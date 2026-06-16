@@ -8,19 +8,24 @@ Consequences). See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the resulting design
 entries are appended below — earlier ADRs are never overwritten. Mark a
 superseded ADR with a `Superseded by ADR-NNN` line rather than editing it.
 
+The index's **Status since** column records the date the ADR reached its current
+status (ISO `YYYY-MM-DD`). Set it on creation and update it whenever the status
+changes (e.g. on supersession), keeping it consistent with the date in the ADR
+body.
+
 ---
 
 ## Index
 
-| ADR | Title | Status |
-|-----|-------|--------|
-| ADR-001 | Tech stack, environment and conventions | Accepted |
-| ADR-002 | Single `.env` as configuration source of truth | Accepted |
-| ADR-003 | Pluggable storage abstraction (local + S3-compatible) | Accepted |
-| ADR-004 | Database abstraction as a documented extension point | Accepted |
-| ADR-005 | Stateless, multi-node (HA) design with probes | Accepted |
-| ADR-006 | Decoupled frontend and single-image default deployment | Accepted |
-| ADR-007 | Backend layering, cache dir and central logging/errors | Accepted |
+| ADR | Title | Status | Status since |
+|-----|-------|--------|--------------|
+| ADR-001 | Tech stack, environment and conventions | Accepted | 2026-06-16 |
+| ADR-002 | Single `.env` as configuration source of truth | Accepted | 2026-06-16 |
+| ADR-003 | Pluggable storage abstraction (local + S3-compatible) | Accepted | 2026-06-16 |
+| ADR-004 | Database abstraction as a documented extension point | Accepted | 2026-06-16 |
+| ADR-005 | Stateless, multi-node (HA) design with probes | Accepted | 2026-06-16 |
+| ADR-006 | Decoupled frontend and single-image default deployment | Accepted | 2026-06-16 |
+| ADR-007 | Backend layering, cache dir and central logging/errors | Accepted | 2026-06-16 |
 
 ---
 
