@@ -28,6 +28,7 @@ body.
 | ADR-007 | Backend layering, cache dir and central logging/errors | Accepted | 2026-06-16 |
 | ADR-008 | References moved out of the code tree; cache renumbered | Accepted | 2026-06-16 |
 | ADR-009 | Unified gear toolchain: app pipeline (STplus/RIKOR/FE) replacing the FVA-Workbench | Accepted | 2026-06-16 |
+| ADR-010 | Three independent analyses (STplus/RIKOR/rolling) with pluggable runners | Accepted | 2026-06-16 |
 
 ---
 
@@ -236,5 +237,36 @@ not maintainable/handover-friendly, no typed contracts).
 **Consequences:** One traceable codebase; model improvements and own evaluation
 become possible; off-Workbench path. Abaqus postprocessing runs in Abaqus' bundled
 Python 3.10 (2025), the rest in the `semesterthesis_3-12` env. See project_rules §17–20.
+
+---
+
+## ADR-010 — Three independent analyses with pluggable runners
+
+**Status:** Accepted (2026-06-16)
+
+**Context:** Chair members want to *use* STplus and RIKOR through the app without
+the big rolling implementation, and ideally not only on Windows (the original
+programs are Windows `.exe`). The rolling analysis in turn consumes STplus/RIKOR
+outputs — either legacy files from colleagues or freshly generated ones.
+
+**Decision:** Expose three first-class, independently runnable analyses —
+`stplus`, `rikor`, `rolling` (`AnalysisKind`). Each analysis's compute is a
+**pluggable runner**:
+1. `exe` — subprocess of the original Windows program (full original output, Windows-only),
+2. `native` — Python reimplementation (cross-platform; STplus geometry done, capacity/load-distribution to follow),
+3. `remote` — optional, run on a Windows host with a cross-platform client.
+
+Inputs are an uploaded existing file **or** a session-cached prior output;
+results are persisted via `app.storage` and exportable to a chosen folder. The
+`rolling` analysis takes `stplus`/`rikor` outputs as input. Cross-platform
+coverage grows as native runners replace exe runners — the structure stays fixed.
+
+**Alternatives:** Only wrap the exes (rejected: Windows-only, defeats the
+cross-platform goal); one monolithic pipeline (rejected: the three uses must be
+runnable independently).
+
+**Consequences:** The three-option UX is stable from the start; each program can
+be adopted independently; portability improves incrementally without rearchitecting.
+See ADR-009, project_rules §17–20.
 
 ---
