@@ -1,0 +1,81 @@
+# ==============================================================================
+# Repository root .gitignore
+# Note: 10_report/ ships its own LaTeX-specific .gitignore.
+# ==============================================================================
+
+# --- Literature (large binary PDFs, not version controlled) --------------------
+00_literatur/
+
+# --- Environment / secrets -----------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# --- Python --------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+
+# --- Conda / virtual environments ---------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+
+# --- Jupyter -------------------------------------------------------------------
+.ipynb_checkpoints/
+
+# --- Node / frontend -----------------------------------------------------------
+node_modules/
+.npm/
+.pnpm-store/
+*.local
+.vite/
+
+# --- Build / runtime output ----------------------------------------------------
+20_code/80_output/**
+!20_code/80_output/.gitkeep
+20_code/90_logs/**
+!20_code/90_logs/.gitkeep
+
+# --- Docker --------------------------------------------------------------------
+*.pid
+
+# --- IDE / editor --------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini

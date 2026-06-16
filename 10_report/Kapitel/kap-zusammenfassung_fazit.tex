@@ -1,0 +1,14 @@
+\chapter{Zusammenfassung und Fazit}
+\label{sec:Zusammenfassung und Fazit}
+
+\textbf{Zusammenfassung der Ergebnisse} \newline
+Die vorliegende Arbeit demonstriert den Prozess der numerischen Spannungsanalyse an einer geometrischen Kerbe unter Einhaltung technischer Restriktionen. Durch die systematische Variation der Diskretisierungsparameter konnte die Überführung eines ungesteuerten Initialmodells in eine optimierte numerische Lösung vollzogen werden. Während das Ausgangsmodell mit linearer Elementformulierung und grobem Mesh die theoretische Kerbspannung von ${500\,\mathrm{MPa}}$ mit lediglich ca. ${425\,\mathrm{MPa}}$ signifikant unterschätzte, lieferte das optimierte Modell \texttt{Kuhn\_A2-2\_quad-seeded\_V1.odb} unter Verwendung quadratischer Elemente \texttt{CPS8} und radialem \texttt{Bias-Seeding} mit ${494\,\mathrm{MPa}}$ ein hochpräzises Ergebnis. Die verbleibende Differenz von ca. ${1.2\,\%}$ zum analytischen Wert nach Inglis lässt sich primär auf den physikalischen Einfluss der endlichen Plattenbreite zurückführen.
+
+\textbf{Abschließendes Fazit und gewonnene Erkenntnisse} \newline
+Aus der Problemlösung lassen sich drei zentrale Erkenntnisse für die ingenieurmäßige Simulationspraxis ableiten:
+\begin{itemize}
+    \item Überlegenheit quadratischer Elementformulierungen: In Bereichen mit hohen Spannungsgradienten, wie sie an Kerben auftreten, sind lineare Elemente aufgrund ihrer konstanten Dehnungsansätze oft zu steif (Locking-Effekte). Der Einsatz quadratischer Formfunktionen ist essenziell, um parabolische Spannungsverläufe und geometrische Krümmungen mit einer effizienten Anzahl an Knoten präzise abzubilden.
+    \item Die Ambivalenz der Netzverfeinerung: Eine lokale Erhöhung der Knotendichte ist zur Auflösung von Gradienten zwingend erforderlich, darf jedoch nicht zu Lasten der Elementqualität gehen. Wie die Version V2 eindrucksvoll zeigt, führen extrem hohe Verfeinerungsgrade zu ungünstigen Seitenverhältnissen (Aspect Ratio), die mathematische Artefakte und physikalisch unmögliche Spannungsspitzen von über ${620\,\mathrm{MPa}}$ provozieren.
+    \item Notwendigkeit der analytischen Plausibilisierung: Die Untersuchung unterstreicht, dass die numerische Simulation kein isoliertes Werkzeug ist. Ohne die Kenntnis der theoretischen Referenzlösung nach Inglis wäre Ergebnis \texttt{Kuhn\_A2-2\_quad-seeded\_V2.odb} möglicherweise als hochgenau missinterpretiert worden. Die Aufgabe des Ingenieurs besteht somit nicht nur in der Modellerstellung, sondern primär in der kritischen Validierung der Ergebnisse gegen theoretische Grenzwerte.
+\end{itemize}
+Durch die methodische Kombination aus gezielter Partitionierung, bewusster Elementwahl und kritischer Ergebniskontrolle konnte nachgewiesen werden, dass auch unter lizenzbedingter Limitierungen (1000-Knoten-Grenze) eine wissenschaftlich belastbare Lösung erzielt werden kann.

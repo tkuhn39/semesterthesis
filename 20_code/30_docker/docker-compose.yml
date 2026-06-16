@@ -1,0 +1,20 @@
+# Local run of the production image (single container: API + SPA).
+#
+#   docker compose -f 30_docker/docker-compose.yml up --build
+#
+# Run from 20_code/ so the build context (..) resolves correctly.
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: 30_docker/Dockerfile
+    image: semesterthesis:latest
+    container_name: semesterthesis
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../.env
+    environment:
+      APP_ENV: production
+    restart: unless-stopped

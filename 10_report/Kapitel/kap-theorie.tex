@@ -1,0 +1,29 @@
+\chapter{Theorie}
+\label{sec:Theorie}
+
+Die mathematische Beschreibung von Spannungsfeldern in der Umgebung geometrischer Diskontinuitäten ist eine fundamentale Fragestellung der Elastostatik. Jede Störung des Kraftflusses, wie sie durch Bohrungen oder Aussparungen hervorgerufen wird, führt lokal zu einer signifikanten Überhöhung der Nennspannung, die als Spannungskonzentration bezeichnet wird. Der Theorieteil wurde unter Zuhilfenahme folgender Literatur ausgearbeitet: \cite{Niemann19} \cite{Sedlacek09} \cite{roesler12}.
+
+
+\section{Analytische Lösung nach Inglis}
+\label{sec:Analytische Lösung nach Inglis}
+
+Für die Untersuchung einer unendlich ausgedehnten, linear-elastischen Scheibe mit einem elliptischen Loch unter einachsiger Zugbelastung stellt die Lösung nach Inglis die theoretische Referenz dar. Die maximale Normalspannung ${\sigma_{xx}^{\mathrm{P}}}$ tritt dabei stets an den Scheitelpunkten der Hauptachse auf, die senkrecht zur Lastrichtung orientiert ist. Diese berechnet sich in Abhängigkeit der Halbachsen ${a}$ (vertikal) und ${b}$ (horizontal) nach der Beziehung:
+
+\begin{equation}
+    \sigma_{xx}^{\mathrm{P}} = \sigma_{0} \cdot \left( 1 + \frac{2a}{b} \right).
+    \label{eq:Inglis Lösung}
+\end{equation}
+
+Hierbei definiert der Term ${\alpha_{\mathrm{k}} = \left( 1 + \frac{2a}{b} \right)}$ die theoretische Formzahl (Spannungskonzentrationsfaktor).
+
+\section{Einfluss der Geometrie und Grenzfälle}
+\label{sec:Einfluss der Geometrie und Grenzfälle}
+
+Die analytische Gleichung verdeutlicht, dass die Spannungsüberhöhung maßgeblich vom Achsenverhältnis der Ellipse bestimmt wird. Hierbei lassen sich zwei physikalisch relevante Grenzfälle ableiten:
+
+\begin{itemize}
+    \item Kreisförmiges Loch: Für den Fall ${a = b}$ reduziert sich die Formzahl auf den konstanten Wert ${\alpha_{\mathrm{k}} = 3}$, was der klassischen Lösung nach Kirsch entspricht.
+    \item Rissartiger Defekt: Nähert sich die horizontale Halbachse dem Wert ${b \rightarrow 0}$, strebt die theoretische Spannungsspitze gegen Unendlich (${\sigma_{xx}^{\mathrm{P}} \rightarrow \infty}$), was die Grundlage der Bruchmechanik hinsichtlich der Singularität an Risspitzen bildet.
+\end{itemize}
+
+Es ist anzumerken, dass die analytische Lösung die Annahme einer unendlich ausgedehnten Scheibe trifft. In der numerischen Simulation der vorliegenden endlichen Scheibengeometrie (${\text{Breite } l = 100\,\mathrm{mm}}$) können daher geringfügige Abweichungen auftreten, da die Interaktion zwischen dem lokalen Spannungsfeld der Kerbe und den äußeren Berandungen physikalisch berücksichtigt wird.

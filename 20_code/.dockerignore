@@ -1,0 +1,30 @@
+# Build context is 20_code/. Keep the image small and reproducible.
+
+# Python caches / artifacts
+**/__pycache__/
+**/*.py[cod]
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# Secrets and local config (image gets config via env at runtime)
+.env
+.env.*
+!.env.example
+
+# Frontend artifacts (rebuilt inside the image)
+50_frontend/node_modules/
+50_frontend/dist/
+
+# Not needed at runtime
+00_development_documentation/
+10_verifiers/
+20_antigravity_scripts/
+60_references_other_programs/
+80_output/
+90_logs/
+**/.gitkeep
+**/README.md
+CLAUDE.md
+project_rules.md
+pyproject.toml

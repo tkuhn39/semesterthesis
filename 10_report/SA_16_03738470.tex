@@ -1,0 +1,87 @@
+\documentclass[]{FZGdasa}
+% {Klassen} entspr. *.cls Dateien:
+% FZGdasa > arbeitet mit \chapter als höchste Ebene
+%
+% [Optionen]:
+% entwurf      > Erstelldatum, Anmerkungen usw. sichtbar
+% notoc        > kein Inhaltsverzeichnis
+% nokeys       > keine labels anzeigen im entwurf-Modus
+% notodolist   > keine Auflistung der mit \Note \sNote \Explain \Reminder \sReminder gekennzeichneten Stellen
+% noxurl       > kein Zeilenumbruch in URL an alphanumerischen Zeichen, aber Skalierung des Zeichenabstands in URL in Literaturverzeichnis
+% english
+
+% Schlüsselwörter:
+\Arbeit{Semesterarbeit}
+\Nummer{16}
+\ThemaDeutsch{Berechnung und experimentelle Untersuchung der Zahnfußspannung kurzfaserverstärkter Kunststoffzahnräder}
+% \ThemaEnglisch{Titel in Englisch (entfällt bei Semesterarbeit)}
+\ErlangungGrad{M.Sc.}
+\AutorAnrede{Herr}
+\Autorname{Tim Kuhn}
+\AutorMatrNr{03738470}
+\Betreuername{Liang Wang}
+\Themenstellername[Prof. Dr.-Ing.]{Karsten Stahl}
+\ThemenstellerZusatz{Lehrstuhl für Maschinenelemente}
+\Beginn{27.04.2026}
+\Ende{27.10.2026}
+\Ort{Garching bei München}
+\Aufgabepfad{aufgabenstellung.tex}
+
+% Verfügbare Kommandos:
+%\siehe[1]{s.~#1}
+%{\chapref}[1]{\textbf{\chaptername~\ref{#1}}}
+%{\schapref}[1]{\siehe{\chapref{#1}}}
+%{\secref}[1]{\textbf{Abschnitt~\ref{#1}}}
+%{\ssecref}[1]{\siehe{\secref{#1}}}
+%{\eqref}[1]{\textbf{Formel~(\ref{#1})}}
+%{\seqref}[1]{\siehe{\eqref{#1}}}
+%{\figref}[1]{\textbf{\figurename~\ref{#1}}}
+%{\sfigref}[1]{\siehe{\figref{#1}}}
+%{\tabref}[1]{\textbf{\tablename~\ref{#1}}}
+%{\stabref}[1]{\siehe{\tabref{#1}}}
+%{\datref}[1]{\textbf{Dateifenster~\ref{#1}}}
+%{\sdatref}[1]{\siehe{\datef{#1}}}
+
+%\addbibresource{litbib.bib}
+
+\begin{document}
+
+%==== Kap1: ====
+\input{Kapitel/kap-einleitung.tex}
+
+%==== Kap2: ====
+\input{Kapitel/kap-theorie.tex}
+
+%==== Kap3: ====
+\input{Kapitel/kap-loesungsansatz.tex}
+
+%==== Kap4: ====
+\input{Kapitel/kap-ergebnisse_diskussion.tex}
+
+%==== Kap4: ====
+\input{Kapitel/kap-zusammenfassung_fazit.tex}
+
+%==== Literaturverzeichnis ====
+\clearpage
+\phantomsection       % Wichtig, damit Verlinkungen im PDF richtig funktionieren
+\addcontentsline{toc}{chapter}{\bibname} % Schreibt das Wort "Anhang" ins Inhaltsverzeichnis
+\chapter*{\bibname}
+\markboth{\bibname}{}
+\insertbib
+% In der Bib sollte für Normen und Richtlinien als Type MANUAL und Webseite als ONLINE eingegeben
+
+
+
+%\phantomsection\label{sec:literaturverzeichnis}
+%\bibliography{litbib}
+%\addcontentsline{toc}{section}{\bibname}
+%\clearpage
+
+%=========================================================
+%==== Anhang ====
+\clearpage            % Sorgt dafür, dass der Anhang auf einer neuen Seite beginnt
+\appendix             % Schaltet die Nummerierung von Zahlen (1,2) auf Buchstaben (A,B) um
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}} % Ab hier nur noch die Chapter-Ebene (Ebene 0) ins Inhaltsverzeichnis aufnehmen, keine Sections (Ebene 1) mehr:
+\input{Kapitel/kap-anhang.tex}
+
+\end{document}

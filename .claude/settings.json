@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($py=\"C:\\\\Users\\\\kuhnt\\\\.conda\\\\envs\\\\semesterthesis_3-12\\\\python.exe\"; Set-Location C:\\\\GitHub\\\\semesterthesis\\\\20_code; Write-Output \"=== ruff check ===\"; & $py -m ruff check .; Write-Output \"=== ruff format --check ===\"; & $py -m ruff format --check .; Write-Output \"=== pytest ===\"; & $py -m pytest -q)",
+      "PowerShell($py=\"C:\\\\Users\\\\kuhnt\\\\.conda\\\\envs\\\\semesterthesis_3-12\\\\python.exe\"; Set-Location C:\\\\GitHub\\\\semesterthesis\\\\20_code; & $py -m mypy 40_backend 2>&1 | Select-Object -First 30)",
+      "Bash(grep -iE \"\\\\.\\(aux|log|bbl|bcf|blg|out|toc|fls|fdb_latexmk|synctex|run\\\\.xml|pdf\\)$\")"
+    ]
+  }
+}

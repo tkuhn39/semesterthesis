@@ -1,0 +1,27 @@
+# Normalize line endings: let Git decide and store LF in the repository.
+* text=auto eol=lf
+
+# Windows-specific scripts keep CRLF
+*.bat        text eol=crlf
+*.cmd        text eol=crlf
+*.ps1        text eol=crlf
+
+# Shell scripts must stay LF
+*.sh         text eol=lf
+
+# Treat common binary assets as binary (no diff/merge, no EOL conversion)
+*.pdf        binary
+*.png        binary
+*.jpg        binary
+*.jpeg       binary
+*.gif        binary
+*.ico        binary
+*.zip        binary
+*.gz         binary
+*.7z         binary
+*.odb        binary
+*.synctex.gz binary
+
+# GitHub Linguist: keep language stats focused on source code
+00_literatur/** linguist-vendored
+10_report/**    linguist-documentation

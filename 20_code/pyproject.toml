@@ -1,0 +1,39 @@
+# Tooling configuration for the semester-thesis Python code.
+# Dependencies are NOT managed here — see requirements.txt and
+# semesterthesis_3-12.yaml. This file configures ruff, mypy and pytest only.
+
+[project]
+name = "semesterthesis"
+version = "0.1.0"
+description = "FE-based tooth root stress optimization of plastic gears"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["60_references_other_programs", "80_output", "90_logs"]
+
+[tool.ruff.lint]
+# pycodestyle/pyflakes (E,F), imports (I), bugbear (B), pyupgrade (UP),
+# comprehensions (C4), naming (N), simplify (SIM)
+select = ["E", "F", "I", "B", "UP", "C4", "N", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+exclude = ["60_references_other_programs/", "80_output/", "90_logs/"]
+
+[tool.pytest.ini_options]
+testpaths = ["10_verifiers", "40_backend"]
+python_files = ["test_*.py", "*_verifier.py"]
+addopts = "-ra"

@@ -1,0 +1,10 @@
+# Development & CI tooling. Install on top of the runtime requirements:
+#   pip install -r requirements.txt -r requirements-dev.txt
+# Keep in sync with semesterthesis_3-12.yaml and the live Conda environment.
+-r requirements.txt
+
+pytest==9.1.0
+httpx==0.28.1          # required by FastAPI's TestClient
+ruff==0.15.17
+mypy==2.1.0
+pre-commit==4.6.0

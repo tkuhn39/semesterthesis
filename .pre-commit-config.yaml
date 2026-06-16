@@ -1,0 +1,24 @@
+# Pre-commit hooks. Install once with: pre-commit install
+# Run on all files with: pre-commit run --all-files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(10_report/|00_literatur/)
+      - id: end-of-file-fixer
+        exclude: ^(10_report/|00_literatur/)
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=2048"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.13.0
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+        files: ^20_code/
+      - id: ruff-format
+        files: ^20_code/
