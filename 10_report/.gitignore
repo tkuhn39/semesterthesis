@@ -23,7 +23,9 @@
 
 ## Generated if empty string is given at "Please type another file name for output:"
 .pdf
-SA_03738470.pdf
+
+## Compiled main document (build artifact). Figure PDFs in _ltx/ stay tracked.
+/SA_*.pdf
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
