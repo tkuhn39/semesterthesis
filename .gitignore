@@ -82,3 +82,23 @@ node_modules/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# --- Abaqus --------------------------------------------------------------------
+*.odb
+*.sim
+*.prt
+*.cae
+*.inp
+*.msg
+*.dat
+*.sta
+*.log
+*.com
+*.rec
+*.sim
+*.fil
+*.res
+*.lock
+
+# --- S-Life Plastics ----------------------------------------------------------
+*.cof
