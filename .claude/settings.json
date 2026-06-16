@@ -15,7 +15,8 @@
       "PowerShell($py=\"C:\\\\Users\\\\kuhnt\\\\.conda\\\\envs\\\\semesterthesis_3-12\\\\python.exe\"; Set-Location C:\\\\GitHub\\\\semesterthesis\\\\20_code; Write-Output \"=== ruff ===\"; & $py -m ruff check .; Write-Output \"=== ruff format --check ===\"; & $py -m ruff format --check .; Write-Output \"=== mypy ===\"; & $py -m mypy 40_backend 2>&1 | Select-Object -Last 6; Write-Output \"=== pytest ===\"; & $py -m pytest -q 2>&1 | Select-Object -Last 12)",
       "PowerShell($py=\"C:\\\\Users\\\\kuhnt\\\\.conda\\\\envs\\\\semesterthesis_3-12\\\\python.exe\"; Set-Location C:\\\\GitHub\\\\semesterthesis\\\\20_code; Write-Output \"=== ruff ===\"; & $py -m ruff check .; Write-Output \"=== format ===\"; & $py -m ruff format --check .; Write-Output \"=== mypy ===\"; & $py -m mypy 40_backend 2>&1 | Select-Object -Last 3; Write-Output \"=== pytest ===\"; & $py -m pytest -q 2>&1 | Select-Object -Last 6)",
       "Read(//c/Program Files/FVA-Workbench-10.1.1-x64/**)",
-      "Bash(/c/Users/kuhnt/AppData/Local/Temp/pdftools/Scripts/python.exe -m pip install --quiet pymupdf)"
+      "Bash(/c/Users/kuhnt/AppData/Local/Temp/pdftools/Scripts/python.exe -m pip install --quiet pymupdf)",
+      "PowerShell($py=\"C:\\\\Users\\\\kuhnt\\\\.conda\\\\envs\\\\semesterthesis_3-12\\\\python.exe\"; Set-Location C:\\\\GitHub\\\\semesterthesis\\\\20_code; Write-Output \"=== ruff ===\"; & $py -m ruff check .; Write-Output \"=== format ===\"; & $py -m ruff format --check .; Write-Output \"=== mypy ===\"; & $py -m mypy 40_backend 2>&1 | Select-Object -Last 4; Write-Output \"=== pytest ===\"; & $py -m pytest -q 2>&1 | Select-Object -Last 6)"
     ],
     "additionalDirectories": [
       "c:\\Users\\kuhnt\\.claude\\projects\\c--GitHub-semesterthesis\\memory"
