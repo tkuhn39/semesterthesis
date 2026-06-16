@@ -11,23 +11,23 @@ from pathlib import Path
 import pytest
 
 from app.io.rexs import RexsGearStage
-from app.io.ste import SteGearStage
+from app.io.ste import Pair, SteGearStage
 from app.services.ingest import compare_gear_stages, load_and_compare
 
 # A matching kst-E pair (STplus and RIKOR describing the same gearing).
 _STE = SteGearStage(
     normal_module_mm=1.0,
-    teeth=(51, 52),
-    pressure_angle_deg=(20.0, 20.0),
-    helix_angle_deg=(0.0, 0.0),
-    face_width_mm=(17.0, 15.0),
-    profile_shift=(0.2034, 0.3143),
+    teeth=Pair(51, 52),
+    pressure_angle_deg=Pair(20.0, 20.0),
+    helix_angle_deg=Pair(0.0, 0.0),
+    face_width_mm=Pair(17.0, 15.0),
+    profile_shift=Pair(0.2034, 0.3143),
 )
 _REXS = RexsGearStage(
-    teeth=(51, 52),
+    teeth=Pair(51, 52),
     normal_module_mm=1.0,
-    helix_angle_deg=(0.0, 0.0),
-    face_width_mm=(17.0, 15.0),
+    helix_angle_deg=Pair(0.0, 0.0),
+    face_width_mm=Pair(17.0, 15.0),
 )
 
 

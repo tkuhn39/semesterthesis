@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from app.io.ste import gear_stage_from_ste, load_ste
+from app.io.ste import Pair, gear_stage_from_ste, load_ste
 from app.services.geometry.gear import GearStage, inverse_involute, involute
 
 _REF_STE = (
@@ -24,10 +24,10 @@ _REF_STE = (
 # Project gear; reference values are STplus / FVA-Workbench (ISO 21771) output.
 KST_E = GearStage(
     normal_module_mm=1.0,
-    teeth=(51, 52),
+    teeth=Pair(51, 52),
     normal_pressure_angle_deg=20.0,
     helix_angle_deg=0.0,
-    profile_shift=(0.2034, 0.3143),
+    profile_shift=Pair(0.2034, 0.3143),
     center_distance_mm=52.0,
 )
 
@@ -45,7 +45,7 @@ def test_kst_e_matches_stplus() -> None:
 def test_zero_profile_shift_generated_center_distance() -> None:
     """Without center distance and x=0: working angle == transverse angle and the
     generated center distance equals the reference center distance."""
-    g = GearStage(normal_module_mm=2.0, teeth=(20, 40))
+    g = GearStage(normal_module_mm=2.0, teeth=Pair(20, 40))
     assert g.working_pressure_angle_deg == pytest.approx(20.0, abs=1e-6)
     assert g.working_center_distance_mm == pytest.approx(60.0, abs=1e-6)
 

@@ -13,6 +13,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from app.io.ste import Pair
+
 
 def _tag(element: ET.Element) -> str:
     """Local tag name, namespace stripped."""
@@ -149,10 +151,10 @@ def load_rexs(path: Path) -> RexsModel:
 class RexsGearStage(BaseModel):
     """A two-gear cylindrical stage extracted from REXS (component order)."""
 
-    teeth: tuple[int, int]
+    teeth: Pair[int]
     normal_module_mm: float
-    helix_angle_deg: tuple[float, float]
-    face_width_mm: tuple[float, float]
+    helix_angle_deg: Pair[float]
+    face_width_mm: Pair[float]
 
 
 def _gear_attr(component: RexsComponent, attr_id: str) -> float:
@@ -182,14 +184,14 @@ def gear_stage_from_rexs(model: RexsModel) -> RexsGearStage:
         )
     first, second = gears
     return RexsGearStage(
-        teeth=(
+        teeth=Pair(
             int(_gear_attr(first, "number_of_teeth")),
             int(_gear_attr(second, "number_of_teeth")),
         ),
         normal_module_mm=_gear_attr(first, "normal_module"),
-        helix_angle_deg=(
+        helix_angle_deg=Pair(
             _gear_attr_opt(first, "helix_angle_reference_diameter"),
             _gear_attr_opt(second, "helix_angle_reference_diameter"),
         ),
-        face_width_mm=(_gear_attr(first, "face_width"), _gear_attr(second, "face_width")),
+        face_width_mm=Pair(_gear_attr(first, "face_width"), _gear_attr(second, "face_width")),
     )

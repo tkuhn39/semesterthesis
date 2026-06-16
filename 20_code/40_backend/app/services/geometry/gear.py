@@ -43,10 +43,10 @@ class GearStage(BaseModel):
     """
 
     normal_module_mm: float
-    teeth: tuple[int, int]
+    teeth: Pair[int]
     normal_pressure_angle_deg: float = 20.0
     helix_angle_deg: float = 0.0
-    profile_shift: Pair = (0.0, 0.0)
+    profile_shift: Pair[float] = Pair(0.0, 0.0)
     center_distance_mm: float | None = None
 
     @classmethod
@@ -75,15 +75,15 @@ class GearStage(BaseModel):
         return math.degrees(math.atan(math.tan(alpha_n) / math.cos(self._beta)))
 
     @property
-    def reference_diameter_mm(self) -> Pair:
+    def reference_diameter_mm(self) -> Pair[float]:
         mt = self.transverse_module_mm
-        return (mt * self.teeth[0], mt * self.teeth[1])
+        return Pair(mt * self.teeth[0], mt * self.teeth[1])
 
     @property
-    def base_diameter_mm(self) -> Pair:
+    def base_diameter_mm(self) -> Pair[float]:
         factor = math.cos(math.radians(self.transverse_pressure_angle_deg))
         d1, d2 = self.reference_diameter_mm
-        return (d1 * factor, d2 * factor)
+        return Pair(d1 * factor, d2 * factor)
 
     @property
     def reference_center_distance_mm(self) -> float:
@@ -114,7 +114,7 @@ class GearStage(BaseModel):
         return self.reference_center_distance_mm * math.cos(alpha_t) / math.cos(alpha_wt)
 
     @property
-    def working_pitch_diameter_mm(self) -> Pair:
+    def working_pitch_diameter_mm(self) -> Pair[float]:
         factor = math.cos(math.radians(self.working_pressure_angle_deg))
         db1, db2 = self.base_diameter_mm
-        return (db1 / factor, db2 / factor)
+        return Pair(db1 / factor, db2 / factor)
