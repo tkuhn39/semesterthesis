@@ -6,7 +6,16 @@
       "Bash(grep -iE \"\\\\.\\(aux|log|bbl|bcf|blg|out|toc|fls|fdb_latexmk|synctex|run\\\\.xml|pdf\\)$\")",
       "Bash(awk '{print $5, $9}')",
       "Bash(git rm *)",
-      "Bash(git check-ignore *)"
+      "Bash(git check-ignore *)",
+      "Read(//c/Users/kuhnt/.claude/projects/c--GitHub-semesterthesis/memory/**)",
+      "Bash(grep -rnE '\\\\w\\\\\\\\[\\\\w.]' --include=*.md --include=*.py --include=*.toml --include=*.yaml --include=*.yml .)",
+      "Bash(grep -viE '\\\\\\\\n|\\\\\\\\t')",
+      "PowerShell($py=\"C:\\\\Users\\\\kuhnt\\\\.conda\\\\envs\\\\semesterthesis_3-12\\\\python.exe\"; Set-Location C:\\\\GitHub\\\\semesterthesis\\\\20_code; Write-Output \"=== ruff ===\"; & $py -m ruff check .; Write-Output \"=== mypy ===\"; & $py -m mypy 40_backend 2>&1 | Select-Object -Last 5; Write-Output \"=== pytest ===\"; & $py -m pytest -q 2>&1 | Select-Object -Last 20)",
+      "PowerShell($py=\"C:\\\\Users\\\\kuhnt\\\\.conda\\\\envs\\\\semesterthesis_3-12\\\\python.exe\"; & $py -m pip install boto3 2>&1 | Select-Object -Last 5; Write-Output \"=== version ===\"; & $py -c \"import boto3; print\\('boto3', boto3.__version__\\)\")",
+      "PowerShell($py=\"C:\\\\Users\\\\kuhnt\\\\.conda\\\\envs\\\\semesterthesis_3-12\\\\python.exe\"; Set-Location C:\\\\GitHub\\\\semesterthesis\\\\20_code; Write-Output \"=== ruff ===\"; & $py -m ruff check .; Write-Output \"=== ruff format --check ===\"; & $py -m ruff format --check .; Write-Output \"=== mypy ===\"; & $py -m mypy 40_backend 2>&1 | Select-Object -Last 6; Write-Output \"=== pytest ===\"; & $py -m pytest -q 2>&1 | Select-Object -Last 12)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\kuhnt\\.claude\\projects\\c--GitHub-semesterthesis\\memory"
     ]
   }
 }

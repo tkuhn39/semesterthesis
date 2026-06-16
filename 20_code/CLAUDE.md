@@ -32,21 +32,10 @@ When you add or remove a dependency, update **all three** in the same change:
 
 ## Directory map
 
-| Folder | Purpose |
-|--------|---------|
-| `00_development_documentation/` | ADRs, lessons learned, dev story. **Append-only** (rule §14). |
-| `10_verifiers/` | Verification / test scripts. |
-| `20_antigravity_scripts/` | Automation, file-moving, command-execution scripts. |
-| `30_docker/` | Dockerfile, compose, deployment assets. |
-| `40_backend/` | FastAPI application (`app/` package). |
-| `50_frontend/` | React (Vite) single-page app. |
-| `60_references_other_programs/` | Read-only reference code (e.g. FVA Abaqus scripts). Do not edit. |
-| `80_output/` | Generated results, CSVs, plots, photos — in categorized subfolders. Git-ignored. |
-| `90_logs/` | Runtime logs. Git-ignored. |
-
-Subfolders keep the parent's first digit and add a second (e.g. `61_FVA`).
-Python packages, however, must use import-safe names (e.g. `40_backend/app/`),
-since module names cannot start with a digit.
+The canonical folder layout lives in
+**[project_rules.md](project_rules.md) → Directory Structure** (kept in sync with
+the repo, so there is one source of truth). Python packages use import-safe names
+(e.g. `40_backend/app/`) because module names cannot start with a digit.
 
 ## Common commands
 
@@ -66,11 +55,21 @@ uvicorn app.main:app --reload          # from 40_backend/
 npm run dev                            # from 50_frontend/
 ```
 
-## Conventions (see project_rules.md for the full list)
+## Rules & architecture (authoritative docs)
 
-- Object-oriented Python; think in classes.
-- Prefer `dict["key"]` over `.get("key")` unless a non-mutable default is required.
-- Minimal `try/except`; never silence faults.
-- Each `.py` starts with a concise, machine-readable header describing its role.
-- Results/logs go into categorized subfolders of `80_output/` and `90_logs/`.
-- Documentation files in `00_development_documentation/` are appended, never overwritten.
+This file only covers the workflow. The **binding rules** are the single source
+of truth in **[project_rules.md](project_rules.md)** — read them before changing
+code. The **system design** (HA / multi-node, statelessness, the `.env` config
+contract, storage/database abstractions, decoupled frontend) lives in
+**[00_development_documentation/ARCHITECTURE.md](00_development_documentation/ARCHITECTURE.md)**.
+
+Things to never get wrong:
+
+- One `20_code/.env` configures everything; read it via
+  `app.config.get_settings()`. Never hardcode endpoints, credentials or paths,
+  including local storage paths (project_rules §15–16).
+- Persist files only via `app.storage`, data only via `app.database`; choose the
+  backend through `.env` — local / S3-compatible (S3, R2, Ceph, MinIO) /
+  SQLite / Postgres / D1 (project_rules §17).
+- Assume the service runs on several nodes at once: no in-process shared state,
+  no node-local filesystem assumptions (project_rules §18).

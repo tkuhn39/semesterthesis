@@ -8,6 +8,9 @@ uvicorn[standard]==0.49.0
 pydantic-settings==2.14.1
 python-dotenv==1.2.2
 
+# --- Object storage (only used when STORAGE_BACKEND=s3: AWS S3/R2/Ceph/MinIO) --
+boto3==1.43.30
+
 # --- Scientific stack ----------------------------------------------------------
 numpy==2.4.6
 scipy==1.17.1
