@@ -86,40 +86,75 @@ def load_ste(path: Path) -> SteFile:
 
 
 class SteGearStage(BaseModel):
-    """Spur-gear stage geometry extracted from a `.ste`, as (pinion, wheel)."""
+    """Spur-gear stage geometry extracted from a `.ste`, as (pinion, wheel).
+
+    Only the *defining* inputs are required. STplus computes the tip diameter and
+    the center distance when they are not given in the input, so both are optional
+    here. A negative tooth count denotes an internal gear (STplus convention).
+    """
 
     normal_module_mm: float
     teeth: tuple[int, int]
-    center_distance_mm: float
     pressure_angle_deg: Pair
     helix_angle_deg: Pair
     face_width_mm: Pair
     profile_shift: Pair
-    tip_diameter_mm: Pair
+    center_distance_mm: float | None = None
+    tip_diameter_mm: Pair | None = None
 
 
-def _floats(ste: SteFile, key: str) -> list[float]:
+def _numbers(entry: SteEntry) -> list[float]:
+    """Numeric tokens of an entry; non-numeric flags (e.g. STplus ``%``) are dropped."""
+    numbers: list[float] = []
+    for token in entry.values:
+        try:
+            numbers.append(float(token))
+        except ValueError:
+            continue
+    return numbers
+
+
+def _required(ste: SteFile, key: str) -> list[float]:
     entry = ste.find(key)
     if entry is None:
         raise KeyError(f"STplus key not found: {key}")
-    return [float(token) for token in entry.values]
+    numbers = _numbers(entry)
+    if not numbers:
+        raise ValueError(f"STplus key {key!r} has no numeric value")
+    return numbers
 
 
-def _pair(ste: SteFile, key: str) -> Pair:
-    values = _floats(ste, key)
-    return (values[0], values[0] if len(values) == 1 else values[1])
+def _optional(ste: SteFile, key: str) -> list[float] | None:
+    entry = ste.find(key)
+    if entry is None:
+        return None
+    return _numbers(entry) or None
+
+
+def _pair(numbers: list[float]) -> Pair:
+    return (numbers[0], numbers[0] if len(numbers) == 1 else numbers[1])
 
 
 def gear_stage_from_ste(ste: SteFile) -> SteGearStage:
-    """Extract the spur-gear stage geometry from a parsed `.ste`."""
-    teeth = _floats(ste, "ZAEHNEZAHL")
+    """Extract the spur-gear stage geometry from a parsed `.ste`.
+
+    Requires the defining inputs (module, teeth, pressure/helix angle, face width,
+    profile shift); center distance and tip diameter are taken only if present.
+    """
+    teeth = _required(ste, "ZAEHNEZAHL")
+    if len(teeth) < 2:
+        raise ValueError(
+            "'.ste' defines a single gear (one ZAEHNEZAHL value), not a two-gear stage"
+        )
+    center = _optional(ste, "ACHSABSTAND")
+    tip = _optional(ste, "KOPFKREISDM")
     return SteGearStage(
-        normal_module_mm=_floats(ste, "NORMALMODUL")[0],
+        normal_module_mm=_required(ste, "NORMALMODUL")[0],
         teeth=(int(teeth[0]), int(teeth[1])),
-        center_distance_mm=_floats(ste, "ACHSABSTAND")[0],
-        pressure_angle_deg=_pair(ste, "EINGRIFFSWINKEL"),
-        helix_angle_deg=_pair(ste, "SCHRAEGUNGSWINKEL"),
-        face_width_mm=_pair(ste, "ZAHNBREITE"),
-        profile_shift=_pair(ste, "PROFILVERSCHIEBUNG_N"),
-        tip_diameter_mm=_pair(ste, "KOPFKREISDM"),
+        pressure_angle_deg=_pair(_required(ste, "EINGRIFFSWINKEL")),
+        helix_angle_deg=_pair(_required(ste, "SCHRAEGUNGSWINKEL")),
+        face_width_mm=_pair(_required(ste, "ZAHNBREITE")),
+        profile_shift=_pair(_required(ste, "PROFILVERSCHIEBUNG_N")),
+        center_distance_mm=center[0] if center else None,
+        tip_diameter_mm=_pair(tip) if tip else None,
     )

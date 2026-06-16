@@ -81,3 +81,24 @@ def test_reference_parity_real_ste() -> None:
     assert stage.face_width_mm == (17.0, 15.0)
     assert stage.profile_shift == (0.2034, 0.3143)
     assert stage.tip_diameter_mm == (52.894, 54.022)
+
+
+# All shipped STplus examples — varied inputs (helical, internal, single-gear,
+# missing tip-diameter/center-distance, '%' flags) to prove robustness.
+_STE_EXAMPLES = sorted((_REF_STE.parent / "STplus_11-0F" / "work").glob("stbsp*.ste"))
+_STE_PARAMS: list[Path | None] = [*_STE_EXAMPLES] if _STE_EXAMPLES else [None]
+
+
+@pytest.mark.parametrize("path", _STE_PARAMS, ids=lambda p: p.name if p else "none")
+def test_extraction_robust_across_stplus_examples(path: Path | None) -> None:
+    """Across every real STplus input, extraction yields a sane two-gear stage or
+    a clean ValueError (single-gear / non-stage) — never an undefined crash."""
+    if path is None:
+        pytest.skip("STplus examples not present")
+    try:
+        stage = gear_stage_from_ste(load_ste(path))
+    except ValueError:
+        return  # single-gear / non-stage definitions are rejected cleanly
+    assert stage.normal_module_mm > 0
+    assert stage.teeth[0] != 0 and stage.teeth[1] != 0
+    assert stage.face_width_mm[0] > 0
