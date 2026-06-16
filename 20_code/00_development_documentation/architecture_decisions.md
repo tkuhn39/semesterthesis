@@ -27,6 +27,7 @@ body.
 | ADR-006 | Decoupled frontend and single-image default deployment | Accepted | 2026-06-16 |
 | ADR-007 | Backend layering, cache dir and central logging/errors | Accepted | 2026-06-16 |
 | ADR-008 | References moved out of the code tree; cache renumbered | Accepted | 2026-06-16 |
+| ADR-009 | Unified gear toolchain: app pipeline (STplus/RIKOR/FE) replacing the FVA-Workbench | Accepted | 2026-06-16 |
 
 ---
 
@@ -201,5 +202,39 @@ references no longer occupy `60`).
 
 **Consequences:** The code tree contains only project code; reference code is
 clearly separated and excluded from linting/builds. Supplements ADR-007.
+
+---
+
+## ADR-009 — Unified gear toolchain: app pipeline replacing the FVA-Workbench
+
+**Status:** Accepted (2026-06-16)
+
+**Context:** The current workflow chains several separate programs (FVA-Workbench/
+STIRAK for the rolling FE model, STplus for geometry/capacity, RIKOR for load
+distribution, Converse for the anisotropic material card, Abaqus for the solve)
+plus a workbench post-processing that **breaks on any inp modification**. The
+chair runs many such tools. Goal: one lean, maintainable app that consolidates
+the chain and lets us improve the FE model (rigid steel pinion, sector body,
+element type, ≥30 rolling positions) and own the evaluation.
+
+**Decision:** Build a single Python app (OOP + pydantic, FastAPI backend, modern
+frontend later) layered into services under `40_backend/app`:
+`io/` (typed parsers/writers: STplus `.ste`, REXS, STIRAK `.fsk`, Abaqus `.inp`/
+`.cof`, Z88), `geometry/`, `capacity/` (STplus), `loaddist/` (RIKOR), `body/`
+(CAD `.stp` → sector cut → mesh → couple to rim, per FVA 484), `model/` (assemble
+the Abaqus rolling inp; material modes simple-nonlinear | Converse-cof), `solve/`
+(drive Abaqus 2025), `postprocess/` (Abaqus-Python 3.10 odbAccess extractor,
+decoupled from workbench naming, neutral CSV/JSON), `evaluation/`, `visualization/`.
+External programs are first wrapped behind typed services, then progressively
+reimplemented in Python. The FVA-Workbench code (STIRAK kernel templates, post
+scripts) serves as the reference basis.
+
+**Alternatives:** Keep scripting the workbench (rejected: postproc breaks on inp
+edits, no model freedom, not consolidatable); a thin script collection (rejected:
+not maintainable/handover-friendly, no typed contracts).
+
+**Consequences:** One traceable codebase; model improvements and own evaluation
+become possible; off-Workbench path. Abaqus postprocessing runs in Abaqus' bundled
+Python 3.10 (2025), the rest in the `semesterthesis_3-12` env. See project_rules §17–20.
 
 ---
