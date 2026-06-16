@@ -43,7 +43,9 @@ class Settings(BaseSettings):
     log_to_stdout: bool = True
 
     # --- Paths (overridable via .env, never hardcoded elsewhere) -------------
-    output_dir: Path = _CODE_ROOT / "80_output"
+    # Disposable cache (mesh/FE intermediates); safe to delete at any time.
+    # Persisted results go through app.storage (STORAGE_LOCAL_BASE_PATH), not here.
+    cache_dir: Path = _CODE_ROOT / "70_cache"
     log_dir: Path = _CODE_ROOT / "90_logs"
 
     # --- API -----------------------------------------------------------------

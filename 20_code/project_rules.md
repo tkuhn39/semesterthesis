@@ -9,11 +9,12 @@ Two-digit prefixes; a nested subfolder keeps its parent's first digit and adds a
 - `20_code/10_verifiers/`: Python files used purely for verification/testing.
 - `20_code/20_antigravity_scripts/`: Scripts used for moving files, automation, and command execution.
 - `20_code/30_docker/`: Dockerfile, compose and deployment assets.
-- `20_code/40_backend/`: FastAPI application — the `app/` package (`api`, `config`, `storage`, `database`).
+- `20_code/40_backend/`: FastAPI application — the `app/` package (`api`, `services`, `config`, `logging_config`, `errors`, `storage`, `database`).
 - `20_code/50_frontend/`: React (Vite) single-page app.
 - `20_code/60_references_other_programs/`: Read-only reference code from other programs (do not edit).
-- `20_code/80_output/`: Generated results/CSVs/plots/logs in categorized subfolders (git-ignored).
-- `20_code/90_logs/`: Runtime logs (git-ignored).
+- `20_code/70_cache/`: Disposable cache (mesh/FE intermediates); safe to delete (git-ignored, `CACHE_DIR`).
+- `20_code/80_output/`: Persisted results in categorized subfolders; the local `app.storage` root (git-ignored, `STORAGE_LOCAL_BASE_PATH`).
+- `20_code/90_logs/`: Runtime logs when not logging to stdout (git-ignored, `LOG_DIR`).
 
 ## Global Rules
 1. **File Generation**: New project files should be placed in their respective architected directories under `20_code/`.

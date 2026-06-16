@@ -17,7 +17,8 @@ gears: a FastAPI backend, a React (Vite) frontend, and a Docker deployment.
 | [`40_backend/`](40_backend/) | FastAPI application. |
 | [`50_frontend/`](50_frontend/) | React (Vite) single-page app. |
 | [`60_references_other_programs/`](60_references_other_programs/) | Read-only reference code (e.g. FVA Abaqus scripts). |
-| `80_output/` | Generated results (git-ignored). |
+| `70_cache/` | Disposable cache, safe to delete (git-ignored). |
+| `80_output/` | Persisted results; local `app.storage` root (git-ignored). |
 | `90_logs/` | Runtime logs (git-ignored). |
 
 ## Environment setup

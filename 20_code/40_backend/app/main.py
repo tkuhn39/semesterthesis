@@ -16,11 +16,20 @@ from fastapi.staticfiles import StaticFiles
 from app import __version__
 from app.api.routes import router as api_router
 from app.config import get_settings
+from app.errors import register_error_handlers
+from app.logging_config import configure_logging
 
 
 def create_app() -> FastAPI:
     """Application factory."""
     settings = get_settings()
+    logger = configure_logging(settings)
+    logger.info(
+        "Starting backend v%s (env=%s, node=%s)",
+        __version__,
+        settings.app_env,
+        settings.node_name,
+    )
 
     app = FastAPI(
         title="Plastic Gear Tooth Root Stress Tool",
@@ -35,6 +44,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    register_error_handlers(app)
     app.include_router(api_router)
 
     # In production the built SPA (50_frontend/dist) is copied next to the app

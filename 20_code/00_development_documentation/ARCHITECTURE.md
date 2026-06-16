@@ -63,6 +63,33 @@ Same shape as storage, kept minimal until a data model exists. `none` is
 implemented; `sqlite` / `postgres` / `d1` are documented extension points.
 See [`../40_backend/app/database/README.md`](../40_backend/app/database/README.md).
 
+## Backend layering (`40_backend/app`)
+
+Thin HTTP layer, fat domain layer, pluggable infrastructure — so the simulation
+logic never depends on FastAPI or a concrete backend:
+
+- `api/` — routers only; parse/validate input, call a service, shape the
+  response. No business logic here.
+- `services/` — the domain/simulation logic (FE pre/post, tooth-root stress,
+  DIN 3990 / VDI 2736). Reads config, persists via `storage`/`database`, caches
+  intermediates under `cache_dir`.
+- `config.py` — the single `.env` contract; `logging_config.py` — stdout/file
+  logging with `NODE_NAME`; `errors.py` — one JSON error envelope (§4).
+- `storage/`, `database/` — infrastructure behind interfaces.
+
+## Runtime filesystem
+
+Three disposable, git-ignored locations, each configured in `.env` (§16):
+
+| Path | Setting | Meaning |
+|------|---------|---------|
+| `70_cache/` | `CACHE_DIR` | Disposable intermediates (mesh, FE caches). Safe to delete; **not** a persistence store. |
+| `80_output/` | `STORAGE_LOCAL_BASE_PATH` | Persisted results via `app.storage` (the `local` backend root). |
+| `90_logs/` | `LOG_DIR` | Log files, only when `LOG_TO_STDOUT=false`. |
+
+On multi-node deployments these node-local paths are *not* shared: cache stays
+node-local (disposable), results move to `s3`, logs go to stdout.
+
 ## High availability & statelessness
 
 The service is designed to run as **one or many interchangeable instances**:
@@ -80,6 +107,20 @@ The service is designed to run as **one or many interchangeable instances**:
   instance.
 - **Caching** — `get_settings`/`get_storage`/`get_database` use `lru_cache` for
   per-process reuse only; they hold no cross-node shared state.
+
+## Performance & long-running work
+
+Simulations are CPU-bound and can run long, so the base is prepared for it:
+
+- **Cache expensive intermediates** under `CACHE_DIR` (keyed by input hash) to
+  avoid recomputation; the directory is disposable and self-cleaning by deletion.
+- **Do not block the event loop**: keep heavy compute out of `async` handlers.
+  Sync endpoints run in FastAPI's threadpool; for true parallelism use a process
+  pool or an external worker.
+- **Offload the heaviest/long runs** to a background worker rather than the
+  request path. The intended target (see roadmap) is a Temporal worker with
+  LangGraph/Pydantic-AI orchestration; until then, a simple job + readiness
+  pattern keeps requests responsive.
 
 ## Decoupled frontend (web *or* local)
 

@@ -21,6 +21,7 @@
 10_verifiers/
 20_antigravity_scripts/
 60_references_other_programs/
+70_cache/
 80_output/
 90_logs/
 **/.gitkeep

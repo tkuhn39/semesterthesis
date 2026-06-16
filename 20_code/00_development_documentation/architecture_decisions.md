@@ -20,6 +20,7 @@ superseded ADR with a `Superseded by ADR-NNN` line rather than editing it.
 | ADR-004 | Database abstraction as a documented extension point | Accepted |
 | ADR-005 | Stateless, multi-node (HA) design with probes | Accepted |
 | ADR-006 | Decoupled frontend and single-image default deployment | Accepted |
+| ADR-007 | Backend layering, cache dir and central logging/errors | Accepted |
 
 ---
 
@@ -142,5 +143,31 @@ option); always-separate services (rejected: heavier default for a thesis tool).
 
 **Consequences:** Both deployment modes stay open without code changes.
 See project_rules.md §19.
+
+---
+
+## ADR-007 — Backend layering, cache dir and central logging/errors
+
+**Status:** Accepted (2026-06-16)
+
+**Context:** Before the simulation logic grows, the base needs an obvious home
+for domain code, a tidy place for disposable intermediates, and consistent
+logging/error handling — without over-building.
+
+**Decision:** Introduce `app/services/` as the domain/simulation layer (API
+routes stay thin and delegate). Add a dedicated, git-ignored `70_cache/`
+(`CACHE_DIR`) for disposable mesh/FE intermediates — explicitly *not*
+`10_verifiers/` (tests) nor a persistence store. Drop the redundant `OUTPUT_DIR`:
+persisted results go through `app.storage` (`STORAGE_LOCAL_BASE_PATH` = `80_output`).
+Add `app/logging_config.py` (stdout/file logging with `NODE_NAME`) and
+`app/errors.py` (one JSON error envelope), wired in the app factory.
+
+**Alternatives:** Cache under `80_output` (rejected: mixes disposable and
+persisted data); keep `OUTPUT_DIR` alongside storage (rejected: two settings for
+one directory); per-module ad-hoc logging/error handling (rejected: §4, drift).
+
+**Consequences:** Clear separation (api → services → storage/database);
+predictable cleanup (`70_cache` is safe to wipe); functional `LOG_*`/`NODE_NAME`
+settings. See project_rules.md §4, §16–18.
 
 ---
