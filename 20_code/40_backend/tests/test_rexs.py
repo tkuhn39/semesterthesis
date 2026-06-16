@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from app.io.rexs import load_rexs, parse_rexs
+from app.io.rexs import gear_stage_from_rexs, load_rexs, parse_rexs
 
 _REXS = """<?xml version="1.0" encoding="UTF-8"?>
 <model applicationId="TEST" applicationVersion="0.1" version="1.2">
@@ -103,3 +103,23 @@ def test_known_stage_values() -> None:
     assert cfw is not None and cfw.as_float() == 127.0
     assert ratio is not None and ratio.as_float() == 4.21428585
     assert grav is not None and grav.as_float() == 9.81
+
+
+def test_gear_stage_from_rexs_single_stage() -> None:
+    """Extract the two-gear stage from the single-stage RIKOR reference."""
+    path = _REXS_DIR / "001_eine_stufe" / "3_Referenz" / "rikor_ausgabe_ref.rexs"
+    if not path.exists():
+        pytest.skip("reference not present")
+    stage = gear_stage_from_rexs(load_rexs(path))
+    assert sorted(stage.teeth) == [14, 59]
+    assert stage.normal_module_mm == 8.0
+    assert sorted(stage.face_width_mm) == [127.0, 137.0]
+
+
+def test_gear_stage_from_rexs_multistage_rejected() -> None:
+    """A multi-stage REXS is rejected cleanly (needs the stage relation)."""
+    path = _REXS_DIR / "076_Fertigungsabweichungen2" / "3_Referenz" / "rikor_ausgabe_ref.rexs"
+    if not path.exists():
+        pytest.skip("reference not present")
+    with pytest.raises(ValueError):
+        gear_stage_from_rexs(load_rexs(path))

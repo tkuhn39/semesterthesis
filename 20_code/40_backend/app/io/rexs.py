@@ -144,3 +144,52 @@ def parse_rexs(text: str) -> RexsModel:
 def load_rexs(path: Path) -> RexsModel:
     """Load and parse a `.rexs` file (encoding from its XML declaration)."""
     return _from_root(ET.fromstring(path.read_bytes()))
+
+
+class RexsGearStage(BaseModel):
+    """A two-gear cylindrical stage extracted from REXS (component order)."""
+
+    teeth: tuple[int, int]
+    normal_module_mm: float
+    helix_angle_deg: tuple[float, float]
+    face_width_mm: tuple[float, float]
+
+
+def _gear_attr(component: RexsComponent, attr_id: str) -> float:
+    attribute = component.attr(attr_id)
+    if attribute is None:
+        raise KeyError(f"REXS gear {component.id} is missing attribute {attr_id!r}")
+    return attribute.as_float()
+
+
+def _gear_attr_opt(component: RexsComponent, attr_id: str, default: float = 0.0) -> float:
+    attribute = component.attr(attr_id)
+    return attribute.as_float() if attribute is not None else default
+
+
+def gear_stage_from_rexs(model: RexsModel) -> RexsGearStage:
+    """Extract the two-gear cylindrical stage from a single-stage REXS model.
+
+    Raises ValueError for non-stage or multi-stage models (the latter would need
+    the stage relation to pick the right gear pair).
+    """
+    gears = model.components_of_type("cylindrical_gear")
+    if len(gears) < 2:
+        raise ValueError("REXS contains no two-gear cylindrical stage")
+    if len(gears) > 2:
+        raise ValueError(
+            f"REXS describes {len(gears)} gears (multi-stage); a single stage is expected"
+        )
+    first, second = gears
+    return RexsGearStage(
+        teeth=(
+            int(_gear_attr(first, "number_of_teeth")),
+            int(_gear_attr(second, "number_of_teeth")),
+        ),
+        normal_module_mm=_gear_attr(first, "normal_module"),
+        helix_angle_deg=(
+            _gear_attr_opt(first, "helix_angle_reference_diameter"),
+            _gear_attr_opt(second, "helix_angle_reference_diameter"),
+        ),
+        face_width_mm=(_gear_attr(first, "face_width"), _gear_attr(second, "face_width")),
+    )
