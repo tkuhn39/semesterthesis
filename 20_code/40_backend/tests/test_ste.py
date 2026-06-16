@@ -5,7 +5,19 @@
        the typed gear-stage geometry.
 """
 
-from app.io.ste import gear_stage_from_ste, parse_ste
+from pathlib import Path
+
+import pytest
+
+from app.io.ste import gear_stage_from_ste, load_ste, parse_ste
+
+# Real STplus reference input (repo-root references tree), used for parity checks.
+_REF_STE = (
+    Path(__file__).resolve().parents[3]
+    / "30_references_and_examples"
+    / "33_STplus"
+    / "kst-E_eingabe.ste"
+)
 
 STE = """\
 $ Anfang
@@ -52,6 +64,20 @@ def test_gear_stage_extraction() -> None:
     assert stage.teeth == (51, 52)
     assert stage.center_distance_mm == 52.0
     assert stage.pressure_angle_deg == (20.0, 20.0)
+    assert stage.face_width_mm == (17.0, 15.0)
+    assert stage.profile_shift == (0.2034, 0.3143)
+    assert stage.tip_diameter_mm == (52.894, 54.022)
+
+
+@pytest.mark.skipif(not _REF_STE.exists(), reason="STplus reference .ste not present")
+def test_reference_parity_real_ste() -> None:
+    """Parser reproduces the real STplus input (matches FVA-Workbench reference)."""
+    stage = gear_stage_from_ste(load_ste(_REF_STE))
+    assert stage.teeth == (51, 52)
+    assert stage.normal_module_mm == 1.0
+    assert stage.center_distance_mm == 52.0
+    assert stage.pressure_angle_deg == (20.0, 20.0)
+    assert stage.helix_angle_deg == (0.0, 0.0)
     assert stage.face_width_mm == (17.0, 15.0)
     assert stage.profile_shift == (0.2034, 0.3143)
     assert stage.tip_diameter_mm == (52.894, 54.022)
