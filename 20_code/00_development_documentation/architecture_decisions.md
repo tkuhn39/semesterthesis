@@ -26,6 +26,7 @@ body.
 | ADR-005 | Stateless, multi-node (HA) design with probes | Accepted | 2026-06-16 |
 | ADR-006 | Decoupled frontend and single-image default deployment | Accepted | 2026-06-16 |
 | ADR-007 | Backend layering, cache dir and central logging/errors | Accepted | 2026-06-16 |
+| ADR-008 | References moved out of the code tree; cache renumbered | Accepted | 2026-06-16 |
 
 ---
 
@@ -155,6 +156,9 @@ See project_rules.md §19.
 
 **Status:** Accepted (2026-06-16)
 
+> Note (2026-06-16): the cache folder was later renumbered `70_cache` → `60_cache`
+> by ADR-008; references below to `70_cache` are historical.
+
 **Context:** Before the simulation logic grows, the base needs an obvious home
 for domain code, a tidy place for disposable intermediates, and consistent
 logging/error handling — without over-building.
@@ -174,5 +178,28 @@ one directory); per-module ad-hoc logging/error handling (rejected: §4, drift).
 **Consequences:** Clear separation (api → services → storage/database);
 predictable cleanup (`70_cache` is safe to wipe); functional `LOG_*`/`NODE_NAME`
 settings. See project_rules.md §4, §16–18.
+
+---
+
+## ADR-008 — References moved out of the code tree; cache renumbered
+
+**Status:** Accepted (2026-06-16)
+
+**Context:** `60_references_other_programs/` held read-only third-party code
+(FVA Abaqus scripts) *inside* `20_code/`, mixing non-project reference material
+into the clean code tree.
+
+**Decision:** Move reference material out of `20_code/` to a new repo-root
+folder `30_references_and_examples/` (subfolder `61_FVA` → `31_FVA`). The freed
+slot is reused for the cache: `20_code/70_cache` → `20_code/60_cache`
+(`CACHE_DIR`); `80_output` and `90_logs` are unchanged. All links, ignore files
+and tool excludes were updated accordingly.
+
+**Alternatives:** Keep references under `20_code` (rejected: not project code);
+leave the cache at `70_cache` with a gap at `60` (rejected: less contiguous, and
+references no longer occupy `60`).
+
+**Consequences:** The code tree contains only project code; reference code is
+clearly separated and excluded from linting/builds. Supplements ADR-007.
 
 ---

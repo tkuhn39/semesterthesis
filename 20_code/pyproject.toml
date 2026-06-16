@@ -11,7 +11,7 @@ requires-python = ">=3.12"
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-extend-exclude = ["60_references_other_programs", "80_output", "90_logs"]
+extend-exclude = ["60_cache", "80_output", "90_logs"]
 
 [tool.ruff.lint]
 # pycodestyle/pyflakes (E,F), imports (I), bugbear (B), pyupgrade (UP),
@@ -31,7 +31,7 @@ warn_redundant_casts = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 ignore_missing_imports = true
-exclude = ["60_references_other_programs/", "80_output/", "90_logs/"]
+exclude = ["60_cache/", "80_output/", "90_logs/"]
 
 [tool.pytest.ini_options]
 testpaths = ["10_verifiers", "40_backend"]

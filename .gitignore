@@ -60,8 +60,8 @@ node_modules/
 .vite/
 
 # --- Build / runtime output ----------------------------------------------------
-20_code/70_cache/**
-!20_code/70_cache/.gitkeep
+20_code/60_cache/**
+!20_code/60_cache/.gitkeep
 20_code/80_output/**
 !20_code/80_output/.gitkeep
 20_code/90_logs/**

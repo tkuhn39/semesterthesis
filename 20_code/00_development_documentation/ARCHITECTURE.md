@@ -83,7 +83,7 @@ Three disposable, git-ignored locations, each configured in `.env` (§16):
 
 | Path | Setting | Meaning |
 |------|---------|---------|
-| `70_cache/` | `CACHE_DIR` | Disposable intermediates (mesh, FE caches). Safe to delete; **not** a persistence store. |
+| `60_cache/` | `CACHE_DIR` | Disposable intermediates (mesh, FE caches). Safe to delete; **not** a persistence store. |
 | `80_output/` | `STORAGE_LOCAL_BASE_PATH` | Persisted results via `app.storage` (the `local` backend root). |
 | `90_logs/` | `LOG_DIR` | Log files, only when `LOG_TO_STDOUT=false`. |
 

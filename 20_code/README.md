@@ -16,10 +16,12 @@ gears: a FastAPI backend, a React (Vite) frontend, and a Docker deployment.
 | [`30_docker/`](30_docker/) | Dockerfile, compose, deployment assets. |
 | [`40_backend/`](40_backend/) | FastAPI application. |
 | [`50_frontend/`](50_frontend/) | React (Vite) single-page app. |
-| [`60_references_other_programs/`](60_references_other_programs/) | Read-only reference code (e.g. FVA Abaqus scripts). |
-| `70_cache/` | Disposable cache, safe to delete (git-ignored). |
+| `60_cache/` | Disposable cache, safe to delete (git-ignored). |
 | `80_output/` | Persisted results; local `app.storage` root (git-ignored). |
 | `90_logs/` | Runtime logs (git-ignored). |
+
+> Reference code and examples are kept out of the code tree, at the repo root:
+> [`../30_references_and_examples/`](../30_references_and_examples/).
 
 ## Environment setup
 

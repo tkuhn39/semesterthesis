@@ -16,9 +16,10 @@ analytical methods of DIN 3990 and VDI 2736.
 | [`00_literatur/`](00_literatur/) | Reference literature (PDFs). **Git-ignored** — not version controlled. |
 | [`10_report/`](10_report/) | LaTeX sources of the thesis (German). |
 | [`20_code/`](20_code/) | All source code: backend, frontend, verification, Docker. See [`20_code/README.md`](20_code/README.md). |
+| [`30_references_and_examples/`](30_references_and_examples/) | Read-only reference code and examples from other programs (kept out of the code tree). |
 
 Numbered folders use a two-digit prefix. Nested subfolders keep the parent's
-first digit and add a second one (e.g. `60_references_other_programs/61_FVA`).
+first digit and add a second one (e.g. `30_references_and_examples/31_FVA`).
 
 ## Quick start
 

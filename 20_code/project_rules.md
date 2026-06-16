@@ -3,7 +3,7 @@
 This file defines the strict rules and architectural guidelines for the `semesterthesis/` project. All IDEs and AI agents MUST follow these rules.
 
 ## Directory Structure (under `20_code/`)
-Two-digit prefixes; a nested subfolder keeps its parent's first digit and adds a second (e.g. `60_references_other_programs/61_FVA`). Python packages use import-safe names (e.g. `40_backend/app/`) because module names cannot start with a digit. **This list is the canonical map — keep it in sync with the repository whenever folders change.**
+Two-digit prefixes; a nested subfolder keeps its parent's first digit and adds a second (e.g. `30_references_and_examples/31_FVA`). Python packages use import-safe names (e.g. `40_backend/app/`) because module names cannot start with a digit. **This list is the canonical map — keep it in sync with the repository whenever folders change.**
 
 - `20_code/00_development_documentation/`: ADRs, architecture, lessons learned, development story (append-only, see §14).
 - `20_code/10_verifiers/`: Python files used purely for verification/testing.
@@ -11,10 +11,11 @@ Two-digit prefixes; a nested subfolder keeps its parent's first digit and adds a
 - `20_code/30_docker/`: Dockerfile, compose and deployment assets.
 - `20_code/40_backend/`: FastAPI application — the `app/` package (`api`, `services`, `config`, `logging_config`, `errors`, `storage`, `database`).
 - `20_code/50_frontend/`: React (Vite) single-page app.
-- `20_code/60_references_other_programs/`: Read-only reference code from other programs (do not edit).
-- `20_code/70_cache/`: Disposable cache (mesh/FE intermediates); safe to delete (git-ignored, `CACHE_DIR`).
+- `20_code/60_cache/`: Disposable cache (mesh/FE intermediates); safe to delete (git-ignored, `CACHE_DIR`).
 - `20_code/80_output/`: Persisted results in categorized subfolders; the local `app.storage` root (git-ignored, `STORAGE_LOCAL_BASE_PATH`).
 - `20_code/90_logs/`: Runtime logs when not logging to stdout (git-ignored, `LOG_DIR`).
+
+Reference code and examples live **outside** the code tree, at the repo root in `30_references_and_examples/` (read-only; do not edit or import).
 
 ## Global Rules
 1. **File Generation**: New project files should be placed in their respective architected directories under `20_code/`.
