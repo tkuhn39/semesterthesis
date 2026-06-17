@@ -50,7 +50,6 @@ def test_din3990_matches_stplus() -> None:
         dynamic_factor=1.56,
         face_load_factor_flank=1.19,
         face_load_factor_root=1.16,
-        single_contact_factor=Pair(1.009, 1.008),
     )
     result = evaluate_din3990(
         stage,

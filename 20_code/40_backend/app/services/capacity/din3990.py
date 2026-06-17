@@ -91,7 +91,6 @@ class Din3990LoadCase(BaseModel):
     face_load_factor_root: float = 1.0  # K_Fβ
     transverse_factor_flank: float = 1.0  # K_Hα
     transverse_factor_root: float = 1.0  # K_Fα
-    single_contact_factor: Pair[float] = Pair(1.0, 1.0)  # Z_B (pinion), Z_D (wheel)
     helix_factor_root: float = 1.0  # Y_β
 
 
@@ -183,6 +182,7 @@ def evaluate_din3990(
             / load.gear_ratio
         )
     )
+    single_bd = single_contact_factors(stage)  # Z_B, Z_D (native, from the geometry)
     results: list[Din3990GearResult] = []
     for index in range(2):
         root = roots[index]
@@ -196,7 +196,7 @@ def evaluate_din3990(
         results.append(
             _gear_result(
                 sigma_h0=sigma_h0,
-                single_contact=load.single_contact_factor[index],
+                single_contact=single_bd[index],
                 load=load,
                 nominal_root=nominal_root,
                 material=materials[index],
