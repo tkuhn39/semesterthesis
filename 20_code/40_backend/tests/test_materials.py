@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from app.io.ste import load_ste
-from app.services.materials import Material, MaterialKind, material_from_ste
+from app.services.materials import Material, MaterialKind, NonlinearCurve, material_from_ste
 
 _REF_STE = (
     Path(__file__).resolve().parents[3]
@@ -59,3 +59,43 @@ def test_materials_from_ste_reference() -> None:
     assert plastic.elastic_modulus_mpa == pytest.approx(2300.0)
     assert plastic.poisson_ratio == pytest.approx(0.5)
     assert plastic.sigma_flim_mpa == pytest.approx(35.0)
+
+
+def test_nonlinear_curve_interpolates_and_clamps() -> None:
+    """A measured stress-strain curve interpolates linearly and clamps at the ends."""
+    curve = NonlinearCurve(
+        quantity="stress_strain",
+        x_label="strain",
+        y_label="stress_mpa",
+        points=[(0.0, 0.0), (0.01, 30.0), (0.05, 50.0)],
+    )
+    assert curve.value_at(0.005) == pytest.approx(15.0)  # midpoint, first segment
+    assert curve.value_at(0.03) == pytest.approx(40.0)  # midpoint, second segment
+    assert curve.value_at(-1.0) == pytest.approx(0.0)  # clamped low
+    assert curve.value_at(9.0) == pytest.approx(50.0)  # clamped high
+
+
+def test_nonlinear_curve_rejects_unsorted() -> None:
+    """x values must be strictly ascending."""
+    with pytest.raises(ValueError, match="ascending"):
+        NonlinearCurve(quantity="x", x_label="a", y_label="b", points=[(1.0, 0.0), (0.5, 1.0)])
+
+
+def test_material_holds_nonlinear_curves() -> None:
+    """A material can carry and look up nonlinear curves by quantity."""
+    mat = Material(
+        name="PA66",
+        kind=MaterialKind.PLASTIC,
+        elastic_modulus_mpa=2300.0,
+        poisson_ratio=0.4,
+        nonlinear_curves=[
+            NonlinearCurve(
+                quantity="stress_strain",
+                x_label="strain",
+                y_label="stress_mpa",
+                points=[(0.0, 0.0), (0.02, 40.0)],
+            )
+        ],
+    )
+    assert mat.curve("stress_strain") is not None
+    assert mat.curve("missing") is None

@@ -15,7 +15,7 @@ consuming method decides what it strictly needs.
 
 from enum import StrEnum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 from app.io.ste import SteFile, SteSection
 
@@ -33,6 +33,48 @@ class StrengthPoint(BaseModel):
     temperature_c: float
     cycles: float
     stress_mpa: float
+
+
+class NonlinearCurve(BaseModel):
+    """A measured x–y material curve for nonlinear behaviour or a property dependence.
+
+    Generic so measurements can be supplied directly — and later imported from
+    Matscape material cards — instead of only linear constants. Examples: a
+    stress–strain curve (``x = strain``, ``y = stress_mpa``) for a nonlinear FE
+    material, or a property over temperature/cycles (``x = temperature_c`` |
+    ``cycles``, ``y = modulus_mpa`` | ``stress_mpa``) for the analytical methods.
+    Shared by the capacity methods, RIKOR, STplus and the FE material model.
+    """
+
+    quantity: str  # what the curve describes, e.g. "stress_strain", "modulus_vs_temperature"
+    x_label: str
+    y_label: str
+    points: list[tuple[float, float]]  # measured (x, y), strictly ascending in x
+    condition_temperature_c: float | None = None
+    source: str = "manual"  # provenance: manual | matscape | datasheet
+
+    @field_validator("points")
+    @classmethod
+    def _ascending_and_nonempty(
+        cls, points: list[tuple[float, float]]
+    ) -> list[tuple[float, float]]:
+        if len(points) < 2:
+            raise ValueError("a nonlinear curve needs at least two points")
+        xs = [x for x, _ in points]
+        if any(later <= earlier for earlier, later in zip(xs, xs[1:], strict=False)):
+            raise ValueError("curve x values must be strictly ascending")
+        return points
+
+    def value_at(self, x: float) -> float:
+        """Linear interpolation of y at ``x``, clamped to the measured range."""
+        if x <= self.points[0][0]:
+            return self.points[0][1]
+        if x >= self.points[-1][0]:
+            return self.points[-1][1]
+        for (x0, y0), (x1, y1) in zip(self.points, self.points[1:], strict=False):
+            if x0 <= x <= x1:
+                return y0 + (y1 - y0) * (x - x0) / (x1 - x0)
+        return self.points[-1][1]
 
 
 class Material(BaseModel):
@@ -62,9 +104,20 @@ class Material(BaseModel):
     root_strength_curve: list[StrengthPoint] | None = None
     flank_strength_curve: list[StrengthPoint] | None = None
 
+    # Provenance and generic nonlinear measured curves (e.g. stress-strain).
+    source: str = "manual"  # manual | matscape | datasheet
+    nonlinear_curves: list[NonlinearCurve] = Field(default_factory=list)
+
     @property
     def is_plastic(self) -> bool:
         return self.kind is MaterialKind.PLASTIC
+
+    def curve(self, quantity: str) -> NonlinearCurve | None:
+        """Return the first nonlinear curve describing ``quantity``, else None."""
+        for curve in self.nonlinear_curves:
+            if curve.quantity == quantity:
+                return curve
+        return None
 
 
 def _section_float(section: SteSection, key: str) -> float | None:
