@@ -12,6 +12,7 @@ from app.services.capacity.din3990 import (
     Din3990LoadCase,
     elasticity_factor,
     evaluate_din3990,
+    single_contact_factors,
     zone_factor,
 )
 
@@ -20,5 +21,6 @@ __all__ = [
     "Din3990LoadCase",
     "elasticity_factor",
     "evaluate_din3990",
+    "single_contact_factors",
     "zone_factor",
 ]

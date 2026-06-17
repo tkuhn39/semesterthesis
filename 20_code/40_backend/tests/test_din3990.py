@@ -14,6 +14,7 @@ from app.services.capacity import (
     Din3990LoadCase,
     elasticity_factor,
     evaluate_din3990,
+    single_contact_factors,
     zone_factor,
 )
 from app.services.geometry.gear import GearStage
@@ -74,3 +75,26 @@ def test_din3990_matches_stplus() -> None:
     assert wheel.root_safety == pytest.approx(0.375, abs=0.02)
     assert pinion.flank_safety == pytest.approx(17.184, abs=0.2)
     assert wheel.flank_safety == pytest.approx(0.703, abs=0.02)
+
+
+@pytest.mark.skipif(not _REF_STE.exists(), reason="STplus reference .ste not present")
+def test_single_contact_factors_spur() -> None:
+    """Z_B/Z_D use the usable tip d_Na; match STplus for the (spur) project gear."""
+    stage = GearStage.from_ste(gear_stage_from_ste(load_ste(_REF_STE)))
+    z_b, z_d = single_contact_factors(stage)
+    assert z_b == pytest.approx(1.009, abs=1e-3)
+    assert z_d == pytest.approx(1.008, abs=1e-3)
+
+
+def test_single_contact_factors_helical_overlap() -> None:
+    """For a helical stage with overlap ratio ε_β ≥ 1, Z_B = Z_D = 1.0 (ISO 6336-2)."""
+    helical = GearStage(
+        normal_module_mm=2.0,
+        teeth=Pair(25, 40),
+        normal_pressure_angle_deg=20.0,
+        helix_angle_deg=20.0,
+        face_width_mm=Pair(26.0, 26.0),
+        center_distance_mm=69.172,
+    )
+    assert helical.overlap_ratio >= 1.0
+    assert single_contact_factors(helical) == pytest.approx((1.0, 1.0))

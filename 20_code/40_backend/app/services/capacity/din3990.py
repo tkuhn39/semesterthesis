@@ -50,6 +50,33 @@ def flank_contact_ratio_factor(eps_alpha: float, eps_beta: float) -> float:
     return math.sqrt(spur_part * (1.0 - eps_beta) + eps_beta / eps_alpha)
 
 
+def single_contact_factors(stage: GearStage) -> Pair[float]:
+    """Single pair tooth contact factors Z_B (pinion), Z_D (wheel) (ISO 6336-2 §9).
+
+    For an overlap ratio ε_β ≥ 1 they are 1.0; for spur gears (ε_β = 0) they are the
+    auxiliaries M_1, M_2 (not below 1); in between they are interpolated. Uses the
+    usable tip diameter d_Na (= d_Fa, carrying the tip chamfer), valid for 1 < ε_α ≤ 2.
+    """
+    eps_beta = stage.overlap_ratio
+    if eps_beta >= 1.0:
+        return Pair(1.0, 1.0)
+    usable = stage.usable_tip_diameter_mm
+    if usable is None:
+        raise ValueError("single contact factors need the usable tip diameters (tool/tip data)")
+    db1, db2 = stage.base_diameter_mm
+    z1, z2 = stage.teeth
+    eps_alpha = stage.transverse_contact_ratio
+    tan_awt = math.tan(math.radians(stage.working_pressure_angle_deg))
+    tip_1 = math.sqrt(usable[0] ** 2 / db1**2 - 1.0)
+    tip_2 = math.sqrt(usable[1] ** 2 / db2**2 - 1.0)
+    two_pi = 2.0 * math.pi
+    m_1 = tan_awt / math.sqrt((tip_1 - two_pi / z1) * (tip_2 - (eps_alpha - 1.0) * two_pi / z2))
+    m_2 = tan_awt / math.sqrt((tip_2 - two_pi / z2) * (tip_1 - (eps_alpha - 1.0) * two_pi / z1))
+    z_b = max(1.0, m_1 - eps_beta * (m_1 - 1.0))
+    z_d = max(1.0, m_2 - eps_beta * (m_2 - 1.0))
+    return Pair(z_b, z_d)
+
+
 class Din3990LoadCase(BaseModel):
     """Operating load and the load/dynamic factors (neutral defaults = 1.0)."""
 
