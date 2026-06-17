@@ -11,6 +11,7 @@ Thin by design (project_rules §): the routes assemble inputs and delegate to
 ``app.services``; no computation lives here.
 """
 
+import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -43,13 +44,26 @@ from app.services.variation import (
 
 router = APIRouter(prefix="/api", tags=["analysis"])
 
-# kst-E reference data lives outside the code tree (ADR-008); resolve from the repo root.
-_KST_E_STE = (
-    Path(__file__).resolve().parents[4]
-    / "30_references_and_examples"
-    / "33_STplus"
-    / "kst-E_eingabe.ste"
-)
+
+def _example_ste_path() -> Path | None:
+    """Locate the kst-E example .ste robustly (env override → bundled → dev tree).
+
+    The image bundles a small copy at ``app/examples/`` so the demo works
+    self-contained; in the dev checkout the reference tree (outside the code tree,
+    ADR-008) is used if present. Never raises at import — resolved lazily.
+    """
+    override = os.environ.get("EXAMPLE_DATA_FILE")
+    if override:
+        path = Path(override)
+        return path if path.exists() else None
+    here = Path(__file__).resolve()
+    candidates = [here.parent.parent / "examples" / "kst-E_eingabe.ste"]
+    parents = here.parents
+    if len(parents) > 4:  # dev checkout: <repo>/20_code/40_backend/app/api/analysis.py
+        candidates.append(
+            parents[4] / "30_references_and_examples" / "33_STplus" / "kst-E_eingabe.ste"
+        )
+    return next((c for c in candidates if c.exists()), None)
 
 # Materials of the kst-E pair (steel pinion 20MnCr5 + plastic wheel).
 _STEEL = Material(
@@ -72,9 +86,10 @@ _PLASTIC = Material(
 
 @lru_cache(maxsize=1)
 def _kst_e_stage() -> GearStage:
-    if not _KST_E_STE.exists():
-        raise HTTPException(503, f"example data not found at {_KST_E_STE}")
-    return GearStage.from_ste(gear_stage_from_ste(load_ste(_KST_E_STE)))
+    path = _example_ste_path()
+    if path is None:
+        raise HTTPException(503, "example data (kst-E .ste) not found; set EXAMPLE_DATA_FILE")
+    return GearStage.from_ste(gear_stage_from_ste(load_ste(path)))
 
 
 def _kst_e_roots(stage: GearStage) -> Pair[ToothRootGeometry]:

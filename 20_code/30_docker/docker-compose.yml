@@ -1,8 +1,9 @@
-# Local run of the production image (single container: API + SPA).
+# Hardened local/production run of the single image (API + SPA).
 #
-#   docker compose -f 30_docker/docker-compose.yml up --build
+#   docker compose -f 30_docker/docker-compose.yml up --build      # run from 20_code/
 #
-# Run from 20_code/ so the build context (..) resolves correctly.
+# Hardening: non-root, all capabilities dropped, no privilege escalation, read-only
+# root filesystem with writable state confined to a named volume + a small tmpfs.
 
 services:
   app:
@@ -17,4 +18,37 @@ services:
       - ../.env
     environment:
       APP_ENV: production
+      # Writable state lives on the mounted volume (rootfs stays read-only).
+      CACHE_DIR: /data/cache
+      LOG_DIR: /data/logs
+      STORAGE_LOCAL_BASE_PATH: /data/output
+    # --- security hardening ---
+    user: "10001:10001"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes:
+      - app-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=2).status==200 else 1)"
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1g
+
+volumes:
+  app-data:
