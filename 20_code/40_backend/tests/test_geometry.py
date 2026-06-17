@@ -64,3 +64,15 @@ def test_from_ste_reference() -> None:
     assert g.reference_diameter_mm == pytest.approx((51.0, 52.0))
     assert g.working_center_distance_mm == pytest.approx(52.0)
     assert g.working_pitch_diameter_mm == pytest.approx((51.495, 52.505), abs=0.005)
+
+
+@pytest.mark.skipif(not _REF_STE.exists(), reason="STplus reference .ste not present")
+def test_contact_ratio_from_ste() -> None:
+    """The contact ratio uses d_Na = d_Fa (tip chamfer accounted for) and matches STplus."""
+    g = GearStage.from_ste(gear_stage_from_ste(load_ste(_REF_STE)))
+    assert g.usable_tip_diameter_mm == pytest.approx((52.894, 53.788), abs=2e-3)
+    assert g.transverse_base_pitch_mm == pytest.approx(2.952, abs=2e-3)
+    assert g.path_of_contact_mm == pytest.approx(3.406, abs=2e-3)
+    assert g.transverse_contact_ratio == pytest.approx(1.154, abs=2e-3)
+    assert g.overlap_ratio == pytest.approx(0.0)
+    assert g.total_contact_ratio == pytest.approx(1.154, abs=2e-3)
