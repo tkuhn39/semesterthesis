@@ -99,7 +99,7 @@ performance strategy: **ADR-013**; current-standards rule: **ADR-011**.
 | Sub-step | Scope | Method / standard | Validation | Status |
 |---|---|---|---|---|
 | C1 | Tooth-root geometry `tooth_root.py`: 30°-tangent s_Fn, ρ_F, h_Fe, α_Fen + form factors Y_F, Y_S | DIN 3990 T3 / ISO 6336-3 (generation trochoid, x_E) | exact vs kst-E: s_Fn* 2.068/2.197, ρ_F* 0.404/0.381, Y_F 2.417/1.970, Y_S 1.819/1.984 | ✅ |
-| C2 | **DIN 3990** capacity (steel): σ_H/σ_F, S_H/S_F, K/Y/Z factors | DIN 3990 T1–3 | kst-E (S_H=17.184, S_F=4.571) | ⬜ |
+| C2 | **DIN 3990** capacity `capacity/din3990.py`: σ_H/σ_F, S_H/S_F; Z_E/Z_H/Z_ε exact, K/life factors as graceful inputs | DIN 3990 T1–3 | exact vs kst-E: σ_H 99.6/99.5, σ_F 180.1/181.4, S_H 17.184/0.703, S_F 4.571/0.375 | ✅ |
 | C3 | **VDI 2736** capacity (plastic): σ_H/σ_F, tooth temperature, wear, deformation | VDI 2736 Bl. 1–2 | VDI-2736 Workbench report (σ_F=77.896, Y_Fa, ϑ, W_m, λ) | ⬜ |
 | C4 | **Stufenvariation engine** — vectorized grid + early pruning | numpy batch; ADR-013 | vs scalar models | ⬜ |
 | C5 | Sampling (Sobol/LHS) + Pareto optimizer (NSGA-II) + graceful warnings | ADR-013 | — | ⬜ |
