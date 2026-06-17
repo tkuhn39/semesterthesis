@@ -11,6 +11,7 @@ Thin by design (project_rules §): the routes assemble inputs and delegate to
 ``app.services``; no computation lives here.
 """
 
+import math
 import os
 from functools import lru_cache
 from pathlib import Path
@@ -64,6 +65,7 @@ def _example_ste_path() -> Path | None:
             parents[4] / "30_references_and_examples" / "33_STplus" / "kst-E_eingabe.ste"
         )
     return next((c for c in candidates if c.exists()), None)
+
 
 # Materials of the kst-E pair (steel pinion 20MnCr5 + plastic wheel).
 _STEEL = Material(
@@ -131,7 +133,7 @@ def example_kst_e() -> ExampleResponse:
     ref = stage.reference_diameter_mm
     tip = stage.usable_tip_diameter_mm or Pair(0.0, 0.0)
     width = stage.face_width_mm or Pair(17.0, 15.0)
-    roles = ("Pinion (steel)", "Wheel (plastic)")
+    roles = ("Ritzel (Stahl)", "Rad (Kunststoff)")
     mats = ("20MnCr5", "POM (Kunststoff)")
     kinds = ("steel", "plastic")
     gears = [
@@ -149,7 +151,7 @@ def example_kst_e() -> ExampleResponse:
     ]
     return ExampleResponse(
         name="kst-E",
-        description="Steel–plastic spur pair (FZG standard test); the validated reference.",
+        description="Stahl-Kunststoff-Stirnradpaar (FZG-Standardtest); die validierte Referenz.",
         normal_module_mm=stage.normal_module_mm,
         normal_pressure_angle_deg=stage.normal_pressure_angle_deg,
         helix_angle_deg=stage.helix_angle_deg,
@@ -232,12 +234,51 @@ def geometry(req: GeometryRequest) -> GeometryResponse:
 # Capacity (kst-E: steel pinion → ISO 6336, plastic wheel → VDI 2736)          #
 # --------------------------------------------------------------------------- #
 class CapacityRequest(BaseModel):
-    pinion_torque_nm: float = 7.85
-    application_factor: float = 1.0
-    power_w: float = 1848.7
-    ambient_temperature_c: float = 80.0
-    friction_coefficient: float = 0.04
-    load_cycles: float = 1.324e7
+    # --- load & application (Welle / Getriebeeinheit) ---
+    pinion_torque_nm: float = 7.85  # T_1
+    pinion_speed_min1: float = 1000.0  # n_1
+    application_factor: float = 1.0  # K_A
+    # --- dynamics (ISO 6336-1): native K_v from accuracy, or override ---
+    compute_dynamics: bool = True
+    dynamic_factor: float = 1.0  # K_v (override when compute_dynamics = False)
+    face_load_factor: float = 1.0  # K_Hβ (override; native K_Hβ needs RIKOR)
+    base_pitch_deviation_um: float = 6.0  # f_pb (ISO 1328)
+    profile_form_deviation_um: float = 5.0  # f_fα
+    # --- ISO 6336 conditions (steel) ---
+    lubricant_viscosity_40_mm2s: float = 100.0  # ν_40
+    flank_roughness_rz_um: float = 5.0  # R_zH
+    root_roughness_rz_um: float = 20.0  # R_zF
+    flank_life_factor: float = 1.0  # Z_NT
+    root_life_factor: float = 1.0  # Y_NT
+    # --- steel material ---
+    steel_modulus_mpa: float = 210000.0
+    steel_poisson: float = 0.30
+    steel_sigma_hlim_mpa: float = 1500.0
+    steel_sigma_flim_mpa: float = 430.0
+    # --- VDI 2736 (plastic) conditions ---
+    power_w: float = 1848.7  # P
+    ambient_temperature_c: float = 80.0  # ϑ_0
+    duty_cycle: float = 1.0  # ED
+    housing_surface_m2: float = 0.010  # A_G
+    friction_coefficient: float = 0.04  # μ
+    wear_coefficient_e6: float = 1.0  # k_W × 1e-6 mm³/(N·m)
+    load_cycles: float = 1.324e7  # N_L
+    root_minimum_safety: float = 2.0  # S_Fmin
+    flank_minimum_safety: float = 1.4  # S_Hmin
+    # --- plastic material ---
+    plastic_modulus_mpa: float = 4156.0
+    plastic_poisson: float = 0.34
+    plastic_sigma_hlim_mpa: float = 60.0
+    plastic_sigma_flim_mpa: float = 35.0
+
+
+class CapacityFactors(BaseModel):
+    application_factor: float  # K_A
+    dynamic_factor: float  # K_v
+    transverse_factor: float  # K_Hα
+    face_load_factor: float  # K_Hβ
+    elasticity_factor: float  # Z_E
+    zone_factor: float  # Z_H
 
 
 class GearCapacity(BaseModel):
@@ -259,59 +300,129 @@ class GearCapacity(BaseModel):
 
 
 class CapacityResponse(BaseModel):
+    factors: CapacityFactors
     pinion: GearCapacity
     wheel: GearCapacity
 
 
+def _materials(req: CapacityRequest) -> Pair[Material]:
+    return Pair(
+        Material(
+            name="20MnCr5",
+            kind=MaterialKind.STEEL,
+            elastic_modulus_mpa=req.steel_modulus_mpa,
+            poisson_ratio=req.steel_poisson,
+            sigma_hlim_mpa=req.steel_sigma_hlim_mpa,
+            sigma_flim_mpa=req.steel_sigma_flim_mpa,
+        ),
+        Material(
+            name="POM (Kunststoff)",
+            kind=MaterialKind.PLASTIC,
+            elastic_modulus_mpa=req.plastic_modulus_mpa,
+            poisson_ratio=req.plastic_poisson,
+            sigma_hlim_mpa=req.plastic_sigma_hlim_mpa,
+            sigma_flim_mpa=req.plastic_sigma_flim_mpa,
+        ),
+    )
+
+
 @router.post("/capacity", response_model=CapacityResponse)
 def capacity(req: CapacityRequest) -> CapacityResponse:
-    """Per-gear dispatch: steel pinion via ISO 6336, plastic wheel via VDI 2736."""
+    """Per-gear dispatch: steel pinion via ISO 6336, plastic wheel via VDI 2736.
+
+    Native dynamics (K_v Method B, K_Hα) from speed + accuracy unless overridden.
+    """
+    from app.services.capacity.iso6336 import elasticity_factor, zone_factor
+
     stage = _kst_e_stage()
     roots = _kst_e_roots(stage)
     width = stage.face_width_mm or Pair(17.0, 15.0)
+    u = stage.teeth[1] / stage.teeth[0]
+    v_t = math.pi * stage.reference_diameter_mm[0] * req.pinion_speed_min1 / 60000.0
     f_t = 2000.0 * req.pinion_torque_nm / stage.reference_diameter_mm[0]
-    materials = Pair(_STEEL, _PLASTIC)
+    materials = _materials(req)
 
-    # steel pinion — ISO 6336
-    iso_load = Iso6336LoadCase(
+    base_load = Iso6336LoadCase(
         tangential_force_n=f_t,
         common_face_width_mm=min(width),
         root_face_width_mm=width,
-        gear_ratio=stage.teeth[1] / stage.teeth[0],
+        gear_ratio=u,
         pinion_reference_diameter_mm=stage.reference_diameter_mm[0],
         application_factor=req.application_factor,
     )
+
+    # --- dynamics: native K_v / K_Hα, or override ---
+    if req.compute_dynamics:
+        dyn = native_dynamic_factors(
+            stage,
+            roots,
+            materials,
+            base_load,
+            DynamicConditions(
+                pinion_speed_min1=req.pinion_speed_min1,
+                base_pitch_deviation_um=Pair(
+                    req.base_pitch_deviation_um, req.base_pitch_deviation_um
+                ),
+                profile_form_deviation_um=Pair(
+                    req.profile_form_deviation_um, req.profile_form_deviation_um
+                ),
+            ),
+        )
+        k_v, k_ha = dyn.dynamic_factor, dyn.transverse_factor_flank
+    else:
+        k_v, k_ha = req.dynamic_factor, 1.0
+    k_hb = req.face_load_factor
+
+    iso_load = base_load.model_copy(
+        update={
+            "dynamic_factor": k_v,
+            "face_load_factor_flank": k_hb,
+            "face_load_factor_root": k_hb,
+            "transverse_factor_flank": k_ha,
+            "transverse_factor_root": k_ha,
+        }
+    )
     iso_conditions = Iso6336Conditions(
-        pitch_line_velocity_ms=6.067,
-        lubricant_viscosity_40_mm2s=100.0,
-        flank_roughness_rz_um=5.0,
-        root_roughness_rz_um=Pair(5.0, 5.0),
+        pitch_line_velocity_ms=v_t,
+        lubricant_viscosity_40_mm2s=req.lubricant_viscosity_40_mm2s,
+        flank_roughness_rz_um=req.flank_roughness_rz_um,
+        root_roughness_rz_um=Pair(req.root_roughness_rz_um, req.root_roughness_rz_um),
         material_group=Pair(RootMaterialGroup.CASE_HARDENED, RootMaterialGroup.CASE_HARDENED),
+        flank_life_factor=Pair(req.flank_life_factor, req.flank_life_factor),
+        root_life_factor=Pair(req.root_life_factor, req.root_life_factor),
     )
     iso = evaluate_iso6336(stage, roots, materials, iso_load, iso_conditions)
     pin = iso[0]
     pinion = GearCapacity(
-        label="Pinion (steel)",
-        material=_STEEL.name,
+        label="Ritzel (Stahl)",
+        material=materials[0].name,
         method="ISO 6336:2019",
         flank_stress_mpa=round(pin.flank_stress_mpa, 3),
         flank_safety=_round(pin.flank_safety),
         root_stress_mpa=round(pin.root_stress_mpa, 3),
         root_safety=_round(pin.root_safety),
+        flank_permissible_mpa=_round(_safe_mul(pin.flank_safety, pin.flank_stress_mpa)),
+        root_permissible_mpa=_round(_safe_mul(pin.root_safety, pin.root_stress_mpa)),
         form_factor=round(roots[0].form_factor, 4),
         stress_correction=round(roots[0].stress_correction_factor, 4),
     )
 
-    # plastic wheel — VDI 2736
+    # plastic wheel — VDI 2736 (load factor K = K_A·K_v)
+    k_load = req.application_factor * k_v
     vdi_conditions = Vdi2736Conditions(
         power_w=req.power_w,
-        torque_nm=Pair(
-            req.pinion_torque_nm, req.pinion_torque_nm * stage.teeth[1] / stage.teeth[0]
-        ),
-        pitch_velocity_ms=6.067,
+        torque_nm=Pair(req.pinion_torque_nm, req.pinion_torque_nm * u),
+        pitch_velocity_ms=v_t,
         ambient_temperature_c=req.ambient_temperature_c,
+        duty_cycle=req.duty_cycle,
+        housing_surface_m2=req.housing_surface_m2,
         friction_coefficient=req.friction_coefficient,
         load_cycles=Pair(req.load_cycles, req.load_cycles),
+        wear_coefficient_mm3_nm=req.wear_coefficient_e6 * 1.0e-6,
+        root_minimum_safety=req.root_minimum_safety,
+        flank_minimum_safety=req.flank_minimum_safety,
+        load_factor_root=k_load,
+        load_factor_flank=k_load,
     )
     vdi = evaluate_vdi2736(
         stage,
@@ -323,13 +434,15 @@ def capacity(req: CapacityRequest) -> CapacityResponse:
     )
     wh = vdi[1]
     wheel = GearCapacity(
-        label="Wheel (plastic)",
-        material=_PLASTIC.name,
+        label="Rad (Kunststoff)",
+        material=materials[1].name,
         method="VDI 2736:2014",
         flank_stress_mpa=round(wh.flank_stress_mpa, 3),
         flank_safety=_round(wh.flank_safety),
         root_stress_mpa=round(wh.root_stress_mpa, 3),
         root_safety=_round(wh.root_safety),
+        flank_permissible_mpa=_round(_safe_mul(wh.flank_safety, wh.flank_stress_mpa)),
+        root_permissible_mpa=_round(_safe_mul(wh.root_safety, wh.root_stress_mpa)),
         form_factor=round(roots[1].form_factor_tip, 4),
         stress_correction=round(roots[1].stress_correction_factor_tip, 4),
         tooth_temperature_c=round(wh.root_temperature_c, 2),
@@ -337,7 +450,19 @@ def capacity(req: CapacityRequest) -> CapacityResponse:
         allowable_wear_um=round(wh.allowable_wear_um, 1),
         deformation_mm=round(wh.deformation_mm, 4),
     )
-    return CapacityResponse(pinion=pinion, wheel=wheel)
+    factors = CapacityFactors(
+        application_factor=round(req.application_factor, 3),
+        dynamic_factor=round(k_v, 4),
+        transverse_factor=round(k_ha, 4),
+        face_load_factor=round(k_hb, 4),
+        elasticity_factor=round(elasticity_factor(materials[0], materials[1]), 3),
+        zone_factor=round(zone_factor(stage), 4),
+    )
+    return CapacityResponse(factors=factors, pinion=pinion, wheel=wheel)
+
+
+def _safe_mul(safety: float | None, stress: float) -> float | None:
+    return safety * stress if safety is not None else None
 
 
 # --------------------------------------------------------------------------- #
@@ -407,28 +532,59 @@ def dynamics(req: DynamicsRequest) -> DynamicsResponse:
 # --------------------------------------------------------------------------- #
 # Stufenvariation (vectorized sweep + Pareto)                                  #
 # --------------------------------------------------------------------------- #
+class VarSpec(BaseModel):
+    """One swept/fixed macro parameter (the Workbench Stufenvariation matrix row)."""
+
+    vary: bool = False
+    value: float
+    min: float
+    max: float
+    steps: int = 6
+
+
 class VariationRequest(BaseModel):
-    normal_module_mm: float = 2.0
-    teeth_wheel: int = 60
-    profile_shift_wheel: float = 0.0
+    # the macro-geometry matrix (vary → min/max/steps, else fixed at value)
+    m_n: VarSpec = VarSpec(value=2.0, min=1.0, max=4.0)
+    z1: VarSpec = VarSpec(value=24, min=16, max=34, vary=True, steps=19)
+    z2: VarSpec = VarSpec(value=60, min=40, max=80)
+    x1: VarSpec = VarSpec(value=0.0, min=-0.3, max=0.6, vary=True, steps=10)
+    x2: VarSpec = VarSpec(value=0.0, min=-0.3, max=0.6)
+    beta_deg: VarSpec = VarSpec(value=0.0, min=0.0, max=25.0)
+    b: VarSpec = VarSpec(value=20.0, min=10.0, max=40.0)
+    # fixed design context
+    normal_pressure_angle_deg: float = 20.0
+    tool_addendum_factor: float = 1.25  # h_aP0*
+    tool_tip_radius_factor: float = 0.38  # ρ_aP0*
     torque_nm: float = 15.0
-    teeth_pinion_min: int = 16
-    teeth_pinion_max: int = 34
-    teeth_pinion_steps: int = 19
-    profile_shift_pinion_min: float = -0.3
-    profile_shift_pinion_max: float = 0.6
-    profile_shift_pinion_steps: int = 10
-    face_width_mm: float = 20.0
+    steel_density_kg_m3: float = 7800.0
+    plastic_density_kg_m3: float = 1400.0
+    steel_sigma_hlim_mpa: float = 1500.0
+    steel_sigma_flim_mpa: float = 430.0
+    plastic_sigma_hlim_mpa: float = 60.0
+    plastic_sigma_flim_mpa: float = 35.0
+    root_minimum_safety: float = 2.0
+    flank_minimum_safety: float = 1.0
     method: str = Field("grid", pattern="^(grid|sobol|lhs)$")
     sample_count: int = 256
 
 
 class VariationPoint(BaseModel):
-    teeth_pinion: float
-    profile_shift_pinion: float
+    m_n: float
+    z1: float
+    z2: float
+    x1: float
+    x2: float
+    beta_deg: float
+    b: float
+    center_distance_mm: float
+    transverse_contact_ratio: float
+    overlap_ratio: float
     total_contact_ratio: float
-    root_safety_plastic: float | None
-    flank_safety_plastic: float | None
+    root_safety_pinion: float | None
+    root_safety_wheel: float | None
+    flank_safety_pinion: float | None
+    flank_safety_wheel: float | None
+    weight_g: float
     pareto: bool
 
 
@@ -437,42 +593,74 @@ class VariationResponse(BaseModel):
     valid: int
     pareto: int
     eval_ms: float
+    varied: list[str]
     points: list[VariationPoint]
     warnings: list[str]
 
 
+_VAR_LABELS = {
+    "m_n": "Module m_n",
+    "z1": "Teeth z₁",
+    "z2": "Teeth z₂",
+    "x1": "Shift x₁",
+    "x2": "Shift x₂",
+    "beta_deg": "Helix β",
+    "b": "Face width b",
+}
+
+
 @router.post("/variation", response_model=VariationResponse)
 def variation(req: VariationRequest) -> VariationResponse:
-    """Run a plastic-capable Stufenvariation (steel pinion + plastic wheel)."""
+    """Plastic-capable Stufenvariation over the macro-geometry matrix (steel + plastic)."""
     import time
 
+    from app.services.variation import kernel
+
+    steel = Material(
+        name="steel",
+        kind=MaterialKind.STEEL,
+        elastic_modulus_mpa=206000.0,
+        poisson_ratio=0.30,
+        sigma_hlim_mpa=req.steel_sigma_hlim_mpa,
+        sigma_flim_mpa=req.steel_sigma_flim_mpa,
+    )
+    plastic = Material(
+        name="plastic",
+        kind=MaterialKind.PLASTIC,
+        elastic_modulus_mpa=2800.0,
+        poisson_ratio=0.35,
+        sigma_hlim_mpa=req.plastic_sigma_hlim_mpa,
+        sigma_flim_mpa=req.plastic_sigma_flim_mpa,
+    )
+    specs = {
+        "m_n": req.m_n,
+        "z1": req.z1,
+        "z2": req.z2,
+        "x1": req.x1,
+        "x2": req.x2,
+        "beta_deg": req.beta_deg,
+        "b": req.b,
+    }
+    varied: dict[str, Varied] = {}
+    fixed: dict[str, float] = {}
+    for key, s in specs.items():
+        if s.vary and s.steps > 1:
+            varied[key] = Varied(
+                values=tuple(np.linspace(s.min, s.max, s.steps)), bounds=(s.min, s.max)
+            )
+        else:
+            fixed[key] = s.value
+
     spec = VariationSpec(
-        materials=(_STEEL, _PLASTIC),
+        materials=(steel, plastic),
         torque_nm=req.torque_nm,
-        varied={
-            "z1": Varied(
-                values=tuple(
-                    np.linspace(req.teeth_pinion_min, req.teeth_pinion_max, req.teeth_pinion_steps)
-                ),
-                bounds=(req.teeth_pinion_min, req.teeth_pinion_max),
-            ),
-            "x1": Varied(
-                values=tuple(
-                    np.linspace(
-                        req.profile_shift_pinion_min,
-                        req.profile_shift_pinion_max,
-                        req.profile_shift_pinion_steps,
-                    )
-                ),
-                bounds=(req.profile_shift_pinion_min, req.profile_shift_pinion_max),
-            ),
-        },
-        fixed={
-            "m_n": req.normal_module_mm,
-            "z2": req.teeth_wheel,
-            "x2": req.profile_shift_wheel,
-            "b": req.face_width_mm,
-        },
+        varied=varied,
+        fixed=fixed,
+        normal_pressure_angle_deg=req.normal_pressure_angle_deg,
+        tool_addendum_factor=req.tool_addendum_factor,
+        tool_tip_radius_factor=req.tool_tip_radius_factor,
+        root_minimum_safety=req.root_minimum_safety,
+        flank_minimum_safety=req.flank_minimum_safety,
     )
     batch = (
         build_grid(spec)
@@ -482,6 +670,30 @@ def variation(req: VariationRequest) -> VariationResponse:
     t = time.perf_counter()
     res = evaluate(spec, batch)
     eval_ms = (time.perf_counter() - t) * 1000.0
+
+    n = int(res.total_contact_ratio.size)
+    p = res.parameters
+    overlap = np.broadcast_to(res.overlap_ratio, (n,))
+    beta = batch["beta_deg"] if "beta_deg" in batch else np.full(n, fixed.get("beta_deg", 0.0))
+    geo = kernel.mesh_geometry(
+        normal_module_mm=p["m_n"],
+        teeth_pinion=p["z1"],
+        teeth_wheel=p["z2"],
+        profile_shift_pinion=p["x1"],
+        profile_shift_wheel=p["x2"],
+        normal_pressure_angle=np.radians(req.normal_pressure_angle_deg),
+        helix_angle=np.radians(beta),
+        face_width_mm=p["b"],
+    )
+    # solid-disc weight estimate (steel pinion + plastic wheel), grams
+    quarter_pi = math.pi / 4.0
+    weight = (
+        req.steel_density_kg_m3 * quarter_pi * (geo.tip_diameter[0] * 1e-3) ** 2 * (p["b"] * 1e-3)
+        + req.plastic_density_kg_m3
+        * quarter_pi
+        * (geo.tip_diameter[1] * 1e-3) ** 2
+        * (p["b"] * 1e-3)
+    ) * 1000.0
 
     valid = res.valid
     front = np.zeros(valid.shape, dtype=bool)
@@ -494,21 +706,33 @@ def variation(req: VariationRequest) -> VariationResponse:
 
     points = [
         VariationPoint(
-            teeth_pinion=round(float(res.parameters["z1"][i]), 3),
-            profile_shift_pinion=round(float(res.parameters["x1"][i]), 4),
+            m_n=round(float(p["m_n"][i]), 3),
+            z1=round(float(p["z1"][i]), 2),
+            z2=round(float(p["z2"][i]), 2),
+            x1=round(float(p["x1"][i]), 4),
+            x2=round(float(p["x2"][i]), 4),
+            beta_deg=round(float(beta[i]), 2),
+            b=round(float(p["b"][i]), 2),
+            center_distance_mm=round(float(geo.working_center_distance_mm[i]), 3),
+            transverse_contact_ratio=round(float(res.transverse_contact_ratio[i]), 4),
+            overlap_ratio=round(float(overlap[i]), 4),
             total_contact_ratio=round(float(res.total_contact_ratio[i]), 4),
-            root_safety_plastic=_round(float(res.root_safety[1][i])),
-            flank_safety_plastic=_round(float(res.flank_safety[1][i])),
+            root_safety_pinion=_round(float(res.root_safety[0][i])),
+            root_safety_wheel=_round(float(res.root_safety[1][i])),
+            flank_safety_pinion=_round(float(res.flank_safety[0][i])),
+            flank_safety_wheel=_round(float(res.flank_safety[1][i])),
+            weight_g=round(float(weight[i]), 1),
             pareto=bool(front[i]),
         )
-        for i in range(res.total_contact_ratio.size)
+        for i in range(n)
         if bool(valid[i])
     ]
     return VariationResponse(
-        count=int(res.total_contact_ratio.size),
+        count=n,
         valid=int(valid.sum()),
         pareto=int(front.sum()),
         eval_ms=round(eval_ms, 1),
+        varied=[_VAR_LABELS[k] for k in varied],
         points=points,
         warnings=list(res.warnings),
     )

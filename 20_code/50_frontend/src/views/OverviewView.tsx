@@ -7,40 +7,32 @@ export function OverviewView(props: { onNavigate: (key: string) => void }): JSX.
   const { data, error, loading } = useAsync<ExampleResponse>(() => api.example());
 
   if (loading) return <Loading />;
-  if (error || !data) return <ErrorNote message={error ?? "no data"} />;
+  if (error || !data) return <ErrorNote message={error ?? "keine Daten"} />;
 
   return (
     <>
       <p className="page-intro">
-        The analysis is preloaded with the validated <strong>{data.name}</strong> reference —{" "}
-        {data.description} Edit the operating parameters in each view to recompute live; the steel
-        gear runs on ISO 6336:2019, the plastic gear on VDI 2736:2014.
+        Die Analyse ist mit der validierten <strong>{data.name}</strong>-Referenz vorgeladen —{" "}
+        {data.description} Passe die Betriebsparameter in jeder Ansicht an; das Stahlrad rechnet nach
+        ISO 6336:2019, das Kunststoffrad nach VDI 2736:2014.
       </p>
 
       <div className="grid cols-4">
-        <Card>
-          <Stat label="Total contact ratio ε_γ" value={fmt(data.total_contact_ratio, 3)} />
-        </Card>
-        <Card>
-          <Stat label="Working pressure angle α_wt" value={fmt(data.working_pressure_angle_deg, 2)} unit="°" />
-        </Card>
-        <Card>
-          <Stat label="Centre distance a" value={fmt(data.center_distance_mm, 2)} unit="mm" />
-        </Card>
-        <Card>
-          <Stat label="Normal module m_n" value={fmt(data.normal_module_mm, 2)} unit="mm" />
-        </Card>
+        <Card><Stat label="Gesamtüberdeckung ε_γ" value={fmt(data.total_contact_ratio, 3)} /></Card>
+        <Card><Stat label="Betriebseingriffswinkel α_wt" value={fmt(data.working_pressure_angle_deg, 2)} unit="°" /></Card>
+        <Card><Stat label="Achsabstand a" value={fmt(data.center_distance_mm, 2)} unit="mm" /></Card>
+        <Card><Stat label="Normalmodul m_n" value={fmt(data.normal_module_mm, 2)} unit="mm" /></Card>
       </div>
 
       <div className="grid mt">
         <Card>
-          <CardHead title="Gear pair" sub="As-cut geometry of the loaded reference" />
+          <CardHead title="Verzahnungspaar" sub="Erzeugte Geometrie der geladenen Referenz" />
           <div className="table-wrap">
             <table className="tbl">
               <thead>
                 <tr>
-                  <th>Gear</th>
-                  <th>Material</th>
+                  <th>Rad</th>
+                  <th>Werkstoff</th>
                   <th>z</th>
                   <th>x</th>
                   <th>d</th>
@@ -66,9 +58,9 @@ export function OverviewView(props: { onNavigate: (key: string) => void }): JSX.
             </table>
           </div>
           {data.notes.length > 0 && (
-            <div className="card-pad" style={{ paddingTop: 14 }}>
+            <div className="card-pad" style={{ paddingTop: 12 }}>
               {data.notes.map((n, i) => (
-                <div className="note" key={i} style={{ marginBottom: 8 }}>
+                <div className="note" key={i} style={{ marginBottom: 6 }}>
                   <span>⚠</span>
                   <span>{n}</span>
                 </div>
@@ -78,20 +70,24 @@ export function OverviewView(props: { onNavigate: (key: string) => void }): JSX.
         </Card>
       </div>
 
-      <div className="eyebrow mt" style={{ marginBottom: 10 }}>
-        Methods
+      <div className="eyebrow mt" style={{ marginBottom: 8 }}>
+        Methoden
       </div>
       <div className="grid cols-2">
         {METHODS.map((m) => (
-          <button key={m.key} className="card card-pad method" onClick={() => props.onNavigate(m.key)}
-            style={{ textAlign: "left", cursor: "pointer", border: "1px solid var(--border)" }}>
-            <div className="card-title" style={{ fontFamily: "var(--font-serif)", fontSize: 17 }}>
+          <button
+            key={m.key}
+            className="card card-pad"
+            onClick={() => props.onNavigate(m.key)}
+            style={{ textAlign: "left", cursor: "pointer", border: "1px solid var(--border)" }}
+          >
+            <div className="card-title" style={{ fontSize: 14 }}>
               {m.title}
             </div>
-            <div className="muted" style={{ fontSize: 13.5, marginTop: 4 }}>
+            <div className="muted" style={{ fontSize: 12.5, marginTop: 3 }}>
               {m.text}
             </div>
-            <div className="eyebrow" style={{ marginTop: 12 }}>
+            <div className="eyebrow" style={{ marginTop: 9 }}>
               {m.tag} →
             </div>
           </button>
@@ -104,42 +100,42 @@ export function OverviewView(props: { onNavigate: (key: string) => void }): JSX.
 const METHODS = [
   {
     key: "geometry",
-    title: "Geometry",
-    text: "Involute macro-geometry: diameters, working pressure angle and contact ratios — the vectorized native kernel (ISO 21771).",
-    tag: "Open geometry",
+    title: "Geometrie",
+    text: "Evolventen-Makrogeometrie: Durchmesser, Betriebseingriffswinkel und Überdeckungen — der vektorisierte native Kernel (ISO 21771).",
+    tag: "Geometrie öffnen",
   },
   {
     key: "capacity",
-    title: "Load capacity",
-    text: "Steel pinion per ISO 6336:2019, plastic wheel per VDI 2736:2014 — stresses, safeties, tooth temperature, wear, deformation.",
-    tag: "Open capacity",
+    title: "Tragfähigkeit",
+    text: "Stahlritzel nach ISO 6336:2019, Kunststoffrad nach VDI 2736:2014 — Spannungen, Sicherheiten, Zahntemperatur, Verschleiß, Verformung.",
+    tag: "Tragfähigkeit öffnen",
   },
   {
     key: "dynamics",
-    title: "Dynamic factors",
-    text: "Native K_v (Method B), K_Hα and K_Hβ with the mesh stiffness, reduced mass and resonance ratio (ISO 6336-1).",
-    tag: "Open dynamics",
+    title: "Dynamikfaktoren",
+    text: "Native K_v (Verf. B), K_Hα und K_Hβ mit Eingriffssteifigkeit, reduzierter Masse und Resonanzverhältnis (ISO 6336-1).",
+    tag: "Dynamik öffnen",
   },
   {
     key: "variation",
     title: "Stufenvariation",
-    text: "Plastic-capable macro-geometry sweep with early pruning, Sobol/LHS sampling and a Pareto front — hundreds of thousands of variants per second.",
-    tag: "Open sweep",
+    text: "Kunststofftaugliche Makrogeometrie-Variation mit Frühausschluss, Sobol/LHS-Sampling und Pareto-Front — Hunderttausende Varianten pro Sekunde.",
+    tag: "Variation öffnen",
   },
 ];
 
 export function Loading(): JSX.Element {
   return (
-    <div className="row" style={{ color: "var(--text-muted)", padding: 24 }}>
-      <span className="spinner" /> Loading…
+    <div className="row" style={{ color: "var(--text-muted)", padding: 20 }}>
+      <span className="spinner" /> Lädt…
     </div>
   );
 }
 export function ErrorNote(props: { message: string }): JSX.Element {
   return (
-    <div className="note" style={{ color: "var(--bad)", background: "var(--bad-bg)", borderColor: "#f3cab9" }}>
+    <div className="note bad">
       <span>⚠</span>
-      <span>Backend error — is the API running on the configured URL? {props.message}</span>
+      <span>Backend-Fehler — läuft die API unter der konfigurierten URL? {props.message}</span>
     </div>
   );
 }

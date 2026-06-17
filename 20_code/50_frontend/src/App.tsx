@@ -10,11 +10,11 @@ import { DynamicsView } from "./views/DynamicsView";
 import { VariationView } from "./views/VariationView";
 
 const NAV: (NavItem & { title: string; eyebrow: string })[] = [
-  { key: "overview", label: "Overview", icon: <IconOverview />, title: "Overview", eyebrow: "Loaded example" },
-  { key: "geometry", label: "Geometry", icon: <IconGear />, title: "Macro-geometry", eyebrow: "ISO 21771" },
-  { key: "capacity", label: "Load capacity", icon: <IconGauge />, title: "Load capacity", eyebrow: "ISO 6336 · VDI 2736" },
-  { key: "dynamics", label: "Dynamic factors", icon: <IconActivity />, title: "Dynamic factors", eyebrow: "ISO 6336-1" },
-  { key: "variation", label: "Stufenvariation", icon: <IconGrid />, title: "Stufenvariation", eyebrow: "Macro-geometry sweep" },
+  { key: "overview", label: "Übersicht", icon: <IconOverview />, title: "Übersicht", eyebrow: "Geladenes Beispiel" },
+  { key: "geometry", label: "Geometrie", icon: <IconGear />, title: "Makrogeometrie", eyebrow: "ISO 21771" },
+  { key: "capacity", label: "Tragfähigkeit", icon: <IconGauge />, title: "Tragfähigkeit", eyebrow: "ISO 6336 · VDI 2736" },
+  { key: "dynamics", label: "Dynamikfaktoren", icon: <IconActivity />, title: "Dynamikfaktoren", eyebrow: "ISO 6336-1" },
+  { key: "variation", label: "Stufenvariation", icon: <IconGrid />, title: "Stufenvariation", eyebrow: "Makrogeometrie-Variation" },
 ];
 
 export default function App(): JSX.Element {
@@ -41,13 +41,13 @@ export default function App(): JSX.Element {
       onSelect={setActive}
       title={current.title}
       eyebrow={current.eyebrow}
-      topRight={<Badge variant="neutral" dot>Example: kst-E</Badge>}
+      topRight={<Badge variant="neutral" dot>Beispiel: kst-E</Badge>}
       footer={
         <div className="stack" style={{ gap: 4 }}>
           <span>
-            {online == null ? "…" : online ? `Backend online · v${version}` : "Backend offline"}
+            {online == null ? "…" : online ? `Backend verbunden · v${version}` : "Backend offline"}
           </span>
-          <span style={{ opacity: 0.7 }}>Plastic-gear tooth-root tool</span>
+          <span style={{ opacity: 0.7 }}>Kunststoff-Zahnfuß-Tool</span>
         </div>
       }
     >

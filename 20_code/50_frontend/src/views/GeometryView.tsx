@@ -40,70 +40,60 @@ export function GeometryView(): JSX.Element {
   return (
     <>
       <p className="page-intro">
-        Native involute macro-geometry (ISO 21771) via the vectorized kernel. Tip diameters use the
-        running addendum (no chamfer) — for the exact as-cut kst-E geometry see the Overview.
+        Native Evolventen-Makrogeometrie (ISO 21771) über den vektorisierten Kernel. Kopfkreise
+        nutzen die laufende Kopfhöhe (ohne Fase) — die exakte erzeugte kst-E-Geometrie siehe Übersicht.
       </p>
       <div className="split">
         <Card>
-          <CardHead title="Parameters" sub="Edit and recompute" />
+          <CardHead title="Parameter" sub="Editieren und neu berechnen" />
           <div className="card-pad">
             <div className="input-row">
-              <NumberField label="Normal module m_n" value={req.normal_module_mm} onChange={set("normal_module_mm")}
-                hint={<>mm · STplus <code>MODUL</code></>} />
-              <NumberField label="Pressure angle α_n" value={req.normal_pressure_angle_deg}
-                onChange={set("normal_pressure_angle_deg")} hint={<>° · <code>EINGRIFFSWINKEL</code></>} />
+              <NumberField label="Normalmodul m_n" value={req.normal_module_mm} onChange={set("normal_module_mm")} hint={<>mm · STplus <code>MODUL</code></>} />
+              <NumberField label="Eingriffswinkel α_n" value={req.normal_pressure_angle_deg} onChange={set("normal_pressure_angle_deg")} hint={<>° · <code>EINGRIFFSWINKEL</code></>} />
             </div>
             <div className="input-row">
-              <NumberField label="Teeth z₁ (pinion)" value={req.teeth_pinion} onChange={set("teeth_pinion")}
-                step={1} hint={<>STplus <code>ZAEHNEZAHL</code></>} />
-              <NumberField label="Teeth z₂ (wheel)" value={req.teeth_wheel} onChange={set("teeth_wheel")} step={1} />
+              <NumberField label="Zähnezahl z₁ (Ritzel)" value={req.teeth_pinion} onChange={set("teeth_pinion")} step={1} hint={<>STplus <code>ZAEHNEZAHL</code></>} />
+              <NumberField label="Zähnezahl z₂ (Rad)" value={req.teeth_wheel} onChange={set("teeth_wheel")} step={1} />
             </div>
             <div className="input-row">
-              <NumberField label="Profile shift x₁" value={req.profile_shift_pinion}
-                onChange={set("profile_shift_pinion")} hint={<>STplus <code>PROFILVERSCHIEBUNG</code></>} />
-              <NumberField label="Profile shift x₂" value={req.profile_shift_wheel}
-                onChange={set("profile_shift_wheel")} />
+              <NumberField label="Profilverschiebung x₁" value={req.profile_shift_pinion} onChange={set("profile_shift_pinion")} hint={<>STplus <code>PROFILVERSCHIEBUNG</code></>} />
+              <NumberField label="Profilverschiebung x₂" value={req.profile_shift_wheel} onChange={set("profile_shift_wheel")} />
             </div>
             <div className="input-row">
-              <NumberField label="Helix angle β" value={req.helix_angle_deg} onChange={set("helix_angle_deg")}
-                hint="° · 0 = spur" />
-              <NumberField label="Face width b" value={req.face_width_mm} onChange={set("face_width_mm")} hint="mm" />
+              <NumberField label="Schrägungswinkel β" value={req.helix_angle_deg} onChange={set("helix_angle_deg")} hint="° · 0 = gerade" />
+              <NumberField label="Zahnbreite b" value={req.face_width_mm} onChange={set("face_width_mm")} hint="mm" />
             </div>
             <Button onClick={() => run(req)} busy={busy}>
-              Recompute geometry
+              Geometrie neu berechnen
             </Button>
           </div>
         </Card>
 
-        <div className="stack" style={{ gap: 18 }}>
-          {err && <div className="note">⚠ {err}</div>}
+        <div className="stack" style={{ gap: 12 }}>
+          {err && <div className="note bad">⚠ {err}</div>}
           {res && (
             <>
               <div className="grid cols-3">
                 <Card>
-                  <Stat label="Transverse ε_α" value={fmt(res.transverse_contact_ratio, 3)}
-                    foot={res.valid ? <Badge variant="good" dot>continuous</Badge> : <Badge variant="bad" dot>ε_γ &lt; 1</Badge>} />
+                  <Stat label="Profilüberdeckung ε_α" value={fmt(res.transverse_contact_ratio, 3)}
+                    foot={res.valid ? <Badge variant="good" dot>stetig</Badge> : <Badge variant="bad" dot>ε_γ &lt; 1</Badge>} />
                 </Card>
-                <Card>
-                  <Stat label="Overlap ε_β" value={fmt(res.overlap_ratio, 3)} />
-                </Card>
-                <Card>
-                  <Stat label="Total ε_γ" value={fmt(res.total_contact_ratio, 3)} />
-                </Card>
+                <Card><Stat label="Sprungüberdeckung ε_β" value={fmt(res.overlap_ratio, 3)} /></Card>
+                <Card><Stat label="Gesamtüberdeckung ε_γ" value={fmt(res.total_contact_ratio, 3)} /></Card>
               </div>
               <Card>
-                <CardHead title="Diameters & mesh" right={<span className="muted num">α_wt {fmt(res.working_pressure_angle_deg, 3)}°</span>} />
+                <CardHead title="Durchmesser & Eingriff" right={<span className="muted num">α_wt {fmt(res.working_pressure_angle_deg, 3)}°</span>} />
                 <div className="table-wrap">
                   <table className="tbl">
                     <thead>
-                      <tr><th>Quantity</th><th>Pinion</th><th>Wheel</th><th>Unit</th></tr>
+                      <tr><th>Größe</th><th>Ritzel</th><th>Rad</th><th>Einheit</th></tr>
                     </thead>
                     <tbody>
-                      <Row name="Reference diameter d" a={res.reference_diameter_mm[0]} b={res.reference_diameter_mm[1]} />
-                      <Row name="Base diameter d_b" a={res.base_diameter_mm[0]} b={res.base_diameter_mm[1]} />
-                      <Row name="Tip diameter d_a" a={res.tip_diameter_mm[0]} b={res.tip_diameter_mm[1]} />
+                      <Row name="Teilkreisdurchmesser d" a={res.reference_diameter_mm[0]} b={res.reference_diameter_mm[1]} />
+                      <Row name="Grundkreisdurchmesser d_b" a={res.base_diameter_mm[0]} b={res.base_diameter_mm[1]} />
+                      <Row name="Kopfkreisdurchmesser d_a" a={res.tip_diameter_mm[0]} b={res.tip_diameter_mm[1]} />
                       <tr>
-                        <td className="txt">Working centre distance a_w</td>
+                        <td className="txt">Betriebsachsabstand a_w</td>
                         <td colSpan={2}>{fmt(res.working_center_distance_mm, 3)}</td>
                         <td className="txt muted">mm</td>
                       </tr>

@@ -27,13 +27,13 @@ export function Layout(props: {
             </svg>
           </div>
           <div>
-            <div className="brand-name">Gear Analysis</div>
+            <div className="brand-name">Verzahnungsanalyse</div>
             <div className="brand-sub">TUM · FZG</div>
           </div>
         </div>
 
         <nav className="nav">
-          <div className="nav-label">Analysis</div>
+          <div className="nav-label">Analyse</div>
           {props.items.map((it) => (
             <button
               key={it.key}

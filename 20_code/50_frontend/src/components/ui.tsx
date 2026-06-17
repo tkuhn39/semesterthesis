@@ -119,6 +119,71 @@ export function SafetyBadge(props: { value: number | null; minimum?: number }): 
   );
 }
 
+export function Section(props: {
+  title: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}): JSX.Element {
+  const [open, setOpen] = useState(props.defaultOpen ?? true);
+  return (
+    <div className="section">
+      <button className={`section-head ${open ? "open" : ""}`} onClick={() => setOpen(!open)}>
+        <span className="chev">▸</span>
+        {props.title}
+      </button>
+      {open && <div className="section-body">{props.children}</div>}
+    </div>
+  );
+}
+
+export function SelectField<T extends string>(props: {
+  label: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+  hint?: ReactNode;
+}): JSX.Element {
+  return (
+    <Field label={props.label} hint={props.hint}>
+      <select className="input" value={props.value} onChange={(e) => props.onChange(e.target.value as T)}>
+        {props.options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </Field>
+  );
+}
+
+/** A label + two compact numeric boxes (the Workbench per-gear pinion/wheel pattern). */
+export function PairRow(props: {
+  label: ReactNode;
+  pinion: number;
+  wheel: number;
+  onPinion: (v: number) => void;
+  onWheel: (v: number) => void;
+  step?: number;
+}): JSX.Element {
+  return (
+    <div className="pair">
+      <span className="pl">{props.label}</span>
+      <input
+        type="number"
+        value={Number.isFinite(props.pinion) ? props.pinion : ""}
+        step={props.step ?? "any"}
+        onChange={(e) => props.onPinion(Number(e.target.value))}
+      />
+      <input
+        type="number"
+        value={Number.isFinite(props.wheel) ? props.wheel : ""}
+        step={props.step ?? "any"}
+        onChange={(e) => props.onWheel(Number(e.target.value))}
+      />
+    </div>
+  );
+}
+
 export function Tabs<T extends string>(props: {
   value: T;
   options: { value: T; label: string }[];
