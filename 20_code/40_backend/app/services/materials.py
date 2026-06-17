@@ -13,6 +13,7 @@ warning and skipped, the rest still runs. So most fields are optional; the
 consuming method decides what it strictly needs.
 """
 
+import math
 from enum import StrEnum
 
 from pydantic import BaseModel, Field, field_validator
@@ -118,6 +119,53 @@ class Material(BaseModel):
             if curve.quantity == quantity:
                 return curve
         return None
+
+    def root_strength_at(self, temperature_c: float, cycles: float) -> float | None:
+        """σ_Flim,N at the root temperature and load-cycle count (VDI 2736 Table 5)."""
+        return _strength_at(self.root_strength_curve, temperature_c, cycles, self.sigma_flim_mpa)
+
+    def flank_strength_at(self, temperature_c: float, cycles: float) -> float | None:
+        """σ_Hlim,N at the flank temperature and load-cycle count (VDI 2736)."""
+        return _strength_at(self.flank_strength_curve, temperature_c, cycles, self.sigma_hlim_mpa)
+
+
+def _strength_at(
+    curve: list[StrengthPoint] | None, temperature_c: float, cycles: float, fallback: float | None
+) -> float | None:
+    """Bilinear lookup of a strength curve over temperature and log₁₀(cycles).
+
+    Returns the constant ``fallback`` (temperature-independent endurance limit) when
+    no measured grid is supplied, so the caller degrades gracefully (ADR-013).
+    """
+    if not curve:
+        return fallback
+    log_n = math.log10(max(cycles, 1.0))
+    temps = sorted({p.temperature_c for p in curve})
+
+    def _at_temp(temp: float) -> float:
+        pts = sorted((p for p in curve if p.temperature_c == temp), key=lambda p: p.cycles)
+        xs = [math.log10(max(p.cycles, 1.0)) for p in pts]
+        ys = [p.stress_mpa for p in pts]
+        if log_n <= xs[0]:
+            return ys[0]
+        if log_n >= xs[-1]:
+            return ys[-1]
+        for (x0, y0), (x1, y1) in zip(
+            zip(xs, ys, strict=True), zip(xs[1:], ys[1:], strict=True), strict=False
+        ):
+            if x0 <= log_n <= x1:
+                return y0 + (y1 - y0) * (log_n - x0) / (x1 - x0)
+        return ys[-1]
+
+    if temperature_c <= temps[0]:
+        return _at_temp(temps[0])
+    if temperature_c >= temps[-1]:
+        return _at_temp(temps[-1])
+    for t0, t1 in zip(temps, temps[1:], strict=False):
+        if t0 <= temperature_c <= t1:
+            s0, s1 = _at_temp(t0), _at_temp(t1)
+            return s0 + (s1 - s0) * (temperature_c - t0) / (t1 - t0)
+    return _at_temp(temps[-1])
 
 
 def _section_float(section: SteSection, key: str) -> float | None:

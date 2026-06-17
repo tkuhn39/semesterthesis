@@ -174,53 +174,83 @@ class ToothRootGeometry(BaseModel):
         single = tip_tangent - (self._virtual_contact_ratio - 1.0) * self._virtual_base_pitch_mm
         return 2.0 * math.hypot(base_radius, single)
 
-    @property
-    def _load_angle_at_contact(self) -> float:
-        return math.acos(self._virtual_base_diameter_mm / self.outer_single_contact_diameter_mm)
+    def _load_angle_at(self, load_diameter_mm: float) -> float:
+        """Pressure angle α_e of the virtual flank at a load applied on ``load_diameter_mm``."""
+        return math.acos(self._virtual_base_diameter_mm / load_diameter_mm)
 
-    @property
-    def _half_angle_to_load(self) -> float:
+    def _half_angle_to(self, load_angle: float) -> float:
         """Angle γ_e between the tooth centre line and the load point (ISO 6336-3)."""
         alpha_n = self._alpha_n
         return (
             (math.pi / 2.0 + 2.0 * self.generation_profile_shift * math.tan(alpha_n))
             / self.virtual_teeth
             + involute(alpha_n)
-            - involute(self._load_angle_at_contact)
+            - involute(load_angle)
         )
 
-    @property
-    def load_application_angle_deg(self) -> float:
-        """Load application angle α_Fen at the outer single contact point."""
-        return math.degrees(self._load_angle_at_contact - self._half_angle_to_load)
-
-    @property
-    def bending_lever_mn(self) -> float:
-        """Bending moment arm h_Fe / m_n (load at the outer single contact point)."""
-        gamma_e = self._half_angle_to_load
-        alpha_fen = math.radians(self.load_application_angle_deg)
+    def _bending_lever_at(self, load_diameter_mm: float) -> tuple[float, float]:
+        """Return (α_Fe [rad], h_Fe / m_n) for a load applied at ``load_diameter_mm``."""
+        load_angle = self._load_angle_at(load_diameter_mm)
+        gamma = self._half_angle_to(load_angle)
+        alpha_fe = load_angle - gamma
         zn, theta, g = self.virtual_teeth, self._theta, self._g_aux
-        load_term = (math.cos(gamma_e) - math.sin(gamma_e) * math.tan(alpha_fen)) * (
-            self.outer_single_contact_diameter_mm / self.normal_module_mm
+        load_term = (math.cos(gamma) - math.sin(gamma) * math.tan(alpha_fe)) * (
+            load_diameter_mm / self.normal_module_mm
         )
         root_term = zn * math.cos(math.pi / 3.0 - theta) + (
             g / math.cos(theta) - self.tool_root_radius_factor
         )
-        return 0.5 * (load_term - root_term)
+        return alpha_fe, 0.5 * (load_term - root_term)
 
-    @property
-    def form_factor(self) -> float:
-        """Tooth form factor Y_F (DIN 3990 / ISO 6336-3 method B)."""
+    def _form_factor_at(self, load_diameter_mm: float) -> float:
+        """Tooth form factor Y_F = 6 h_Fe cos α_Fe / (s_Fn² cos α_n) for a given load point."""
+        alpha_fe, h_fe = self._bending_lever_at(load_diameter_mm)
         s_fn = self.critical_root_chord_mn
-        alpha_fen = math.radians(self.load_application_angle_deg)
-        return (
-            6.0 * self.bending_lever_mn * math.cos(alpha_fen) / (s_fn**2 * math.cos(self._alpha_n))
-        )
+        return 6.0 * h_fe * math.cos(alpha_fe) / (s_fn**2 * math.cos(self._alpha_n))
 
-    @property
-    def stress_correction_factor(self) -> float:
+    def _stress_correction_at(self, bending_lever_mn: float) -> float:
         """Stress correction factor Y_S (DIN 3990 / ISO 6336-3, 1 ≤ q_s < 8)."""
-        lever_ratio = self.critical_root_chord_mn / self.bending_lever_mn
+        lever_ratio = self.critical_root_chord_mn / bending_lever_mn
         return (1.2 + 0.13 * lever_ratio) * self.notch_parameter ** (
             1.0 / (1.21 + 2.3 / lever_ratio)
         )
+
+    @property
+    def load_application_angle_deg(self) -> float:
+        """Load application angle α_Fen at the outer single contact point (ISO 6336 method B)."""
+        return math.degrees(self._bending_lever_at(self.outer_single_contact_diameter_mm)[0])
+
+    @property
+    def bending_lever_mn(self) -> float:
+        """Bending moment arm h_Fe / m_n (load at the outer single contact point)."""
+        return self._bending_lever_at(self.outer_single_contact_diameter_mm)[1]
+
+    @property
+    def form_factor(self) -> float:
+        """Tooth form factor Y_F (DIN 3990 / ISO 6336-3 method B; load at d_en)."""
+        return self._form_factor_at(self.outer_single_contact_diameter_mm)
+
+    @property
+    def stress_correction_factor(self) -> float:
+        """Stress correction factor Y_S (DIN 3990 / ISO 6336-3, load at d_en)."""
+        return self._stress_correction_at(self.bending_lever_mn)
+
+    @property
+    def tip_load_application_angle_deg(self) -> float:
+        """Load application angle α_Fan for a load at the tooth tip (VDI 2736 / method C)."""
+        return math.degrees(self._bending_lever_at(self._virtual_tip_diameter_mm)[0])
+
+    @property
+    def tip_bending_lever_mn(self) -> float:
+        """Bending moment arm h_Fa / m_n for a load at the tooth tip (VDI 2736)."""
+        return self._bending_lever_at(self._virtual_tip_diameter_mm)[1]
+
+    @property
+    def form_factor_tip(self) -> float:
+        """Tooth form factor Y_Fa for a load at the tooth tip (VDI 2736 plastic root)."""
+        return self._form_factor_at(self._virtual_tip_diameter_mm)
+
+    @property
+    def stress_correction_factor_tip(self) -> float:
+        """Stress correction factor Y_Sa for a load at the tooth tip (VDI 2736)."""
+        return self._stress_correction_at(self.tip_bending_lever_mn)

@@ -33,6 +33,7 @@ body.
 | ADR-012 | Native involute geometry incl. tool-generated tip chamfer | Accepted | 2026-06-17 |
 | ADR-013 | Plastic-capable Stufenvariation and its performance strategy | Accepted | 2026-06-17 |
 | ADR-014 | Native ISO 6336-1 dynamic/load factors (K_v, K_Hα, K_Hβ) | Accepted | 2026-06-17 |
+| ADR-015 | Native VDI 2736 plastic-gear capacity (root/flank/temperature/wear/deformation) | Accepted | 2026-06-17 |
 
 ---
 
@@ -436,5 +437,44 @@ dynamics kernel is plastic-capable and feeds straight into the vectorized
 Stufenvariation (ADR-013). Exact-match validation is explicitly **not** claimed for
 K_v/K_Hα (documented in code and tests); the formula correctness is asserted on the
 locked components and the reference band.
+
+---
+
+## ADR-015 — Native VDI 2736 plastic-gear capacity
+
+**Status:** Accepted (2026-06-17)
+
+**Context:** The thesis gear is a **steel–plastic** pair; ISO 6336 covers the steel
+gear but not the thermoplastic one, whose limits depend on **tooth temperature** and
+which also fails by **wear** and excessive **deformation**, not only pitting/bending.
+VDI 2736 Blatt 2 (2014) is the current method for plastic cylindrical gears.
+
+**Decision:** Implement VDI 2736 Blatt 2 natively in `capacity/vdi2736.py`: tooth-root
+stress σ_F with the **tip-load** form factors Y_Fa/Y_Sa (eq. 10; added to
+`geometry.tooth_root` as `form_factor_tip`/`stress_correction_factor_tip`, a load point
+at d_a sharing the validated 30°-tangent machinery), flank stress σ_H (eq. 15-17, the
+same Z_E/Z_H/Z_ε form as ISO 6336, reused), the Wimmer loss factor H_V (eq. 8), the
+local **tooth temperature** ϑ_Fla/ϑ_Fuß (eq. 9), the **wear** W_m (eq. 19, with the
+active-flank length l_Fl from the path of contact) and the **deformation** λ (eq. 22).
+The temperature- and cycle-dependent strength σ_Flim/σ_Hlim (Table 5) is read from the
+material via a bilinear (temperature × log₁₀ cycles) lookup, falling back gracefully to
+the constant endurance limit (ADR-013). The steel gear of a pair stays on ISO 6336; the
+plastic gear uses this module (the per-gear material dispatch of ADR-013).
+
+**Validation (the reference is the kst-E pair = the VDI-2736 Workbench report; all
+inputs known → near-exact):** σ_H 79.92 (ref 79.893), σ_F 77.78 (ref 77.896), ϑ 107.77 °C
+(ref 107.767), W_m 40.16 µm (ref 40.151), λ 0.0378 mm (ref 0.038), H_V 0.0626, l_Fl
+1.349/1.330 mm, and the pinion tip form factors Y_Fa 2.694 (ref 2.693) / Y_Sa 1.759
+(ref 1.759). **Known Workbench inconsistency (ADR-011, the norm wins):** the report's
+displayed *wheel* Y_Fa = 2.024 contradicts its own σ_F = 77.896 (which needs Y_Fa ≈
+2.21); the native Y_Fa = 2.211 reproduces the σ_F. Same pattern as the helical Y_F bug.
+
+**Alternatives:** ISO 6336 with reduced plastic limits (rejected: ignores temperature,
+wear and deformation — the plastic failure modes); the Workbench (rejected: the
+Stufenvariation cannot run with a plastic gear, ADR-013).
+
+**Consequences:** the plastic side of the steel–plastic pair is now covered with a
+near-exactly validated method, completing the analytical capacity (steel = ISO 6336,
+plastic = VDI 2736) ahead of the Stufenvariation and the FE rolling model.
 
 ---

@@ -24,6 +24,11 @@ from app.services.capacity.iso6336_dynamics import (
     compute_dynamic_factors,
 )
 from app.services.capacity.iso6336_root_strength import RootMaterialGroup
+from app.services.capacity.vdi2736 import (
+    Vdi2736Conditions,
+    Vdi2736GearResult,
+    evaluate_vdi2736,
+)
 
 __all__ = [
     "DynamicConditions",
@@ -33,9 +38,12 @@ __all__ = [
     "Iso6336Conditions",
     "RootMaterialGroup",
     "RunningInGroup",
+    "Vdi2736Conditions",
+    "Vdi2736GearResult",
     "compute_dynamic_factors",
     "elasticity_factor",
     "evaluate_iso6336",
+    "evaluate_vdi2736",
     "native_dynamic_factors",
     "single_contact_factors",
     "zone_factor",
