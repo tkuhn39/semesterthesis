@@ -82,14 +82,32 @@ editor — all pydantic-typed, tested. The native STplus geometry analysis and t
 | 1a | `.ste` model: tool reference profiles, min tip clearance, tooth-width allowances, span teeth | parse documented keys | parser round-trip on kst-E | ✅ |
 | 1b | **Tool generation (Verzahnen)** `generation.py`: x_E (§7.4), root form circle d_Ff, tip chamfer h_K & tip form circle d_Fa via the two-involute construction (usable ∩ edge-break involute) | ISO 21771 §5/§6/§7 involute primitives (cross-checked vs DIN 3960 A.3.1) | exact vs kst-E: x_E, d_Ff, d_Fa=53.788, h_K=0.117, s_aK | ✅ |
 | 1c | **Meshing geometry:** d_Na, p_et, g_α, ε_α/ε_β/ε_γ, W_k; input-validity checks | ISO 21771 (77,90,93,97), DIN 21773 (14), ISO 1328-1 ranges | exact vs kst-E (table §5) | ✅ |
-| 1d | **Capacity (optional, later):** root/flank safety | DIN 3990 / VDI 2736 (plastics) | STplus standard tests | ⬜ |
+| 1d | **Materials** `materials.py`: steel (DIN 3990) + plastic (VDI 2736), graceful on missing optional fields; **nonlinear x–y measured curves** + Matscape card import (Matscape later) — also used by RIKOR/STplus/FE | — | loads kst-E PA66 / 16MnCr5 | ✅ (linear); curves/Matscape ⬜ |
 
 Step 1 (native STplus geometry) is **complete and exact vs STplus** for the project
 gear: the tip chamfer h_K (Kopfkantenbruch) is generated from the tool edge-break
 flank, so d_Na carries it and ε_α = 1.154 matches STplus (without the chamfer it
 would be ~1.25, ~8 % off). All computation rests on current-standard ISO 21771
 primitives; DIN 3960 was used only to cross-check the construction (not as a basis).
-Remaining for full coverage: helical/internal cases, more standard-test inputs, 1d.
+Remaining for full coverage: helical/internal cases, more standard-test inputs.
+
+### Step 1.5 — Capacity & plastic-capable Stufenvariation (macro pre-design)
+The analytical macro-geometry layer *before* the FE work, and a clear advantage over
+the FVA-Workbench (whose Stufenvariation fails for plastic gears). Decision & full
+performance strategy: **ADR-013**; current-standards rule: **ADR-011**.
+
+| Sub-step | Scope | Method / standard | Validation | Status |
+|---|---|---|---|---|
+| C1 | Tooth-root fillet geometry (s_Fn, h_F, ρ_F, 30° tangent) — the Y_F inputs | ISO 21771 / generation trochoid | kst-E s_Fn*, h_F*, ρ_F* | ⬜ |
+| C2 | **DIN 3990** capacity (steel): σ_H/σ_F, S_H/S_F, K/Y/Z factors | DIN 3990 T1–3 | kst-E (S_H=17.184, S_F=4.571) | ⬜ |
+| C3 | **VDI 2736** capacity (plastic): σ_H/σ_F, tooth temperature, wear, deformation | VDI 2736 Bl. 1–2 | VDI-2736 Workbench report (σ_F=77.896, Y_Fa, ϑ, W_m, λ) | ⬜ |
+| C4 | **Stufenvariation engine** — vectorized grid + early pruning | numpy batch; ADR-013 | vs scalar models | ⬜ |
+| C5 | Sampling (Sobol/LHS) + Pareto optimizer (NSGA-II) + graceful warnings | ADR-013 | — | ⬜ |
+
+Validation philosophy (ADR-011): implement **strictly per norm**; STplus/Workbench
+outputs are cross-checks that **may themselves deviate** (a Kopfkantenbruch error is
+suspected in the Workbench) — where they disagree with a norm-correct result, the
+norm wins and the deviation is documented.
 
 ### Step 2 — RIKOR load distribution, native (FVA 30) ⬜
 Reimplement the face-/profile load distribution per the RIKOR Benutzeranleitung +

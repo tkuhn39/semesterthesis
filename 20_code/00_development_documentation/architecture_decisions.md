@@ -29,6 +29,9 @@ body.
 | ADR-008 | References moved out of the code tree; cache renumbered | Accepted | 2026-06-16 |
 | ADR-009 | Unified gear toolchain: app pipeline (STplus/RIKOR/FE) replacing the FVA-Workbench | Accepted | 2026-06-16 |
 | ADR-010 | Three independent analyses (STplus/RIKOR/rolling) with pluggable runners | Accepted | 2026-06-16 |
+| ADR-011 | Compute on current standards only; withdrawn norms are cross-checks | Accepted | 2026-06-17 |
+| ADR-012 | Native involute geometry incl. tool-generated tip chamfer | Accepted | 2026-06-17 |
+| ADR-013 | Plastic-capable Stufenvariation and its performance strategy | Accepted | 2026-06-17 |
 
 ---
 
@@ -268,5 +271,106 @@ runnable independently).
 **Consequences:** The three-option UX is stable from the start; each program can
 be adopted independently; portability improves incrementally without rearchitecting.
 See ADR-009, project_rules §17–20.
+
+---
+
+## ADR-011 — Compute on current standards only; withdrawn norms are cross-checks
+
+**Status:** Accepted (2026-06-17)
+
+**Context:** A native reimplementation used in engineering must be standards-
+defensible. Current standards are mandatory; referencing **withdrawn** standards
+as the basis of a calculation can be legally problematic. The legacy DIN 3960 /
+3961 / 3963 / 21772 are superseded by **DIN ISO 21771**, **DIN ISO 1328-1/-2** and
+**DIN 21773**. Separately, the available reference tools are not infallible: STplus
+reproduces exactly for geometry, but the FVA-Workbench did **not** reproduce the
+STplus values 1:1 and is suspected to carry a Kopfkantenbruch error.
+
+**Decision:** All computation rests only on the current state of the art —
+DIN ISO 21771 (geometry), DIN 21773 (tooth-thickness measures), DIN ISO 1328-1/-2
+(tolerances), DIN 3990 + VDI 2736 (capacity). Withdrawn standards (DIN 3960,
+DIN 21772) are consulted **only** to cross-check understanding and are never cited
+as a computational basis. Formulas are read visually from the standards (text
+extraction garbles maths). Results are validated against shipped reference cases;
+**where a reference tool deviates from a norm-correct result, the norm wins** — the
+deviation is documented, not chased.
+
+**Alternatives:** Fit to STplus/Workbench I/O (rejected: couples us to possibly-
+buggy tools and, indirectly, to withdrawn methods); implement straight from
+DIN 3960 (rejected: withdrawn).
+
+**Consequences:** The tool is standards-defensible and decoupled from third-party
+tool bugs. Small, documented deviations from STplus/Workbench output are acceptable
+and expected. See [[reimpl-from-method-not-io]] and the memory references for the
+exact formula chains.
+
+---
+
+## ADR-012 — Native involute geometry incl. tool-generated tip chamfer
+
+**Status:** Accepted (2026-06-17)
+
+**Context:** STplus geometry must be reproduced natively and **exactly**, variable
+in the inputs (not fitted to I/O). The transverse contact ratio ε_α depends on the
+tip chamfer (Kopfkantenbruch) h_K, which STplus generates from the tool edge-break
+angle; ISO 21771 treats h_K as a *given* radial modification (eq. 127) and gives no
+closed form for it from the tool.
+
+**Decision:** Implement the geometry chain per ISO 21771 (involute, α_wt, form
+circles, ε_α/ε_β/ε_γ, tooth thickness) and DIN 21773 (span W_k). Compute the tip
+chamfer by **rack-tool generation** (`app/services/geometry/generation.py`): the
+tip form circle d_Fa is the **intersection of the usable involute and the edge-break
+(Kantenbruch) involute** (base d·cos α_tK), solved by iteration; h_K = (d_a − d_Fa)/2;
+the generation profile shift x_E uses the tooth-thickness allowance (A_We/cos α_n).
+This is pure involute geometry built from ISO 21771 primitives — cross-checked
+against the historical DIN 3960 §A.3.1 worked form (understanding only, per ADR-011).
+Validated exactly against STplus (kst-E): x_E, d_Ff, d_Fa, h_K, s_aK, ε_α, W_k.
+
+**Alternatives:** Accept only a directly-given h_K (rejected: not variable for
+tool-chamfered gears); defer the chamfer (rejected: ε_α off by ~8 %).
+
+**Consequences:** ε_α and the usable tip circle d_Na are exact; the same generation
+layer yields the root form circle d_Ff, feeding the tooth-root capacity work.
+See [[iso21771-geometry-formulas]], [[tool-generation-kantenbruch]].
+
+---
+
+## ADR-013 — Plastic-capable Stufenvariation and its performance strategy
+
+**Status:** Accepted (2026-06-17)
+
+**Context:** Macro-geometry pre-design — the analytical step *before* the FE rolling
+model — needs a parameter sweep (Stufenvariation) over the geometry with capacity
+results (S_H/S_F per gear, ε_γ, …). The FVA-Workbench Stufenvariation only supports
+**DIN 3990 (steel)** and fails as soon as a **plastic** gear is involved — a real
+gap since this project's gear is a steel-plastic pair. The Workbench is also very
+slow at high variable counts, and it locks the run when a non-essential input is
+missing.
+
+**Decision:** Build a native, **plastic-capable** Stufenvariation with capacity via
+**DIN 3990 (steel)** and **VDI 2736 (plastic)**. Performance is layered:
+1. **Vectorized batch evaluation (numpy)** — all variants as arrays; the two
+   iterative steps (inv α_wt, d_Fa) as fixed-iteration vectorized Newton; ~100–1000×
+   over a per-variant Python loop (the Workbench's bottleneck).
+2. **Early validity pruning** — discard geometrically invalid variants (undercut,
+   ε_γ<1, near-pointed tip, interference, tip clearance) *before* the costly capacity.
+3. **Smart sampling (Sobol / Latin-Hypercube)** — for high-dimensional spaces where
+   the full grid (∏ steps) explodes (e.g. 10 vars × 10 steps = 10¹⁰).
+4. **Multi-objective optimization (Pareto, e.g. NSGA-II)** — find good macro-
+   geometries directly (max S_F/S_H, min weight/sliding, ε_γ ≥ target) instead of scanning.
+5. **Parallelism** — numpy/BLAS threads; chunked multiprocessing; later distributed
+   across the HA nodes.
+**Graceful degradation:** a missing non-essential parameter (e.g. a wear coefficient)
+yields a *warning* and skips only that sub-result; the sweep keeps running, unlocked.
+
+**Alternatives:** Per-variant evaluation through the scalar pydantic models
+(rejected: too slow at scale); exhaustive grid only (rejected: infeasible for many
+DOF); DIN-3990-only like the Workbench (rejected: the plastic gap is the point).
+
+**Consequences:** A fast, plastic-capable design-exploration tool that beats the
+Workbench on capability *and* speed. The vectorized kernel is validated against the
+scalar models; capacity is validated against kst-E (DIN 3990) and the VDI 2736
+Workbench report (with the ADR-011 caveat that the reference may itself deviate).
+numpy becomes a core dependency (kept in sync across the three dependency files).
 
 ---

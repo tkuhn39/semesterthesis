@@ -11,8 +11,10 @@ Built incrementally — each package is added when its first real logic lands.
 | Package | Responsibility | Wraps / replaces |
 |---------|----------------|------------------|
 | `../io/` | Typed parsers/writers (pydantic): STplus `.ste`, REXS, STIRAK `.fsk`, Abaqus `.inp`/`.cof`, Z88 | file formats |
-| `geometry/` | Spur-gear geometry: involute, root form circle, line of action A–E | — |
-| `capacity/` | Analytical geometry & load capacity | STplus (FVA 241) |
+| `geometry/` | Spur-gear geometry: involute, tool generation (tip chamfer h_K), form circles, contact ratios, span — exact vs STplus (ADR-012) | STplus (FVA 241) geometry |
+| `materials.py` | Typed gear materials (steel DIN 3990 + plastic VDI 2736); linear + **nonlinear x–y measured curves**, Matscape card import (later); shared by capacity, RIKOR, STplus, FE | — |
+| `capacity/` | Tooth capacity: **DIN 3990** (steel) + **VDI 2736** (plastic) — σ_F/σ_H, S_F/S_H, temperature, wear, deformation | STplus / FVA-Workbench |
+| `variation/` | Plastic-capable **Stufenvariation** (macro-geometry sweep): vectorized grid + pruning + Sobol/LHS sampling + Pareto optimizer (ADR-013) | FVA-Workbench Stufenvariation |
 | `loaddist/` | Tooth load distribution | RIKOR (FVA 30) |
 | `body/` | CAD `.stp` → sector cut (pitches + run-in/out) → tet mesh → couple to rim | FVA 484 / FVA-Workbench |
 | `model/` | Assemble the Abaqus rolling inp (rigid steel, sector body, ≥30 positions, material modes simple-nonlinear \| Converse-cof) | FVA 892 / STIRAK |
