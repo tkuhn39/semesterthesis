@@ -19,6 +19,19 @@ import math
 from pydantic import BaseModel
 
 from app.io.ste import Pair
+from app.services.capacity.iso6336_flank_strength import (
+    lubricant_factor,
+    permissible_flank_stress,
+    relative_radius_of_curvature_mm,
+    roughness_factor,
+    size_factor,
+    velocity_factor,
+    work_hardening_factor,
+)
+from app.services.capacity.iso6336_root_strength import (
+    RootMaterialGroup,
+    permissible_root_stress,
+)
 from app.services.geometry.gear import GearStage
 from app.services.geometry.tooth_root import ToothRootGeometry
 from app.services.materials import Material
@@ -94,6 +107,24 @@ class Din3990LoadCase(BaseModel):
     helix_factor_root: float = 1.0  # Y_β
 
 
+class Iso6336Conditions(BaseModel):
+    """Operating + material-classification data for the permissible stresses.
+
+    Feeds the native ISO 6336-2/-3 permissible-stress factors so S_H/S_F fall out
+    of inputs. The life factors (Z_NT flank, Y_NT root) stay here as the material
+    S-N datum.
+    """
+
+    pitch_line_velocity_ms: float  # v (for Z_v)
+    lubricant_viscosity_40_mm2s: float  # ν40 (for Z_L)
+    flank_roughness_rz_um: float  # mean flank Rz (for Z_R)
+    root_roughness_rz_um: Pair[float]  # per-gear root fillet Rz (for Y_RrelT)
+    material_group: Pair[RootMaterialGroup]  # ISO 6336 group (ρ′, Y_RrelT, Z_R curves)
+    flank_life_factor: Pair[float] = Pair(1.0, 1.0)  # Z_NT
+    root_life_factor: Pair[float] = Pair(1.0, 1.0)  # Y_NT
+    softer_gear_hardness_hb: float | None = None  # for Z_W (paired with a soft gear)
+
+
 class Din3990GearResult(BaseModel):
     """Per-gear DIN 3990 result: flank and root stress and (when limits known) safety."""
 
@@ -105,52 +136,17 @@ class Din3990GearResult(BaseModel):
     root_safety: float | None = None  # S_F
 
 
-def _gear_result(
-    *,
-    sigma_h0: float,
-    single_contact: float,
-    load: Din3990LoadCase,
-    nominal_root: float,
-    material: Material,
-    flank_strength_product: float,
-    root_strength_product: float,
-) -> Din3990GearResult:
-    sigma_h = (
-        single_contact
-        * sigma_h0
-        * math.sqrt(
-            load.application_factor
-            * load.dynamic_factor
-            * load.face_load_factor_flank
-            * load.transverse_factor_flank
-        )
-    )
-    sigma_f = nominal_root * (
-        load.application_factor
-        * load.dynamic_factor
-        * load.face_load_factor_root
-        * load.transverse_factor_root
-    )
-    flank_safety: float | None = None
-    if material.sigma_hlim_mpa is not None:
-        flank_safety = material.sigma_hlim_mpa * flank_strength_product / sigma_h
-    root_safety: float | None = None
-    root_basic = material.sigma_fe_mpa
-    if root_basic is None and material.sigma_flim_mpa is not None:
-        root_basic = 2.0 * material.sigma_flim_mpa  # σ_FE = σ_Flim · Y_ST, Y_ST = 2
-    if root_basic is not None:
-        root_safety = root_basic * root_strength_product / sigma_f
-    return Din3990GearResult(
-        flank_stress_mpa=sigma_h,
-        nominal_flank_stress_mpa=sigma_h0,
-        root_stress_mpa=sigma_f,
-        nominal_root_stress_mpa=nominal_root,
-        flank_safety=flank_safety,
-        root_safety=root_safety,
-    )
+def _safety(strength_mpa: float | None, stress_mpa: float) -> float | None:
+    return strength_mpa / stress_mpa if strength_mpa is not None else None
 
 
-_UNIT_PAIR: Pair[float] = Pair(1.0, 1.0)
+def _basic_root_strength(material: Material) -> float | None:
+    """σ_FE (basic root strength); derive from σ_Flim·Y_ST (Y_ST = 2) when absent."""
+    if material.sigma_fe_mpa is not None:
+        return material.sigma_fe_mpa
+    if material.sigma_flim_mpa is not None:
+        return 2.0 * material.sigma_flim_mpa
+    return None
 
 
 def evaluate_din3990(
@@ -158,15 +154,13 @@ def evaluate_din3990(
     roots: Pair[ToothRootGeometry],
     materials: Pair[Material],
     load: Din3990LoadCase,
-    *,
-    flank_strength_product: Pair[float] = _UNIT_PAIR,
-    root_strength_product: Pair[float] = _UNIT_PAIR,
+    conditions: Iso6336Conditions,
 ) -> Pair[Din3990GearResult]:
-    """Evaluate DIN 3990 flank and root capacity for both gears.
+    """Evaluate ISO 6336 / DIN 3990 flank and root capacity for both gears.
 
-    ``*_strength_product`` are the per-gear products of the permissible-stress life
-    and sub factors (flank: Z_NT·Z_L·Z_R·Z_V·Z_W·Z_X; root: Y_NT·Y_δrelT·Y_RrelT·Y_X);
-    default 1.0. With the raw endurance limits this yields the static safety.
+    The stresses *and* the permissible stresses are computed natively (geometry +
+    ISO 6336-2/-3 strength factors); only K_v/K_Hβ/K_Hα (dynamics, in ``load``) and
+    Z_NT/Y_NT (life, in ``conditions``) remain inputs. S_H = σ_HP/σ_H, S_F = σ_FP/σ_F.
     """
     z_e = elasticity_factor(materials[0], materials[1])
     z_h = zone_factor(stage)
@@ -183,25 +177,74 @@ def evaluate_din3990(
         )
     )
     single_bd = single_contact_factors(stage)  # Z_B, Z_D (native, from the geometry)
+    base_diameter = stage.base_diameter_mm
+    rho_red = relative_radius_of_curvature_mm(
+        base_diameter[0], base_diameter[1], stage.working_pressure_angle_deg
+    )
+    k_flank = math.sqrt(
+        load.application_factor
+        * load.dynamic_factor
+        * load.face_load_factor_flank
+        * load.transverse_factor_flank
+    )
+    k_root = (
+        load.application_factor
+        * load.dynamic_factor
+        * load.face_load_factor_root
+        * load.transverse_factor_root
+    )
     results: list[Din3990GearResult] = []
     for index in range(2):
+        material = materials[index]
         root = roots[index]
-        nominal_root = (
+        sigma_h = single_bd[index] * sigma_h0 * k_flank
+        sigma_f0 = (
             load.tangential_force_n
             / (load.root_face_width_mm[index] * stage.normal_module_mm)
             * root.form_factor
             * root.stress_correction_factor
             * load.helix_factor_root
         )
+        sigma_f = sigma_f0 * k_root
+
+        sigma_hp: float | None = None
+        if material.sigma_hlim_mpa is not None:
+            sigma_hp = permissible_flank_stress(
+                material.sigma_hlim_mpa,
+                life_factor=conditions.flank_life_factor[index],
+                lubricant=lubricant_factor(
+                    conditions.lubricant_viscosity_40_mm2s, material.sigma_hlim_mpa
+                ),
+                velocity=velocity_factor(
+                    conditions.pitch_line_velocity_ms, material.sigma_hlim_mpa
+                ),
+                roughness=roughness_factor(
+                    conditions.flank_roughness_rz_um, rho_red, material.sigma_hlim_mpa
+                ),
+                work_hardening=work_hardening_factor(conditions.softer_gear_hardness_hb),
+                size=size_factor(),
+            )
+
+        sigma_fp: float | None = None
+        basic_root = _basic_root_strength(material)
+        if basic_root is not None:
+            sigma_fp = permissible_root_stress(
+                basic_root,
+                notch_parameter_qs=root.notch_parameter,
+                roughness_rz_um=conditions.root_roughness_rz_um[index],
+                normal_module_mm=stage.normal_module_mm,
+                group=conditions.material_group[index],
+                life_factor=conditions.root_life_factor[index],
+            )
+
         results.append(
-            _gear_result(
-                sigma_h0=sigma_h0,
-                single_contact=single_bd[index],
-                load=load,
-                nominal_root=nominal_root,
-                material=materials[index],
-                flank_strength_product=flank_strength_product[index],
-                root_strength_product=root_strength_product[index],
+            Din3990GearResult(
+                flank_stress_mpa=sigma_h,
+                nominal_flank_stress_mpa=sigma_h0,
+                root_stress_mpa=sigma_f,
+                nominal_root_stress_mpa=sigma_f0,
+                flank_safety=_safety(sigma_hp, sigma_h),
+                root_safety=_safety(sigma_fp, sigma_f),
             )
         )
     return Pair(results[0], results[1])

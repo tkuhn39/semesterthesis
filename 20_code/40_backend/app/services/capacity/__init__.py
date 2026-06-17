@@ -10,15 +10,19 @@
 from app.services.capacity.din3990 import (
     Din3990GearResult,
     Din3990LoadCase,
+    Iso6336Conditions,
     elasticity_factor,
     evaluate_din3990,
     single_contact_factors,
     zone_factor,
 )
+from app.services.capacity.iso6336_root_strength import RootMaterialGroup
 
 __all__ = [
     "Din3990GearResult",
     "Din3990LoadCase",
+    "Iso6336Conditions",
+    "RootMaterialGroup",
     "elasticity_factor",
     "evaluate_din3990",
     "single_contact_factors",
