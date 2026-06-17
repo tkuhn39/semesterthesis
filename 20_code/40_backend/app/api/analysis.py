@@ -551,6 +551,9 @@ class VariationRequest(BaseModel):
     x2: VarSpec = VarSpec(value=0.0, min=-0.3, max=0.6)
     beta_deg: VarSpec = VarSpec(value=0.0, min=0.0, max=25.0)
     b: VarSpec = VarSpec(value=20.0, min=10.0, max=40.0)
+    # center-distance coupling: hold a fixed → teeth locked, x₂ derived from a
+    fix_center_distance: bool = False
+    center_distance_mm: float = 80.0
     # fixed design context
     normal_pressure_angle_deg: float = 20.0
     tool_addendum_factor: float = 1.25  # h_aP0*
@@ -644,6 +647,11 @@ def variation(req: VariationRequest) -> VariationResponse:
     varied: dict[str, Varied] = {}
     fixed: dict[str, float] = {}
     for key, s in specs.items():
+        # Centre-distance coupling: teeth are locked and x₂ is derived → never varied.
+        if req.fix_center_distance and key in ("z1", "z2", "x2"):
+            if key != "x2":
+                fixed[key] = s.value
+            continue
         if s.vary and s.steps > 1:
             varied[key] = Varied(
                 values=tuple(np.linspace(s.min, s.max, s.steps)), bounds=(s.min, s.max)
@@ -667,6 +675,25 @@ def variation(req: VariationRequest) -> VariationResponse:
         if req.method == "grid"
         else build_sample(spec, req.sample_count, method=req.method)
     )
+    if req.fix_center_distance:
+        # derive x₂ so the working centre distance equals the target a (per variant)
+        size = next((v.size for v in batch.values()), 1)
+
+        def _col(key: str) -> np.ndarray:
+            return batch[key] if key in batch else np.full(size, fixed[key])
+
+        beta_r = np.radians(_col("beta_deg"))
+        alpha_n = np.radians(req.normal_pressure_angle_deg)
+        m_t = _col("m_n") / np.cos(beta_r)
+        alpha_t = np.arctan(np.tan(alpha_n) / np.cos(beta_r))
+        a_ref = (_col("z1") + _col("z2")) * m_t / 2.0
+        cos_awt = np.clip(a_ref * np.cos(alpha_t) / req.center_distance_mm, -1.0, 1.0)
+        alpha_wt = np.arccos(cos_awt)
+        inv_awt = np.tan(alpha_wt) - alpha_wt
+        inv_at = np.tan(alpha_t) - alpha_t
+        sum_x = (inv_awt - inv_at) * (_col("z1") + _col("z2")) / (2.0 * np.tan(alpha_n))
+        batch["x2"] = sum_x - _col("x1")
+
     t = time.perf_counter()
     res = evaluate(spec, batch)
     eval_ms = (time.perf_counter() - t) * 1000.0
@@ -736,6 +763,111 @@ def variation(req: VariationRequest) -> VariationResponse:
         points=points,
         warnings=list(res.warnings),
     )
+
+
+# --------------------------------------------------------------------------- #
+# Tooth profile (real involute flanks for the mesh plot of a selected variant) #
+# --------------------------------------------------------------------------- #
+class ToothProfileRequest(BaseModel):
+    normal_module_mm: float = 2.0
+    teeth_pinion: float = 24
+    teeth_wheel: float = 60
+    profile_shift_pinion: float = 0.0
+    profile_shift_wheel: float = 0.0
+    normal_pressure_angle_deg: float = 20.0
+    helix_angle_deg: float = 0.0
+
+
+class ToothGear(BaseModel):
+    teeth: int
+    center_x_mm: float
+    reference_radius_mm: float
+    base_radius_mm: float
+    tip_radius_mm: float
+    root_radius_mm: float
+    half_flank: list[list[float]]  # one right half-flank [[x, y], …], tooth centred on +y
+
+
+class ToothProfileResponse(BaseModel):
+    center_distance_mm: float
+    pinion: ToothGear
+    wheel: ToothGear
+
+
+def _tooth_gear(m_n: float, z: float, x: float, alpha_n_deg: float, beta_deg: float) -> ToothGear:
+    """Exact transverse involute half-flank (d_f → d_a) of one tooth, centred on +y."""
+    beta = math.radians(beta_deg)
+    alpha_n = math.radians(alpha_n_deg)
+    m_t = m_n / math.cos(beta)
+    alpha_t = math.atan(math.tan(alpha_n) / math.cos(beta))
+    r = m_t * z / 2.0
+    r_b = r * math.cos(alpha_t)
+    r_a = r + m_n * (1.0 + x)  # standard addendum
+    r_f = max(0.1, r - m_n * (1.25 - x))  # standard dedendum
+    s_t = m_t * (math.pi / 2.0 + 2.0 * x * math.tan(alpha_n))  # transverse thickness at d
+    psi = s_t / (2.0 * r) + (math.tan(alpha_t) - alpha_t)  # half-angle to right flank at base
+    start = max(r_b, r_f)
+    pts: list[list[float]] = []
+    if r_f < start:  # radial root segment up to where the involute starts
+        a0 = math.acos(min(1.0, r_b / start))
+        th0 = psi - (math.tan(a0) - a0)
+        pts.append([r_f * math.sin(th0), r_f * math.cos(th0)])
+    steps = 36
+    for k in range(steps + 1):
+        rr = start + (r_a - start) * k / steps
+        a_y = math.acos(min(1.0, r_b / rr))
+        th = psi - (math.tan(a_y) - a_y)
+        pts.append([rr * math.sin(th), rr * math.cos(th)])
+    return ToothGear(
+        teeth=int(round(z)),
+        center_x_mm=0.0,
+        reference_radius_mm=r,
+        base_radius_mm=r_b,
+        tip_radius_mm=r_a,
+        root_radius_mm=r_f,
+        half_flank=[[round(a, 4), round(b, 4)] for a, b in pts],
+    )
+
+
+@router.post("/tooth-profile", response_model=ToothProfileResponse)
+def tooth_profile(req: ToothProfileRequest) -> ToothProfileResponse:
+    """Real involute tooth flanks of both gears for the mesh plot (Zahneingriff)."""
+    beta = math.radians(req.helix_angle_deg)
+    alpha_n = math.radians(req.normal_pressure_angle_deg)
+    m_t = req.normal_module_mm / math.cos(beta)
+    alpha_t = math.atan(math.tan(alpha_n) / math.cos(beta))
+    z1, z2 = req.teeth_pinion, req.teeth_wheel
+    a_ref = (z1 + z2) * m_t / 2.0
+    inv_at = math.tan(alpha_t) - alpha_t
+    inv_awt = inv_at + 2.0 * (req.profile_shift_pinion + req.profile_shift_wheel) * math.tan(
+        alpha_n
+    ) / (z1 + z2)
+    alpha_wt = _inv_involute(inv_awt)
+    a = a_ref * math.cos(alpha_t) / math.cos(alpha_wt)
+    pinion = _tooth_gear(
+        req.normal_module_mm,
+        z1,
+        req.profile_shift_pinion,
+        req.normal_pressure_angle_deg,
+        req.helix_angle_deg,
+    )
+    wheel = _tooth_gear(
+        req.normal_module_mm,
+        z2,
+        req.profile_shift_wheel,
+        req.normal_pressure_angle_deg,
+        req.helix_angle_deg,
+    )
+    wheel = wheel.model_copy(update={"center_x_mm": round(a, 4)})
+    return ToothProfileResponse(center_distance_mm=round(a, 4), pinion=pinion, wheel=wheel)
+
+
+def _inv_involute(value: float, *, guess: float = 0.4) -> float:
+    """Solve inv α = tan α − α for α (scalar Newton)."""
+    alpha = max(0.05, (3.0 * value) ** (1.0 / 3.0))
+    for _ in range(40):
+        alpha -= (math.tan(alpha) - alpha - value) / math.tan(alpha) ** 2
+    return alpha
 
 
 def _round(value: float | None, digits: int = 3) -> float | None:

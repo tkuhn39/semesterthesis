@@ -165,6 +165,8 @@ export interface VariationRequest {
   x2: VarSpec;
   beta_deg: VarSpec;
   b: VarSpec;
+  fix_center_distance: boolean;
+  center_distance_mm: number;
   normal_pressure_angle_deg: number;
   tool_addendum_factor: number;
   tool_tip_radius_factor: number;
@@ -209,6 +211,30 @@ export interface VariationResponse {
   warnings: string[];
 }
 
+export interface ToothProfileRequest {
+  normal_module_mm: number;
+  teeth_pinion: number;
+  teeth_wheel: number;
+  profile_shift_pinion: number;
+  profile_shift_wheel: number;
+  normal_pressure_angle_deg: number;
+  helix_angle_deg: number;
+}
+export interface ToothGear {
+  teeth: number;
+  center_x_mm: number;
+  reference_radius_mm: number;
+  base_radius_mm: number;
+  tip_radius_mm: number;
+  root_radius_mm: number;
+  half_flank: [number, number][];
+}
+export interface ToothProfileResponse {
+  center_distance_mm: number;
+  pinion: ToothGear;
+  wheel: ToothGear;
+}
+
 export const api = {
   health: () => get<{ status: string; version: string }>("/api/health"),
   example: () => get<ExampleResponse>("/api/example/kst-e"),
@@ -216,4 +242,5 @@ export const api = {
   capacity: (req: CapacityRequest) => post<CapacityResponse>("/api/capacity", req),
   dynamics: (req: DynamicsRequest) => post<DynamicsResponse>("/api/dynamics", req),
   variation: (req: VariationRequest) => post<VariationResponse>("/api/variation", req),
+  toothProfile: (req: ToothProfileRequest) => post<ToothProfileResponse>("/api/tooth-profile", req),
 };
