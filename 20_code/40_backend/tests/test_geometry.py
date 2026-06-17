@@ -76,3 +76,24 @@ def test_contact_ratio_from_ste() -> None:
     assert g.transverse_contact_ratio == pytest.approx(1.154, abs=2e-3)
     assert g.overlap_ratio == pytest.approx(0.0)
     assert g.total_contact_ratio == pytest.approx(1.154, abs=2e-3)
+
+
+@pytest.mark.skipif(not _REF_STE.exists(), reason="STplus reference .ste not present")
+def test_span_measurement_from_ste() -> None:
+    """Span (base tangent length) W_k over k=6 teeth matches STplus."""
+    g = GearStage.from_ste(gear_stage_from_ste(load_ste(_REF_STE)))
+    assert g.span_measurement_mm == pytest.approx((17.090, 17.180), abs=1e-3)
+
+
+def test_validity_clean_for_project_gear() -> None:
+    """The project gear violates no ISO 1328-1 range."""
+    assert KST_E.check_validity() == []
+
+
+def test_validity_flags_out_of_range_inputs() -> None:
+    """Out-of-range module, tooth count and helix angle are each flagged."""
+    bad = GearStage(normal_module_mm=0.1, teeth=Pair(3, 400), helix_angle_deg=50.0)
+    issues = bad.check_validity()
+    assert any("normal module" in issue for issue in issues)
+    assert any("helix angle" in issue for issue in issues)
+    assert any("pinion tooth count" in issue for issue in issues)

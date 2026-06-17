@@ -39,6 +39,7 @@ class GearStage(BaseModel):
     profile_shift: Pair[float] = Pair(0.0, 0.0)
     center_distance_mm: float | None = None
     face_width_mm: Pair[float] | None = None
+    span_teeth: Pair[int] | None = None
     # Per-gear rack-tool generation; supplies the usable tip diameter (d_Na = d_Fa)
     # for the contact ratio. Absent when the `.ste` carries no tool/tip data.
     generation: Pair[GearGeneration] | None = None
@@ -67,6 +68,7 @@ class GearStage(BaseModel):
             profile_shift=stage.profile_shift,
             center_distance_mm=stage.center_distance_mm,
             face_width_mm=stage.face_width_mm,
+            span_teeth=stage.span_teeth,
             generation=generation,
         )
 
@@ -193,3 +195,67 @@ class GearStage(BaseModel):
     def total_contact_ratio(self) -> float:
         """Total contact ratio eps_gamma = eps_alpha + eps_beta (ISO 21771 eq. 97)."""
         return self.transverse_contact_ratio + self.overlap_ratio
+
+    @property
+    def span_measurement_mm(self) -> Pair[float] | None:
+        """Base tangent length (span) W_k over k teeth per gear (DIN 21773 eq. 14).
+
+        ``W_k = m_n cos(alpha_n) [pi (k - 0.5) + z inv(alpha_t)] + 2 x m_n sin(alpha_n)``.
+        ``None`` when the span teeth count k is unknown.
+        """
+        if self.span_teeth is None:
+            return None
+        alpha_n = math.radians(self.normal_pressure_angle_deg)
+        alpha_t = math.radians(self.transverse_pressure_angle_deg)
+        mn = self.normal_module_mm
+        spans = [
+            mn * math.cos(alpha_n) * (math.pi * (k - 0.5) + z * involute(alpha_t))
+            + 2.0 * x * mn * math.sin(alpha_n)
+            for z, x, k in zip(self.teeth, self.profile_shift, self.span_teeth, strict=True)
+        ]
+        return Pair(spans[0], spans[1])
+
+    def check_validity(self) -> list[str]:
+        """Advisory input checks: DIN ISO 1328-1 §1 ranges plus mesh sanity.
+
+        Returns human-readable issues (empty means no objection). These are
+        advisory, not hard errors: ISO 1328-1 permits values outside its ranges by
+        extrapolation/agreement, but flagging them catches typos and inputs that
+        mutually exclude one another (e.g. a near-pointed tooth or a mesh that is
+        not continuous).
+        """
+        issues: list[str] = []
+        labels = ("pinion", "wheel")
+        mn = self.normal_module_mm
+        if not 0.5 <= mn <= 70.0:
+            issues.append(f"normal module {mn} mm outside ISO 1328-1 range [0.5, 70]")
+        if abs(self.helix_angle_deg) > 45.0:
+            issues.append(f"helix angle {self.helix_angle_deg} deg exceeds ISO 1328-1 limit 45")
+        for label, z in zip(labels, self.teeth, strict=True):
+            if not 5 <= abs(z) <= 1000:
+                issues.append(f"{label} tooth count |{z}| outside ISO 1328-1 range [5, 1000]")
+        for label, d in zip(labels, self.reference_diameter_mm, strict=True):
+            if not 5.0 <= abs(d) <= 15000.0:
+                issues.append(
+                    f"{label} reference diameter {abs(d):.1f} mm "
+                    "outside ISO 1328-1 range [5, 15000]"
+                )
+        if self.face_width_mm is not None:
+            for label, width in zip(labels, self.face_width_mm, strict=True):
+                if not 4.0 <= width <= 1200.0:
+                    issues.append(
+                        f"{label} face width {width} mm outside ISO 1328-1 range [4, 1200]"
+                    )
+        if self.generation is not None:
+            if self.total_contact_ratio < 1.0:
+                issues.append(
+                    f"total contact ratio {self.total_contact_ratio:.3f} < 1 (mesh not continuous)"
+                )
+            for label, gen in zip(labels, self.generation, strict=True):
+                tip_thickness = gen.rest_tip_thickness_mm
+                if tip_thickness < 0.2 * mn:
+                    issues.append(
+                        f"{label} tip thickness {tip_thickness:.3f} mm "
+                        "< 0.2*m_n (near-pointed tooth)"
+                    )
+        return issues
