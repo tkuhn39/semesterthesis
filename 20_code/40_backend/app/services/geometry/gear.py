@@ -17,21 +17,12 @@ from pydantic import BaseModel
 
 from app.io.ste import Pair, SteGearStage
 
+# The involute primitives live in the (more foundational) generation module so the
+# generation layer never has to import this meshing layer; re-exported here for the
+# existing public API.
+from app.services.geometry.generation import inverse_involute, involute
 
-def involute(angle_rad: float) -> float:
-    """Involute function inv(alpha) = tan(alpha) - alpha (radians)."""
-    return math.tan(angle_rad) - angle_rad
-
-
-def inverse_involute(value: float, *, guess_rad: float = 0.35) -> float:
-    """Solve inv(alpha) = ``value`` for alpha (radians) by Newton iteration."""
-    alpha = guess_rad
-    for _ in range(60):
-        delta = (math.tan(alpha) - alpha - value) / math.tan(alpha) ** 2
-        alpha -= delta
-        if abs(delta) < 1e-14:
-            break
-    return alpha
+__all__ = ["GearStage", "inverse_involute", "involute"]
 
 
 class GearStage(BaseModel):
