@@ -29,7 +29,7 @@ External `.exe` are first wrapped behind typed services, then progressively reim
 ## Conventions
 
 - **One module per cohesive capability** (e.g. `tooth_root_stress.py`,
-  `mesh.py`, `din3990.py`), classes for stateful pipelines (project_rules.md §7).
+  `mesh.py`, `iso6336.py`), classes for stateful pipelines (project_rules.md §7).
 - **No I/O assumptions**: read configuration via `app.config.get_settings()`;
   persist results via `app.storage`; store disposable intermediates under
   `settings.cache_dir`. Never hardcode paths or call `open()` for app data

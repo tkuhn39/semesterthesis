@@ -11,11 +11,11 @@ import pytest
 
 from app.io.ste import Pair, gear_stage_from_ste, load_ste
 from app.services.capacity import (
-    Din3990LoadCase,
     Iso6336Conditions,
+    Iso6336LoadCase,
     RootMaterialGroup,
     elasticity_factor,
-    evaluate_din3990,
+    evaluate_iso6336,
     single_contact_factors,
     zone_factor,
 )
@@ -42,7 +42,7 @@ def test_din3990_matches_stplus() -> None:
     assert elasticity_factor(materials[0], materials[1]) == pytest.approx(31.0, abs=0.1)
     assert zone_factor(stage) == pytest.approx(2.400, abs=2e-3)
 
-    load = Din3990LoadCase(
+    load = Iso6336LoadCase(
         tangential_force_n=384.6,
         common_face_width_mm=15.0,
         root_face_width_mm=Pair(17.0, 15.0),
@@ -62,7 +62,7 @@ def test_din3990_matches_stplus() -> None:
         flank_life_factor=Pair(1.172, 1.0),  # Z_NT (material S-N)
         root_life_factor=Pair(1.0, 1.0),  # Y_NT
     )
-    pinion, wheel = evaluate_din3990(stage, roots, materials, load, conditions)
+    pinion, wheel = evaluate_iso6336(stage, roots, materials, load, conditions)
 
     # Stresses — exact vs STplus.
     assert pinion.nominal_root_stress_mpa == pytest.approx(99.5, abs=0.3)

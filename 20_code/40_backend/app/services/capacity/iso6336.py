@@ -1,17 +1,18 @@
 """
-@module: app.services.capacity.din3990
-@context: Domain layer — steel gear load capacity (DIN 3990 Teil 1–3, Dec 1987).
+@module: app.services.capacity.iso6336
+@context: Domain layer — metal gear load capacity (ISO 6336:2019, the current
+       standard; numerically equivalent to DIN 3990:1987, which STplus computes).
 @role: Flank (pitting) and tooth-root (bending) stress and the resulting safety
-       factors. The geometry-derived factors (elasticity Z_E, zone Z_H, contact
-       ratio Z_ε; form Y_F and stress-correction Y_S from the tooth-root module)
-       are computed exactly; the load/dynamic/face/transverse factors (K_A, K_v,
-       K_Hβ, K_Fβ, K_Hα, K_Fα), the single-contact factors (Z_B, Z_D) and the
-       permissible-stress life/sub factors are typed inputs with neutral defaults,
-       so a partly specified case still evaluates (graceful — a missing factor
-       defaults to 1.0 rather than blocking).
+       factors. Computed natively: the geometry factors (Z_E, Z_H, Z_ε; Y_F, Y_S
+       from the tooth-root module; Z_B, Z_D), the stresses σ_H/σ_F, and the
+       permissible stresses σ_HP/σ_FP (via the ISO 6336-2/-3 strength factor
+       modules and the operating ``Iso6336Conditions``). So S_H = σ_HP/σ_H and
+       S_F = σ_FP/σ_F fall out of inputs; only K_v/K_Hβ/K_Hα (dynamics, in the load
+       case) and Z_NT/Y_NT (life, in the conditions) remain inputs.
 
-Stresses validated exactly against STplus (kst-E): σ_H0 = 72.4, σ_H = 99.6/99.5,
-σ_F0 = 99.5/100.2, σ_F = 180.1/181.4 (with K_A=1, K_v=1.56, K_Hβ=1.19, K_Fβ=1.16).
+Validated against two complete references: kst-E (spur, DIN 3990 via STplus) —
+σ_H 99.6, σ_F 180.1, S_F 4.571 — and the helical ISO 6336 case (S_H 1.044,
+S_F 2.275/2.309). The plastic gear of a pair is handled by ``capacity.vdi2736``.
 """
 
 import math
@@ -90,7 +91,7 @@ def single_contact_factors(stage: GearStage) -> Pair[float]:
     return Pair(z_b, z_d)
 
 
-class Din3990LoadCase(BaseModel):
+class Iso6336LoadCase(BaseModel):
     """Operating load and the load/dynamic factors (neutral defaults = 1.0)."""
 
     tangential_force_n: float  # F_t at the reference circle
@@ -125,7 +126,7 @@ class Iso6336Conditions(BaseModel):
     softer_gear_hardness_hb: float | None = None  # for Z_W (paired with a soft gear)
 
 
-class Din3990GearResult(BaseModel):
+class Iso6336GearResult(BaseModel):
     """Per-gear DIN 3990 result: flank and root stress and (when limits known) safety."""
 
     flank_stress_mpa: float  # σ_H
@@ -149,13 +150,13 @@ def _basic_root_strength(material: Material) -> float | None:
     return None
 
 
-def evaluate_din3990(
+def evaluate_iso6336(
     stage: GearStage,
     roots: Pair[ToothRootGeometry],
     materials: Pair[Material],
-    load: Din3990LoadCase,
+    load: Iso6336LoadCase,
     conditions: Iso6336Conditions,
-) -> Pair[Din3990GearResult]:
+) -> Pair[Iso6336GearResult]:
     """Evaluate ISO 6336 / DIN 3990 flank and root capacity for both gears.
 
     The stresses *and* the permissible stresses are computed natively (geometry +
@@ -193,7 +194,7 @@ def evaluate_din3990(
         * load.face_load_factor_root
         * load.transverse_factor_root
     )
-    results: list[Din3990GearResult] = []
+    results: list[Iso6336GearResult] = []
     for index in range(2):
         material = materials[index]
         root = roots[index]
@@ -238,7 +239,7 @@ def evaluate_din3990(
             )
 
         results.append(
-            Din3990GearResult(
+            Iso6336GearResult(
                 flank_stress_mpa=sigma_h,
                 nominal_flank_stress_mpa=sigma_h0,
                 root_stress_mpa=sigma_f,

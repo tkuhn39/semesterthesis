@@ -7,24 +7,24 @@
        typed inputs (graceful defaults), to be computed or supplied per case.
 """
 
-from app.services.capacity.din3990 import (
-    Din3990GearResult,
-    Din3990LoadCase,
+from app.services.capacity.iso6336 import (
     Iso6336Conditions,
+    Iso6336GearResult,
+    Iso6336LoadCase,
     elasticity_factor,
-    evaluate_din3990,
+    evaluate_iso6336,
     single_contact_factors,
     zone_factor,
 )
 from app.services.capacity.iso6336_root_strength import RootMaterialGroup
 
 __all__ = [
-    "Din3990GearResult",
-    "Din3990LoadCase",
+    "Iso6336GearResult",
+    "Iso6336LoadCase",
     "Iso6336Conditions",
     "RootMaterialGroup",
     "elasticity_factor",
-    "evaluate_din3990",
+    "evaluate_iso6336",
     "single_contact_factors",
     "zone_factor",
 ]
