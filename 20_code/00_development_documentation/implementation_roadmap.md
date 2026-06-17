@@ -99,15 +99,22 @@ performance strategy: **ADR-013**; current-standards rule: **ADR-011**.
 | Sub-step | Scope | Method / standard | Validation | Status |
 |---|---|---|---|---|
 | C1 | Tooth-root geometry `tooth_root.py`: 30°-tangent s_Fn, ρ_F, h_Fe, α_Fen + form factors Y_F, Y_S | DIN 3990 T3 / ISO 6336-3 (generation trochoid, x_E) | exact vs kst-E: s_Fn* 2.068/2.197, ρ_F* 0.404/0.381, Y_F 2.417/1.970, Y_S 1.819/1.984 | ✅ |
-| C2 | **DIN 3990** capacity `capacity/din3990.py`: σ_H/σ_F, S_H/S_F; Z_E/Z_H/Z_ε exact, K/life factors as graceful inputs | DIN 3990 T1–3 | exact vs kst-E: σ_H 99.6/99.5, σ_F 180.1/181.4, S_H 17.184/0.703, S_F 4.571/0.375 | ✅ |
+| C2 | Capacity **stress core** `capacity/` (→ rename `iso6336.py`): σ_H/σ_F, Z_E/Z_H/Z_ε exact; K- and life-factors still **fed** (so σ_H/σ_F validate the assembly, not yet the factor *computation*) | ISO 6336:2019 / DIN 3990:1987 | stresses exact vs kst-E (σ_H 99.6, σ_F 180.1) | ✅ (stresses) |
+| C2b | **End-to-end**: native K_v, K_Hα, K_Hβ (C/D), Z_B/Z_D, and the permissible-stress life/sub factors (Z_NT, Y_NT, Y_RrelT, Y_δrelT, Y_X, Z_X, Z_W) → σ_HP/σ_FP and **S_H/S_F native** (de-circularised); helical (z_n, β_b, Z_β, Y_β) | ISO 6336-1/-2/-3/-5 (2019) | **helical** ISO-6336 ref (S_H=1.044, S_F=2.275/2.309, Z_NT=0.85, Y_RrelT=0.915) **and** kst-E (S_F=4.571) | ⬜ |
 | C3 | **VDI 2736** capacity (plastic): σ_H/σ_F, tooth temperature, wear, deformation | VDI 2736 Bl. 1–2 | VDI-2736 Workbench report (σ_F=77.896, Y_Fa, ϑ, W_m, λ) | ⬜ |
-| C4 | **Stufenvariation engine** — vectorized grid + early pruning | numpy batch; ADR-013 | vs scalar models | ⬜ |
+| C4 | **Stufenvariation engine** — vectorized grid + early pruning; per-gear material dispatch (steel→ISO 6336, plastic→VDI 2736) for steel/steel, plastic/plastic, steel/plastic pairs (ADR-013) | numpy batch | vs scalar models | ⬜ |
 | C5 | Sampling (Sobol/LHS) + Pareto optimizer (NSGA-II) + graceful warnings | ADR-013 | — | ⬜ |
 
-Validation philosophy (ADR-011): implement **strictly per norm**; STplus/Workbench
-outputs are cross-checks that **may themselves deviate** (a Kopfkantenbruch error is
-suspected in the Workbench) — where they disagree with a norm-correct result, the
-norm wins and the deviation is documented.
+Validation philosophy (ADR-011): implement **strictly per ISO 6336:2019** (the current
+standard; DIN 3990:1987 is the equivalent cross-check, what STplus uses). Two complete
+references: **kst-E** (spur, DIN 3990 via STplus) and the **helical ISO-6336 case**
+(`31_FVA/Helical_…_Gesamt.pdf`, see memory [[din3990-helical-reference]]). Where a
+reference tool deviates from a norm-correct result, the norm wins.
+
+**Outlook (recorded, not yet built):** (a) **i18n** — switch the tool/reports to English at a
+button press (domain identifiers are already English; ISO 6336 EN is the vocabulary).
+(b) **Material pairings** in the Stufenvariation — steel/steel, plastic/plastic and
+steel/plastic, via the per-gear capacity-method dispatch over a shared mesh (ADR-013).
 
 ### Step 2 — RIKOR load distribution, native (FVA 30) ⬜
 Reimplement the face-/profile load distribution per the RIKOR Benutzeranleitung +

@@ -288,10 +288,14 @@ STplus values 1:1 and is suspected to carry a Kopfkantenbruch error.
 
 **Decision:** All computation rests only on the current state of the art —
 DIN ISO 21771 (geometry), DIN 21773 (tooth-thickness measures), DIN ISO 1328-1/-2
-(tolerances), DIN 3990 + VDI 2736 (capacity). Withdrawn standards (DIN 3960,
-DIN 21772) are consulted **only** to cross-check understanding and are never cited
-as a computational basis. Formulas are read visually from the standards (text
-extraction garbles maths). Results are validated against shipped reference cases;
+(tolerances), and for capacity **ISO 6336:2019 (parts 1–6) + VDI 2736** (plastics).
+ISO 6336:2019 is the current international standard and the primary documented
+basis; **DIN 3990:1987** is the equivalent, still-valid German method (not withdrawn
+— it shares the core factor set with ISO 6336) and is used as a cross-check (and is
+what STplus computes). The truly withdrawn standards (DIN 3960, DIN 21772) are
+consulted **only** to cross-check understanding and are never cited as a basis.
+ISO 6336 (2019) PDFs are text-readable (formulas read directly); the scanned
+DIN 3990 is visual-only. Results are validated against shipped reference cases;
 **where a reference tool deviates from a norm-correct result, the norm wins** — the
 deviation is documented, not chased.
 
@@ -372,5 +376,20 @@ Workbench on capability *and* speed. The vectorized kernel is validated against 
 scalar models; capacity is validated against kst-E (DIN 3990) and the VDI 2736
 Workbench report (with the ADR-011 caveat that the reference may itself deviate).
 numpy becomes a core dependency (kept in sync across the three dependency files).
+
+**Outlook — material pairings (the key plastic advantage):** the Stufenvariation must
+support **steel–steel, plastic–plastic and steel–plastic** pairs. Approach: a **per-gear
+capacity-method dispatch**. The meshing layer (geometry, load, and the *mutual* factors
+— the elasticity factor Z_E combines *both* materials' E/ν, plus the contact ratio and
+load distribution) is shared and computed once per variant (vectorized); then **each
+gear's** flank/root capacity is dispatched by its own material kind — steel → ISO 6336,
+plastic → VDI 2736. So steel–steel = both ISO 6336, plastic–plastic = both VDI 2736,
+steel–plastic = ISO 6336 for the steel gear + VDI 2736 for the plastic gear over the
+shared mesh. Vectorized: a material-kind mask routes rows to the ISO-6336 vs VDI-2736
+kernel, so all three pairings run in one batched pass.
+
+**Outlook — i18n:** the tool (and its reports) shall be switchable to **English** at a
+button press; the domain model already uses English identifiers, and the ISO 6336 (2019)
+English terminology is the reference vocabulary.
 
 ---
