@@ -9,7 +9,7 @@ It complements, and does not replace:
 - [`architecture_decisions.md`](architecture_decisions.md) — the ADRs (why).
 - The master plan in plan mode — the FE-modelling vision and trade-offs.
 
-_Last updated: 2026-06-17._
+_Last updated: 2026-06-17 — Step 1 (native STplus geometry) complete and exact vs STplus._
 
 Status legend: ✅ done & validated · 🟦 in progress · ⬜ planned · ❓ open decision.
 
@@ -80,13 +80,16 @@ editor — all pydantic-typed, tested. The native STplus geometry analysis and t
 | Sub-step | Scope | Method / standard | Validation | Status |
 |---|---|---|---|---|
 | 1a | `.ste` model: tool reference profiles, min tip clearance, tooth-width allowances, span teeth | parse documented keys | parser round-trip on kst-E | ✅ |
-| 1b | **Tool generation (Verzahnen):** tip chamfer h_K from edge-break angle; tip/root form & usable circles d_Fa/d_Ff, d_Na/d_Nf; computed d_a when not given | ISO 21771 §7 generation + STplus tool construction | reproduce kst-E d_Fa=53.788, h_K=0.117, d_Nf | 🟦 |
-| 1c | **Meshing geometry:** p_et, g_α, ε_α/ε_β/ε_γ, s_t/s_an, W_k; input-validity checks | ISO 21771 (62,77,90,93,97,38), DIN 21773 (14), ISO 1328-1 ranges | exact vs kst-E (table §5) + varied inputs through STplus | ⬜ |
+| 1b | **Tool generation (Verzahnen)** `generation.py`: x_E (§7.4), root form circle d_Ff, tip chamfer h_K & tip form circle d_Fa via the two-involute construction (usable ∩ edge-break involute) | ISO 21771 §5/§6/§7 involute primitives (cross-checked vs DIN 3960 A.3.1) | exact vs kst-E: x_E, d_Ff, d_Fa=53.788, h_K=0.117, s_aK | ✅ |
+| 1c | **Meshing geometry:** d_Na, p_et, g_α, ε_α/ε_β/ε_γ, W_k; input-validity checks | ISO 21771 (77,90,93,97), DIN 21773 (14), ISO 1328-1 ranges | exact vs kst-E (table §5) | ✅ |
 | 1d | **Capacity (optional, later):** root/flank safety | DIN 3990 / VDI 2736 (plastics) | STplus standard tests | ⬜ |
 
-The meshing chain (1c) is **hand-verified exact** already (see §5); it only needs
-d_Na, i.e. h_K from 1b. Without the tip chamfer ε_α would be 1.248 instead of the
-correct 1.154 (~8 % off) — so 1b is mandatory, not cosmetic.
+Step 1 (native STplus geometry) is **complete and exact vs STplus** for the project
+gear: the tip chamfer h_K (Kopfkantenbruch) is generated from the tool edge-break
+flank, so d_Na carries it and ε_α = 1.154 matches STplus (without the chamfer it
+would be ~1.25, ~8 % off). All computation rests on current-standard ISO 21771
+primitives; DIN 3960 was used only to cross-check the construction (not as a basis).
+Remaining for full coverage: helical/internal cases, more standard-test inputs, 1d.
 
 ### Step 2 — RIKOR load distribution, native (FVA 30) ⬜
 Reimplement the face-/profile load distribution per the RIKOR Benutzeranleitung +
@@ -147,33 +150,35 @@ reproduce these exactly.
 | d_b | 47.924 | 48.864 | ✅ |
 | d_w | 51.495 | 52.505 | ✅ |
 | d_a (given) | 52.894 | 54.022 | ✅ |
-| d_Fa | 52.894 | **53.788** | 🟦 (needs h_K, Step 1b) |
-| h_K (tip chamfer, radial) | 0.000 | **0.117** | 🟦 (Step 1b) |
-| g_α (path of contact) | 3.406 | — | ✅ hand-check (with d_Na) |
+| d_Fa | 52.894 | **53.788** | ✅ (native, `generation.py`) |
+| h_K (tip chamfer, radial) | 0.000 | **0.117** | ✅ (native) |
+| x_E (generation profile shift) | −0.2030 | 0.0117 | ✅ |
+| d_Ff (root form) | 49.081 | 50.158 | ✅ |
+| rest tip thickness s_aK | 0.672 | 0.634 | ✅ |
+| g_α (path of contact) | 3.406 | — | ✅ |
 | p_et | 2.952 | — | ✅ |
-| **ε_α** | **1.154** | — | ✅ hand-check (with d_Na) |
-| s_t (nominal) | 1.719 | 1.800 | ✅ |
-| W_k (k=6) | 17.090 | 17.180 | ✅ hand-check |
+| **ε_α** | **1.154** | — | ✅ (with d_Na) |
+| W_k (k=6) | 17.090 | 17.180 | ✅ |
 
 ---
 
 ## 6. Key technical findings & open decisions
 
-- **Tip chamfer h_K (Kopfkantenbruch) drives ε_α and is mandatory.** In kst-E it is
-  **tool-generated** from the wheel tool's edge-break angle (α_K0 = 45°), not given
-  as a number in the `.ste`. ISO 21771 treats h_K as a *given* radial modification
-  (eq. 127) and does not provide a closed form from α_K0; STplus computes it in its
-  tool-generation (Verzahnen) step. ❓ **Decision for Step 1b:** derive the exact
-  STplus tool construction (render the STplus tool-reference-profile figures / the
-  FVA 241 report) vs. accept a directly-specified h_K when available. Until 1b is
-  exact, `from_ste` on a tool-chamfered gear yields the un-chamfered ε_α — so 1b is
-  gating for full native exactness on such gears.
-- **Tip diameter d_a:** given in kst-E; when absent STplus computes it from the tool
-  (d_a = d + 2·m_n·(h_aP* + x), subject to tool/pairing compatibility). Same
-  tool-generation module as 1b.
-- **Tooth-thickness allowances:** STplus's s_an (0.777) and the span allowances
-  include the tooth-width deviations (A_We/A_Wi). The nominal chain matches without
-  them; the allowance refinement is part of 1c.
+- **Tip chamfer h_K (Kopfkantenbruch) — SOLVED.** It is **tool-generated** from the
+  wheel tool edge-break flank (α_K0 = 45°), not given in the `.ste`. d_Fa is the
+  intersection of the usable involute and the **edge-break (Kantenbruch) involute**
+  (base d·cos α_tK); solved by iteration. This is pure involute geometry built from
+  ISO 21771 primitives (§5/§6/§7) — cross-checked against the DIN 3960 A.3.1 worked
+  form (withdrawn → understanding only, **not** a computational basis, per the
+  current-standards requirement). Reproduces STplus exactly (h_K=0.117, d_Fa=53.788).
+- **Standards constraint:** computation must rest only on current standards (ISO
+  21771 / 21773 / 1328-1/-2); withdrawn norms (DIN 3960, 21772) are cross-checks only.
+- **Tip diameter d_a:** given in kst-E; when absent STplus computes it from the tool.
+  Not yet implemented natively (all our `.ste` inputs give KOPFKREISDM) — add to
+  `generation.py` when an input without d_a appears.
+- **Generation profile shift x_E:** `x_E = x + A_sn/(2·m_n·tan α_n)`, A_sn = A_We/cos α_n
+  from the `.ste` span allowances — drives the as-cut tooth thickness and the form
+  circles. Validated exact (−0.2030 / 0.0117).
 - **Converse cof:** no API → manual hand-off (load `.inp` material, map injection-
   moulding sim, export cof, embed into `.inp`). Modelled as a material **mode** in
   `model/`; automate later if an API appears.
@@ -190,4 +195,4 @@ PY="C:/Users/kuhnt/.conda/envs/semesterthesis_3-12/python.exe"
 cd 20_code/40_backend
 "$PY" -m ruff check . && "$PY" -m mypy . && PYTHONPATH=. "$PY" -m pytest -q
 ```
-Current state: ruff clean, mypy clean, 42 tests pass.
+Current state: ruff clean, mypy clean, 49 tests pass.
