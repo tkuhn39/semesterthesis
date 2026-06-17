@@ -20,6 +20,11 @@ import math
 from pydantic import BaseModel
 
 from app.io.ste import Pair
+from app.services.capacity.iso6336_dynamics import (
+    DynamicConditions,
+    DynamicFactors,
+    compute_dynamic_factors,
+)
 from app.services.capacity.iso6336_flank_strength import (
     lubricant_factor,
     permissible_flank_stress,
@@ -150,19 +155,77 @@ def _basic_root_strength(material: Material) -> float | None:
     return None
 
 
+def native_dynamic_factors(
+    stage: GearStage,
+    roots: Pair[ToothRootGeometry],
+    materials: Pair[Material],
+    load: Iso6336LoadCase,
+    dynamics: DynamicConditions,
+) -> DynamicFactors:
+    """Compute K_v / K_Hα / K_Hβ natively (ISO 6336-1) from the geometry + operating data.
+
+    Needs the per-gear rack-tool generation (tip/root diameters, basic-rack dedendum).
+    """
+    if stage.generation is None:
+        raise ValueError("native dynamics need the rack-tool generation (tool + tip data)")
+    gen = stage.generation
+    z_eps = flank_contact_ratio_factor(stage.transverse_contact_ratio, stage.overlap_ratio)
+    tip = Pair(gen[0].tip_diameter_mm, gen[1].tip_diameter_mm)
+    root = Pair(gen[0].root_form_diameter_mm, gen[1].root_form_diameter_mm)
+    tooth_height = 0.5 * (tip[0] - root[0])  # pinion tooth height for b/h
+    dedendum = Pair(
+        gen[0].tool.dedendum_factor or gen[0].tool.addendum_factor,
+        gen[1].tool.dedendum_factor or gen[1].tool.addendum_factor,
+    )
+    return compute_dynamic_factors(
+        dynamics,
+        pinion_teeth=stage.teeth[0],
+        virtual_teeth=Pair(roots[0].virtual_teeth, roots[1].virtual_teeth),
+        profile_shift=stage.profile_shift,
+        helix_angle_deg=stage.helix_angle_deg,
+        normal_pressure_angle_deg=stage.normal_pressure_angle_deg,
+        transverse_contact_ratio=stage.transverse_contact_ratio,
+        overlap_ratio=stage.overlap_ratio,
+        tip_diameter_mm=tip,
+        root_diameter_mm=root,
+        base_diameter_mm=stage.base_diameter_mm,
+        basic_rack_dedendum_factor=dedendum,
+        elastic_modulus=Pair(materials[0].elastic_modulus_mpa, materials[1].elastic_modulus_mpa),
+        tangential_force_n=load.tangential_force_n,
+        face_width_mm=load.common_face_width_mm,
+        application_factor=load.application_factor,
+        flank_contact_ratio_factor=z_eps,
+        width_to_height_ratio=load.common_face_width_mm / tooth_height,
+    )
+
+
 def evaluate_iso6336(
     stage: GearStage,
     roots: Pair[ToothRootGeometry],
     materials: Pair[Material],
     load: Iso6336LoadCase,
     conditions: Iso6336Conditions,
+    dynamics: DynamicConditions | None = None,
 ) -> Pair[Iso6336GearResult]:
     """Evaluate ISO 6336 / DIN 3990 flank and root capacity for both gears.
 
     The stresses *and* the permissible stresses are computed natively (geometry +
-    ISO 6336-2/-3 strength factors); only K_v/K_Hβ/K_Hα (dynamics, in ``load``) and
-    Z_NT/Y_NT (life, in ``conditions``) remain inputs. S_H = σ_HP/σ_H, S_F = σ_FP/σ_F.
+    ISO 6336-2/-3 strength factors); Z_NT/Y_NT (life, in ``conditions``) stay inputs.
+    When ``dynamics`` is given, K_v/K_Hα/K_Hβ (and K_Fα/K_Fβ) are computed natively
+    (ISO 6336-1) and override the scalar factors in ``load``; otherwise the ``load``
+    factors are used. S_H = σ_HP/σ_H, S_F = σ_FP/σ_F.
     """
+    if dynamics is not None:
+        factors = native_dynamic_factors(stage, roots, materials, load, dynamics)
+        load = load.model_copy(
+            update={
+                "dynamic_factor": factors.dynamic_factor,
+                "face_load_factor_flank": factors.face_load_factor_flank,
+                "face_load_factor_root": factors.face_load_factor_root,
+                "transverse_factor_flank": factors.transverse_factor_flank,
+                "transverse_factor_root": factors.transverse_factor_root,
+            }
+        )
     z_e = elasticity_factor(materials[0], materials[1])
     z_h = zone_factor(stage)
     z_eps = flank_contact_ratio_factor(stage.transverse_contact_ratio, stage.overlap_ratio)

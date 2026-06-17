@@ -32,6 +32,7 @@ body.
 | ADR-011 | Compute on current standards only; withdrawn norms are cross-checks | Accepted | 2026-06-17 |
 | ADR-012 | Native involute geometry incl. tool-generated tip chamfer | Accepted | 2026-06-17 |
 | ADR-013 | Plastic-capable Stufenvariation and its performance strategy | Accepted | 2026-06-17 |
+| ADR-014 | Native ISO 6336-1 dynamic/load factors (K_v, K_Hα, K_Hβ) | Accepted | 2026-06-17 |
 
 ---
 
@@ -391,5 +392,49 @@ kernel, so all three pairings run in one batched pass.
 **Outlook — i18n:** the tool (and its reports) shall be switchable to **English** at a
 button press; the domain model already uses English identifiers, and the ISO 6336 (2019)
 English terminology is the reference vocabulary.
+
+---
+
+## ADR-014 — Native ISO 6336-1 dynamic/load factors (K_v, K_Hα, K_Hβ)
+
+**Status:** Accepted (2026-06-17)
+
+**Context:** After de-circularizing the permissible stresses (ADR-011), the last
+fed-in capacity inputs were the dynamic factor **K_v** and the transverse/face load
+factors **K_Hα/K_Hβ**. For the Stufenvariation these must be *computed*, and — unlike
+the Workbench, whose DIN-3990 dynamics path is steel-only — they must work for a
+**plastic** gear too. The validation references report only the *result* K_v/K_Hα/K_Hβ,
+not the gear-accuracy grade or mesh stiffness they used (the spur kst-E even overrides
+c_γ), so an exact end-to-end reproduction is impossible — the same situation as the
+de-circularized permissible factors.
+
+**Decision:** Implement the ISO 6336-1:2019 factors **natively** in
+`capacity/iso6336_dynamics.py`: the mesh stiffness c′/c_γα/c_γβ (§9, with the
+**E/E_st material correction** so a soft plastic gear lowers c_γ), the reduced mass
+m_red (§6.5.9, solid-disc eq. 30–32), the resonance speed n_E1 / ratio N, **K_v by
+Method B** over all running ranges (eq. 13–22), **K_Hα/K_Fα** (§7.6) and **K_Hβ/K_Fβ
+by Method C** (eq. 41–44). The accuracy deviations (f_pb, f_fα) and the initial mesh
+misalignment F_βx are inputs (the latter from the shaft analysis / RIKOR; K_Hβ
+Method B stays deferred to RIKOR). `evaluate_iso6336` gains an optional
+`dynamics: DynamicConditions` that overrides the scalar `load` factors.
+
+**Validation (per ADR-011, the norm wins):** the *determinable* components are
+locked — C_B = 0.95 (= the reference's own value), c_γα ≈ 17.21, m_red ≈ 0.0074 kg/mm,
+n_E1 ≈ 18 420 min⁻¹, N ≈ 0.163 (sub-critical) for the helical example; the assembled
+K_v ≈ 1.034 (ref. 1.05) and K_Hα ≈ 1.143 (ref. 1.18) land in the reference band, the
+residual being the unreported accuracy grade + the DIN-3990-vs-ISO-6336 method
+difference. The plastic-pair behaviour is physical: a soft gear (E 8000 vs 206000)
+drops c_γα ~13× and raises N and K_v.
+
+**Alternatives:** Keep K_v/K_Hα/K_Hβ as fed inputs (rejected: blocks a native
+Stufenvariation and reintroduces a hidden circularity); Method A (numeric, rejected:
+needs an FE/MKS dynamic model — out of scope for the analytical pre-design);
+K_Hβ Method C with a built-in shaft model (deferred: that is RIKOR's job, FVA 30).
+
+**Consequences:** S_H/S_F now fall out of geometry + operating data end-to-end. The
+dynamics kernel is plastic-capable and feeds straight into the vectorized
+Stufenvariation (ADR-013). Exact-match validation is explicitly **not** claimed for
+K_v/K_Hα (documented in code and tests); the formula correctness is asserted on the
+locked components and the reference band.
 
 ---
