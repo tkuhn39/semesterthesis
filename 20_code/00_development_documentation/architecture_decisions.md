@@ -394,6 +394,15 @@ kernel, so all three pairings run in one batched pass.
 button press; the domain model already uses English identifiers, and the ISO 6336 (2019)
 English terminology is the reference vocabulary.
 
+**Status — implemented (2026-06-17):** `app/services/variation/` — `kernel.py` (the
+vectorized batch: macro-geometry, tip-load Y_Fa/Y_Sa, capacity, validity pruning;
+reproduces the scalar models bit-for-bit, validated against kst-E) and `sweep.py`
+(grid + Sobol/LHS sampling, per-gear material dispatch, Pareto front, graceful
+warnings). Measured: a **5-DOF grid of 98 000 variants in ~165 ms (~6·10⁵ variants/s)**
+on one core — the performance argument for the thesis. Layers ① (vectorized batch),
+② (pruning), ③ (Sobol/LHS) and ④ (Pareto) are in; layer ⑤ (multiprocessing/distributed)
+and a full NSGA-II evolutionary search remain an outlook.
+
 ---
 
 ## ADR-014 — Native ISO 6336-1 dynamic/load factors (K_v, K_Hα, K_Hβ)

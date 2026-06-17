@@ -103,8 +103,8 @@ performance strategy: **ADR-013**; current-standards rule: **ADR-011**.
 | C2b | **End-to-end**: native K_v, K_Hα, K_Hβ (C/D), Z_B/Z_D, and the permissible-stress life/sub factors (Z_NT, Y_NT, Y_RrelT, Y_δrelT, Y_X, Z_X, Z_W) → σ_HP/σ_FP and **S_H/S_F native** (de-circularised); helical (z_n, β_b, Z_β, Y_β) | ISO 6336-1/-2/-3/-5 (2019) | **helical** ISO-6336 ref (S_H=1.044, S_F=2.275/2.309, Z_NT=0.85, Y_RrelT=0.915) **and** kst-E (S_F=4.571) | ✅ |
 | C2b-dyn | Native dynamics `iso6336_dynamics.py` (ADR-014): mesh stiffness c′/c_γα (E-corrected for plastic), m_red, resonance ratio N, **K_v Method B**, K_Hα/K_Fα, **K_Hβ/K_Fβ Method C** (F_βx from RIKOR) | ISO 6336-1 (2019) | helical components locked (C_B 0.95, c_γα 17.21, N 0.163); K_v 1.034 (ref 1.05), K_Hα 1.143 (ref 1.18) in-band — grade not reported (ADR-011) | ✅ |
 | C3 | **VDI 2736** capacity (plastic) `vdi2736.py`: σ_H/σ_F (tip-load Y_Fa/Y_Sa), tooth temperature ϑ, wear W_m, deformation λ, loss factor H_V | VDI 2736 Bl. 2 (2014) | VDI-2736 Workbench report (= kst-E pair), near-exact: σ_H 79.9, σ_F 77.8, ϑ 107.77, W_m 40.16 µm, λ 0.0378 — ADR-015 | ✅ |
-| C4 | **Stufenvariation engine** — vectorized grid + early pruning; per-gear material dispatch (steel→ISO 6336, plastic→VDI 2736) for steel/steel, plastic/plastic, steel/plastic pairs (ADR-013) | numpy batch | vs scalar models | ⬜ |
-| C5 | Sampling (Sobol/LHS) + Pareto optimizer (NSGA-II) + graceful warnings | ADR-013 | — | ⬜ |
+| C4 | **Stufenvariation engine** `variation/kernel.py` — vectorized grid (macro-geometry, tip-load Y_Fa/Y_Sa, capacity) + early pruning; per-gear material dispatch (steel↔plastic) over the shared mesh (ADR-013) | numpy batch | bit-exact vs scalar (kst-E); **98k variants / 165 ms** | ✅ |
+| C5 | `variation/sweep.py` — Sobol/LHS sampling (scipy.qmc) + Pareto front + graceful warnings | ADR-013 | grid=cartesian, samples in-bounds, Pareto/pruning/graceful tested | ✅ (NSGA-II evolutionary search = outlook) |
 
 Validation philosophy (ADR-011): implement **strictly per ISO 6336:2019** (the current
 standard; DIN 3990:1987 is the equivalent cross-check, what STplus uses). Two complete
