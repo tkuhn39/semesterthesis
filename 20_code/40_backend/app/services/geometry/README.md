@@ -12,6 +12,12 @@ cross-check, never a basis (ADR-011).
   `h_K` / tip form circle `d_Fa` from the tool edge-break flank. The tip chamfer is
   the **intersection of the usable involute and the edge-break (Kantenbruch)
   involute** (ADR-012). Also the involute primitives `involute` / `inverse_involute`.
+- **`tooth_root.py`** — `ToothRootGeometry`: the 30°-tangent critical root section
+  (s_Fn, ρ_F), the load at the outer single contact point (α_Fen, h_Fe) and the
+  bending form factors Y_F, Y_S (DIN 3990 T3 / ISO 6336-3). Exact vs STplus.
+- **`tooth_form.py`** — `ToothProfile`: the full transverse tooth *shape* as
+  coordinates — involute flank (d_Ff … d_Na) plus the root fillet trochoid (d_f …
+  d_Ff) cut by the tool tip rounding. For plotting / CAD / the FE mesh.
 - **`gear.py`** — `GearStage`, the meshing pair: transverse module/pressure angle,
   reference/base/working-pitch diameters, working pressure angle & centre distance,
   usable tip circle `d_Na = d_Fa`, base pitch `p_et`, path of contact `g_α`, contact
