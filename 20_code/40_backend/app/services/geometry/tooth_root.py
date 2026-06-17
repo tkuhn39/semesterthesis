@@ -12,9 +12,11 @@ tip rounding ρ_aP0, so the **generation profile shift x_E** (not the nominal x)
 drives the as-cut root — exactly as for the form circles. Validated against STplus
 (kst-E): s_Fn*, ρ_F*, α_Fen, h_Fe*, Y_F, Y_S for both gears.
 
-Spur gears are exact; for helical the virtual spur gear z_n = z/cos³β is used and
-the transverse meshing inputs would need their virtual-gear equivalents (not yet
-validated against a helical reference).
+Validated exact against STplus (spur, kst-E) **and** the ISO 6336 helical example:
+the virtual spur gear (z_n = z/(cos²β_b·cos β), eq. 15–17) drives the load point, so
+s_Fn, ρ_F, α_Fen, h_Fe and Y_F match for both. (For the helical example the FVA-
+Workbench reports an inconsistent Y_F = 1.181 vs the 1.541 its own h_F*/s_Fn*/α_Fen
+give via eq. 9 — a tool artefact; the norm-correct value is used, ADR-011.)
 """
 
 import math
@@ -41,9 +43,7 @@ class ToothRootGeometry(BaseModel):
     tool_dedendum_factor: float  # h_fP* (= tool addendum h_aP0*)
     tool_root_radius_factor: float  # ρ_fP* (= tool tip rounding ρ_aP0*)
     tool_protuberance_mm: float = 0.0  # s_pr (0 for non-protuberance tools)
-    base_diameter_mm: float
-    usable_tip_diameter_mm: float  # d_Na
-    transverse_base_pitch_mm: float  # p_et
+    usable_tip_diameter_mm: float  # d_Na (transverse)
     transverse_contact_ratio: float  # ε_α
 
     @classmethod
@@ -66,9 +66,7 @@ class ToothRootGeometry(BaseModel):
             generation_profile_shift=gen.generation_profile_shift,
             tool_dedendum_factor=gen.tool.addendum_factor,
             tool_root_radius_factor=gen.tool.tip_radius_factor,
-            base_diameter_mm=stage.base_diameter_mm[index],
             usable_tip_diameter_mm=stage.usable_tip_diameter_mm[index],
-            transverse_base_pitch_mm=stage.transverse_base_pitch_mm,
             transverse_contact_ratio=stage.transverse_contact_ratio,
         )
 
@@ -77,9 +75,47 @@ class ToothRootGeometry(BaseModel):
         return math.radians(self.normal_pressure_angle_deg)
 
     @property
+    def _beta(self) -> float:
+        return math.radians(self.helix_angle_deg)
+
+    @property
+    def _base_helix_angle(self) -> float:
+        """Base helix angle β_b = asin(sin β · cos α_n) (ISO 6336-3 eq. 15)."""
+        return math.asin(math.sin(self._beta) * math.cos(self._alpha_n))
+
+    @property
     def virtual_teeth(self) -> float:
-        """Virtual (normal-section) tooth number z_n = z / cos³β (= z for spur)."""
-        return self.teeth / math.cos(math.radians(self.helix_angle_deg)) ** 3
+        """Virtual spur-gear tooth number z_n = z/(cos²β_b·cos β) (ISO 6336-3 eq. 16)."""
+        return self.teeth / (math.cos(self._base_helix_angle) ** 2 * math.cos(self._beta))
+
+    @property
+    def _transverse_reference_diameter_mm(self) -> float:
+        return self.normal_module_mm / math.cos(self._beta) * self.teeth
+
+    @property
+    def _virtual_reference_diameter_mm(self) -> float:
+        return self.normal_module_mm * self.virtual_teeth  # d_n (ISO 6336-3 eq. 18)
+
+    @property
+    def _virtual_base_diameter_mm(self) -> float:
+        return self._virtual_reference_diameter_mm * math.cos(self._alpha_n)  # d_bn (eq. 19)
+
+    @property
+    def _virtual_tip_diameter_mm(self) -> float:
+        """Virtual tip diameter d_an = d_n + (d_Na − d) (ISO 6336-3 eq. 20)."""
+        return self._virtual_reference_diameter_mm + (
+            self.usable_tip_diameter_mm - self._transverse_reference_diameter_mm
+        )
+
+    @property
+    def _virtual_base_pitch_mm(self) -> float:
+        return math.pi * self.normal_module_mm * math.cos(self._alpha_n)  # p_en
+
+    @property
+    def _virtual_contact_ratio(self) -> float:
+        return (
+            self.transverse_contact_ratio / math.cos(self._base_helix_angle) ** 2
+        )  # ε_αn (eq. 17)
 
     @property
     def _g_aux(self) -> float:
@@ -128,19 +164,19 @@ class ToothRootGeometry(BaseModel):
 
     @property
     def outer_single_contact_diameter_mm(self) -> float:
-        """Diameter d_en of the outer point of single tooth contact (HPSTC).
+        """Diameter d_en of the outer single contact point in the virtual spur gear.
 
-        One double-contact length ``(ε_α − 1)·p_et`` inside the usable tip on the
+        One double-contact length ``(ε_αn − 1)·p_en`` inside the virtual tip on the
         line of action — the load position for the maximum root bending moment.
         """
-        base_radius = self.base_diameter_mm / 2.0
-        tip_tangent = math.sqrt((self.usable_tip_diameter_mm / 2.0) ** 2 - base_radius**2)
-        single = tip_tangent - (self.transverse_contact_ratio - 1.0) * self.transverse_base_pitch_mm
+        base_radius = self._virtual_base_diameter_mm / 2.0
+        tip_tangent = math.sqrt((self._virtual_tip_diameter_mm / 2.0) ** 2 - base_radius**2)
+        single = tip_tangent - (self._virtual_contact_ratio - 1.0) * self._virtual_base_pitch_mm
         return 2.0 * math.hypot(base_radius, single)
 
     @property
     def _load_angle_at_contact(self) -> float:
-        return math.acos(self.base_diameter_mm / self.outer_single_contact_diameter_mm)
+        return math.acos(self._virtual_base_diameter_mm / self.outer_single_contact_diameter_mm)
 
     @property
     def _half_angle_to_load(self) -> float:
