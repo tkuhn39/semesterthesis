@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app import __version__
+from app.api.analysis import router as analysis_router
 from app.api.routes import router as api_router
 from app.config import get_settings
 from app.errors import register_error_handlers
@@ -46,6 +47,7 @@ def create_app() -> FastAPI:
 
     register_error_handlers(app)
     app.include_router(api_router)
+    app.include_router(analysis_router)
 
     # In production the built SPA (50_frontend/dist) is copied next to the app
     # and served from the root path. Skipped silently when not present (dev).
