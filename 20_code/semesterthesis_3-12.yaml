@@ -25,6 +25,7 @@ dependencies:
       - scipy==1.17.1
       - pandas==3.0.3
       - matplotlib==3.11.0
+      - gmsh==4.15.2  # FE mesh generator for the gear toothing/rim (model/ service)
       # development / CI (mirrors requirements-dev.txt)
       - pytest==9.1.0
       - httpx==0.28.1

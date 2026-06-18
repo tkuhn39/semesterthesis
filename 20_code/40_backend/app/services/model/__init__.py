@@ -9,6 +9,7 @@
        run-time problems (element type, root refinement, sector vs full model).
 """
 
+from app.services.model.gmsh_mesher import mesh_tooth_pitch
 from app.services.model.tooth_mesh import Mesh2D, tooth_sector_2d
 
-__all__ = ["Mesh2D", "tooth_sector_2d"]
+__all__ = ["Mesh2D", "mesh_tooth_pitch", "tooth_sector_2d"]
