@@ -150,6 +150,18 @@ an optional, non-default oracle for exact F_βx / K_Hβ and for generating valid
 cases — the native path stays the cross-platform default (ADR: native runners ship in
 Docker; the `.exe` is Windows-only).
 
+## Source methods for the compliance blocks (FVA 30 XI bibliography)
+- **δ^Z tooth deformation — Weber, C.; Banaschek, K. (1955):** *Formänderung und
+  Profilrücknahme bei gerad- und schrägverzahnten Rädern*, Schriftenreihe
+  Antriebstechnik Bd. 11, Vieweg ([75]). Classic; the tooth bending+shear+compression
+  compliance (also the basis of the ISO 6336-1 c′). Formulas implementable from the
+  published method.
+- **δ^Z gear-body cross-influence — FVA-Arbeitsblatt Nr. T309 (1989):** *Einfluss der
+  Radkörpergestalt auf die Zahnfedersteifigkeit und Breitenlastverteilung von
+  Stirnrädern* ([25]). The plate-strip Radkörper influence numbers. **Not in
+  `00_literatur`** — would be needed for a bit-exact gear-body block (else approximate).
+- **δ^H** — Hertzian line-contact flattening (standard). **δ^W** — the native beam.
+
 ## Validation targets (test 001, single helical stage)
 F_bt/b 1319.34 N/mm · c_γ 16.70 · K_Hβ 1.36 · K_Fβ 1.30 · Gesamtkorrektur peak
 41.82 µm (vertex 77.76 mm) · w(b) 1799.82 → 1147 N/mm. Equivalent diameters
