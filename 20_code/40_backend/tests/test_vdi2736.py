@@ -17,6 +17,7 @@ from app.services.capacity.vdi2736 import (
     evaluate_vdi2736,
     loss_factor,
     partial_contact_ratios,
+    permissible_peak_stress,
     tooth_deformation_mm,
 )
 from app.services.geometry.gear import GearStage
@@ -117,6 +118,38 @@ def test_vdi2736_full_capacity_matches_report() -> None:
     assert wheel.allowable_wear_um == pytest.approx(100.0)
     assert wheel.deformation_mm == pytest.approx(0.038, abs=5e-4)
     assert wheel.loss_factor == pytest.approx(0.063, abs=1e-3)
+
+
+def test_permissible_peak_stress() -> None:
+    """Static peak permissible σ_FP = 2·σ_S/S_Smin (VDI 2736 §3.3 eq. 24)."""
+    assert permissible_peak_stress(70.0, minimum_safety=1.5) == pytest.approx(2.0 * 70.0 / 1.5)
+
+
+@pytest.mark.skipif(not _REF_STE.exists(), reason="kst-E reference .ste not present")
+def test_static_peak_load() -> None:
+    """σ_F,P = σ_F0·K_A,stat and S_static = (2·σ_S/S_Smin)/σ_F,P for the plastic wheel."""
+    stage, roots, _materials, base = _case()
+    materials = Pair(
+        _materials[0],
+        _materials[1].model_copy(update={"yield_strength_mpa": 70.0}),
+    )
+    k_stat = 2.0
+    conditions = base.model_copy(
+        update={"static_overload_factor": k_stat, "static_minimum_safety": 1.5}
+    )
+    _pin, wheel = evaluate_vdi2736(
+        stage,
+        roots,
+        materials,
+        conditions,
+        root_face_width_mm=Pair(17.0, 15.0),
+        common_face_width_mm=15.0,
+    )
+    # nominal σ_F (K_F = load_factor_root = 1 by default here) → peak = σ_F·k_stat
+    assert wheel.peak_root_stress_mpa == pytest.approx(wheel.root_stress_mpa * k_stat, rel=1e-6)
+    assert wheel.peak_root_safety == pytest.approx(
+        (2.0 * 70.0 / 1.5) / wheel.peak_root_stress_mpa, rel=1e-6
+    )
 
 
 def test_strength_lookup_temperature_and_cycles() -> None:

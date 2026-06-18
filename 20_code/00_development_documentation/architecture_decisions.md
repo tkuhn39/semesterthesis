@@ -487,6 +487,16 @@ Stufenvariation cannot run with a plastic gear, ADR-013).
 near-exactly validated method, completing the analytical capacity (steel = ISO 6336,
 plastic = VDI 2736) ahead of the Stufenvariation and the FE rolling model.
 
+**Addendum (2026-06-18) — static peak load (VDI 2736 §3.3):** added the static
+overload check `permissible_peak_stress`: σ_F,P = σ_F0·K_A,stat (the nominal root
+stress scaled by the static overload factor F_zmax/F_t, eq. 23) must stay below the
+**yield-based** permissible 2·σ_S/S_Smin (eq. 24; σ_S = yield strength R_p0.2 at the
+operating temperature, S_Smin ≈ 1.5). Opt-in via `static_overload_factor` and the
+material `yield_strength_mpa`; reported as `peak_root_stress_mpa`/`peak_root_safety`
+(left None when not configured, ADR-013). The yield strength is the `R_p0,2` of the
+Workbench *Werkstoff* tab. This is the bending peak check only; other tabs
+(*Zusatzberechnungen*, micropitting/scuffing) remain open.
+
 ---
 
 ## ADR-016 — Native ISO 1328-1 accuracy-grade tolerances

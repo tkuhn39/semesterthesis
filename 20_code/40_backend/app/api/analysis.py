@@ -315,6 +315,10 @@ class CapacityRequest(BaseModel):
     load_cycles: float = 1.324e7  # N_L
     root_minimum_safety: float = 2.0  # S_Fmin
     flank_minimum_safety: float = 1.4  # S_Hmin
+    # --- static peak load (VDI 2736 §3.3) ---
+    static_overload_factor: float | None = None  # K_A,stat (F_zmax/F_t); None → skip
+    static_minimum_safety: float = 1.5  # S_Smin
+    plastic_yield_strength_mpa: float | None = None  # σ_S / R_p0.2 of the plastic
     # --- plastic material ---
     plastic_modulus_mpa: float = 4156.0
     plastic_poisson: float = 0.34
@@ -347,6 +351,8 @@ class GearCapacity(BaseModel):
     wear_um: float | None = None
     allowable_wear_um: float | None = None
     deformation_mm: float | None = None
+    peak_stress_mpa: float | None = None  # σ_F,P (static overload)
+    peak_safety: float | None = None  # S_static
 
 
 class CapacityResponse(BaseModel):
@@ -372,6 +378,7 @@ def _materials(req: CapacityRequest) -> Pair[Material]:
             poisson_ratio=req.plastic_poisson,
             sigma_hlim_mpa=req.plastic_sigma_hlim_mpa,
             sigma_flim_mpa=req.plastic_sigma_flim_mpa,
+            yield_strength_mpa=req.plastic_yield_strength_mpa,
         ),
     )
 
@@ -487,6 +494,8 @@ def _run_capacity(
         flank_minimum_safety=req.flank_minimum_safety,
         load_factor_root=k_load,
         load_factor_flank=k_load,
+        static_overload_factor=req.static_overload_factor,
+        static_minimum_safety=req.static_minimum_safety,
     )
     vdi = evaluate_vdi2736(
         stage,
@@ -513,6 +522,8 @@ def _run_capacity(
         wear_um=round(wh.linear_wear_um, 2),
         allowable_wear_um=round(wh.allowable_wear_um, 1),
         deformation_mm=round(wh.deformation_mm, 4),
+        peak_stress_mpa=_round(wh.peak_root_stress_mpa),
+        peak_safety=_round(wh.peak_root_safety),
     )
     factors = CapacityFactors(
         application_factor=round(req.application_factor, 3),

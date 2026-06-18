@@ -241,6 +241,14 @@ def permissible_flank_stress(
     return fatigue_strength_mpa * roughness_factor / minimum_safety
 
 
+def permissible_peak_stress(yield_strength_mpa: float, *, minimum_safety: float = 1.5) -> float:
+    """Permissible static peak root stress σ_FP = 2·σ_S/S_Smin (VDI 2736 §3.3 eq. 24).
+
+    σ_S is the yield strength at the operating (root) temperature; S_Smin ≈ 1.5.
+    """
+    return 2.0 * yield_strength_mpa / minimum_safety
+
+
 class Vdi2736Conditions(BaseModel):
     """Operating + thermal/wear data for the plastic-gear VDI 2736 checks."""
 
@@ -261,6 +269,8 @@ class Vdi2736Conditions(BaseModel):
     flank_roughness_factor: float = 1.0  # Z_R
     load_factor_root: float = 1.0  # K_F
     load_factor_flank: float = 1.0  # K_H
+    static_overload_factor: float | None = None  # K_A,stat (peak load F_zmax/F_t); None → skip
+    static_minimum_safety: float = 1.5  # S_Smin (VDI 2736 §3.3)
 
 
 class Vdi2736GearResult(BaseModel):
@@ -276,6 +286,8 @@ class Vdi2736GearResult(BaseModel):
     deformation_mm: float  # λ
     root_safety: float | None = None  # S_F
     flank_safety: float | None = None  # S_H
+    peak_root_stress_mpa: float | None = None  # σ_F,P at the static overload (eq. 23)
+    peak_root_safety: float | None = None  # S_static = (2·σ_S/S_Smin)/σ_F,P (eq. 24)
 
 
 def evaluate_vdi2736(
@@ -380,6 +392,22 @@ def evaluate_vdi2736(
             if flank_strength is not None
             else None
         )
+        # static peak load (VDI 2736 §3.3): σ_F,P = σ_F0·K_A,stat ≤ 2·σ_S/S_Smin
+        peak_stress: float | None = None
+        peak_safety: float | None = None
+        if conditions.static_overload_factor is not None:
+            nominal = (
+                sigma_f / conditions.load_factor_root if conditions.load_factor_root else sigma_f
+            )
+            peak_stress = nominal * conditions.static_overload_factor
+            if material.yield_strength_mpa is not None and peak_stress > 0.0:
+                peak_safety = (
+                    permissible_peak_stress(
+                        material.yield_strength_mpa, minimum_safety=conditions.static_minimum_safety
+                    )
+                    / peak_stress
+                )
+
         results.append(
             Vdi2736GearResult(
                 root_stress_mpa=sigma_f,
@@ -392,6 +420,8 @@ def evaluate_vdi2736(
                 deformation_mm=deformation,
                 root_safety=sigma_fp / sigma_f if sigma_fp is not None else None,
                 flank_safety=sigma_hp / sigma_h if sigma_hp is not None else None,
+                peak_root_stress_mpa=peak_stress,
+                peak_root_safety=peak_safety,
             )
         )
     return Pair(results[0], results[1])

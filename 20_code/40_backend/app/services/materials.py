@@ -95,6 +95,7 @@ class Material(BaseModel):
     sigma_hlim_mpa: float | None = None  # flank endurance limit
     sigma_flim_mpa: float | None = None  # root (bending) endurance limit
     sigma_fe_mpa: float | None = None  # basic root strength (DIN 3990 sigma_FE)
+    yield_strength_mpa: float | None = None  # sigma_S / R_p0.2 (VDI 2736 peak load)
     reference_cycles_flank: float | None = None
     reference_cycles_root: float | None = None
 

@@ -28,7 +28,10 @@ Standards basis & validation rule: ADR-011/013.
   `Z_E`/`Z_H`/`Z_ε`), the **tooth temperature** ϑ (frictional heat, eq. 9), the **wear**
   `W_m` (eq. 19) and the **deformation** λ (eq. 22); the loss factor `H_V` (Wimmer) and
   the active-flank length `l_Fl` are native. Strength limits σ_Flim/σ_Hlim are read
-  temperature- and cycle-dependent from the material (Table 5). ADR-015.
+  temperature- and cycle-dependent from the material (Table 5). The **static peak
+  load** (§3.3) is optional: σ_F,P = σ_F0·K_A,stat ≤ 2·σ_S/S_Smin (yield-based,
+  `permissible_peak_stress`), reported as `peak_root_stress_mpa`/`peak_root_safety`
+  when a static overload factor and the material yield σ_S are given. ADR-015.
 
 ## Validated against two complete references
 

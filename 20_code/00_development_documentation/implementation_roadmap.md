@@ -9,7 +9,7 @@ It complements, and does not replace:
 - [`architecture_decisions.md`](architecture_decisions.md) — the ADRs (why).
 - The master plan in plan mode — the FE-modelling vision and trade-offs.
 
-_Last updated: 2026-06-17 — Step 1 (native STplus geometry) complete and exact vs STplus._
+_Last updated: 2026-06-18 — A2 (free geometry → capacity) and A4 (static peak load, VDI 2736 §3.3) added; 98 tests green._
 
 Status legend: ✅ done & validated · 🟦 in progress · ⬜ planned · ❓ open decision.
 
@@ -107,6 +107,7 @@ performance strategy: **ADR-013**; current-standards rule: **ADR-011**.
 | C5 | `variation/sweep.py` — Sobol/LHS sampling (scipy.qmc) + Pareto front + graceful warnings | ADR-013 | grid=cartesian, samples in-bounds, Pareto/pruning/graceful tested | ✅ (NSGA-II evolutionary search = outlook) |
 | C6 | **Accuracy tolerances** `geometry/tolerances.py` (ADR-016) — ISO 1328-1:2018 grade → flank deviations (f_ptT…F_βT); `dynamics_deviations` drives the native dynamics from the quality grade; §1 validity | ISO 1328-1:2018 (eq. 5–12) | hand-verified (mn2/d100/b20/Q5); grade step √2; rounding bands | ✅ |
 | C7 | **Free geometry → capacity** `GearStage.from_parameters` + `/api/evaluate` — build any pair from raw inputs + tool reference profile (no `.ste`), then geometry + ISO 6336 (steel) / VDI 2736 (plastic) capacity | ISO 21771 generation | reproduces kst-E exactly (ε_α, d_Fa incl. chamfer, Y_F, s_Fn) | ✅ |
+| C8 | **Static peak load** `vdi2736.permissible_peak_stress` + wiring — σ_F,P = σ_F0·K_A,stat ≤ 2·σ_S/S_Smin (yield σ_S at operating temp, S_Smin≈1.5); opt-in via `static_overload_factor` + plastic yield; `peak_root_stress_mpa`/`peak_root_safety` | VDI 2736 Blatt 2 §3.3 (eq. 23/24) | formula hand-checked; unit + kst-E test | ✅ |
 
 Validation philosophy (ADR-011): implement **strictly per ISO 6336:2019** (the current
 standard; DIN 3990:1987 is the equivalent cross-check, what STplus uses). Two complete
