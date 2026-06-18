@@ -81,32 +81,38 @@ def _resample_radial(points: Array, count: int, root_bias: float) -> Array:
 def tooth_sector_2d(
     profile: ToothProfile,
     *,
-    radial: int = 20,
-    circumferential: int = 10,
+    height_elements: int = 12,
+    root_elements: int = 5,
+    thickness_elements: int = 5,
     root_bias: float = 1.5,
+    include_fillet: bool = True,
     boundary_samples: int = 400,
 ) -> Mesh2D:
-    """Structured quad mesh of one tooth column over the **involute flank** (d_Ff → d_Na).
+    """Structured quad mesh of one tooth column from the root fillet up to the tip.
 
-    ``radial`` × ``circumferential`` cells on constant-radius arcs; the involute
-    flanks are the exact left/right boundaries. Radius-graded toward the root form
-    circle (``root_bias`` > 1) for a finer base. The **root fillet + rim** (d_f → d_Ff)
-    is a separate transition block (next step) — it carries the 30°-tangent critical
-    section and, like the reference mesh, fans into the rim rather than the tooth column.
+    Element counts follow the FVA 377 mesher: ``height_elements`` over the involute
+    flank (d_Ff → d_Na, "Elemente über die Zahnhöhe"), ``root_elements`` over the root
+    fillet (d_f → d_Ff, "Elemente am Zahnfuß"), and ``thickness_elements`` across the
+    tooth ("Elemente über die Zahndicke"). Each radial level is a constant-radius arc
+    between the exact involute/trochoid flanks (mirror-symmetric about +y); nodes sit
+    on the radius circle, so no cell inverts. The flank stops at the usable tip d_Na —
+    the tool tip chamfer (Kopfkantenbruch, d_Fa → d_a) is added per the tool definition
+    once the gear assignment is confirmed. ``include_fillet`` extends down to d_f.
     """
-    raw = profile.flank_points(boundary_samples)  # involute flank, d_Ff → d_Na (root → tip)
-    right_raw = np.array([[p[0], p[1]] for p in raw])
-    right = _resample_radial(right_raw, radial + 1, root_bias)  # right flank, level 0…radial
+    flank = np.array([[p[0], p[1]] for p in profile.flank_points(boundary_samples)])
+    right = _resample_radial(flank, height_elements + 1, root_bias)  # d_Ff → d_Na
+    if include_fillet:
+        fillet = np.array([[p[0], p[1]] for p in profile.root_fillet_points(boundary_samples // 2)])
+        fillet_levels = _resample_radial(fillet, root_elements + 1, root_bias)  # d_f → d_Ff
+        right = np.vstack([fillet_levels[:-1], right])  # share the d_Ff level
 
-    # Polar structured mesh: each radial level lies on its own constant-radius arc, from
-    # the left flank (mirror) to the right flank; the flanks are the exact boundaries and
-    # the interior nodes sit on the radius circle, so no cell can invert.
     radius = np.hypot(right[:, 0], right[:, 1])
     half_angle = np.arctan2(right[:, 0], right[:, 1])  # +y axis = 0, right flank > 0
-    n_c = circumferential
+    n_r = right.shape[0] - 1  # radial cells (fillet + flank)
+    n_c = thickness_elements
     s = np.linspace(-1.0, 1.0, n_c + 1)  # left flank … right flank
-    nodes = np.empty(((radial + 1) * (n_c + 1), 2))
-    for i in range(radial + 1):
+    nodes = np.empty(((n_r + 1) * (n_c + 1), 2))
+    for i in range(n_r + 1):
         ang = half_angle[i] * s
         nodes[i * (n_c + 1) : (i + 1) * (n_c + 1)] = np.column_stack(
             [radius[i] * np.sin(ang), radius[i] * np.cos(ang)]
@@ -118,7 +124,7 @@ def tooth_sector_2d(
     quads = np.array(
         [
             [idx(i, j), idx(i, j + 1), idx(i + 1, j + 1), idx(i + 1, j)]
-            for i in range(radial)
+            for i in range(n_r)
             for j in range(n_c)
         ],
         dtype=int,
