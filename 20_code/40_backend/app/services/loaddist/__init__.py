@@ -10,6 +10,12 @@
        (`app.io.rie`) and validates against the bundled standard tests.
 """
 
+from app.services.loaddist.compliance import local_mesh_compliance, shaft_compliance
+from app.services.loaddist.distribution import (
+    LoadDistribution,
+    evaluate_load_distribution,
+    solve_contact,
+)
 from app.services.loaddist.forces import (
     MeshForces,
     MeshStiffness,
@@ -19,13 +25,21 @@ from app.services.loaddist.forces import (
     mesh_forces,
     mesh_stiffness,
 )
+from app.services.loaddist.shaft import GapResult, mesh_gap
 
 __all__ = [
+    "GapResult",
+    "LoadDistribution",
     "MeshForces",
     "MeshStiffness",
     "RikorMesh",
     "build_stage",
+    "evaluate_load_distribution",
     "evaluate_mesh",
+    "local_mesh_compliance",
     "mesh_forces",
+    "mesh_gap",
     "mesh_stiffness",
+    "shaft_compliance",
+    "solve_contact",
 ]

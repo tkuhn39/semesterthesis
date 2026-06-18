@@ -29,9 +29,17 @@ The documented FVA 30 method (and how the native model relates, incl. the honest
   magnitude, torsion the asymmetry, shear lifts the peak. Reproduces RIKOR 001's
   Gesamtkorrektur in shape + magnitude (peak ≈ 44 µm vs 41.8; vertex in the loaded
   face). Bit-exact needs RIKOR's internal torque-transfer/bearing conventions.
-- **R3 — `distribution.py`** ⬜ — 1-D elastic-foundation load sharing under g(b) with
-  line stiffness c_γ → **w(b)**, **K_Hβ = w_max/w_mean**, K_Fβ, and the flank-line
-  correction for uniform load.
+- **R2/R3 LTCA — `compliance.py` + `distribution.py`** 🟦 — the proper FVA 30 form:
+  the compliance matrix **δ = δ^W + δ^Z + δ^H** solved for the load distribution
+  (`solve_contact`: δ·F + f_app = λ·1, Σ F = F_n, with contact-loss release). `δ^W`
+  (shaft bending via `beam.py` unit-load columns + analytic torsion with d_T) and the
+  local mesh compliance 1/c_γ are built; **w(b), K_Hβ = w_max/w̄, K_Fβ** and the
+  Gesamtkorrektur follow. The **gear-body cross-influence δ^Z** (Weber-Banaschek /
+  FVA-AB T309) is the remaining block — until it is added the absolute K_Hβ
+  over-predicts (test 001: 1.47 vs 1.36; mean load exact, shape physical). See
+  [`METHOD.md`](METHOD.md).
+- **`shaft.py`** — the earlier direct gap model (bending+shear+linear torsion, ~6 % on
+  the Gesamtkorrektur); kept as the simple `mesh_gap` path while the LTCA matures.
 
 ## Validated vs RIKOR standard test 001 (single helical stage)
 F_bt 167555.8 N, F_bt/b 1319.34 N/mm, F_bn 170316.0 N, F_bx 30538.0 N;
