@@ -62,13 +62,13 @@ vs 41.8 µm, ~6 %)**: bending sets the magnitude (validated against RIKOR's own
 bending line, ~21 µm sag), torsion the asymmetry, shear the peak.
 
 **Why it is not yet bit-exact.** RIKOR's gap is a richer multi-component model than
-the native R2: it adds the **gear-body deformation δ^{VV}**, the **two-plane (v,w)**
-decomposition with the bearing friction coupling, the **coupled load–deformation
-iteration**, and the exact **equivalent-diameter** treatment (d_Q/d_T) in the toothed
-region. Replicating these bit-exactly is effectively re-implementing all of RIKOR.
-The derivation of the equivalent-diameter and iteration formulas is **not** in the
-available PDFs (they are input/output references + feature lists), so the native
-model captures the engineering essence at ~6 % rather than to the last digit.
+the native R2 — and, on a thorough page-by-page read of §2.12, it is **fully
+documented** (an earlier note here wrongly said otherwise). See *The complete method*
+below: the gap/load distribution is an **influence-number compliance matrix**
+δ = δ^W + δ^Z + δ^H solved against the misalignment, with each block a classic,
+citable method. The native R2 implements only the shaft block δ^W (+ a derived
+torsion); bit-exactness needs the tooth/gear-body block δ^Z (Weber–Banaschek / Schmidt)
+and the Hertzian block δ^H — i.e. a full **loaded tooth contact analysis (LTCA)**.
 
 ## Oracle decomposition of the gap (test 001)
 Running the oracle twice — drive torque at the input end vs. moved to the far end —
@@ -76,12 +76,12 @@ flips the torsion asymmetry and cleanly separates the Gesamtkorrektur into
 `sym = (A+B)/2` (the direction-independent **bending** part) and `asym = (A−B)/2`
 (the **torsion** part):
 - **Bending (sym): a parabola, ptp ≈ 32 µm** (vertex near the face centre). The
-  native Timoshenko model gives only ~22 µm — the missing ~45 % is the **gear-body
-  deformation δ^VV** (not in the native model; its formula is not in the docs).
+  native Timoshenko shaft model gives only ~22 µm — the missing ~45 % is the
+  **tooth/gear-body compliance δ^Z** (Weber–Banaschek tooth + Schmidt plate-strip
+  gear-body cross-influence; see *The complete method*).
 - **Torsion (asym): essentially LINEAR, ptp ≈ 35 µm** (a tilt across the face). The
-  native quadratic `r_b·φ` wind-up has the wrong shape *and* overshoots ~10× when fed
-  the real twist — so RIKOR's torsion→gap coupling is **strongly reduced** by a factor
-  that is not derivable from the available documentation.
+  native quadratic `r_b·φ` wind-up had the wrong shape; the correct linear law (below)
+  reproduces it.
 
 So a bit-exact native rebuild needs the right structure for each part.
 
@@ -100,18 +100,46 @@ oracle's 35.0 — exact. And d_T itself follows a simple rule:
 — pinion 102.34 vs RIKOR 102.37, wheel 469.07 vs 469.45. (Bending uses ≈ the
 reference diameter d_Q ≈ d.)
 
-### Bending — shaft part validated, gear body missing
+### Bending — shaft part validated, tooth/gear-body block to add
 The native Timoshenko shaft bending matches RIKOR's printed bending line (~21 µm under
 the actual load) and gives ~24 µm under uniform load; the oracle's bending part is
-~32 µm. The missing ~33 % is the **gear-body deformation δ^VV** — its formula is not
-in the docs, so it remains an **oracle-calibrated factor (~1.33)**.
+~32 µm. The missing ~33 % is the **tooth/gear-body compliance δ^Z**, which is the
+Weber–Banaschek + Schmidt influence-number block — documented, not a free factor.
 
-### Status
-Torsion: derived (exact). Bending: shaft part exact, gear-body factor calibrated.
-What still needs care for a full match: the **two-shaft torsion sign combination** and
-validating the gear-body factor across several standard tests (the gap is referenced
-through a non-linear max(), so the parts do not add trivially). This is the realistic
-"native rebuild": structurally derived, with one calibrated compliance.
+## The complete method (FVA 30 XI §2.12.5–2.12.7) — the path to bit-exact
+The load distribution is a **loaded tooth contact analysis** on the discretised
+contact line(s). For n support points, the spring forces F = [F_1…F_n] satisfy the
+elastic compatibility δ·F = w_common − f_app and Σ F_i = F_bn (eq. 2.12.7–2.12.13;
+contact-loss points are dropped and the system re-solved). The **total compliance
+matrix** is the sum of three blocks (eq. 2.12.16):
+
+> **δ = δ^W + δ^Z + δ^H**
+
+- **δ^W — shaft/bearing** (a *full* matrix): the deflection at point i from a unit
+  load at j, from both shafts on their elastic bearings, **including torsion**. The
+  native `beam.py` system produces this (apply unit loads at each support → columns of
+  δ^W); the off-diagonals are the bending cross-coupling along the face. Equivalent
+  diameters d_Q (bending ≈ d) and d_T (torsion ≈ d − m_n·h_aP0*) apply in the toothed
+  span; the torsion follows the derived linear law above.
+- **δ^Z — tooth + gear-body** (diagonal + off-diagonal): the tooth bending/shear/
+  compression on the diagonal (Weber–Banaschek [75], DIN 3990 [32]) and the
+  **gear-body cross-influence** off-diagonal — a loaded tooth elastically twists and
+  transversely deforms the rim, deflecting neighbouring teeth (Schmidt plate-strip
+  influence numbers [6], Fig. 2.12.7). This is the ~33 % the native shaft model omits.
+- **δ^H — Hertzian flattening** (diagonal only): the local contact flattening; a load
+  at i only deforms its immediate neighbourhood (Fig. 2.12.8), so δ^H is diagonal.
+
+The misalignment f_app (shaft tilt + manufacturing flank deviations F_Hβ/F_Hα) enters
+the right-hand side; the whole system is iterated with the bearing operating points
+("Verzahnungs/Lager-Iteration"). K_Hβ = w_max/w̄.
+
+### Status & path
+Torsion: **derived** (linear law, exact vs oracle). Shaft compliance δ^W: have it
+(beam system). Missing for bit-exact: assemble δ^W as a **matrix** (unit-load columns),
+add **δ^Z** (Weber–Banaschek tooth + Schmidt gear-body influence numbers) and **δ^H**
+(Hertz), then solve the LTCA with contact-loss handling and the bearing iteration.
+That is the realistic native rebuild — large but fully specified by cited methods, no
+free parameters. The oracle validates each block and the final K_Hβ.
 
 ## Oracle (rikor.exe)
 For exact values the original `rikor.exe` runs locally (Windows): place an example's
