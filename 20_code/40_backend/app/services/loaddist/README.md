@@ -17,9 +17,14 @@ also drives the load positions of the FE rolling model (Step 3).
   ISO 6336-1 mesh line stiffness c_γ (c′_th, C_B, c′, c_γα/c_γβ — reusing the
   `capacity.iso6336_dynamics` stiffness chain, one implementation for both). Builds
   the meshing `GearStage` from the two `.rie` gears via `GearStage.from_parameters`.
-- **R2 — `shaft.py`** ⬜ — each shaft a stepped beam (`UK/DA` stations) on elastic
-  bearings; gear forces + the F_bx tilting moment + torsion wind-up → the deflection
-  line → the **gap g(b)** (relative flank misalignment) over the face width.
+- **R2 — `shaft.py` + `beam.py`** ✅ — each shaft a stepped **Timoshenko** beam
+  (`UK/DA` stations → EI, G·A_s) on elastic bearings (`beam.py`, a small FE solver,
+  validated exactly against closed-form beam deflection); the mesh force over the gear
+  face + the **torsional wind-up** of both shafts → the **gap g(b)** (relative flank
+  misalignment, line of action) and the equivalent misalignment f_βx. Bending sets the
+  magnitude, torsion the asymmetry, shear lifts the peak. Reproduces RIKOR 001's
+  Gesamtkorrektur in shape + magnitude (peak ≈ 44 µm vs 41.8; vertex in the loaded
+  face). Bit-exact needs RIKOR's internal torque-transfer/bearing conventions.
 - **R3 — `distribution.py`** ⬜ — 1-D elastic-foundation load sharing under g(b) with
   line stiffness c_γ → **w(b)**, **K_Hβ = w_max/w_mean**, K_Fβ, and the flank-line
   correction for uniform load.
