@@ -11,6 +11,10 @@ shaft/mounting quantity. RIKOR computes it from the shaft–bearing system; this
 package reproduces it so the analytical capacity no longer *feeds* K_Hβ. The result
 also drives the load positions of the FE rolling model (Step 3).
 
+The documented FVA 30 method (and how the native model relates, incl. the honest
+~6 % residual on the gap and the `rikor.exe` oracle) is captured in
+[`METHOD.md`](METHOD.md).
+
 ## Phases
 - **R1 — `forces.py`** ✅ — nominal mesh forces (F_bt, F_bn, F_bx, mean line load
   F_bt/b at the base circle, from the drive-gear design torque K_A·T_nom) and the
