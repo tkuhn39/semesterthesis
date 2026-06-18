@@ -22,7 +22,11 @@ cross-check, never a basis (ADR-011).
   reference/base/working-pitch diameters, working pressure angle & centre distance,
   usable tip circle `d_Na = d_Fa`, base pitch `p_et`, path of contact `g_α`, contact
   ratios `ε_α/ε_β/ε_γ`, span `W_k`, and `check_validity()` (ISO 1328-1 ranges + mesh
-  sanity, advisory).
+  sanity, advisory). `GearStage.from_ste(...)` builds from a parsed `.ste`;
+  **`GearStage.from_parameters(...)`** builds the same fully-generated stage from raw
+  design inputs (per-gear tool reference profile, optional measured tip diameters else
+  the running addendum, mean tooth-width allowance A_We → x_E) — so the capacity runs
+  for **any** gear, not only a `.ste`. Reproduces kst-E exactly (test).
 - **`tolerances.py`** — gear-accuracy tolerances (**ISO 1328-1:2018**): the accuracy
   grade A (1…11) → flank deviations `f_ptT`/`F_pT`/`f_HαT`/`f_fαT`/`F_αT`/`f_HβT`/`f_fβT`/`F_βT`
   (eq. 5–12; grade step (√2)^(A−5), §5.2.3 rounding, totals from the *unrounded*

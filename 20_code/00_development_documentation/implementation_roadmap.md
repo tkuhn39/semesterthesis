@@ -106,6 +106,7 @@ performance strategy: **ADR-013**; current-standards rule: **ADR-011**.
 | C4 | **Stufenvariation engine** `variation/kernel.py` — vectorized grid (macro-geometry, tip-load Y_Fa/Y_Sa, capacity) + early pruning; per-gear material dispatch (steel↔plastic) over the shared mesh (ADR-013) | numpy batch | bit-exact vs scalar (kst-E); **98k variants / 165 ms** | ✅ |
 | C5 | `variation/sweep.py` — Sobol/LHS sampling (scipy.qmc) + Pareto front + graceful warnings | ADR-013 | grid=cartesian, samples in-bounds, Pareto/pruning/graceful tested | ✅ (NSGA-II evolutionary search = outlook) |
 | C6 | **Accuracy tolerances** `geometry/tolerances.py` (ADR-016) — ISO 1328-1:2018 grade → flank deviations (f_ptT…F_βT); `dynamics_deviations` drives the native dynamics from the quality grade; §1 validity | ISO 1328-1:2018 (eq. 5–12) | hand-verified (mn2/d100/b20/Q5); grade step √2; rounding bands | ✅ |
+| C7 | **Free geometry → capacity** `GearStage.from_parameters` + `/api/evaluate` — build any pair from raw inputs + tool reference profile (no `.ste`), then geometry + ISO 6336 (steel) / VDI 2736 (plastic) capacity | ISO 21771 generation | reproduces kst-E exactly (ε_α, d_Fa incl. chamfer, Y_F, s_Fn) | ✅ |
 
 Validation philosophy (ADR-011): implement **strictly per ISO 6336:2019** (the current
 standard; DIN 3990:1987 is the equivalent cross-check, what STplus uses). Two complete

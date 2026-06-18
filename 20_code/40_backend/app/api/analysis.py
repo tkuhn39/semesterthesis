@@ -31,7 +31,7 @@ from app.services.capacity import (
     evaluate_vdi2736,
     native_dynamic_factors,
 )
-from app.services.geometry.gear import GearStage
+from app.services.geometry.gear import GearStage, ToolReferenceProfile
 from app.services.geometry.tolerances import (
     FlankTolerances,
     dynamics_deviations,
@@ -378,19 +378,27 @@ def _materials(req: CapacityRequest) -> Pair[Material]:
 
 @router.post("/capacity", response_model=CapacityResponse)
 def capacity(req: CapacityRequest) -> CapacityResponse:
-    """Per-gear dispatch: steel pinion via ISO 6336, plastic wheel via VDI 2736.
+    """Per-gear dispatch on the preloaded kst-E reference (operating values editable)."""
+    stage = _kst_e_stage()
+    return _run_capacity(stage, _kst_e_roots(stage), _materials(req), req)
 
-    Native dynamics (K_v Method B, K_Hα) from speed + accuracy unless overridden.
+
+def _run_capacity(
+    stage: GearStage,
+    roots: Pair[ToothRootGeometry],
+    materials: Pair[Material],
+    req: CapacityRequest,
+) -> CapacityResponse:
+    """Steel pinion via ISO 6336, plastic wheel via VDI 2736; native dynamics.
+
+    Works for any generated stage (the preloaded kst-E or a free `from_parameters`).
     """
     from app.services.capacity.iso6336 import elasticity_factor, zone_factor
 
-    stage = _kst_e_stage()
-    roots = _kst_e_roots(stage)
     width = stage.face_width_mm or Pair(17.0, 15.0)
     u = stage.teeth[1] / stage.teeth[0]
     v_t = math.pi * stage.reference_diameter_mm[0] * req.pinion_speed_min1 / 60000.0
     f_t = 2000.0 * req.pinion_torque_nm / stage.reference_diameter_mm[0]
-    materials = _materials(req)
 
     base_load = Iso6336LoadCase(
         tangential_force_n=f_t,
@@ -519,6 +527,108 @@ def capacity(req: CapacityRequest) -> CapacityResponse:
 
 def _safe_mul(safety: float | None, stress: float) -> float | None:
     return safety * stress if safety is not None else None
+
+
+# --------------------------------------------------------------------------- #
+# Free geometry → capacity (any gear, built from raw parameters + tool profile) #
+# --------------------------------------------------------------------------- #
+class EvaluateRequest(BaseModel):
+    # geometry
+    normal_module_mm: float = 2.0
+    teeth_pinion: int = 24
+    teeth_wheel: int = 60
+    profile_shift_pinion: float = 0.2
+    profile_shift_wheel: float = 0.2
+    normal_pressure_angle_deg: float = 20.0
+    helix_angle_deg: float = 0.0
+    center_distance_mm: float | None = None
+    face_width_pinion_mm: float = 20.0
+    face_width_wheel_mm: float = 20.0
+    # rack-tool reference profile (shared by both gears)
+    tool_addendum_factor: float = 1.25  # h_aP0*
+    tool_tip_radius_factor: float = 0.38  # ρ_aP0*
+    tool_dedendum_factor: float | None = None  # h_fP0*
+    tool_root_form_height_factor: float | None = None  # h_FfP0*
+    tool_edge_break_angle_deg: float | None = None  # α_Kn0 (tip chamfer)
+    gear_addendum_factor: float = 1.0  # for d_a when no tip diameter is given
+    tip_diameter_pinion_mm: float | None = None
+    tip_diameter_wheel_mm: float | None = None
+    tooth_width_allowance_pinion_mm: float = 0.0  # mean A_We → x_E
+    tooth_width_allowance_wheel_mm: float = 0.0
+    # operating + material (reuses the capacity inputs)
+    operating: CapacityRequest = CapacityRequest()
+
+
+class GeometrySummary(BaseModel):
+    working_pressure_angle_deg: float
+    center_distance_mm: float
+    reference_diameter_mm: list[float]
+    tip_diameter_mm: list[float]
+    transverse_contact_ratio: float
+    overlap_ratio: float
+    total_contact_ratio: float
+    span_measurement_mm: list[float] | None
+    notes: list[str]
+
+
+class EvaluateResponse(BaseModel):
+    geometry: GeometrySummary
+    capacity: CapacityResponse
+
+
+@router.post("/evaluate", response_model=EvaluateResponse)
+def evaluate_custom(req: EvaluateRequest) -> EvaluateResponse:
+    """Build any gear pair from raw parameters + tool profile, then geometry + capacity."""
+    tool = ToolReferenceProfile(
+        addendum_factor=req.tool_addendum_factor,
+        tip_radius_factor=req.tool_tip_radius_factor,
+        dedendum_factor=req.tool_dedendum_factor,
+        root_form_height_factor=req.tool_root_form_height_factor,
+        normal_pressure_angle_deg=req.normal_pressure_angle_deg,
+        edge_break_angle_deg=req.tool_edge_break_angle_deg,
+    )
+    tip = (
+        Pair(req.tip_diameter_pinion_mm, req.tip_diameter_wheel_mm)
+        if req.tip_diameter_pinion_mm is not None and req.tip_diameter_wheel_mm is not None
+        else None
+    )
+    try:
+        stage = GearStage.from_parameters(
+            normal_module_mm=req.normal_module_mm,
+            teeth=Pair(req.teeth_pinion, req.teeth_wheel),
+            profile_shift=Pair(req.profile_shift_pinion, req.profile_shift_wheel),
+            face_width_mm=Pair(req.face_width_pinion_mm, req.face_width_wheel_mm),
+            tool=Pair(tool, tool),
+            normal_pressure_angle_deg=req.normal_pressure_angle_deg,
+            helix_angle_deg=req.helix_angle_deg,
+            center_distance_mm=req.center_distance_mm,
+            tip_diameter_mm=tip,
+            gear_addendum_factor=req.gear_addendum_factor,
+            tooth_width_allowance_mm=Pair(
+                req.tooth_width_allowance_pinion_mm, req.tooth_width_allowance_wheel_mm
+            ),
+        )
+        roots = Pair(ToothRootGeometry.from_stage(stage, 0), ToothRootGeometry.from_stage(stage, 1))
+    except (ValueError, ZeroDivisionError) as exc:
+        raise HTTPException(422, f"invalid gear geometry: {exc}") from exc
+
+    materials = _materials(req.operating)
+    cap = _run_capacity(stage, roots, materials, req.operating)
+    span = stage.span_measurement_mm
+    geo = GeometrySummary(
+        working_pressure_angle_deg=round(stage.working_pressure_angle_deg, 4),
+        center_distance_mm=round(stage.working_center_distance_mm, 3),
+        reference_diameter_mm=[round(stage.reference_diameter_mm[i], 3) for i in range(2)],
+        tip_diameter_mm=[
+            round((stage.usable_tip_diameter_mm or Pair(0.0, 0.0))[i], 3) for i in range(2)
+        ],
+        transverse_contact_ratio=round(stage.transverse_contact_ratio, 4),
+        overlap_ratio=round(stage.overlap_ratio, 4),
+        total_contact_ratio=round(stage.total_contact_ratio, 4),
+        span_measurement_mm=[round(span[i], 3) for i in range(2)] if span is not None else None,
+        notes=stage.check_validity(),
+    )
+    return EvaluateResponse(geometry=geo, capacity=cap)
 
 
 # --------------------------------------------------------------------------- #

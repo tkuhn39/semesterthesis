@@ -19,9 +19,16 @@ from app.io.ste import Pair, SteGearStage
 # The involute primitives live in the (more foundational) generation module so the
 # generation layer never has to import this meshing layer; re-exported here for the
 # existing public API.
-from app.services.geometry.generation import GearGeneration, inverse_involute, involute
+from app.services.geometry.generation import (
+    GearGeneration,
+    ToolReferenceProfile,
+    inverse_involute,
+    involute,
+)
 
-__all__ = ["GearStage", "inverse_involute", "involute"]
+__all__ = ["GearStage", "ToolReferenceProfile", "inverse_involute", "involute"]
+
+_ZERO_PAIR: Pair[float] = Pair(0.0, 0.0)
 
 
 class GearStage(BaseModel):
@@ -70,6 +77,64 @@ class GearStage(BaseModel):
             face_width_mm=stage.face_width_mm,
             span_teeth=stage.span_teeth,
             generation=generation,
+        )
+
+    @classmethod
+    def from_parameters(
+        cls,
+        *,
+        normal_module_mm: float,
+        teeth: Pair[int],
+        profile_shift: Pair[float],
+        face_width_mm: Pair[float],
+        tool: Pair[ToolReferenceProfile],
+        normal_pressure_angle_deg: float = 20.0,
+        helix_angle_deg: float = 0.0,
+        center_distance_mm: float | None = None,
+        tip_diameter_mm: Pair[float] | None = None,
+        gear_addendum_factor: float = 1.0,
+        tooth_width_allowance_mm: Pair[float] | None = None,
+        span_teeth: Pair[int] | None = None,
+    ) -> "GearStage":
+        """Build a fully-generated stage from raw design parameters (free geometry).
+
+        Mirrors :meth:`from_ste` but takes explicit inputs: the rack-tool reference
+        profile per gear, optional measured tip diameters (else the running addendum
+        d_a = m_t·z + 2·m_n·(h_aP* + x)), and the mean tooth-width allowance A_We
+        (→ generation profile shift x_E). So the capacity runs for any gear, not just
+        a parsed `.ste`.
+        """
+        allowance = tooth_width_allowance_mm or _ZERO_PAIR
+        transverse_module = normal_module_mm / math.cos(math.radians(helix_angle_deg))
+        gens: list[GearGeneration] = []
+        for i in range(2):
+            if tip_diameter_mm is not None:
+                tip = tip_diameter_mm[i]
+            else:
+                reference = transverse_module * teeth[i]
+                tip = reference + 2.0 * normal_module_mm * (gear_addendum_factor + profile_shift[i])
+            gens.append(
+                GearGeneration(
+                    normal_module_mm=normal_module_mm,
+                    teeth=teeth[i],
+                    normal_pressure_angle_deg=normal_pressure_angle_deg,
+                    helix_angle_deg=helix_angle_deg,
+                    profile_shift=profile_shift[i],
+                    tip_diameter_mm=tip,
+                    tool=tool[i],
+                    tooth_width_allowance_mm=allowance[i],
+                )
+            )
+        return cls(
+            normal_module_mm=normal_module_mm,
+            teeth=teeth,
+            normal_pressure_angle_deg=normal_pressure_angle_deg,
+            helix_angle_deg=helix_angle_deg,
+            profile_shift=profile_shift,
+            center_distance_mm=center_distance_mm,
+            face_width_mm=face_width_mm,
+            span_teeth=span_teeth,
+            generation=Pair(gens[0], gens[1]),
         )
 
     @property
