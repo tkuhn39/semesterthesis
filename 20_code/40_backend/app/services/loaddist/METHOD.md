@@ -70,6 +70,49 @@ The derivation of the equivalent-diameter and iteration formulas is **not** in t
 available PDFs (they are input/output references + feature lists), so the native
 model captures the engineering essence at ~6 % rather than to the last digit.
 
+## Oracle decomposition of the gap (test 001)
+Running the oracle twice — drive torque at the input end vs. moved to the far end —
+flips the torsion asymmetry and cleanly separates the Gesamtkorrektur into
+`sym = (A+B)/2` (the direction-independent **bending** part) and `asym = (A−B)/2`
+(the **torsion** part):
+- **Bending (sym): a parabola, ptp ≈ 32 µm** (vertex near the face centre). The
+  native Timoshenko model gives only ~22 µm — the missing ~45 % is the **gear-body
+  deformation δ^VV** (not in the native model; its formula is not in the docs).
+- **Torsion (asym): essentially LINEAR, ptp ≈ 35 µm** (a tilt across the face). The
+  native quadratic `r_b·φ` wind-up has the wrong shape *and* overshoots ~10× when fed
+  the real twist — so RIKOR's torsion→gap coupling is **strongly reduced** by a factor
+  that is not derivable from the available documentation.
+
+So a bit-exact native rebuild needs the right structure for each part.
+
+### Torsion — derived and matched
+The linear torsion part *is* reproducible from first principles. The lead deviation
+over the face is the shaft wind-up across the reacted gear width:
+
+> **f_tors(b) = r_b · (T/2) / (G·J_T) · (b − b_mid)**,  J_T = π/32 · d_T⁴
+
+with the **average** transmitted torque T/2 (linear reaction over the face) and the
+**equivalent torsion diameter** `d_T`. For test 001 this gives 34.9 µm ptp vs the
+oracle's 35.0 — exact. And d_T itself follows a simple rule:
+
+> **d_T ≈ d − m_n · h_aP0*** (reference diameter minus the tool addendum)
+
+— pinion 102.34 vs RIKOR 102.37, wheel 469.07 vs 469.45. (Bending uses ≈ the
+reference diameter d_Q ≈ d.)
+
+### Bending — shaft part validated, gear body missing
+The native Timoshenko shaft bending matches RIKOR's printed bending line (~21 µm under
+the actual load) and gives ~24 µm under uniform load; the oracle's bending part is
+~32 µm. The missing ~33 % is the **gear-body deformation δ^VV** — its formula is not
+in the docs, so it remains an **oracle-calibrated factor (~1.33)**.
+
+### Status
+Torsion: derived (exact). Bending: shaft part exact, gear-body factor calibrated.
+What still needs care for a full match: the **two-shaft torsion sign combination** and
+validating the gear-body factor across several standard tests (the gap is referenced
+through a non-linear max(), so the parts do not add trivially). This is the realistic
+"native rebuild": structurally derived, with one calibrated compliance.
+
 ## Oracle (rikor.exe)
 For exact values the original `rikor.exe` runs locally (Windows): place an example's
 `rikor.cfg` as `bin/rikor.cfg`, run from `bin/` (it reads `rikor.cfg` from the CWD and
