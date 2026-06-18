@@ -23,6 +23,12 @@ cross-check, never a basis (ADR-011).
   usable tip circle `d_Na = d_Fa`, base pitch `p_et`, path of contact `g_α`, contact
   ratios `ε_α/ε_β/ε_γ`, span `W_k`, and `check_validity()` (ISO 1328-1 ranges + mesh
   sanity, advisory).
+- **`tolerances.py`** — gear-accuracy tolerances (**ISO 1328-1:2018**): the accuracy
+  grade A (1…11) → flank deviations `f_ptT`/`F_pT`/`f_HαT`/`f_fαT`/`F_αT`/`f_HβT`/`f_fβT`/`F_βT`
+  (eq. 5–12; grade step (√2)^(A−5), §5.2.3 rounding, totals from the *unrounded*
+  components). `dynamics_deviations(grade…)` gives (f_pb, f_fα) so the **quality grade**
+  drives the native dynamics; `validity_warnings` enforces the §1 application ranges
+  (ADR-016). DIN 21773 span `W_k` is in `gear.py`.
 
 ```python
 from app.services.geometry import GearStage

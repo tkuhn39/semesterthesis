@@ -105,6 +105,7 @@ performance strategy: **ADR-013**; current-standards rule: **ADR-011**.
 | C3 | **VDI 2736** capacity (plastic) `vdi2736.py`: σ_H/σ_F (tip-load Y_Fa/Y_Sa), tooth temperature ϑ, wear W_m, deformation λ, loss factor H_V | VDI 2736 Bl. 2 (2014) | VDI-2736 Workbench report (= kst-E pair), near-exact: σ_H 79.9, σ_F 77.8, ϑ 107.77, W_m 40.16 µm, λ 0.0378 — ADR-015 | ✅ |
 | C4 | **Stufenvariation engine** `variation/kernel.py` — vectorized grid (macro-geometry, tip-load Y_Fa/Y_Sa, capacity) + early pruning; per-gear material dispatch (steel↔plastic) over the shared mesh (ADR-013) | numpy batch | bit-exact vs scalar (kst-E); **98k variants / 165 ms** | ✅ |
 | C5 | `variation/sweep.py` — Sobol/LHS sampling (scipy.qmc) + Pareto front + graceful warnings | ADR-013 | grid=cartesian, samples in-bounds, Pareto/pruning/graceful tested | ✅ (NSGA-II evolutionary search = outlook) |
+| C6 | **Accuracy tolerances** `geometry/tolerances.py` (ADR-016) — ISO 1328-1:2018 grade → flank deviations (f_ptT…F_βT); `dynamics_deviations` drives the native dynamics from the quality grade; §1 validity | ISO 1328-1:2018 (eq. 5–12) | hand-verified (mn2/d100/b20/Q5); grade step √2; rounding bands | ✅ |
 
 Validation philosophy (ADR-011): implement **strictly per ISO 6336:2019** (the current
 standard; DIN 3990:1987 is the equivalent cross-check, what STplus uses). Two complete

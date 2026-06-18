@@ -34,6 +34,7 @@ body.
 | ADR-013 | Plastic-capable Stufenvariation and its performance strategy | Accepted | 2026-06-17 |
 | ADR-014 | Native ISO 6336-1 dynamic/load factors (K_v, K_Hα, K_Hβ) | Accepted | 2026-06-17 |
 | ADR-015 | Native VDI 2736 plastic-gear capacity (root/flank/temperature/wear/deformation) | Accepted | 2026-06-17 |
+| ADR-016 | Native ISO 1328-1 accuracy-grade tolerances (grade → deviations) | Accepted | 2026-06-18 |
 
 ---
 
@@ -485,5 +486,42 @@ Stufenvariation cannot run with a plastic gear, ADR-013).
 **Consequences:** the plastic side of the steel–plastic pair is now covered with a
 near-exactly validated method, completing the analytical capacity (steel = ISO 6336,
 plastic = VDI 2736) ahead of the Stufenvariation and the FE rolling model.
+
+---
+
+## ADR-016 — Native ISO 1328-1 accuracy-grade tolerances
+
+**Status:** Accepted (2026-06-18)
+
+**Context:** Until now the gear-accuracy deviations the dynamics needs (f_pb, f_fα)
+and the manufacturing part of the face load factor (F_β) were **raw µm inputs**.
+Engineers think in a **quality grade** (e.g. ISO 1328 class 6), and the geometry layer
+only range-checked accuracy (`check_validity`) — it never *computed* the tolerances.
+This was the one real remaining gap on the capacity side (the "A1" item).
+
+**Decision:** Implement the current inspection standard **DIN ISO 1328-1:2018** natively
+in `geometry/tolerances.py`: the flank class A (1…11) → single/total pitch (f_ptT, F_pT),
+profile slope/form/total (f_HαT, f_fαT, F_αT) and helix slope/form/total (f_HβT, f_fβT,
+F_βT) via eq. 5–12, with the (√2)^(A−5) grade step (§5.2.2, from the unrounded class-5
+value), the §5.2.3 rounding (>10→1, 5…10→0.5, <5→0.1 µm) and the totals from the
+**unrounded** slope/form components (eq. 9/12). `dynamics_deviations(grade, m_n, d)`
+returns (f_pb=f_ptT, f_fα=f_fαT); `validity_warnings` enforces the §1 application ranges.
+`/api/capacity` gains an optional `accuracy_grade` that derives the deviations from the
+grade (else the raw µm inputs stand), and a `/api/tolerances` endpoint exposes the table.
+
+**Validation (the formulas are read visually from §5.2.4 → the code *is* the standard):**
+hand-verified for m_n=2, d=100, b=20, class 5 — f_ptT 6.0, F_pT 19, f_HαT 4.8, f_fαT 6.0,
+F_αT 8.0, f_HβT 6.0, f_fβT 6.5, F_βT 9.0 µm; class 6 = class-5 unrounded × √2 → 8.5; the
+rounding bands and the §1 range warnings are covered (`tests/test_tolerances.py`). Driving
+the dynamics by grade is physical (K_v rises with a coarser class).
+
+**Scope / not yet:** the ISO 1328-2 double-flank composite (master-gear QC, peripheral)
+and the **tooth-thickness / centre-distance allowances** (A_We/A_Wi per DIN 3967,
+A_Ae/A_Ai per DIN 3964) are deferred — those standards are not in the repo and the
+allowances arrive as `.ste` inputs today. DIN 21773 span W_k already lives in `gear.py`.
+
+**Consequences:** users specify a quality grade instead of raw µm; the accuracy feeds
+the native dynamics and (later) the face load factor consistently — closing the last
+analytical-capacity gap before RIKOR.
 
 ---

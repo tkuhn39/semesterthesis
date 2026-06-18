@@ -32,6 +32,12 @@ from app.services.capacity import (
     native_dynamic_factors,
 )
 from app.services.geometry.gear import GearStage
+from app.services.geometry.tolerances import (
+    FlankTolerances,
+    dynamics_deviations,
+    flank_tolerances,
+    validity_warnings,
+)
 from app.services.geometry.tooth_root import ToothRootGeometry
 from app.services.materials import Material, MaterialKind
 from app.services.variation import (
@@ -231,6 +237,49 @@ def geometry(req: GeometryRequest) -> GeometryResponse:
 
 
 # --------------------------------------------------------------------------- #
+# Tolerances (ISO 1328-1:2018 — accuracy grade → flank deviations)             #
+# --------------------------------------------------------------------------- #
+class ToleranceRequest(BaseModel):
+    accuracy_grade: int = 6  # ISO 1328-1 flank class (1…11)
+    normal_module_mm: float = 2.0
+    teeth: int = 24
+    reference_diameter_mm: float = 48.0
+    face_width_mm: float = 20.0
+    helix_angle_deg: float = 0.0
+
+
+class ToleranceResponse(BaseModel):
+    tolerances: FlankTolerances
+    base_pitch_deviation_um: float  # f_pb (= f_ptT) for the dynamics
+    profile_form_deviation_um: float  # f_fα (= f_fαT)
+    warnings: list[str]
+
+
+@router.post("/tolerances", response_model=ToleranceResponse)
+def tolerances(req: ToleranceRequest) -> ToleranceResponse:
+    """Flank deviations from the accuracy grade (ISO 1328-1:2018, eq. 5–12)."""
+    t = flank_tolerances(
+        accuracy_grade=req.accuracy_grade,
+        normal_module_mm=req.normal_module_mm,
+        reference_diameter_mm=req.reference_diameter_mm,
+        face_width_mm=req.face_width_mm,
+    )
+    return ToleranceResponse(
+        tolerances=t,
+        base_pitch_deviation_um=t.single_pitch,
+        profile_form_deviation_um=t.profile_form,
+        warnings=validity_warnings(
+            accuracy_grade=req.accuracy_grade,
+            teeth=req.teeth,
+            reference_diameter_mm=req.reference_diameter_mm,
+            normal_module_mm=req.normal_module_mm,
+            face_width_mm=req.face_width_mm,
+            helix_angle_deg=req.helix_angle_deg,
+        ),
+    )
+
+
+# --------------------------------------------------------------------------- #
 # Capacity (kst-E: steel pinion → ISO 6336, plastic wheel → VDI 2736)          #
 # --------------------------------------------------------------------------- #
 class CapacityRequest(BaseModel):
@@ -242,7 +291,8 @@ class CapacityRequest(BaseModel):
     compute_dynamics: bool = True
     dynamic_factor: float = 1.0  # K_v (override when compute_dynamics = False)
     face_load_factor: float = 1.0  # K_Hβ (override; native K_Hβ needs RIKOR)
-    base_pitch_deviation_um: float = 6.0  # f_pb (ISO 1328)
+    accuracy_grade: int | None = None  # ISO 1328-1 class; if set, derives f_pb/f_fα
+    base_pitch_deviation_um: float = 6.0  # f_pb (ISO 1328) — used when no grade given
     profile_form_deviation_um: float = 5.0  # f_fα
     # --- ISO 6336 conditions (steel) ---
     lubricant_viscosity_40_mm2s: float = 100.0  # ν_40
@@ -351,6 +401,16 @@ def capacity(req: CapacityRequest) -> CapacityResponse:
         application_factor=req.application_factor,
     )
 
+    # accuracy deviations: from the quality grade (ISO 1328-1) or the raw µm inputs
+    if req.accuracy_grade is not None:
+        f_pb, f_fa = dynamics_deviations(
+            accuracy_grade=req.accuracy_grade,
+            normal_module_mm=stage.normal_module_mm,
+            reference_diameter_mm=stage.reference_diameter_mm[0],
+        )
+    else:
+        f_pb, f_fa = req.base_pitch_deviation_um, req.profile_form_deviation_um
+
     # --- dynamics: native K_v / K_Hα, or override ---
     if req.compute_dynamics:
         dyn = native_dynamic_factors(
@@ -360,12 +420,8 @@ def capacity(req: CapacityRequest) -> CapacityResponse:
             base_load,
             DynamicConditions(
                 pinion_speed_min1=req.pinion_speed_min1,
-                base_pitch_deviation_um=Pair(
-                    req.base_pitch_deviation_um, req.base_pitch_deviation_um
-                ),
-                profile_form_deviation_um=Pair(
-                    req.profile_form_deviation_um, req.profile_form_deviation_um
-                ),
+                base_pitch_deviation_um=Pair(f_pb, f_pb),
+                profile_form_deviation_um=Pair(f_fa, f_fa),
             ),
         )
         k_v, k_ha = dyn.dynamic_factor, dyn.transverse_factor_flank
