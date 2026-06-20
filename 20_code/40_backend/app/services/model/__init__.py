@@ -16,16 +16,19 @@ from app.services.model.mapped_mesher import (
     mesh_sector_mapped_2d,
     mesh_sector_mapped_3d,
 )
+from app.services.model.mesh_sets import SectorSurfaces, tag_sector_surfaces
 from app.services.model.tooth_mesh import Mesh2D, tooth_sector_2d
 
 __all__ = [
     "Mesh2D",
     "Mesh3D",
+    "SectorSurfaces",
     "mesh_pitch_mapped_2d",
     "mesh_pitch_mapped_3d",
     "mesh_sector_mapped_2d",
     "mesh_sector_mapped_3d",
     "mesh_tooth_pitch",
     "mesh_tooth_pitch_3d",
+    "tag_sector_surfaces",
     "tooth_sector_2d",
 ]
