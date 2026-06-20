@@ -90,10 +90,66 @@ def _build_pitch_surface(
     return surf, s_flank
 
 
+def _rotate(points: Array, angle: float) -> Array:
+    c, s = math.cos(angle), math.sin(angle)
+    return points @ np.array([[c, s], [-s, c]])
+
+
+def _tooth_outline(profile: ToothProfile, boundary_samples: int) -> tuple[Array, Array]:
+    """One tooth outline (left fillet bottom → tip → right fillet bottom) + per-point on-fillet flag."""
+    pts = profile.right_flank_profile(fillet_points=boundary_samples, flank_points=boundary_samples)
+    right = np.array([[p[0], p[1]] for p in pts])  # d_f → d_Na (root → tip)
+    left = right * np.array([-1.0, 1.0])  # mirror, d_f → tip
+    outline = np.vstack([left, right[::-1][1:]])  # left d_f→tip, then tip→d_f right
+    radii = np.hypot(outline[:, 0], outline[:, 1])
+    on_fillet = radii <= profile.d_Ff / 2.0 + 1e-9
+    return outline, on_fillet
+
+
+def _sector_boundary(
+    profile: ToothProfile, n_teeth: int, n_segments: int
+) -> tuple[Array, Array, float]:
+    """Outer boundary of the gear sector (n_teeth teeth + n_segments rim-only pitches each side).
+
+    Returns the ordered boundary points, an on-fillet flag per point (for sizing), and
+    the sector half-angle.
+    """
+    pitch = 2.0 * math.pi / profile.z
+    total = n_teeth + 2 * n_segments
+    half_sector = total * pitch / 2.0
+    r_root = profile.root_diameter_mm / 2.0
+    outline, on_fillet = _tooth_outline(profile, 40)
+    a_df = math.atan2(outline[0, 0], outline[0, 1])  # left fillet-bottom angle (negative)
+
+    pts: list[Array] = []
+    flags: list[bool] = []
+
+    def root_arc(a0: float, a1: float, n: int = 6) -> None:
+        for a in np.linspace(a0, a1, n)[1:]:
+            pts.append(np.array([r_root * math.sin(a), r_root * math.cos(a)]))
+            flags.append(False)
+
+    pts.append(np.array([r_root * math.sin(-half_sector), r_root * math.cos(-half_sector)]))
+    flags.append(False)
+    for p in range(total):
+        centre = (p - (total - 1) / 2.0) * pitch
+        is_tooth = n_segments <= p < n_segments + n_teeth
+        if is_tooth:
+            root_arc(math.atan2(pts[-1][0], pts[-1][1]), centre + a_df)
+            # skip outline[0]: it coincides with the root-arc end (avoids a zero-length edge)
+            for (x, y), f in zip(_rotate(outline, centre)[1:], on_fillet[1:], strict=True):
+                pts.append(np.array([x, y]))
+                flags.append(bool(f))
+        # else: a tooth-free pitch — the root floor continues (added by the next arc)
+    root_arc(math.atan2(pts[-1][0], pts[-1][1]), half_sector)
+    return np.array(pts), np.array(flags), half_sector
+
+
 def _quad_recombine_options(s_flank: float) -> None:
     gmsh.option.setNumber("Mesh.RecombineAll", 1)
     gmsh.option.setNumber("Mesh.Algorithm", 8)  # Frontal-Delaunay for quads
     gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
+    gmsh.option.setNumber("Mesh.SubdivisionAlgorithm", 1)  # force all-quad (→ all-hex on extrude)
     gmsh.option.setNumber("Mesh.CharacteristicLengthMax", s_flank * 2.0)
 
 
@@ -149,14 +205,94 @@ def mesh_tooth_pitch_3d(
             boundary_samples=boundary_samples,
         )
         _quad_recombine_options(s_flank)
-        gmsh.model.geo.extrude(
-            [(2, surf)], 0.0, 0.0, face_width_mm, numElements=[face_layers], recombine=True
-        )
-        gmsh.model.geo.synchronize()
-        gmsh.model.mesh.generate(3)
-        return _extract_3d()
+        gmsh.model.mesh.generate(2)
+        section, quality = _extract_2d_quality()
     finally:
         gmsh.finalize()
+    return extrude_to_hex(section, quality, width=face_width_mm, layers=face_layers)
+
+
+def mesh_sector_3d(
+    profile: ToothProfile,
+    *,
+    n_teeth: int,
+    n_segments: int,
+    face_width_mm: float,
+    face_layers: int,
+    height_elements: int = 20,
+    root_elements: int = 40,
+    thickness_elements: int = 5,
+    rim_depth_mm: float | None = None,
+) -> Mesh3D:
+    """C3D8 hex mesh of a gear sector: ``n_teeth`` teeth + ``n_segments`` rim-only pitches each side.
+
+    The sector (gear-body) angle = (n_teeth + 2·n_segments)·360°/z. Extruded
+    ``face_layers`` over the face width.
+
+    WIP: the multi-tooth outer boundary self-intersects on the trochoid fillet fold
+    (gmsh 1-D mesh intersections) — being fixed; the single-pitch ``mesh_tooth_pitch_3d``
+    is the working meshing primitive meanwhile.
+    """
+    boundary, flags, half_sector = _sector_boundary(profile, n_teeth, n_segments)
+    r_root = profile.root_diameter_mm / 2.0
+    rim_inner = r_root - (rim_depth_mm if rim_depth_mm is not None else 2.0 * profile.mn)
+    flank_len = float(
+        np.sum(np.linalg.norm(np.diff(_tooth_outline(profile, 40)[0], axis=0), axis=1))
+    )
+    s_flank = 0.5 * flank_len / max(height_elements, 1)
+    s_fillet = (abs(math.atan2(boundary[0, 0], boundary[0, 1])) * r_root) / max(root_elements, 1)
+    s_fillet = max(s_fillet, 1e-3)
+
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 0)
+    try:
+        gmsh.model.add("sector")
+        geo = gmsh.model.geo
+        tags = [
+            geo.addPoint(float(x), float(y), 0.0, s_fillet if f else s_flank)
+            for (x, y), f in zip(boundary, flags, strict=True)
+        ]
+        b_l = geo.addPoint(
+            rim_inner * math.sin(-half_sector), rim_inner * math.cos(-half_sector), 0, s_flank * 2
+        )
+        b_r = geo.addPoint(
+            rim_inner * math.sin(half_sector), rim_inner * math.cos(half_sector), 0, s_flank * 2
+        )
+        centre = geo.addPoint(0.0, 0.0, 0.0, s_flank)
+        loop_pts = [b_l] + tags + [b_r]
+        lines = [geo.addLine(loop_pts[i], loop_pts[i + 1]) for i in range(len(loop_pts) - 1)]
+        lines.append(geo.addCircleArc(b_r, centre, b_l))
+        surf = geo.addPlaneSurface([geo.addCurveLoop(lines)])
+        geo.synchronize()
+        _quad_recombine_options(s_flank)
+        gmsh.model.mesh.generate(2)
+        section, quality = _extract_2d_quality()
+    finally:
+        gmsh.finalize()
+    return extrude_to_hex(section, quality, width=face_width_mm, layers=face_layers)
+
+
+def extrude_to_hex(section: Mesh2D, quad_quality: Array, *, width: float, layers: int) -> Mesh3D:
+    """Extrude a 2-D quad section into C3D8 hexahedra (``layers`` over the face ``width``).
+
+    Done natively (replicate the section nodes per z-layer; one hex per quad × layer) so
+    it is robust to gmsh's surface-extrusion quirks on complex sector boundaries. The hex
+    Jacobi-Güte equals the section quad's (orthogonal extrusion), tiled over the layers.
+    """
+    n = section.n_nodes
+    z = np.linspace(0.0, width, layers + 1)
+    nodes = np.empty(((layers + 1) * n, 3))
+    for k in range(layers + 1):
+        nodes[k * n : (k + 1) * n, :2] = section.nodes
+        nodes[k * n : (k + 1) * n, 2] = z[k]
+    q = section.quads
+    hexes = np.empty((layers * q.shape[0], 8), dtype=int)
+    for k in range(layers):
+        block = slice(k * q.shape[0], (k + 1) * q.shape[0])
+        hexes[block, :4] = q + k * n
+        hexes[block, 4:] = q + (k + 1) * n
+    quality = np.tile(quad_quality, layers)
+    return Mesh3D(nodes, hexes, quality=quality)
 
 
 def _extract_2d() -> Mesh2D:
@@ -168,11 +304,11 @@ def _extract_2d() -> Mesh2D:
     return Mesh2D(pts, quads)
 
 
-def _extract_3d() -> Mesh3D:
+def _extract_2d_quality() -> tuple[Mesh2D, Array]:
     node_tags, coords, _ = gmsh.model.mesh.getNodes()
-    pts = np.array(coords).reshape(-1, 3)
+    pts = np.array(coords).reshape(-1, 3)[:, :2]
     index = {int(t): i for i, t in enumerate(node_tags)}
-    elem_tags, conn = gmsh.model.mesh.getElementsByType(5)  # 8-node hexahedron
-    hexes = np.array([index[int(t)] for t in conn]).reshape(-1, 8)
+    elem_tags, conn = gmsh.model.mesh.getElementsByType(3)  # 4-node quad
+    quads = np.array([index[int(t)] for t in conn]).reshape(-1, 4)
     quality = np.array(gmsh.model.mesh.getElementQualities(elem_tags, "minSJ"))  # = Jacobi-Güte
-    return Mesh3D(pts, hexes, quality=quality)
+    return Mesh2D(pts, quads), quality
