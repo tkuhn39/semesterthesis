@@ -9,7 +9,12 @@
        run-time problems (element type, root refinement, sector vs full model).
 """
 
-from app.services.model.abaqus_writer import ElasticMaterial, build_gear_deck
+from app.services.model.abaqus_writer import (
+    ElasticMaterial,
+    RollingSetup,
+    build_gear_deck,
+    build_rolling_deck,
+)
 from app.services.model.gmsh_mesher import Mesh3D, mesh_tooth_pitch, mesh_tooth_pitch_3d
 from app.services.model.mapped_mesher import (
     mesh_pitch_mapped_2d,
@@ -24,8 +29,10 @@ __all__ = [
     "ElasticMaterial",
     "Mesh2D",
     "Mesh3D",
+    "RollingSetup",
     "SectorSurfaces",
     "build_gear_deck",
+    "build_rolling_deck",
     "mesh_pitch_mapped_2d",
     "mesh_pitch_mapped_3d",
     "mesh_sector_mapped_2d",
