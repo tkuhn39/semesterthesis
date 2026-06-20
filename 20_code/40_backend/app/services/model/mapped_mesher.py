@@ -1,0 +1,204 @@
+"""
+@module: app.services.model.mapped_mesher
+@context: Domain layer — FE rolling model, the structured (transfinite) tooth mesher.
+@role: Build the **mapped, structured** tooth-pitch mesh the way STIRAK / the FVA
+       screenshots do — not by throwing a complex outline at an unstructured mesher,
+       but by partitioning one pitch into mappable 4-sided blocks (tooth body, root
+       fillet, rim-under-tooth, rim-under-gap ×2) and meshing each transfinite with
+       the FVA element counts as edge seeds. Recombine → structured quads, swept over
+       the face width → structured C3D8 hexahedra. This is the clean path: every block
+       is trivially mappable, so there is no boundary self-intersection. Spur gears
+       (β = 0); transverse plane, tooth on +y, swept along +z.
+"""
+
+import math
+
+import gmsh
+import numpy as np
+from numpy.typing import NDArray
+
+from app.services.geometry.tooth_form import ToothProfile
+from app.services.model.gmsh_mesher import Mesh3D, _extract_2d_quality, extrude_to_hex
+from app.services.model.tooth_mesh import Mesh2D
+
+Array = NDArray[np.float64]
+
+
+def _xy(points: list) -> Array:
+    return np.array([[p[0], p[1]] for p in points])
+
+
+def _monotone_fillet(fillet: Array) -> Array:
+    """Clamp the (right) fillet so its half-angle is monotone d_f → d_Ff.
+
+    The trochoid folds back near d_f (a few points dip in angle), which makes the
+    structured rows wiggle. Enforcing a non-decreasing |angle| outward removes the
+    fold while keeping each point on its radius circle.
+    """
+    r = np.hypot(fillet[:, 0], fillet[:, 1])
+    a = np.abs(np.arctan2(fillet[:, 0], fillet[:, 1]))
+    a = np.maximum.accumulate(a)  # fillet is ordered d_f → d_Ff (radius ascending)
+    return np.column_stack([r * np.sin(a), r * np.cos(a)])
+
+
+def mesh_pitch_mapped_2d(
+    profile: ToothProfile,
+    *,
+    height_elements: int = 20,
+    root_elements: int = 40,
+    thickness_elements: int = 5,
+    rim_elements: int = 8,
+    gap_elements: int | None = None,
+    rim_depth_mm: float | None = None,
+    min_jacobi: float = 0.35,
+    limit_angle_deg: float = 65.0,
+    samples: int = 40,
+) -> tuple[Mesh2D, Array]:
+    """Structured quad mesh of one tooth pitch (5 transfinite blocks). Returns (mesh, quality).
+
+    The FVA mesher targets (FEM-Vernetzer): the scaled-Jacobian "Jacobi-Güte" must stay
+    ≥ ``min_jacobi`` (default 0.35) — verified here, with gmsh optimisation enabled — and
+    ``limit_angle_deg`` (the FVA "Grenzwinkelvorgabe", default 65°) bounds the element
+    skew; the structured transfinite topology satisfies it by construction.
+    """
+    z = profile.z
+    pitch_half = math.pi / z
+    r_df = profile.root_diameter_mm / 2.0
+    rim = r_df - (rim_depth_mm if rim_depth_mm is not None else 2.0 * profile.mn)
+    n_gap = gap_elements if gap_elements is not None else thickness_elements
+
+    flank = _xy(profile.flank_points(samples))  # d_Ff → d_Na
+    fillet = _monotone_fillet(_xy(profile.root_fillet_points(samples)))  # d_f → d_Ff
+    r_t, r_f = flank[-1], flank[0]  # right tip, right d_Ff junction
+    r_d = fillet[0]  # right d_f (fillet bottom)
+    ang_d = math.atan2(r_d[0], r_d[1])  # right fillet-bottom angle
+
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 0)
+    try:
+        gmsh.model.add("pitch_mapped")
+        geo = gmsh.model.geo
+
+        def pt(x: float, y: float) -> int:
+            return geo.addPoint(float(x), float(y), 0.0)
+
+        def mirror(p: Array) -> Array:
+            return np.array([-p[0], p[1]])
+
+        def on_circle(radius: float, angle: float) -> int:
+            return pt(radius * math.sin(angle), radius * math.cos(angle))
+
+        # corner points (r/l = right/left; t/f/d = tip/d_Ff/d_f; g = gap; b = bore)
+        rt, lt = pt(*r_t), pt(*mirror(r_t))
+        rf, lf = pt(*r_f), pt(*mirror(r_f))
+        rd, ld = pt(*r_d), pt(*mirror(r_d))
+        rg, lg = on_circle(r_df, pitch_half), on_circle(r_df, -pitch_half)
+        bgr, bgl = on_circle(rim, pitch_half), on_circle(rim, -pitch_half)
+        bdr, bdl = on_circle(rim, ang_d), on_circle(rim, -ang_d)
+        ctr = pt(0.0, 0.0)
+
+        def spline(p0: int, mids: Array, p1: int) -> int:
+            tags = [p0] + [pt(*m) for m in mids] + [p1]
+            return geo.addSpline(tags)
+
+        # flank & fillet splines (right + mirrored left)
+        rflank = spline(rt, flank[::-1][1:-1], rf)
+        lflank = spline(lt, _xy_mirror(flank[::-1][1:-1]), lf)
+        rfil = spline(rf, fillet[::-1][1:-1], rd)
+        lfil = spline(lf, _xy_mirror(fillet[::-1][1:-1]), ld)
+
+        tip = geo.addLine(lt, rt)
+        base_ff = geo.addLine(lf, rf)
+        base_df = geo.addLine(ld, rd)
+        gap_l = geo.addCircleArc(lg, ctr, ld)
+        gap_r = geo.addCircleArc(rd, ctr, rg)
+        rad_dl = geo.addLine(bdl, ld)
+        rad_dr = geo.addLine(rd, bdr)
+        rad_gl = geo.addLine(bgl, lg)
+        rad_gr = geo.addLine(rg, bgr)
+        bore_t = geo.addCircleArc(bdr, ctr, bdl)
+        bore_l = geo.addCircleArc(bdl, ctr, bgl)
+        bore_r = geo.addCircleArc(bgr, ctr, bdr)
+
+        body = _surface(geo, [tip, rflank, base_ff, lflank], reverse={base_ff, lflank})
+        fil = _surface(geo, [base_ff, rfil, base_df, lfil], reverse={base_df, lfil})
+        rim_t = _surface(geo, [base_df, rad_dr, bore_t, rad_dl], reverse=set())
+        rim_l = _surface(geo, [gap_l, rad_dl, bore_l, rad_gl], reverse={rad_dl})
+        rim_r = _surface(geo, [gap_r, rad_gr, bore_r, rad_dr], reverse={rad_dr})
+        geo.synchronize()
+
+        def seed(curve: int, n: int) -> None:
+            geo.mesh.setTransfiniteCurve(curve, n + 1)
+
+        for c in (rflank, lflank):
+            seed(c, height_elements)
+        for c in (rfil, lfil):
+            seed(c, root_elements)
+        for c in (tip, base_ff, base_df, bore_t):
+            seed(c, thickness_elements)
+        for c in (gap_l, gap_r, bore_l, bore_r):
+            seed(c, n_gap)
+        for c in (rad_dl, rad_dr, rad_gl, rad_gr):
+            seed(c, rim_elements)
+
+        for s, corners in (
+            (body, [lt, rt, rf, lf]),
+            (fil, [lf, rf, rd, ld]),
+            (rim_t, [ld, rd, bdr, bdl]),
+            (rim_l, [lg, ld, bdl, bgl]),
+            (rim_r, [rd, rg, bgr, bdr]),
+        ):
+            geo.mesh.setTransfiniteSurface(s, "Left", corners)
+            geo.mesh.setRecombine(2, s)
+        geo.synchronize()
+
+        gmsh.option.setNumber("Mesh.Optimize", 1)
+        gmsh.option.setNumber("Mesh.OptimizeThreshold", min_jacobi)
+        gmsh.model.mesh.generate(2)
+        mesh, quality = _extract_2d_quality()
+    finally:
+        gmsh.finalize()
+    if quality.size and float(quality.min()) < min_jacobi:
+        raise ValueError(
+            f"mesh below the Jacobi-Güte target: min {quality.min():.3f} < {min_jacobi}"
+        )
+    return mesh, quality
+
+
+def _xy_mirror(pts: Array) -> Array:
+    return pts * np.array([-1.0, 1.0])
+
+
+def _surface(geo: object, curves: list[int], *, reverse: set[int]) -> int:
+    """A plane surface from 4 curves, flipping the ones listed in ``reverse`` for a CCW loop."""
+    oriented = [-c if c in reverse else c for c in curves]
+    return geo.addPlaneSurface([geo.addCurveLoop(oriented)])  # type: ignore[attr-defined]
+
+
+def mesh_pitch_mapped_3d(
+    profile: ToothProfile,
+    *,
+    face_width_mm: float,
+    face_layers: int,
+    height_elements: int = 20,
+    root_elements: int = 40,
+    thickness_elements: int = 5,
+    rim_elements: int = 8,
+    gap_elements: int | None = None,
+    rim_depth_mm: float | None = None,
+    min_jacobi: float = 0.35,
+    limit_angle_deg: float = 65.0,
+) -> Mesh3D:
+    """Structured C3D8 mesh of one tooth pitch, swept over the face width."""
+    section, quality = mesh_pitch_mapped_2d(
+        profile,
+        height_elements=height_elements,
+        root_elements=root_elements,
+        thickness_elements=thickness_elements,
+        rim_elements=rim_elements,
+        gap_elements=gap_elements,
+        rim_depth_mm=rim_depth_mm,
+        min_jacobi=min_jacobi,
+        limit_angle_deg=limit_angle_deg,
+    )
+    return extrude_to_hex(section, quality, width=face_width_mm, layers=face_layers)

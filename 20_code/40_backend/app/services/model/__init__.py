@@ -10,11 +10,14 @@
 """
 
 from app.services.model.gmsh_mesher import Mesh3D, mesh_tooth_pitch, mesh_tooth_pitch_3d
+from app.services.model.mapped_mesher import mesh_pitch_mapped_2d, mesh_pitch_mapped_3d
 from app.services.model.tooth_mesh import Mesh2D, tooth_sector_2d
 
 __all__ = [
     "Mesh2D",
     "Mesh3D",
+    "mesh_pitch_mapped_2d",
+    "mesh_pitch_mapped_3d",
     "mesh_tooth_pitch",
     "mesh_tooth_pitch_3d",
     "tooth_sector_2d",
