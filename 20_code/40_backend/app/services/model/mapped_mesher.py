@@ -175,6 +175,121 @@ def _surface(geo: object, curves: list[int], *, reverse: set[int]) -> int:
     return geo.addPlaneSurface([geo.addCurveLoop(oriented)])  # type: ignore[attr-defined]
 
 
+def _mesh_rim_pitch_2d(
+    profile: ToothProfile,
+    *,
+    rim_elements: int,
+    gap_elements: int,
+    rim_depth_mm: float | None,
+    min_jacobi: float,
+) -> tuple[Mesh2D, Array]:
+    """A single transfinite rim-only annular block over one pitch (for tooth-free segments)."""
+    pitch_half = math.pi / profile.z
+    r_df = profile.root_diameter_mm / 2.0
+    rim = r_df - (rim_depth_mm if rim_depth_mm is not None else 2.0 * profile.mn)
+
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 0)
+    try:
+        gmsh.model.add("rim_pitch")
+        geo = gmsh.model.geo
+
+        def oc(radius: float, angle: float) -> int:
+            return geo.addPoint(radius * math.sin(angle), radius * math.cos(angle), 0.0)
+
+        tl, tr = oc(r_df, -pitch_half), oc(r_df, pitch_half)
+        bl, br = oc(rim, -pitch_half), oc(rim, pitch_half)
+        ctr = geo.addPoint(0.0, 0.0, 0.0)
+        top = geo.addCircleArc(tl, ctr, tr)
+        right = geo.addLine(tr, br)
+        bot = geo.addCircleArc(br, ctr, bl)
+        left = geo.addLine(bl, tl)
+        surf = geo.addPlaneSurface([geo.addCurveLoop([top, right, bot, left])])
+        geo.synchronize()
+        geo.mesh.setTransfiniteCurve(top, gap_elements + 1)
+        geo.mesh.setTransfiniteCurve(bot, gap_elements + 1)
+        geo.mesh.setTransfiniteCurve(left, rim_elements + 1)
+        geo.mesh.setTransfiniteCurve(right, rim_elements + 1)
+        geo.mesh.setTransfiniteSurface(surf, "Left", [tl, tr, br, bl])
+        geo.mesh.setRecombine(2, surf)
+        geo.synchronize()
+        gmsh.model.mesh.generate(2)
+        return _extract_2d_quality()
+    finally:
+        gmsh.finalize()
+
+
+def _rotate2d(nodes: Array, angle: float) -> Array:
+    c, s = math.cos(angle), math.sin(angle)
+    return nodes @ np.array([[c, s], [-s, c]])
+
+
+def _merge_coincident(
+    nodes: Array, elements: Array, tol: float = 1e-6
+) -> tuple[Array, NDArray[np.int64]]:
+    """Deduplicate coincident nodes (rounded to ``tol``) and remap the element connectivity."""
+    keys = np.round(nodes / tol).astype(np.int64)
+    _, index, inverse = np.unique(keys, axis=0, return_index=True, return_inverse=True)
+    return nodes[index], inverse[elements].astype(np.int64)
+
+
+def mesh_sector_mapped_2d(
+    profile: ToothProfile,
+    *,
+    n_teeth: int,
+    n_segments: int = 1,
+    height_elements: int = 20,
+    root_elements: int = 40,
+    thickness_elements: int = 5,
+    rim_elements: int = 8,
+    gap_elements: int | None = None,
+    rim_depth_mm: float | None = None,
+    min_jacobi: float = 0.35,
+    limit_angle_deg: float = 65.0,
+) -> tuple[Mesh2D, Array]:
+    """Structured mesh of a gear sector: ``n_teeth`` teeth + ``n_segments`` rim pitches each side.
+
+    Builds the structured tooth pitch and a rim-only pitch once, then rotates copies into
+    place and merges the coincident rim-cut nodes — a connected, mapped sector with the
+    gear-body angle (n_teeth + 2·n_segments)·360°/z, no boundary self-intersection.
+    """
+    n_gap = gap_elements if gap_elements is not None else thickness_elements
+    tooth, tq = mesh_pitch_mapped_2d(
+        profile,
+        height_elements=height_elements,
+        root_elements=root_elements,
+        thickness_elements=thickness_elements,
+        rim_elements=rim_elements,
+        gap_elements=n_gap,
+        rim_depth_mm=rim_depth_mm,
+        min_jacobi=min_jacobi,
+        limit_angle_deg=limit_angle_deg,
+    )
+    rim, rq = _mesh_rim_pitch_2d(
+        profile,
+        rim_elements=rim_elements,
+        gap_elements=n_gap,
+        rim_depth_mm=rim_depth_mm,
+        min_jacobi=min_jacobi,
+    )
+    pitch = 2.0 * math.pi / profile.z
+    total = n_teeth + 2 * n_segments
+    parts_n: list[Array] = []
+    parts_q: list[Array] = []
+    quality: list[Array] = []
+    offset = 0
+    for k in range(total):
+        theta = (k - (total - 1) / 2.0) * pitch
+        is_tooth = n_segments <= k < n_segments + n_teeth
+        mesh, qual = (tooth, tq) if is_tooth else (rim, rq)
+        parts_n.append(_rotate2d(mesh.nodes, theta))
+        parts_q.append(mesh.quads + offset)
+        quality.append(qual)
+        offset += mesh.n_nodes
+    nodes, quads = _merge_coincident(np.vstack(parts_n), np.vstack(parts_q))
+    return Mesh2D(nodes, quads), np.concatenate(quality)
+
+
 def mesh_pitch_mapped_3d(
     profile: ToothProfile,
     *,
@@ -192,6 +307,39 @@ def mesh_pitch_mapped_3d(
     """Structured C3D8 mesh of one tooth pitch, swept over the face width."""
     section, quality = mesh_pitch_mapped_2d(
         profile,
+        height_elements=height_elements,
+        root_elements=root_elements,
+        thickness_elements=thickness_elements,
+        rim_elements=rim_elements,
+        gap_elements=gap_elements,
+        rim_depth_mm=rim_depth_mm,
+        min_jacobi=min_jacobi,
+        limit_angle_deg=limit_angle_deg,
+    )
+    return extrude_to_hex(section, quality, width=face_width_mm, layers=face_layers)
+
+
+def mesh_sector_mapped_3d(
+    profile: ToothProfile,
+    *,
+    n_teeth: int,
+    face_width_mm: float,
+    face_layers: int,
+    n_segments: int = 1,
+    height_elements: int = 20,
+    root_elements: int = 40,
+    thickness_elements: int = 5,
+    rim_elements: int = 8,
+    gap_elements: int | None = None,
+    rim_depth_mm: float | None = None,
+    min_jacobi: float = 0.35,
+    limit_angle_deg: float = 65.0,
+) -> Mesh3D:
+    """Structured C3D8 mesh of a gear sector (n_teeth + 2·n_segments pitches), swept over the face."""
+    section, quality = mesh_sector_mapped_2d(
+        profile,
+        n_teeth=n_teeth,
+        n_segments=n_segments,
         height_elements=height_elements,
         root_elements=root_elements,
         thickness_elements=thickness_elements,
