@@ -56,16 +56,32 @@ def _deck(n_teeth: int = 3) -> str:
         "gap_elements": 3,
     }
     part1 = build_gear_part(
-        p1, gear=1, material=MarlowUniaxial("PA_kstE"), n_teeth=n_teeth,
-        face_width_mm=15.0, face_layers=2, rot_rad=-math.pi / 2.0, **mesh_kw,
+        p1,
+        gear=1,
+        material=MarlowUniaxial("PA_kstE"),
+        n_teeth=n_teeth,
+        face_width_mm=15.0,
+        face_layers=2,
+        rot_rad=-math.pi / 2.0,
+        **mesh_kw,
     )
     part2 = build_gear_part(
-        p2, gear=2, material=LinearElastic("STEEL", 210000.0, 0.3), n_teeth=n_teeth,
-        face_width_mm=15.0, face_layers=2, rot_rad=math.pi / 2.0 + math.pi / p2.z, dx=a, **mesh_kw,
+        p2,
+        gear=2,
+        material=LinearElastic("STEEL", 210000.0, 0.3),
+        n_teeth=n_teeth,
+        face_width_mm=15.0,
+        face_layers=2,
+        rot_rad=math.pi / 2.0 + math.pi / p2.z,
+        dx=a,
+        **mesh_kw,
     )
     kin = RollKinematics(
-        center_distance_mm=a, wheel_torque_nmm=7846.0, roll_angle_rad=0.25,
-        n_roll_positions=10, settle_positions=3,
+        center_distance_mm=a,
+        wheel_torque_nmm=7846.0,
+        roll_angle_rad=0.25,
+        n_roll_positions=10,
+        settle_positions=3,
     )
     return build_implicit_pair_deck(part1, part2, kin=kin, contact_gap_mm=6.0)
 
@@ -81,8 +97,13 @@ def test_deck_has_reference_parts_sets_and_surfaces() -> None:
     assert "TOOTH-1-001F1" in surf_names and "TOOTH-2-001F2" in surf_names
     assert "G1T001F1_NODESET" in nset_names and "G2T003F2_NODESET" in nset_names
     assert "G1T001F1_ELEMENTSET" in elset_names
-    assert {"Rot_Node_Rad1", "Rot_Node_Rad2", "MASTERKNOTEN_NODE_SET",
-            "Fesselung_Rad1", "Fesselung_Rad2"} <= nset_names
+    assert {
+        "Rot_Node_Rad1",
+        "Rot_Node_Rad2",
+        "MASTERKNOTEN_NODE_SET",
+        "Fesselung_Rad1",
+        "Fesselung_Rad2",
+    } <= nset_names
 
 
 def test_deck_fastening_contact_and_step() -> None:

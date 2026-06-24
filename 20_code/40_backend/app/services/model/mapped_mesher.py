@@ -40,10 +40,14 @@ def _extract_2d_quality() -> tuple[Mesh2D, Array]:
     p = pts[quads]  # (M, 4, 2) — signed shoelace area; flip clockwise quads to CCW
     x, y = p[..., 0], p[..., 1]
     area2 = (
-        x[:, 0] * y[:, 1] - x[:, 1] * y[:, 0]
-        + x[:, 1] * y[:, 2] - x[:, 2] * y[:, 1]
-        + x[:, 2] * y[:, 3] - x[:, 3] * y[:, 2]
-        + x[:, 3] * y[:, 0] - x[:, 0] * y[:, 3]
+        x[:, 0] * y[:, 1]
+        - x[:, 1] * y[:, 0]
+        + x[:, 1] * y[:, 2]
+        - x[:, 2] * y[:, 1]
+        + x[:, 2] * y[:, 3]
+        - x[:, 3] * y[:, 2]
+        + x[:, 3] * y[:, 0]
+        - x[:, 0] * y[:, 3]
     )
     quads[area2 < 0.0] = quads[area2 < 0.0][:, ::-1]
     return Mesh2D(pts, quads), quality

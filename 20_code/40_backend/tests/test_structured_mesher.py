@@ -67,7 +67,12 @@ def test_assemble_pitch_optimization_smoothing_lifts_quality() -> None:
     p = _profile()
     tooth, _, base = tooth_section_2d(p, height_elements=5, root_elements=4, thickness_elements=14)
     body, _ = body_section_2d(
-        p, tooth.nodes[base], bore_radius_mm=10.0, n_gap=1, bore_columns=4, rim_rows=10,
+        p,
+        tooth.nodes[base],
+        bore_radius_mm=10.0,
+        n_gap=1,
+        bore_columns=4,
+        rim_rows=10,
         smooth_iters=0,
     )
     raw_nodes = np.vstack([tooth.nodes, body.nodes])

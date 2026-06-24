@@ -161,9 +161,7 @@ def _merge(nodes: Array, quads: IntArray, tol: float = 1e-6) -> tuple[Array, Int
     return nodes[index], inverse[quads.reshape(-1)].reshape(quads.shape).astype(np.int64)
 
 
-def _laplacian_smooth(
-    nodes: Array, quads: IntArray, fixed: set[int], iters: int = 40
-) -> Array:
+def _laplacian_smooth(nodes: Array, quads: IntArray, fixed: set[int], iters: int = 40) -> Array:
     """Laplacian smoothing: move every non-``fixed`` node to its edge-neighbour centroid.
 
     Lifts the quality of the raw coarsening-fan cells (the transfinite tooth is already smoothed by
@@ -201,9 +199,7 @@ _OPT_DIRS = np.array(
 )
 
 
-def _optimize_smooth(
-    nodes: Array, quads: IntArray, fixed: set[int], iters: int = 40
-) -> Array:
+def _optimize_smooth(nodes: Array, quads: IntArray, fixed: set[int], iters: int = 40) -> Array:
     """Quality-greedy (optimization-based) smoothing: per node, move to the trial position that
     maximises the minimum scaled Jacobian of its incident quads.
 
