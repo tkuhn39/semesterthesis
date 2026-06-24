@@ -535,3 +535,43 @@ the native dynamics and (later) the face load factor consistently — closing th
 analytical-capacity gap before RIKOR.
 
 ---
+
+## ADR-017 — FE rolling-model mesh: ρ_F-arc root, transfinite tooth, all-quad body fan
+
+**Status:** Accepted (2026-06-24)
+
+**Context:** The first FE rolling deck (Step 3) was structurally right but the mesh was wrong
+versus the reference ANSA mesh (`32_Abaqus/implicit/…_ohne_Radkoerper.inp`): the tooth root came
+out **inverted/pinched** ("Pokal" shape), the rim was a thin band, and the body lacked the
+reference's coarsening transition. Root cause (verified numerically on kst-E): `tooth_form.
+root_fillet_points` produced a **non-monotonic, branch-mixed trochoid** whose half-angle did not
+even meet the involute at d_Ff (2.75° vs 2.25°); `_monotone_fillet` only masked the dip.
+
+**Decision:**
+1. **Geometry — clean boundary.** New `tooth_form.transverse_right_boundary`: the root fillet is the
+   **circular arc of radius ρ_F** (validated DIN 3990 / ISO 6336-3 value from `tooth_root.py`)
+   **tangent to the involute flank** (true d_Ff by bisection) **and to the root circle d_f**. The
+   half-angle is monotone non-increasing root→tip (rounded root, no pinch). Regression test guards it.
+2. **Mesher — transfinite from the clean boundary.** Feed the clean boundary into the structured
+   **transfinite `mapped_mesher`** (not a pure radius-arc Coons tooth: that hit Jacobi ≈ 0.13 at the
+   fillet tangent). Result: rounded root, deep rim to the real bore, **Jacobi-Güte ≥ 0.9**. A
+   native radius-arc mesher (`structured_mesher.py`) is kept as a fallback.
+3. **Surface boundary layer.** Thickness curves graded with a gmsh "Bump" (`flank_bias`) so the
+   contact/root surface layer is finer than the interior; the rim is radially graded fine→coarse.
+4. **Winding.** `_extract_2d_quality` normalises every quad to CCW so the face-width sweep yields
+   positively-oriented C3D8 hexahedra (Abaqus rejects negative Jacobians).
+5. **Body fan — all-quad 2:1 template.** The reference's circumferential coarsening (fine surface →
+   coarse body) must be **pure hexahedra**. gmsh recombine cannot do conformal all-quad coarsening
+   here (Blossom → triangles; full-quad → "cannot divide by 2"). A hand-built **conformal all-quad
+   4→2 transition template** (6 quads, 3 interior nodes, near-rectangular) was designed and validated
+   standalone (conformal, |Jacobi| = 1.0). Integration into the annular body is the next step.
+
+**Validation:** kst-E both gears — boundary half-angle monotone, root widest, within the half pitch,
+C0 at the stitch; transfinite sector Jacobi 0.90–0.95; the 4→2 template 16→8→4→2 all-quad,
+conformal, |Jacobi| 1.0 (`80_output/coarsen_template_check.png`).
+
+**Consequences:** the tooth/root mesh (the stress-critical region and the thesis target) is now
+reference-grade; the body fan lands via the validated template, then the deck conventions/BCs
+(Workstream C) follow. The trochoid (`root_fillet_points`) remains for a later high-fidelity option.
+
+---

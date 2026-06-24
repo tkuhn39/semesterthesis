@@ -25,13 +25,26 @@ Array = NDArray[np.float64]
 
 
 def _extract_2d_quality() -> tuple[Mesh2D, Array]:
-    """Pull the recombined quad section + per-quad Jacobi-Güte from the active gmsh model."""
+    """Pull the recombined quad section + per-quad Jacobi-Güte from the active gmsh model.
+
+    gmsh emits quads in mixed winding; we normalise each to CCW (positive area) so the face-width
+    sweep produces positively-oriented C3D8 hexahedra (Abaqus rejects negative-Jacobian elements).
+    """
     node_tags, coords, _ = gmsh.model.mesh.getNodes()
     pts = np.array(coords).reshape(-1, 3)[:, :2]
     index = {int(t): i for i, t in enumerate(node_tags)}
     elem_tags, conn = gmsh.model.mesh.getElementsByType(3)  # 4-node quad
     quads = np.array([index[int(t)] for t in conn]).reshape(-1, 4)
     quality = np.array(gmsh.model.mesh.getElementQualities(elem_tags, "minSJ"))  # = Jacobi-Güte
+    p = pts[quads]  # (M, 4, 2) — signed shoelace area; flip clockwise quads to CCW
+    x, y = p[..., 0], p[..., 1]
+    area2 = (
+        x[:, 0] * y[:, 1] - x[:, 1] * y[:, 0]
+        + x[:, 1] * y[:, 2] - x[:, 2] * y[:, 1]
+        + x[:, 2] * y[:, 3] - x[:, 3] * y[:, 2]
+        + x[:, 3] * y[:, 0] - x[:, 0] * y[:, 3]
+    )
+    quads[area2 < 0.0] = quads[area2 < 0.0][:, ::-1]
     return Mesh2D(pts, quads), quality
 
 
@@ -62,19 +75,6 @@ def _check_budget(n_elements: int, max_elements: int, what: str) -> None:
         )
 
 
-def _monotone_fillet(fillet: Array) -> Array:
-    """Clamp the (right) fillet so its half-angle is monotone d_f → d_Ff.
-
-    The trochoid folds back near d_f (a few points dip in angle), which makes the
-    structured rows wiggle. Enforcing a non-decreasing |angle| outward removes the
-    fold while keeping each point on its radius circle.
-    """
-    r = np.hypot(fillet[:, 0], fillet[:, 1])
-    a = np.abs(np.arctan2(fillet[:, 0], fillet[:, 1]))
-    a = np.maximum.accumulate(a)  # fillet is ordered d_f → d_Ff (radius ascending)
-    return np.column_stack([r * np.sin(a), r * np.cos(a)])
-
-
 def mesh_pitch_mapped_2d(
     profile: ToothProfile,
     *,
@@ -87,6 +87,7 @@ def mesh_pitch_mapped_2d(
     min_jacobi: float = 0.35,
     limit_angle_deg: float = 65.0,
     samples: int = 40,
+    flank_bias: float = 0.0,
     max_elements: int = DEFAULT_MAX_ELEMENTS,
 ) -> tuple[Mesh2D, Array]:
     """Structured quad mesh of one tooth pitch (5 transfinite blocks). Returns (mesh, quality).
@@ -107,9 +108,12 @@ def mesh_pitch_mapped_2d(
         "mapped pitch 2-D mesh",
     )
 
-    flank = _xy(profile.flank_points(samples))  # d_Ff → d_Na
-    fillet = _monotone_fillet(_xy(profile.root_fillet_points(samples)))  # d_f → d_Ff
-    r_t, r_f = flank[-1], flank[0]  # right tip, right d_Ff junction
+    # Clean transverse boundary: rounded ρ_F fillet (d_f → form circle) + involute flank
+    # (form circle → d_Na), split at the shared junction so the two splines stay C0.
+    boundary = profile.transverse_right_boundary(fillet_points=samples, flank_points=samples)
+    fillet = _xy(boundary[:samples])  # d_f → form circle
+    flank = _xy(boundary[samples - 1 :])  # form circle → d_Na (shares the junction node)
+    r_t, r_f = flank[-1], flank[0]  # right tip, right form-circle junction
     r_d = fillet[0]  # right d_f (fillet bottom)
     ang_d = math.atan2(r_d[0], r_d[1])  # right fillet-bottom angle
 
@@ -167,19 +171,29 @@ def mesh_pitch_mapped_2d(
         rim_r = _surface(geo, [gap_r, rad_gr, bore_r, rad_dr], reverse={rad_dr})
         geo.synchronize()
 
-        def seed(curve: int, n: int) -> None:
-            geo.mesh.setTransfiniteCurve(curve, n + 1)
+        def seed(curve: int, n: int, kind: str = "", coef: float = 1.0) -> None:
+            if kind:
+                geo.mesh.setTransfiniteCurve(curve, n + 1, kind, coef)
+            else:
+                geo.mesh.setTransfiniteCurve(curve, n + 1)
 
         for c in (rflank, lflank):
             seed(c, height_elements)
         for c in (rfil, lfil):
             seed(c, root_elements)
-        for c in (tip, base_ff, base_df, bore_t):
-            seed(c, thickness_elements)
+        for c in (tip, base_ff, base_df, bore_t):  # thickness curves → fine surface boundary layer
+            if flank_bias > 0.0:
+                seed(c, thickness_elements, "Bump", flank_bias)
+            else:
+                seed(c, thickness_elements)
         for c in (gap_l, gap_r, bore_l, bore_r):
             seed(c, n_gap)
-        for c in (rad_dl, rad_dr, rad_gl, rad_gr):
-            seed(c, rim_elements)
+        # radial rim edges graded fine at d_f → coarse at the bore (fine surface runs out into the
+        # coarser body); mirror grade on the two pitch sides so adjacent pitches still merge.
+        for c in (rad_dr, rad_gr):  # oriented d_f → bore
+            seed(c, rim_elements, "Progression", 1.25)
+        for c in (rad_dl, rad_gl):  # oriented bore → d_f (mirror)
+            seed(c, rim_elements, "Progression", 1.0 / 1.25)
 
         for s, corners in (
             (body, [lt, rt, rf, lf]),
@@ -192,9 +206,13 @@ def mesh_pitch_mapped_2d(
             geo.mesh.setRecombine(2, s)
         geo.synchronize()
 
+        gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)  # Blossom (transfinite → all-quad)
         gmsh.option.setNumber("Mesh.Optimize", 1)
         gmsh.option.setNumber("Mesh.OptimizeThreshold", min_jacobi)
         gmsh.model.mesh.generate(2)
+        n_tri = len(gmsh.model.mesh.getElementsByType(2)[0])  # type 2 = triangle
+        if n_tri:
+            raise ValueError(f"recombine left {n_tri} triangles (need an all-quad section)")
         mesh, quality = _extract_2d_quality()
     finally:
         gmsh.finalize()
@@ -286,6 +304,7 @@ def mesh_sector_mapped_2d(
     rim_depth_mm: float | None = None,
     min_jacobi: float = 0.35,
     limit_angle_deg: float = 65.0,
+    flank_bias: float = 0.0,
     max_elements: int = DEFAULT_MAX_ELEMENTS,
 ) -> tuple[Mesh2D, Array]:
     """Structured mesh of a gear sector: ``n_teeth`` teeth + ``n_segments`` rim pitches each side.
@@ -313,6 +332,7 @@ def mesh_sector_mapped_2d(
         rim_depth_mm=rim_depth_mm,
         min_jacobi=min_jacobi,
         limit_angle_deg=limit_angle_deg,
+        flank_bias=flank_bias,
         max_elements=max_elements,
     )
     rim, rq = _mesh_rim_pitch_2d(
@@ -353,6 +373,7 @@ def mesh_pitch_mapped_3d(
     rim_depth_mm: float | None = None,
     min_jacobi: float = 0.35,
     limit_angle_deg: float = 65.0,
+    flank_bias: float = 0.0,
     max_elements: int = DEFAULT_MAX_ELEMENTS,
 ) -> Mesh3D:
     """Structured C3D8 mesh of one tooth pitch, swept over the face width."""
@@ -373,6 +394,7 @@ def mesh_pitch_mapped_3d(
         rim_depth_mm=rim_depth_mm,
         min_jacobi=min_jacobi,
         limit_angle_deg=limit_angle_deg,
+        flank_bias=flank_bias,
         max_elements=max_elements,
     )
     return extrude_to_hex(section, quality, width=face_width_mm, layers=face_layers)
@@ -393,6 +415,7 @@ def mesh_sector_mapped_3d(
     rim_depth_mm: float | None = None,
     min_jacobi: float = 0.35,
     limit_angle_deg: float = 65.0,
+    flank_bias: float = 0.0,
     max_elements: int = DEFAULT_MAX_ELEMENTS,
 ) -> Mesh3D:
     """Structured C3D8 mesh of a gear sector (n_teeth + 2·n_segments pitches) over the face."""
@@ -417,6 +440,7 @@ def mesh_sector_mapped_3d(
         rim_depth_mm=rim_depth_mm,
         min_jacobi=min_jacobi,
         limit_angle_deg=limit_angle_deg,
+        flank_bias=flank_bias,
         max_elements=max_elements,
     )
     return extrude_to_hex(section, quality, width=face_width_mm, layers=face_layers)

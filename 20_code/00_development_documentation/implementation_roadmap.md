@@ -9,7 +9,9 @@ It complements, and does not replace:
 - [`architecture_decisions.md`](architecture_decisions.md) — the ADRs (why).
 - The master plan in plan mode — the FE-modelling vision and trade-offs.
 
-_Last updated: 2026-06-18 — A2 (free geometry → capacity) and A4 (static peak load, VDI 2736 §3.3) added; 98 tests green._
+_Last updated: 2026-06-24 — Step 3 FE rolling model in progress: reference-grade tooth/root geometry +
+transfinite mesh (boundary layer, deep rim, Jacobi ≥ 0.9) and the validated all-quad body-coarsening
+template (ADR-017); 136 tests green._
 
 Status legend: ✅ done & validated · 🟦 in progress · ⬜ planned · ❓ open decision.
 
@@ -127,7 +129,19 @@ output as REXS-compatible data. Validate against the RIKOR standard test cases a
 varied inputs run through the original RIKOR. (REXS reader already exists.)
 Done by the maintainer, not by sub-agents.
 
-### Step 3 — FE rolling-model build ⬜ (released after Steps 1+2 are clean)
+### Step 3 — FE rolling-model build 🟦 (in progress — reference reproduction, `ohne_Radkoerper`)
+**Progress (2026-06-24, ADR-017):** Native STplus geometry → FE deck pipeline stands. Tooth/root
+geometry is **reference-grade**: clean rounded ρ_F root fillet (`tooth_form.transverse_right_boundary`),
+transfinite mesh fed that boundary with a fine **surface boundary layer** + radially graded **deep
+rim** to the real bore, Jacobi-Güte ≥ 0.9, CCW winding fixed. The reference **all-quad 4→2 body
+coarsening template** (the circumferential fan) is designed + validated standalone (|Jacobi| 1.0);
+**next: integrate it into the annular body** (get the d_f interface from the tooth → coarsen → bore).
+Deck generator (`implicit_deck.py`, `materials_card.py`, `mesh_sets.tag_gear_reference`) produces the
+reference set/surface naming + Marlow/steel materials + single staircase step. **Still open (Workstream
+C):** the `.ste` conventions in the deck (Part_Rad_Vz_1 = wheel z52/PA/b15, Vz_2 = pinion z51/steel/b17),
+Fesselung = radial cut faces (lateral hold), z-centring, and the torque convention (M_wheel·z51/z52 on
+the pinion). Live Abaqus solve runs on the user's cluster (locally node-limited).
+
 Build the quasi-static rolling Abaqus model in `model/` + `body/`:
 - Rigid steel pinion as a **rigid surface** (+ reference node); plastic gear as a
   **symmetric sector** cut from the CAD `.stp`, coupled to the rim (per FVA 484).

@@ -48,3 +48,31 @@ def test_tooth_profile_spans_root_to_tip() -> None:
     radii = [_radius(p) for p in profile.right_flank_profile()]
     assert radii == sorted(radii)
     assert all(point[0] >= -1e-9 for point in profile.right_flank_profile())
+
+
+@pytest.mark.skipif(not _REF_STE.exists(), reason="STplus reference .ste not present")
+def test_transverse_boundary_rounded_root_monotone() -> None:
+    """The clean meshing boundary is a rounded root (widest at d_f) narrowing monotonically to d_Na.
+
+    This is the regression guard for the inverted/pinched root: the half-angle from the tooth centre
+    line must be monotone non-increasing with radius (no pinch), bounded by the half pitch (no
+    crossing into the neighbour), continuous (no kink), and span d_f → d_Na for both gears.
+    """
+    stage = GearStage.from_ste(gear_stage_from_ste(load_ste(_REF_STE)))
+    for index in (0, 1):
+        profile = ToothProfile.from_stage(stage, index)
+        boundary = profile.transverse_right_boundary(fillet_points=20, flank_points=30)
+        radii = [_radius(p) for p in boundary]
+        half_angles = [math.degrees(math.atan2(p[0], p[1])) for p in boundary]
+        half_pitch = 180.0 / profile.z
+
+        assert 2.0 * radii[0] == pytest.approx(profile.root_diameter_mm, abs=1e-2)  # starts at d_f
+        assert 2.0 * radii[-1] == pytest.approx(profile.d_Na, abs=1e-2)  # ends at d_Na
+        assert radii == sorted(radii)  # radius monotone increasing root → tip
+        # half-angle monotone non-increasing (root is the widest section — no pinch/inversion)
+        assert all(half_angles[k] <= half_angles[k - 1] + 1e-6 for k in range(1, len(half_angles)))
+        assert max(half_angles) == half_angles[0]  # widest exactly at the root
+        assert half_angles[0] < half_pitch  # tooth stays within its pitch
+        # C0: no jump between consecutive boundary points (continuous fillet→flank stitch)
+        steps = [math.dist(boundary[k], boundary[k - 1]) for k in range(1, len(boundary))]
+        assert max(steps) < 0.3 * profile.mn

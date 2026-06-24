@@ -15,29 +15,58 @@ from app.services.model.abaqus_writer import (
     build_gear_deck,
     build_rolling_deck,
 )
+from app.services.model.implicit_deck import (
+    GearPart,
+    RollKinematics,
+    build_gear_part,
+    build_implicit_pair_deck,
+    build_implicit_pair_from_stage,
+)
 from app.services.model.mapped_mesher import (
     mesh_pitch_mapped_2d,
     mesh_pitch_mapped_3d,
     mesh_sector_mapped_2d,
     mesh_sector_mapped_3d,
 )
+from app.services.model.materials_card import (
+    LinearElastic,
+    MarlowUniaxial,
+    Material,
+    material_card,
+)
 from app.services.model.mesh3d import Mesh3D, extrude_to_hex
-from app.services.model.mesh_sets import SectorSurfaces, tag_sector_surfaces
+from app.services.model.mesh_sets import (
+    GearReferenceSets,
+    SectorSurfaces,
+    tag_gear_reference,
+    tag_sector_surfaces,
+)
 from app.services.model.tooth_mesh import Mesh2D, tooth_sector_2d
 
 __all__ = [
     "ElasticMaterial",
+    "GearPart",
+    "GearReferenceSets",
+    "LinearElastic",
+    "MarlowUniaxial",
+    "Material",
     "Mesh2D",
     "Mesh3D",
+    "RollKinematics",
     "RollingSetup",
     "SectorSurfaces",
     "build_gear_deck",
+    "build_gear_part",
+    "build_implicit_pair_deck",
+    "build_implicit_pair_from_stage",
     "build_rolling_deck",
     "extrude_to_hex",
+    "material_card",
     "mesh_pitch_mapped_2d",
     "mesh_pitch_mapped_3d",
     "mesh_sector_mapped_2d",
     "mesh_sector_mapped_3d",
+    "tag_gear_reference",
     "tag_sector_surfaces",
     "tooth_sector_2d",
 ]

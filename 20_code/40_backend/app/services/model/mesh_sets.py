@@ -13,6 +13,7 @@
 """
 
 import math
+from collections import defaultdict
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -107,3 +108,91 @@ def tag_sector_surfaces(
         name: np.array(sorted(ns), dtype=np.int64) for name, ns in node_groups.items()
     }
     return surfaces
+
+
+@dataclass
+class GearReferenceSets:
+    """Reference-named (FVA WoBe-892) sets/surfaces for one gear sector, in 1-based 3-D ids.
+
+    The frozen FVA postprocessing builds its set names as ``G{gear}T{tooth:03d}F{flank}_NODESET`` /
+    ``_ELEMENTSET`` and reads the matching ``TOOTH-{gear}-{tooth:03d}F{flank}`` element surfaces, so
+    the deck must emit exactly these. ``flank`` is 1 (right, +angle) or 2 (left, −angle); ``tooth``
+    is 1-based. Ids are 1-based and refer to the 3-D mesh swept by ``extrude_to_hex``.
+    """
+
+    gear: int
+    n_teeth: int
+    bore_nodes: IntArray  # Fesselung: 1-based bore node ids (tied to the rotation node)
+    flank_nodes: dict[tuple[int, int], IntArray]  # (tooth, flank) -> 1-based node ids
+    flank_elements: dict[tuple[int, int], IntArray]  # (tooth, flank) -> 1-based hex ids
+    flank_faces: dict[tuple[int, int], list[tuple[int, str]]]  # (tooth, flank) -> (hex id, face)
+
+
+def tag_gear_reference(
+    section: Mesh2D,
+    *,
+    profile: ToothProfile,
+    gear: int,
+    n_teeth: int,
+    n_segments: int,
+    layers: int,
+    tol_mm: float | None = None,
+) -> GearReferenceSets:
+    """Classify a swept gear sector into the reference per-tooth/flank sets + bore (Fesselung).
+
+    Same boundary geometry as ``tag_sector_surfaces`` but emits the reference naming and **1-based
+    3-D** ids: each 2-D boundary node expands over the ``layers + 1`` face-width node planes and
+    each boundary quad-edge over the ``layers`` swept side faces (the ``extrude_to_hex`` layout).
+    The radial cut faces and tip land are left free — the postprocessing does not consume them.
+    """
+    tol = tol_mm if tol_mm is not None else 0.02 * profile.mn
+    pitch = 2.0 * math.pi / profile.z
+    total = n_teeth + 2 * n_segments
+    centres = [(n_segments + i - (total - 1) / 2.0) * pitch for i in range(n_teeth)]
+    half_sector = total * pitch / 2.0
+    r_na, r_ff = profile.d_Na / 2.0, profile.d_Ff / 2.0
+    used = np.unique(section.quads)
+    r_bore = float(np.hypot(section.nodes[used, 0], section.nodes[used, 1]).min())
+    n_quads = section.n_quads
+    n_nodes = section.n_nodes
+
+    def nodes_3d(edge: tuple[int, int]) -> set[int]:
+        return {layer * n_nodes + nd + 1 for layer in range(layers + 1) for nd in edge}
+
+    bore: set[int] = set()
+    flank_nodes: dict[tuple[int, int], set[int]] = defaultdict(set)
+    flank_elems: dict[tuple[int, int], set[int]] = defaultdict(set)
+    flank_faces: dict[tuple[int, int], list[tuple[int, str]]] = defaultdict(list)
+
+    for qi, p in _boundary_edges(section):
+        edge = (int(section.quads[qi][p]), int(section.quads[qi][(p + 1) % 4]))
+        mid = section.nodes[list(edge)].mean(axis=0)
+        r = float(np.hypot(mid[0], mid[1]))
+        ang = math.atan2(mid[0], mid[1])
+        if abs(abs(ang) - half_sector) < tol / max(r, 1e-6):
+            continue  # radial cut face — free
+        if abs(r - r_bore) < tol:
+            bore.update(nodes_3d(edge))
+        elif abs(r - r_na) < tol:
+            continue  # tip land — not a named reference surface
+        elif r_ff + tol < r < r_na - tol:
+            tooth = int(np.argmin([abs(ang - c) for c in centres])) + 1
+            flank = 1 if ang > centres[tooth - 1] else 2  # F1 = right (+), F2 = left (−)
+            key = (tooth, flank)
+            flank_nodes[key].update(nodes_3d(edge))
+            for k in range(layers):
+                hex_id = k * n_quads + qi + 1
+                flank_elems[key].add(hex_id)
+                flank_faces[key].append((hex_id, _SIDE_FACE[p]))
+
+    def arr(ids: set[int]) -> IntArray:
+        return np.array(sorted(ids), dtype=np.int64)
+
+    return GearReferenceSets(
+        gear=gear,
+        n_teeth=n_teeth,
+        bore_nodes=arr(bore),
+        flank_nodes={k: arr(v) for k, v in flank_nodes.items()},
+        flank_elements={k: arr(v) for k, v in flank_elems.items()},
+        flank_faces=dict(flank_faces),
+    )

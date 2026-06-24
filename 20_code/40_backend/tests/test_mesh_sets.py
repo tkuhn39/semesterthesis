@@ -12,7 +12,7 @@ from app.io.ste import Pair
 from app.services.geometry.gear import GearStage, ToolReferenceProfile
 from app.services.geometry.tooth_form import ToothProfile
 from app.services.model.mapped_mesher import mesh_sector_mapped_2d
-from app.services.model.mesh_sets import tag_sector_surfaces
+from app.services.model.mesh_sets import tag_gear_reference, tag_sector_surfaces
 
 
 def _profile(index: int = 0) -> ToothProfile:
@@ -72,3 +72,37 @@ def test_sector_faces_reference_valid_hexes() -> None:
     for nodes in surf.node_sets.values():
         assert nodes.min() >= 0 and nodes.max() < section.n_nodes
         assert np.array_equal(nodes, np.unique(nodes))
+
+
+def test_reference_tags_name_every_tooth_flank_and_bore() -> None:
+    """The reference tagging yields G{g}T{nnn}F{f} sets for both flanks of every tooth + a bore."""
+    n_teeth, n_seg, layers = 3, 1, 4
+    h, t, rim = 10, 5, 6
+    section, _ = mesh_sector_mapped_2d(
+        _profile(),
+        n_teeth=n_teeth,
+        n_segments=n_seg,
+        height_elements=h,
+        root_elements=12,
+        thickness_elements=t,
+        rim_elements=rim,
+        gap_elements=6,
+    )
+    ref = tag_gear_reference(
+        section, profile=_profile(), gear=1, n_teeth=n_teeth, n_segments=n_seg, layers=layers
+    )
+
+    n_3d_nodes = (layers + 1) * section.n_nodes
+    n_3d_hexes = layers * section.n_quads
+    assert ref.bore_nodes.size > 0
+    assert ref.bore_nodes.min() >= 1 and ref.bore_nodes.max() <= n_3d_nodes
+    for tooth in range(1, n_teeth + 1):
+        for flank in (1, 2):
+            key = (tooth, flank)
+            assert key in ref.flank_nodes and key in ref.flank_faces
+            # one swept side face per flank edge per layer; element set = the same hexes (unique)
+            assert len(ref.flank_faces[key]) == h * layers
+            assert ref.flank_elements[key].size == h * layers
+            assert ref.flank_elements[key].max() <= n_3d_hexes
+            assert ref.flank_nodes[key].min() >= 1 and ref.flank_nodes[key].max() <= n_3d_nodes
+            assert all(face in {"S3", "S4", "S5", "S6"} for _, face in ref.flank_faces[key])
