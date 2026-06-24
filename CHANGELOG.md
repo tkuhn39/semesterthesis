@@ -37,6 +37,12 @@ Dates are ISO 8601 (YYYY-MM-DD).
   boundary, with a fine **surface boundary layer** (`flank_bias`, gmsh "Bump") and a radially graded
   **deep rim** to the real bore; Jacobi-Güte ≥ 0.9. Native fallback mesher
   `model/structured_mesher.py` (radius-arc tooth + rim) with a scaled-Jacobian check. (ADR-017)
+- **FE model — body mesh (WIP):** building blocks toward the reference gear-body mesh —
+  `mapped_mesher.tooth_section_2d` (transfinite tooth+fillet, no rim, + ordered d_f base interface),
+  a validated **conformal all-quad 4→2 coarsening template** + graded ring (`structured_mesher.
+  body_section_2d`), and Laplacian smoothing. The exact reference **O-grid "dome + run-out"** body
+  (fine structure continued under the tooth, coarsening only outside the root) is the next step;
+  the tooth/root itself is already reference-grade and (Saint-Venant) sets the root stress. (ADR-017)
 - **FE model:** `model/mesh3d.py` holding the pure-numpy `Mesh3D` container and
   the native `extrude_to_hex` (quad section → C3D8 hexahedra), free of gmsh.
 - **FE model:** an element-count safety valve (`max_elements`, default

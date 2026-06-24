@@ -161,6 +161,151 @@ def _merge(nodes: Array, quads: IntArray, tol: float = 1e-6) -> tuple[Array, Int
     return nodes[index], inverse[quads.reshape(-1)].reshape(quads.shape).astype(np.int64)
 
 
+def _laplacian_smooth(
+    nodes: Array, quads: IntArray, fixed: set[int], iters: int = 40
+) -> Array:
+    """Laplacian smoothing: move every non-``fixed`` node to its edge-neighbour centroid.
+
+    Lifts the quality of the raw coarsening-fan cells (the transfinite tooth is already smoothed by
+    gmsh; the native body is not). Boundary nodes — the d_f interface, the bore and the pitch
+    sides — stay fixed, so conformity and the sector merge are preserved.
+    """
+    pts = np.asarray(nodes, dtype=float).copy()
+    nbr: list[set[int]] = [set() for _ in range(len(pts))]
+    for q in quads:
+        for k in range(4):
+            a, b = int(q[k]), int(q[(k + 1) % 4])
+            nbr[a].add(b)
+            nbr[b].add(a)
+    free = [(i, np.fromiter(nbr[i], int)) for i in range(len(pts)) if i not in fixed and nbr[i]]
+    for _ in range(iters):
+        for i, neigh in free:
+            pts[i] = pts[neigh].mean(axis=0)
+    return pts
+
+
+def _angles(top_idx: list[int], nodes: list[list[float]]) -> tuple[list[float], float]:
+    """Half-angles (from +y) of `top_idx` nodes and their mean radius."""
+    ang = [math.atan2(nodes[i][0], nodes[i][1]) for i in top_idx]
+    r = float(np.mean([math.hypot(nodes[i][0], nodes[i][1]) for i in top_idx]))
+    return ang, r
+
+
+def _coarsen_band(
+    top_idx: list[int], nodes: list[list[float]], r_bot: float
+) -> tuple[list[list[int]], list[int]]:
+    """One annular all-quad 4→2 coarsening band: N top columns → N/2 bottom columns (N % 4 == 0).
+
+    Uses the validated 6-quad / 3-interior-node template per 4→2 unit. Appends bottom + interior
+    nodes to ``nodes`` (radii r_bot and mid); returns (quads, bottom_idx) with N/2+1 bottom nodes.
+    """
+    n = len(top_idx) - 1
+    ang, r_top = _angles(top_idx, nodes)
+    r_mid = 0.5 * (r_top + r_bot)
+
+    def add(radius: float, a: float) -> int:
+        nodes.append([radius * math.sin(a), radius * math.cos(a)])
+        return len(nodes) - 1
+
+    bottom = [add(r_bot, ang[2 * j]) for j in range(n // 2 + 1)]  # every other top angle
+    quads: list[list[int]] = []
+    for u in range(n // 4):
+        t = top_idx[4 * u : 4 * u + 5]
+        b0, b1, b2 = bottom[2 * u], bottom[2 * u + 1], bottom[2 * u + 2]
+        i0 = add(r_mid, ang[4 * u + 1])
+        ic = add(r_mid, ang[4 * u + 2])
+        i1 = add(r_mid, ang[4 * u + 3])
+        quads += [
+            [t[0], t[1], i0, b0],
+            [t[1], t[2], ic, i0],
+            [t[2], t[3], i1, ic],
+            [t[3], t[4], b2, i1],
+            [b0, i0, ic, b1],
+            [b1, ic, i1, b2],
+        ]
+    return quads, bottom
+
+
+def _ring_band(
+    top_idx: list[int], nodes: list[list[float]], r_bot: float, rows: int, grade: float
+) -> tuple[list[list[int]], list[int]]:
+    """Transfinite annular ring: sweep ``top_idx`` columns radially to r_bot over ``rows`` rows,
+    graded (element size grows ~``grade``× per row toward the bore). Returns (quads, bottom_idx)."""
+    n = len(top_idx) - 1
+    ang, r_top = _angles(top_idx, nodes)
+    w = np.cumsum([grade**k for k in range(rows)])
+    radii = [r_top] + [r_top + (r_bot - r_top) * float(wi / w[-1]) for wi in w]
+    quads: list[list[int]] = []
+    prev = list(top_idx)
+    for row in range(1, rows + 1):
+        rr = radii[row]
+        cur = []
+        for a in ang:
+            nodes.append([rr * math.sin(a), rr * math.cos(a)])
+            cur.append(len(nodes) - 1)
+        quads += [[prev[c], prev[c + 1], cur[c + 1], cur[c]] for c in range(n)]
+        prev = cur
+    return quads, prev
+
+
+def body_section_2d(
+    profile: ToothProfile,
+    base_xy: Array,
+    *,
+    bore_radius_mm: float,
+    n_gap: int = 1,
+    bore_columns: int = 4,
+    rim_rows: int = 8,
+    band_aspect: float = 1.5,
+    rim_grade: float = 1.2,
+) -> tuple[Mesh2D, list[int]]:
+    """All-quad gear-body section for one pitch, grown from the tooth base interface ``base_xy``.
+
+    The top row at d_f = gap-floor (``n_gap`` cells each side) + the tooth base; it coarsens
+    circumferentially via compact 4→2 bands (the reference fan, each band ≈ ``band_aspect`` × the
+    local column width so the fan cells stay near-square) down to ``bore_columns``, then a graded
+    transfinite ring carries it to the bore. Requires ``len(base_xy)-1 + 2*n_gap`` divisible by 4.
+    Returns (mesh, bore node indices).
+    """
+    pitch = 2.0 * math.pi / profile.z
+    pitch_half = pitch / 2.0
+    r_df = profile.root_diameter_mm / 2.0
+    nodes: list[list[float]] = [[float(x), float(y)] for x, y in base_xy]
+    base_idx = list(range(len(base_xy)))
+    th_l = math.atan2(base_xy[0][0], base_xy[0][1])
+    th_r = math.atan2(base_xy[-1][0], base_xy[-1][1])
+
+    def gap(a: float) -> int:
+        nodes.append([r_df * math.sin(a), r_df * math.cos(a)])
+        return len(nodes) - 1
+
+    left = [gap(a) for a in np.linspace(-pitch_half, th_l, n_gap + 1)[:-1]]
+    right = [gap(a) for a in np.linspace(th_r, pitch_half, n_gap + 1)[1:]]
+    top_idx = left + base_idx + right
+    interface = list(top_idx)  # the d_f row stays fixed (shared with the tooth)
+    if (len(top_idx) - 1) % 4 != 0:
+        raise ValueError(f"body top columns {len(top_idx) - 1} (thickness + 2·n_gap) must be ÷ 4")
+
+    quads: list[list[int]] = []
+    r = r_df
+    while (len(top_idx) - 1) // 2 >= bore_columns and (len(top_idx) - 1) % 4 == 0:
+        n_cols = len(top_idx) - 1
+        height = band_aspect * pitch * r / n_cols  # band ≈ square fan cells (compact near the root)
+        r = max(r - height, bore_radius_mm + 0.05 * (r_df - bore_radius_mm))
+        q, top_idx = _coarsen_band(top_idx, nodes, r)
+        quads += q
+    q, bore_idx = _ring_band(top_idx, nodes, bore_radius_mm, rim_rows, rim_grade)
+    quads += q
+
+    pts = np.array(nodes, float)
+    ang_all = np.abs(np.arctan2(pts[:, 0], pts[:, 1]))
+    side = {int(i) for i in np.where(np.abs(ang_all - pitch_half) < 1e-4)[0]}
+    fixed = set(interface) | set(bore_idx) | side  # smooth only the true body interior
+    quad_arr = np.array(quads, dtype=np.int64)
+    mesh = _ccw(Mesh2D(_laplacian_smooth(pts, quad_arr, fixed), quad_arr))
+    return mesh, bore_idx
+
+
 def sector_2d(
     profile: ToothProfile,
     *,

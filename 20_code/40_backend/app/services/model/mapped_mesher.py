@@ -22,6 +22,7 @@ from app.services.model.mesh3d import Mesh3D, extrude_to_hex
 from app.services.model.tooth_mesh import Mesh2D
 
 Array = NDArray[np.float64]
+IntArray = NDArray[np.int64]
 
 
 def _extract_2d_quality() -> tuple[Mesh2D, Array]:
@@ -221,6 +222,89 @@ def mesh_pitch_mapped_2d(
             f"mesh below the Jacobi-Güte target: min {quality.min():.3f} < {min_jacobi}"
         )
     return mesh, quality
+
+
+def tooth_section_2d(
+    profile: ToothProfile,
+    *,
+    height_elements: int = 20,
+    root_elements: int = 20,
+    thickness_elements: int = 10,
+    flank_bias: float = 0.0,
+    min_jacobi: float = 0.35,
+    samples: int = 40,
+) -> tuple[Mesh2D, Array, IntArray]:
+    """Transfinite tooth+fillet section d_f → d_Na (NO rim). Returns (mesh, quality, base_idx).
+
+    ``base_idx`` are the node indices of the tooth-base edge at d_f (the fillet bottom line ld→rd),
+    ordered left→right by angle — the interface the all-quad body block is grown from.
+    """
+    boundary = profile.transverse_right_boundary(fillet_points=samples, flank_points=samples)
+    fillet = _xy(boundary[:samples])
+    flank = _xy(boundary[samples - 1 :])
+    r_t, r_f, r_d = flank[-1], flank[0], fillet[0]
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 0)
+    try:
+        gmsh.model.add("tooth_section")
+        geo = gmsh.model.geo
+
+        def pt(x: float, y: float) -> int:
+            return geo.addPoint(float(x), float(y), 0.0)
+
+        def mirror(p: Array) -> Array:
+            return np.array([-p[0], p[1]])
+
+        def spline(p0: int, mids: Array, p1: int) -> int:
+            return geo.addSpline([p0] + [pt(*m) for m in mids] + [p1])
+
+        rt, lt = pt(*r_t), pt(*mirror(r_t))
+        rf, lf = pt(*r_f), pt(*mirror(r_f))
+        rd, ld = pt(*r_d), pt(*mirror(r_d))
+        rflank = spline(rt, flank[::-1][1:-1], rf)
+        lflank = spline(lt, _xy_mirror(flank[::-1][1:-1]), lf)
+        rfil = spline(rf, fillet[::-1][1:-1], rd)
+        lfil = spline(lf, _xy_mirror(fillet[::-1][1:-1]), ld)
+        tip = geo.addLine(lt, rt)
+        base_ff = geo.addLine(lf, rf)
+        base_df = geo.addLine(ld, rd)
+        body = _surface(geo, [tip, rflank, base_ff, lflank], reverse={base_ff, lflank})
+        fil = _surface(geo, [base_ff, rfil, base_df, lfil], reverse={base_df, lfil})
+        geo.synchronize()
+
+        def seed(curve: int, n: int, kind: str = "", coef: float = 1.0) -> None:
+            if kind:
+                geo.mesh.setTransfiniteCurve(curve, n + 1, kind, coef)
+            else:
+                geo.mesh.setTransfiniteCurve(curve, n + 1)
+
+        for c in (rflank, lflank):
+            seed(c, height_elements)
+        for c in (rfil, lfil):
+            seed(c, root_elements)
+        for c in (tip, base_ff):  # surface boundary layer on the flank side (d_Ff and up)
+            if flank_bias > 0.0:
+                seed(c, thickness_elements, "Bump", flank_bias)
+            else:
+                seed(c, thickness_elements)
+        seed(base_df, thickness_elements)  # tooth base UNIFORM → clean body coarsening from d_f
+        for s, corners in ((body, [lt, rt, rf, lf]), (fil, [lf, rf, rd, ld])):
+            geo.mesh.setTransfiniteSurface(s, "Left", corners)
+            geo.mesh.setRecombine(2, s)
+        geo.synchronize()
+        gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
+        gmsh.option.setNumber("Mesh.Optimize", 1)
+        gmsh.option.setNumber("Mesh.OptimizeThreshold", min_jacobi)
+        gmsh.model.mesh.generate(2)
+        base_tags = gmsh.model.mesh.getNodes(1, base_df, includeBoundary=True)[0]  # tooth base edge
+        node_tags = gmsh.model.mesh.getNodes()[0]
+        tag_to_i = {int(t): i for i, t in enumerate(node_tags)}
+        mesh, quality = _extract_2d_quality()
+    finally:
+        gmsh.finalize()
+    base = np.array([tag_to_i[int(t)] for t in base_tags], dtype=np.int64)
+    base = base[np.argsort(np.arctan2(mesh.nodes[base, 0], mesh.nodes[base, 1]))]  # left → right
+    return mesh, quality, base
 
 
 def _xy_mirror(pts: Array) -> Array:

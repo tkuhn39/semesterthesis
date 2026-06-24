@@ -574,4 +574,12 @@ conformal, |Jacobi| 1.0 (`80_output/coarsen_template_check.png`).
 reference-grade; the body fan lands via the validated template, then the deck conventions/BCs
 (Workstream C) follow. The trochoid (`root_fillet_points`) remains for a later high-fidelity option.
 
+**Update (2026-06-24):** the 4→2 template is integrated into the annular body
+(`structured_mesher.body_section_2d` = tooth interface → compact coarsening bands → graded ring) with
+Laplacian smoothing. BUT a uniform 4→2 fan at d_f is a **hard break in the tooth-root region** — the
+reference instead **continues the fine structure as a dome/ellipse under the tooth and runs it out
+only outside the root** (ANSA O-grid paving). The body target is therefore the **O-grid dome**, not
+the d_f fan. This is body geometry only: by Saint-Venant it does not change the (already
+reference-grade) tooth-root stress, so it is an efficiency/fidelity refinement, not a results issue.
+
 ---
