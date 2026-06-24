@@ -78,6 +78,10 @@ Dates are ISO 8601 (YYYY-MM-DD).
   used a different rim depth.
 - **Tooling:** cleared all outstanding ruff and mypy findings across the model
   layer and the test suite.
+- **CI:** the workflow now installs the system OpenGL libs (`libglu1-mesa`, `libgl1`) the gmsh wheel
+  links against, and runs `ruff format --check`; CI had been red since gmsh was introduced because
+  importing it on the Linux runner failed with `libGLU.so.1: cannot open shared object file`, erroring
+  out collection of every gmsh-importing test.
 
 ### Verified
 - `ruff check .` clean, `mypy .` clean, `pytest` → 136 passed (full gold-standard
