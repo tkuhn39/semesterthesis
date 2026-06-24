@@ -51,6 +51,15 @@ Dates are ISO 8601 (YYYY-MM-DD).
   (+ `boundary_nodes`) and `assemble_pitch_2d` (merge tooth+body, hold only the outer contour, smooth
   the dome). Validated by overlay on the parsed reference; bad-cell count on the kst-E pitch fell from
   26 to 9 toward the reference dome. Dome-quality finish + sector/extrude next. (ADR-017)
+- **FE model — body mesh matches the reference (kst-E):** the body is now built as a **root
+  boundary layer** (fine surface-aligned arcs hugging the fillet, where the bending stress peaks)
+  that runs out into a structured rim grid — the reason the reference is meshed this way. The
+  reference itself is fully structured (all interior nodes valence 4; its only 6 cells < 0.35 sit at
+  the tooth *tip*, min 0.243). The dome transition is lifted by the now **lexicographic**
+  `_optimize_smooth` (maximise the worst incident scaled Jacobian, then the mean — the mean
+  tie-breaker unlocks the plateau Laplacian/greedy-min got stuck at). Result on the kst-E wheel
+  pitch: all-quad, **min Jacobian 0.736, 0 cells < 0.35** — exceeding the reference (0.243 / 6) with
+  a reference-like structure. (ADR-017)
 - **FE model:** `model/mesh3d.py` holding the pure-numpy `Mesh3D` container and
   the native `extrude_to_hex` (quad section → C3D8 hexahedra), free of gmsh.
 - **FE model:** an element-count safety valve (`max_elements`, default

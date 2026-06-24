@@ -596,4 +596,18 @@ Validated by overlaying the generated pitch on the parsed reference slice. The A
 is not available (maybe later); the topology is reverse-engineered from the `.inp`.
 See memory `reference-mesh-ground-truth`.
 
+**Update 3 (2026-06-24) — body = root boundary layer, reference parity exceeded:** analysing the
+reference slice showed *why* it is meshed this way — the dense concentric arcs hugging the fillet are
+a **root boundary layer**: the tooth-root fillet is the max bending-stress site (the thesis quantity),
+so fine surface-aligned elements (arcs ∥ surface, spokes ⟂) resolve the steep notch gradient, then
+run out into a coarse rim where stress has decayed (Saint-Venant). The reference is fully structured
+(all interior nodes valence 4; its only 6 sub-0.35 cells are at the tooth *tip*, min 0.243). Two
+changes made the generated body reach/exceed this: (1) build the body as that boundary layer (fine
+ring arcs at d_f → graded reduction → rim) rather than a hard fan; (2) make `_optimize_smooth`
+**lexicographic** — maximise the worst incident scaled Jacobian, then the mean; the mean tie-breaker
+unlocks the plateau pure-min/greedy got stuck at (0.139). Result on the kst-E wheel pitch: all-quad,
+**min Jacobian 0.736, 0 cells < 0.35**, exceeding the reference (0.243 / 6) with a reference-like
+structure. Winning params: tooth thickness 30, body bore_columns 8, cap_rows 5, rim_rows 18,
+band_aspect 1.1, opt_iters 120. Sector + extrude next.
+
 ---

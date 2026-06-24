@@ -201,11 +201,12 @@ _OPT_DIRS = np.array(
 
 def _optimize_smooth(nodes: Array, quads: IntArray, fixed: set[int], iters: int = 40) -> Array:
     """Quality-greedy (optimization-based) smoothing: per node, move to the trial position that
-    maximises the minimum scaled Jacobian of its incident quads.
+    lexicographically maximises (min scaled Jacobian, then mean) of its incident quads.
 
-    Unlike Laplacian smoothing this lifts the irregular-valence coarsening-fan nodes (where the
-    dome cap reduces the column count) and never lowers local quality — the right tool for the
-    reference dome. Connectivity is untouched, so all-quad + conformity are preserved.
+    Unlike Laplacian smoothing this lifts the irregular-valence transition nodes (where the body
+    reduces the column count) and never lowers local quality. The mean tie-breaker keeps improving
+    the neighbourhood once the local minimum plateaus, which unlocks the worst cells — the tool for
+    the reference dome. Connectivity is untouched, so all-quad + conformity are preserved.
     """
     pts = np.asarray(nodes, dtype=float).copy()
     inc: dict[int, list[IntArray]] = {}
@@ -222,18 +223,18 @@ def _optimize_smooth(nodes: Array, quads: IntArray, fixed: set[int], iters: int 
         for i in free:
             qs = inc[i]
 
-            def local_min(pos: Array, _qs: list[IntArray] = qs, _i: int = i) -> float:
+            def local_obj(pos: Array, _qs: list[IntArray] = qs, _i: int = i) -> tuple[float, float]:
                 old = pts[_i].copy()
                 pts[_i] = pos
-                m = min(_quad_sj(pts[q]) for q in _qs)
+                sjs = [_quad_sj(pts[q]) for q in _qs]
                 pts[_i] = old
-                return m
+                return min(sjs), sum(sjs) / len(sjs)  # lexicographic: worst cell, then average
 
             h = float(np.mean(np.hypot(*(pts[i] - pts[nbrs[i]]).T)))
             cen = pts[nbrs[i]].mean(axis=0)
-            best, best_p = local_min(pts[i]), pts[i].copy()
+            best, best_p = local_obj(pts[i]), pts[i].copy()
             for cand in [cen, *(cen + step * h * _OPT_DIRS), *(pts[i] + step * h * _OPT_DIRS)]:
-                val = local_min(cand)
+                val = local_obj(cand)
                 if val > best:
                     best, best_p = val, cand
             pts[i] = best_p
