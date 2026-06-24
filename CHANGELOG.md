@@ -60,6 +60,14 @@ Dates are ISO 8601 (YYYY-MM-DD).
   tie-breaker unlocks the plateau Laplacian/greedy-min got stuck at). Result on the kst-E wheel
   pitch: all-quad, **min Jacobian 0.736, 0 cells < 0.35** — exceeding the reference (0.243 / 6) with
   a reference-like structure. (ADR-017)
+- **FE model — block-structured FVA mesher (`model/block_mesh.py`, WIP):** the reference-faithful
+  multiblock route per `MESHING_SPEC.md`, built on the proven scaffold pipeline (TFI/Coons blocks +
+  shared-node `NodeRegistry` for conformity, no tolerance merge, no paving/gmsh). Adds B3 fillet band
+  (curve-seeded, densified to the 30°-tangent — not offset marching), B4 core, B1 rim, B2 deep 2:1
+  quad templates, and the **section-11 finish** (optimization-based worst-first node relocation,
+  frozen connectivity, fixed boundary/feature/cut nodes). On kst-E: registry conformity asserted,
+  4-tooth + 2-toothless sector periodic to 5e-15 mm, B2 template det(J) **0.21 → 0.66** after the
+  finish (0 cells < 0.35, 0 inverted). Element type **C3D8I** in the root. (ADR-018)
 - **FE model:** `model/mesh3d.py` holding the pure-numpy `Mesh3D` container and
   the native `extrude_to_hex` (quad section → C3D8 hexahedra), free of gmsh.
 - **FE model:** an element-count safety valve (`max_elements`, default

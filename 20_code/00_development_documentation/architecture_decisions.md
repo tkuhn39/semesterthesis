@@ -611,3 +611,37 @@ structure. Winning params: tooth thickness 30, body bore_columns 8, cap_rows 5, 
 band_aspect 1.1, opt_iters 120. Sector + extrude next.
 
 ---
+
+## ADR-018: Block-structured FVA/STIRAK gear mesh on a fixed scaffold (MESHING_SPEC.md)
+
+**Status:** accepted (2026-06-25) · supersedes the body-mesh construction of ADR-017 for the
+reference reproduction.
+
+**Context:** the optimizer-finished boundary-layer body (ADR-017) hit det(J) 0.74 but its *element
+distribution* still differed from the FVA reference — the reference is a true **block-structured
+multiblock** (C-form fillet band, transfinite core, fine→coarse templates only in the load-far body),
+which a paving/relax approach cannot reproduce. A binding spec (`MESHING_SPEC.md`) + a proven scaffold
+(`gear_mesh_scaffold.py`, both under `30_references_and_examples/36_Claude_Chat_Vorschlag/`) were
+provided.
+
+**Decision:** adopt the scaffold pipeline **verbatim and unchanged** (TFI/Coons blocks, a shared-node
+`NodeRegistry` enforcing conformity *by construction* — no tolerance merge, no paving/advancing-front/
+gmsh) and build the gear blocks on top: B3 fillet band (n_fuss over the rounding, densified to the
+30°-tangent via curve seeding — not offset marching), B4 core, B1 rim, B2 fine→coarse 2:1 quad
+templates placed **deep** in the load-far body, sector = **4 teeth + 2 toothless segments**. The 2:1
+valence-3 nodes are lifted by a **section-11 node-relocation finish**: optimization-based
+(lexicographic worst-element-first), **frozen connectivity**, boundary/feature/cut nodes (incl. the
+30°-point) held fixed so periodicity is preserved. This lives in `app/services/model/block_mesh.py`.
+
+**Evidence (kst-E):** registry conformity asserted (no merge); B3|B4 share the d_Ff edge; coarse
+sector periodic to 5e-15 mm; B2 deep 2:1 template det(J)min 0.21 → **0.66 after the finish, 0 cells
+< 0.35, 0 inverted**, connectivity frozen. Parameters are the four FVA integers
+(n_flanke, n_fuss, n_dicke, n_breite); quality is won in n_fuss + n_dicke, not the flank.
+
+**Consequences:** the previous `structured_mesher` boundary-layer path (ADR-017) is kept but no longer
+the reference route. Remaining: integrate B2 reduction + finish into the full sector with the
+periodicity re-assert, refine n_fuss ≥ 6, compute G, the root-stress convergence study (30°-tangent +
+max GEH), then wire the deck (materials/BCs/torque/periodicity MPC). Element type **C3D8I** (not C3D8R)
+in the root.
+
+---
