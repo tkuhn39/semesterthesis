@@ -582,4 +582,18 @@ only outside the root** (ANSA O-grid paving). The body target is therefore the *
 the d_f fan. This is body geometry only: by Saint-Venant it does not change the (already
 reference-grade) tooth-root stress, so it is an efficiency/fidelity refinement, not a results issue.
 
+**Update 2 (2026-06-24) — ground truth + smoothing method:** stopped reverse-engineering the body
+topology from screenshots (the real cause of going in circles). The reference `.inp` is the *meshed
+ground truth*: parsing one z-slice gives the exact 2D topology (wheel 269 649 nodes, 81 z-levels,
+bore 12.38, ~723 quads/pitch; tooth → dome-cap fan → structured rim grid). gmsh is confirmed the
+wrong tool for the body — size-field/recombine leaves triangles, subdivision drops quality to 0.10,
+full-quad-3 and BoundaryLayer-field both fail, and any unstructured path re-opens the hang risk. The
+mesh is built **structured** (transfinite tooth + all-quad coarsening + ring) and the irregular
+dome-cap fan nodes are lifted with **optimization-based (quality-greedy) smoothing**
+(`_optimize_smooth`: per node, maximise the min scaled Jacobian of incident quads — Laplacian cannot,
+it inverts them). `assemble_pitch_2d` merges tooth+body and smooths with only the outer contour held.
+Validated by overlaying the generated pitch on the parsed reference slice. The ANSA batch-mesh recipe
+is not available (maybe later); the topology is reverse-engineered from the `.inp`.
+See memory `reference-mesh-ground-truth`.
+
 ---

@@ -43,6 +43,14 @@ Dates are ISO 8601 (YYYY-MM-DD).
   body_section_2d`), and Laplacian smoothing. The exact reference **O-grid "dome + run-out"** body
   (fine structure continued under the tooth, coarsening only outside the root) is the next step;
   the tooth/root itself is already reference-grade and (Saint-Venant) sets the root stress. (ADR-017)
+- **FE model — reference ground truth + dome (WIP):** the reference deck `…_ohne_Radkoerper.inp` is
+  now mined as the *meshed ground truth* (parse a z-slice → exact 2D topology, instead of guessing
+  from screenshots): wheel 269 649 nodes, 81 z-levels (b=15, z-centered, Δz=0.1875), bore r=12.38,
+  ~723 quads/pitch; structure = fine tooth → dome-cap fan → structured rim grid. New structured
+  pieces toward it: optimization-based (quality-greedy) smoothing `structured_mesher._optimize_smooth`
+  (+ `boundary_nodes`) and `assemble_pitch_2d` (merge tooth+body, hold only the outer contour, smooth
+  the dome). Validated by overlay on the parsed reference; bad-cell count on the kst-E pitch fell from
+  26 to 9 toward the reference dome. Dome-quality finish + sector/extrude next. (ADR-017)
 - **FE model:** `model/mesh3d.py` holding the pure-numpy `Mesh3D` container and
   the native `extrude_to_hex` (quad section → C3D8 hexahedra), free of gmsh.
 - **FE model:** an element-count safety valve (`max_elements`, default

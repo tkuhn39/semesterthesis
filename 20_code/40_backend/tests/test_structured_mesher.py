@@ -14,7 +14,11 @@ from app.io.ste import Pair
 from app.services.geometry.gear import GearStage, ToolReferenceProfile
 from app.services.geometry.tooth_form import ToothProfile
 from app.services.model.mapped_mesher import tooth_section_2d
-from app.services.model.structured_mesher import body_section_2d, scaled_jacobian
+from app.services.model.structured_mesher import (
+    assemble_pitch_2d,
+    body_section_2d,
+    scaled_jacobian,
+)
 
 
 def _profile(index: int = 1) -> ToothProfile:
@@ -56,3 +60,24 @@ def test_body_section_is_all_quad_and_conformal() -> None:
             edges[frozenset((int(quad[k]), int(quad[(k + 1) % 4])))] += 1
     assert max(edges.values()) <= 2  # conformal: no edge shared by > 2 quads
     assert len(bore) >= 2 and scaled_jacobian(body).size == body.n_quads
+
+
+def test_assemble_pitch_optimization_smoothing_lifts_quality() -> None:
+    """Merging tooth+body and quality-smoothing keeps it all-quad and raises the worst Jacobian."""
+    p = _profile()
+    tooth, _, base = tooth_section_2d(p, height_elements=5, root_elements=4, thickness_elements=14)
+    body, _ = body_section_2d(
+        p, tooth.nodes[base], bore_radius_mm=10.0, n_gap=1, bore_columns=4, rim_rows=10,
+        smooth_iters=0,
+    )
+    raw_nodes = np.vstack([tooth.nodes, body.nodes])
+    raw_quads = np.vstack([tooth.quads, body.quads + tooth.n_nodes])
+    pitch, bore = assemble_pitch_2d(tooth, body, bore_radius_mm=10.0, opt_iters=12)
+    assert pitch.quads.shape[1] == 4 and pitch.n_quads == len(raw_quads)  # all-quad, no cells lost
+    assert len(bore) >= 2
+    # optimization smoothing must not lower the worst-cell quality vs the unsmoothed merge
+    from app.services.model.structured_mesher import _ccw  # noqa: PLC0415
+    from app.services.model.tooth_mesh import Mesh2D  # noqa: PLC0415
+
+    raw = _ccw(Mesh2D(raw_nodes, raw_quads))
+    assert scaled_jacobian(pitch).min() >= scaled_jacobian(raw).min() - 1e-9

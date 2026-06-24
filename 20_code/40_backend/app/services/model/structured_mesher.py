@@ -184,6 +184,81 @@ def _laplacian_smooth(
     return pts
 
 
+def _quad_sj(p4: Array) -> float:
+    """Scaled Jacobian (min corner sine) of a single quad given its 4 corner points (CCW)."""
+    sj = 1.0
+    for c in range(4):
+        cur = p4[c]
+        e1, e2 = p4[(c + 1) % 4] - cur, p4[(c - 1) % 4] - cur
+        cross = float(e1[0] * e2[1] - e1[1] * e2[0])
+        norm = math.hypot(e1[0], e1[1]) * math.hypot(e2[0], e2[1])
+        sj = min(sj, cross / max(norm, 1e-30))
+    return sj
+
+
+_OPT_DIRS = np.array(
+    [[math.cos(t), math.sin(t)] for t in np.linspace(0.0, 2.0 * math.pi, 8, endpoint=False)]
+)
+
+
+def _optimize_smooth(
+    nodes: Array, quads: IntArray, fixed: set[int], iters: int = 40
+) -> Array:
+    """Quality-greedy (optimization-based) smoothing: per node, move to the trial position that
+    maximises the minimum scaled Jacobian of its incident quads.
+
+    Unlike Laplacian smoothing this lifts the irregular-valence coarsening-fan nodes (where the
+    dome cap reduces the column count) and never lowers local quality — the right tool for the
+    reference dome. Connectivity is untouched, so all-quad + conformity are preserved.
+    """
+    pts = np.asarray(nodes, dtype=float).copy()
+    inc: dict[int, list[IntArray]] = {}
+    nbr: dict[int, set[int]] = {}
+    for q in quads:
+        for k in range(4):
+            v = int(q[k])
+            inc.setdefault(v, []).append(q)
+            nbr.setdefault(v, set()).update((int(q[(k + 1) % 4]), int(q[(k - 1) % 4])))
+    free = [i for i in range(len(pts)) if i not in fixed and inc.get(i)]
+    nbrs = {i: np.fromiter(nbr[i], int) for i in free}
+    for it in range(iters):
+        step = 0.5 * (1.0 - it / iters) + 0.05
+        for i in free:
+            qs = inc[i]
+
+            def local_min(pos: Array, _qs: list[IntArray] = qs, _i: int = i) -> float:
+                old = pts[_i].copy()
+                pts[_i] = pos
+                m = min(_quad_sj(pts[q]) for q in _qs)
+                pts[_i] = old
+                return m
+
+            h = float(np.mean(np.hypot(*(pts[i] - pts[nbrs[i]]).T)))
+            cen = pts[nbrs[i]].mean(axis=0)
+            best, best_p = local_min(pts[i]), pts[i].copy()
+            for cand in [cen, *(cen + step * h * _OPT_DIRS), *(pts[i] + step * h * _OPT_DIRS)]:
+                val = local_min(cand)
+                if val > best:
+                    best, best_p = val, cand
+            pts[i] = best_p
+    return pts
+
+
+def boundary_nodes(quads: IntArray) -> set[int]:
+    """Node indices on the mesh boundary (nodes of edges used by exactly one quad)."""
+    from collections import Counter
+
+    edges: Counter[frozenset[int]] = Counter()
+    for q in quads:
+        for k in range(4):
+            edges[frozenset((int(q[k]), int(q[(k + 1) % 4])))] += 1
+    bnd: set[int] = set()
+    for edge, count in edges.items():
+        if count == 1:
+            bnd |= set(edge)
+    return bnd
+
+
 def _angles(top_idx: list[int], nodes: list[list[float]]) -> tuple[list[float], float]:
     """Half-angles (from +y) of `top_idx` nodes and their mean radius."""
     ang = [math.atan2(nodes[i][0], nodes[i][1]) for i in top_idx]
@@ -258,14 +333,17 @@ def body_section_2d(
     rim_rows: int = 8,
     band_aspect: float = 1.5,
     rim_grade: float = 1.2,
+    cap_rows: int = 2,
+    smooth_iters: int = 60,
 ) -> tuple[Mesh2D, list[int]]:
     """All-quad gear-body section for one pitch, grown from the tooth base interface ``base_xy``.
 
-    The top row at d_f = gap-floor (``n_gap`` cells each side) + the tooth base; it coarsens
-    circumferentially via compact 4→2 bands (the reference fan, each band ≈ ``band_aspect`` × the
-    local column width so the fan cells stay near-square) down to ``bore_columns``, then a graded
-    transfinite ring carries it to the bore. Requires ``len(base_xy)-1 + 2*n_gap`` divisible by 4.
-    Returns (mesh, bore node indices).
+    Reproduces the reference dome-cap topology: from the d_f row (gap-floor ``n_gap`` cells each
+    side + the tooth base) a boundary-layer "cap" of concentric ring arcs (``cap_rows`` per level)
+    interleaves with 4→2 coarsening bands, so the circumferential reduction to ``bore_columns`` is
+    spread smoothly into a dome rather than a few hard fans; a graded transfinite rim ring then
+    carries the ``bore_columns`` to the bore. Heavy Laplacian smoothing (``smooth_iters``) rounds
+    the cap. Requires ``len(base_xy)-1 + 2*n_gap`` divisible by 4. Returns (mesh, bore indices).
     """
     pitch = 2.0 * math.pi / profile.z
     pitch_half = pitch / 2.0
@@ -288,10 +366,15 @@ def body_section_2d(
 
     quads: list[list[int]] = []
     r = r_df
+    floor = bore_radius_mm + 0.05 * (r_df - bore_radius_mm)
     while (len(top_idx) - 1) // 2 >= bore_columns and (len(top_idx) - 1) % 4 == 0:
         n_cols = len(top_idx) - 1
-        height = band_aspect * pitch * r / n_cols  # band ≈ square fan cells (compact near the root)
-        r = max(r - height, bore_radius_mm + 0.05 * (r_df - bore_radius_mm))
+        step = band_aspect * pitch * r / n_cols  # ≈ local column width → near-square cap cells
+        for _ in range(cap_rows):  # concentric boundary-layer arcs at this column count
+            r = max(r - 0.6 * step, floor)
+            q, top_idx = _ring_band(top_idx, nodes, r, 1, 1.0)
+            quads += q
+        r = max(r - step, floor)  # one 4→2 coarsening band
         q, top_idx = _coarsen_band(top_idx, nodes, r)
         quads += q
     q, bore_idx = _ring_band(top_idx, nodes, bore_radius_mm, rim_rows, rim_grade)
@@ -302,7 +385,31 @@ def body_section_2d(
     side = {int(i) for i in np.where(np.abs(ang_all - pitch_half) < 1e-4)[0]}
     fixed = set(interface) | set(bore_idx) | side  # smooth only the true body interior
     quad_arr = np.array(quads, dtype=np.int64)
-    mesh = _ccw(Mesh2D(_laplacian_smooth(pts, quad_arr, fixed), quad_arr))
+    mesh = _ccw(Mesh2D(_laplacian_smooth(pts, quad_arr, fixed, smooth_iters), quad_arr))
+    return mesh, bore_idx
+
+
+def assemble_pitch_2d(
+    tooth: Mesh2D,
+    body: Mesh2D,
+    *,
+    bore_radius_mm: float,
+    opt_iters: int = 40,
+) -> tuple[Mesh2D, IntArray]:
+    """Merge the transfinite tooth with the native body into one pitch and quality-smooth it.
+
+    The shared d_f interface is fused; only the true outer contour (tooth surface, bore, pitch
+    sides) is held fixed, so the d_f row and the dome-cap fan nodes can relax under optimization
+    smoothing (the reference dome). Returns (mesh, bore node indices).
+    """
+    nodes, quads = _merge(
+        np.vstack([tooth.nodes, body.nodes]),
+        np.vstack([tooth.quads, body.quads + tooth.n_nodes]),
+    )
+    pts = _optimize_smooth(nodes, quads, boundary_nodes(quads), opt_iters)
+    mesh = _ccw(Mesh2D(pts, quads))
+    r = np.hypot(mesh.nodes[:, 0], mesh.nodes[:, 1])
+    bore_idx = np.where(np.abs(r - bore_radius_mm) < 0.02 * bore_radius_mm)[0].astype(np.int64)
     return mesh, bore_idx
 
 
