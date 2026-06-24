@@ -146,6 +146,7 @@ def test_static_peak_load() -> None:
         common_face_width_mm=15.0,
     )
     # nominal σ_F (K_F = load_factor_root = 1 by default here) → peak = σ_F·k_stat
+    assert wheel.peak_root_stress_mpa is not None
     assert wheel.peak_root_stress_mpa == pytest.approx(wheel.root_stress_mpa * k_stat, rel=1e-6)
     assert wheel.peak_root_safety == pytest.approx(
         (2.0 * 70.0 / 1.5) / wheel.peak_root_stress_mpa, rel=1e-6

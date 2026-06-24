@@ -54,6 +54,16 @@ def test_mapped_2d_enforces_jacobi_target() -> None:
         mesh_pitch_mapped_2d(_profile(), min_jacobi=0.999)
 
 
+def test_mapped_rejects_over_budget_instead_of_hanging() -> None:
+    """An over-budget request is rejected up front (the element-count safety valve)."""
+    with pytest.raises(ValueError, match="max_elements"):
+        mesh_pitch_mapped_2d(_profile(), max_elements=10)
+    with pytest.raises(ValueError, match="max_elements"):
+        mesh_sector_mapped_3d(
+            _profile(), n_teeth=4, face_width_mm=15.0, face_layers=8, max_elements=1_000
+        )
+
+
 def test_mapped_3d_sweep_quality() -> None:
     """Sweeping to C3D8 keeps the structure and the Jacobi-Güte over the face width."""
     mesh = mesh_pitch_mapped_3d(

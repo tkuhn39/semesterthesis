@@ -54,6 +54,11 @@ Dependencies are kept in sync across three places — update them **together**:
 2. [`20_code/semesterthesis_3-12.yaml`](20_code/semesterthesis_3-12.yaml) — reproducible Conda spec
 3. [`20_code/requirements.txt`](20_code/requirements.txt) — pip lockfile (used by Docker)
 
+## Changelog
+
+Notable changes to the FE / analysis toolchain are recorded in
+[`CHANGELOG.md`](CHANGELOG.md) (Keep a Changelog format).
+
 ## License
 
 Released under the [MIT License](LICENSE) © 2026 Technical University of

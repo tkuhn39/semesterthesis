@@ -18,14 +18,48 @@ import numpy as np
 from numpy.typing import NDArray
 
 from app.services.geometry.tooth_form import ToothProfile
-from app.services.model.gmsh_mesher import Mesh3D, _extract_2d_quality, extrude_to_hex
+from app.services.model.mesh3d import Mesh3D, extrude_to_hex
 from app.services.model.tooth_mesh import Mesh2D
 
 Array = NDArray[np.float64]
 
 
+def _extract_2d_quality() -> tuple[Mesh2D, Array]:
+    """Pull the recombined quad section + per-quad Jacobi-Güte from the active gmsh model."""
+    node_tags, coords, _ = gmsh.model.mesh.getNodes()
+    pts = np.array(coords).reshape(-1, 3)[:, :2]
+    index = {int(t): i for i, t in enumerate(node_tags)}
+    elem_tags, conn = gmsh.model.mesh.getElementsByType(3)  # 4-node quad
+    quads = np.array([index[int(t)] for t in conn]).reshape(-1, 4)
+    quality = np.array(gmsh.model.mesh.getElementQualities(elem_tags, "minSJ"))  # = Jacobi-Güte
+    return Mesh2D(pts, quads), quality
+
+
 def _xy(points: list) -> Array:
     return np.array([[p[0], p[1]] for p in points])
+
+
+# Safety valve: even the deterministic transfinite path must never silently build a mesh so
+# large it hangs the machine. The projected element count is closed-form from the seeds, so we
+# reject an over-budget request up front instead of meshing it.
+DEFAULT_MAX_ELEMENTS = 4_000_000
+
+
+def _pitch_quads(
+    height_elements: int, root_elements: int, thickness_elements: int, rim_elements: int, n_gap: int
+) -> int:
+    """Closed-form quad count of one mapped tooth pitch (the 5 transfinite blocks)."""
+    return (height_elements + root_elements + rim_elements) * thickness_elements + 2 * (
+        rim_elements * n_gap
+    )
+
+
+def _check_budget(n_elements: int, max_elements: int, what: str) -> None:
+    if n_elements > max_elements:
+        raise ValueError(
+            f"{what} would generate {n_elements:,} elements (> max_elements {max_elements:,}); "
+            "reduce the element counts / teeth / face layers, or raise max_elements"
+        )
 
 
 def _monotone_fillet(fillet: Array) -> Array:
@@ -53,6 +87,7 @@ def mesh_pitch_mapped_2d(
     min_jacobi: float = 0.35,
     limit_angle_deg: float = 65.0,
     samples: int = 40,
+    max_elements: int = DEFAULT_MAX_ELEMENTS,
 ) -> tuple[Mesh2D, Array]:
     """Structured quad mesh of one tooth pitch (5 transfinite blocks). Returns (mesh, quality).
 
@@ -66,6 +101,11 @@ def mesh_pitch_mapped_2d(
     r_df = profile.root_diameter_mm / 2.0
     rim = r_df - (rim_depth_mm if rim_depth_mm is not None else 2.0 * profile.mn)
     n_gap = gap_elements if gap_elements is not None else thickness_elements
+    _check_budget(
+        _pitch_quads(height_elements, root_elements, thickness_elements, rim_elements, n_gap),
+        max_elements,
+        "mapped pitch 2-D mesh",
+    )
 
     flank = _xy(profile.flank_points(samples))  # d_Ff → d_Na
     fillet = _monotone_fillet(_xy(profile.root_fillet_points(samples)))  # d_f → d_Ff
@@ -246,6 +286,7 @@ def mesh_sector_mapped_2d(
     rim_depth_mm: float | None = None,
     min_jacobi: float = 0.35,
     limit_angle_deg: float = 65.0,
+    max_elements: int = DEFAULT_MAX_ELEMENTS,
 ) -> tuple[Mesh2D, Array]:
     """Structured mesh of a gear sector: ``n_teeth`` teeth + ``n_segments`` rim pitches each side.
 
@@ -254,6 +295,14 @@ def mesh_sector_mapped_2d(
     gear-body angle (n_teeth + 2·n_segments)·360°/z, no boundary self-intersection.
     """
     n_gap = gap_elements if gap_elements is not None else thickness_elements
+    tooth_quads = _pitch_quads(
+        height_elements, root_elements, thickness_elements, rim_elements, n_gap
+    )
+    _check_budget(
+        n_teeth * tooth_quads + 2 * n_segments * (rim_elements * n_gap),
+        max_elements,
+        "mapped sector 2-D mesh",
+    )
     tooth, tq = mesh_pitch_mapped_2d(
         profile,
         height_elements=height_elements,
@@ -264,6 +313,7 @@ def mesh_sector_mapped_2d(
         rim_depth_mm=rim_depth_mm,
         min_jacobi=min_jacobi,
         limit_angle_deg=limit_angle_deg,
+        max_elements=max_elements,
     )
     rim, rq = _mesh_rim_pitch_2d(
         profile,
@@ -303,8 +353,16 @@ def mesh_pitch_mapped_3d(
     rim_depth_mm: float | None = None,
     min_jacobi: float = 0.35,
     limit_angle_deg: float = 65.0,
+    max_elements: int = DEFAULT_MAX_ELEMENTS,
 ) -> Mesh3D:
     """Structured C3D8 mesh of one tooth pitch, swept over the face width."""
+    n_gap = gap_elements if gap_elements is not None else thickness_elements
+    _check_budget(
+        _pitch_quads(height_elements, root_elements, thickness_elements, rim_elements, n_gap)
+        * face_layers,
+        max_elements,
+        "mapped pitch 3-D mesh",
+    )
     section, quality = mesh_pitch_mapped_2d(
         profile,
         height_elements=height_elements,
@@ -315,6 +373,7 @@ def mesh_pitch_mapped_3d(
         rim_depth_mm=rim_depth_mm,
         min_jacobi=min_jacobi,
         limit_angle_deg=limit_angle_deg,
+        max_elements=max_elements,
     )
     return extrude_to_hex(section, quality, width=face_width_mm, layers=face_layers)
 
@@ -334,8 +393,18 @@ def mesh_sector_mapped_3d(
     rim_depth_mm: float | None = None,
     min_jacobi: float = 0.35,
     limit_angle_deg: float = 65.0,
+    max_elements: int = DEFAULT_MAX_ELEMENTS,
 ) -> Mesh3D:
-    """Structured C3D8 mesh of a gear sector (n_teeth + 2·n_segments pitches), swept over the face."""
+    """Structured C3D8 mesh of a gear sector (n_teeth + 2·n_segments pitches) over the face."""
+    n_gap = gap_elements if gap_elements is not None else thickness_elements
+    tooth_quads = _pitch_quads(
+        height_elements, root_elements, thickness_elements, rim_elements, n_gap
+    )
+    _check_budget(
+        (n_teeth * tooth_quads + 2 * n_segments * (rim_elements * n_gap)) * face_layers,
+        max_elements,
+        "mapped sector 3-D mesh",
+    )
     section, quality = mesh_sector_mapped_2d(
         profile,
         n_teeth=n_teeth,
@@ -348,5 +417,6 @@ def mesh_sector_mapped_3d(
         rim_depth_mm=rim_depth_mm,
         min_jacobi=min_jacobi,
         limit_angle_deg=limit_angle_deg,
+        max_elements=max_elements,
     )
     return extrude_to_hex(section, quality, width=face_width_mm, layers=face_layers)

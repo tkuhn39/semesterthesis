@@ -20,10 +20,13 @@ from app.services.model.abaqus_writer import (
     build_rolling_deck,
 )
 from app.services.model.mapped_mesher import mesh_sector_mapped_2d, mesh_sector_mapped_3d
-from app.services.model.mesh_sets import tag_sector_surfaces
+from app.services.model.mesh3d import Mesh3D
+from app.services.model.mesh_sets import SectorSurfaces, tag_sector_surfaces
 
 
-def _gear(index: int, n_teeth: int, n_seg: int, layers: int, **counts: int):
+def _gear(
+    index: int, n_teeth: int, n_seg: int, layers: int, **counts: int
+) -> tuple[Mesh3D, SectorSurfaces]:
     common = dict(n_teeth=n_teeth, n_segments=n_seg, **counts)
     section, _ = mesh_sector_mapped_2d(_profile(index), **common)
     mesh = mesh_sector_mapped_3d(_profile(index), face_width_mm=15.0, face_layers=layers, **common)
@@ -67,7 +70,7 @@ def _profile(index: int = 0) -> ToothProfile:
 
 
 def _deck(n_teeth: int = 2, n_seg: int = 1, layers: int = 4) -> tuple[str, int, int]:
-    common = dict(n_teeth=n_teeth, n_segments=n_seg, height_elements=10, root_elements=10)
+    common = {"n_teeth": n_teeth, "n_segments": n_seg, "height_elements": 10, "root_elements": 10}
     section, _ = mesh_sector_mapped_2d(_profile(), **common)
     mesh = mesh_sector_mapped_3d(_profile(), face_width_mm=15.0, face_layers=layers, **common)
     surfaces = tag_sector_surfaces(

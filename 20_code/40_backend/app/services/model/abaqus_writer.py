@@ -14,7 +14,7 @@
 
 from dataclasses import dataclass
 
-from app.services.model.gmsh_mesher import Mesh3D
+from app.services.model.mesh3d import Mesh3D
 from app.services.model.mesh_sets import SectorSurfaces
 
 
@@ -173,6 +173,7 @@ def build_rolling_deck(
     """
     wheel_master, pinion_master = 9_000_001, 9_000_002
     a = setup.center_distance_mm - setup.penetration_mm
+    pz = setup.pinion_axis_z_mm
     dt = 1.0 / setup.n_roll_positions
     pinion = _part_block("PINION", pinion_mesh, pinion_surfaces, pinion_material, "PINION_EL")
     wheel = _part_block("WHEEL", wheel_mesh, wheel_surfaces, wheel_material, "WHEEL_EL")
@@ -184,7 +185,7 @@ def build_rolling_deck(
             f"*INSTANCE, NAME=PINION-1, PART=PINION\n0., {a:.6f}, 0.\n"
             f"0., 0., 0., 0., 0., 1., {setup.pinion_phase_deg:.6f}\n*END INSTANCE",
             f"*NODE, NSET=WHEEL_MASTER\n{wheel_master}, 0., 0., {setup.wheel_axis_z_mm:.6f}",
-            f"*NODE, NSET=PINION_MASTER\n{pinion_master}, 0., {a:.6f}, {setup.pinion_axis_z_mm:.6f}",
+            f"*NODE, NSET=PINION_MASTER\n{pinion_master}, 0., {a:.6f}, {pz:.6f}",
             f"*RIGID BODY, REF NODE={wheel_master}, TIE NSET=WHEEL-1.FESSELUNG",
             f"*RIGID BODY, REF NODE={pinion_master}, ELSET=PINION-1.PINION_EL",
             "*SURFACE INTERACTION, NAME=FLANK_CONTACT",

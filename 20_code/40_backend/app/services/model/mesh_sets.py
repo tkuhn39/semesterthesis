@@ -55,14 +55,15 @@ def tag_sector_surfaces(
     n_teeth: int,
     n_segments: int,
     layers: int,
-    rim_depth_mm: float | None = None,
     tol_mm: float | None = None,
 ) -> SectorSurfaces:
     """Classify the section boundary into bore / cut / tip / per-tooth flank surfaces.
 
     ``layers`` is the number of face-width layers used in the extrusion, so each boundary
     edge expands to that many swept side faces. Tooth centres follow the sector layout
-    (``n_teeth`` teeth flanked by ``n_segments`` rim pitches each side).
+    (``n_teeth`` teeth flanked by ``n_segments`` rim pitches each side). The bore radius is
+    read off the actual mesh (its minimum node radius), not recomputed from a ``rim_depth``
+    — so the BORE/Fesselung set can never come up empty if the mesher used a different rim.
     """
     tol = tol_mm if tol_mm is not None else 0.02 * profile.mn
     pitch = 2.0 * math.pi / profile.z
@@ -70,9 +71,8 @@ def tag_sector_surfaces(
     centres = [(n_segments + i - (total - 1) / 2.0) * pitch for i in range(n_teeth)]
     half_sector = total * pitch / 2.0
     r_na, r_ff = profile.d_Na / 2.0, profile.d_Ff / 2.0
-    r_bore = profile.root_diameter_mm / 2.0 - (
-        rim_depth_mm if rim_depth_mm is not None else 2.0 * profile.mn
-    )
+    used = np.unique(section.quads)  # skip orphan geometry nodes (e.g. the arc-centre at r=0)
+    r_bore = float(np.hypot(section.nodes[used, 0], section.nodes[used, 1]).min())  # inner radius
     n_quads = section.n_quads
 
     faces: dict[str, list[tuple[int, str]]] = {}
