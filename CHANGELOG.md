@@ -9,6 +9,37 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (2026-07-03 — reference-topology transplant mesher, ADR-019)
+- **FE model — reference miner** (`model/reference_slice.py` + committed template
+  `model/data/reference_sector_rad_vz_1.json`, verifier `10_verifiers/make_reference_template.py`):
+  the ANSA/FVA wheel slice is parsed with correct cyclic face ordering (rim hexes carry a rotated
+  local axis — naive ordering creates bowtie quads) and pinned by tests: 3024 quads / 3329 nodes,
+  interior valences {4: 2716, 5: 2, 6: 3} — **exactly one fan-convergence node per tooth gap**,
+  rim grid 26×25, min scaled Jacobian 0.243 (24 tip cells < 0.35).
+- **FE model — transplant mesher** (`model/template_mesher.py`): generates the reference-identical
+  block-structured 2D sector for any spur gear by re-using the mined connectivity and deriving node
+  positions from the target geometry (pitch scaling, radial feature map, exact foot-point
+  projection onto the analytic contour incl. the ISO 21771 tip chamfer up to d_a, selective §11
+  tip lift). kst-E wheel: topology-identical, min scaled Jacobian 0.45, **0 cells < 0.35**.
+- **FE model — canonical symmetry**: sector symmetry orbits enforce **exact tooth-to-tooth
+  congruence** (≤ 1e-14 mm) and, gated by the data-driven `ToothProfile.is_flank_symmetric()`
+  (DIN 867 §4.2), exact in-tooth mirror symmetry; the tip lift is rolled out orbit-synchronously.
+- **FE model — parametric density** (`model/refine.py`): conformal chord splits with separate
+  FVA-style root/flank factors; structure, gates and congruence survive every level.
+- **FE model — native quick solver** (`model/plane_fe.py`): vectorized plane-strain Q4 FE
+  (< 0.1 s/solve) for root/flank density-convergence checks (separate searches) — confirms the
+  mined reference density is already converged for the root stress (Δ < 0.1 %).
+- **Geometry — optimized root fillets** (`geometry/root_fillet.py`, supervisor's topic):
+  `EllipticFillet` / `BezierFillet` / `BionicFillet` per the literature synthesis
+  (`00_development_documentation/root_fillet_strategies.md`), pluggable into the mesher, with the
+  mandatory mating-tip clearance check and a DIN 3960 eq. 3.6.06 undercut warning. Quick-FE on
+  kst-E: ellipse −9.9 %, Bézier −22.1 % root stress vs the standard ρ_F arc.
+- **Geometry — tip chamfer boundary**: `transverse_right_boundary(to_tip_circle=True)` continues
+  past d_Na along the edge-break involute to d_a (`generation.edge_break_flank_transverse`).
+- **Docs:** norm audit (`norm_geometry_audit.md` — DIN 3960/867/3972 findings incl. tool-profile
+  presets I–IV and protuberance parameters living in DIN 3960 Anhang A) and the root-fillet
+  literature synthesis with measured results.
+
 ### Removed
 - **FE model:** deleted the unstructured gmsh tooth/sector mesher
   (`model/gmsh_mesher.py`: `mesh_sector_3d`, `mesh_tooth_pitch`,

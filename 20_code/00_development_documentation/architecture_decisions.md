@@ -35,6 +35,9 @@ body.
 | ADR-014 | Native ISO 6336-1 dynamic/load factors (K_v, K_Hα, K_Hβ) | Accepted | 2026-06-17 |
 | ADR-015 | Native VDI 2736 plastic-gear capacity (root/flank/temperature/wear/deformation) | Accepted | 2026-06-17 |
 | ADR-016 | Native ISO 1328-1 accuracy-grade tolerances (grade → deviations) | Accepted | 2026-06-18 |
+| ADR-017 | FE rolling-model mesh: ρ_F-arc root, transfinite tooth, all-quad body fan | Accepted | 2026-06-24 |
+| ADR-018 | Block-structured FVA/STIRAK gear mesh on a fixed scaffold (MESHING_SPEC.md) | Superseded by ADR-019 | 2026-07-03 |
+| ADR-019 | Reference-topology transplant mesher: mined ground truth, canonical symmetry, chord density, quick FE, fillet strategies | Accepted | 2026-07-03 |
 
 ---
 
@@ -645,3 +648,57 @@ max GEH), then wire the deck (materials/BCs/torque/periodicity MPC). Element typ
 in the root.
 
 ---
+
+## ADR-019: Reference-topology transplant mesher (mined ground truth, canonical symmetry, chord density, quick FE, fillet strategies)
+
+**Status:** accepted (2026-07-03) · supersedes ADR-018's B2 2:1-template construction for the
+reference route; the scaffold utilities (`NodeRegistry`, TFI helpers, §11 `optimize_finish`,
+`extrude`, `write_inp`) remain in use.
+
+**Context:** definitive parsing of the reference deck (committed miner, not scratchpad) showed the
+ANSA/FVA mesh concentrates the whole fine→coarse reduction in **exactly one fan-convergence node
+per tooth gap** on the rim-top ring (valence 6 mid-sector, 5 at the sector edges) — all other
+interior nodes are valence 4. There is no distributed 4→2 template band; ADR-018's approach could
+therefore never reproduce the reference element distribution. A parser trap masked this earlier:
+rim hexes carry a different local axis orientation, so slice faces must be re-ordered cyclically
+around their centroid or bowtie quads corrupt every valence measurement.
+
+**Decision:**
+1. **Mine, don't model** (`model/reference_slice.py`): parse the wheel part, slice the mid
+   z-plane, measure (pin-tested: 3024 quads / 3329 nodes, interior valences {4: 2716, 5: 2, 6: 3},
+   rim 26×25, min scaled Jacobian 0.243 with 24 sub-0.35 tip cells) and export the sector as a
+   committed JSON **topology template** (`model/data/reference_sector_rad_vz_1.json`).
+2. **Topology transplant** (`model/template_mesher.py`): re-use the reference connectivity
+   verbatim; derive node positions from the target geometry — angular pitch scaling about the
+   sector bisector, piecewise radial feature map (bore → fan ring → actual contour bottom → tip
+   circle d_a incl. the ISO 21771 §7.6 edge-break chamfer, now emitted by
+   `tooth_form.transverse_right_boundary(to_tip_circle=True)`), and exact foot-point projection
+   of tooth-zone surface nodes onto the analytic contour. A **selective** §11 finish lifts only
+   the sub-0.4 tip-cap cells. Result (kst-E wheel): topology-identical to the reference,
+   min scaled Jacobian 0.45 with **0 cells < 0.35** (reference: 0.243 / 24).
+3. **Canonical symmetry** (user requirement): orbit decomposition under the sector symmetry group
+   (rotations × bisector reflection, bijective per-orbit transform assignment, self-mirror orbits
+   projected onto their half-pitch axis). Teeth are **exactly rotation-congruent** (≤ 1e-14 mm);
+   in-tooth mirror symmetry is applied only when `ToothProfile.is_flank_symmetric()` — DIN 867
+   §4.2 backs the symmetric default, per-flank parameters stay an extension point.
+4. **Parametric density** (`model/refine.py`): conformal chord splits (opposite-edge bands) with
+   separate root/flank factors seeded from radius-banded tooth-zone surface edges — valences,
+   the fan signature and tooth congruence survive every level.
+5. **Native quick FE** (`model/plane_fe.py`): vectorized plane-strain Q4 solver (sparse, < 0.1 s)
+   for root/flank **density-convergence checks** (separate searches by design) and fillet
+   ranking; load = tip point force, criterion = max tensile stress along the whole fillet.
+6. **Optimized root fillets** (`geometry/root_fillet.py`, thesis add-on): `EllipticFillet`
+   (Kassem), `BezierFillet` (Roth/Voith, one factor), `BionicFillet` (tension-triangle form),
+   pluggable into the mesher via the projection contour; mandatory `mating_tip_clearance`
+   check and a DIN 3960 eq. 3.6.06 undercut warning. Quick-FE on kst-E: ellipse −9.9 %,
+   Bézier −22.1 % root stress vs the standard ρ_F arc, gates intact.
+
+**Evidence:** 159 tests green (topology pins, quality gates, exact congruence/mirror symmetry,
+refinement invariants, fillet tangency/clearance/stress ranking); checkpoint plots under
+`40_backend/80_output/cp2_*.png`; user-reviewed at checkpoints 1 and 2.
+
+**Consequences:** `mapped_mesher` remains only as the legacy deck path until the deck is rewired
+(next step: extrusion + FVA set contract + rigid-shell steel side in mixed pairings). The
+convergence quick check confirms the mined reference density is already converged for the root
+stress (Δ < 0.1 %), matching the FVA "Konvergenz Fuß" preset. Fillet-shape parameters become
+Stufenvariation axes with the quick solver as objective.

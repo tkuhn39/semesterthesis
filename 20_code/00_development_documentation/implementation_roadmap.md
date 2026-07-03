@@ -9,7 +9,7 @@ It complements, and does not replace:
 - [`architecture_decisions.md`](architecture_decisions.md) — the ADRs (why).
 - The master plan in plan mode — the FE-modelling vision and trade-offs.
 
-_Last updated: 2026-06-24 — Step 3 FE rolling model in progress: reference-grade tooth/root geometry +
+_Last updated: 2026-07-03 — Step 3: reference-topology transplant mesher done (ADR-019); deck rewiring next. Previously: reference-grade tooth/root geometry +
 transfinite mesh (boundary layer, deep rim, Jacobi ≥ 0.9) and the validated all-quad body-coarsening
 template (ADR-017); 136 tests green._
 
@@ -130,12 +130,22 @@ varied inputs run through the original RIKOR. (REXS reader already exists.)
 Done by the maintainer, not by sub-agents.
 
 ### Step 3 — FE rolling-model build 🟦 (in progress — reference reproduction, `ohne_Radkoerper`)
+**Progress (2026-07-03, ADR-019):** the 2D sector mesh is **solved** — the reference topology is
+mined from the deck (committed template + pin tests) and transplanted onto our validated geometry:
+topology-identical to ANSA (one fan node per gap, 3024 quads/sector), min scaled Jacobian 0.45 with
+0 cells < 0.35 (reference: 0.243/24), teeth exactly rotation-congruent, mirror symmetry gated by
+`is_flank_symmetric`. Parametric density (root/flank chord splits) + native 2D quick solver for
+convergence checks (reference density already converged, Δ < 0.1 %). Optimized root fillets
+(elliptic/Bézier/bionic, supervisor topic) mesh through the same pipeline with interference check.
+User-reviewed at checkpoints 1+2. **Next:** 3D extrusion + FVA set contract on the new mesher,
+rewire `implicit_deck.build_gear_part` (replacing `mapped_mesher`), material-mode rule (mixed
+pairing → steel side as ideally stiff rigid shell), then mesh API + three.js viewer.
+
 **Progress (2026-06-24, ADR-017):** Native STplus geometry → FE deck pipeline stands. Tooth/root
 geometry is **reference-grade**: clean rounded ρ_F root fillet (`tooth_form.transverse_right_boundary`),
 transfinite mesh fed that boundary with a fine **surface boundary layer** + radially graded **deep
 rim** to the real bore, Jacobi-Güte ≥ 0.9, CCW winding fixed. The reference **all-quad 4→2 body
-coarsening template** (the circumferential fan) is designed + validated standalone (|Jacobi| 1.0);
-**next: integrate it into the annular body** (get the d_f interface from the tooth → coarsen → bore).
+coarsening template** (the circumferential fan) is designed + validated standalone (|Jacobi| 1.0).
 Deck generator (`implicit_deck.py`, `materials_card.py`, `mesh_sets.tag_gear_reference`) produces the
 reference set/surface naming + Marlow/steel materials + single staircase step. **Still open (Workstream
 C):** the `.ste` conventions in the deck (Part_Rad_Vz_1 = wheel z52/PA/b15, Vz_2 = pinion z51/steel/b17),

@@ -45,6 +45,8 @@ class ToothProfile:
         root_form_diameter_mm: float,
         usable_tip_diameter_mm: float,
         root_fillet_radius_mm: float,
+        tip_diameter_mm: float | None = None,
+        edge_break_flank_transverse: tuple[float, float] | None = None,
     ) -> None:
         self.mn = normal_module_mm
         self.z = teeth
@@ -56,6 +58,8 @@ class ToothProfile:
         self.d_Ff = root_form_diameter_mm
         self.d_Na = usable_tip_diameter_mm
         self.rho_F = root_fillet_radius_mm  # DIN 3990 / ISO 6336-3 root fillet radius ρ_F
+        self.d_a = tip_diameter_mm  # tip circle; the chamfer spans d_Na … d_a when present
+        self.edge_break = edge_break_flank_transverse  # (d_bK, ψ_bK) of the Kopfkantenbruch
 
     @classmethod
     def from_stage(cls, stage: GearStage, index: int) -> "ToothProfile":
@@ -75,6 +79,8 @@ class ToothProfile:
             root_form_diameter_mm=gen.root_form_diameter_mm,
             usable_tip_diameter_mm=stage.usable_tip_diameter_mm[index],
             root_fillet_radius_mm=root.root_fillet_radius_mn * stage.normal_module_mm,
+            tip_diameter_mm=gen.tip_diameter_mm,
+            edge_break_flank_transverse=gen.edge_break_flank_transverse,
         )
 
     @property
@@ -158,10 +164,57 @@ class ToothProfile:
         """The whole right flank from the root fillet bottom (d_f) up to the tip (d_Na)."""
         return self.root_fillet_points(fillet_points) + self.flank_points(flank_points)
 
+    @property
+    def undercut_min_generation_shift(self) -> float:
+        """Minimum x_E for an undercut-free finish cut (DIN 3960 §3.6.6 eq. 3.6.06, rack tool).
+
+        x_E,min = h*_FaP0 − z·sin²α_t / (2·cos β); spur gears here (β = 0, α_t = α_n) with the
+        tool tip form height factor h*_FaP0 = h*_aP0 − ρ*_aP0·(1 − sin α).
+        """
+        h_fap0 = self.h_aP0 - self.rho_aP0 * (1.0 - math.sin(self.alpha))
+        return h_fap0 - self.z * math.sin(self.alpha) ** 2 / 2.0
+
+    @property
+    def has_undercut(self) -> bool:
+        """Undercut warning: the closed-form d_Ff (and the ρ_F fillet) require no undercut —
+        with undercut DIN 3960 mandates iteration (§3.6.7), so treat results as invalid."""
+        return self.x_e < self.undercut_min_generation_shift
+
+    def is_flank_symmetric(self) -> bool:
+        """Whether left and right flank share identical effective parameters.
+
+        Policy (user decision, 2026-07-03): never *assume* mirror symmetry — derive it from the
+        input data. The current data model (STplus ``.ste``: one pressure angle and one tool per
+        gear, no per-flank micro-geometry) can only describe symmetric teeth, matching the
+        standard basic rack (DIN 867 §4.2: flanks mirror-symmetric about the tooth centre line).
+        When per-flank parameters (ISO 21771 §6 modifications, or asymmetric load/coast racks)
+        are added to the model, this check must compare them instead of returning a constant.
+        """
+        return True
+
+    def tip_chamfer_points(self, count: int = 12) -> list[Pair[float]]:
+        """Edge-break (Kopfkantenbruch) flank points from d_Na (= d_Fa) up to the tip circle d_a.
+
+        The chamfer flank is itself an involute (ISO 21771): half-angle ψ(r) = ψ_bK − inv(α_K(r))
+        with the edge-break base circle d_bK. Empty without chamfer data (then d_Na = d_a).
+        """
+        if self.edge_break is None or self.d_a is None or self.d_a <= self.d_Na + 1e-9:
+            return []
+        d_bk, psi_bk = self.edge_break
+        points: list[Pair[float]] = []
+        for radius in np.linspace(self.d_Na / 2.0, self.d_a / 2.0, count + 1)[1:]:
+            alpha_k = math.acos(min(1.0, d_bk / 2.0 / float(radius)))
+            theta = psi_bk - involute(alpha_k)
+            points.append(Pair(float(radius) * math.sin(theta), float(radius) * math.cos(theta)))
+        return points
+
     def transverse_right_boundary(
-        self, *, fillet_points: int = 40, flank_points: int = 80
+        self, *, fillet_points: int = 40, flank_points: int = 80, to_tip_circle: bool = False
     ) -> list[Pair[float]]:
         """Clean continuous right-flank boundary d_f → d_Na (rounded root fillet + involute flank).
+
+        With ``to_tip_circle=True`` the boundary continues past d_Na along the tool-generated tip
+        chamfer (Kopfkantenbruch) to the real tip circle d_a — the as-meshed FE surface contour.
 
         The root fillet is the circular arc of radius ρ_F (DIN 3990 / ISO 6336-3) **tangent to the
         involute flank** (at the true form circle d_Ff, by bisection) **and tangent to the root
@@ -193,9 +246,10 @@ class ToothProfile:
         # its centre sits on the flank gap-side offset at radius r_f + ρ_F. Solve d_Ff by bisection.
         target = r_f + rho
         lo, hi = r_lo, r_na
+        chamfer = self.tip_chamfer_points() if to_tip_circle else []
         if rho <= 1e-6 or centre_dist(lo) >= target:  # no room for a fillet — involute to the root
             grid = np.linspace(r_lo, r_na, fillet_points + flank_points)
-            return [Pair(*flank(float(r))) for r in grid]
+            return [Pair(*flank(float(r))) for r in grid] + chamfer
         for _ in range(60):
             mid = 0.5 * (lo + hi)
             if centre_dist(mid) < target:
@@ -221,4 +275,4 @@ class ToothProfile:
             pts.append(Pair(cx + rho * math.cos(a), cy + rho * math.sin(a)))
         for r in np.linspace(r_ff, r_na, flank_points)[1:]:  # flank tangent → tip (skip junction)
             pts.append(Pair(*flank(float(r))))
-        return pts
+        return pts + chamfer

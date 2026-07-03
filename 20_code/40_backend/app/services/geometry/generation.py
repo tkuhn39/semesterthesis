@@ -242,6 +242,17 @@ class GearGeneration(BaseModel):
         return (self.tip_diameter_mm - self.tip_form_diameter_mm) / 2.0
 
     @property
+    def edge_break_flank_transverse(self) -> tuple[float, float] | None:
+        """The edge-break (Kopfkantenbruch) involute as (base diameter, half tooth angle at base).
+
+        ``None`` without a chamfer. Points on the chamfer flank at radius r follow the standard
+        involute tooth-thickness relation: half-angle ψ(r) = ψ_bK − inv(acos(d_bK / 2r)).
+        """
+        if not self.tool.has_tip_chamfer:
+            return None
+        return self._edge_break_base_diameter_mm, self._edge_break_half_tooth_angle_base
+
+    @property
     def rest_tip_thickness_mm(self) -> float:
         """Transverse tip thickness at d_a; reduced by the edge-break when present (Restkopfdicke).
 
