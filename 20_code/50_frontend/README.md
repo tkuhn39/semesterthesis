@@ -1,46 +1,37 @@
-# `50_frontend` — React (Vite + TypeScript) SPA
+# 50_frontend — Next.js workbench
 
-The web UI for the gear-analysis tool. **Anthropic/Claude layout language with the
-TUM 2022 web colour palette** (see memory `ui-design-tokens`): editorial whitespace,
-a serif display face (Fraunces), TUM-blue accents, calm rounded cards.
+The workbench UI (ADR-020): FVA-Workbench layout language, modernised — model tree on the
+left (Getriebe → Stufe → Ritzel/Rad → Berechnungen), condensed attribute-table editors in the
+centre, dark three.js viewports for the FE mesh and the gear pair (co-moving DOF triads),
+messages strip at the bottom. Geist font, Tailwind v4, DE/EN language switch (i18n keys in
+`src/lib/i18n.tsx`).
 
-## Stack
+## Panels
 
-- React 19 · Vite 6 · TypeScript (strict)
-- No UI framework — a small **own CSS design system** (`src/index.css`, tokens as CSS
-  custom properties). Fonts via Google Fonts `<link>` (Fraunces / Inter / JetBrains Mono).
+| Tree node | Panel | Backend |
+|---|---|---|
+| Übersicht | kst-E summary + entry tiles | `/api/example/kst-e` |
+| Auslegung | presets / `.ste` import / free parameters, tool profile (DIN 3972), micro-geometry (ISO 21771 §6), tolerances | `/api/presets`, `/api/import/ste`, `/api/tolerances` |
+| Geometrie | macro geometry editor | `/api/geometry` |
+| Tragfähigkeit | ISO 6336 + VDI 2736 incl. static peak load | `/api/capacity` |
+| Dynamikfaktoren | native K_v/K_Hα/K_Hβ + resonance | `/api/dynamics` |
+| Stufenvariation | sweep, Pareto, parallel coordinates, material matrix, real-contour variant overlay | `/api/variation`, `/api/mesh/contour` |
+| Zahnform (je Rad) | as-cut contour, fillet strategies incl. clearance | `/api/mesh/contour` |
+| FE-Mesh (je Rad) | density presets, 3D hull + Jacobian heatmap, convergence quick check, fillet ranking/sweep | `/api/mesh/*` |
+| Paar & FE-Abwälzmodell | both gears, DOF triads, roll slider, deck download (rigid-shell rule) | `/api/mesh/3d`, `/api/mesh/deck` |
 
-## Structure
-
-```
-src/
-  index.css          design tokens (TUM palette) + component styles
-  lib/api.ts         typed client for the FastAPI backend
-  lib/format.ts      number formatting + safety classification
-  components/        Layout (sidebar/topbar), ui.tsx (Card/Field/Stat/Badge/Tabs…), icons
-  views/             Overview · Geometry · Capacity · Dynamics · Stufenvariation
-  App.tsx            shell + view routing (state-based, no router dep)
-```
-
-The backend (`40_backend/app/api/analysis.py`) preloads the validated **kst-E**
-steel–plastic pair; each view edits operating parameters and recomputes live (steel →
-ISO 6336, plastic → VDI 2736). Extension points: a standard-gear example library and
-STplus/RIKOR import.
-
-## Develop
+## Development
 
 ```bash
-cd 20_code/40_backend && uvicorn app.main:app --reload   # API on :8000
-cd 20_code/50_frontend && npm install && npm run dev      # SPA on :5173
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-`VITE_API_BASE_URL` (and `CORS_ORIGINS`) come from the shared `20_code/.env`
-(Vite `envDir` points one level up), so one `.env` configures both ends.
+Dev against a separately running backend needs in the shared `20_code/.env`:
+`NEXT_PUBLIC_API_BASE_URL=http://localhost:8000` and `CORS_ORIGINS=http://localhost:3000`.
 
-## Build & checks
+## Production
 
-```bash
-npm run typecheck   # tsc --noEmit (strict)
-npm run build       # → dist/ (copied into the backend image, served by FastAPI)
-npm run preview
-```
+`npm run build` produces a static export in `out/` (no server runtime, ADR-006): FastAPI
+serves it same-origin from `40_backend/app/static` — the Docker build does this copy.
+The stage state (Auslegung) lives client-side; every request is stateless against the API.

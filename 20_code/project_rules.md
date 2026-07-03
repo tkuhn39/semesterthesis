@@ -10,8 +10,7 @@ Two-digit prefixes; a nested subfolder keeps its parent's first digit and adds a
 - `20_code/20_antigravity_scripts/`: Scripts used for moving files, automation, and command execution.
 - `20_code/30_docker/`: Dockerfile, compose and deployment assets.
 - `20_code/40_backend/`: FastAPI application — the `app/` package (`api`, `services`, `config`, `logging_config`, `errors`, `storage`, `database`).
-- `20_code/50_frontend/`: React (Vite) single-page app (legacy — being replaced, see ADR-020).
-- `20_code/50_frontend_v2/`: Next.js workbench frontend (ADR-020); replaces `50_frontend` after the remaining views are ported (swap = its own commit, this map updates again).
+- `20_code/50_frontend/`: Next.js workbench frontend (ADR-020): model tree, attribute-table editors, three.js viewports; Geist font, DE/EN i18n; static export served by FastAPI.
 - `20_code/60_cache/`: Disposable cache (mesh/FE intermediates); safe to delete (git-ignored, `CACHE_DIR`).
 - `20_code/80_output/`: Persisted results in categorized subfolders; the local `app.storage` root (git-ignored, `STORAGE_LOCAL_BASE_PATH`).
 - `20_code/90_logs/`: Runtime logs when not logging to stdout (git-ignored, `LOG_DIR`).

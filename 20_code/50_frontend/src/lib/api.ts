@@ -1,7 +1,7 @@
 // Typed client for the gear-analysis backend (FastAPI). The base URL comes from
 // the shared 20_code/.env (VITE_API_BASE_URL); empty means same-origin.
 
-const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
+const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
@@ -84,6 +84,8 @@ export interface GearCapacity {
   wear_um: number | null;
   allowable_wear_um: number | null;
   deformation_mm: number | null;
+  peak_stress_mpa?: number | null;
+  peak_safety?: number | null;
 }
 export interface CapacityFactors {
   application_factor: number;
@@ -129,6 +131,10 @@ export interface CapacityRequest {
   plastic_poisson: number;
   plastic_sigma_hlim_mpa: number;
   plastic_sigma_flim_mpa: number;
+  accuracy_grade?: number | null;
+  static_overload_factor?: number | null;
+  static_minimum_safety?: number;
+  plastic_yield_strength_mpa?: number | null;
 }
 
 export interface DynamicsRequest {
@@ -181,6 +187,10 @@ export interface VariationRequest {
   flank_minimum_safety: number;
   method: "grid" | "sobol" | "lhs";
   sample_count: number;
+  pinion_material?: "steel" | "plastic";
+  wheel_material?: "steel" | "plastic";
+  steel_modulus_mpa?: number;
+  plastic_modulus_mpa?: number;
 }
 export interface VariationPoint {
   m_n: number;
@@ -243,4 +253,216 @@ export const api = {
   dynamics: (req: DynamicsRequest) => post<DynamicsResponse>("/api/dynamics", req),
   variation: (req: VariationRequest) => post<VariationResponse>("/api/variation", req),
   toothProfile: (req: ToothProfileRequest) => post<ToothProfileResponse>("/api/tooth-profile", req),
+};
+
+// ---- Stage definition (design.py — kst-E example or free parameters, M6) ----
+export interface FlankModification {
+  tip_relief_um?: number;
+  root_relief_um?: number;
+  profile_crowning_um?: number;
+  helix_crowning_um?: number;
+  end_relief_um?: number;
+  helix_slope_um?: number;
+}
+export interface GearModifications {
+  left?: FlankModification;
+  right?: FlankModification;
+}
+export interface StageParams {
+  use_example: boolean;
+  normal_module_mm: number;
+  teeth_pinion: number;
+  teeth_wheel: number;
+  profile_shift_pinion: number;
+  profile_shift_wheel: number;
+  normal_pressure_angle_deg: number;
+  helix_angle_deg: number;
+  face_width_pinion_mm: number;
+  face_width_wheel_mm: number;
+  center_distance_mm?: number | null;
+  tool_addendum_factor: number;
+  tool_tip_radius_factor: number;
+  tool_root_form_height_factor?: number | null;
+  tool_edge_break_angle_deg?: number | null;
+  modifications_pinion?: GearModifications;
+  modifications_wheel?: GearModifications;
+}
+export const KST_E_STAGE: StageParams = {
+  use_example: true,
+  normal_module_mm: 1.0,
+  teeth_pinion: 51,
+  teeth_wheel: 52,
+  profile_shift_pinion: 0.2034,
+  profile_shift_wheel: 0.3143,
+  normal_pressure_angle_deg: 20,
+  helix_angle_deg: 0,
+  face_width_pinion_mm: 17,
+  face_width_wheel_mm: 15,
+  center_distance_mm: 52,
+  tool_addendum_factor: 1.25,
+  tool_tip_radius_factor: 0.38,
+};
+export interface PresetInfo {
+  id: string;
+  name: string;
+  description: string;
+  params: StageParams;
+}
+export interface PresetsResponse {
+  presets: PresetInfo[];
+  tools: Record<string, { addendum_factor: number; tip_radius_factor: number; label: string }>;
+}
+export const designApi = {
+  presets: () => get<PresetsResponse>("/api/presets"),
+  importSte: (content: string) =>
+    post<{ params: StageParams; notes: string[] }>("/api/import/ste", { content }),
+};
+
+// ---- Mesh (FE sector, ADR-019 transplant mesher) ----
+export interface FilletSpec {
+  kind: "standard" | "trochoid" | "elliptic" | "bezier" | "bionic";
+  e_f?: number;
+  be?: number;
+  gamma_deg?: number | null;
+  b_f?: number;
+}
+export interface MeshRequest {
+  stage: StageParams;
+  gear: 1 | 2;
+  refine_root: number;
+  refine_flank: number;
+  fillet: FilletSpec;
+}
+export interface MeshPreviewResponse {
+  gear: number;
+  n_nodes: number;
+  n_quads: number;
+  nodes_xy: number[];
+  quads: number[];
+  quality: number[];
+  min_scaled_jacobian: number;
+  cells_below_035: number;
+  kind_surface: number[];
+}
+export interface Mesh3DResponse {
+  gear: number;
+  n_nodes_3d: number;
+  n_hexes: number;
+  min_scaled_jacobian: number;
+  cells_below_035: number;
+  face_width_mm: number;
+  vertices: number[];
+  faces: number[];
+  face_quality: number[];
+}
+export interface ConvergenceResponse {
+  target: string;
+  levels: number[];
+  sigma_mpa: number[];
+  relative_change: number[];
+  converged_level: number | null;
+  reference_sigma_mpa: number;
+}
+export interface FilletCompareResponse {
+  gear: number;
+  names: string[];
+  sigma_mpa: number[];
+  delta_percent: number[];
+  clearance_mm: number[];
+}
+export interface FilletSweepResponse {
+  gear: number;
+  kind: string;
+  parameter: string;
+  values: number[];
+  sigma_mpa: number[];
+  clearance_mm: number[];
+  feasible: boolean[];
+  best_value: number | null;
+  best_sigma_mpa: number | null;
+  standard_sigma_mpa: number;
+}
+export interface DeckRequest {
+  stage: StageParams;
+  wheel_torque_nmm: number;
+  face_layers: number;
+  n_roll_positions: number;
+  refine_root: number;
+  refine_flank: number;
+  steel_shell: boolean;
+  fillet_wheel: FilletSpec;
+}
+export interface ContourRequest {
+  stage: StageParams;
+  gear: 1 | 2;
+  fillet?: FilletSpec;
+  points?: number;
+}
+export interface ContourResponse {
+  gear: number;
+  teeth: number;
+  pitch_deg: number;
+  root_diameter_mm: number;
+  root_form_diameter_mm: number;
+  usable_tip_diameter_mm: number;
+  tip_diameter_mm: number | null;
+  boundary_xy: number[];
+  fillet_kind: string;
+  clearance_mm: number | null;
+}
+
+async function postText(path: string, body: unknown): Promise<string> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}: ${await res.text()}`);
+  return res.text();
+}
+
+export const meshApi = {
+  preview: (req: MeshRequest) => post<MeshPreviewResponse>("/api/mesh/preview", req),
+  mesh3d: (req: MeshRequest, layers: number) =>
+    post<Mesh3DResponse>(`/api/mesh/3d?layers=${layers}`, req),
+  convergence: (stage: StageParams, gear: 1 | 2, target: "root" | "flank") =>
+    post<ConvergenceResponse>("/api/mesh/convergence", { stage, gear, target, levels: [1, 2, 3] }),
+  filletCompare: (stage: StageParams, gear: 1 | 2) =>
+    post<FilletCompareResponse>("/api/mesh/fillet-compare", { stage, gear }),
+  filletSweep: (stage: StageParams, gear: 1 | 2, kind: "elliptic" | "bezier" | "bionic") =>
+    post<FilletSweepResponse>("/api/mesh/fillet-sweep", { stage, gear, kind, points: 6 }),
+  deck: (req: DeckRequest) => postText("/api/mesh/deck", req),
+};
+export const contourApi = {
+  contour: (req: ContourRequest) => post<ContourResponse>("/api/mesh/contour", req),
+};
+
+// ---- Tolerances (ISO 1328-1) + free evaluate ----
+export interface ToleranceRequest {
+  accuracy_grade: number;
+  normal_module_mm: number;
+  teeth: number;
+  reference_diameter_mm: number;
+  face_width_mm: number;
+  helix_angle_deg: number;
+}
+export interface FlankTolerances {
+  accuracy_grade: number;
+  single_pitch: number;
+  total_pitch: number;
+  profile_slope: number;
+  profile_form: number;
+  profile_total: number;
+  helix_slope: number;
+  helix_form: number;
+  helix_total: number;
+}
+export interface ToleranceResponse {
+  tolerances: FlankTolerances;
+  base_pitch_deviation_um: number;
+  profile_form_deviation_um: number;
+  warnings: string[];
+}
+export const toleranceApi = {
+  tolerances: (req: ToleranceRequest) => post<ToleranceResponse>("/api/tolerances", req),
 };

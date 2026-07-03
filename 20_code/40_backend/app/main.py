@@ -53,7 +53,7 @@ def create_app() -> FastAPI:
     app.include_router(design_router)
     app.include_router(mesh_router)
 
-    # In production the built SPA (50_frontend/dist) is copied next to the app
+    # In production the Next.js static export (50_frontend/out) is copied next to the app
     # and served from the root path. Skipped silently when not present (dev).
     static_dir = Path(__file__).resolve().parent / "static"
     if static_dir.is_dir():

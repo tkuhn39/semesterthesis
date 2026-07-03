@@ -1,7 +1,7 @@
 # `20_code` — Source code
 
 Code for the FE-based tooth root stress analysis and optimization of plastic
-gears: a FastAPI backend, a React (Vite) frontend, and a Docker deployment.
+gears: a FastAPI backend, a Next.js workbench frontend (ADR-020), and a Docker deployment.
 
 > Documentation language is **English** throughout (see [`CLAUDE.md`](CLAUDE.md)
 > and [`project_rules.md`](project_rules.md)).
@@ -15,7 +15,7 @@ gears: a FastAPI backend, a React (Vite) frontend, and a Docker deployment.
 | [`20_antigravity_scripts/`](20_antigravity_scripts/) | Automation and utility scripts. |
 | [`30_docker/`](30_docker/) | Dockerfile, compose, deployment assets. |
 | [`40_backend/`](40_backend/) | FastAPI application. |
-| [`50_frontend/`](50_frontend/) | React (Vite) single-page app. |
+| [`50_frontend/`](50_frontend/) | Next.js workbench frontend (model tree, attribute editors, 3D viewports). |
 | `60_cache/` | Disposable cache, safe to delete (git-ignored). |
 | `80_output/` | Persisted results; local `app.storage` root (git-ignored). |
 | `90_logs/` | Runtime logs (git-ignored). |

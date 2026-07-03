@@ -12,14 +12,30 @@
 """
 
 import math
+from typing import Any
 
-import gmsh
 import numpy as np
 from numpy.typing import NDArray
 
 from app.services.geometry.tooth_form import ToothProfile
 from app.services.model.mesh3d import Mesh3D, extrude_to_hex
 from app.services.model.tooth_mesh import Mesh2D
+
+try:  # gmsh dlopens OpenGL system libs at import — keep the legacy mesher optional (the
+    # deck path runs on the ADR-019 transplant mesher; slim runtime images ship without GL).
+    import gmsh as _gmsh_module
+except (ImportError, OSError):  # pragma: no cover - environment-dependent
+    _gmsh_module = None
+gmsh: Any = _gmsh_module
+
+
+def _require_gmsh() -> None:
+    if gmsh is None:
+        raise RuntimeError(
+            "the legacy mapped mesher needs gmsh (with system OpenGL libs); "
+            "the deck path uses the ADR-019 transplant mesher instead"
+        )
+
 
 Array = NDArray[np.float64]
 IntArray = NDArray[np.int64]
@@ -102,6 +118,7 @@ def mesh_pitch_mapped_2d(
     ``limit_angle_deg`` (the FVA "Grenzwinkelvorgabe", default 65°) bounds the element
     skew; the structured transfinite topology satisfies it by construction.
     """
+    _require_gmsh()
     z = profile.z
     pitch_half = math.pi / z
     r_df = profile.root_diameter_mm / 2.0
@@ -243,6 +260,7 @@ def tooth_section_2d(
     ``base_idx`` are the node indices of the tooth-base edge at d_f (the fillet bottom line ld→rd),
     ordered left→right by angle — the interface the all-quad body block is grown from.
     """
+    _require_gmsh()
     boundary = profile.transverse_right_boundary(fillet_points=samples, flank_points=samples)
     fillet = _xy(boundary[:samples])
     flank = _xy(boundary[samples - 1 :])
@@ -401,6 +419,7 @@ def mesh_sector_mapped_2d(
     place and merges the coincident rim-cut nodes — a connected, mapped sector with the
     gear-body angle (n_teeth + 2·n_segments)·360°/z, no boundary self-intersection.
     """
+    _require_gmsh()
     n_gap = gap_elements if gap_elements is not None else thickness_elements
     tooth_quads = _pitch_quads(
         height_elements, root_elements, thickness_elements, rim_elements, n_gap
@@ -465,6 +484,7 @@ def mesh_pitch_mapped_3d(
     max_elements: int = DEFAULT_MAX_ELEMENTS,
 ) -> Mesh3D:
     """Structured C3D8 mesh of one tooth pitch, swept over the face width."""
+    _require_gmsh()
     n_gap = gap_elements if gap_elements is not None else thickness_elements
     _check_budget(
         _pitch_quads(height_elements, root_elements, thickness_elements, rim_elements, n_gap)
@@ -507,6 +527,7 @@ def mesh_sector_mapped_3d(
     max_elements: int = DEFAULT_MAX_ELEMENTS,
 ) -> Mesh3D:
     """Structured C3D8 mesh of a gear sector (n_teeth + 2·n_segments pitches) over the face."""
+    _require_gmsh()
     n_gap = gap_elements if gap_elements is not None else thickness_elements
     tooth_quads = _pitch_quads(
         height_elements, root_elements, thickness_elements, rim_elements, n_gap

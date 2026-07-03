@@ -9,7 +9,7 @@ It complements, and does not replace:
 - [`architecture_decisions.md`](architecture_decisions.md) — the ADRs (why).
 - The master plan in plan mode — the FE-modelling vision and trade-offs.
 
-_Last updated: 2026-07-03 — Step 3: reference-topology transplant mesher done (ADR-019); deck rewiring next. Previously: reference-grade tooth/root geometry +
+_Last updated: 2026-07-03 (v0.3.0) — Step 3: transplant mesher + deck + mesh API + Next.js workbench done (ADR-019/020). Previously: reference-grade tooth/root geometry +
 transfinite mesh (boundary layer, deep rim, Jacobi ≥ 0.9) and the validated all-quad body-coarsening
 template (ADR-017); 136 tests green._
 
@@ -141,9 +141,12 @@ User-reviewed at checkpoints 1+2. **Done since (v0.2.0, checkpoints 3):** deck r
 transplant mesher (mapped_mesher retired from the deck path), rigid-shell material rule for mixed
 pairings, Part_Rad_Vz_1 = plastic wheel convention, /api/mesh router (preview/3d/convergence/
 fillet-compare/contour/deck) and the Next.js workbench UI (ADR-020) with the three.js mesh
-viewport, tooth-form and variation-overlay panels. **Next (M6):** capacity/dynamics panel ports,
-FZG presets + STE upload + free design, fillet parameters as Stufenvariation axes, tolerance
-views (DIN 3967/3964), frontend swap.
+viewport, tooth-form and variation-overlay panels. **Done (v0.3.0):** capacity/dynamics panels, FZG presets + STE
+import + free StageParams across all mesh/deck endpoints, fillet-sweep axis (quick-FE
+objective), trochoid strategy, micro-geometry data model (ISO 21771 §6), material matrix,
+pair viewport with DOF triads, frontend swap (Next.js is `50_frontend`; Docker without
+OpenGL). **Still open:** DIN 3967/3964 tooth-thickness/centre-distance allowance system,
+protuberance tool variant (DIN 3960 Anhang A), micro-geometry mechanics (load distribution).
 
 **Progress (2026-06-24, ADR-017):** Native STplus geometry → FE deck pipeline stands. Tooth/root
 geometry is **reference-grade**: clean rounded ρ_F root fillet (`tooth_form.transverse_right_boundary`),

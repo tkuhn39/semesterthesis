@@ -9,6 +9,24 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.3.0] - 2026-07-03
+
+### Changed (2026-07-03 — frontend swap, ADR-020 completed)
+- **`50_frontend/` is now the Next.js workbench** (old Vite SPA removed; `50_frontend_v2`
+  renamed): new M6 panels — Auslegung (presets / `.ste` import / free parameters, DIN 3972
+  tool presets, ISO 21771 §6 micro-geometry editor, ISO 1328-1 tolerances; publishes the stage
+  app-wide), Tragfähigkeit (incl. accuracy grade + VDI 2736 static peak), Dynamikfaktoren, and
+  the **pair viewport** with co-moving DOF triads at Rot_Node_Rad1/2 (locked DOFs 1–5 gray,
+  free rotation green/amber) and a kinematically coupled roll slider. Mesh panel gains FVA
+  density presets, the trochoid option, the manufacturability warning and the fillet-sweep UI;
+  Stufenvariation gains the material-matrix selectors.
+- **Docker** builds the Next static export (`out/` → `app/static`); the runtime image needs
+  **no OpenGL**: gmsh became an optional import (the legacy mapped mesher guards its entry
+  points; the deck path runs on the ADR-019 transplant mesher). Container smoke-tested:
+  UI + `/api/health` + `/api/mesh/preview` green.
+
 ### Added (2026-07-03 — M6 backend: free design flow, fillet axis, presets/import, micro-geometry)
 - **Design router** (`app/api/design.py`): shared `StageParams` (kst-E example OR fully free
   pair definition incl. tool reference profile) now feeds EVERY mesh/contour/deck endpoint —

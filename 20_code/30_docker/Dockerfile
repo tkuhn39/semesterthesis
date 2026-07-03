@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 #
-# Hardened multi-stage build → one image serving the React SPA + FastAPI backend.
+# Hardened multi-stage build → one image serving the Next.js workbench + FastAPI backend.
 # Build context is 20_code/ (paths below are relative to it):
 #   docker build -f 30_docker/Dockerfile -t semesterthesis:latest .
 #
@@ -10,14 +10,14 @@
 # (see docker-compose.yml: cap_drop ALL, no-new-privileges, read_only). For strict
 # supply-chain pin the base images by digest (FROM image@sha256:…).
 
-# ---- Stage 1: build the React frontend ---------------------------------------
+# ---- Stage 1: build the Next.js workbench frontend ---------------------------
 FROM node:24-alpine AS frontend
 WORKDIR /frontend
-# Reproducible install from the lockfile (devDeps needed for the Vite/TS build).
+# Reproducible install from the lockfile (devDeps needed for the Next/TS build).
 COPY 50_frontend/package.json 50_frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY 50_frontend/ ./
-# Served same-origin by the backend → no API base URL baked in.
+# Served same-origin by the backend → no API base URL baked in (static export, ADR-020).
 RUN npm run build
 
 # ---- Stage 2: build the Python virtualenv (isolated from the runtime) ---------
@@ -55,8 +55,8 @@ RUN groupadd -r -g 10001 app \
 COPY --from=builder /opt/venv /opt/venv
 # Backend application package.
 COPY --chown=app:app 40_backend/app ./app
-# Built SPA, served by FastAPI as static files (see app/main.py).
-COPY --from=frontend --chown=app:app /frontend/dist ./app/static
+# Static export (out/), served by FastAPI as static files (see app/main.py).
+COPY --from=frontend --chown=app:app /frontend/out ./app/static
 
 USER 10001:10001
 EXPOSE 8000
@@ -65,7 +65,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
     CMD ["python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=2).status==200 else 1)"]
 
 LABEL org.opencontainers.image.title="Gear Analysis (TUM/FZG)" \
-      org.opencontainers.image.description="Plastic-gear tooth-root capacity tool — FastAPI + React SPA" \
+      org.opencontainers.image.description="Plastic-gear tooth-root workbench — FastAPI + Next.js" \
       org.opencontainers.image.licenses="MIT"
 
 # exec form → uvicorn is PID 1 and receives SIGTERM for graceful shutdown.

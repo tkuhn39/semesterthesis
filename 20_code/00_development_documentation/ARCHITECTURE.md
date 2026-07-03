@@ -40,7 +40,7 @@ All selection happens in `app.config.Settings` from the single `20_code/.env`.
 There is exactly **one** configuration file: [`../.env`](../.env)
 (template: [`../.env.example`](../.env.example)). Every endpoint, credential and
 path lives there and is read through `app.config.get_settings()`. The frontend
-reads its `VITE_*` values from the *same* file via Vite's `envDir`.
+reads `NEXT_PUBLIC_API_BASE_URL` from the *same* file via `next.config.ts` (empty = same-origin; dev only).
 
 Rules: never hardcode endpoints, credentials or paths — including local storage
 paths (project_rules.md §15–16). Secrets use `SecretStr` and are never returned
