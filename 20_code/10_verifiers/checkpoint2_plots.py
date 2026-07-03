@@ -171,7 +171,7 @@ def main() -> None:
     names = list(sigmas)
     values = [sigmas[n] for n in names]
     ref = sigmas["Standard (ρ_F)"]
-    bars = axes[1].bar(range(len(names)), values, color=["gray"] + ["tab:blue"] * 3)
+    axes[1].bar(range(len(names)), values, color=["gray"] + ["tab:blue"] * 3)
     for i, (n, v) in enumerate(zip(names, values, strict=True)):
         delta = (v / ref - 1.0) * 100.0
         axes[1].text(

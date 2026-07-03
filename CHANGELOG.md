@@ -9,7 +9,10 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
-_Nothing yet._
+### Fixed
+- CI: `ruff check` over all of `20_code/` (unused variable in
+  `10_verifiers/checkpoint2_plots.py`); local lint gate now runs from `20_code/`
+  like the pipeline, not just `40_backend/`.
 
 ## [0.3.0] - 2026-07-03
 
