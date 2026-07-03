@@ -38,6 +38,7 @@ body.
 | ADR-017 | FE rolling-model mesh: ρ_F-arc root, transfinite tooth, all-quad body fan | Accepted | 2026-06-24 |
 | ADR-018 | Block-structured FVA/STIRAK gear mesh on a fixed scaffold (MESHING_SPEC.md) | Superseded by ADR-019 | 2026-07-03 |
 | ADR-019 | Reference-topology transplant mesher: mined ground truth, canonical symmetry, chord density, quick FE, fillet strategies | Accepted | 2026-07-03 |
+| ADR-020 | Next.js workbench frontend (FVA layout language, Geist, static export) | Accepted | 2026-07-03 |
 
 ---
 
@@ -702,3 +703,30 @@ refinement invariants, fillet tangency/clearance/stress ranking); checkpoint plo
 convergence quick check confirms the mined reference density is already converged for the root
 stress (Δ < 0.1 %), matching the FVA "Konvergenz Fuß" preset. Fillet-shape parameters become
 Stufenvariation axes with the quick solver as objective.
+
+---
+
+## ADR-020: Next.js workbench frontend (FVA layout language, Geist, static export)
+
+**Status:** accepted (2026-07-03) · user decision at checkpoint review.
+
+**Context:** the Vite SPA's page-per-topic layout does not scale to the tool's real workflows —
+"in einzelnen Fenstern alles gut einstellen" like the FVA Workbench (model tree, tabbed attribute
+editors, quick results, 3D view), but visually modern, clean and condensed.
+
+**Decision:** rebuild the frontend as a **Next.js** app (App Router, TypeScript, Tailwind v4)
+under `20_code/50_frontend_v2/` with the **Geist** font (self-hosted via `next/font`), following
+the FVA-Workbench layout language: model tree (Getriebe → Stufe → Ritzel/Rad → Berechnungen) on
+the left, condensed attribute-table editors in the centre, a bottom messages strip, and a dark
+ANSA-like three.js viewport for the FE mesh. `output: 'export'` keeps ADR-006 intact — FastAPI
+serves the static bundle same-origin (`app/static`, gitignored; the API base stays empty, an
+explicit `NEXT_PUBLIC_API_BASE_URL` in the shared `20_code/.env` is dev-only). i18n keys
+(DE default, EN complete) from day one with a header language switch.
+
+**Consequences:** the legacy Vite app in `50_frontend/` stays untouched until the remaining
+views (Tragfähigkeit, Dynamik, Übersicht details) are ported; the swap (delete Vite app, rename
+`50_frontend_v2` → `50_frontend`, update project_rules' directory map and the Docker build) is
+its own reviewed commit. New panels shipped now: Übersicht, Geometrie, Zahnform (real as-cut
+contour + fillet strategies + clearance), FE-Mesh (density, 3D hull viewer with Jacobian heatmap,
+convergence quick check, fillet ranking, deck download incl. rigid-shell rule), Stufenvariation
+(parallel coordinates, Pareto, variants table + up-to-4 real-contour overlay comparison).

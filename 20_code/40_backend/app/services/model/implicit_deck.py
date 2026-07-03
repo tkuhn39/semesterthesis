@@ -377,6 +377,7 @@ def build_implicit_pair_from_stage(
     refine_flank: int = 1,
     fillet1: object | None = None,
     fillet2: object | None = None,
+    plastic_index: int = 1,
     heading: str = "FE rolling model (implicit, ohne Radkoerper) - generated from GearStage",
 ) -> str:
     """One-call build: a ``GearStage`` → meshed, positioned pair → reference-faithful implicit deck.
@@ -392,9 +393,13 @@ def build_implicit_pair_from_stage(
     ``steel_shell=True`` applies the mixed-pairing material rule: the steel gear 2 becomes an
     ideally stiff rigid body about its rotation node (elements kept for contact, DOFs
     eliminated). Default False = the reference-faithful fully deformable pair.
+
+    ``plastic_index`` selects which stage gear is the plastic Part_Rad_Vz_1. Default 1 matches
+    the kst-E reference contract: the .ste lists (pinion z51 steel, wheel z52 plastic) and the
+    reference deck's Part_Rad_Vz_1 is the plastic wheel (Workstream C convention).
     """
-    p1 = ToothProfile.from_stage(stage, 0)
-    p2 = ToothProfile.from_stage(stage, 1)
+    p1 = ToothProfile.from_stage(stage, plastic_index)
+    p2 = ToothProfile.from_stage(stage, 1 - plastic_index)
     a = stage.working_center_distance_mm
     if face_width_mm is None:
         if stage.face_width_mm is None:

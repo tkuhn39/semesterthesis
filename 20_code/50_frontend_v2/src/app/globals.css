@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --wb-viewport: #10161f; /* dark 3D viewport, ANSA-like */
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden; /* the workbench manages its own scroll areas */
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.wb-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+/* Attribute tables (FVA-editor style, modernised + condensed) */
+.attr-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.attr-table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--color-zinc-500);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--color-zinc-200);
+  white-space: nowrap;
+}
+.attr-table td {
+  padding: 3px 10px;
+  border-bottom: 1px solid var(--color-zinc-100);
+  white-space: nowrap;
+}
+.attr-table tbody tr:hover td {
+  background: var(--color-zinc-50);
+}
+.attr-table input,
+.attr-table select {
+  width: 100%;
+  max-width: 132px;
+  border: 1px solid var(--color-zinc-300);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: white;
+  text-align: right;
+}
+.attr-table select {
+  text-align: left;
+}
+.attr-table input:focus,
+.attr-table select:focus {
+  outline: 2px solid color-mix(in srgb, var(--color-blue-500) 35%, transparent);
+  border-color: var(--color-blue-500);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-zinc-300) transparent;
+}

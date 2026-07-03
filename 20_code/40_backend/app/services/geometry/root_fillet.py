@@ -233,16 +233,20 @@ def mating_tip_clearance(
     mating_tip_radius_mm: float,
     mating_teeth: int,
     centre_distance_mm: float,
+    mating_half_tip_rad: float | None = None,
     steps: int = 361,
 ) -> float:
     """Minimum radial clearance between the fillet and the mating tooth-tip path (mm).
 
     The mating tip is swept through the mesh in this gear's rotating frame (standard external
-    pair, the mating tooth centred in the analyzed gap at mid-roll). For every swept tip sample
-    that falls into the fillet's angular window, the radial margin ``r_tip − r_fillet(θ)`` is
-    taken; the minimum over the sweep is returned. **Negative = interference** — the optimized
-    fillet rises into the mating tip path (fallbacks per Landi/Kassem: nudge the junction
-    0.03–0.05 mm radially inward, raise h*_fP, or shrink the fillet parameter).
+    pair, the mating tooth centred in the analyzed gap at mid-roll). Only MATERIAL points of
+    the mating tip are swept: the corner range is the mating tip half-thickness angle
+    (``mating_half_tip_rad``, e.g. ``ToothProfile.half_thickness_angle(r_tip)``) — sweeping the
+    half pitch instead would sample the mating gap (no material) and report false interference.
+    For every swept sample in the fillet's angular window the radial margin
+    ``r_tip − r_fillet(θ)`` is taken; the minimum is returned. **Negative = interference**
+    (fallbacks per Landi/Kassem: nudge the junction 0.03–0.05 mm inward, raise h*_fP, or
+    shrink the fillet parameter).
     """
     z1, z2 = profile.z, mating_teeth
     gap_axis = math.pi / 2.0 - _gap_frame(profile)  # right-side gap centre (tooth centre = +y)
@@ -251,10 +255,10 @@ def mating_tip_clearance(
     order = np.argsort(theta_f)
     theta_f, r_f = theta_f[order], r_f[order]
     centre = np.array([math.cos(gap_axis), math.sin(gap_axis)]) * centre_distance_mm
-    half_tip = math.pi / z2
+    half_tip = mating_half_tip_rad if mating_half_tip_rad is not None else 0.6 * math.pi / z2
     best = math.inf
     for t in np.linspace(-1.5 * math.pi / z1, 1.5 * math.pi / z1, steps):
-        rot2 = t * z1 / z2  # mating gear rolls opposite (external pair)
+        rot2 = -t * z1 / z2  # mating gear rolls opposite (external pair)
         for corner in np.linspace(-half_tip, half_tip, 9):
             ang = gap_axis + math.pi + rot2 + corner  # mating tip points back into our gap
             tip = centre + mating_tip_radius_mm * np.array([math.cos(ang), math.sin(ang)])

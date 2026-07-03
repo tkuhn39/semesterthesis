@@ -164,6 +164,19 @@ class ToothProfile:
         """The whole right flank from the root fillet bottom (d_f) up to the tip (d_Na)."""
         return self.root_fillet_points(fillet_points) + self.flank_points(flank_points)
 
+    def half_thickness_angle(self, radius_mm: float) -> float:
+        """Half tooth-thickness angle at ``radius_mm`` from the tooth centre line (rad).
+
+        Above d_Na/2 the tip chamfer's edge-break involute applies (ISO 21771 §7.9 tip
+        thickness); below, the usable involute. Used e.g. to sweep only MATERIAL points of a
+        mating tooth tip in interference checks.
+        """
+        if self.edge_break is not None and radius_mm > self.d_Na / 2.0:
+            d_bk, psi_bk = self.edge_break
+            alpha_k = math.acos(min(1.0, d_bk / (2.0 * radius_mm)))
+            return max(0.0, psi_bk - involute(alpha_k))
+        return max(0.0, self._involute_half_angle(max(radius_mm, self.d_b / 2.0 + 1e-9)))
+
     @property
     def undercut_min_generation_shift(self) -> float:
         """Minimum x_E for an undercut-free finish cut (DIN 3960 §3.6.6 eq. 3.6.06, rack tool).

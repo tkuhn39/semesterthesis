@@ -158,6 +158,7 @@ def main() -> None:
             fil,
             mating_tip_radius_mm=(pinion.d_a or pinion.d_Na) / 2.0,
             mating_teeth=pinion.z,
+            mating_half_tip_rad=pinion.half_thickness_angle((pinion.d_a or pinion.d_Na) / 2.0),
             centre_distance_mm=52.0,
         )
         m = generate_sector_2d(wheel, bore_radius_mm=bore, fillet=strat)

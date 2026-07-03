@@ -9,6 +9,28 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (2026-07-03 — mesh API, deck rewiring + rigid shell, workbench UI; ADR-019/020, M3–M5)
+- **API — mesh router** (`app/api/mesh.py`): `/api/mesh/preview` (2-D sector + per-quad scaled
+  Jacobian), `/api/mesh/3d` (outer hull of the extruded sector for the three.js viewer),
+  `/api/mesh/convergence` (native root/flank density quick check), `/api/mesh/fillet-compare`
+  (quick-FE ranking of the fillet strategies incl. clearances), `/api/mesh/contour` (real as-cut
+  boundary — kst-E or free variant parameters, fillet-strategy-capable, with interference check)
+  and `/api/mesh/deck` (implicit rolling deck download).
+- **FE deck on the transplant mesher (M3):** `implicit_deck.build_gear_part` now meshes via
+  ADR-019 (4 teeth + 2 shoulders, density factors, fillet strategy); the mixed-pairing material
+  rule ships as `steel_shell`/`rigid_gears` (steel gear = ideally stiff rigid body about its
+  rotation node, contact + frozen FVA set contract unchanged); `plastic_index` fixes the
+  Workstream-C convention (Part_Rad_Vz_1 = plastic wheel, second `.ste` entry).
+- **Geometry:** `ToothProfile.half_thickness_angle` (tip thickness via the edge-break involute);
+  the mating-tip interference sweep now samples only MATERIAL tip points and rolls the correct
+  direction (a half-pitch corner sweep produced false interference for u ≠ 1 pairs).
+- **Frontend v2 (ADR-020):** Next.js workbench under `50_frontend_v2/` — model tree, condensed
+  attribute-table editors (Geist, Tailwind), dark three.js FE-mesh viewport with Jacobian
+  heatmap, convergence + fillet-ranking panels, deck download with rigid-shell toggle, real
+  tooth-form panel (standard vs optimized fillet overlay + clearance), Stufenvariation with
+  parallel coordinates, Pareto and the up-to-4-variant **real-contour overlay comparison**;
+  DE/EN i18n keys from day one. Served as a static export by FastAPI (`app/static`, gitignored).
+
 ### Added (2026-07-03 — reference-topology transplant mesher, ADR-019)
 - **FE model — reference miner** (`model/reference_slice.py` + committed template
   `model/data/reference_sector_rad_vz_1.json`, verifier `10_verifiers/make_reference_template.py`):
