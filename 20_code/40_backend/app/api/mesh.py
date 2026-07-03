@@ -76,7 +76,7 @@ class MeshRequest(BaseModel):
     """Mesh one gear of the stage with FVA density factors + fillet strategy."""
 
     stage: StageParams = Field(default_factory=StageParams)
-    gear: Literal[1, 2] = 1  # 1 = pinion, 2 = wheel — .ste order
+    gear: Literal[1, 2] = 1  # input slot: 1 = the stage's first gear, 2 = the second (ADR-021)
     refine_root: int = Field(1, ge=1, le=3)
     refine_flank: int = Field(1, ge=1, le=3)
     fillet: FilletSpec = Field(default_factory=FilletSpec)
@@ -86,31 +86,34 @@ class MeshRequest(BaseModel):
 class DeckRequest(BaseModel):
     """Full implicit rolling deck (both gears) as .inp text.
 
-    Gear numbering follows the stage input order (ADR-021): gear 1 = pinion, gear 2 = wheel
-    (kst-E: steel pinion z=51, plastic wheel z=52). ``wheel_torque_nmm`` is the resisting
-    torque expressed at the WHEEL; the deck applies the equivalent pinion torque T₁ = T₂·z₁/z₂.
-    ``axial_offset_*`` displace each gear along its rotation axis from the default mid-plane
-    alignment (both gears are extruded symmetric about z = 0, reference parity).
+    Slot semantics (ADR-021, amended): gear 1 = the stage's FIRST gear, gear 2 = the second —
+    every per-gear field follows that input chain and is never re-ordered by role or tooth
+    count (kst-E: gear 1 = steel pinion z=51 at the origin/left, gear 2 = plastic wheel z=52
+    at the centre distance/right — the Kleingetriebeprüfstand top view). ``torque_gear2_nmm``
+    is the resisting torque expressed AT GEAR 2 (M₂); the deck applies the equivalent torque
+    at whichever gear carries the load. ``axial_offset_*`` displace each gear along its
+    rotation axis from the default mid-plane alignment (both gears are extruded symmetric
+    about z = 0, reference parity).
     """
 
     stage: StageParams = Field(default_factory=StageParams)
-    wheel_torque_nmm: float = Field(20000.0, gt=0.0)
+    torque_gear2_nmm: float = Field(20000.0, gt=0.0)
     face_layers: int = Field(6, ge=1, le=80)
     n_roll_positions: int = Field(30, ge=1, le=200)
     refine_root: int = Field(1, ge=1, le=3)
     refine_flank: int = Field(1, ge=1, le=3)
-    pinion_material: Literal["steel", "plastic"] = "steel"
-    wheel_material: Literal["steel", "plastic"] = "plastic"
-    axial_offset_pinion_mm: float = Field(0.0, ge=-50.0, le=50.0)
-    axial_offset_wheel_mm: float = Field(0.0, ge=-50.0, le=50.0)
+    gear1_material: Literal["steel", "plastic"] = "steel"
+    gear2_material: Literal["steel", "plastic"] = "plastic"
+    axial_offset_gear1_mm: float = Field(0.0, ge=-50.0, le=50.0)
+    axial_offset_gear2_mm: float = Field(0.0, ge=-50.0, le=50.0)
     steel_shell: bool = Field(
         False,
         description="Mixed-pairing rule: the steel side as ideally stiff rigid body "
         "(saves DOFs; only effective for mixed pairings; default False = "
         "reference-faithful deformable pair)",
     )
-    fillet_pinion: FilletSpec = Field(default_factory=FilletSpec)
-    fillet_wheel: FilletSpec = Field(default_factory=FilletSpec)
+    fillet_gear1: FilletSpec = Field(default_factory=FilletSpec)
+    fillet_gear2: FilletSpec = Field(default_factory=FilletSpec)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -521,29 +524,31 @@ def build_deck(req: DeckRequest) -> PlainTextResponse:
             return LinearElastic("STEEL", 210000.0, 0.3)
         return MarlowUniaxial("PA_kstE")
 
-    kinds = (req.pinion_material, req.wheel_material)
-    # contact slave = the plastic side (reference parity); same-material pairs keep the wheel
-    slave_gear = 1 if kinds == ("plastic", "steel") else 2
+    kinds = (req.gear1_material, req.gear2_material)
+    # roles follow the MATERIAL (reference parity), the chain follows the input slot:
+    # the plastic side is angle-driven and the contact slave; same-material pairs keep gear 2
+    plastic_side = 1 if kinds == ("plastic", "steel") else 2
     # the mixed-pairing rigid-shell rule only applies to the steel side of a mixed pair
     rigid_gears: frozenset[int] = frozenset()
     if req.steel_shell and "plastic" in kinds and "steel" in kinds:
         rigid_gears = frozenset({1 + kinds.index("steel")})
     deck = build_implicit_pair_from_stage(
         stage,
-        pinion_material=deck_material(req.pinion_material),
-        wheel_material=deck_material(req.wheel_material),
-        wheel_torque_nmm=req.wheel_torque_nmm,
+        gear1_material=deck_material(req.gear1_material),
+        gear2_material=deck_material(req.gear2_material),
+        torque_gear2_nmm=req.torque_gear2_nmm,
         face_layers=req.face_layers,
-        axial_offset_mm=(req.axial_offset_pinion_mm, req.axial_offset_wheel_mm),
+        axial_offset_mm=(req.axial_offset_gear1_mm, req.axial_offset_gear2_mm),
         n_roll_positions=req.n_roll_positions,
         refine_root=req.refine_root,
         refine_flank=req.refine_flank,
         rigid_gears=rigid_gears,
-        slave_gear=slave_gear,
-        fillet_pinion=req.fillet_pinion.strategy(),
-        fillet_wheel=req.fillet_wheel.strategy(),
+        driven_gear=plastic_side,
+        slave_gear=plastic_side,
+        fillet_gear1=req.fillet_gear1.strategy(),
+        fillet_gear2=req.fillet_gear2.strategy(),
     )
-    pitch_deg = 360.0 / stage.teeth[1]  # the angle-driven wheel's pitch (gear 2)
+    pitch_deg = 360.0 / stage.teeth[plastic_side - 1]  # the angle-driven gear's pitch
     headers = {
         "Content-Disposition": "attachment; filename=implicit_rolling_generated.inp",
         "X-Roll-Pitch-Deg": f"{pitch_deg:.4f}",

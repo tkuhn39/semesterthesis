@@ -761,14 +761,14 @@ export const GLOSSARY: GlossaryEntry[] = [
   },
   {
     symbol: "M₂",
-    name: { de: "Radmoment", en: "Wheel torque" },
+    name: { de: "Moment an Rad 2", en: "Torque at gear 2" },
     unit: "N·mm",
     category: "capacity",
     norms: ["VDI 2736"],
     related: ["u", "F_t", "AMP-TORQUE"],
     description: {
-      de: "Lastmoment am (Kunststoff-)Rad — die Eingabegröße des Abwälzmodells. Im Deck wird es über die Zähnezahlen auf das momentenbelastete Ritzel umgerechnet (T₁ = M₂·z₁/z₂) und über AMP-TORQUE aufgebracht.",
-      en: "Load torque at the (plastic) wheel — the rolling model's input. In the deck it is converted via the tooth counts to the torque-loaded pinion (T₁ = M₂·z₁/z₂) and applied through AMP-TORQUE.",
+      de: "Lastmoment, ausgedrückt an Rad 2 (kst-E: das Kunststoffrad) — die Eingabegröße des Abwälzmodells. Im Deck wird es über die Zähnezahlen auf das momentenbelastete Rad umgerechnet (T_g = M₂·z_g/z₂) und über AMP-TORQUE aufgebracht.",
+      en: "Load torque expressed at gear 2 (kst-E: the plastic wheel) — the rolling model's input. In the deck it is converted via the tooth counts to the torque-loaded gear (T_g = M₂·z_g/z₂) and applied through AMP-TORQUE.",
     },
   },
   {
@@ -864,8 +864,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     norms: ["WoBe-892-Deckaufbau"],
     related: ["Fesselung", "Δz", "AMP-ANGLE", "AMP-TORQUE"],
     description: {
-      de: "Referenzknoten auf der Drehachse in Radmitte (z = Mittelebene + Δz): DOF 1–5 gesperrt, DOF 6 frei. Rad 2 (Rad) bekommt den Wälzwinkel (AMP-ANGLE), Rad 1 (Ritzel) das Gegenmoment (AMP-TORQUE) — im Viewport als mitbewegte Koordinaten-Triaden sichtbar.",
-      en: "Reference node on the rotation axis at mid-width (z = mid-plane + Δz): DOF 1–5 locked, DOF 6 free. Gear 2 (wheel) receives the roll angle (AMP-ANGLE), gear 1 (pinion) the resisting torque (AMP-TORQUE) — shown as co-moving triads in the viewport.",
+      de: "Referenzknoten auf der Drehachse in Radmitte (z = Mittelebene + Δz): DOF 1–5 gesperrt, DOF 6 frei. Rad 1 sitzt im Ursprung (Prüfstand-Ansicht: links), Rad 2 im Achsabstand (rechts); die Kunststoffseite bekommt den Wälzwinkel (AMP-ANGLE), die Gegenseite das Moment (AMP-TORQUE) — im Viewport als mitbewegte Koordinaten-Triaden sichtbar.",
+      en: "Reference node on the rotation axis at mid-width (z = mid-plane + Δz): DOF 1–5 locked, DOF 6 free. Gear 1 sits at the origin (rig view: left), gear 2 at the centre distance (right); the plastic side receives the roll angle (AMP-ANGLE), the other side the torque (AMP-TORQUE) — shown as co-moving triads in the viewport.",
     },
   },
   {
@@ -924,8 +924,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     norms: ["WoBe-892-Deckaufbau"],
     related: ["Rot_Node", "n_W", "AMP-TORQUE"],
     description: {
-      de: "Amplitudenkurve, die das Rad (Rot_Node_Rad2, DOF 6) quasi-statisch durch den Abwälzweg dreht: pro Wälzstellung eine gehaltene Stufe, davor eine Setzphase, in der das Moment aufgebaut wird.",
-      en: "Amplitude curve that quasi-statically turns the wheel (Rot_Node_Rad2, DOF 6) through the roll: one held step per position, preceded by a settle phase while the torque ramps in.",
+      de: "Amplitudenkurve, die das winkelgetriebene Rad (kst-E: Rad 2, DOF 6) quasi-statisch durch den Abwälzweg dreht: pro Wälzstellung eine gehaltene Stufe, davor eine Setzphase, in der das Moment aufgebaut wird.",
+      en: "Amplitude curve that quasi-statically turns the angle-driven gear (kst-E: gear 2, DOF 6) through the roll: one held step per position, preceded by a settle phase while the torque ramps in.",
     },
   },
   {
@@ -936,8 +936,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     norms: ["WoBe-892-Deckaufbau"],
     related: ["M₂", "AMP-ANGLE"],
     description: {
-      de: "Amplitudenkurve des Gegenmoments am Ritzel (Rot_Node_Rad1): Rampe während der Setzphase, dann konstant, während AMP-ANGLE abwälzt — so bleibt der Kontakt durchgehend belastet.",
-      en: "Amplitude curve of the resisting torque at the pinion (Rot_Node_Rad1): ramps during the settle phase, then holds while AMP-ANGLE rolls — keeping the contact loaded throughout.",
+      de: "Amplitudenkurve des Gegenmoments am nicht winkelgetriebenen Rad (kst-E: Rad 1): Rampe während der Setzphase, dann konstant, während AMP-ANGLE abwälzt — so bleibt der Kontakt durchgehend belastet.",
+      en: "Amplitude curve of the resisting torque at the non-driven gear (kst-E: gear 1): ramps during the settle phase, then holds while AMP-ANGLE rolls — keeping the contact loaded throughout.",
     },
   },
 ];

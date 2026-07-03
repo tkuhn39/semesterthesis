@@ -1,13 +1,14 @@
 "use client";
 
 // Pair viewport (user request, M6): both meshed sectors positioned exactly like the combined
-// implicit deck (ADR-021 numbering: gear 1 = pinion at the working centre distance, gear 2 =
-// wheel at the origin, half-pitch phase), with CO-MOVING coordinate triads at the two rotation
-// nodes showing which DOFs the deck locks: DOF 1–5 fixed (gray struts + lock ring), DOF 6 free
-// (green rotation arrow on the angle-driven wheel, amber on the torque-loaded pinion). The
-// hulls arrive mid-plane-symmetric (z = ±b/2) and each gear can be displaced along its
+// implicit deck (ADR-021 amended — Kleingetriebeprüfstand top view: gear 1 = the stage's
+// FIRST gear at the origin, on the LEFT of the default camera; gear 2 at the working centre
+// distance on the RIGHT, half-pitch phase), with CO-MOVING coordinate triads at the two
+// rotation nodes showing which DOFs the deck locks: DOF 1–5 fixed (gray struts + lock ring),
+// DOF 6 free (green rotation arrow on the angle-driven gear, amber on the torque-loaded one).
+// The hulls arrive mid-plane-symmetric (z = ±b/2) and each gear can be displaced along its
 // rotation axis (parametric axial offset, mirrors the deck's axial_offset_*). A roll slider
-// turns both gears with the correct kinematic coupling (−z2/z1), so the triads visibly rotate
+// turns the driven gear with the correct kinematic coupling, so the triads visibly rotate
 // with their gears — consistent with *BOUNDARY / *CLOAD in the .inp.
 
 import { useEffect, useRef } from "react";
@@ -119,14 +120,15 @@ function buildTriad(size: number, moment: boolean): THREE.Group {
 }
 
 export function PairViewport(props: {
-  wheel: Mesh3DResponse | null; // gear 2 in the deck (wheel, angle-driven, at the origin)
-  pinion: Mesh3DResponse | null; // gear 1 (pinion, torque), at the centre distance
+  gear1: Mesh3DResponse | null; // the stage's first gear — at the origin, LEFT (rig view)
+  gear2: Mesh3DResponse | null; // the second gear — at the centre distance, RIGHT
   centerDistance: number;
-  teethWheel: number;
-  teethPinion: number;
-  rollDeg: number; // driven angle of the wheel (the slider)
-  offsetWheelZ?: number; // axial offset along the rotation axis (deck axial_offset_wheel_mm)
-  offsetPinionZ?: number;
+  teethGear1: number;
+  teethGear2: number;
+  drivenGear: 1 | 2; // angle-driven gear (green triad; the other carries the torque, amber)
+  rollDeg: number; // driven-gear angle (the slider)
+  offsetGear1Z?: number; // axial offset along the rotation axis (deck axial_offset_gear1_mm)
+  offsetGear2Z?: number;
 }) {
   const mount = useRef<HTMLDivElement>(null);
   const state = useRef<{
@@ -190,43 +192,49 @@ export function PairViewport(props: {
     if (!s) return;
     s.g1.clear();
     s.g2.clear();
-    if (!props.wheel || !props.pinion) return;
+    if (!props.gear1 || !props.gear2) return;
     const a = props.centerDistance;
     const size = a * 0.16;
 
-    // gear 2 = wheel at the origin, sector rotated -90° (deck convention); the hull is
-    // mid-plane symmetric, so the triad at the group origin sits at mid-width
-    const hull1 = buildHull(props.wheel, 0xd5d9df);
+    // gear 1 at the origin (screen LEFT), sector rotated -90° to face +x (deck convention);
+    // the hull is mid-plane symmetric, so the triad at the group origin sits at mid-width
+    const hull1 = buildHull(props.gear1, 0xb9c2cf);
     hull1.rotation.z = -Math.PI / 2;
-    s.g1.add(hull1, buildTriad(size, false));
-    s.g1.position.set(0, 0, props.offsetWheelZ ?? 0);
+    s.g1.add(hull1, buildTriad(size, props.drivenGear !== 1));
+    s.g1.position.set(0, 0, props.offsetGear1Z ?? 0);
 
-    // gear 1 = pinion at (a, 0), rotated +90° + half pitch (deck convention)
-    const hull2 = buildHull(props.pinion, 0xb9c2cf);
-    hull2.rotation.z = Math.PI / 2 + Math.PI / props.teethPinion;
-    s.g2.add(hull2, buildTriad(size, true));
-    s.g2.position.set(a, 0, props.offsetPinionZ ?? 0);
+    // gear 2 at (a, 0) (screen RIGHT), rotated +90° + half pitch (deck convention)
+    const hull2 = buildHull(props.gear2, 0xd5d9df);
+    hull2.rotation.z = Math.PI / 2 + Math.PI / props.teethGear2;
+    s.g2.add(hull2, buildTriad(size, props.drivenGear !== 2));
+    s.g2.position.set(a, 0, props.offsetGear2Z ?? 0);
 
     s.camera.position.set(a / 2, -a * 1.6, a * 1.1);
     s.controls.target.set(a / 2, 0, 8);
     s.controls.update();
   }, [
-    props.wheel,
-    props.pinion,
+    props.gear1,
+    props.gear2,
     props.centerDistance,
-    props.teethPinion,
-    props.offsetWheelZ,
-    props.offsetPinionZ,
+    props.teethGear2,
+    props.drivenGear,
+    props.offsetGear1Z,
+    props.offsetGear2Z,
   ]);
 
-  // roll coupling: the wheel is driven by the slider, the pinion counter-rotates by -z2/z1
+  // roll coupling: the driven gear follows the slider, the other counter-rotates by the ratio
   useEffect(() => {
     const s = state.current;
     if (!s) return;
-    const phiWheel = (props.rollDeg * Math.PI) / 180;
-    s.g1.rotation.z = phiWheel;
-    s.g2.rotation.z = (-phiWheel * props.teethWheel) / props.teethPinion;
-  }, [props.rollDeg, props.teethWheel, props.teethPinion]);
+    const phi = (props.rollDeg * Math.PI) / 180;
+    if (props.drivenGear === 2) {
+      s.g2.rotation.z = phi;
+      s.g1.rotation.z = (-phi * props.teethGear2) / props.teethGear1;
+    } else {
+      s.g1.rotation.z = phi;
+      s.g2.rotation.z = (-phi * props.teethGear1) / props.teethGear2;
+    }
+  }, [props.rollDeg, props.teethGear1, props.teethGear2, props.drivenGear]);
 
   return <div ref={mount} className="w-full h-full min-h-[520px] rounded-lg overflow-hidden" />;
 }

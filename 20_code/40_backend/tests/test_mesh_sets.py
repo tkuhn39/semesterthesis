@@ -6,6 +6,8 @@
        per-side involute flanks (contact pairs) — each mapped to swept C3D8 side faces.
 """
 
+import math
+
 import numpy as np
 
 from app.io.ste import Pair
@@ -74,12 +76,14 @@ def test_sector_faces_reference_valid_hexes() -> None:
         assert np.array_equal(nodes, np.unique(nodes))
 
 
-def test_reference_tags_name_every_tooth_flank_and_bore() -> None:
-    """The reference tagging yields G{g}T{nnn}F{f} sets for both flanks of every tooth + a bore."""
+def test_reference_tags_name_every_tooth_flank_and_fastening() -> None:
+    """The reference tagging yields G{g}T{nnn}F{f} sets for both flanks of every tooth plus the
+    Fesselung = bore surface AND both radial sector cut faces (reference parity)."""
     n_teeth, n_seg, layers = 3, 1, 4
     h, t, rim = 10, 5, 6
+    profile = _profile()
     section, _ = mesh_sector_mapped_2d(
-        _profile(),
+        profile,
         n_teeth=n_teeth,
         n_segments=n_seg,
         height_elements=h,
@@ -89,13 +93,23 @@ def test_reference_tags_name_every_tooth_flank_and_bore() -> None:
         gap_elements=6,
     )
     ref = tag_gear_reference(
-        section, profile=_profile(), gear=1, n_teeth=n_teeth, n_segments=n_seg, layers=layers
+        section, profile=profile, gear=1, n_teeth=n_teeth, n_segments=n_seg, layers=layers
     )
 
     n_3d_nodes = (layers + 1) * section.n_nodes
     n_3d_hexes = layers * section.n_quads
-    assert ref.bore_nodes.size > 0
-    assert ref.bore_nodes.min() >= 1 and ref.bore_nodes.max() <= n_3d_nodes
+    assert ref.fastening_nodes.size > 0
+    assert ref.fastening_nodes.min() >= 1 and ref.fastening_nodes.max() <= n_3d_nodes
+    # bore + cut faces: the set spans from the bore radius up the radial cut lines toward the
+    # shoulder contour, on BOTH sector boundary angles
+    xy = section.nodes[(ref.fastening_nodes - 1) % section.n_nodes]
+    radii = np.hypot(xy[:, 0], xy[:, 1])
+    angles = np.arctan2(xy[:, 0], xy[:, 1])
+    half_sector = (n_teeth + 2 * n_seg) * math.pi / profile.z
+    assert radii.max() > radii.min() + 0.5 * (profile.d_Ff / 2.0 - radii.min())  # reaches upward
+    above_bore = radii > radii.min() + 1e-6
+    assert np.isclose(np.abs(angles[above_bore]), half_sector, atol=1e-3).all()  # on the cuts
+    assert (angles[above_bore] > 0).any() and (angles[above_bore] < 0).any()  # both sides
     for tooth in range(1, n_teeth + 1):
         for flank in (1, 2):
             key = (tooth, flank)

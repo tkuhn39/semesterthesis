@@ -39,7 +39,7 @@ body.
 | ADR-018 | Block-structured FVA/STIRAK gear mesh on a fixed scaffold (MESHING_SPEC.md) | Superseded by ADR-019 | 2026-07-03 |
 | ADR-019 | Reference-topology transplant mesher: mined ground truth, canonical symmetry, chord density, quick FE, fillet strategies | Accepted | 2026-07-03 |
 | ADR-020 | Next.js workbench frontend (FVA layout language, Geist, static export) | Accepted | 2026-07-03 |
-| ADR-021 | Deck gear numbering follows the stage input order; mid-plane-centred extrusion with parametric axial offsets | Accepted | 2026-07-04 |
+| ADR-021 | Deck gear numbering follows the stage input order; mid-plane-centred extrusion with parametric axial offsets (amended: rig-view slot layout + Fesselung parity) | Accepted | 2026-07-04 |
 
 ---
 
@@ -773,3 +773,19 @@ reference deck's gear indices — postprocessing that reads G1/G2 sets must use 
 the deck header (plastic stress sets are now G2 for kst-E). The frozen-reference comparison
 path is unaffected (the reference .inp itself is untouched). Frontend pair view mirrors the
 convention (wheel triad = driven/green, pinion triad = torque/amber, offsets in the panel).
+
+**Amendment (2026-07-04, same review cycle — user decision):**
+1. **Rig-view slot layout:** the assembly follows the Kleingetriebeprüfstand top view — gear 1
+   (the stage's FIRST gear) at the origin, on the LEFT of the default 3D pair view; gear 2 at
+   the working centre distance, on the RIGHT. Every per-gear input (material, face width,
+   axial offset, fillet) is keyed by input slot through the whole chain and never re-ordered
+   by role or tooth count (gear 1 may well be the larger "wheel"); Ritzel/Rad remain display
+   labels. The angle/torque/slave ROLES follow the material (plastic side angle-driven +
+   contact slave, reference parity), independent of the slot. Deck request fields renamed to
+   slot names (`gear1_material`, `axial_offset_gear1_mm`, `fillet_gear1`, …;
+   `torque_gear2_nmm` = M₂, the torque level expressed at gear 2, converted to the loaded
+   gear via T_g = M₂·z_g/z₂).
+2. **Fesselung parity:** `Fesselung_Rad{g}` ties the bore surface AND both radial sector cut
+   faces (bore → shoulder contour, all layers) — matching the reference deck's set, which was
+   verified to hold the full bore arc plus two complete radial node chains up to the root
+   circle. Closes the parity gap noted in the original consequences.

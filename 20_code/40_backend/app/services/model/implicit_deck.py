@@ -4,8 +4,9 @@
           (structure of ``32_Abaqus/implicit/kst-E_8_DY2-0_WS30_ohne_Radkoerper.inp``).
 @role: Assemble two meshed gear sectors into the WoBe-892 implicit rolling deck: two
        ``Part_Rad_Vz_{g}`` parts with per-tooth/flank ``G{g}T{nnn}F{f}`` sets +
-       ``TOOTH-{g}-{nnn}F{f}`` surfaces, each bore (``Fesselung_Rad{g}``) rigid-tied to a
-       rotation node at the gear's mid-plane, frictionless hard contact as explicit meshing
+       ``TOOTH-{g}-{nnn}F{f}`` surfaces, each gear's bore + radial sector cut faces
+       (``Fesselung_Rad{g}``, reference parity) rigid-tied to a rotation node at the gear's
+       mid-plane, frictionless hard contact as explicit meshing
        flank pairs, and ONE quasi-static step driving the ``driven_gear`` through a staircase
        angle while the other gear carries the resisting torque. Pure text (the caller persists
        via ``app.storage``). The plastic gear is the contact slave; a steel gear is deformable
@@ -18,8 +19,11 @@
        stage input (.ste order — kst-E: steel pinion z=51), gear 2 = the second (plastic wheel
        z=52). NOTE: the FVA reference deck numbers the other way around (its Part_Rad_Vz_1 is
        the plastic z52 wheel) — verified against the deck's material cards and tip diameters.
-       The physical load case is kept identical to the reference: the plastic wheel at the
-       origin is angle-driven, the steel pinion at the centre distance carries the torque.
+       Layout follows the Kleingetriebeprüfstand top view (ADR-021 amendment): gear 1 at the
+       origin (left), gear 2 at the centre distance (right) — per-gear inputs are keyed by
+       input position only, never re-ordered by role or tooth count. The load case is kept
+       physically identical to the reference: the plastic wheel is angle-driven, the steel
+       pinion carries the resisting torque (roles by material, not by slot).
 """
 
 import math
@@ -303,7 +307,7 @@ def build_implicit_pair_deck(
     ``rigid_gears`` implements the material-mode rule for mixed pairings (user decision): the
     listed gears become **ideally stiff** — the whole element set is a rigid body about the
     rotation node (all internal DOFs eliminated, only the reference node moves), instead of the
-    bore-only Fesselung tie. Contact surfaces and set names are unchanged, so the frozen FVA
+    bore + cut-face Fesselung tie. Contact surfaces and set names are unchanged, so the frozen FVA
     postprocessing still runs.
     """
     if driven_gear not in (1, 2) or slave_gear not in (1, 2):
@@ -343,8 +347,8 @@ def build_implicit_pair_deck(
             "*NSET, NSET=Rot_Node_Rad1\n1,",
             "*NSET, NSET=Rot_Node_Rad2\n2,",
             "*NSET, NSET=MASTERKNOTEN_NODE_SET\n1, 2",
-            f"*NSET, NSET=Fesselung_Rad1, INSTANCE=Rad_Vz_1\n{_wrap(part1.sets.bore_nodes)}",
-            f"*NSET, NSET=Fesselung_Rad2, INSTANCE=Rad_Vz_2\n{_wrap(part2.sets.bore_nodes)}",
+            f"*NSET, NSET=Fesselung_Rad1, INSTANCE=Rad_Vz_1\n{_wrap(part1.sets.fastening_nodes)}",
+            f"*NSET, NSET=Fesselung_Rad2, INSTANCE=Rad_Vz_2\n{_wrap(part2.sets.fastening_nodes)}",
             fastening(part1),
             fastening(part2),
         )
@@ -392,9 +396,10 @@ def build_implicit_pair_deck(
             (
                 f"*HEADING\n{heading}",
                 "** Gear numbering follows the stage input order (ADR-021): "
-                "gear 1 = pinion, gear 2 = wheel.",
-                "** (The FVA reference deck kst-E_8_DY2-0_WS30 numbers the gears "
-                "the other way around.)",
+                "gear 1 = the stage's first gear, gear 2 = the second.",
+                "** Rig layout: gear 1 on the axis at the origin, gear 2 at the centre "
+                "distance. (The FVA reference",
+                "** deck kst-E_8_DY2-0_WS30 numbers its gears the other way around.)",
                 gear_comment(part1),
                 gear_comment(part2),
                 "**",
@@ -420,9 +425,9 @@ def build_implicit_pair_deck(
 def build_implicit_pair_from_stage(
     stage: GearStage,
     *,
-    pinion_material: Material,
-    wheel_material: Material,
-    wheel_torque_nmm: float,
+    gear1_material: Material,
+    gear2_material: Material,
+    torque_gear2_nmm: float,
     face_layers: int = 6,
     face_width_mm: tuple[float, float] | None = None,
     axial_offset_mm: tuple[float, float] = (0.0, 0.0),
@@ -435,72 +440,83 @@ def build_implicit_pair_from_stage(
     contact_gap_mm: float | None = None,
     element_type: str = "C3D8R",
     rigid_gears: frozenset[int] = frozenset(),
+    driven_gear: int = 2,
     slave_gear: int = 2,
     refine_root: int = 1,
     refine_flank: int = 1,
-    fillet_pinion: object | None = None,
-    fillet_wheel: object | None = None,
+    fillet_gear1: object | None = None,
+    fillet_gear2: object | None = None,
     heading: str = "FE rolling model (implicit, ohne Radkoerper) - generated from GearStage",
 ) -> str:
     """One-call build: a ``GearStage`` → meshed, positioned pair → reference-faithful implicit deck.
 
-    **Numbering follows the stage input order (ADR-021):** gear 1 = the stage's first gear
-    (kst-E: steel pinion z=51), gear 2 = the second (plastic wheel z=52). The physical layout
-    and load case stay reference-faithful: the wheel (gear 2) sits at the origin facing +x and
-    is angle-driven through ``roll_pitches`` of its pitches; the pinion (gear 1) sits at the
-    working centre distance facing −x, offset half a pitch so a gap meshes the wheel's tooth
-    (``phase_rad`` adds a tunable mounting offset), and carries the resisting torque. The
-    torque is entered as the WHEEL torque and converted to the applied pinion torque
-    (T₁ = T₂ · z₁/z₂, static equilibrium of the pair). The contact gap defaults to 1.5·mₙ.
+    **Slot semantics (ADR-021, amended):** everything is keyed by the stage INPUT position —
+    gear 1 = the stage's first gear, gear 2 = the second — and never re-ordered by role or
+    tooth count (kst-E: gear 1 = steel pinion z=51, gear 2 = plastic wheel z=52; but gear 1
+    may just as well be the larger wheel). All per-gear inputs (materials, face widths, axial
+    offsets, fillets) follow that chain. Layout matches the Kleingetriebeprüfstand top view:
+    **gear 1 at the origin (left), gear 2 at the working centre distance (right)**, gear 2
+    rotated half a pitch so a gap meshes gear 1's tooth (``phase_rad`` adds a tunable
+    mounting offset).
+
+    Load case (reference parity): ``driven_gear`` (default 2 — the plastic wheel for kst-E)
+    is angle-driven through ``roll_pitches`` of its pitches; the other gear carries the
+    resisting torque. ``torque_gear2_nmm`` is the torque level expressed AT GEAR 2 (M₂, the
+    kst-E load-stage convention); it is converted to the torque actually applied at the
+    non-driven gear via the tooth counts (T_g = M₂ · z_g/z₂). The contact gap defaults to
+    1.5·mₙ.
 
     Each gear keeps its own face width (``face_width_mm`` overrides the stage values, order
-    (pinion, wheel)) and is extruded symmetric about its mid-plane, shifted by
-    ``axial_offset_mm`` (pinion, wheel) along the rotation axis — reference parity: the
-    narrower wheel rolls centred on the wider pinion by default, and both rotation nodes sit
-    at their gear's mid-plane instead of on a side face.
+    (gear 1, gear 2)) and is extruded symmetric about its mid-plane, shifted by
+    ``axial_offset_mm`` (gear 1, gear 2) along the rotation axis — reference parity: gears of
+    unequal width roll centred on each other by default, and both rotation nodes sit at their
+    gear's mid-plane instead of on a side face.
 
     Both sectors come from the reference-topology transplant mesher; ``refine_root`` /
-    ``refine_flank`` set the FVA density factors and ``fillet_pinion`` / ``fillet_wheel`` an
+    ``refine_flank`` set the FVA density factors and ``fillet_gear1`` / ``fillet_gear2`` an
     optional optimized root-fillet strategy per gear (run the mating-tip clearance check
     first). ``rigid_gears`` lists gears rendered ideally stiff (mixed-pairing rule — pass the
-    steel side); ``slave_gear`` is the contact slave (the plastic side, default the wheel).
+    steel side); ``slave_gear`` is the contact slave (the plastic side).
     """
-    pinion = ToothProfile.from_stage(stage, 0)
-    wheel = ToothProfile.from_stage(stage, 1)
+    profile1 = ToothProfile.from_stage(stage, 0)
+    profile2 = ToothProfile.from_stage(stage, 1)
     a = stage.working_center_distance_mm
     if face_width_mm is None:
         if stage.face_width_mm is None:
             raise ValueError("face widths needed: pass face_width_mm or a stage carrying them")
         face_width_mm = (abs(stage.face_width_mm[0]), abs(stage.face_width_mm[1]))
-    part_pinion = build_gear_part(
-        pinion,
+    part1 = build_gear_part(
+        profile1,
         gear=1,
-        material=pinion_material,
+        material=gear1_material,
         face_width_mm=face_width_mm[0],
         face_layers=face_layers,
-        rot_rad=math.pi / 2.0 + math.pi / pinion.z + phase_rad,
-        dx=a,
+        rot_rad=-math.pi / 2.0,
         axial_offset_mm=axial_offset_mm[0],
         refine_root=refine_root,
         refine_flank=refine_flank,
-        fillet=fillet_pinion,
+        fillet=fillet_gear1,
     )
-    part_wheel = build_gear_part(
-        wheel,
+    part2 = build_gear_part(
+        profile2,
         gear=2,
-        material=wheel_material,
+        material=gear2_material,
         face_width_mm=face_width_mm[1],
         face_layers=face_layers,
-        rot_rad=-math.pi / 2.0,
+        rot_rad=math.pi / 2.0 + math.pi / profile2.z + phase_rad,
+        dx=a,
         axial_offset_mm=axial_offset_mm[1],
         refine_root=refine_root,
         refine_flank=refine_flank,
-        fillet=fillet_wheel,
+        fillet=fillet_gear2,
     )
+    z = {1: profile1.z, 2: profile2.z}
+    torque_gear = 3 - driven_gear
     kin = RollKinematics(
         center_distance_mm=a,
-        torque_nmm=wheel_torque_nmm * pinion.z / wheel.z,  # applied at the pinion (gear 1)
-        roll_angle_rad=roll_pitches * 2.0 * math.pi / wheel.z,
+        # M₂ (torque at gear 2) converted to the gear that actually carries the load
+        torque_nmm=torque_gear2_nmm * z[torque_gear] / z[2],
+        roll_angle_rad=roll_pitches * 2.0 * math.pi / z[driven_gear],
         n_roll_positions=n_roll_positions,
         settle_positions=settle_positions,
         sub_increments=sub_increments,
@@ -508,13 +524,13 @@ def build_implicit_pair_from_stage(
     )
     gap = contact_gap_mm if contact_gap_mm is not None else 1.5 * stage.normal_module_mm
     return build_implicit_pair_deck(
-        part_pinion,
-        part_wheel,
+        part1,
+        part2,
         kin=kin,
         contact_gap_mm=gap,
         element_type=element_type,
         rigid_gears=rigid_gears,
-        driven_gear=2,
+        driven_gear=driven_gear,
         slave_gear=slave_gear,
         heading=heading,
     )

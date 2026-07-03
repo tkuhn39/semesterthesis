@@ -107,25 +107,27 @@ def test_tooth_contour_example_and_variant() -> None:
 
 
 def test_deck_download_with_steel_shell() -> None:
-    """ADR-021 numbering: gear 1 = steel pinion (z51, rigid under the shell rule),
-    gear 2 = plastic wheel (z52, deformable, angle-driven), axial offsets parametric."""
+    """ADR-021 slot semantics: gear 1 = steel pinion (z51, at the origin/left, rigid under
+    the shell rule), gear 2 = plastic wheel (z52, at the centre distance/right, deformable,
+    angle-driven), axial offsets parametric per input slot."""
     res = client.post(
         "/api/mesh/deck",
         json={
             "steel_shell": True,
             "face_layers": 2,
             "n_roll_positions": 4,
-            "axial_offset_wheel_mm": 1.0,
+            "axial_offset_gear2_mm": 1.0,
         },
     )
     assert res.status_code == 200
     deck = res.text
     assert "*PART, NAME=Part_Rad_Vz_1" in deck
     assert "Gear 1: z=51" in deck and "Gear 2: z=52" in deck  # STE order, header table
+    assert "axis at (0, 0)" in deck.split("Gear 2")[0]  # gear 1 at the origin (rig: left)
     assert "ELSET=Rad_Vz_1.ALL_ELEMENTS_Part_Rad_Vz_1" in deck  # rigid steel pinion
     assert "TIE NSET=Fesselung_Rad2" in deck  # plastic wheel stays deformable
-    assert "mid-plane z=1 mm" in deck  # wheel axial offset lands in the header table
-    assert "Rot_Node_Rad2, 6, 6" in deck  # the wheel is the angle-driven gear
+    assert "mid-plane z=1 mm" in deck  # gear-2 axial offset lands in the header table
+    assert "Rot_Node_Rad2, 6, 6" in deck  # the plastic side (gear 2) is angle-driven
 
 
 def test_presets_and_ste_import() -> None:

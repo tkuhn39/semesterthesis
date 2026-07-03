@@ -122,7 +122,10 @@ class GearReferenceSets:
 
     gear: int
     n_teeth: int
-    bore_nodes: IntArray  # Fesselung: 1-based bore node ids (tied to the rotation node)
+    # Fesselung (reference parity): 1-based node ids of the bore surface PLUS both radial
+    # sector cut faces (bore → shoulder contour), all tied to the rotation node — verified
+    # against the reference deck's Fesselung_Rad1 (bore arc + the two cut planes, all layers).
+    fastening_nodes: IntArray
     flank_nodes: dict[tuple[int, int], IntArray]  # (tooth, flank) -> 1-based node ids
     flank_elements: dict[tuple[int, int], IntArray]  # (tooth, flank) -> 1-based hex ids
     flank_faces: dict[tuple[int, int], list[tuple[int, str]]]  # (tooth, flank) -> (hex id, face)
@@ -138,12 +141,14 @@ def tag_gear_reference(
     layers: int,
     tol_mm: float | None = None,
 ) -> GearReferenceSets:
-    """Classify a swept gear sector into the reference per-tooth/flank sets + bore (Fesselung).
+    """Classify a swept gear sector into the reference per-tooth/flank sets + Fesselung.
 
     Same boundary geometry as ``tag_sector_surfaces`` but emits the reference naming and **1-based
     3-D** ids: each 2-D boundary node expands over the ``layers + 1`` face-width node planes and
     each boundary quad-edge over the ``layers`` swept side faces (the ``extrude_to_hex`` layout).
-    The radial cut faces and tip land are left free — the postprocessing does not consume them.
+    The Fesselung comprises the bore surface AND both radial sector cut faces (reference parity,
+    user decision 2026-07-04); only the tip land is left free — the postprocessing does not
+    consume it.
     """
     tol = tol_mm if tol_mm is not None else 0.02 * profile.mn
     pitch = 2.0 * math.pi / profile.z
@@ -159,7 +164,7 @@ def tag_gear_reference(
     def nodes_3d(edge: tuple[int, int]) -> set[int]:
         return {layer * n_nodes + nd + 1 for layer in range(layers + 1) for nd in edge}
 
-    bore: set[int] = set()
+    fastening: set[int] = set()
     flank_nodes: dict[tuple[int, int], set[int]] = defaultdict(set)
     flank_elems: dict[tuple[int, int], set[int]] = defaultdict(set)
     flank_faces: dict[tuple[int, int], list[tuple[int, str]]] = defaultdict(list)
@@ -170,9 +175,9 @@ def tag_gear_reference(
         r = float(np.hypot(mid[0], mid[1]))
         ang = math.atan2(mid[0], mid[1])
         if abs(abs(ang) - half_sector) < tol / max(r, 1e-6):
-            continue  # radial cut face — free
-        if abs(r - r_bore) < tol:
-            bore.update(nodes_3d(edge))
+            fastening.update(nodes_3d(edge))  # radial cut face — fastened (reference parity)
+        elif abs(r - r_bore) < tol:
+            fastening.update(nodes_3d(edge))
         elif abs(r - r_na) < tol:
             continue  # tip land — not a named reference surface
         elif r_ff + tol < r < r_na - tol:
@@ -191,7 +196,7 @@ def tag_gear_reference(
     return GearReferenceSets(
         gear=gear,
         n_teeth=n_teeth,
-        bore_nodes=arr(bore),
+        fastening_nodes=arr(fastening),
         flank_nodes={k: arr(v) for k, v in flank_nodes.items()},
         flank_elements={k: arr(v) for k, v in flank_elems.items()},
         flank_faces=dict(flank_faces),

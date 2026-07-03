@@ -15,18 +15,18 @@ import { useT } from "@/lib/i18n";
 export function PairPanel() {
   const t = useT();
   const { stage, label } = useStage();
-  const [wheel, setWheel] = useState<Mesh3DResponse | null>(null);
-  const [pinion, setPinion] = useState<Mesh3DResponse | null>(null);
+  const [gear1, setGear1] = useState<Mesh3DResponse | null>(null);
+  const [gear2, setGear2] = useState<Mesh3DResponse | null>(null);
   const [roll, setRoll] = useState(0);
   const [layers, setLayers] = useState(6);
   const [refineRoot, setRefineRoot] = useState(1);
   const [refineFlank, setRefineFlank] = useState(1);
-  const [filletWheel, setFilletWheel] = useState<FilletSpec>({ kind: "standard" });
+  const [filletGear2, setFilletGear2] = useState<FilletSpec>({ kind: "standard" });
   const [torque, setTorque] = useState(20000);
   const [rollPositions, setRollPositions] = useState(30);
   const [steelShell, setSteelShell] = useState(true);
-  const [offsetPinion, setOffsetPinion] = useState(0);
-  const [offsetWheel, setOffsetWheel] = useState(0);
+  const [offsetGear1, setOffsetGear1] = useState(0);
+  const [offsetGear2, setOffsetGear2] = useState(0);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -47,27 +47,27 @@ export function PairPanel() {
   const generate = () =>
     guard("pair", async () => {
       const base = { stage, refine_root: refineRoot, refine_flank: refineFlank };
-      const [w, p] = await Promise.all([
-        meshApi.mesh3d({ ...base, gear: 2, fillet: filletWheel }, layers),
+      const [g1, g2] = await Promise.all([
         meshApi.mesh3d({ ...base, gear: 1, fillet: { kind: "standard" } }, layers),
+        meshApi.mesh3d({ ...base, gear: 2, fillet: filletGear2 }, layers),
       ]);
-      setWheel(w);
-      setPinion(p);
+      setGear1(g1);
+      setGear2(g2);
     });
 
   const downloadDeck = () =>
     guard("deck", async () => {
       const text = await meshApi.deck({
         stage,
-        wheel_torque_nmm: torque,
+        torque_gear2_nmm: torque,
         face_layers: layers,
         n_roll_positions: rollPositions,
         refine_root: refineRoot,
         refine_flank: refineFlank,
-        axial_offset_pinion_mm: offsetPinion,
-        axial_offset_wheel_mm: offsetWheel,
+        axial_offset_gear1_mm: offsetGear1,
+        axial_offset_gear2_mm: offsetGear2,
         steel_shell: steelShell,
-        fillet_wheel: filletWheel,
+        fillet_gear2: filletGear2,
       });
       const blob = new Blob([text], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
@@ -123,14 +123,14 @@ export function PairPanel() {
         <Section title={t("pair.axial")}>
           <table className="attr-table">
             <tbody>
-              <AttrRow label={`${t("pair.axialOffset")} · ${t("common.pinion")}`} symbol="Δz₁" unit="mm">
+              <AttrRow label={`${t("pair.axialOffset")} · ${t("pair.gear1")}`} symbol="Δz₁" unit="mm">
                 <td>
-                  <Num value={offsetPinion} onChange={setOffsetPinion} step={0.5} />
+                  <Num value={offsetGear1} onChange={setOffsetGear1} step={0.5} />
                 </td>
               </AttrRow>
-              <AttrRow label={`${t("pair.axialOffset")} · ${t("common.wheel")}`} symbol="Δz₂" unit="mm">
+              <AttrRow label={`${t("pair.axialOffset")} · ${t("pair.gear2")}`} symbol="Δz₂" unit="mm">
                 <td>
-                  <Num value={offsetWheel} onChange={setOffsetWheel} step={0.5} />
+                  <Num value={offsetGear2} onChange={setOffsetGear2} step={0.5} />
                 </td>
               </AttrRow>
             </tbody>
@@ -143,11 +143,11 @@ export function PairPanel() {
         </Btn>
         {err && <ErrNote>{err}</ErrNote>}
 
-        {wheel && pinion && (
+        {gear1 && gear2 && (
           <>
             <div className="grid grid-cols-2 gap-2">
-              <Stat label={`${t("common.wheel")} · ${t("mesh.hexes")}`} value={wheel.n_hexes.toLocaleString("de-DE")} />
-              <Stat label={`${t("common.pinion")} · ${t("mesh.hexes")}`} value={pinion.n_hexes.toLocaleString("de-DE")} />
+              <Stat label={`${t("pair.gear1")} · ${t("mesh.hexes")}`} value={gear1.n_hexes.toLocaleString("de-DE")} />
+              <Stat label={`${t("pair.gear2")} · ${t("mesh.hexes")}`} value={gear2.n_hexes.toLocaleString("de-DE")} />
             </div>
             <Section title={t("pair.roll")}>
               <div className="p-3">
@@ -198,11 +198,11 @@ export function PairPanel() {
                   <Num value={rollPositions} onChange={setRollPositions} step={1} />
                 </td>
               </AttrRow>
-              <AttrRow label={t("mesh.fillet")} symbol="" unit="">
+              <AttrRow label={`${t("mesh.fillet")} · ${t("pair.gear2")}`} symbol="" unit="">
                 <td>
                   <select
-                    value={filletWheel.kind}
-                    onChange={(e) => setFilletWheel({ kind: e.target.value as FilletSpec["kind"] })}
+                    value={filletGear2.kind}
+                    onChange={(e) => setFilletGear2({ kind: e.target.value as FilletSpec["kind"] })}
                   >
                     {["standard", "trochoid", "elliptic", "bezier", "bionic"].map((k) => (
                       <option key={k} value={k}>
@@ -232,14 +232,15 @@ export function PairPanel() {
 
       <div className="h-full min-h-[560px]" style={{ background: "var(--wb-viewport)", borderRadius: 10 }}>
         <PairViewport
-          wheel={wheel}
-          pinion={pinion}
+          gear1={gear1}
+          gear2={gear2}
           centerDistance={centerDistance}
-          teethWheel={stage.teeth_wheel}
-          teethPinion={stage.teeth_pinion}
+          teethGear1={stage.teeth_pinion}
+          teethGear2={stage.teeth_wheel}
+          drivenGear={2}
           rollDeg={roll}
-          offsetWheelZ={offsetWheel}
-          offsetPinionZ={offsetPinion}
+          offsetGear1Z={offsetGear1}
+          offsetGear2Z={offsetGear2}
         />
       </div>
     </div>

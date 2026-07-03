@@ -2,7 +2,8 @@
 @module: tests.test_implicit_deck
 @context: Domain-layer tests — FE rolling model, the reference-faithful implicit deck.
 @role: A meshed gear pair becomes a WoBe-892 implicit deck: Part_Rad_Vz_{g} parts with
-       per-tooth/flank G{g}T{nnn}F{f} sets + TOOTH surfaces, bore Fesselung rigid-tied to a
+       per-tooth/flank G{g}T{nnn}F{f} sets + TOOTH surfaces, Fesselung (bore + radial cut
+       faces, reference parity) rigid-tied to a
        rotation node at the gear's mid-plane, frictionless hard contact as meshing flank pairs
        (plastic side = slave), Marlow plastic + elastic steel, and one static step with
        staircase angle + torque. Gear numbering follows the stage input order (ADR-021):
@@ -46,14 +47,14 @@ def _profiles() -> tuple[ToothProfile, ToothProfile]:
 def _deck(rigid_gear1: bool = False) -> str:
     pinion, wheel = _profiles()
     a = pinion.mn * (pinion.z + wheel.z) / 2.0
+    # rig layout (ADR-021 amendment): gear 1 at the origin (left), gear 2 at (a, 0) (right)
     part_pinion = build_gear_part(
         pinion,
         gear=1,
         material=LinearElastic("STEEL", 210000.0, 0.3),
         face_width_mm=17.0,
         face_layers=2,
-        rot_rad=math.pi / 2.0 + math.pi / pinion.z,
-        dx=a,
+        rot_rad=-math.pi / 2.0,
         axial_offset_mm=1.0,
     )
     part_wheel = build_gear_part(
@@ -62,7 +63,8 @@ def _deck(rigid_gear1: bool = False) -> str:
         material=MarlowUniaxial("PA_kstE"),
         face_width_mm=15.0,
         face_layers=2,
-        rot_rad=-math.pi / 2.0,
+        rot_rad=math.pi / 2.0 + math.pi / wheel.z,
+        dx=a,
     )
     kin = RollKinematics(
         center_distance_mm=a,
@@ -143,8 +145,9 @@ def test_rotation_nodes_sit_at_the_gear_mid_planes() -> None:
     n1 = [float(v) for v in rot[0].split(",")]
     n2 = [float(v) for v in rot[1].split(",")]
     a = 2.0 * (24 + 60) / 2.0
-    assert n1[0] == 1 and math.isclose(n1[1], a) and math.isclose(n1[3], 1.0)  # offset 1 mm
-    assert n2[0] == 2 and n2[1] == 0.0 and n2[3] == 0.0
+    # rig layout: gear 1 on the axis at the ORIGIN (left), gear 2 at the centre distance
+    assert n1[0] == 1 and n1[1] == 0.0 and math.isclose(n1[3], 1.0)  # offset 1 mm
+    assert n2[0] == 2 and math.isclose(n2[1], a) and n2[3] == 0.0
     # part node z-ranges: pinion b=17 shifted +1 → [-7.5, 9.5]; wheel b=15 centred → [-7.5, 7.5]
     parsed = parse_inp(deck)
     for part, lo, hi in (("Part_Rad_Vz_1", -7.5, 9.5), ("Part_Rad_Vz_2", -7.5, 7.5)):
@@ -168,13 +171,14 @@ def test_deck_materials_and_amplitudes() -> None:
 
 
 def test_one_call_build_from_stage() -> None:
-    """The GearStage convenience wrapper produces a complete, parseable deck: STE-order
-    numbering, per-gear face widths, mid-plane rotation nodes, wheel-torque conversion."""
+    """The GearStage convenience wrapper produces a complete, parseable deck: slot-order
+    numbering with gear 1 at the origin (rig view: left), per-gear face widths, mid-plane
+    rotation nodes, and the M₂ torque conversion to the loaded gear."""
     deck = build_implicit_pair_from_stage(
         _stage(),
-        pinion_material=LinearElastic("STEEL", 210000.0, 0.3),
-        wheel_material=MarlowUniaxial("PA_kstE"),
-        wheel_torque_nmm=7846.0,
+        gear1_material=LinearElastic("STEEL", 210000.0, 0.3),
+        gear2_material=MarlowUniaxial("PA_kstE"),
+        torque_gear2_nmm=7846.0,
         face_layers=2,
         axial_offset_mm=(0.0, -1.0),
         n_roll_positions=8,
@@ -186,7 +190,11 @@ def test_one_call_build_from_stage() -> None:
     assert len([b for b in parsed.blocks if b.keyword == "STEP"]) == 1
     assert len([b for b in parsed.blocks if b.keyword == "CONTACT PAIR"]) >= 1
     assert "Gear 1: z=24, b=20 mm" in deck and "Gear 2: z=60, b=18 mm" in deck
-    # wheel torque 7846 N·mm → applied pinion torque 7846·24/60 at Rot_Node_Rad1
+    # rig layout: gear 1 on the axis at the origin, gear 2 at the working centre distance
+    # (a_w ≈ 84.774 — null distance 84 plus the profile-shift widening)
+    assert "Gear 1: z=24" in deck and "axis at (0, 0)" in deck.split("Gear 2")[0]
+    assert "axis at (84.77" in deck.split("Gear 2: z=60")[1].split("\n")[0]
+    # M₂ = 7846 N·mm at gear 2 → applied at the torque gear 1 as 7846·24/60 (Rot_Node_Rad1)
     cload = next(b for b in parsed.blocks if b.keyword == "CLOAD")
     node, dof, value = (v.strip() for v in cload.data.strip().split(","))
     assert node == "Rot_Node_Rad1" and dof == "6"
@@ -195,7 +203,7 @@ def test_one_call_build_from_stage() -> None:
 
 def test_steel_shell_mode_makes_the_steel_pinion_rigid() -> None:
     """Mixed-pairing material rule: the steel pinion (gear 1) becomes an ideally stiff rigid
-    body (whole element set about its rotation node) instead of the bore-only Fesselung tie;
+    body (whole element set about its rotation node) instead of the Fesselung tie;
     the plastic wheel stays deformable."""
     parsed = parse_inp(_deck(rigid_gear1=True))
     rigids = [b.header for b in parsed.blocks if b.keyword == "RIGID BODY"]

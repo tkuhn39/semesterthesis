@@ -70,7 +70,7 @@ const DICT: Record<string, { de: string; en: string }> = {
   "mesh.filletCompare.run": { de: "Strategien vergleichen", en: "Compare strategies" },
   "mesh.clearance": { de: "Freigang", en: "clearance" },
   "deck.title": { de: "Implizites Abwälzmodell", en: "Implicit rolling model" },
-  "deck.torque": { de: "Radmoment", en: "Wheel torque" },
+  "deck.torque": { de: "Moment an Rad 2", en: "Torque at gear 2" },
   "deck.rollPositions": { de: "Wälzstellungen", en: "Roll positions" },
   "deck.steelShell": {
     de: "Stahlseite ideal steif (Rigid-Shell)",
@@ -107,18 +107,20 @@ const DICT: Record<string, { de: string; en: string }> = {
   "pair.legend": { de: "Koordinatensysteme (Rot_Node_Rad1/2)", en: "Coordinate systems (Rot_Node_Rad1/2)" },
   "pair.legendLocked": { de: "DOF 1–5 gesperrt (Ring + Streben)", en: "DOF 1–5 locked (ring + struts)" },
   "pair.legendDriven": {
-    de: "DOF 6 frei — Rad 2 (Rad): Wälzwinkel (Treppenkurve)",
-    en: "DOF 6 free — gear 2 (wheel): driven angle (staircase)",
+    de: "DOF 6 frei — grün: winkelgetriebenes Rad (Treppenkurve, Kunststoffseite)",
+    en: "DOF 6 free — green: angle-driven gear (staircase, plastic side)",
   },
   "pair.legendTorque": {
-    de: "DOF 6 frei — Rad 1 (Ritzel): Gegenmoment (aus M₂ umgerechnet)",
-    en: "DOF 6 free — gear 1 (pinion): resisting torque (converted from M₂)",
+    de: "DOF 6 frei — gelb: momentbelastetes Rad (aus M₂ umgerechnet)",
+    en: "DOF 6 free — amber: torque-loaded gear (converted from M₂)",
   },
+  "pair.gear1": { de: "Rad 1", en: "Gear 1" },
+  "pair.gear2": { de: "Rad 2", en: "Gear 2" },
   "pair.axial": { de: "Axiale Lage", en: "Axial position" },
   "pair.axialOffset": { de: "Axialversatz", en: "Axial offset" },
   "pair.axialNote": {
-    de: "Beide Räder sind symmetrisch um ihre Mittelebene extrudiert (Rot_Nodes in Radmitte, z = 0) und wälzen standardmäßig mittig aufeinander ab; der Versatz verschiebt jedes Rad entlang seiner Drehachse.",
-    en: "Both gears extrude symmetric about their mid-plane (rotation nodes at mid-width, z = 0) and roll centred on each other by default; the offset displaces each gear along its rotation axis.",
+    de: "Ansicht wie am Kleingetriebeprüfstand: links Rad 1, rechts Rad 2 (STE-Reihenfolge). Beide Räder sind symmetrisch um ihre Mittelebene extrudiert (Rot_Nodes in Radmitte, z = 0) und wälzen standardmäßig mittig aufeinander ab; der Versatz verschiebt jedes Rad entlang seiner Drehachse.",
+    en: "View like the small-gear test rig: gear 1 left, gear 2 right (STE order). Both gears extrude symmetric about their mid-plane (rotation nodes at mid-width, z = 0) and roll centred on each other by default; the offset displaces each gear along its rotation axis.",
   },
   "mesh.fillet.trochoid": { de: "Werkzeug-Trochoide (DIN 3960)", en: "Tool trochoid (DIN 3960)" },
   "mesh.fillet.manufacturing": {

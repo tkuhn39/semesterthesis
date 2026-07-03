@@ -11,6 +11,23 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 _Nothing yet._
 
+## [0.4.1] - 2026-07-04
+
+### Changed (user review follow-up — Fesselung parity + rig-view slot convention)
+- **Fesselung on reference parity**: `Fesselung_Rad{g}` now ties the bore surface AND both
+  radial sector cut faces (bore → shoulder contour) to the rotation node — verified
+  numerically against the reference deck's set (bore arc over the full sector + two complete
+  radial node chains up to the root circle, all layers). Previously only the bore was tied.
+- **Slot convention (ADR-021 amendment)**: every per-gear input follows the stage INPUT
+  position through the whole chain (gear 1 = first .ste gear, gear 2 = second — never
+  re-ordered by role or tooth count), and the assembly matches the Kleingetriebeprüfstand
+  top view: **gear 1 at the origin (left), gear 2 at the working centre distance (right)** —
+  in the deck and as the default 3D pair-view orientation. Deck request fields renamed
+  accordingly (`gear1_material`/`gear2_material`, `axial_offset_gear(1|2)_mm`,
+  `fillet_gear(1|2)`, `torque_gear2_nmm` = M₂, the torque expressed at gear 2). The
+  angle/torque/slave roles follow the MATERIAL (plastic side angle-driven + contact slave,
+  reference parity), independent of the slot.
+
 ## [0.4.0] - 2026-07-04
 
 ### Changed (user review of the generated pair — deck conventions, ADR-021)
