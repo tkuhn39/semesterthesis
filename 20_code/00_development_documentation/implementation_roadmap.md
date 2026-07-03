@@ -137,9 +137,13 @@ topology-identical to ANSA (one fan node per gap, 3024 quads/sector), min scaled
 `is_flank_symmetric`. Parametric density (root/flank chord splits) + native 2D quick solver for
 convergence checks (reference density already converged, Δ < 0.1 %). Optimized root fillets
 (elliptic/Bézier/bionic, supervisor topic) mesh through the same pipeline with interference check.
-User-reviewed at checkpoints 1+2. **Next:** 3D extrusion + FVA set contract on the new mesher,
-rewire `implicit_deck.build_gear_part` (replacing `mapped_mesher`), material-mode rule (mixed
-pairing → steel side as ideally stiff rigid shell), then mesh API + three.js viewer.
+User-reviewed at checkpoints 1+2. **Done since (v0.2.0, checkpoints 3):** deck rewired onto the
+transplant mesher (mapped_mesher retired from the deck path), rigid-shell material rule for mixed
+pairings, Part_Rad_Vz_1 = plastic wheel convention, /api/mesh router (preview/3d/convergence/
+fillet-compare/contour/deck) and the Next.js workbench UI (ADR-020) with the three.js mesh
+viewport, tooth-form and variation-overlay panels. **Next (M6):** capacity/dynamics panel ports,
+FZG presets + STE upload + free design, fillet parameters as Stufenvariation axes, tolerance
+views (DIN 3967/3964), frontend swap.
 
 **Progress (2026-06-24, ADR-017):** Native STplus geometry → FE deck pipeline stands. Tooth/root
 geometry is **reference-grade**: clean rounded ρ_F root fillet (`tooth_form.transverse_right_boundary`),

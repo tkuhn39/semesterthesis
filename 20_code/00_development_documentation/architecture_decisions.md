@@ -618,7 +618,8 @@ band_aspect 1.1, opt_iters 120. Sector + extrude next.
 
 ## ADR-018: Block-structured FVA/STIRAK gear mesh on a fixed scaffold (MESHING_SPEC.md)
 
-**Status:** accepted (2026-06-25) · supersedes the body-mesh construction of ADR-017 for the
+**Status:** superseded by ADR-019 (2026-07-03) — the mined reference topology has no distributed
+2:1 template band; the scaffold utilities live on. Originally: accepted (2026-06-25) · supersedes the body-mesh construction of ADR-017 for the
 reference reproduction.
 
 **Context:** the optimizer-finished boundary-layer body (ADR-017) hit det(J) 0.74 but its *element

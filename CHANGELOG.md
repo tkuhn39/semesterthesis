@@ -9,6 +9,10 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.2.0] - 2026-07-03
+
 ### Added (2026-07-03 — mesh API, deck rewiring + rigid shell, workbench UI; ADR-019/020, M3–M5)
 - **API — mesh router** (`app/api/mesh.py`): `/api/mesh/preview` (2-D sector + per-quad scaled
   Jacobian), `/api/mesh/3d` (outer hull of the extruded sector for the three.js viewer),

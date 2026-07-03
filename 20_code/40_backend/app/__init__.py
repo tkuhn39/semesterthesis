@@ -4,4 +4,4 @@
 @role: Package marker exposing the application version.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
