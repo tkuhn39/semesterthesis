@@ -33,15 +33,19 @@ class Mesh3D:
         return int(self.hexes.shape[0])
 
 
-def extrude_to_hex(section: Mesh2D, quad_quality: Array, *, width: float, layers: int) -> Mesh3D:
+def extrude_to_hex(
+    section: Mesh2D, quad_quality: Array, *, width: float, layers: int, z0: float = 0.0
+) -> Mesh3D:
     """Extrude a 2-D quad section into C3D8 hexahedra (``layers`` over the face ``width``).
 
     Done natively (replicate the section nodes per z-layer; one hex per quad × layer) so
     it is robust to gmsh's surface-extrusion quirks on complex sector boundaries. The hex
     Jacobi-Güte equals the section quad's (orthogonal extrusion), tiled over the layers.
+    ``z0`` places the lower face (pass ``-width / 2`` for a mid-plane-symmetric gear —
+    the reference deck centres both parts about z = 0).
     """
     n = section.n_nodes
-    z = np.linspace(0.0, width, layers + 1)
+    z = z0 + np.linspace(0.0, width, layers + 1)
     nodes = np.empty(((layers + 1) * n, 3))
     for k in range(layers + 1):
         nodes[k * n : (k + 1) * n, :2] = section.nodes

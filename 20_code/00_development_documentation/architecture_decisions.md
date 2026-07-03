@@ -39,6 +39,7 @@ body.
 | ADR-018 | Block-structured FVA/STIRAK gear mesh on a fixed scaffold (MESHING_SPEC.md) | Superseded by ADR-019 | 2026-07-03 |
 | ADR-019 | Reference-topology transplant mesher: mined ground truth, canonical symmetry, chord density, quick FE, fillet strategies | Accepted | 2026-07-03 |
 | ADR-020 | Next.js workbench frontend (FVA layout language, Geist, static export) | Accepted | 2026-07-03 |
+| ADR-021 | Deck gear numbering follows the stage input order; mid-plane-centred extrusion with parametric axial offsets | Accepted | 2026-07-04 |
 
 ---
 
@@ -731,3 +732,44 @@ its own reviewed commit. New panels shipped now: Übersicht, Geometrie, Zahnform
 contour + fillet strategies + clearance), FE-Mesh (density, 3D hull viewer with Jacobian heatmap,
 convergence quick check, fillet ranking, deck download incl. rigid-shell rule), Stufenvariation
 (parallel coordinates, Pareto, variants table + up-to-4 real-contour overlay comparison).
+
+---
+
+## ADR-021: Deck gear numbering follows the stage input order; mid-plane-centred extrusion with parametric axial offsets
+
+**Status:** accepted (2026-07-04) · user decision after reviewing the generated pair.
+
+**Context:** the generated implicit deck had inherited the FVA reference deck's gear numbering,
+where `Part_Rad_Vz_1` is the **plastic wheel** (z=52) and `Part_Rad_Vz_2` the **steel pinion**
+(z=51) — verified directly against the reference deck's material cards (Vz_1 = Marlow
+hyperelastic, Vz_2 = E 210000) and tip diameters. That is the reverse of the .ste input order
+(pinion first), which is what a user naturally expects when postprocessing. Additionally both
+gears were extruded from z = 0 with a single shared face width, so the 15/17 mm kst-E pair sat
+flush on one side (2 mm overhang on the other) and the rotation nodes lay on a side face —
+while the reference deck centres both parts about z = 0 with their own widths.
+
+**Decision:**
+1. **Numbering = stage input order:** gear 1 = the stage's first gear (kst-E: steel pinion
+   z=51), gear 2 = the second (plastic wheel z=52) — across `build_implicit_pair_from_stage`,
+   the `G{g}T{nnn}F{f}`/`TOOTH-{g}-…` sets, `Rot_Node_Rad{g}` and `Fesselung_Rad{g}`. The
+   physical load case stays reference-faithful (wheel at the origin, angle-driven via
+   AMP-ANGLE; pinion at the centre distance carrying the resisting torque via AMP-TORQUE;
+   plastic side = contact slave), and a comment table in the deck heading documents z, b,
+   material, axis position, mid-plane and role per gear — including the note that the FVA
+   deck numbers the other way around.
+2. **Torque semantics:** the API keeps the user-facing `wheel_torque_nmm` (M₂) and converts it
+   to the applied pinion torque T₁ = M₂·z₁/z₂ (static pair equilibrium).
+3. **Mid-plane extrusion + axial offsets:** each gear keeps its own face width and is extruded
+   symmetric about its mid-plane (z = ±b/2, reference parity), so unequal-width gears roll
+   centred by default; `axial_offset_(pinion|wheel)_mm` displaces each gear parametrically
+   along its rotation axis, and each rotation node sits at its gear's mid-plane (z = offset),
+   not on a side face. The single-gear `/api/mesh/3d` hull is centred the same way.
+4. **Material matrix in the deck:** `DeckRequest` gains `pinion_material`/`wheel_material`
+   (steel/plastic); the rigid-shell rule resolves to whichever side is steel in a mixed
+   pairing, and the contact slave to the plastic side.
+
+**Consequences:** decks generated from here on are **not name-compatible** with the FVA
+reference deck's gear indices — postprocessing that reads G1/G2 sets must use the mapping in
+the deck header (plastic stress sets are now G2 for kst-E). The frozen-reference comparison
+path is unaffected (the reference .inp itself is untouched). Frontend pair view mirrors the
+convention (wheel triad = driven/green, pinion triad = torque/amber, offsets in the panel).

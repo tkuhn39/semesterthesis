@@ -7,6 +7,7 @@
        parameters); the design router provides presets and the STplus text import.
 """
 
+import math
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -84,6 +85,12 @@ def test_tooth_contour_example_and_variant() -> None:
     body = res.json()
     assert body["teeth"] == 52
     assert body["clearance_mm"] is None
+    # the drawn envelope is completed across the root land: the boundary starts on the
+    # gap centreline (half-pitch off the tooth centre), not at the fillet tangent point
+    x0, y0 = body["boundary_xy"][0], body["boundary_xy"][1]
+    gap_angle = math.pi / 2.0 - math.pi / body["teeth"]  # right gap centre, tooth centre = +y
+    assert math.isclose(math.atan2(y0, x0), gap_angle, abs_tol=1e-6)
+    assert math.isclose(math.hypot(x0, y0), body["root_diameter_mm"] / 2.0, rel_tol=1e-6)
     # free variant with an optimized fillet reports its clearance
     res = client.post(
         "/api/mesh/contour",
@@ -100,15 +107,25 @@ def test_tooth_contour_example_and_variant() -> None:
 
 
 def test_deck_download_with_steel_shell() -> None:
+    """ADR-021 numbering: gear 1 = steel pinion (z51, rigid under the shell rule),
+    gear 2 = plastic wheel (z52, deformable, angle-driven), axial offsets parametric."""
     res = client.post(
         "/api/mesh/deck",
-        json={"steel_shell": True, "face_layers": 2, "n_roll_positions": 4},
+        json={
+            "steel_shell": True,
+            "face_layers": 2,
+            "n_roll_positions": 4,
+            "axial_offset_wheel_mm": 1.0,
+        },
     )
     assert res.status_code == 200
     deck = res.text
     assert "*PART, NAME=Part_Rad_Vz_1" in deck
-    assert "ELSET=Rad_Vz_2.ALL_ELEMENTS_Part_Rad_Vz_2" in deck  # rigid steel side
-    assert "TIE NSET=Fesselung_Rad1" in deck  # plastic side stays deformable
+    assert "Gear 1: z=51" in deck and "Gear 2: z=52" in deck  # STE order, header table
+    assert "ELSET=Rad_Vz_1.ALL_ELEMENTS_Part_Rad_Vz_1" in deck  # rigid steel pinion
+    assert "TIE NSET=Fesselung_Rad2" in deck  # plastic wheel stays deformable
+    assert "mid-plane z=1 mm" in deck  # wheel axial offset lands in the header table
+    assert "Rot_Node_Rad2, 6, 6" in deck  # the wheel is the angle-driven gear
 
 
 def test_presets_and_ste_import() -> None:
@@ -149,7 +166,7 @@ def test_variation_material_matrix() -> None:
 
 def test_micro_geometry_symmetry_policy() -> None:
     """Asymmetric per-flank micro-geometry data drops mirror symmetry (teeth stay congruent)."""
-    stage = dict(_FREE_STAGE)
+    stage: dict[str, object] = dict(_FREE_STAGE)
     stage["modifications_wheel"] = {
         "left": {"tip_relief_um": 20.0},
         "right": {"tip_relief_um": 0.0},

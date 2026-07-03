@@ -18,7 +18,8 @@ messages strip at the bottom. Geist font, Tailwind v4, DE/EN language switch (i1
 | Stufenvariation | sweep, Pareto, parallel coordinates, material matrix, real-contour variant overlay | `/api/variation`, `/api/mesh/contour` |
 | Zahnform (je Rad) | as-cut contour, fillet strategies incl. clearance | `/api/mesh/contour` |
 | FE-Mesh (je Rad) | density presets, 3D hull + Jacobian heatmap, convergence quick check, fillet ranking/sweep | `/api/mesh/*` |
-| Paar & FE-Abwälzmodell | both gears, DOF triads, roll slider, deck download (rigid-shell rule) | `/api/mesh/3d`, `/api/mesh/deck` |
+| Paar & FE-Abwälzmodell | both gears (mid-plane centred, ADR-021 numbering), DOF triads, axial offsets Δz₁/Δz₂, roll slider, deck download (material matrix + rigid-shell rule) | `/api/mesh/3d`, `/api/mesh/deck` |
+| Legende & Parameter | filterable glossary (75 entries, DE/EN): symbol, full name, plain-language relations, norm badges, cross-links | static (`src/lib/glossary.ts`) |
 
 ## Development
 

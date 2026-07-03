@@ -9,7 +9,7 @@ It complements, and does not replace:
 - [`architecture_decisions.md`](architecture_decisions.md) — the ADRs (why).
 - The master plan in plan mode — the FE-modelling vision and trade-offs.
 
-_Last updated: 2026-07-03 (v0.3.0) — Step 3: transplant mesher + deck + mesh API + Next.js workbench done (ADR-019/020). Previously: reference-grade tooth/root geometry +
+_Last updated: 2026-07-04 (v0.4.0) — deck conventions finalized for the cluster run (ADR-021: STE-order numbering, mid-plane centring, axial offsets, torque conversion) + glossary panel. Step 3: transplant mesher + deck + mesh API + Next.js workbench done (ADR-019/020). Previously: reference-grade tooth/root geometry +
 transfinite mesh (boundary layer, deep rim, Jacobi ≥ 0.9) and the validated all-quad body-coarsening
 template (ADR-017); 136 tests green._
 
@@ -145,8 +145,17 @@ viewport, tooth-form and variation-overlay panels. **Done (v0.3.0):** capacity/d
 import + free StageParams across all mesh/deck endpoints, fillet-sweep axis (quick-FE
 objective), trochoid strategy, micro-geometry data model (ISO 21771 §6), material matrix,
 pair viewport with DOF triads, frontend swap (Next.js is `50_frontend`; Docker without
-OpenGL). **Still open:** DIN 3967/3964 tooth-thickness/centre-distance allowance system,
-protuberance tool variant (DIN 3960 Anhang A), micro-geometry mechanics (load distribution).
+OpenGL). **Done (v0.4.0, ADR-021, user review of the pair):** deck gear numbering follows the
+stage input order (gear 1 = steel pinion z51, gear 2 = plastic wheel z52; the FVA deck is the
+reverse — header comment table documents the mapping), per-gear face widths with mid-plane-
+centred extrusion (z = ±b/2) + parametric axial offsets, rotation nodes at mid-width, wheel
+torque converted to the pinion (T₁ = M₂·z₁/z₂), deck material matrix (steel/plastic per gear),
+contour completed across the root land, filterable parameter glossary panel (75 entries,
+DE/EN). **Still open:** Fesselung parity — the reference holds the sector's radial cut faces
+(bore → root circle), our deck ties the bore only (middle teeth buffered by the shoulder
+pitches; revisit after the first cluster run), DIN 3967/3964 tooth-thickness/centre-distance
+allowance system, protuberance tool variant (DIN 3960 Anhang A), micro-geometry mechanics
+(load distribution).
 
 **Progress (2026-06-24, ADR-017):** Native STplus geometry → FE deck pipeline stands. Tooth/root
 geometry is **reference-grade**: clean rounded ρ_F root fillet (`tooth_form.transverse_right_boundary`),

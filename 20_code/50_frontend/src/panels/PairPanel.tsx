@@ -25,6 +25,8 @@ export function PairPanel() {
   const [torque, setTorque] = useState(20000);
   const [rollPositions, setRollPositions] = useState(30);
   const [steelShell, setSteelShell] = useState(true);
+  const [offsetPinion, setOffsetPinion] = useState(0);
+  const [offsetWheel, setOffsetWheel] = useState(0);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -62,6 +64,8 @@ export function PairPanel() {
         n_roll_positions: rollPositions,
         refine_root: refineRoot,
         refine_flank: refineFlank,
+        axial_offset_pinion_mm: offsetPinion,
+        axial_offset_wheel_mm: offsetWheel,
         steel_shell: steelShell,
         fillet_wheel: filletWheel,
       });
@@ -116,6 +120,24 @@ export function PairPanel() {
           </table>
         </Section>
 
+        <Section title={t("pair.axial")}>
+          <table className="attr-table">
+            <tbody>
+              <AttrRow label={`${t("pair.axialOffset")} · ${t("common.pinion")}`} symbol="Δz₁" unit="mm">
+                <td>
+                  <Num value={offsetPinion} onChange={setOffsetPinion} step={0.5} />
+                </td>
+              </AttrRow>
+              <AttrRow label={`${t("pair.axialOffset")} · ${t("common.wheel")}`} symbol="Δz₂" unit="mm">
+                <td>
+                  <Num value={offsetWheel} onChange={setOffsetWheel} step={0.5} />
+                </td>
+              </AttrRow>
+            </tbody>
+          </table>
+          <div className="px-2.5 pb-2 text-[11px] text-zinc-500">{t("pair.axialNote")}</div>
+        </Section>
+
         <Btn onClick={generate} busy={busy === "pair"}>
           {t("pair.generate")}
         </Btn>
@@ -140,7 +162,7 @@ export function PairPanel() {
                 />
                 <div className="flex justify-between text-[11px] text-zinc-500">
                   <span>−15°</span>
-                  <span className="wb-num">φ₁ = {roll.toFixed(1)}°</span>
+                  <span className="wb-num">φ₂ = {roll.toFixed(1)}°</span>
                   <span>+15°</span>
                 </div>
               </div>
@@ -216,6 +238,8 @@ export function PairPanel() {
           teethWheel={stage.teeth_wheel}
           teethPinion={stage.teeth_pinion}
           rollDeg={roll}
+          offsetWheelZ={offsetWheel}
+          offsetPinionZ={offsetPinion}
         />
       </div>
     </div>

@@ -17,6 +17,7 @@ import { DesignPanel } from "@/panels/DesignPanel";
 import { CapacityPanel } from "@/panels/CapacityPanel";
 import { DynamicsPanel } from "@/panels/DynamicsPanel";
 import { PairPanel } from "@/panels/PairPanel";
+import { GlossaryPanel } from "@/panels/GlossaryPanel";
 
 type NodeKey =
   | "overview"
@@ -29,7 +30,8 @@ type NodeKey =
   | "pinion.mesh"
   | "wheel.toothform"
   | "wheel.mesh"
-  | "deck";
+  | "deck"
+  | "glossary";
 
 interface TreeNode {
   key?: NodeKey;
@@ -72,6 +74,7 @@ const TREE: TreeNode = {
         },
       ],
     },
+    { key: "glossary", labelKey: "tree.glossary" },
   ],
 };
 
@@ -148,6 +151,7 @@ function Shell() {
       "wheel.toothform": `${t("tree.wheel")} — ${t("tree.toothform")}`,
       "wheel.mesh": `${t("tree.wheel")} — ${t("tree.mesh")} · ADR-019`,
       deck: t("tree.pair"),
+      glossary: t("tree.glossary"),
     }),
     [t],
   );
@@ -176,6 +180,8 @@ function Shell() {
         return <MeshPanel gear={2} />;
       case "deck":
         return <PairPanel />;
+      case "glossary":
+        return <GlossaryPanel />;
     }
   })();
 

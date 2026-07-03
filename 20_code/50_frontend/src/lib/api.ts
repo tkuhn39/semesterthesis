@@ -382,6 +382,10 @@ export interface FilletSweepResponse {
   best_sigma_mpa: number | null;
   standard_sigma_mpa: number;
 }
+// Gear numbering follows the stage input order (ADR-021): gear 1 = pinion, gear 2 = wheel.
+// wheel_torque_nmm is the resisting torque at the WHEEL (the deck applies T1 = T2·z1/z2 at
+// the pinion); the axial offsets displace each gear along its rotation axis from the default
+// mid-plane alignment (both gears extrude symmetric about z = 0).
 export interface DeckRequest {
   stage: StageParams;
   wheel_torque_nmm: number;
@@ -389,7 +393,12 @@ export interface DeckRequest {
   n_roll_positions: number;
   refine_root: number;
   refine_flank: number;
+  pinion_material?: "steel" | "plastic";
+  wheel_material?: "steel" | "plastic";
+  axial_offset_pinion_mm?: number;
+  axial_offset_wheel_mm?: number;
   steel_shell: boolean;
+  fillet_pinion?: FilletSpec;
   fillet_wheel: FilletSpec;
 }
 export interface ContourRequest {

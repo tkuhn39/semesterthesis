@@ -8,6 +8,7 @@
 
 import math
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 import pytest
@@ -16,8 +17,12 @@ from scipy.spatial import cKDTree
 from app.io.ste import gear_stage_from_ste, load_ste
 from app.services.geometry.gear import GearStage
 from app.services.geometry.tooth_form import ToothProfile
-from app.services.model.reference_slice import load_reference_template, measure
-from app.services.model.template_mesher import generate_sector_2d, scaled_jacobians
+from app.services.model.reference_slice import Quad, load_reference_template, measure
+from app.services.model.template_mesher import (
+    SectorMesh2D,
+    generate_sector_2d,
+    scaled_jacobians,
+)
 
 _REF_STE = (
     Path(__file__).resolve().parents[3]
@@ -30,7 +35,7 @@ pytestmark = pytest.mark.skipif(not _REF_STE.exists(), reason="STplus reference 
 
 
 @pytest.fixture(scope="module")
-def wheel_mesh():
+def wheel_mesh() -> tuple[ToothProfile, SectorMesh2D]:
     stage = GearStage.from_ste(gear_stage_from_ste(load_ste(_REF_STE)))
     profile = ToothProfile.from_stage(stage, 1)  # wheel z=52 (plastic side)
     template = load_reference_template()
@@ -38,16 +43,16 @@ def wheel_mesh():
     return profile, mesh
 
 
-def test_topology_matches_reference(wheel_mesh) -> None:
+def test_topology_matches_reference(wheel_mesh: tuple[ToothProfile, SectorMesh2D]) -> None:
     """Same quad count and the reference's exact irregular-node signature."""
     _, mesh = wheel_mesh
     coords = {i: (c[0], c[1]) for i, c in enumerate(mesh.coords)}
-    metrics = measure(mesh.quads, coords)
+    metrics = measure(cast("list[Quad]", mesh.quads), coords)
     assert metrics.n_quads == 3024
     assert metrics.interior_valence == {4: 2716, 5: 2, 6: 3}
 
 
-def test_quality_gates(wheel_mesh) -> None:
+def test_quality_gates(wheel_mesh: tuple[ToothProfile, SectorMesh2D]) -> None:
     """MESHING_SPEC §3: det(J)min ≥ 0.35 with zero cells below (better than the reference)."""
     _, mesh = wheel_mesh
     sj = scaled_jacobians(mesh.coords, mesh.quads)
@@ -62,7 +67,7 @@ def test_quality_gates(wheel_mesh) -> None:
     assert float(sj[in_band].min()) >= 0.5
 
 
-def test_teeth_exactly_congruent(wheel_mesh) -> None:
+def test_teeth_exactly_congruent(wheel_mesh: tuple[ToothProfile, SectorMesh2D]) -> None:
     """Every tooth is a pure rotation of the base tooth (MESHING_SPEC §6, user requirement)."""
     profile, mesh = wheel_mesh
     pts = mesh.points
@@ -80,7 +85,7 @@ def test_teeth_exactly_congruent(wheel_mesh) -> None:
         assert float(dist.max()) < 1e-9
 
 
-def test_base_tooth_mirror_symmetric(wheel_mesh) -> None:
+def test_base_tooth_mirror_symmetric(wheel_mesh: tuple[ToothProfile, SectorMesh2D]) -> None:
     """Symmetric input parameters (is_flank_symmetric) → exact in-tooth mirror symmetry."""
     profile, mesh = wheel_mesh
     assert profile.is_flank_symmetric()

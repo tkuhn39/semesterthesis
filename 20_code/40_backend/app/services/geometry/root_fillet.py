@@ -43,6 +43,7 @@ __all__ = [
     "TrochoidFillet",
     "fillet_boundary",
     "mating_tip_clearance",
+    "with_root_land",
 ]
 
 
@@ -244,6 +245,32 @@ def fillet_boundary(
     flank = profile.flank_points(flank_points)
     chamfer = profile.tip_chamfer_points() if to_tip_circle else []
     return fillet + flank[1:] + chamfer
+
+
+def with_root_land(
+    profile: ToothProfile, pts: list[Pair[float]], *, points: int = 16
+) -> list[Pair[float]]:
+    """Prepend the root-land arc from the right gap centre to the boundary's first point.
+
+    Fillets that leave the root circle BEFORE the gap centreline (the ρ_F arc, the tool
+    trochoid) leave a root land on d_f between the two facing fillets — physically part of
+    the outer envelope, but missing from the plotted boundary, which visually interrupts the
+    contour at d_f (user report 2026-07-04). This completes the polyline with the circular
+    arc at the start-point radius from the gap centre axis to the start point. Fillets that
+    already reach the gap centre (Bézier, bionic, elliptic) get no extra points.
+    """
+    if not pts:
+        return pts
+    u0, v0 = _to_gap(profile, pts[0][0], pts[0][1])
+    phi0 = math.atan2(-u0, v0)  # CW angle of the start point off the gap centre axis
+    if phi0 <= 1e-9:  # already starts on (or past) the gap centreline
+        return pts
+    r0 = math.hypot(u0, v0)
+    arc = [
+        Pair(*_to_tooth(profile, -r0 * math.sin(phi), r0 * math.cos(phi)))
+        for phi in np.linspace(0.0, phi0, points, endpoint=False)
+    ]
+    return arc + pts
 
 
 def mating_tip_clearance(

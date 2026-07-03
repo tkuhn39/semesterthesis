@@ -8,6 +8,7 @@
 
 import math
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 import pytest
@@ -17,7 +18,7 @@ from app.io.ste import gear_stage_from_ste, load_ste
 from app.services.geometry.gear import GearStage
 from app.services.geometry.tooth_form import ToothProfile
 from app.services.model.plane_fe import density_convergence, root_tensile_stress
-from app.services.model.reference_slice import load_reference_template, measure
+from app.services.model.reference_slice import Quad, load_reference_template, measure
 from app.services.model.template_mesher import generate_sector_2d, scaled_jacobians
 
 _REF_STE = (
@@ -44,9 +45,9 @@ def bore() -> float:
 def test_refinement_keeps_structure_and_gates(wheel: ToothProfile, bore: float) -> None:
     """Density levels stay conformal all-quad with the reference irregular-node signature."""
     mesh = generate_sector_2d(wheel, bore_radius_mm=bore, refine_root=2, refine_flank=2)
-    assert mesh.meta["n_quads"] > 5000  # actually refined
+    assert int(mesh.meta["n_quads"]) > 5000  # actually refined
     coords = {i: (c[0], c[1]) for i, c in enumerate(mesh.coords)}
-    metrics = measure(mesh.quads, coords)
+    metrics = measure(cast("list[Quad]", mesh.quads), coords)
     assert metrics.interior_valence[5] == 2
     assert metrics.interior_valence[6] == 3
     assert set(metrics.interior_valence) == {4, 5, 6}

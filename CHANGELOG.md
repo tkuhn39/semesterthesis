@@ -9,10 +9,45 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.4.0] - 2026-07-04
+
+### Changed (user review of the generated pair — deck conventions, ADR-021)
+- **Deck gear numbering now follows the stage input order**: gear 1 = pinion (kst-E: steel,
+  z=51), gear 2 = wheel (plastic, z=52) — across parts, `G{g}T{nnn}F{f}` sets, surfaces,
+  `Rot_Node_Rad{g}` and `Fesselung_Rad{g}`. Verified against the FVA reference deck that its
+  own `Part_Rad_Vz_1` is the plastic z52 wheel (material cards + tip diameters), i.e. reversed
+  relative to the .ste order — generated decks now carry a header comment table (z, b,
+  material, axis, mid-plane, role per gear) documenting the mapping. The physical load case is
+  unchanged (wheel at the origin angle-driven, pinion carrying the torque, plastic = contact
+  slave); `wheel_torque_nmm` (M₂) is now converted to the applied pinion torque T₁ = M₂·z₁/z₂.
+- **Mid-plane-centred extrusion (reference parity)**: each gear keeps its own face width and
+  extrudes symmetric about z = 0, so the 15/17 mm kst-E pair rolls centred by default and both
+  rotation nodes sit at their gear's mid-plane instead of on a side face; also applied to the
+  single-gear `/api/mesh/3d` hull.
+
+### Added
+- **Legende & Parameter panel**: a dedicated, filterable glossary tab (75 entries, DE/EN) —
+  symbol, full name, an understandable explanation of what each parameter does and which
+  parameters it interacts with, norm badges (click to filter) and clickable cross-links;
+  free-text search + category chips + norm dropdown.
+- **Parametric axial offsets**: `axial_offset_(pinion|wheel)_mm` in the deck request displace
+  each gear along its rotation axis; the pair panel exposes both (Δz₁/Δz₂) and the viewport
+  mirrors them live.
+- **Deck material matrix**: `pinion_material`/`wheel_material` (steel/plastic) in the deck
+  request; the rigid-shell rule resolves to the steel side of a mixed pairing and the contact
+  slave to the plastic side; `fillet_pinion` joins `fillet_wheel`.
+- Tooth contours are drawn **continuously across the root land**: the plotted boundary is
+  completed with the d_f arc from the fillet end to the gap centreline
+  (`with_root_land`), so the standard/trochoid envelope no longer shows a gap at d_f.
+
 ### Fixed
 - CI: `ruff check` over all of `20_code/` (unused variable in
   `10_verifiers/checkpoint2_plots.py`); local lint gate now runs from `20_code/`
   like the pipeline, not just `40_backend/`.
+- mypy is now clean over the whole backend including tests (annotations added to the mesher,
+  fillet and refine test modules).
 
 ## [0.3.0] - 2026-07-03
 

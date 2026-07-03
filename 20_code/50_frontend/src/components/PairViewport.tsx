@@ -1,11 +1,13 @@
 "use client";
 
 // Pair viewport (user request, M6): both meshed sectors positioned exactly like the combined
-// implicit deck (plastic wheel at the origin, steel pinion at the working centre distance,
-// half-pitch phase), with CO-MOVING coordinate triads at the two rotation nodes showing which
-// DOFs the deck locks: DOF 1–5 fixed (gray struts + lock ring), DOF 6 free (green rotation
-// arrow; gear 1 driven by the staircase angle, gear 2 carrying the torque). A roll slider
-// turns both gears with the correct kinematic coupling (−z1/z2), so the triads visibly rotate
+// implicit deck (ADR-021 numbering: gear 1 = pinion at the working centre distance, gear 2 =
+// wheel at the origin, half-pitch phase), with CO-MOVING coordinate triads at the two rotation
+// nodes showing which DOFs the deck locks: DOF 1–5 fixed (gray struts + lock ring), DOF 6 free
+// (green rotation arrow on the angle-driven wheel, amber on the torque-loaded pinion). The
+// hulls arrive mid-plane-symmetric (z = ±b/2) and each gear can be displaced along its
+// rotation axis (parametric axial offset, mirrors the deck's axial_offset_*). A roll slider
+// turns both gears with the correct kinematic coupling (−z2/z1), so the triads visibly rotate
 // with their gears — consistent with *BOUNDARY / *CLOAD in the .inp.
 
 import { useEffect, useRef } from "react";
@@ -117,12 +119,14 @@ function buildTriad(size: number, moment: boolean): THREE.Group {
 }
 
 export function PairViewport(props: {
-  wheel: Mesh3DResponse | null; // gear 1 in the deck (plastic wheel, origin)
-  pinion: Mesh3DResponse | null; // gear 2 (steel), at the centre distance
+  wheel: Mesh3DResponse | null; // gear 2 in the deck (wheel, angle-driven, at the origin)
+  pinion: Mesh3DResponse | null; // gear 1 (pinion, torque), at the centre distance
   centerDistance: number;
   teethWheel: number;
   teethPinion: number;
-  rollDeg: number; // driven angle of gear 1 (the slider)
+  rollDeg: number; // driven angle of the wheel (the slider)
+  offsetWheelZ?: number; // axial offset along the rotation axis (deck axial_offset_wheel_mm)
+  offsetPinionZ?: number;
 }) {
   const mount = useRef<HTMLDivElement>(null);
   const state = useRef<{
@@ -190,30 +194,38 @@ export function PairViewport(props: {
     const a = props.centerDistance;
     const size = a * 0.16;
 
-    // gear 1 = plastic wheel at the origin, sector rotated -90° (deck convention)
+    // gear 2 = wheel at the origin, sector rotated -90° (deck convention); the hull is
+    // mid-plane symmetric, so the triad at the group origin sits at mid-width
     const hull1 = buildHull(props.wheel, 0xd5d9df);
     hull1.rotation.z = -Math.PI / 2;
     s.g1.add(hull1, buildTriad(size, false));
-    s.g1.position.set(0, 0, 0);
+    s.g1.position.set(0, 0, props.offsetWheelZ ?? 0);
 
-    // gear 2 = steel pinion at (a, 0), rotated +90° + half pitch (deck convention)
+    // gear 1 = pinion at (a, 0), rotated +90° + half pitch (deck convention)
     const hull2 = buildHull(props.pinion, 0xb9c2cf);
     hull2.rotation.z = Math.PI / 2 + Math.PI / props.teethPinion;
     s.g2.add(hull2, buildTriad(size, true));
-    s.g2.position.set(a, 0, 0);
+    s.g2.position.set(a, 0, props.offsetPinionZ ?? 0);
 
     s.camera.position.set(a / 2, -a * 1.6, a * 1.1);
     s.controls.target.set(a / 2, 0, 8);
     s.controls.update();
-  }, [props.wheel, props.pinion, props.centerDistance, props.teethPinion]);
+  }, [
+    props.wheel,
+    props.pinion,
+    props.centerDistance,
+    props.teethPinion,
+    props.offsetWheelZ,
+    props.offsetPinionZ,
+  ]);
 
-  // roll coupling: gear 1 driven by the slider, gear 2 counter-rotates by -z1/z2
+  // roll coupling: the wheel is driven by the slider, the pinion counter-rotates by -z2/z1
   useEffect(() => {
     const s = state.current;
     if (!s) return;
-    const phi1 = (props.rollDeg * Math.PI) / 180;
-    s.g1.rotation.z = phi1;
-    s.g2.rotation.z = (-phi1 * props.teethWheel) / props.teethPinion;
+    const phiWheel = (props.rollDeg * Math.PI) / 180;
+    s.g1.rotation.z = phiWheel;
+    s.g2.rotation.z = (-phiWheel * props.teethWheel) / props.teethPinion;
   }, [props.rollDeg, props.teethWheel, props.teethPinion]);
 
   return <div ref={mount} className="w-full h-full min-h-[520px] rounded-lg overflow-hidden" />;

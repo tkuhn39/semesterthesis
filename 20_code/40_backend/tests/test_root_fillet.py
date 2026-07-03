@@ -18,6 +18,7 @@ from app.services.geometry.root_fillet import (
     BezierFillet,
     BionicFillet,
     EllipticFillet,
+    FilletStrategy,
     fillet_boundary,
     mating_tip_clearance,
 )
@@ -35,6 +36,8 @@ _REF_STE = (
 
 pytestmark = pytest.mark.skipif(not _REF_STE.exists(), reason="STplus reference .ste not present")
 
+Profiles = tuple[ToothProfile, ToothProfile]
+
 _STRATEGIES = [EllipticFillet(e_f=-0.2), BezierFillet(be=0.57), BionicFillet()]
 
 
@@ -45,7 +48,7 @@ def pair() -> tuple[ToothProfile, ToothProfile]:
 
 
 @pytest.mark.parametrize("strategy", _STRATEGIES, ids=lambda s: type(s).__name__)
-def test_fillet_attaches_at_junction(pair, strategy) -> None:
+def test_fillet_attaches_at_junction(pair: Profiles, strategy: FilletStrategy) -> None:
     """Curve runs gap centre → d_Ff junction; elliptic/Bézier meet the involute G1 (< 2° kink),
     the bionic form deliberately attaches with the tension-triangle wedge angle (bounded kink
     below the active flank, per Voith/Kassem)."""
@@ -62,7 +65,7 @@ def test_fillet_attaches_at_junction(pair, strategy) -> None:
 
 
 @pytest.mark.parametrize("strategy", _STRATEGIES, ids=lambda s: type(s).__name__)
-def test_mating_clearance_positive(pair, strategy) -> None:
+def test_mating_clearance_positive(pair: Profiles, strategy: FilletStrategy) -> None:
     """No interference with the mating tooth-tip path for the kst-E pair (a = 52 mm)."""
     wheel, pinion = pair
     fillet = np.array([(p[0], p[1]) for p in strategy.right_half(wheel)])
@@ -77,7 +80,7 @@ def test_mating_clearance_positive(pair, strategy) -> None:
     assert clearance > 0.1
 
 
-def test_optimized_fillets_reduce_root_stress(pair) -> None:
+def test_optimized_fillets_reduce_root_stress(pair: Profiles) -> None:
     """Deep ellipse and Bézier cut the quick-FE root stress vs the standard fillet (gates hold)."""
     wheel, _ = pair
     bore = float(load_reference_template().meta["bore_radius_mm"])

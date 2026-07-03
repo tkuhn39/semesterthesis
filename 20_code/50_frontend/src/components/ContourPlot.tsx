@@ -75,6 +75,7 @@ export function ContourPlot(props: {
               stroke={OVERLAY_COLORS[ci % OVERLAY_COLORS.length]}
               strokeWidth={(maxX - minX) / 420}
               strokeLinejoin="round"
+              strokeLinecap="round"
             />
           )),
         )}

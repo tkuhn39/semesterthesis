@@ -106,8 +106,20 @@ const DICT: Record<string, { de: string; en: string }> = {
   "pair.roll": { de: "Abwälzen (kinematisch gekoppelt)", en: "Roll (kinematically coupled)" },
   "pair.legend": { de: "Koordinatensysteme (Rot_Node_Rad1/2)", en: "Coordinate systems (Rot_Node_Rad1/2)" },
   "pair.legendLocked": { de: "DOF 1–5 gesperrt (Ring + Streben)", en: "DOF 1–5 locked (ring + struts)" },
-  "pair.legendDriven": { de: "DOF 6 frei — Rad 1: Wälzwinkel (Treppenkurve)", en: "DOF 6 free — gear 1: driven angle (staircase)" },
-  "pair.legendTorque": { de: "DOF 6 frei — Rad 2: Gegenmoment M₂", en: "DOF 6 free — gear 2: resisting torque M₂" },
+  "pair.legendDriven": {
+    de: "DOF 6 frei — Rad 2 (Rad): Wälzwinkel (Treppenkurve)",
+    en: "DOF 6 free — gear 2 (wheel): driven angle (staircase)",
+  },
+  "pair.legendTorque": {
+    de: "DOF 6 frei — Rad 1 (Ritzel): Gegenmoment (aus M₂ umgerechnet)",
+    en: "DOF 6 free — gear 1 (pinion): resisting torque (converted from M₂)",
+  },
+  "pair.axial": { de: "Axiale Lage", en: "Axial position" },
+  "pair.axialOffset": { de: "Axialversatz", en: "Axial offset" },
+  "pair.axialNote": {
+    de: "Beide Räder sind symmetrisch um ihre Mittelebene extrudiert (Rot_Nodes in Radmitte, z = 0) und wälzen standardmäßig mittig aufeinander ab; der Versatz verschiebt jedes Rad entlang seiner Drehachse.",
+    en: "Both gears extrude symmetric about their mid-plane (rotation nodes at mid-width, z = 0) and roll centred on each other by default; the offset displaces each gear along its rotation axis.",
+  },
   "mesh.fillet.trochoid": { de: "Werkzeug-Trochoide (DIN 3960)", en: "Tool trochoid (DIN 3960)" },
   "mesh.fillet.manufacturing": {
     de: "Optimierte Fußkurve: nur Spritzguss/Erodieren — geschnittene Räder brauchen werkzeugkonforme Füße (DIN 3972/Protuberanz).",
@@ -120,6 +132,15 @@ const DICT: Record<string, { de: string; en: string }> = {
   "mesh.preset.custom": { de: "Benutzerdefiniert", en: "Custom" },
   "mesh.sweep": { de: "Fußkurven-Optimierung (Sweep)", en: "Fillet optimization (sweep)" },
   "mesh.sweep.best": { de: "Empfehlung", en: "Recommendation" },
+  "tree.glossary": { de: "Legende & Parameter", en: "Legend & parameters" },
+  "glossary.search": { de: "Suchen (Symbol, Name, Beschreibung) …", en: "Search (symbol, name, description) …" },
+  "glossary.all": { de: "Alle", en: "All" },
+  "glossary.allNorms": { de: "Alle Normen", en: "All norms" },
+  "glossary.entries": { de: "Einträge", en: "entries" },
+  "glossary.noMatch": { de: "Keine Treffer — Filter anpassen.", en: "No matches — adjust the filters." },
+  "glossary.seeAlso": { de: "Siehe auch", en: "See also" },
+  "glossary.filterNorm": { de: "Nach dieser Norm filtern", en: "Filter by this norm" },
+  "glossary.jump": { de: "Zum Parameter springen", en: "Jump to parameter" },
 };
 
 const LocaleCtx = createContext<{ locale: Locale; setLocale: (l: Locale) => void }>({
