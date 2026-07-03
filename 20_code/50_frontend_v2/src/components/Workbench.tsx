@@ -7,15 +7,23 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { api } from "@/lib/api";
 import { LocaleProvider, useLocale, useT } from "@/lib/i18n";
+import { StageProvider, useStage } from "@/lib/stage";
 import { GeometryPanel } from "@/panels/GeometryPanel";
 import { MeshPanel } from "@/panels/MeshPanel";
 import { ToothFormPanel } from "@/panels/ToothFormPanel";
 import { VariationPanel } from "@/panels/VariationPanel";
 import { OverviewPanel } from "@/panels/OverviewPanel";
+import { DesignPanel } from "@/panels/DesignPanel";
+import { CapacityPanel } from "@/panels/CapacityPanel";
+import { DynamicsPanel } from "@/panels/DynamicsPanel";
+import { PairPanel } from "@/panels/PairPanel";
 
 type NodeKey =
   | "overview"
+  | "design"
   | "geometry"
+  | "capacity"
+  | "dynamics"
   | "variation"
   | "pinion.toothform"
   | "pinion.mesh"
@@ -37,7 +45,10 @@ const TREE: TreeNode = {
       labelKey: "tree.stage",
       children: [
         { key: "overview", labelKey: "tree.overview" },
+        { key: "design", labelKey: "tree.design" },
         { key: "geometry", labelKey: "tree.geometry" },
+        { key: "capacity", labelKey: "tree.capacity" },
+        { key: "dynamics", labelKey: "tree.dynamics" },
         { key: "variation", labelKey: "tree.variation" },
         {
           labelKey: "tree.pinion",
@@ -57,7 +68,7 @@ const TREE: TreeNode = {
         },
         {
           labelKey: "tree.calcs",
-          children: [{ key: "deck", labelKey: "tree.deck" }],
+          children: [{ key: "deck", labelKey: "tree.pair" }],
         },
       ],
     },
@@ -109,6 +120,7 @@ function TreeItem(props: {
 function Shell() {
   const t = useT();
   const { locale, setLocale } = useLocale();
+  const { label: stageLabel } = useStage();
   const [active, setActive] = useState<NodeKey>("overview");
   const [version, setVersion] = useState<string | null>(null);
   const [online, setOnline] = useState<boolean | null>(null);
@@ -126,13 +138,16 @@ function Shell() {
   const titles: Record<NodeKey, string> = useMemo(
     () => ({
       overview: t("tree.overview"),
+      design: `${t("tree.design")} · Presets / STE / parametrisch`,
       geometry: `${t("tree.geometry")} · ISO 21771`,
+      capacity: `${t("tree.capacity")} · ISO 6336 / VDI 2736`,
+      dynamics: `${t("tree.dynamics")} · ISO 6336-1`,
       variation: `${t("tree.variation")}`,
       "pinion.toothform": `${t("tree.pinion")} — ${t("tree.toothform")}`,
       "pinion.mesh": `${t("tree.pinion")} — ${t("tree.mesh")} · ADR-019`,
       "wheel.toothform": `${t("tree.wheel")} — ${t("tree.toothform")}`,
       "wheel.mesh": `${t("tree.wheel")} — ${t("tree.mesh")} · ADR-019`,
-      deck: t("tree.deck"),
+      deck: t("tree.pair"),
     }),
     [t],
   );
@@ -141,8 +156,14 @@ function Shell() {
     switch (active) {
       case "overview":
         return <OverviewPanel onNavigate={(k) => setActive(k as NodeKey)} />;
+      case "design":
+        return <DesignPanel />;
       case "geometry":
         return <GeometryPanel />;
+      case "capacity":
+        return <CapacityPanel />;
+      case "dynamics":
+        return <DynamicsPanel />;
       case "variation":
         return <VariationPanel />;
       case "pinion.toothform":
@@ -154,7 +175,7 @@ function Shell() {
       case "wheel.mesh":
         return <MeshPanel gear={2} />;
       case "deck":
-        return <MeshPanel gear={2} />;
+        return <PairPanel />;
     }
   })();
 
@@ -200,7 +221,7 @@ function Shell() {
         <main className="flex-1 min-w-0 flex flex-col">
           <div className="h-9 flex items-center px-4 border-b border-zinc-200 bg-white shrink-0">
             <span className="text-[12.5px] font-medium text-zinc-800">{titles[active]}</span>
-            <span className="ml-auto text-[11px] text-zinc-400">kst-E · FZG a=52 mm</span>
+            <span className="ml-auto text-[11px] text-zinc-400">Stufe: {stageLabel}</span>
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto p-3 bg-zinc-100/70">{panel}</div>
         </main>
@@ -218,7 +239,9 @@ function Shell() {
 export function Workbench() {
   return (
     <LocaleProvider>
-      <Shell />
+      <StageProvider>
+        <Shell />
+      </StageProvider>
     </LocaleProvider>
   );
 }

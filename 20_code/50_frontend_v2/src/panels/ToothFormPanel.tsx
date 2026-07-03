@@ -9,6 +9,7 @@ import { contourApi, type ContourResponse, type FilletSpec } from "@/lib/api";
 import { ContourPlot } from "@/components/ContourPlot";
 import { AttrRow, Btn, ErrNote, Section, Stat } from "@/components/ui";
 import { useT } from "@/lib/i18n";
+import { useStage } from "@/lib/stage";
 
 export function FilletEditor(props: { value: FilletSpec; onChange: (f: FilletSpec) => void }) {
   const t = useT();
@@ -29,6 +30,7 @@ export function FilletEditor(props: { value: FilletSpec; onChange: (f: FilletSpe
           <td>
             <select value={f.kind} onChange={(e) => set({ kind: e.target.value as FilletSpec["kind"] })}>
               <option value="standard">{t("mesh.fillet.standard")}</option>
+              <option value="trochoid">{t("mesh.fillet.trochoid")}</option>
               <option value="elliptic">{t("mesh.fillet.elliptic")}</option>
               <option value="bezier">{t("mesh.fillet.bezier")}</option>
               <option value="bionic">{t("mesh.fillet.bionic")}</option>
@@ -99,8 +101,19 @@ export function FilletEditor(props: { value: FilletSpec; onChange: (f: FilletSpe
   );
 }
 
+export function ManufacturabilityNote(props: { kind: FilletSpec["kind"] }) {
+  const t = useT();
+  if (props.kind === "standard" || props.kind === "trochoid") return null;
+  return (
+    <div className="text-[11.5px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5">
+      {t("mesh.fillet.manufacturing")}
+    </div>
+  );
+}
+
 export function ToothFormPanel(props: { gear: 1 | 2 }) {
   const t = useT();
+  const { stage } = useStage();
   const [fillet, setFillet] = useState<FilletSpec>({ kind: "standard" });
   const [standard, setStandard] = useState<ContourResponse | null>(null);
   const [current, setCurrent] = useState<ContourResponse | null>(null);
@@ -112,11 +125,11 @@ export function ToothFormPanel(props: { gear: 1 | 2 }) {
       setBusy(true);
       setErr(null);
       try {
-        const cur = await contourApi.contour({ gear: props.gear, use_example: true, fillet: f });
+        const cur = await contourApi.contour({ stage, gear: props.gear, fillet: f });
         setCurrent(cur);
         if (f.kind !== "standard" && !standard) {
           setStandard(
-            await contourApi.contour({ gear: props.gear, use_example: true, fillet: { kind: "standard" } }),
+            await contourApi.contour({ stage, gear: props.gear, fillet: { kind: "standard" } }),
           );
         }
       } catch (e) {
@@ -125,7 +138,7 @@ export function ToothFormPanel(props: { gear: 1 | 2 }) {
         setBusy(false);
       }
     },
-    [props.gear, standard],
+    [props.gear, standard, stage],
   );
 
   useEffect(() => {
@@ -133,7 +146,7 @@ export function ToothFormPanel(props: { gear: 1 | 2 }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load(fillet);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.gear]);
+  }, [props.gear, stage]);
 
   const contours = [];
   if (current) {
@@ -154,6 +167,7 @@ export function ToothFormPanel(props: { gear: 1 | 2 }) {
             </Btn>
           </div>
         </Section>
+        <ManufacturabilityNote kind={fillet.kind} />
         {err && <ErrNote>{err}</ErrNote>}
         {current && (
           <Section title={t("toothform.title")}>

@@ -8,6 +8,7 @@ import { useState } from "react";
 import {
   api,
   contourApi,
+  KST_E_STAGE,
   type ContourResponse,
   type VariationPoint,
   type VariationRequest,
@@ -111,15 +112,23 @@ export function VariationPanel() {
       const p = rows[k];
       try {
         const c = await contourApi.contour({
+          stage: {
+            ...KST_E_STAGE,
+            use_example: false,
+            normal_module_mm: p.m_n,
+            teeth_pinion: p.z1,
+            teeth_wheel: p.z2,
+            profile_shift_pinion: p.x1,
+            profile_shift_wheel: p.x2,
+            normal_pressure_angle_deg: r.normal_pressure_angle_deg,
+            helix_angle_deg: p.beta_deg,
+            face_width_pinion_mm: p.b ?? 20,
+            face_width_wheel_mm: p.b ?? 20,
+            center_distance_mm: null,
+            tool_addendum_factor: r.tool_addendum_factor,
+            tool_tip_radius_factor: r.tool_tip_radius_factor,
+          },
           gear: 2,
-          use_example: false,
-          normal_module_mm: p.m_n,
-          teeth_pinion: p.z1,
-          teeth_wheel: p.z2,
-          profile_shift_pinion: p.x1,
-          profile_shift_wheel: p.x2,
-          normal_pressure_angle_deg: r.normal_pressure_angle_deg,
-          helix_angle_deg: p.beta_deg,
         });
         entries.push({ label: `z=${p.z1}/${p.z2} · x₂=${p.x2.toFixed(2)} · m=${p.m_n}`, data: c });
       } catch {
@@ -208,6 +217,20 @@ export function VariationPanel() {
         </Section>
 
         <Section title="Werkstoff & Sicherheiten" defaultOpen={false}>
+          <div className="p-2 flex items-center gap-2 text-[12px] text-zinc-600">
+            <span>{t("variation.matrix")}</span>
+            {(["pinion_material", "wheel_material"] as const).map((k) => (
+              <select
+                key={k}
+                className="border border-zinc-300 rounded-md px-1.5 py-0.5 text-[12px]"
+                value={(r as unknown as Record<string, string>)[k] ?? (k === "pinion_material" ? "steel" : "plastic")}
+                onChange={(e) => setR({ ...r, [k]: e.target.value } as VariationRequest)}
+              >
+                <option value="steel">{k === "pinion_material" ? "Ritzel: Stahl" : "Rad: Stahl"}</option>
+                <option value="plastic">{k === "pinion_material" ? "Ritzel: Kunststoff" : "Rad: Kunststoff"}</option>
+              </select>
+            ))}
+          </div>
           <table className="attr-table">
             <tbody>
               <AttrRow label="Moment" symbol="T₁" unit="N·m">

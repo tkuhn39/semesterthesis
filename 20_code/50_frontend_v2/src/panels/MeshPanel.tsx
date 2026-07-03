@@ -10,15 +10,25 @@ import {
   type ConvergenceResponse,
   type FilletCompareResponse,
   type FilletSpec,
+  type FilletSweepResponse,
   type Mesh3DResponse,
 } from "@/lib/api";
+import { useStage } from "@/lib/stage";
 import { MeshViewport } from "@/components/MeshViewport";
-import { FilletEditor } from "@/panels/ToothFormPanel";
+import { FilletEditor, ManufacturabilityNote } from "@/panels/ToothFormPanel";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 
+const DENSITY_PRESETS: { id: string; root: number; flank: number }[] = [
+  { id: "reference", root: 1, flank: 1 },
+  { id: "convRoot", root: 2, flank: 1 },
+  { id: "convFlank", root: 1, flank: 2 },
+  { id: "fine", root: 2, flank: 2 },
+];
+
 export function MeshPanel(props: { gear: 1 | 2 }) {
   const t = useT();
+  const { stage } = useStage();
   const [refineRoot, setRefineRoot] = useState(1);
   const [refineFlank, setRefineFlank] = useState(1);
   const [layers, setLayers] = useState(6);
@@ -27,13 +37,10 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
   const [data, setData] = useState<Mesh3DResponse | null>(null);
   const [conv, setConv] = useState<Record<string, ConvergenceResponse>>({});
   const [ranking, setRanking] = useState<FilletCompareResponse | null>(null);
+  const [sweep, setSweep] = useState<FilletSweepResponse | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
-  // deck options
-  const [torque, setTorque] = useState(20000);
-  const [rollPositions, setRollPositions] = useState(30);
-  const [steelShell, setSteelShell] = useState(true);
 
   const guard = async (name: string, fn: () => Promise<void>) => {
     setBusy(name);
@@ -51,7 +58,7 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
     guard("mesh", async () => {
       setData(
         await meshApi.mesh3d(
-          { gear: props.gear, refine_root: refineRoot, refine_flank: refineFlank, fillet },
+          { stage, gear: props.gear, refine_root: refineRoot, refine_flank: refineFlank, fillet },
           layers,
         ),
       );
@@ -59,39 +66,44 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
 
   const runConvergence = (target: "root" | "flank") =>
     guard(`conv-${target}`, async () => {
-      const out = await meshApi.convergence(props.gear, target);
+      const out = await meshApi.convergence(stage, props.gear, target);
       setConv((c) => ({ ...c, [target]: out }));
     });
 
   const runRanking = () =>
     guard("rank", async () => {
-      setRanking(await meshApi.filletCompare(props.gear));
-    });
-
-  const downloadDeck = () =>
-    guard("deck", async () => {
-      const text = await meshApi.deck({
-        wheel_torque_nmm: torque,
-        face_layers: layers,
-        n_roll_positions: rollPositions,
-        refine_root: refineRoot,
-        refine_flank: refineFlank,
-        steel_shell: steelShell,
-        fillet_wheel: fillet,
-      });
-      const blob = new Blob([text], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "kst-e_implicit_generated.inp";
-      a.click();
-      URL.revokeObjectURL(url);
+      setRanking(await meshApi.filletCompare(stage, props.gear));
     });
 
   return (
     <div className="grid grid-cols-[360px_1fr] gap-3 items-start h-full">
       <div className="flex flex-col gap-3 overflow-y-auto pr-1" style={{ maxHeight: "100%" }}>
         <Section title={t("mesh.density")}>
+          <div className="p-2 border-b border-zinc-100">
+            <select
+              className="border border-zinc-300 rounded-md px-2 py-1 text-[12px] w-full"
+              value={
+                DENSITY_PRESETS.find((d) => d.root === refineRoot && d.flank === refineFlank)?.id ??
+                "custom"
+              }
+              onChange={(e) => {
+                const d = DENSITY_PRESETS.find((x) => x.id === e.target.value);
+                if (d) {
+                  setRefineRoot(d.root);
+                  setRefineFlank(d.flank);
+                }
+              }}
+            >
+              {DENSITY_PRESETS.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {t(`mesh.preset.${d.id}`)}
+                </option>
+              ))}
+              <option value="custom" disabled>
+                {t("mesh.preset.custom")}
+              </option>
+            </select>
+          </div>
           <table className="attr-table">
             <thead>
               <tr>
@@ -135,6 +147,9 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
 
         <Section title={t("mesh.fillet")} defaultOpen={false}>
           <FilletEditor value={fillet} onChange={setFillet} />
+          <div className="p-2">
+            <ManufacturabilityNote kind={fillet.kind} />
+          </div>
         </Section>
 
         <div className="flex gap-2">
@@ -219,34 +234,56 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
           )}
         </Section>
 
-        <Section title={t("deck.title")} defaultOpen={false}>
-          <table className="attr-table">
-            <tbody>
-              <AttrRow label={t("deck.torque")} symbol="M₂" unit="N·mm">
-                <td>
-                  <Num value={torque} onChange={setTorque} />
-                </td>
-              </AttrRow>
-              <AttrRow label={t("deck.rollPositions")} symbol="n_W" unit="–">
-                <td>
-                  <Num value={rollPositions} onChange={setRollPositions} step={1} />
-                </td>
-              </AttrRow>
-            </tbody>
-          </table>
-          <div className="p-2 flex items-center gap-3 border-t border-zinc-100">
-            <label className="inline-flex items-center gap-1.5 text-[12px] text-zinc-600">
-              <input
-                type="checkbox"
-                checked={steelShell}
-                onChange={(e) => setSteelShell(e.target.checked)}
-              />
-              {t("deck.steelShell")}
-            </label>
-            <Btn onClick={downloadDeck} busy={busy === "deck"}>
-              {t("deck.download")}
-            </Btn>
+        <Section title={t("mesh.sweep")} defaultOpen={false}>
+          <div className="p-2 flex items-center gap-2">
+            {(["elliptic", "bezier", "bionic"] as const).map((k) => (
+              <Btn
+                key={k}
+                variant="ghost"
+                busy={busy === `sweep-${k}`}
+                onClick={() =>
+                  guard(`sweep-${k}`, async () =>
+                    setSweep(await meshApi.filletSweep(stage, props.gear, k)),
+                  )
+                }
+              >
+                {t(`mesh.fillet.${k}`)}
+              </Btn>
+            ))}
           </div>
+          {sweep && (
+            <div className="px-3 pb-2">
+              <table className="attr-table">
+                <thead>
+                  <tr>
+                    <th>{sweep.parameter}</th>
+                    <th>σ_max</th>
+                    <th>{t("mesh.clearance")}</th>
+                    <th>OK</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sweep.values.map((v, i) => (
+                    <tr key={i} style={{ fontWeight: v === sweep.best_value ? 600 : 400 }}>
+                      <td className="wb-num">{v}</td>
+                      <td className="wb-num">
+                        {sweep.sigma_mpa[i] > 0 ? `${sweep.sigma_mpa[i].toFixed(1)} MPa` : "–"}
+                      </td>
+                      <td className="wb-num">
+                        {sweep.clearance_mm[i] > -90 ? `${sweep.clearance_mm[i].toFixed(2)} mm` : "–"}
+                      </td>
+                      <td>{sweep.feasible[i] ? "✓" : "✗"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="text-[11.5px] text-zinc-600 pt-1.5">
+                {t("mesh.sweep.best")}: <span className="wb-num font-semibold">{sweep.best_value ?? "–"}</span>
+                {" · "}σ {sweep.best_sigma_mpa?.toFixed(1) ?? "–"} MPa (Standard{" "}
+                {sweep.standard_sigma_mpa.toFixed(1)} MPa)
+              </div>
+            </div>
+          )}
         </Section>
       </div>
 
