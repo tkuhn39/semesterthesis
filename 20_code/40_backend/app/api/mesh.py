@@ -1,13 +1,13 @@
 """
 @module: app.api.mesh
-@context: API layer — FE mesh preview/3D data + Abaqus deck download (plan v2, M4).
-@role: Expose the ADR-019 transplant mesher over HTTP for the frontend mesh viewer:
-       a 2-D sector preview (nodes, quads, per-element scaled Jacobian), a render-ready 3-D
-       payload (outer surface faces of the extruded hex sector + per-face quality), the native
-       density-convergence quick check, and the full implicit rolling deck as an ``.inp``
-       download with the mixed-pairing material rule (steel side as ideally stiff rigid shell).
-       Stateless: everything is computed from the request (kst-E example stage for now; the
-       free-design stage plugs in via the same models in M6).
+@context: API layer — FE mesh preview/3D data, fillet tooling + Abaqus deck download (M4–M6).
+@role: Expose the ADR-019 transplant mesher over HTTP for the workbench: 2-D sector preview,
+       render-ready 3-D hull, native density-convergence quick check, fillet ranking and
+       parameter sweep (quick-FE objective — the Stufenvariation axis for optimized root
+       fillets), the real as-cut tooth contour, and the implicit rolling deck with the
+       mixed-pairing material rule. Every endpoint consumes the shared ``StageParams``
+       (kst-E example or free parameters — plan v2 product vision), and the flank-symmetry
+       policy flows from the per-flank micro-geometry data.
 """
 
 from __future__ import annotations
@@ -21,13 +21,14 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
-from app.api.analysis import _kst_e_stage
-from app.io.ste import Pair
-from app.services.geometry.gear import GearStage, ToolReferenceProfile
+from app.api.design import StageParams
+from app.services.geometry.gear import GearStage
 from app.services.geometry.root_fillet import (
     BezierFillet,
     BionicFillet,
     EllipticFillet,
+    FilletStrategy,
+    TrochoidFillet,
     fillet_boundary,
     mating_tip_clearance,
 )
@@ -46,15 +47,21 @@ router = APIRouter(prefix="/api/mesh", tags=["mesh"])
 # request models
 # ----------------------------------------------------------------------------------------------
 class FilletSpec(BaseModel):
-    """Optimized root-fillet strategy selection (see geometry/root_fillet.py)."""
+    """Root-fillet strategy selection (see geometry/root_fillet.py).
 
-    kind: Literal["standard", "elliptic", "bezier", "bionic"] = "standard"
+    ``standard`` = the ρ_F arc; ``trochoid`` = the exact DIN 3960 tool trochoid; the optimized
+    shapes (molded/WEDM gears only) carry their literature parameters.
+    """
+
+    kind: Literal["standard", "trochoid", "elliptic", "bezier", "bionic"] = "standard"
     e_f: Annotated[float, Field(ge=-0.5, le=0.2)] = 0.0  # elliptic root-diameter factor
     be: Annotated[float, Field(ge=0.3, le=0.95)] = 0.57  # Bézier factor (Roth/Voith)
     gamma_deg: Annotated[float, Field(gt=5.0, lt=65.0)] | None = None  # bionic wedge angle
     b_f: Annotated[float, Field(ge=0.1, le=0.6)] = 0.35  # bionic arc factor
 
-    def strategy(self) -> EllipticFillet | BezierFillet | BionicFillet | None:
+    def strategy(self) -> FilletStrategy | None:
+        if self.kind == "trochoid":
+            return TrochoidFillet()
         if self.kind == "elliptic":
             return EllipticFillet(e_f=self.e_f)
         if self.kind == "bezier":
@@ -65,9 +72,10 @@ class FilletSpec(BaseModel):
 
 
 class MeshRequest(BaseModel):
-    """Mesh one gear of the (kst-E) stage with FVA density factors + fillet strategy."""
+    """Mesh one gear of the stage with FVA density factors + fillet strategy."""
 
-    gear: Literal[1, 2] = 1  # 1 = pinion (steel side), 2 = wheel (plastic side) — .ste order
+    stage: StageParams = Field(default_factory=StageParams)
+    gear: Literal[1, 2] = 1  # 1 = pinion, 2 = wheel — .ste order
     refine_root: int = Field(1, ge=1, le=3)
     refine_flank: int = Field(1, ge=1, le=3)
     fillet: FilletSpec = Field(default_factory=FilletSpec)
@@ -77,6 +85,7 @@ class MeshRequest(BaseModel):
 class DeckRequest(BaseModel):
     """Full implicit rolling deck (both gears) as .inp text."""
 
+    stage: StageParams = Field(default_factory=StageParams)
     wheel_torque_nmm: float = Field(20000.0, gt=0.0)
     face_layers: int = Field(6, ge=1, le=80)
     n_roll_positions: int = Field(30, ge=1, le=200)
@@ -93,32 +102,54 @@ class DeckRequest(BaseModel):
 # ----------------------------------------------------------------------------------------------
 # helpers
 # ----------------------------------------------------------------------------------------------
-def _profile(gear: int) -> ToothProfile:
-    return ToothProfile.from_stage(_kst_e_stage(), gear - 1)
+def _profiles(stage_params: StageParams, gear: int) -> tuple[GearStage, ToothProfile, ToothProfile]:
+    """(stage, this gear's profile, mating profile) for a 1-based gear index."""
+    stage = stage_params.stage()
+    return (
+        stage,
+        ToothProfile.from_stage(stage, gear - 1),
+        ToothProfile.from_stage(stage, 2 - gear),
+    )
+
+
+def _clearance(
+    stage: GearStage, profile: ToothProfile, mating: ToothProfile, strategy: FilletStrategy
+) -> float:
+    """Mating-tip clearance of an optimized fillet (mandatory check; negative = interference)."""
+    fillet_pts = np.array([(p[0], p[1]) for p in strategy.right_half(profile)])
+    r_tip = (mating.d_a or mating.d_Na) / 2.0
+    return float(
+        mating_tip_clearance(
+            profile,
+            fillet_pts,
+            mating_tip_radius_mm=r_tip,
+            mating_teeth=mating.z,
+            mating_half_tip_rad=mating.half_thickness_angle(r_tip),
+            centre_distance_mm=stage.working_center_distance_mm,
+        )
+    )
+
+
+def _checked_strategy(
+    stage: GearStage, profile: ToothProfile, mating: ToothProfile, spec: FilletSpec
+) -> tuple[FilletStrategy | None, float | None]:
+    """Resolve the fillet strategy and enforce the interference check (422 on interference)."""
+    strategy = spec.strategy()
+    if strategy is None or isinstance(strategy, TrochoidFillet):
+        return strategy, None
+    clearance = _clearance(stage, profile, mating, strategy)
+    if clearance < 0.0:
+        raise HTTPException(
+            422,
+            f"optimized fillet interferes with the mating tooth tip "
+            f"(clearance {clearance:.3f} mm) — reduce the fillet parameter",
+        )
+    return strategy, clearance
 
 
 def _sector(req: MeshRequest) -> tuple[ToothProfile, SectorMesh2D]:
-    profile = _profile(req.gear)
-    strategy = req.fillet.strategy()
-    if strategy is not None:
-        # Mandatory interference check before handing out an optimized fillet.
-        stage = _kst_e_stage()
-        mating = ToothProfile.from_stage(stage, 2 - req.gear)  # the other gear (0/1 index)
-        fillet_pts = np.array([(p[0], p[1]) for p in strategy.right_half(profile)])
-        clearance = mating_tip_clearance(
-            profile,
-            fillet_pts,
-            mating_tip_radius_mm=(mating.d_a or mating.d_Na) / 2.0,
-            mating_teeth=mating.z,
-            mating_half_tip_rad=mating.half_thickness_angle((mating.d_a or mating.d_Na) / 2.0),
-            centre_distance_mm=stage.working_center_distance_mm,
-        )
-        if clearance < 0.0:
-            raise HTTPException(
-                422,
-                f"optimized fillet interferes with the mating tooth tip "
-                f"(clearance {clearance:.3f} mm) — reduce the fillet parameter",
-            )
+    stage, profile, mating = _profiles(req.stage, req.gear)
+    strategy, _ = _checked_strategy(stage, profile, mating, req.fillet)
     try:
         mesh = generate_sector_2d(
             profile,
@@ -126,6 +157,7 @@ def _sector(req: MeshRequest) -> tuple[ToothProfile, SectorMesh2D]:
             refine_root=req.refine_root,
             refine_flank=req.refine_flank,
             fillet=strategy,
+            mirror_symmetric=req.stage.mirror_symmetric(req.gear),
         )
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
@@ -176,6 +208,7 @@ class Mesh3DResponse(BaseModel):
     n_hexes: int
     min_scaled_jacobian: float
     cells_below_035: int
+    face_width_mm: float
     vertices: list[float]  # x, y, z per surface vertex (deduplicated)
     faces: list[int]  # 4 vertex indices per outer quad face
     face_quality: list[float]  # source-hex scaled Jacobian per face
@@ -189,7 +222,7 @@ def mesh_3d(
     if not 1 <= layers <= 80:
         raise HTTPException(422, "layers must be in 1..80")
     profile, mesh = _sector(req)
-    stage = _kst_e_stage()
+    stage = req.stage.stage()
     if face_width_mm is None:
         if stage.face_width_mm is None:
             raise HTTPException(422, "stage carries no face width; pass face_width_mm")
@@ -220,6 +253,7 @@ def mesh_3d(
         n_hexes=m3.n_hexes,
         min_scaled_jacobian=float(np.min(qual)),
         cells_below_035=int(np.sum(qual < 0.35)),
+        face_width_mm=float(face_width_mm),
         vertices=[round(float(v), 5) for v in verts.ravel()],
         faces=[remap[v] for face, _ in hull for v in face],
         face_quality=[round(float(qual[hi]), 4) for _, hi in hull],
@@ -227,6 +261,7 @@ def mesh_3d(
 
 
 class ConvergenceRequest(BaseModel):
+    stage: StageParams = Field(default_factory=StageParams)
     gear: Literal[1, 2] = 1
     target: Literal["root", "flank"] = "root"
     levels: list[int] = Field(default=[1, 2, 3], min_length=2, max_length=4)
@@ -245,7 +280,7 @@ class ConvergenceResponse(BaseModel):
 @router.post("/convergence", response_model=ConvergenceResponse)
 def mesh_convergence(req: ConvergenceRequest) -> ConvergenceResponse:
     """Native quick-FE density convergence (separate root/flank searches, seconds not hours)."""
-    profile = _profile(req.gear)
+    _, profile, _ = _profiles(req.stage, req.gear)
     result = density_convergence(
         profile, target=req.target, levels=tuple(req.levels), tol=req.tolerance
     )
@@ -259,6 +294,11 @@ def mesh_convergence(req: ConvergenceRequest) -> ConvergenceResponse:
     )
 
 
+class FilletCompareRequest(BaseModel):
+    stage: StageParams = Field(default_factory=StageParams)
+    gear: Literal[1, 2] = 2
+
+
 class FilletCompareResponse(BaseModel):
     """Quick-FE root-stress ranking of the fillet strategies (same load, same topology)."""
 
@@ -270,13 +310,12 @@ class FilletCompareResponse(BaseModel):
 
 
 @router.post("/fillet-compare", response_model=FilletCompareResponse)
-def fillet_compare(gear: Literal[1, 2] = 1) -> FilletCompareResponse:
-    """Rank standard / elliptic / Bézier / bionic fillets by quick-FE root stress."""
-    stage = _kst_e_stage()
-    profile = _profile(gear)
-    mating = ToothProfile.from_stage(stage, 2 - gear)
-    strategies: list[tuple[str, EllipticFillet | BezierFillet | BionicFillet | None]] = [
+def fillet_compare(req: FilletCompareRequest) -> FilletCompareResponse:
+    """Rank standard / trochoid / elliptic / Bézier / bionic fillets by quick-FE root stress."""
+    stage, profile, mating = _profiles(req.stage, req.gear)
+    strategies: list[tuple[str, FilletStrategy | None]] = [
         ("standard", None),
+        ("trochoid", TrochoidFillet()),
         ("elliptic", EllipticFillet(e_f=-0.2)),
         ("bezier", BezierFillet(be=0.57)),
         ("bionic", BionicFillet()),
@@ -285,29 +324,35 @@ def fillet_compare(gear: Literal[1, 2] = 1) -> FilletCompareResponse:
     sigmas: list[float] = []
     clearances: list[float] = []
     for name, strategy in strategies:
-        mesh = generate_sector_2d(profile, fillet=strategy)
+        try:
+            mesh = generate_sector_2d(profile, fillet=strategy)
+        except ValueError:
+            continue  # a strategy that fails on this geometry is simply omitted
         sigmas.append(root_tensile_stress(mesh, profile).sigma_max_mpa)
         if strategy is None:
             boundary = np.array([(p[0], p[1]) for p in profile.transverse_right_boundary()])
             fillet_pts = boundary[
                 np.hypot(boundary[:, 0], boundary[:, 1]) < profile.d_Ff / 2.0 + 1e-6
             ]
-        else:
-            fillet_pts = np.array([(p[0], p[1]) for p in strategy.right_half(profile)])
-        clearances.append(
-            mating_tip_clearance(
-                profile,
-                fillet_pts,
-                mating_tip_radius_mm=(mating.d_a or mating.d_Na) / 2.0,
-                mating_teeth=mating.z,
-                mating_half_tip_rad=mating.half_thickness_angle((mating.d_a or mating.d_Na) / 2.0),
-                centre_distance_mm=stage.working_center_distance_mm,
+            r_tip = (mating.d_a or mating.d_Na) / 2.0
+            clearances.append(
+                float(
+                    mating_tip_clearance(
+                        profile,
+                        fillet_pts,
+                        mating_tip_radius_mm=r_tip,
+                        mating_teeth=mating.z,
+                        mating_half_tip_rad=mating.half_thickness_angle(r_tip),
+                        centre_distance_mm=stage.working_center_distance_mm,
+                    )
+                )
             )
-        )
+        else:
+            clearances.append(_clearance(stage, profile, mating, strategy))
         names.append(name)
     ref = sigmas[0]
     return FilletCompareResponse(
-        gear=gear,
+        gear=req.gear,
         names=names,
         sigma_mpa=[round(s, 2) for s in sigmas],
         delta_percent=[round((s / ref - 1.0) * 100.0, 2) for s in sigmas],
@@ -315,23 +360,87 @@ def fillet_compare(gear: Literal[1, 2] = 1) -> FilletCompareResponse:
     )
 
 
-class ContourRequest(BaseModel):
-    """Real as-cut tooth contour (plan v2, M5) — kst-E by default or free variant parameters.
+class FilletSweepRequest(BaseModel):
+    """Sweep ONE strategy's shape parameter with the quick-FE objective (Variation axis)."""
 
-    Free parameters use the standard tool (DIN 867 / ISO 53 A: h*_aP0 = 1.25, ρ*_aP0 = 0.38),
-    so Stufenvariation variants can be drawn with their true generated root fillet.
-    """
-
+    stage: StageParams = Field(default_factory=StageParams)
     gear: Literal[1, 2] = 2
-    use_example: bool = True
-    normal_module_mm: float = Field(1.0, gt=0.0)
-    teeth_pinion: int = Field(51, ge=5)
-    teeth_wheel: int = Field(52, ge=5)
-    profile_shift_pinion: float = 0.2034
-    profile_shift_wheel: float = 0.3143
-    normal_pressure_angle_deg: float = Field(20.0, gt=5.0, lt=35.0)
-    helix_angle_deg: float = 0.0
-    face_width_mm: float = Field(15.0, gt=0.0)
+    kind: Literal["elliptic", "bezier", "bionic"] = "bezier"
+    points: int = Field(6, ge=3, le=12)
+
+
+class FilletSweepResponse(BaseModel):
+    gear: int
+    kind: str
+    parameter: str
+    values: list[float]
+    sigma_mpa: list[float]
+    clearance_mm: list[float]
+    feasible: list[bool]  # clearance > 0 and gates met
+    best_value: float | None
+    best_sigma_mpa: float | None
+    standard_sigma_mpa: float
+
+
+@router.post("/fillet-sweep", response_model=FilletSweepResponse)
+def fillet_sweep(req: FilletSweepRequest) -> FilletSweepResponse:
+    """σ_F quick-FE over the strategy's parameter range; recommends the feasible optimum."""
+    stage, profile, mating = _profiles(req.stage, req.gear)
+    standard = root_tensile_stress(generate_sector_2d(profile), profile).sigma_max_mpa
+    ranges: dict[str, tuple[str, np.ndarray]] = {
+        "elliptic": ("e_f", np.linspace(-0.4, 0.0, req.points)),
+        "bezier": ("be", np.linspace(0.42, 0.9, req.points)),
+        "bionic": ("b_f", np.linspace(0.15, 0.55, req.points)),
+    }
+    param, values = ranges[req.kind]
+    sigmas: list[float] = []
+    clearances: list[float] = []
+    feasible: list[bool] = []
+    for v in values:
+        strategy: FilletStrategy = (
+            EllipticFillet(e_f=float(v))
+            if req.kind == "elliptic"
+            else BezierFillet(be=float(v))
+            if req.kind == "bezier"
+            else BionicFillet(b_f=float(v))
+        )
+        try:
+            clearance = _clearance(stage, profile, mating, strategy)
+            mesh = generate_sector_2d(
+                profile, fillet=strategy, mirror_symmetric=req.stage.mirror_symmetric(req.gear)
+            )
+            sj = scaled_jacobians(mesh.coords, mesh.quads)
+            ok = clearance > 0.0 and float(sj.min()) >= 0.35
+            sigma = root_tensile_stress(mesh, profile).sigma_max_mpa
+        except (ValueError, HTTPException):
+            clearance, sigma, ok = math.nan, math.nan, False
+        sigmas.append(round(sigma, 2) if not math.isnan(sigma) else math.nan)
+        clearances.append(round(clearance, 3) if not math.isnan(clearance) else math.nan)
+        feasible.append(ok)
+    best_i = min(
+        (i for i in range(len(values)) if feasible[i]),
+        key=lambda i: sigmas[i],
+        default=None,
+    )
+    return FilletSweepResponse(
+        gear=req.gear,
+        kind=req.kind,
+        parameter=param,
+        values=[round(float(v), 4) for v in values],
+        sigma_mpa=[s if not math.isnan(s) else -1.0 for s in sigmas],
+        clearance_mm=[c if not math.isnan(c) else -99.0 for c in clearances],
+        feasible=feasible,
+        best_value=round(float(values[best_i]), 4) if best_i is not None else None,
+        best_sigma_mpa=sigmas[best_i] if best_i is not None else None,
+        standard_sigma_mpa=round(standard, 2),
+    )
+
+
+class ContourRequest(BaseModel):
+    """Real as-cut tooth contour (M5) — the shared stage (kst-E or free parameters)."""
+
+    stage: StageParams = Field(default_factory=StageParams)
+    gear: Literal[1, 2] = 2
     fillet: FilletSpec = Field(default_factory=FilletSpec)
     points: int = Field(160, ge=40, le=600)
 
@@ -351,31 +460,11 @@ class ContourResponse(BaseModel):
     clearance_mm: float | None  # mating-tip clearance for optimized fillets (None = standard)
 
 
-def _stage_for(req: ContourRequest) -> GearStage:
-    if req.use_example:
-        return _kst_e_stage()
-    tool = ToolReferenceProfile(addendum_factor=1.25, tip_radius_factor=0.38)
-    try:
-        return GearStage.from_parameters(
-            normal_module_mm=req.normal_module_mm,
-            teeth=Pair(req.teeth_pinion, req.teeth_wheel),
-            profile_shift=Pair(req.profile_shift_pinion, req.profile_shift_wheel),
-            face_width_mm=Pair(req.face_width_mm, req.face_width_mm),
-            tool=Pair(tool, tool),
-            normal_pressure_angle_deg=req.normal_pressure_angle_deg,
-            helix_angle_deg=req.helix_angle_deg,
-        )
-    except (ValueError, ZeroDivisionError) as exc:
-        raise HTTPException(422, f"invalid gear geometry: {exc}") from exc
-
-
 @router.post("/contour", response_model=ContourResponse)
 def tooth_contour(req: ContourRequest) -> ContourResponse:
-    """The real generated tooth boundary (ρ_F fillet or optimized strategy, chamfer to d_a)."""
-    stage = _stage_for(req)
-    profile = ToothProfile.from_stage(stage, req.gear - 1)
-    strategy = req.fillet.strategy()
-    clearance: float | None = None
+    """The real generated tooth boundary (ρ_F fillet, trochoid or optimized strategy, to d_a)."""
+    stage, profile, mating = _profiles(req.stage, req.gear)
+    strategy, clearance = _checked_strategy(stage, profile, mating, req.fillet)
     if strategy is None:
         pts = profile.transverse_right_boundary(
             fillet_points=req.points // 3,
@@ -383,27 +472,12 @@ def tooth_contour(req: ContourRequest) -> ContourResponse:
             to_tip_circle=True,
         )
     else:
-        pts = fillet_boundary(
-            profile, strategy, flank_points=req.points - req.points // 3, to_tip_circle=True
-        )
-        mating = ToothProfile.from_stage(stage, 2 - req.gear)
-        fillet_pts = np.array([(p[0], p[1]) for p in strategy.right_half(profile)])
-        clearance = float(
-            mating_tip_clearance(
-                profile,
-                fillet_pts,
-                mating_tip_radius_mm=(mating.d_a or mating.d_Na) / 2.0,
-                mating_teeth=mating.z,
-                mating_half_tip_rad=mating.half_thickness_angle((mating.d_a or mating.d_Na) / 2.0),
-                centre_distance_mm=stage.working_center_distance_mm,
+        try:
+            pts = fillet_boundary(
+                profile, strategy, flank_points=req.points - req.points // 3, to_tip_circle=True
             )
-        )
-        if clearance < 0.0:
-            raise HTTPException(
-                422,
-                f"optimized fillet interferes with the mating tooth tip "
-                f"(clearance {clearance:.3f} mm)",
-            )
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
     return ContourResponse(
         gear=req.gear,
         teeth=profile.z,
@@ -420,8 +494,8 @@ def tooth_contour(req: ContourRequest) -> ContourResponse:
 
 @router.post("/deck", response_class=PlainTextResponse)
 def build_deck(req: DeckRequest) -> PlainTextResponse:
-    """The full implicit rolling deck (.inp) for the kst-E pair with the requested options."""
-    stage = _kst_e_stage()
+    """The full implicit rolling deck (.inp) for the stage with the requested options."""
+    stage = req.stage.stage()
     deck = build_implicit_pair_from_stage(
         stage,
         plastic_material=MarlowUniaxial("PA_kstE"),
@@ -434,9 +508,9 @@ def build_deck(req: DeckRequest) -> PlainTextResponse:
         steel_shell=req.steel_shell,
         fillet1=req.fillet_wheel.strategy(),  # part 1 = plastic wheel (kst-E contract)
     )
-    pitch_deg = math.degrees(2.0 * math.pi / _profile(1).z)
+    pitch_deg = 360.0 / req.stage.stage().teeth[0]
     headers = {
-        "Content-Disposition": "attachment; filename=kst-e_implicit_generated.inp",
+        "Content-Disposition": "attachment; filename=implicit_rolling_generated.inp",
         "X-Roll-Pitch-Deg": f"{pitch_deg:.4f}",
     }
     return PlainTextResponse(deck, media_type="text/plain", headers=headers)

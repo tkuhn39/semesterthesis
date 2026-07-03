@@ -187,6 +187,7 @@ def generate_sector_2d(
     refine_root: int = 1,
     refine_flank: int = 1,
     fillet: object | None = None,
+    mirror_symmetric: bool | None = None,
     template: SectorTemplate | None = None,
 ) -> SectorMesh2D:
     """Transplant the reference sector topology onto ``profile``'s geometry (see module doc).
@@ -261,7 +262,9 @@ def generate_sector_2d(
 
     # Exact tooth-to-tooth congruence (and in-tooth mirror symmetry when the flank parameters
     # are symmetric) — enforced after placement and re-enforced after every lift pass.
-    symmetric = profile.is_flank_symmetric()
+    # Flank-symmetry policy: micro-geometry (or future per-flank macro data) may break the
+    # in-tooth mirror; teeth stay rotation-congruent either way. None = derive from profile.
+    symmetric = profile.is_flank_symmetric() if mirror_symmetric is None else mirror_symmetric
 
     def canon(p: Array) -> Array:
         return canonicalize_positions(

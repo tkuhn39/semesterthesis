@@ -9,7 +9,23 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added (2026-07-03 — M6 backend: free design flow, fillet axis, presets/import, micro-geometry)
+- **Design router** (`app/api/design.py`): shared `StageParams` (kst-E example OR fully free
+  pair definition incl. tool reference profile) now feeds EVERY mesh/contour/deck endpoint —
+  the kst-E lock is gone; `GET /api/presets` (kst-E + DIN 3972 tool-profile presets I–III /
+  ISO 53 A) and `POST /api/import/ste` (STplus text import → editable parameters).
+- **Fillet axis for the Stufenvariation**: `POST /api/mesh/fillet-sweep` sweeps one strategy's
+  shape parameter (e_f / Be / b_f) with the quick-FE root stress as objective, enforcing the
+  interference check and the det(J) gate per point, and recommends the feasible optimum.
+- **TrochoidFillet** (`geometry/root_fillet.py`): the exact DIN 3960 tool trochoid as a
+  first-class strategy (norm reference beside the ρ_F arc; ADR-017's high-fidelity option).
+- **Micro-geometry data model** (`geometry/modifications.py`, ISO 21771 §6): per-flank
+  Kopf-/Fußrücknahme, Profil-/Breitenballigkeit, Endrücknahme, f_Hβ per gear — carried through
+  `StageParams`, drives the flank-symmetry policy (asymmetric data ⇒ mirror symmetry off,
+  teeth stay rotation-congruent); mechanically active from the load-distribution step onward.
+- **Variation material matrix**: `pinion_material`/`wheel_material` (steel|plastic) request
+  fields — steel/steel, plastic/plastic and both mixed orientations dispatch per gear through
+  the existing ADR-013 kernel; weight densities follow the material kind.
 
 ## [0.2.0] - 2026-07-03
 

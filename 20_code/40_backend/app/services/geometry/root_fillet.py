@@ -40,6 +40,7 @@ __all__ = [
     "EllipticFillet",
     "BezierFillet",
     "BionicFillet",
+    "TrochoidFillet",
     "fillet_boundary",
     "mating_tip_clearance",
 ]
@@ -209,7 +210,26 @@ class BionicFillet:
         return out
 
 
-FilletStrategy = EllipticFillet | BezierFillet | BionicFillet
+@dataclass(frozen=True)
+class TrochoidFillet:
+    """The exact tool-generated trochoid (DIN 3960 §3.6.1/A.2.2, ISO 21771 §7) as a strategy.
+
+    The norm-reference root: the envelope of the tool tip rounding ρ_aP0 as the rack rolls,
+    from the root circle d_f up to the involute junction at d_Ff. Higher fidelity than the
+    default ρ_F arc (whose radius is only the fillet's minimum curvature, DIN 867 §4.5 note);
+    kept as an explicit strategy per ADR-017's "later high-fidelity option".
+    """
+
+    points: int = 60
+
+    def right_half(self, profile: ToothProfile) -> list[Pair[float]]:
+        pts = profile.root_fillet_points(self.points)
+        if len(pts) < 8:
+            raise ValueError("trochoid fillet: too few valid trochoid points (undercut gear?)")
+        return pts
+
+
+FilletStrategy = EllipticFillet | BezierFillet | BionicFillet | TrochoidFillet
 
 
 def fillet_boundary(

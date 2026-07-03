@@ -746,6 +746,13 @@ class VariationRequest(BaseModel):
     flank_minimum_safety: float = 1.0
     method: str = Field("grid", pattern="^(grid|sobol|lhs)$")
     sample_count: int = 256
+    # material matrix (user decision/plan v2): each side steel or plastic — steel/steel,
+    # plastic/plastic, or mixed in either orientation. The kernel dispatches per gear
+    # (steel → ISO 6336 limits, plastic → VDI 2736 limits, ADR-013).
+    pinion_material: str = Field("steel", pattern="^(steel|plastic)$")
+    wheel_material: str = Field("plastic", pattern="^(steel|plastic)$")
+    steel_modulus_mpa: float = 206000.0
+    plastic_modulus_mpa: float = 2800.0
 
 
 class VariationPoint(BaseModel):
@@ -796,22 +803,27 @@ def variation(req: VariationRequest) -> VariationResponse:
 
     from app.services.variation import kernel
 
-    steel = Material(
-        name="steel",
-        kind=MaterialKind.STEEL,
-        elastic_modulus_mpa=206000.0,
-        poisson_ratio=0.30,
-        sigma_hlim_mpa=req.steel_sigma_hlim_mpa,
-        sigma_flim_mpa=req.steel_sigma_flim_mpa,
-    )
-    plastic = Material(
-        name="plastic",
-        kind=MaterialKind.PLASTIC,
-        elastic_modulus_mpa=2800.0,
-        poisson_ratio=0.35,
-        sigma_hlim_mpa=req.plastic_sigma_hlim_mpa,
-        sigma_flim_mpa=req.plastic_sigma_flim_mpa,
-    )
+    def _material(kind: str) -> Material:
+        if kind == "steel":
+            return Material(
+                name="steel",
+                kind=MaterialKind.STEEL,
+                elastic_modulus_mpa=req.steel_modulus_mpa,
+                poisson_ratio=0.30,
+                sigma_hlim_mpa=req.steel_sigma_hlim_mpa,
+                sigma_flim_mpa=req.steel_sigma_flim_mpa,
+            )
+        return Material(
+            name="plastic",
+            kind=MaterialKind.PLASTIC,
+            elastic_modulus_mpa=req.plastic_modulus_mpa,
+            poisson_ratio=0.35,
+            sigma_hlim_mpa=req.plastic_sigma_hlim_mpa,
+            sigma_flim_mpa=req.plastic_sigma_flim_mpa,
+        )
+
+    pinion_mat = _material(req.pinion_material)  # gear 1
+    wheel_mat = _material(req.wheel_material)  # gear 2
     specs = {
         "m_n": req.m_n,
         "z1": req.z1,
@@ -837,7 +849,7 @@ def variation(req: VariationRequest) -> VariationResponse:
             fixed[key] = s.value
 
     spec = VariationSpec(
-        materials=(steel, plastic),
+        materials=(pinion_mat, wheel_mat),
         torque_nm=req.torque_nm,
         varied=varied,
         fixed=fixed,
@@ -889,11 +901,18 @@ def variation(req: VariationRequest) -> VariationResponse:
         helix_angle=np.radians(beta),
         face_width_mm=p["b"],
     )
-    # solid-disc weight estimate (steel pinion + plastic wheel), grams
+    # solid-disc weight estimate (density follows each gear's material kind), grams
     quarter_pi = math.pi / 4.0
     weight = (
-        req.steel_density_kg_m3 * quarter_pi * (geo.tip_diameter[0] * 1e-3) ** 2 * (p["b"] * 1e-3)
-        + req.plastic_density_kg_m3
+        (req.steel_density_kg_m3 if req.pinion_material == "steel" else req.plastic_density_kg_m3)
+        * quarter_pi
+        * (geo.tip_diameter[0] * 1e-3) ** 2
+        * (p["b"] * 1e-3)
+        + (
+            req.plastic_density_kg_m3
+            if req.wheel_material == "plastic"
+            else req.steel_density_kg_m3
+        )
         * quarter_pi
         * (geo.tip_diameter[1] * 1e-3) ** 2
         * (p["b"] * 1e-3)
