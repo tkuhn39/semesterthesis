@@ -7,6 +7,7 @@
        pairs, Marlow plastic + elastic steel, and one static step with staircase angle + torque.
 """
 
+import functools
 import math
 
 from app.io.inp import parse_inp
@@ -45,36 +46,26 @@ def _profiles() -> tuple[ToothProfile, ToothProfile]:
     return ToothProfile.from_stage(stage, 0), ToothProfile.from_stage(stage, 1)
 
 
-def _deck(n_teeth: int = 3) -> str:
+@functools.cache
+def _deck(rigid_gear2: bool = False) -> str:
     p1, p2 = _profiles()
     a = p1.mn * (p1.z + p2.z) / 2.0
-    mesh_kw = {
-        "height_elements": 6,
-        "root_elements": 6,
-        "thickness_elements": 3,
-        "rim_elements": 3,
-        "gap_elements": 3,
-    }
     part1 = build_gear_part(
         p1,
         gear=1,
         material=MarlowUniaxial("PA_kstE"),
-        n_teeth=n_teeth,
         face_width_mm=15.0,
         face_layers=2,
         rot_rad=-math.pi / 2.0,
-        **mesh_kw,
     )
     part2 = build_gear_part(
         p2,
         gear=2,
         material=LinearElastic("STEEL", 210000.0, 0.3),
-        n_teeth=n_teeth,
         face_width_mm=15.0,
         face_layers=2,
         rot_rad=math.pi / 2.0 + math.pi / p2.z,
         dx=a,
-        **mesh_kw,
     )
     kin = RollKinematics(
         center_distance_mm=a,
@@ -83,7 +74,13 @@ def _deck(n_teeth: int = 3) -> str:
         n_roll_positions=10,
         settle_positions=3,
     )
-    return build_implicit_pair_deck(part1, part2, kin=kin, contact_gap_mm=6.0)
+    return build_implicit_pair_deck(
+        part1,
+        part2,
+        kin=kin,
+        contact_gap_mm=6.0,
+        rigid_gears=frozenset({2}) if rigid_gear2 else frozenset(),
+    )
 
 
 def test_deck_has_reference_parts_sets_and_surfaces() -> None:
@@ -144,18 +141,28 @@ def test_one_call_build_from_stage() -> None:
         plastic_material=MarlowUniaxial("PA_kstE"),
         steel_material=LinearElastic("STEEL", 210000.0, 0.3),
         wheel_torque_nmm=7846.0,
-        n_teeth=3,
         face_layers=2,
         n_roll_positions=8,
         settle_positions=2,
-        height_elements=6,
-        root_elements=6,
-        thickness_elements=3,
-        rim_elements=3,
-        gap_elements=3,
     )
     parsed = parse_inp(deck)
     parts = {b.parameter("NAME") for b in parsed.blocks if b.keyword == "PART"}
     assert parts == {"Part_Rad_Vz_1", "Part_Rad_Vz_2"}
     assert len([b for b in parsed.blocks if b.keyword == "STEP"]) == 1
     assert len([b for b in parsed.blocks if b.keyword == "CONTACT PAIR"]) >= 1
+
+
+def test_steel_shell_mode_makes_gear2_rigid() -> None:
+    """Mixed-pairing material rule: gear 2 becomes an ideally stiff rigid body (whole element
+    set about its rotation node) instead of the bore-only Fesselung tie; gear 1 unchanged."""
+    parsed = parse_inp(_deck(rigid_gear2=True))
+    rigids = [b.header for b in parsed.blocks if b.keyword == "RIGID BODY"]
+    assert any("REF NODE=1" in r and "TIE NSET=Fesselung_Rad1" in r for r in rigids)
+    assert any(
+        "REF NODE=2" in r and "ELSET=Rad_Vz_2.ALL_ELEMENTS_Part_Rad_Vz_2" in r for r in rigids
+    )
+    assert not any("TIE NSET=Fesselung_Rad2" in r for r in rigids)
+    # contact pairs and reference sets survive unchanged (frozen postprocessing contract)
+    assert len([b for b in parsed.blocks if b.keyword == "CONTACT PAIR"]) >= 1
+    nset_names = {b.parameter("NSET") for b in parsed.blocks if b.keyword == "NSET"}
+    assert "G2T001F1_NODESET" in nset_names
