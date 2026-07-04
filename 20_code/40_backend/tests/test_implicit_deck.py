@@ -14,12 +14,17 @@
 import functools
 import math
 
+import numpy as np
+
 from app.io.inp import parse_inp
 from app.io.ste import Pair
 from app.services.geometry.gear import GearStage, ToolReferenceProfile
 from app.services.geometry.tooth_form import ToothProfile
 from app.services.model.implicit_deck import (
+    GearPart,
     RollKinematics,
+    _closing_rotation_rad,
+    _rotate_part_about_own_axis,
     build_gear_part,
     build_implicit_pair_deck,
     build_implicit_pair_from_stage,
@@ -199,6 +204,137 @@ def test_one_call_build_from_stage() -> None:
     node, dof, value = (v.strip() for v in cload.data.strip().split(","))
     assert node == "Rot_Node_Rad1" and dof == "6"
     assert math.isclose(float(value), 7846.0 * 24 / 60, rel_tol=1e-9)
+
+
+def test_fesselung_contains_every_node_of_bore_and_cut_planes() -> None:
+    """Reference parity (measured 2026-07-04): the Fesselung is the bore surface plus BOTH
+    radial cut planes as complete cross-sections — every single node of those faces, from
+    the bore to the root circle, over all face-width planes. Cross-checked here with an
+    independent coordinate predicate over the whole 3-D mesh."""
+    pinion, _ = _profiles()
+    layers = 3
+    part = build_gear_part(
+        pinion,
+        gear=1,
+        material=LinearElastic("STEEL", 210000.0, 0.3),
+        face_width_mm=17.0,
+        face_layers=layers,
+        rot_rad=0.0,  # unrotated: section coordinates = assembly coordinates
+    )
+    nodes = part.mesh.nodes
+    used = np.unique(part.mesh.hexes)  # skip orphan geometry nodes (e.g. arc centres)
+    r = np.hypot(nodes[used, 0], nodes[used, 1])
+    ang = np.arctan2(nodes[used, 0], nodes[used, 1])
+    tol = 0.02 * pinion.mn
+    r_bore = float(r.min())
+    half_sector = 6.0 * math.pi / pinion.z  # 4 teeth + 2 shoulder pitches, half of 6 pitches
+    on_face = (np.abs(r - r_bore) < tol) | (
+        np.abs(np.abs(ang) - half_sector) * np.maximum(r, 1e-6) < tol
+    )
+    expected = {int(nd) + 1 for nd in used[on_face]}
+    assert set(part.sets.fastening_nodes.tolist()) == expected
+    # both cut planes reach exactly the root circle (like the reference deck), not further
+    fast = nodes[part.sets.fastening_nodes - 1]
+    r_fast = np.hypot(fast[:, 0], fast[:, 1])
+    assert math.isclose(float(r_fast.max()), pinion.root_diameter_mm / 2.0, rel_tol=1e-3)
+    # every face-width plane is present (complete cross-sections, not an edge subset)
+    zs = np.unique(np.round(nodes[part.sets.fastening_nodes - 1, 2], 6))
+    assert len(zs) == layers + 1
+
+
+def test_fesselung_flags_follow_the_fva_checkboxes() -> None:
+    """The FVA 'Fesselung' checkboxes map to writer flags: oben/unten add the complete axial
+    end faces; disabling Bohrung/Schnitt removes those faces."""
+    pinion, _ = _profiles()
+    layers = 2
+    common: dict = {
+        "gear": 1,
+        "material": LinearElastic("STEEL", 210000.0, 0.3),
+        "face_width_mm": 17.0,
+        "face_layers": layers,
+        "rot_rad": 0.0,
+    }
+    ends_only = build_gear_part(
+        pinion, fasten_bore=False, fasten_cuts=False, fasten_bottom=True, fasten_top=True, **common
+    )
+    n2d = ends_only.mesh.nodes.shape[0] // (layers + 1)
+    ids = set(ends_only.sets.fastening_nodes.tolist())
+    # bottom plane = first node plane, top plane = last; both complete
+    used = np.unique(ends_only.mesh.hexes)
+    bottom = {int(nd) + 1 for nd in used if nd < n2d}
+    top = {int(nd) + 1 for nd in used if nd >= layers * n2d}
+    assert ids == bottom | top
+    reference = build_gear_part(pinion, **common)
+    assert bottom - set(reference.sets.fastening_nodes.tolist())  # ends are NOT in the default
+
+
+def test_contact_alignment_closes_the_backlash() -> None:
+    """The closing rotation turns gear 2 from 'floating centred in the gap' (with the full
+    allowance backlash split onto both flanks — the gears 'run in the air') into single-flank
+    contact with the reference-like ~5–35 µm clearance on the −y flank (the side the
+    reference deck touches). Gears cut with a mean tooth-width allowance A_We like kst-E."""
+    tool = ToolReferenceProfile(addendum_factor=1.25, tip_radius_factor=0.38)
+    stage = GearStage.from_parameters(
+        normal_module_mm=2.0,
+        teeth=Pair(24, 60),
+        profile_shift=Pair(0.3, 0.1),
+        face_width_mm=Pair(20.0, 18.0),
+        tool=Pair(tool, tool),
+        tooth_width_allowance_mm=Pair(-0.10, -0.08),  # thinned teeth → real backlash
+    )
+    pinion = ToothProfile.from_stage(stage, 0)
+    wheel = ToothProfile.from_stage(stage, 1)
+    a = stage.working_center_distance_mm
+    part1 = build_gear_part(
+        pinion,
+        gear=1,
+        material=LinearElastic("STEEL", 210000.0, 0.3),
+        face_width_mm=17.0,
+        face_layers=1,
+        rot_rad=-math.pi / 2.0,
+    )
+    part2 = build_gear_part(
+        wheel,
+        gear=2,
+        material=MarlowUniaxial("PA_kstE"),
+        face_width_mm=15.0,
+        face_layers=1,
+        rot_rad=math.pi / 2.0 + math.pi / wheel.z,
+        dx=a,
+    )
+
+    def min_gap(p1: GearPart, p2: GearPart) -> tuple[float, float]:
+        n1, n2 = p1.mesh.nodes, p2.mesh.nodes
+        r1 = np.hypot(n1[:, 0], n1[:, 1])
+        r2 = np.hypot(n2[:, 0] - a, n2[:, 1])
+        t1 = n1[(r1 > pinion.d_Ff / 2.0) & (n1[:, 0] > 0.7 * r1.max())][:, :2]
+        t2 = n2[(r2 > wheel.d_Ff / 2.0) & (n2[:, 0] < a - 0.7 * r2.max())][:, :2]
+        d = np.hypot(*(t1[:, None, :] - t2[None, :, :]).transpose(2, 0, 1))
+        i, j = np.unravel_index(int(np.argmin(d)), d.shape)
+        return float(d[i, j]), float(t1[i, 1])
+
+    gap_before, _ = min_gap(part1, part2)
+    assert gap_before > 0.06  # half the allowance backlash per flank — 'running in the air'
+    delta = _closing_rotation_rad(part1, part2, direction=1.0)
+    # ≈ (ΣA_sn/2)/r_w2 − backoff = ((0.10+0.08)/cos20°/2)/60.55 − 0.015/60.55 ≈ 0.0013 rad
+    assert 0.0008 < delta < 0.003
+    aligned = _rotate_part_about_own_axis(part2, delta)
+    gap_after, y_contact = min_gap(part1, aligned)
+    assert 0.004 <= gap_after <= 0.035  # reference: ~25 µm single-flank clearance
+    assert y_contact < 0.0  # contact on the −y flank like the reference deck
+
+
+def test_from_stage_documents_the_contact_alignment() -> None:
+    deck = build_implicit_pair_from_stage(
+        _stage(),
+        gear1_material=LinearElastic("STEEL", 210000.0, 0.3),
+        gear2_material=MarlowUniaxial("PA_kstE"),
+        torque_gear2_nmm=7846.0,
+        face_layers=1,
+        n_roll_positions=4,
+        settle_positions=1,
+    )
+    assert "contact-aligned: gear 2 rotated" in deck
 
 
 def test_steel_shell_mode_makes_the_steel_pinion_rigid() -> None:

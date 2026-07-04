@@ -1,111 +1,141 @@
 "use client";
 
-// The workbench shell (plan v2 D2): FVA-Workbench layout language, modernised — model tree
-// left, tabbed editor centre (condensed attribute tables), messages strip bottom, language
-// switch + backend status in the header. Panels own their result areas (quick-view style).
+// FVA-Workbench-style shell (user decision 2026-07-04, screenshots are the spec):
+// model tree on the left (Getriebeeinheit → Stirnradstufe → Wellen → Räder …), a TAB BAR
+// per selected node in the editor (Geometrie · Tragfähigkeit · … · Dynamisches Abwälzen
+// (FEM)), messages strip at the bottom. Tab visibility follows the Berechnungsauswahl
+// (schema.methods → enables_tabs); hidden tabs keep their state. Schema-driven tabs render
+// via <SchemaTab/>; the richer bespoke views (viewports, plots) stay as custom panels —
+// they are the "Extras" the user chose to keep.
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { api } from "@/lib/api";
+import { fetchUiSchema, type TabDef, type UiSchema } from "@/lib/uischema";
 import { LocaleProvider, useLocale, useT } from "@/lib/i18n";
 import { StageProvider, useStage } from "@/lib/stage";
-import { GeometryPanel } from "@/panels/GeometryPanel";
-import { MeshPanel } from "@/panels/MeshPanel";
-import { ToothFormPanel } from "@/panels/ToothFormPanel";
-import { VariationPanel } from "@/panels/VariationPanel";
+import { useWorkbench } from "@/lib/store";
+import { SchemaTab } from "@/components/SchemaTab";
+import { CalcSelectionPanel } from "@/panels/CalcSelectionPanel";
 import { OverviewPanel } from "@/panels/OverviewPanel";
 import { DesignPanel } from "@/panels/DesignPanel";
+import { GeometryPanel } from "@/panels/GeometryPanel";
 import { CapacityPanel } from "@/panels/CapacityPanel";
 import { DynamicsPanel } from "@/panels/DynamicsPanel";
+import { VariationPanel } from "@/panels/VariationPanel";
+import { ToothFormPanel } from "@/panels/ToothFormPanel";
+import { MeshPanel } from "@/panels/MeshPanel";
 import { PairPanel } from "@/panels/PairPanel";
 import { GlossaryPanel } from "@/panels/GlossaryPanel";
 
-type NodeKey =
+type NodeId =
   | "overview"
-  | "design"
-  | "geometry"
-  | "capacity"
-  | "dynamics"
+  | "unit"
+  | "stage"
+  | "pinion"
+  | "wheel"
   | "variation"
-  | "pinion.toothform"
-  | "pinion.mesh"
-  | "wheel.toothform"
-  | "wheel.mesh"
-  | "deck"
   | "glossary";
 
 interface TreeNode {
-  key?: NodeKey;
-  labelKey: string;
+  id?: NodeId;
+  label: string; // FVA-exact German node names incl. [n] numbering
+  labelEn?: string;
   children?: TreeNode[];
   badge?: string;
 }
 
 const TREE: TreeNode = {
-  labelKey: "tree.model",
+  label: "Modell",
+  labelEn: "Model",
   children: [
     {
-      labelKey: "tree.stage",
+      id: "unit",
+      label: "Getriebeeinheit [1]",
+      labelEn: "Gear unit [1]",
       children: [
-        { key: "overview", labelKey: "tree.overview" },
-        { key: "design", labelKey: "tree.design" },
-        { key: "geometry", labelKey: "tree.geometry" },
-        { key: "capacity", labelKey: "tree.capacity" },
-        { key: "dynamics", labelKey: "tree.dynamics" },
-        { key: "variation", labelKey: "tree.variation" },
         {
-          labelKey: "tree.pinion",
-          badge: "Stahl",
+          id: "stage",
+          label: "Stirnradstufe [3]",
+          labelEn: "Cylindrical gear stage [3]",
           children: [
-            { key: "pinion.toothform", labelKey: "tree.toothform" },
-            { key: "pinion.mesh", labelKey: "tree.mesh" },
+            {
+              label: "Welle [4]",
+              labelEn: "Shaft [4]",
+              children: [{ id: "pinion", label: "Stahlritzel [8]", labelEn: "Steel pinion [8]", badge: "Stahl" }],
+            },
+            {
+              label: "Welle [6]",
+              labelEn: "Shaft [6]",
+              children: [{ id: "wheel", label: "Kunststoffrad [9]", labelEn: "Plastic wheel [9]", badge: "PA" }],
+            },
+            { id: "variation", label: "Stufenvariation", labelEn: "Stage variation" },
           ],
-        },
-        {
-          labelKey: "tree.wheel",
-          badge: "PA",
-          children: [
-            { key: "wheel.toothform", labelKey: "tree.toothform" },
-            { key: "wheel.mesh", labelKey: "tree.mesh" },
-          ],
-        },
-        {
-          labelKey: "tree.calcs",
-          children: [{ key: "deck", labelKey: "tree.pair" }],
         },
       ],
     },
-    { key: "glossary", labelKey: "tree.glossary" },
+    { id: "overview", label: "Übersicht", labelEn: "Overview" },
+    { id: "glossary", label: "Legende & Parameter", labelEn: "Glossary & parameters" },
   ],
 };
+
+interface TabSpec {
+  id: string;
+  title: string;
+  render: () => ReactNode;
+  visibleIfMethod?: string | null;
+}
+
+function schemaTab(schema: UiSchema, componentId: string, tabId: string, locale: string): TabSpec | null {
+  const comp = schema.components.find((c) => c.id === componentId);
+  const tab: TabDef | undefined = comp?.tabs.find((t) => t.id === tabId);
+  if (!tab) return null;
+  return {
+    id: tabId,
+    title: locale === "de" ? tab.title_de : tab.title_en,
+    visibleIfMethod: tab.visible_if_method,
+    render: () => <SchemaTab schema={schema} tab={tab} />,
+  };
+}
 
 function TreeItem(props: {
   node: TreeNode;
   depth: number;
-  active: NodeKey;
-  onSelect: (k: NodeKey) => void;
+  active: NodeId;
+  onSelect: (k: NodeId) => void;
 }) {
-  const t = useT();
+  const { locale } = useLocale();
   const [open, setOpen] = useState(true);
   const { node } = props;
-  const isLeaf = !node.children?.length;
-  const selected = node.key === props.active;
+  const hasChildren = Boolean(node.children?.length);
+  const selected = node.id === props.active;
+  const label = locale === "de" ? node.label : node.labelEn ?? node.label;
   return (
     <div>
       <button
         type="button"
-        onClick={() => (isLeaf && node.key ? props.onSelect(node.key) : setOpen(!open))}
+        onClick={() => {
+          if (node.id) props.onSelect(node.id);
+          if (hasChildren && !node.id) setOpen(!open);
+        }}
         className={`w-full flex items-center gap-1.5 text-left rounded-md px-2 py-[3px] text-[12.5px] transition-colors ${
           selected ? "bg-blue-600 text-white" : "text-zinc-700 hover:bg-zinc-200/70"
         }`}
         style={{ paddingLeft: 8 + props.depth * 14 }}
       >
-        {!isLeaf && (
-          <span className={`text-[9px] transition-transform ${open ? "rotate-90" : ""} ${selected ? "text-white" : "text-zinc-400"}`}>
+        {hasChildren && (
+          <span
+            role="presentation"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(!open);
+            }}
+            className={`text-[9px] transition-transform ${open ? "rotate-90" : ""} ${selected ? "text-white" : "text-zinc-400"}`}
+          >
             ▶
           </span>
         )}
-        {isLeaf && <span className={`w-1.5 h-1.5 rounded-full ${selected ? "bg-white" : "bg-zinc-300"}`} />}
-        <span className="truncate">{t(node.labelKey)}</span>
+        {!hasChildren && <span className={`w-1.5 h-1.5 rounded-full ${selected ? "bg-white" : "bg-zinc-300"}`} />}
+        <span className="truncate">{label}</span>
         {node.badge && (
           <span className={`ml-auto text-[10px] px-1.5 rounded-full ${selected ? "bg-white/20" : "bg-zinc-200 text-zinc-500"}`}>
             {node.badge}
@@ -124,7 +154,10 @@ function Shell() {
   const t = useT();
   const { locale, setLocale } = useLocale();
   const { label: stageLabel } = useStage();
-  const [active, setActive] = useState<NodeKey>("overview");
+  const wb = useWorkbench();
+  const [schema, setSchema] = useState<UiSchema | null>(null);
+  const [active, setActive] = useState<NodeId>("stage");
+  const [tabByNode, setTabByNode] = useState<Record<string, string>>({});
   const [version, setVersion] = useState<string | null>(null);
   const [online, setOnline] = useState<boolean | null>(null);
 
@@ -136,54 +169,70 @@ function Shell() {
         setOnline(true);
       })
       .catch(() => setOnline(false));
+    fetchUiSchema()
+      .then(setSchema)
+      .catch(() => setSchema(null));
   }, []);
 
-  const titles: Record<NodeKey, string> = useMemo(
-    () => ({
-      overview: t("tree.overview"),
-      design: `${t("tree.design")} · Presets / STE / parametrisch`,
-      geometry: `${t("tree.geometry")} · ISO 21771`,
-      capacity: `${t("tree.capacity")} · ISO 6336 / VDI 2736`,
-      dynamics: `${t("tree.dynamics")} · ISO 6336-1`,
-      variation: `${t("tree.variation")}`,
-      "pinion.toothform": `${t("tree.pinion")} — ${t("tree.toothform")}`,
-      "pinion.mesh": `${t("tree.pinion")} — ${t("tree.mesh")} · ADR-019`,
-      "wheel.toothform": `${t("tree.wheel")} — ${t("tree.toothform")}`,
-      "wheel.mesh": `${t("tree.wheel")} — ${t("tree.mesh")} · ADR-019`,
-      deck: t("tree.pair"),
-      glossary: t("tree.glossary"),
-    }),
-    [t],
-  );
+  // node → editor tabs (FVA layout; schema tabs + bespoke panels as the kept extras)
+  const nodeTabs: Record<NodeId, TabSpec[]> = useMemo(() => {
+    const s = schema;
+    const maybe = (spec: TabSpec | null) => (spec ? [spec] : []);
+    return {
+      overview: [{ id: "overview", title: locale === "de" ? "Übersicht" : "Overview", render: () => <OverviewPanel onNavigate={() => setActive("stage")} /> }],
+      unit: [
+        ...(s
+          ? [
+              {
+                id: "calc_selection",
+                title: locale === "de" ? "Berechnungsauswahl" : "Calculation selection",
+                render: () => <CalcSelectionPanel schema={s} />,
+              } satisfies TabSpec,
+            ]
+          : []),
+        ...(s ? maybe(schemaTab(s, "gear_unit", "operating_data", locale)) : []),
+      ],
+      stage: [
+        { id: "design", title: locale === "de" ? "Auslegung" : "Design", render: () => <DesignPanel /> },
+        { id: "geometry", title: "Geometrie", render: () => <GeometryPanel /> },
+        { id: "capacity", title: locale === "de" ? "Tragfähigkeit" : "Load capacity", render: () => <CapacityPanel /> },
+        { id: "dynamics", title: locale === "de" ? "Dynamikfaktoren" : "Dynamic factors", render: () => <DynamicsPanel /> },
+        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "transient_fem", locale)) : []),
+        { id: "pair", title: locale === "de" ? "FE-Abwälzmodell (Ansicht)" : "FE rolling model (view)", render: () => <PairPanel /> },
+      ],
+      pinion: [
+        { id: "toothform", title: "Zahnform", render: () => <ToothFormPanel gear={1} /> },
+        { id: "mesh", title: "FE-Mesh", render: () => <MeshPanel gear={1} /> },
+      ],
+      wheel: [
+        { id: "toothform", title: "Zahnform", render: () => <ToothFormPanel gear={2} /> },
+        { id: "mesh", title: "FE-Mesh", render: () => <MeshPanel gear={2} /> },
+      ],
+      variation: [
+        { id: "variation", title: "Stufenvariation", render: () => <VariationPanel /> },
+      ],
+      glossary: [
+        { id: "glossary", title: locale === "de" ? "Legende & Parameter" : "Glossary & parameters", render: () => <GlossaryPanel /> },
+      ],
+    };
+  }, [schema, locale]);
 
-  const panel: ReactNode = (() => {
-    switch (active) {
-      case "overview":
-        return <OverviewPanel onNavigate={(k) => setActive(k as NodeKey)} />;
-      case "design":
-        return <DesignPanel />;
-      case "geometry":
-        return <GeometryPanel />;
-      case "capacity":
-        return <CapacityPanel />;
-      case "dynamics":
-        return <DynamicsPanel />;
-      case "variation":
-        return <VariationPanel />;
-      case "pinion.toothform":
-        return <ToothFormPanel gear={1} />;
-      case "wheel.toothform":
-        return <ToothFormPanel gear={2} />;
-      case "pinion.mesh":
-        return <MeshPanel gear={1} />;
-      case "wheel.mesh":
-        return <MeshPanel gear={2} />;
-      case "deck":
-        return <PairPanel />;
-      case "glossary":
-        return <GlossaryPanel />;
-    }
-  })();
+  // Berechnungsauswahl drives tab visibility (state preserved while hidden)
+  const visibleTabs = (nodeTabs[active] ?? []).filter(
+    (tab) => !tab.visibleIfMethod || wb.calc[tab.visibleIfMethod],
+  );
+  const activeTabId = tabByNode[active] ?? visibleTabs[0]?.id;
+  const activeTab = visibleTabs.find((x) => x.id === activeTabId) ?? visibleTabs[0];
+
+  const nodeTitle: Record<NodeId, string> = {
+    overview: locale === "de" ? "Übersicht" : "Overview",
+    unit: "Getriebeeinheit [1]",
+    stage: "Stirnradstufe [3]",
+    pinion: "Stahlritzel [8]",
+    wheel: "Kunststoffrad [9]",
+    variation: "Stufenvariation",
+    glossary: locale === "de" ? "Legende & Parameter" : "Glossary & parameters",
+  };
 
   return (
     <div className="h-screen flex flex-col">
@@ -218,18 +267,38 @@ function Shell() {
         {/* model tree */}
         <aside className="w-[250px] shrink-0 border-r border-zinc-200 bg-zinc-50 overflow-y-auto p-2">
           <div className="text-[10.5px] uppercase tracking-wider text-zinc-400 px-2 pb-1">
-            Modellbaum
+            {locale === "de" ? "Modellbaum" : "Model tree"}
           </div>
           <TreeItem node={TREE} depth={0} active={active} onSelect={setActive} />
         </aside>
 
-        {/* editor */}
+        {/* editor: node title + FVA tab bar + panel */}
         <main className="flex-1 min-w-0 flex flex-col">
-          <div className="h-9 flex items-center px-4 border-b border-zinc-200 bg-white shrink-0">
-            <span className="text-[12.5px] font-medium text-zinc-800">{titles[active]}</span>
-            <span className="ml-auto text-[11px] text-zinc-400">Stufe: {stageLabel}</span>
+          <div className="flex items-center px-3 border-b border-zinc-200 bg-white shrink-0 gap-1 h-9 overflow-x-auto">
+            {visibleTabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setTabByNode({ ...tabByNode, [active]: tab.id })}
+                className={`px-2.5 h-7 rounded-t-md text-[12px] whitespace-nowrap border-b-2 ${
+                  activeTab?.id === tab.id
+                    ? "border-blue-600 text-blue-700 font-medium bg-blue-50/50"
+                    : "border-transparent text-zinc-600 hover:text-zinc-900"
+                }`}
+              >
+                {tab.title}
+              </button>
+            ))}
+            <span className="ml-auto text-[11px] text-zinc-400 whitespace-nowrap">
+              Stufe: {stageLabel}
+            </span>
           </div>
-          <div className="flex-1 min-h-0 overflow-y-auto p-3 bg-zinc-100/70">{panel}</div>
+          <div className="h-8 flex items-center px-4 border-b border-zinc-100 bg-white shrink-0">
+            <span className="text-[13px] font-semibold text-sky-900">{nodeTitle[active]}</span>
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto p-3 bg-zinc-100/70">
+            {activeTab?.render() ?? null}
+          </div>
         </main>
       </div>
 

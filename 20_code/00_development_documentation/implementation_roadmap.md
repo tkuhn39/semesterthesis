@@ -157,6 +157,18 @@ DE/EN). **Done (v0.4.1, ADR-021 amendment, user decisions):** Fesselung parity c
 LEFT, gear 2 at the centre distance/RIGHT in deck and 3D pair view, per-gear inputs strictly
 keyed by input slot (never re-ordered by role/tooth count), deck request fields renamed to
 gear1/gear2 names, angle/torque/slave roles follow the material (plastic side driven).
+**Done (v0.5.0, ADR-021 second amendment, measured ground truth + user report):** the deck
+starts in **single-flank contact** like the reference (backlash-closing rotation of gear 2 by
+exact rotational collision detection; kst-E 243 µm centred backlash → 21.9 µm on the −y flank,
+angle in the deck heading) and the **Fesselung is a coordinate predicate over ALL nodes**
+(bore + both complete cut planes to d_f/2; FVA checkboxes as `fasten_*` writer flags);
+`10_verifiers/verify_deck_parity.py` asserts both against the reference INP. Single source of
+truth: shared `StageParams` (`app/api/stage_params.py`) behind every endpoint, material
+catalog (20MnCr5 + Stanyl TW200F6 incl. Marlow curve) feeding analytics AND deck, norm
+dispatch per gear by MATERIAL (steel → ISO 6336, plastic → VDI 2736). FVA-replica foundation:
+label extraction from the installed Workbench, pydantic editor schema (`app/services/uimodel`)
+at `/api/ui-schema`, FVA-style shell (tree → tab bar), Berechnungsauswahl matrix driving tab
+visibility (FVA 892 → "Dynamisches Abwälzen (FEM)" tab with deck download).
 **Still open:** DIN 3967/3964 tooth-thickness/centre-distance allowance system, protuberance
 tool variant (DIN 3960 Anhang A), micro-geometry mechanics (load distribution).
 

@@ -21,7 +21,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
-from app.api.design import StageParams
+from app.api.stage_params import StageParams
 from app.services.geometry.gear import GearStage
 from app.services.geometry.root_fillet import (
     BezierFillet,
@@ -34,8 +34,9 @@ from app.services.geometry.root_fillet import (
     with_root_land,
 )
 from app.services.geometry.tooth_form import ToothProfile
+from app.services.materials import catalog_material
 from app.services.model.implicit_deck import build_implicit_pair_from_stage
-from app.services.model.materials_card import LinearElastic, MarlowUniaxial
+from app.services.model.materials_card import LinearElastic, MarlowUniaxial, card_from_catalog
 from app.services.model.mesh3d import extrude_to_hex
 from app.services.model.plane_fe import density_convergence, root_tensile_stress
 from app.services.model.template_mesher import SectorMesh2D, generate_sector_2d, scaled_jacobians
@@ -114,6 +115,17 @@ class DeckRequest(BaseModel):
     )
     fillet_gear1: FilletSpec = Field(default_factory=FilletSpec)
     fillet_gear2: FilletSpec = Field(default_factory=FilletSpec)
+    align_contact: bool = Field(
+        True,
+        description="Rotate gear 2 into single-flank contact (~15 µm arc clearance) so the "
+        "torque ramp closes the gap like the reference deck; False keeps the tooth centred "
+        "in the gap with the full allowance backlash",
+    )
+    # FVA "Fesselung" checkboxes (Dynamisches Abwälzen (FEM)); defaults = reference parity
+    fasten_bore: bool = Field(True, description="Fesselung an der Bohrung")
+    fasten_cuts: bool = Field(True, description="Fesselung im Schnitt (both radial cut planes)")
+    fasten_top: bool = Field(False, description="Fesselung oben (axial end face, +z)")
+    fasten_bottom: bool = Field(False, description="Fesselung unten (axial end face, -z)")
 
 
 # ----------------------------------------------------------------------------------------------
@@ -520,9 +532,8 @@ def build_deck(req: DeckRequest) -> PlainTextResponse:
     stage = req.stage.stage()
 
     def deck_material(kind: str) -> LinearElastic | MarlowUniaxial:
-        if kind == "steel":
-            return LinearElastic("STEEL", 210000.0, 0.3)
-        return MarlowUniaxial("PA_kstE")
+        # properties from THE material catalog (single source, user decision 2026-07-04)
+        return card_from_catalog(catalog_material(kind))
 
     kinds = (req.gear1_material, req.gear2_material)
     # roles follow the MATERIAL (reference parity), the chain follows the input slot:
@@ -547,6 +558,11 @@ def build_deck(req: DeckRequest) -> PlainTextResponse:
         slave_gear=plastic_side,
         fillet_gear1=req.fillet_gear1.strategy(),
         fillet_gear2=req.fillet_gear2.strategy(),
+        align_contact=req.align_contact,
+        fasten_bore=req.fasten_bore,
+        fasten_cuts=req.fasten_cuts,
+        fasten_bottom=req.fasten_bottom,
+        fasten_top=req.fasten_top,
     )
     pitch_deg = 360.0 / stage.teeth[plastic_side - 1]  # the angle-driven gear's pitch
     headers = {

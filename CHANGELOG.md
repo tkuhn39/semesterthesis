@@ -11,6 +11,61 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 _Nothing yet._
 
+## [0.5.0] - 2026-07-04
+
+### Fixed (deck correctness — measured against the reference INP, user report)
+- **Fesselung is now a coordinate predicate over ALL mesh nodes** — the reference deck's
+  `Fesselung_Rad{1,2}` holds the bore surface PLUS both radial cut planes as *complete
+  cross-sections* (every single node, bore → root circle, all face-width planes; measured:
+  2 268/2 225 nodes per cut plane, no z side faces). The previous boundary-edge traversal
+  could miss face nodes. The four FVA "Fesselung" checkboxes (Bohrung/Schnitt/oben/unten)
+  are writer flags now (`DeckRequest.fasten_*`), defaults = reference parity.
+- **Initial single-flank contact (the gears no longer "run in the air")**: the reference
+  stands in single-flank contact at t=0 (~25 µm node gap on the −y flanks; AMP-TORQUE
+  switches on while AMP-ANGLE dwells). The writer now computes the backlash-closing rotation
+  of gear 2 by exact rotational collision detection on the 2-D boundary polylines
+  (`align_contact=True`, 15 µm arc backoff) — kst-E: 243 µm centred backlash → **21.9 µm**
+  on the −y flank, angle documented in the deck heading.
+- New verifier `10_verifiers/verify_deck_parity.py`: Fesselung composition (bore + two
+  complete cut planes to d_f/2), initial gap ≤ 35 µm on −y, torque-before-angle amplitudes,
+  one `*STATIC` step, flank-wise contact pairs; `--reference` re-measures the FVA deck.
+  ADR-021 second amendment records the measured ground truth.
+
+### Changed (single source of truth — user requirement "eine aktive Geometrie überall")
+- **`StageParams` moved to `app/api/stage_params.py`** and became THE shared request model:
+  `/api/geometry`, `/api/capacity`, `/api/dynamics`, `/api/tooth-profile`, mesh/contour/deck
+  all derive their `GearStage` from the same parameters (plus new fields: tooth-width
+  allowances A_We, explicit tip diameters, tool dedendum, gear addendum factor).
+  The duplicated `GeometryRequest`/`ToothProfileRequest`/`/api/evaluate` are gone;
+  `/api/tooth-profile` now returns the REAL as-cut flanks (tip chamfer, root fillet).
+- **Norm dispatch follows the MATERIAL, never the role**: steel → ISO 6336:2019, plastic →
+  VDI 2736:2014, per gear (`CapacityRequest.pinion_material`/`wheel_material`) — steel/steel,
+  plastic/plastic and mixed pairs all dispatch correctly.
+- **Material catalog** (`app/services/materials.py::CATALOG`): 20MnCr5 + Stanyl TW200F6
+  (PA46, cond. 80 °C, incl. the measured Marlow stress–strain curve, single copy) feed the
+  analytic methods AND the FE deck (`materials_card.card_from_catalog`; FE Marlow keeps the
+  reference deck's ν=0.30 while the analytic sheet uses ν=0.34).
+- Frontend panels consume the shared stage store: Geometrie edits publish app-wide,
+  Tragfähigkeit/Dynamik/Stufenvariation recompute from it (the Variation baseline is the
+  active stage, no more hardcoded second gear pair); face width is a per-gear pair
+  everywhere; input width cap 132→180 px (values were clipped); computed/locked field
+  styling; missing SVG plot CSS tokens defined.
+
+### Added (FVA replica foundation — user decision "Option 2": FVA as template, own logic)
+- `20_antigravity_scripts/extract_fva_labels.py` mines the installed FVA Workbench's
+  declarative UI (produktmodell_SI.xml + pm_messages DE/EN + pm_combo.xml, inheritance
+  resolved) into `00_development_documentation/fva_label_reference.json` — a wording
+  reference for 8 replicated components.
+- **Own pydantic editor schema** `app/services/uimodel/` (AttributeDef/TabDef/
+  DependencyRule/CalcMethod — every attribute with DE/EN label, symbol, unit, norm
+  reference, store binding; doubles as the glossary source), served at **`/api/ui-schema`**.
+- Frontend: workbench store (`lib/store.tsx`) with path-based bindings (stage/calc/fem/…),
+  generic `SchemaTab` renderer, **Berechnungsauswahl** matrix (18 methods, unimplemented
+  greyed out, ISO 6336 + VDI 2736 always-on), and the FVA-style shell: model tree
+  (Getriebeeinheit → Stirnradstufe → Wellen → Räder) with an editor TAB BAR per node —
+  the "Dynamisches Abwälzen (FEM)" tab exists only while FVA 892 is selected and downloads
+  the corrected deck with the Fesselung checkboxes + contact alignment.
+
 ## [0.4.1] - 2026-07-04
 
 ### Changed (user review follow-up — Fesselung parity + rig-view slot convention)

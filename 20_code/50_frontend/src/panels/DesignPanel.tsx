@@ -33,6 +33,13 @@ export function DesignPanel() {
     designApi.presets().then(setPresets).catch(() => setPresets(null));
   }, []);
 
+  useEffect(() => {
+    // the draft follows external stage changes (Geometrie tab edits, Variation-Übernehmen)
+    // so this panel never shows a stale copy of the single source of truth
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDraft(stage);
+  }, [stage]);
+
   const set = (k: keyof StageParams) => (v: number) =>
     setDraft({ ...draft, use_example: false, [k]: v });
 

@@ -6,8 +6,11 @@
 import { useEffect, useState } from "react";
 import { api, type CapacityRequest, type CapacityResponse, type GearCapacity } from "@/lib/api";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
+import { useStage } from "@/lib/stage";
 import { useT } from "@/lib/i18n";
 
+// Operating conditions only — the GEOMETRY always comes from THE shared stage
+// (single source of truth); this panel never carries its own copy of it.
 const DEFAULTS: CapacityRequest = {
   pinion_torque_nm: 7.85,
   pinion_speed_min1: 1000,
@@ -47,6 +50,7 @@ const DEFAULTS: CapacityRequest = {
 
 export function CapacityPanel() {
   const t = useT();
+  const { stage } = useStage();
   const [req, setReq] = useState<CapacityRequest>(DEFAULTS);
   const [res, setRes] = useState<CapacityResponse | null>(null);
   const [busy, setBusy] = useState(false);
@@ -56,7 +60,7 @@ export function CapacityPanel() {
     setBusy(true);
     setErr(null);
     try {
-      setRes(await api.capacity(r));
+      setRes(await api.capacity({ ...r, stage }));
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {
@@ -64,10 +68,11 @@ export function CapacityPanel() {
     }
   };
   useEffect(() => {
-    // initial compute on mount; async, so state updates land post-render
+    // recompute when the shared stage changes (a geometry edit in any tab lands here too)
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void run(DEFAULTS);
-  }, []);
+    void run(req);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
 
   const set = (k: keyof CapacityRequest) => (v: number) => setReq({ ...req, [k]: v });
 

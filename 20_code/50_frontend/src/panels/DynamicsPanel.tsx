@@ -5,8 +5,10 @@
 import { useEffect, useState } from "react";
 import { api, type DynamicsRequest, type DynamicsResponse } from "@/lib/api";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
+import { useStage } from "@/lib/stage";
 import { useT } from "@/lib/i18n";
 
+// Operating conditions only — the geometry comes from THE shared stage (SSOT).
 const DEFAULTS: DynamicsRequest = {
   pinion_speed_min1: 1000,
   pinion_torque_nm: 7.85,
@@ -17,6 +19,7 @@ const DEFAULTS: DynamicsRequest = {
 
 export function DynamicsPanel() {
   const t = useT();
+  const { stage } = useStage();
   const [req, setReq] = useState<DynamicsRequest>(DEFAULTS);
   const [res, setRes] = useState<DynamicsResponse | null>(null);
   const [busy, setBusy] = useState(false);
@@ -26,7 +29,7 @@ export function DynamicsPanel() {
     setBusy(true);
     setErr(null);
     try {
-      setRes(await api.dynamics(r));
+      setRes(await api.dynamics({ ...r, stage }));
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {
@@ -34,10 +37,11 @@ export function DynamicsPanel() {
     }
   };
   useEffect(() => {
-    // initial compute on mount; async, so state updates land post-render
+    // recompute when the shared stage changes (geometry edits land here too)
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void run(DEFAULTS);
-  }, []);
+    void run(req);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
 
   const set = (k: keyof DynamicsRequest) => (v: number) => setReq({ ...req, [k]: v });
 

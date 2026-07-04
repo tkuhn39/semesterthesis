@@ -90,6 +90,10 @@ class Material(BaseModel):
     kind: MaterialKind
     elastic_modulus_mpa: float
     poisson_ratio: float
+    density_kg_m3: float | None = None  # ρ — weight estimates + FE material card
+    # FE-card Poisson ratio when it differs from the analytical one (kst-E reference deck
+    # runs the Marlow plastic with ν=0.30 while the capacity sheet lists ν=0.34).
+    fe_poisson_ratio: float | None = None
 
     # Endurance limits — DIN 3990 for steel; VDI 2736 baseline for plastic.
     sigma_hlim_mpa: float | None = None  # flank endurance limit
@@ -167,6 +171,113 @@ def _strength_at(
             s0, s1 = _at_temp(t0), _at_temp(t1)
             return s0 + (s1 - s0) * (temperature_c - t0) / (t1 - t0)
     return _at_temp(temps[-1])
+
+
+# --------------------------------------------------------------------------- #
+# Material catalog — THE single source for named materials (user decision      #
+# 2026-07-04: capacity, variation and the FE deck must never hold their own    #
+# divergent property copies).                                                  #
+# --------------------------------------------------------------------------- #
+# kst-E plastic (Stanyl TW200F6, PA46, conditioned 80 °C) uniaxial test data from the
+# reference deck: (strain [-], nominal stress [MPa]) — feeds the Marlow FE card (see
+# model/materials_card.py, which converts to its (stress, strain) order) AND is available
+# to the analytical methods via Material.curve("stress_strain"). Single copy on purpose.
+_KST_E_STRESS_STRAIN: list[tuple[float, float]] = [
+    (0.000, 0.00),
+    (0.001, 4.27),
+    (0.006, 22.81),
+    (0.008, 28.00),
+    (0.009, 32.91),
+    (0.011, 37.41),
+    (0.012, 41.69),
+    (0.014, 45.64),
+    (0.016, 49.35),
+    (0.017, 52.84),
+    (0.019, 56.10),
+    (0.020, 59.16),
+    (0.022, 62.01),
+    (0.024, 64.64),
+    (0.025, 67.09),
+    (0.027, 69.34),
+    (0.028, 71.39),
+    (0.030, 73.24),
+    (0.032, 74.92),
+    (0.033, 76.34),
+    (0.035, 77.78),
+    (0.036, 79.00),
+    (0.038, 80.10),
+    (0.040, 81.07),
+    (0.041, 81.96),
+    (0.043, 82.75),
+    (0.044, 83.48),
+    (0.046, 84.15),
+    (0.048, 84.75),
+    (0.049, 85.30),
+    (0.051, 85.80),
+    (0.052, 86.26),
+    (0.054, 86.68),
+    (0.056, 87.04),
+    (0.057, 87.38),
+    (0.059, 87.69),
+    (0.060, 87.97),
+    (0.062, 88.23),
+    (0.064, 88.44),
+    (0.065, 88.64),
+    (0.067, 88.81),
+    (0.068, 88.94),
+    (0.070, 88.98),
+]
+
+CATALOG: dict[str, "Material"] = {
+    # kst-E steel pinion (FVA Workbench screenshot: 20MnCr5, einsatzgehärtet)
+    "20MnCr5": Material(
+        name="20MnCr5",
+        kind=MaterialKind.STEEL,
+        elastic_modulus_mpa=210000.0,
+        poisson_ratio=0.30,
+        density_kg_m3=7850.0,
+        sigma_hlim_mpa=1500.0,
+        sigma_flim_mpa=430.0,
+        source="datasheet",
+    ),
+    # kst-E plastic wheel (FVA Workbench screenshot: Stanyl_TW200F6_cond_80, PA46)
+    "Stanyl_TW200F6_cond_80": Material(
+        name="Stanyl_TW200F6_cond_80",
+        kind=MaterialKind.PLASTIC,
+        elastic_modulus_mpa=4156.0,
+        poisson_ratio=0.34,
+        fe_poisson_ratio=0.30,  # the reference deck's Marlow card (parity)
+        density_kg_m3=1410.0,
+        sigma_hlim_mpa=60.0,
+        sigma_flim_mpa=35.0,
+        allowable_temperature_c=100.0,
+        source="datasheet",
+        nonlinear_curves=[
+            NonlinearCurve(
+                quantity="stress_strain",
+                x_label="strain",
+                y_label="stress_mpa",
+                points=_KST_E_STRESS_STRAIN,
+                condition_temperature_c=80.0,
+                source="datasheet",
+            )
+        ],
+    ),
+}
+
+#: default catalog entry per material kind (the kst-E pair)
+DEFAULT_BY_KIND: dict[MaterialKind, str] = {
+    MaterialKind.STEEL: "20MnCr5",
+    MaterialKind.PLASTIC: "Stanyl_TW200F6_cond_80",
+}
+
+
+def catalog_material(name_or_kind: str) -> "Material":
+    """Look up a catalog material by name, or the kind default for "steel"/"plastic"."""
+    if name_or_kind in CATALOG:
+        return CATALOG[name_or_kind].model_copy(deep=True)
+    kind = MaterialKind(name_or_kind)  # raises ValueError for unknown names
+    return CATALOG[DEFAULT_BY_KIND[kind]].model_copy(deep=True)
 
 
 def _section_float(section: SteSection, key: str) -> float | None:

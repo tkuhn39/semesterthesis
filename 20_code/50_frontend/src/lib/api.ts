@@ -45,16 +45,8 @@ export interface ExampleResponse {
   notes: string[];
 }
 
-export interface GeometryRequest {
-  normal_module_mm: number;
-  teeth_pinion: number;
-  teeth_wheel: number;
-  profile_shift_pinion: number;
-  profile_shift_wheel: number;
-  normal_pressure_angle_deg: number;
-  helix_angle_deg: number;
-  face_width_mm: number;
-}
+// /api/geometry consumes THE shared StageParams (single source of truth) — no
+// separate request type with its own copies of the gear parameters anymore.
 export interface GeometryResponse {
   reference_diameter_mm: [number, number];
   base_diameter_mm: [number, number];
@@ -101,6 +93,11 @@ export interface CapacityResponse {
   wheel: GearCapacity;
 }
 export interface CapacityRequest {
+  // THE shared stage (single source of truth) + per-slot material kind — the norm
+  // dispatch follows the MATERIAL (steel → ISO 6336, plastic → VDI 2736), never the role.
+  stage?: StageParams;
+  pinion_material?: "steel" | "plastic";
+  wheel_material?: "steel" | "plastic";
   pinion_torque_nm: number;
   pinion_speed_min1: number;
   application_factor: number;
@@ -138,6 +135,9 @@ export interface CapacityRequest {
 }
 
 export interface DynamicsRequest {
+  stage?: StageParams; // THE shared stage
+  pinion_material?: "steel" | "plastic";
+  wheel_material?: "steel" | "plastic";
   pinion_speed_min1: number;
   pinion_torque_nm: number;
   application_factor: number;
@@ -221,15 +221,7 @@ export interface VariationResponse {
   warnings: string[];
 }
 
-export interface ToothProfileRequest {
-  normal_module_mm: number;
-  teeth_pinion: number;
-  teeth_wheel: number;
-  profile_shift_pinion: number;
-  profile_shift_wheel: number;
-  normal_pressure_angle_deg: number;
-  helix_angle_deg: number;
-}
+// /api/tooth-profile consumes THE shared StageParams and returns the real as-cut flanks.
 export interface ToothGear {
   teeth: number;
   center_x_mm: number;
@@ -248,11 +240,11 @@ export interface ToothProfileResponse {
 export const api = {
   health: () => get<{ status: string; version: string }>("/api/health"),
   example: () => get<ExampleResponse>("/api/example/kst-e"),
-  geometry: (req: GeometryRequest) => post<GeometryResponse>("/api/geometry", req),
+  geometry: (stage: StageParams) => post<GeometryResponse>("/api/geometry", stage),
   capacity: (req: CapacityRequest) => post<CapacityResponse>("/api/capacity", req),
   dynamics: (req: DynamicsRequest) => post<DynamicsResponse>("/api/dynamics", req),
   variation: (req: VariationRequest) => post<VariationResponse>("/api/variation", req),
-  toothProfile: (req: ToothProfileRequest) => post<ToothProfileResponse>("/api/tooth-profile", req),
+  toothProfile: (stage: StageParams) => post<ToothProfileResponse>("/api/tooth-profile", stage),
 };
 
 // ---- Stage definition (design.py — kst-E example or free parameters, M6) ----
@@ -282,8 +274,15 @@ export interface StageParams {
   center_distance_mm?: number | null;
   tool_addendum_factor: number;
   tool_tip_radius_factor: number;
+  tool_dedendum_factor?: number | null;
   tool_root_form_height_factor?: number | null;
   tool_edge_break_angle_deg?: number | null;
+  gear_addendum_factor?: number;
+  tip_diameter_pinion_mm?: number | null;
+  tip_diameter_wheel_mm?: number | null;
+  // mean tooth-width allowance A_We (Toleranzen; drives x_E and the deck backlash)
+  tooth_width_allowance_pinion_mm?: number;
+  tooth_width_allowance_wheel_mm?: number;
   modifications_pinion?: GearModifications;
   modifications_wheel?: GearModifications;
 }
@@ -402,6 +401,13 @@ export interface DeckRequest {
   steel_shell: boolean;
   fillet_gear1?: FilletSpec;
   fillet_gear2?: FilletSpec;
+  // reference parity: rotate gear 2 into single-flank contact (torque closes the last µm)
+  align_contact?: boolean;
+  // FVA "Fesselung" checkboxes (Dynamisches Abwälzen (FEM)); defaults = reference
+  fasten_bore?: boolean;
+  fasten_cuts?: boolean;
+  fasten_top?: boolean;
+  fasten_bottom?: boolean;
 }
 export interface ContourRequest {
   stage: StageParams;

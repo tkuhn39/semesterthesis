@@ -4,12 +4,12 @@
 // Pareto front; up to 4 selected variants overlay their REAL as-cut wheel tooth contours
 // (root_fillet-capable /api/mesh/contour) — the clean visual comparison the FVA lacks.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   api,
   contourApi,
-  KST_E_STAGE,
   type ContourResponse,
+  type StageParams,
   type VariationPoint,
   type VariationRequest,
   type VariationResponse,
@@ -18,6 +18,7 @@ import {
 import { ParallelCoordinates, type PCDim } from "@/components/ParallelCoordinates";
 import { ContourPlot, OVERLAY_COLORS } from "@/components/ContourPlot";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
+import { useStage } from "@/lib/stage";
 import { useT } from "@/lib/i18n";
 
 type ParamKey = "m_n" | "z1" | "z2" | "x1" | "x2" | "beta_deg" | "b";
@@ -41,31 +42,36 @@ const PC_DIMS: PCDim[] = [
   { key: "weight_g", label: "Gew." },
 ];
 
-const DEFAULTS: VariationRequest = {
-  m_n: { vary: false, value: 2.0, min: 1.0, max: 4.0, steps: 4 },
-  z1: { vary: true, value: 24, min: 16, max: 34, steps: 19 },
-  z2: { vary: false, value: 60, min: 40, max: 80, steps: 5 },
-  x1: { vary: true, value: 0.0, min: -0.3, max: 0.6, steps: 10 },
-  x2: { vary: false, value: 0.0, min: -0.3, max: 0.6, steps: 5 },
-  beta_deg: { vary: false, value: 0.0, min: 0.0, max: 25.0, steps: 4 },
-  b: { vary: false, value: 20.0, min: 10.0, max: 40.0, steps: 4 },
-  fix_center_distance: false,
-  center_distance_mm: 86.0,
-  normal_pressure_angle_deg: 20,
-  tool_addendum_factor: 1.25,
-  tool_tip_radius_factor: 0.38,
-  torque_nm: 15,
-  steel_density_kg_m3: 7800,
-  plastic_density_kg_m3: 1400,
-  steel_sigma_hlim_mpa: 1500,
-  steel_sigma_flim_mpa: 430,
-  plastic_sigma_hlim_mpa: 60,
-  plastic_sigma_flim_mpa: 35,
-  root_minimum_safety: 2.0,
-  flank_minimum_safety: 1.0,
-  method: "grid",
-  sample_count: 256,
-};
+// The variation BASELINE is the currently active stage (single source of truth) —
+// never a hardcoded second gear pair. Ranges open a sensible window around it.
+function defaultsFromStage(s: StageParams): VariationRequest {
+  const a0 = s.center_distance_mm ?? (s.normal_module_mm * (s.teeth_pinion + s.teeth_wheel)) / 2;
+  return {
+    m_n: { vary: false, value: s.normal_module_mm, min: s.normal_module_mm / 2, max: s.normal_module_mm * 2, steps: 4 },
+    z1: { vary: true, value: s.teeth_pinion, min: Math.max(8, s.teeth_pinion - 10), max: s.teeth_pinion + 10, steps: 21 },
+    z2: { vary: false, value: s.teeth_wheel, min: Math.max(8, s.teeth_wheel - 10), max: s.teeth_wheel + 10, steps: 5 },
+    x1: { vary: true, value: s.profile_shift_pinion, min: -1.0, max: 1.0, steps: 10 },
+    x2: { vary: false, value: s.profile_shift_wheel, min: -1.0, max: 1.0, steps: 5 },
+    beta_deg: { vary: false, value: s.helix_angle_deg, min: 0.0, max: 25.0, steps: 4 },
+    b: { vary: false, value: s.face_width_pinion_mm, min: Math.max(5, s.face_width_pinion_mm - 10), max: s.face_width_pinion_mm + 15, steps: 4 },
+    fix_center_distance: false,
+    center_distance_mm: a0,
+    normal_pressure_angle_deg: s.normal_pressure_angle_deg,
+    tool_addendum_factor: s.tool_addendum_factor,
+    tool_tip_radius_factor: s.tool_tip_radius_factor,
+    torque_nm: 7.85,
+    steel_density_kg_m3: 7850,
+    plastic_density_kg_m3: 1410,
+    steel_sigma_hlim_mpa: 1500,
+    steel_sigma_flim_mpa: 430,
+    plastic_sigma_hlim_mpa: 60,
+    plastic_sigma_flim_mpa: 35,
+    root_minimum_safety: 2.0,
+    flank_minimum_safety: 1.0,
+    method: "grid",
+    sample_count: 256,
+  };
+}
 
 interface OverlayEntry {
   label: string;
@@ -74,13 +80,21 @@ interface OverlayEntry {
 
 export function VariationPanel() {
   const t = useT();
-  const [r, setR] = useState<VariationRequest>(DEFAULTS);
+  const { stage } = useStage();
+  const [r, setR] = useState<VariationRequest>(() => defaultsFromStage(stage));
   const [res, setRes] = useState<VariationResponse | null>(null);
   const [rows, setRows] = useState<VariationPoint[]>([]);
   const [compare, setCompare] = useState<number[]>([]);
   const [overlays, setOverlays] = useState<OverlayEntry[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    // the baseline follows the shared stage — a geometry edit elsewhere re-seeds the matrix
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setR(defaultsFromStage(stage));
+     
+  }, [stage]);
 
   const run = async () => {
     setBusy(true);
@@ -113,7 +127,7 @@ export function VariationPanel() {
       try {
         const c = await contourApi.contour({
           stage: {
-            ...KST_E_STAGE,
+            ...stage,
             use_example: false,
             normal_module_mm: p.m_n,
             teeth_pinion: p.z1,

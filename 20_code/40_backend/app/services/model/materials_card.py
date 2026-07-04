@@ -4,58 +4,23 @@
 @role: Turn a material definition into the keyword card the reference deck uses — a linear
        ``*ELASTIC`` card (the steel gear) or the isotropic-nonlinear ``*Hyperelastic, marlow``
        driven by a measured ``*Uniaxial Test Data`` curve (the plastic gear, WoBe-892 "simple"
-       material mode). The measured curve is a parameter; the project gear's kst-E PA curve is
-       embedded as a regression reference. The ``cof``-mapped anisotropic mode plugs in here later.
+       material mode). Material PROPERTIES come from the single catalog in
+       ``app.services.materials`` (user decision 2026-07-04: no divergent copies between the
+       analytical methods and the FE deck) — ``card_from_catalog`` converts a catalog entry
+       into the deck card. The ``cof``-mapped anisotropic mode plugs in here later.
 """
 
 from dataclasses import dataclass
 
-# kst-E plastic (PA) uniaxial test data from the reference deck: (nominal stress [MPa], strain [-]).
-# Embedded for validation — the production path feeds curves from app.services.materials.
-KST_E_PA_MARLOW_CURVE: tuple[tuple[float, float], ...] = (
-    (0.00, 0.000),
-    (4.27, 0.001),
-    (22.81, 0.006),
-    (28.00, 0.008),
-    (32.91, 0.009),
-    (37.41, 0.011),
-    (41.69, 0.012),
-    (45.64, 0.014),
-    (49.35, 0.016),
-    (52.84, 0.017),
-    (56.10, 0.019),
-    (59.16, 0.020),
-    (62.01, 0.022),
-    (64.64, 0.024),
-    (67.09, 0.025),
-    (69.34, 0.027),
-    (71.39, 0.028),
-    (73.24, 0.030),
-    (74.92, 0.032),
-    (76.34, 0.033),
-    (77.78, 0.035),
-    (79.00, 0.036),
-    (80.10, 0.038),
-    (81.07, 0.040),
-    (81.96, 0.041),
-    (82.75, 0.043),
-    (83.48, 0.044),
-    (84.15, 0.046),
-    (84.75, 0.048),
-    (85.30, 0.049),
-    (85.80, 0.051),
-    (86.26, 0.052),
-    (86.68, 0.054),
-    (87.04, 0.056),
-    (87.38, 0.057),
-    (87.69, 0.059),
-    (87.97, 0.060),
-    (88.23, 0.062),
-    (88.44, 0.064),
-    (88.64, 0.065),
-    (88.81, 0.067),
-    (88.94, 0.068),
-    (88.98, 0.070),
+from app.services.materials import Material as CatalogMaterial
+from app.services.materials import catalog_material
+
+# kst-E plastic uniaxial test data in the deck-card order (stress [MPa], strain [-]) —
+# derived from the SINGLE copy in app.services.materials (catalog "Stanyl_TW200F6_cond_80").
+_kst_e_curve = catalog_material("Stanyl_TW200F6_cond_80").curve("stress_strain")
+assert _kst_e_curve is not None  # the catalog entry always carries the measured curve
+KST_E_PA_MARLOW_CURVE: tuple[tuple[float, float], ...] = tuple(
+    (stress, strain) for strain, stress in _kst_e_curve.points
 )
 
 
@@ -81,6 +46,35 @@ class MarlowUniaxial:
 
 
 Material = LinearElastic | MarlowUniaxial
+
+
+def card_from_catalog(mat: CatalogMaterial) -> Material:
+    """Convert a catalog material (app.services.materials) into its deck card.
+
+    Steel → linear ``*ELASTIC``; plastic → ``*HYPERELASTIC, MARLOW`` from the material's
+    measured stress–strain curve (falls back to the kst-E curve when none is attached).
+    Density converts kg/m³ → t/mm³ (Abaqus consistent units).
+    """
+    density = mat.density_kg_m3 * 1e-12 if mat.density_kg_m3 is not None else None
+    if not mat.is_plastic:
+        return LinearElastic(
+            name=mat.name,
+            youngs_modulus_mpa=mat.elastic_modulus_mpa,
+            poisson_ratio=mat.poisson_ratio,
+            density_t_per_mm3=density,
+        )
+    curve = mat.curve("stress_strain")
+    points = (
+        tuple((stress, strain) for strain, stress in curve.points)
+        if curve is not None
+        else KST_E_PA_MARLOW_CURVE
+    )
+    return MarlowUniaxial(
+        name=mat.name,
+        curve=points,
+        poisson_ratio=mat.fe_poisson_ratio or mat.poisson_ratio,
+        density_t_per_mm3=density,
+    )
 
 
 def _density_card(density_t_per_mm3: float | None) -> str:

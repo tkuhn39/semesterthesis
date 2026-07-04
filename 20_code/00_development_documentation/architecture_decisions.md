@@ -789,3 +789,26 @@ convention (wheel triad = driven/green, pinion triad = torque/amber, offsets in 
    faces (bore → shoulder contour, all layers) — matching the reference deck's set, which was
    verified to hold the full bore arc plus two complete radial node chains up to the root
    circle. Closes the parity gap noted in the original consequences.
+
+**Second amendment (2026-07-04, evening review — measured ground truth + user report):**
+1. **Fesselung is a node predicate, not an edge subset.** Parsing the reference deck
+   (`kst-E_8_DY2-0_WS30_ohne_Radkoerper.inp`) shows `Fesselung_Rad{1,2}` = the bore surface
+   (full sector arc × all face-width planes) plus BOTH radial cut planes as **complete
+   cross-sections — every single node** of those faces from the bore to the root circle
+   (2 268 / 2 225 nodes per cut plane; no z side faces, no rim volume beyond them).
+   `mesh_sets.tag_gear_reference` therefore selects the Fesselung by a coordinate predicate
+   over ALL mesh nodes instead of traversing boundary edges (which can miss face nodes), and
+   exposes the FVA checkboxes as writer flags: `fasten_bore` / `fasten_cuts` (defaults, the
+   reference) plus `fasten_bottom` / `fasten_top` (axial end faces, off in the reference).
+2. **Initial contact alignment (single-flank, reference parity).** The reference gears stand
+   in single-flank contact at t=0 (~25 µm node gap along the whole contact line on the −y
+   flank); AMP-TORQUE switches on first while AMP-ANGLE dwells, so the torque ramp closes the
+   last micrometres. The previous half-pitch-only placement left the tooth centred in the gap
+   with the full allowance backlash split onto both flanks (~0.24 mm per side for kst-E) —
+   the gears "ran in the air". `build_implicit_pair_from_stage(align_contact=True)` now
+   computes the backlash-closing rotation of gear 2 by exact rotational collision detection
+   on the 2-D boundary polylines (same-radius angular-gap minimisation, 15 µm arc backoff)
+   and documents the applied angle in the deck heading. Verified end-to-end by
+   `10_verifiers/verify_deck_parity.py` (Fesselung composition, ≤35 µm single-flank gap on
+   −y, torque-before-angle amplitudes, flank-wise contact pairs; `--reference` re-measures
+   the FVA deck).

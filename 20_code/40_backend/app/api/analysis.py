@@ -12,15 +12,14 @@ Thin by design (project_rules §): the routes assemble inputs and delegate to
 """
 
 import math
-import os
-from functools import lru_cache
-from pathlib import Path
+from typing import Literal
 
 import numpy as np
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from app.io.ste import Pair, gear_stage_from_ste, load_ste
+from app.api.stage_params import StageParams, kst_e_stage
+from app.io.ste import Pair
 from app.services.capacity import (
     DynamicConditions,
     Iso6336Conditions,
@@ -31,15 +30,17 @@ from app.services.capacity import (
     evaluate_vdi2736,
     native_dynamic_factors,
 )
-from app.services.geometry.gear import GearStage, ToolReferenceProfile
+from app.services.geometry.gear import GearStage
+from app.services.geometry.root_fillet import with_root_land
 from app.services.geometry.tolerances import (
     FlankTolerances,
     dynamics_deviations,
     flank_tolerances,
     validity_warnings,
 )
+from app.services.geometry.tooth_form import ToothProfile
 from app.services.geometry.tooth_root import ToothRootGeometry
-from app.services.materials import Material, MaterialKind
+from app.services.materials import Material, MaterialKind, catalog_material
 from app.services.variation import (
     VariationSpec,
     Varied,
@@ -51,56 +52,15 @@ from app.services.variation import (
 
 router = APIRouter(prefix="/api", tags=["analysis"])
 
+#: material kind per input slot — the norm dispatch follows the MATERIAL, never the role
+#: (user decision 2026-07-04: steel → ISO 6336, plastic → VDI 2736, no mixing)
+MaterialKindName = Literal["steel", "plastic"]
 
-def _example_ste_path() -> Path | None:
-    """Locate the kst-E example .ste robustly (env override → bundled → dev tree).
-
-    The image bundles a small copy at ``app/examples/`` so the demo works
-    self-contained; in the dev checkout the reference tree (outside the code tree,
-    ADR-008) is used if present. Never raises at import — resolved lazily.
-    """
-    override = os.environ.get("EXAMPLE_DATA_FILE")
-    if override:
-        path = Path(override)
-        return path if path.exists() else None
-    here = Path(__file__).resolve()
-    candidates = [here.parent.parent / "examples" / "kst-E_eingabe.ste"]
-    parents = here.parents
-    if len(parents) > 4:  # dev checkout: <repo>/20_code/40_backend/app/api/analysis.py
-        candidates.append(
-            parents[4] / "30_references_and_examples" / "33_STplus" / "kst-E_eingabe.ste"
-        )
-    return next((c for c in candidates if c.exists()), None)
+# retained internal alias — the kst-E loader lives in app.api.stage_params (shared model)
+_kst_e_stage = kst_e_stage
 
 
-# Materials of the kst-E pair (steel pinion 20MnCr5 + plastic wheel).
-_STEEL = Material(
-    name="20MnCr5",
-    kind=MaterialKind.STEEL,
-    elastic_modulus_mpa=210000.0,
-    poisson_ratio=0.30,
-    sigma_hlim_mpa=1500.0,
-    sigma_flim_mpa=430.0,
-)
-_PLASTIC = Material(
-    name="POM (Kunststoff)",
-    kind=MaterialKind.PLASTIC,
-    elastic_modulus_mpa=4156.0,
-    poisson_ratio=0.34,
-    sigma_hlim_mpa=60.0,
-    sigma_flim_mpa=35.0,
-)
-
-
-@lru_cache(maxsize=1)
-def _kst_e_stage() -> GearStage:
-    path = _example_ste_path()
-    if path is None:
-        raise HTTPException(503, "example data (kst-E .ste) not found; set EXAMPLE_DATA_FILE")
-    return GearStage.from_ste(gear_stage_from_ste(load_ste(path)))
-
-
-def _kst_e_roots(stage: GearStage) -> Pair[ToothRootGeometry]:
+def _stage_roots(stage: GearStage) -> Pair[ToothRootGeometry]:
     return Pair(ToothRootGeometry.from_stage(stage, 0), ToothRootGeometry.from_stage(stage, 1))
 
 
@@ -140,7 +100,8 @@ def example_kst_e() -> ExampleResponse:
     tip = stage.usable_tip_diameter_mm or Pair(0.0, 0.0)
     width = stage.face_width_mm or Pair(17.0, 15.0)
     roles = ("Ritzel (Stahl)", "Rad (Kunststoff)")
-    mats = ("20MnCr5", "POM (Kunststoff)")
+    # catalog names (FVA Workbench parity: 20MnCr5 + Stanyl TW200F6, PA46 cond. 80 °C)
+    mats = (catalog_material("steel").name, catalog_material("plastic").name)
     kinds = ("steel", "plastic")
     gears = [
         ExampleGear(
@@ -172,19 +133,8 @@ def example_kst_e() -> ExampleResponse:
 
 
 # --------------------------------------------------------------------------- #
-# Geometry (kernel-based; editable macro parameters)                           #
+# Geometry — computed from THE shared StageParams (single source of truth)     #
 # --------------------------------------------------------------------------- #
-class GeometryRequest(BaseModel):
-    normal_module_mm: float = 1.0
-    teeth_pinion: int = 51
-    teeth_wheel: int = 52
-    profile_shift_pinion: float = 0.2034
-    profile_shift_wheel: float = 0.3143
-    normal_pressure_angle_deg: float = 20.0
-    helix_angle_deg: float = 0.0
-    face_width_mm: float = 17.0
-
-
 class GeometryResponse(BaseModel):
     reference_diameter_mm: list[float]
     base_diameter_mm: list[float]
@@ -198,40 +148,35 @@ class GeometryResponse(BaseModel):
     notes: list[str]
 
 
-@router.post("/geometry", response_model=GeometryResponse)
-def geometry(req: GeometryRequest) -> GeometryResponse:
-    """Macro-geometry (diameters, contact ratios, α_wt) via the vectorized kernel."""
-    from app.services.variation import kernel
+def _tip_diameters(stage: GearStage) -> Pair[float]:
+    """d_a from the generation (as cut) or the DIN 21771 nominal fallback."""
+    tip = stage.usable_tip_diameter_mm
+    if tip is not None:
+        return tip
+    d = stage.reference_diameter_mm
+    x = stage.profile_shift
+    m = stage.normal_module_mm
+    return Pair(d[0] + 2.0 * m * (1.0 + x[0]), d[1] + 2.0 * m * (1.0 + x[1]))
 
-    one = np.ones(1)
-    geo = kernel.mesh_geometry(
-        normal_module_mm=one * req.normal_module_mm,
-        teeth_pinion=one * req.teeth_pinion,
-        teeth_wheel=one * req.teeth_wheel,
-        profile_shift_pinion=one * req.profile_shift_pinion,
-        profile_shift_wheel=one * req.profile_shift_wheel,
-        normal_pressure_angle=one * np.radians(req.normal_pressure_angle_deg),
-        helix_angle=one * np.radians(req.helix_angle_deg),
-        face_width_mm=one * req.face_width_mm,
-    )
-    notes: list[str] = []
-    if geo.total_contact_ratio[0] < 1.0:
-        notes.append("ε_γ < 1 — no continuous mesh.")
-    if req.teeth_pinion < 14 and req.profile_shift_pinion < 0.3:
-        notes.append("z₁ low — risk of undercut without enough profile shift.")
+
+@router.post("/geometry", response_model=GeometryResponse)
+def geometry(req: StageParams) -> GeometryResponse:
+    """Macro-geometry (diameters, contact ratios, α_wt) of the ONE active stage."""
+    stage = req.stage()
+    notes = stage.check_validity()
+    if stage.total_contact_ratio < 1.0:
+        notes = [*notes, "ε_γ < 1 — no continuous mesh."]
+    tip = _tip_diameters(stage)
     return GeometryResponse(
-        reference_diameter_mm=[
-            float(geo.reference_diameter[0][0]),
-            float(geo.reference_diameter[1][0]),
-        ],
-        base_diameter_mm=[float(geo.base_diameter[0][0]), float(geo.base_diameter[1][0])],
-        tip_diameter_mm=[float(geo.tip_diameter[0][0]), float(geo.tip_diameter[1][0])],
-        working_pressure_angle_deg=float(np.degrees(geo.working_pressure_angle[0])),
-        working_center_distance_mm=float(geo.working_center_distance_mm[0]),
-        transverse_contact_ratio=float(geo.transverse_contact_ratio[0]),
-        overlap_ratio=float(geo.overlap_ratio[0]),
-        total_contact_ratio=float(geo.total_contact_ratio[0]),
-        valid=bool(geo.total_contact_ratio[0] >= 1.0),
+        reference_diameter_mm=[round(stage.reference_diameter_mm[i], 4) for i in range(2)],
+        base_diameter_mm=[round(stage.base_diameter_mm[i], 4) for i in range(2)],
+        tip_diameter_mm=[round(tip[i], 4) for i in range(2)],
+        working_pressure_angle_deg=round(stage.working_pressure_angle_deg, 4),
+        working_center_distance_mm=round(stage.working_center_distance_mm, 4),
+        transverse_contact_ratio=round(stage.transverse_contact_ratio, 4),
+        overlap_ratio=round(stage.overlap_ratio, 4),
+        total_contact_ratio=round(stage.total_contact_ratio, 4),
+        valid=bool(stage.total_contact_ratio >= 1.0),
         notes=notes,
     )
 
@@ -280,9 +225,15 @@ def tolerances(req: ToleranceRequest) -> ToleranceResponse:
 
 
 # --------------------------------------------------------------------------- #
-# Capacity (kst-E: steel pinion → ISO 6336, plastic wheel → VDI 2736)          #
+# Capacity — norm dispatch per gear by MATERIAL (steel → ISO 6336,             #
+# plastic → VDI 2736; user decision 2026-07-04, never mixed by role)           #
 # --------------------------------------------------------------------------- #
 class CapacityRequest(BaseModel):
+    # --- THE shared stage (single source of truth for the geometry) ---
+    stage: StageParams = Field(default_factory=StageParams)
+    # --- material kind per input slot (drives the norm dispatch) ---
+    pinion_material: MaterialKindName = "steel"
+    wheel_material: MaterialKindName = "plastic"
     # --- load & application (Welle / Getriebeeinheit) ---
     pinion_torque_nm: float = 7.85  # T_1
     pinion_speed_min1: float = 1000.0  # n_1
@@ -362,32 +313,37 @@ class CapacityResponse(BaseModel):
 
 
 def _materials(req: CapacityRequest) -> Pair[Material]:
-    return Pair(
-        Material(
-            name="20MnCr5",
-            kind=MaterialKind.STEEL,
-            elastic_modulus_mpa=req.steel_modulus_mpa,
-            poisson_ratio=req.steel_poisson,
-            sigma_hlim_mpa=req.steel_sigma_hlim_mpa,
-            sigma_flim_mpa=req.steel_sigma_flim_mpa,
-        ),
-        Material(
-            name="POM (Kunststoff)",
-            kind=MaterialKind.PLASTIC,
-            elastic_modulus_mpa=req.plastic_modulus_mpa,
-            poisson_ratio=req.plastic_poisson,
-            sigma_hlim_mpa=req.plastic_sigma_hlim_mpa,
-            sigma_flim_mpa=req.plastic_sigma_flim_mpa,
-            yield_strength_mpa=req.plastic_yield_strength_mpa,
-        ),
-    )
+    """Per-slot materials from the catalog, with the request's property overrides."""
+
+    def build(kind: MaterialKindName) -> Material:
+        base = catalog_material(kind)
+        if kind == "steel":
+            return base.model_copy(
+                update={
+                    "elastic_modulus_mpa": req.steel_modulus_mpa,
+                    "poisson_ratio": req.steel_poisson,
+                    "sigma_hlim_mpa": req.steel_sigma_hlim_mpa,
+                    "sigma_flim_mpa": req.steel_sigma_flim_mpa,
+                }
+            )
+        return base.model_copy(
+            update={
+                "elastic_modulus_mpa": req.plastic_modulus_mpa,
+                "poisson_ratio": req.plastic_poisson,
+                "sigma_hlim_mpa": req.plastic_sigma_hlim_mpa,
+                "sigma_flim_mpa": req.plastic_sigma_flim_mpa,
+                "yield_strength_mpa": req.plastic_yield_strength_mpa,
+            }
+        )
+
+    return Pair(build(req.pinion_material), build(req.wheel_material))
 
 
 @router.post("/capacity", response_model=CapacityResponse)
 def capacity(req: CapacityRequest) -> CapacityResponse:
-    """Per-gear dispatch on the preloaded kst-E reference (operating values editable)."""
-    stage = _kst_e_stage()
-    return _run_capacity(stage, _kst_e_roots(stage), _materials(req), req)
+    """Per-gear norm dispatch by material on THE shared stage (geometry + operating values)."""
+    stage = req.stage.stage()
+    return _run_capacity(stage, _stage_roots(stage), _materials(req), req)
 
 
 def _run_capacity(
@@ -396,9 +352,10 @@ def _run_capacity(
     materials: Pair[Material],
     req: CapacityRequest,
 ) -> CapacityResponse:
-    """Steel pinion via ISO 6336, plastic wheel via VDI 2736; native dynamics.
+    """Per-gear norm dispatch by material (steel → ISO 6336, plastic → VDI 2736).
 
-    Works for any generated stage (the preloaded kst-E or a free `from_parameters`).
+    Works for any generated stage (the preloaded kst-E or a free `from_parameters`) and any
+    material pairing — steel/steel, plastic/plastic, or mixed in either orientation.
     """
     from app.services.capacity.iso6336 import elasticity_factor, zone_factor
 
@@ -462,69 +419,84 @@ def _run_capacity(
         flank_life_factor=Pair(req.flank_life_factor, req.flank_life_factor),
         root_life_factor=Pair(req.root_life_factor, req.root_life_factor),
     )
-    iso = evaluate_iso6336(stage, roots, materials, iso_load, iso_conditions)
-    pin = iso[0]
-    pinion = GearCapacity(
-        label="Ritzel (Stahl)",
-        material=materials[0].name,
-        method="ISO 6336:2019",
-        flank_stress_mpa=round(pin.flank_stress_mpa, 3),
-        flank_safety=_round(pin.flank_safety),
-        root_stress_mpa=round(pin.root_stress_mpa, 3),
-        root_safety=_round(pin.root_safety),
-        flank_permissible_mpa=_round(_safe_mul(pin.flank_safety, pin.flank_stress_mpa)),
-        root_permissible_mpa=_round(_safe_mul(pin.root_safety, pin.root_stress_mpa)),
-        form_factor=round(roots[0].form_factor, 4),
-        stress_correction=round(roots[0].stress_correction_factor, 4),
+    kinds = (materials[0].kind, materials[1].kind)
+    iso = (
+        evaluate_iso6336(stage, roots, materials, iso_load, iso_conditions)
+        if MaterialKind.STEEL in kinds
+        else None
     )
+    vdi = None
+    if MaterialKind.PLASTIC in kinds:
+        # VDI 2736 load factor K = K_A·K_v
+        k_load = req.application_factor * k_v
+        vdi_conditions = Vdi2736Conditions(
+            power_w=req.power_w,
+            torque_nm=Pair(req.pinion_torque_nm, req.pinion_torque_nm * u),
+            pitch_velocity_ms=v_t,
+            ambient_temperature_c=req.ambient_temperature_c,
+            duty_cycle=req.duty_cycle,
+            housing_surface_m2=req.housing_surface_m2,
+            friction_coefficient=req.friction_coefficient,
+            load_cycles=Pair(req.load_cycles, req.load_cycles),
+            wear_coefficient_mm3_nm=req.wear_coefficient_e6 * 1.0e-6,
+            root_minimum_safety=req.root_minimum_safety,
+            flank_minimum_safety=req.flank_minimum_safety,
+            load_factor_root=k_load,
+            load_factor_flank=k_load,
+            static_overload_factor=req.static_overload_factor,
+            static_minimum_safety=req.static_minimum_safety,
+        )
+        vdi = evaluate_vdi2736(
+            stage,
+            roots,
+            materials,
+            vdi_conditions,
+            root_face_width_mm=width,
+            common_face_width_mm=min(width),
+        )
 
-    # plastic wheel — VDI 2736 (load factor K = K_A·K_v)
-    k_load = req.application_factor * k_v
-    vdi_conditions = Vdi2736Conditions(
-        power_w=req.power_w,
-        torque_nm=Pair(req.pinion_torque_nm, req.pinion_torque_nm * u),
-        pitch_velocity_ms=v_t,
-        ambient_temperature_c=req.ambient_temperature_c,
-        duty_cycle=req.duty_cycle,
-        housing_surface_m2=req.housing_surface_m2,
-        friction_coefficient=req.friction_coefficient,
-        load_cycles=Pair(req.load_cycles, req.load_cycles),
-        wear_coefficient_mm3_nm=req.wear_coefficient_e6 * 1.0e-6,
-        root_minimum_safety=req.root_minimum_safety,
-        flank_minimum_safety=req.flank_minimum_safety,
-        load_factor_root=k_load,
-        load_factor_flank=k_load,
-        static_overload_factor=req.static_overload_factor,
-        static_minimum_safety=req.static_minimum_safety,
-    )
-    vdi = evaluate_vdi2736(
-        stage,
-        roots,
-        materials,
-        vdi_conditions,
-        root_face_width_mm=width,
-        common_face_width_mm=min(width),
-    )
-    wh = vdi[1]
-    wheel = GearCapacity(
-        label="Rad (Kunststoff)",
-        material=materials[1].name,
-        method="VDI 2736:2014",
-        flank_stress_mpa=round(wh.flank_stress_mpa, 3),
-        flank_safety=_round(wh.flank_safety),
-        root_stress_mpa=round(wh.root_stress_mpa, 3),
-        root_safety=_round(wh.root_safety),
-        flank_permissible_mpa=_round(_safe_mul(wh.flank_safety, wh.flank_stress_mpa)),
-        root_permissible_mpa=_round(_safe_mul(wh.root_safety, wh.root_stress_mpa)),
-        form_factor=round(roots[1].form_factor_tip, 4),
-        stress_correction=round(roots[1].stress_correction_factor_tip, 4),
-        tooth_temperature_c=round(wh.root_temperature_c, 2),
-        wear_um=round(wh.linear_wear_um, 2),
-        allowable_wear_um=round(wh.allowable_wear_um, 1),
-        deformation_mm=round(wh.deformation_mm, 4),
-        peak_stress_mpa=_round(wh.peak_root_stress_mpa),
-        peak_safety=_round(wh.peak_root_safety),
-    )
+    def gear_result(i: int) -> GearCapacity:
+        """Norm dispatch by MATERIAL: steel → ISO 6336, plastic → VDI 2736 (never by role)."""
+        mat = materials[i]
+        slot = "Ritzel" if i == 0 else "Rad"
+        if mat.is_plastic:
+            assert vdi is not None
+            r = vdi[i]
+            return GearCapacity(
+                label=f"{slot} (Kunststoff)",
+                material=mat.name,
+                method="VDI 2736:2014",
+                flank_stress_mpa=round(r.flank_stress_mpa, 3),
+                flank_safety=_round(r.flank_safety),
+                root_stress_mpa=round(r.root_stress_mpa, 3),
+                root_safety=_round(r.root_safety),
+                flank_permissible_mpa=_round(_safe_mul(r.flank_safety, r.flank_stress_mpa)),
+                root_permissible_mpa=_round(_safe_mul(r.root_safety, r.root_stress_mpa)),
+                form_factor=round(roots[i].form_factor_tip, 4),
+                stress_correction=round(roots[i].stress_correction_factor_tip, 4),
+                tooth_temperature_c=round(r.root_temperature_c, 2),
+                wear_um=round(r.linear_wear_um, 2),
+                allowable_wear_um=round(r.allowable_wear_um, 1),
+                deformation_mm=round(r.deformation_mm, 4),
+                peak_stress_mpa=_round(r.peak_root_stress_mpa),
+                peak_safety=_round(r.peak_root_safety),
+            )
+        assert iso is not None
+        s = iso[i]
+        return GearCapacity(
+            label=f"{slot} (Stahl)",
+            material=mat.name,
+            method="ISO 6336:2019",
+            flank_stress_mpa=round(s.flank_stress_mpa, 3),
+            flank_safety=_round(s.flank_safety),
+            root_stress_mpa=round(s.root_stress_mpa, 3),
+            root_safety=_round(s.root_safety),
+            flank_permissible_mpa=_round(_safe_mul(s.flank_safety, s.flank_stress_mpa)),
+            root_permissible_mpa=_round(_safe_mul(s.root_safety, s.root_stress_mpa)),
+            form_factor=round(roots[i].form_factor, 4),
+            stress_correction=round(roots[i].stress_correction_factor, 4),
+        )
+
     factors = CapacityFactors(
         application_factor=round(req.application_factor, 3),
         dynamic_factor=round(k_v, 4),
@@ -533,119 +505,25 @@ def _run_capacity(
         elasticity_factor=round(elasticity_factor(materials[0], materials[1]), 3),
         zone_factor=round(zone_factor(stage), 4),
     )
-    return CapacityResponse(factors=factors, pinion=pinion, wheel=wheel)
+    return CapacityResponse(factors=factors, pinion=gear_result(0), wheel=gear_result(1))
 
 
 def _safe_mul(safety: float | None, stress: float) -> float | None:
     return safety * stress if safety is not None else None
 
 
-# --------------------------------------------------------------------------- #
-# Free geometry → capacity (any gear, built from raw parameters + tool profile) #
-# --------------------------------------------------------------------------- #
-class EvaluateRequest(BaseModel):
-    # geometry
-    normal_module_mm: float = 2.0
-    teeth_pinion: int = 24
-    teeth_wheel: int = 60
-    profile_shift_pinion: float = 0.2
-    profile_shift_wheel: float = 0.2
-    normal_pressure_angle_deg: float = 20.0
-    helix_angle_deg: float = 0.0
-    center_distance_mm: float | None = None
-    face_width_pinion_mm: float = 20.0
-    face_width_wheel_mm: float = 20.0
-    # rack-tool reference profile (shared by both gears)
-    tool_addendum_factor: float = 1.25  # h_aP0*
-    tool_tip_radius_factor: float = 0.38  # ρ_aP0*
-    tool_dedendum_factor: float | None = None  # h_fP0*
-    tool_root_form_height_factor: float | None = None  # h_FfP0*
-    tool_edge_break_angle_deg: float | None = None  # α_Kn0 (tip chamfer)
-    gear_addendum_factor: float = 1.0  # for d_a when no tip diameter is given
-    tip_diameter_pinion_mm: float | None = None
-    tip_diameter_wheel_mm: float | None = None
-    tooth_width_allowance_pinion_mm: float = 0.0  # mean A_We → x_E
-    tooth_width_allowance_wheel_mm: float = 0.0
-    # operating + material (reuses the capacity inputs)
-    operating: CapacityRequest = CapacityRequest()
-
-
-class GeometrySummary(BaseModel):
-    working_pressure_angle_deg: float
-    center_distance_mm: float
-    reference_diameter_mm: list[float]
-    tip_diameter_mm: list[float]
-    transverse_contact_ratio: float
-    overlap_ratio: float
-    total_contact_ratio: float
-    span_measurement_mm: list[float] | None
-    notes: list[str]
-
-
-class EvaluateResponse(BaseModel):
-    geometry: GeometrySummary
-    capacity: CapacityResponse
-
-
-@router.post("/evaluate", response_model=EvaluateResponse)
-def evaluate_custom(req: EvaluateRequest) -> EvaluateResponse:
-    """Build any gear pair from raw parameters + tool profile, then geometry + capacity."""
-    tool = ToolReferenceProfile(
-        addendum_factor=req.tool_addendum_factor,
-        tip_radius_factor=req.tool_tip_radius_factor,
-        dedendum_factor=req.tool_dedendum_factor,
-        root_form_height_factor=req.tool_root_form_height_factor,
-        normal_pressure_angle_deg=req.normal_pressure_angle_deg,
-        edge_break_angle_deg=req.tool_edge_break_angle_deg,
-    )
-    tip = (
-        Pair(req.tip_diameter_pinion_mm, req.tip_diameter_wheel_mm)
-        if req.tip_diameter_pinion_mm is not None and req.tip_diameter_wheel_mm is not None
-        else None
-    )
-    try:
-        stage = GearStage.from_parameters(
-            normal_module_mm=req.normal_module_mm,
-            teeth=Pair(req.teeth_pinion, req.teeth_wheel),
-            profile_shift=Pair(req.profile_shift_pinion, req.profile_shift_wheel),
-            face_width_mm=Pair(req.face_width_pinion_mm, req.face_width_wheel_mm),
-            tool=Pair(tool, tool),
-            normal_pressure_angle_deg=req.normal_pressure_angle_deg,
-            helix_angle_deg=req.helix_angle_deg,
-            center_distance_mm=req.center_distance_mm,
-            tip_diameter_mm=tip,
-            gear_addendum_factor=req.gear_addendum_factor,
-            tooth_width_allowance_mm=Pair(
-                req.tooth_width_allowance_pinion_mm, req.tooth_width_allowance_wheel_mm
-            ),
-        )
-        roots = Pair(ToothRootGeometry.from_stage(stage, 0), ToothRootGeometry.from_stage(stage, 1))
-    except (ValueError, ZeroDivisionError) as exc:
-        raise HTTPException(422, f"invalid gear geometry: {exc}") from exc
-
-    materials = _materials(req.operating)
-    cap = _run_capacity(stage, roots, materials, req.operating)
-    span = stage.span_measurement_mm
-    geo = GeometrySummary(
-        working_pressure_angle_deg=round(stage.working_pressure_angle_deg, 4),
-        center_distance_mm=round(stage.working_center_distance_mm, 3),
-        reference_diameter_mm=[round(stage.reference_diameter_mm[i], 3) for i in range(2)],
-        tip_diameter_mm=[
-            round((stage.usable_tip_diameter_mm or Pair(0.0, 0.0))[i], 3) for i in range(2)
-        ],
-        transverse_contact_ratio=round(stage.transverse_contact_ratio, 4),
-        overlap_ratio=round(stage.overlap_ratio, 4),
-        total_contact_ratio=round(stage.total_contact_ratio, 4),
-        span_measurement_mm=[round(span[i], 3) for i in range(2)] if span is not None else None,
-        notes=stage.check_validity(),
-    )
-    return EvaluateResponse(geometry=geo, capacity=cap)
+# NOTE: the former /api/evaluate route (its own copy of the geometry fields) is gone —
+# /api/capacity now carries THE shared StageParams, so one endpoint serves both cases
+# (single-source-of-truth decision 2026-07-04).
 
 
 # --------------------------------------------------------------------------- #
 # Dynamics (native ISO 6336-1)                                                 #
 # --------------------------------------------------------------------------- #
 class DynamicsRequest(BaseModel):
+    stage: StageParams = Field(default_factory=StageParams)  # THE shared stage
+    pinion_material: MaterialKindName = "steel"
+    wheel_material: MaterialKindName = "plastic"
     pinion_speed_min1: float = 1000.0
     pinion_torque_nm: float = 7.85
     application_factor: float = 1.0
@@ -668,8 +546,8 @@ class DynamicsResponse(BaseModel):
 @router.post("/dynamics", response_model=DynamicsResponse)
 def dynamics(req: DynamicsRequest) -> DynamicsResponse:
     """Native K_v (Method B), K_Hα, K_Hβ plus the resonance diagnostics."""
-    stage = _kst_e_stage()
-    roots = _kst_e_roots(stage)
+    stage = req.stage.stage()
+    roots = _stage_roots(stage)
     width = stage.face_width_mm or Pair(17.0, 15.0)
     f_t = 2000.0 * req.pinion_torque_nm / stage.reference_diameter_mm[0]
     load = Iso6336LoadCase(
@@ -687,7 +565,13 @@ def dynamics(req: DynamicsRequest) -> DynamicsResponse:
             req.profile_form_deviation_um, req.profile_form_deviation_um
         ),
     )
-    f = native_dynamic_factors(stage, roots, Pair(_STEEL, _PLASTIC), load, conditions)
+    f = native_dynamic_factors(
+        stage,
+        roots,
+        Pair(catalog_material(req.pinion_material), catalog_material(req.wheel_material)),
+        load,
+        conditions,
+    )
     regime = (
         "sub-critical"
         if f.resonance_ratio <= 0.85
@@ -804,22 +688,22 @@ def variation(req: VariationRequest) -> VariationResponse:
     from app.services.variation import kernel
 
     def _material(kind: str) -> Material:
+        # catalog defaults + the request's overrides (single material source)
+        base = catalog_material(kind)
         if kind == "steel":
-            return Material(
-                name="steel",
-                kind=MaterialKind.STEEL,
-                elastic_modulus_mpa=req.steel_modulus_mpa,
-                poisson_ratio=0.30,
-                sigma_hlim_mpa=req.steel_sigma_hlim_mpa,
-                sigma_flim_mpa=req.steel_sigma_flim_mpa,
+            return base.model_copy(
+                update={
+                    "elastic_modulus_mpa": req.steel_modulus_mpa,
+                    "sigma_hlim_mpa": req.steel_sigma_hlim_mpa,
+                    "sigma_flim_mpa": req.steel_sigma_flim_mpa,
+                }
             )
-        return Material(
-            name="plastic",
-            kind=MaterialKind.PLASTIC,
-            elastic_modulus_mpa=req.plastic_modulus_mpa,
-            poisson_ratio=0.35,
-            sigma_hlim_mpa=req.plastic_sigma_hlim_mpa,
-            sigma_flim_mpa=req.plastic_sigma_flim_mpa,
+        return base.model_copy(
+            update={
+                "elastic_modulus_mpa": req.plastic_modulus_mpa,
+                "sigma_hlim_mpa": req.plastic_sigma_hlim_mpa,
+                "sigma_flim_mpa": req.plastic_sigma_flim_mpa,
+            }
         )
 
     pinion_mat = _material(req.pinion_material)  # gear 1
@@ -962,18 +846,9 @@ def variation(req: VariationRequest) -> VariationResponse:
 
 
 # --------------------------------------------------------------------------- #
-# Tooth profile (real involute flanks for the mesh plot of a selected variant) #
+# Tooth profile — the REAL as-cut flanks (same geometry as the FE contour;     #
+# the simplified standard-addendum reimplementation is gone, SSOT decision)    #
 # --------------------------------------------------------------------------- #
-class ToothProfileRequest(BaseModel):
-    normal_module_mm: float = 2.0
-    teeth_pinion: float = 24
-    teeth_wheel: float = 60
-    profile_shift_pinion: float = 0.0
-    profile_shift_wheel: float = 0.0
-    normal_pressure_angle_deg: float = 20.0
-    helix_angle_deg: float = 0.0
-
-
 class ToothGear(BaseModel):
     teeth: int
     center_x_mm: float
@@ -990,80 +865,32 @@ class ToothProfileResponse(BaseModel):
     wheel: ToothGear
 
 
-def _tooth_gear(m_n: float, z: float, x: float, alpha_n_deg: float, beta_deg: float) -> ToothGear:
-    """Exact transverse involute half-flank (d_f → d_a) of one tooth, centred on +y."""
-    beta = math.radians(beta_deg)
-    alpha_n = math.radians(alpha_n_deg)
-    m_t = m_n / math.cos(beta)
-    alpha_t = math.atan(math.tan(alpha_n) / math.cos(beta))
-    r = m_t * z / 2.0
-    r_b = r * math.cos(alpha_t)
-    r_a = r + m_n * (1.0 + x)  # standard addendum
-    r_f = max(0.1, r - m_n * (1.25 - x))  # standard dedendum
-    s_t = m_t * (math.pi / 2.0 + 2.0 * x * math.tan(alpha_n))  # transverse thickness at d
-    psi = s_t / (2.0 * r) + (math.tan(alpha_t) - alpha_t)  # half-angle to right flank at base
-    start = max(r_b, r_f)
-    pts: list[list[float]] = []
-    if r_f < start:  # radial root segment up to where the involute starts
-        a0 = math.acos(min(1.0, r_b / start))
-        th0 = psi - (math.tan(a0) - a0)
-        pts.append([r_f * math.sin(th0), r_f * math.cos(th0)])
-    steps = 36
-    for k in range(steps + 1):
-        rr = start + (r_a - start) * k / steps
-        a_y = math.acos(min(1.0, r_b / rr))
-        th = psi - (math.tan(a_y) - a_y)
-        pts.append([rr * math.sin(th), rr * math.cos(th)])
+def _tooth_gear_from_profile(stage: GearStage, index: int) -> ToothGear:
+    """One gear's right tooth boundary (root fillet → flank → tip), as cut."""
+    profile = ToothProfile.from_stage(stage, index)
+    pts = with_root_land(
+        profile,
+        profile.transverse_right_boundary(fillet_points=24, flank_points=48, to_tip_circle=True),
+    )
     return ToothGear(
-        teeth=int(round(z)),
+        teeth=profile.z,
         center_x_mm=0.0,
-        reference_radius_mm=r,
-        base_radius_mm=r_b,
-        tip_radius_mm=r_a,
-        root_radius_mm=r_f,
-        half_flank=[[round(a, 4), round(b, 4)] for a, b in pts],
+        reference_radius_mm=round(stage.reference_diameter_mm[index] / 2.0, 4),
+        base_radius_mm=round(stage.base_diameter_mm[index] / 2.0, 4),
+        tip_radius_mm=round((profile.d_a or profile.d_Na) / 2.0, 4),
+        root_radius_mm=round(profile.root_diameter_mm / 2.0, 4),
+        half_flank=[[round(float(p[0]), 4), round(float(p[1]), 4)] for p in pts],
     )
 
 
 @router.post("/tooth-profile", response_model=ToothProfileResponse)
-def tooth_profile(req: ToothProfileRequest) -> ToothProfileResponse:
-    """Real involute tooth flanks of both gears for the mesh plot (Zahneingriff)."""
-    beta = math.radians(req.helix_angle_deg)
-    alpha_n = math.radians(req.normal_pressure_angle_deg)
-    m_t = req.normal_module_mm / math.cos(beta)
-    alpha_t = math.atan(math.tan(alpha_n) / math.cos(beta))
-    z1, z2 = req.teeth_pinion, req.teeth_wheel
-    a_ref = (z1 + z2) * m_t / 2.0
-    inv_at = math.tan(alpha_t) - alpha_t
-    inv_awt = inv_at + 2.0 * (req.profile_shift_pinion + req.profile_shift_wheel) * math.tan(
-        alpha_n
-    ) / (z1 + z2)
-    alpha_wt = _inv_involute(inv_awt)
-    a = a_ref * math.cos(alpha_t) / math.cos(alpha_wt)
-    pinion = _tooth_gear(
-        req.normal_module_mm,
-        z1,
-        req.profile_shift_pinion,
-        req.normal_pressure_angle_deg,
-        req.helix_angle_deg,
-    )
-    wheel = _tooth_gear(
-        req.normal_module_mm,
-        z2,
-        req.profile_shift_wheel,
-        req.normal_pressure_angle_deg,
-        req.helix_angle_deg,
-    )
-    wheel = wheel.model_copy(update={"center_x_mm": round(a, 4)})
+def tooth_profile(req: StageParams) -> ToothProfileResponse:
+    """Both gears' real tooth flanks for the mesh plot (Zahneingriff), from THE shared stage."""
+    stage = req.stage()
+    a = stage.working_center_distance_mm
+    pinion = _tooth_gear_from_profile(stage, 0)
+    wheel = _tooth_gear_from_profile(stage, 1).model_copy(update={"center_x_mm": round(a, 4)})
     return ToothProfileResponse(center_distance_mm=round(a, 4), pinion=pinion, wheel=wheel)
-
-
-def _inv_involute(value: float, *, guess: float = 0.4) -> float:
-    """Solve inv α = tan α − α for α (scalar Newton)."""
-    alpha = max(0.05, (3.0 * value) ** (1.0 / 3.0))
-    for _ in range(40):
-        alpha -= (math.tan(alpha) - alpha - value) / math.tan(alpha) ** 2
-    return alpha
 
 
 def _round(value: float | None, digits: int = 3) -> float | None:

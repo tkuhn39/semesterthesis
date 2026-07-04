@@ -123,8 +123,11 @@ class GearReferenceSets:
     gear: int
     n_teeth: int
     # Fesselung (reference parity): 1-based node ids of the bore surface PLUS both radial
-    # sector cut faces (bore → shoulder contour), all tied to the rotation node — verified
-    # against the reference deck's Fesselung_Rad1 (bore arc + the two cut planes, all layers).
+    # sector cut planes as COMPLETE cross-sections — every node of those faces from the bore
+    # to the shoulder contour, over all face-width planes. Measured against the reference
+    # deck's Fesselung_Rad{1,2} (bore arc x all z planes + two full cut planes, 2 268/2 225
+    # nodes each — nothing else, no z side faces). Selected by coordinate predicate over ALL
+    # mesh nodes, not by boundary-edge traversal, so no node of a face can be missed.
     fastening_nodes: IntArray
     flank_nodes: dict[tuple[int, int], IntArray]  # (tooth, flank) -> 1-based node ids
     flank_elements: dict[tuple[int, int], IntArray]  # (tooth, flank) -> 1-based hex ids
@@ -140,15 +143,24 @@ def tag_gear_reference(
     n_segments: int,
     layers: int,
     tol_mm: float | None = None,
+    fasten_bore: bool = True,
+    fasten_cuts: bool = True,
+    fasten_bottom: bool = False,
+    fasten_top: bool = False,
 ) -> GearReferenceSets:
     """Classify a swept gear sector into the reference per-tooth/flank sets + Fesselung.
 
     Same boundary geometry as ``tag_sector_surfaces`` but emits the reference naming and **1-based
     3-D** ids: each 2-D boundary node expands over the ``layers + 1`` face-width node planes and
     each boundary quad-edge over the ``layers`` swept side faces (the ``extrude_to_hex`` layout).
-    The Fesselung comprises the bore surface AND both radial sector cut faces (reference parity,
-    user decision 2026-07-04); only the tip land is left free — the postprocessing does not
-    consume it.
+
+    The Fesselung is selected by a coordinate predicate over ALL mesh nodes — every single node
+    of the chosen faces, never an edge-traversal subset (reference parity, measured 2026-07-04):
+    ``fasten_bore`` = the bore surface (full sector arc, all face-width planes), ``fasten_cuts``
+    = both radial sector cut planes as complete cross-sections (bore → shoulder contour, all
+    planes). ``fasten_bottom`` / ``fasten_top`` add the axial end faces (the FVA "Fesselung
+    unten/oben" checkboxes; off in the reference). The tip land stays free — the postprocessing
+    does not consume it.
     """
     tol = tol_mm if tol_mm is not None else 0.02 * profile.mn
     pitch = 2.0 * math.pi / profile.z
@@ -157,14 +169,29 @@ def tag_gear_reference(
     half_sector = total * pitch / 2.0
     r_na, r_ff = profile.d_Na / 2.0, profile.d_Ff / 2.0
     used = np.unique(section.quads)
-    r_bore = float(np.hypot(section.nodes[used, 0], section.nodes[used, 1]).min())
+    r_used = np.hypot(section.nodes[used, 0], section.nodes[used, 1])
+    r_bore = float(r_used.min())
     n_quads = section.n_quads
     n_nodes = section.n_nodes
 
     def nodes_3d(edge: tuple[int, int]) -> set[int]:
         return {layer * n_nodes + nd + 1 for layer in range(layers + 1) for nd in edge}
 
-    fastening: set[int] = set()
+    # Fesselung: coordinate predicate over every used 2-D node, expanded over all planes.
+    ang_used = np.arctan2(section.nodes[used, 0], section.nodes[used, 1])
+    on_face = np.zeros(used.shape, dtype=bool)
+    if fasten_bore:
+        on_face |= np.abs(r_used - r_bore) < tol
+    if fasten_cuts:  # arc-length tolerance: |Δangle| * r < tol — the two cut planes, completely
+        on_face |= np.abs(np.abs(ang_used) - half_sector) * np.maximum(r_used, 1e-6) < tol
+    fastening: set[int] = {
+        layer * n_nodes + int(nd) + 1 for nd in used[on_face] for layer in range(layers + 1)
+    }
+    if fasten_bottom:  # axial end face at z0 — the first node plane, every node
+        fastening.update(int(nd) + 1 for nd in used)
+    if fasten_top:  # axial end face at z0 + width — the last node plane, every node
+        fastening.update(layers * n_nodes + int(nd) + 1 for nd in used)
+
     flank_nodes: dict[tuple[int, int], set[int]] = defaultdict(set)
     flank_elems: dict[tuple[int, int], set[int]] = defaultdict(set)
     flank_faces: dict[tuple[int, int], list[tuple[int, str]]] = defaultdict(list)
@@ -175,12 +202,10 @@ def tag_gear_reference(
         r = float(np.hypot(mid[0], mid[1]))
         ang = math.atan2(mid[0], mid[1])
         if abs(abs(ang) - half_sector) < tol / max(r, 1e-6):
-            fastening.update(nodes_3d(edge))  # radial cut face — fastened (reference parity)
-        elif abs(r - r_bore) < tol:
-            fastening.update(nodes_3d(edge))
-        elif abs(r - r_na) < tol:
-            continue  # tip land — not a named reference surface
-        elif r_ff + tol < r < r_na - tol:
+            continue  # radial cut face — already fastened by the node predicate above
+        if abs(r - r_bore) < tol or abs(r - r_na) < tol:
+            continue  # bore (fastened above) / tip land (not a named reference surface)
+        if r_ff + tol < r < r_na - tol:
             tooth = int(np.argmin([abs(ang - c) for c in centres])) + 1
             flank = 1 if ang > centres[tooth - 1] else 2  # F1 = right (+), F2 = left (−)
             key = (tooth, flank)

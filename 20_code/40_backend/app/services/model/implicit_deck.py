@@ -36,7 +36,7 @@ from app.services.geometry.gear import GearStage
 from app.services.geometry.tooth_form import ToothProfile
 from app.services.model.materials_card import Material, material_card
 from app.services.model.mesh3d import Mesh3D, extrude_to_hex
-from app.services.model.mesh_sets import GearReferenceSets, tag_gear_reference
+from app.services.model.mesh_sets import GearReferenceSets, _boundary_edges, tag_gear_reference
 from app.services.model.template_mesher import generate_sector_2d, scaled_jacobians
 from app.services.model.tooth_mesh import Mesh2D
 
@@ -60,6 +60,9 @@ class GearPart:
     face_width_mm: float
     center_xy: tuple[float, float] = (0.0, 0.0)  # rotation-axis position in the assembly
     z_mid_mm: float = 0.0  # mid-plane z (= axial offset; rotation node sits here)
+    # 2-D section boundary polyline segments (E, 2, 2) in assembly coordinates — the
+    # contact-closing rotation collides these against the mating gear's segments.
+    boundary_segments_xy: Array | None = None
 
 
 def _transform(nodes: Array, *, rot_rad: float, dx: float, dy: float) -> Array:
@@ -67,6 +70,125 @@ def _transform(nodes: Array, *, rot_rad: float, dx: float, dy: float) -> Array:
     c, s = math.cos(rot_rad), math.sin(rot_rad)
     x, y, z = nodes[:, 0], nodes[:, 1], nodes[:, 2]
     return np.column_stack([c * x - s * y + dx, s * x + c * y + dy, z])
+
+
+def _transform_xy(pts: Array, *, rot_rad: float, dx: float, dy: float) -> Array:
+    """Rotate 2-D points CCW about the origin by ``rot_rad`` then translate by (dx, dy)."""
+    c, s = math.cos(rot_rad), math.sin(rot_rad)
+    x, y = pts[..., 0], pts[..., 1]
+    return np.stack([c * x - s * y + dx, s * x + c * y + dy], axis=-1)
+
+
+def _rotate_part_about_own_axis(part: GearPart, rot_rad: float) -> GearPart:
+    """Rotate a positioned part about its own rotation axis (sets/ids are untouched)."""
+    cx, cy = part.center_xy
+    nodes = _transform(
+        np.column_stack(
+            [part.mesh.nodes[:, 0] - cx, part.mesh.nodes[:, 1] - cy, part.mesh.nodes[:, 2]]
+        ),
+        rot_rad=rot_rad,
+        dx=cx,
+        dy=cy,
+    )
+    segments = part.boundary_segments_xy
+    if segments is not None:
+        segments = _transform_xy(segments - (cx, cy), rot_rad=rot_rad, dx=cx, dy=cy)
+    return replace(
+        part,
+        mesh=Mesh3D(nodes, part.mesh.hexes, quality=part.mesh.quality),
+        boundary_segments_xy=segments,
+    )
+
+
+def _resample_segments(segments: Array, step_mm: float) -> Array:
+    """Points sampled along every polyline segment at ``step_mm`` arc spacing (both ends kept)."""
+    a, b = segments[:, 0, :], segments[:, 1, :]
+    lengths = np.hypot(*(b - a).T)
+    out = [a, b]
+    for seg_a, seg_b, ln in zip(a, b, lengths, strict=True):
+        n_inner = int(ln // step_mm)
+        if n_inner >= 1:
+            t = (np.arange(1, n_inner + 1) / (n_inner + 1))[:, None]
+            out.append(seg_a + t * (seg_b - seg_a))
+    return np.concatenate(out, axis=0)
+
+
+def _closing_rotation_rad(
+    part1: GearPart,
+    part2: GearPart,
+    *,
+    direction: float,
+    resample_mm: float = 0.005,
+    bin_mm: float = 0.010,
+    backoff_mm: float = 0.015,
+) -> float:
+    """Rotation of gear 2 about its own axis that closes the flank gap to ~``backoff_mm``.
+
+    Exact rotational collision detection on the 2-D boundary polylines (spur gears are
+    prismatic): a rotation about gear 2's axis moves its material points on circles of
+    constant radius, so first contact happens at the smallest positive angular gap between
+    same-radius surface points of the two boundaries. Both boundaries are resampled at
+    ``resample_mm`` arc steps, binned radially at ``bin_mm`` (each bin matched against its
+    neighbours, so near-equal-radius pairs are never missed — quantisation only errs on the
+    safe, smaller-rotation side), and the minimum positive angular gap in the closing
+    ``direction`` (+1 = CCW of gear 2) is returned less a ``backoff_mm`` arc so the deck
+    starts a hair clear of contact like the reference (~25 µm node gap) and the torque
+    ramp closes it. Returns 0.0 when the boundaries do not overlap radially.
+    """
+    if part1.boundary_segments_xy is None or part2.boundary_segments_xy is None:
+        raise ValueError("closing rotation needs boundary_segments_xy on both parts")
+    ax, ay = part2.center_xy
+    p1 = _resample_segments(part1.boundary_segments_xy, resample_mm)
+    p2 = _resample_segments(part2.boundary_segments_xy, resample_mm)
+
+    def polar_about_2(pts: Array) -> tuple[Array, Array]:
+        x, y = pts[:, 0] - ax, pts[:, 1] - ay
+        r = np.hypot(x, y)
+        phi = np.arctan2(y, x) - math.pi  # contact zone (gear 2's teeth face gear 1) near 0
+        return r, np.arctan2(np.sin(phi), np.cos(phi))
+
+    r1, f1 = polar_about_2(p1)
+    r2, f2 = polar_about_2(p2)
+    c1x, c1y = part1.center_xy
+    r_tip1 = float(np.hypot(p1[:, 0] - c1x, p1[:, 1] - c1y).max())
+    a = math.hypot(ax - c1x, ay - c1y)
+    r_lo, r_hi = a - r_tip1, float(r2.max())
+    keep1 = (r1 >= r_lo - bin_mm) & (r1 <= r_hi + bin_mm) & (np.abs(f1) < 0.6)
+    keep2 = (r2 >= r_lo - bin_mm) & (r2 <= r_hi + bin_mm) & (np.abs(f2) < 0.6)
+    if not keep1.any() or not keep2.any():
+        return 0.0
+    # closing direction: gear-2 points move by +direction·δ in φ; contact when φ2 + s·δ = φ1
+    s = 1.0 if direction >= 0.0 else -1.0
+    f1k, f2k = s * f1[keep1], s * f2[keep2]
+    b1 = np.floor(r1[keep1] / bin_mm).astype(np.int64)
+    b2 = np.floor(r2[keep2] / bin_mm).astype(np.int64)
+    order2 = np.lexsort((f2k, b2))
+    b2s, f2s = b2[order2], f2k[order2]
+    r1k = r1[keep1]
+    delta = math.inf
+    r_at_min = r_hi
+    for offset in (-1, 0, 1):
+        # for every gear-1 point: the largest gear-2 angle ≤ its own within bin b1 + offset
+        target = b1 + offset
+        for tb in np.unique(target):
+            lo = int(np.searchsorted(b2s, tb, side="left"))
+            hi = int(np.searchsorted(b2s, tb, side="right"))
+            if hi == lo:
+                continue
+            mask = target == tb
+            f1b = f1k[mask]
+            idx = np.searchsorted(f2s[lo:hi], f1b, side="right") - 1
+            ok = idx >= 0
+            if not ok.any():
+                continue
+            gaps = f1b[ok] - f2s[lo + idx[ok]]
+            i = int(np.argmin(gaps))
+            if float(gaps[i]) < delta:
+                delta = float(gaps[i])
+                r_at_min = float(r1k[mask][ok][i])
+    if not math.isfinite(delta):
+        return 0.0
+    return s * max(delta - backoff_mm / max(r_at_min, 1e-6), 0.0)
 
 
 def build_gear_part(
@@ -86,6 +208,10 @@ def build_gear_part(
     refine_root: int = 1,
     refine_flank: int = 1,
     fillet: object | None = None,
+    fasten_bore: bool = True,
+    fasten_cuts: bool = True,
+    fasten_bottom: bool = False,
+    fasten_top: bool = False,
 ) -> GearPart:
     """Mesh one gear sector, tag its reference sets, and position it in the assembly.
 
@@ -128,7 +254,21 @@ def build_gear_part(
         n_teeth=n_teeth,
         n_segments=n_segments,
         layers=face_layers,
+        fasten_bore=fasten_bore,
+        fasten_cuts=fasten_cuts,
+        fasten_bottom=fasten_bottom,
+        fasten_top=fasten_top,
     )
+    segments = np.array(
+        [
+            [
+                section.nodes[int(section.quads[qi][p])][:2],
+                section.nodes[int(section.quads[qi][(p + 1) % 4])][:2],
+            ]
+            for qi, p in _boundary_edges(section)
+        ]
+    )
+    segments = _transform_xy(segments, rot_rad=rot_rad, dx=dx, dy=dy)
     return GearPart(
         gear=gear,
         mesh=mesh,
@@ -138,6 +278,7 @@ def build_gear_part(
         face_width_mm=face_width_mm,
         center_xy=(dx, dy),
         z_mid_mm=axial_offset_mm,
+        boundary_segments_xy=segments,
     )
 
 
@@ -437,6 +578,7 @@ def build_implicit_pair_from_stage(
     sub_increments: int = 3,
     stabilize: float = 2.0e-4,
     phase_rad: float = 0.0,
+    align_contact: bool = True,
     contact_gap_mm: float | None = None,
     element_type: str = "C3D8R",
     rigid_gears: frozenset[int] = frozenset(),
@@ -446,6 +588,10 @@ def build_implicit_pair_from_stage(
     refine_flank: int = 1,
     fillet_gear1: object | None = None,
     fillet_gear2: object | None = None,
+    fasten_bore: bool = True,
+    fasten_cuts: bool = True,
+    fasten_bottom: bool = False,
+    fasten_top: bool = False,
     heading: str = "FE rolling model (implicit, ohne Radkoerper) - generated from GearStage",
 ) -> str:
     """One-call build: a ``GearStage`` → meshed, positioned pair → reference-faithful implicit deck.
@@ -458,6 +604,14 @@ def build_implicit_pair_from_stage(
     **gear 1 at the origin (left), gear 2 at the working centre distance (right)**, gear 2
     rotated half a pitch so a gap meshes gear 1's tooth (``phase_rad`` adds a tunable
     mounting offset).
+
+    ``align_contact`` (default, reference parity) then rotates gear 2 about its own axis by
+    the backlash-closing angle so the WORKING flanks start a hair (~15 µm arc) clear of
+    contact — measured 2026-07-04: the reference deck stands in single-flank contact
+    (~25 µm node gap on the −y flanks) and lets the torque ramp close the rest, instead of
+    the tooth floating centred in the gap with the full allowance backlash on each side.
+    ``fasten_bore``/``fasten_cuts``/``fasten_bottom``/``fasten_top`` mirror the FVA
+    "Fesselung" checkboxes (defaults = the reference: bore + both cut planes, complete).
 
     Load case (reference parity): ``driven_gear`` (default 2 — the plastic wheel for kst-E)
     is angle-driven through ``roll_pitches`` of its pitches; the other gear carries the
@@ -485,6 +639,12 @@ def build_implicit_pair_from_stage(
         if stage.face_width_mm is None:
             raise ValueError("face widths needed: pass face_width_mm or a stage carrying them")
         face_width_mm = (abs(stage.face_width_mm[0]), abs(stage.face_width_mm[1]))
+    fasten = {
+        "fasten_bore": fasten_bore,
+        "fasten_cuts": fasten_cuts,
+        "fasten_bottom": fasten_bottom,
+        "fasten_top": fasten_top,
+    }
     part1 = build_gear_part(
         profile1,
         gear=1,
@@ -496,6 +656,7 @@ def build_implicit_pair_from_stage(
         refine_root=refine_root,
         refine_flank=refine_flank,
         fillet=fillet_gear1,
+        **fasten,
     )
     part2 = build_gear_part(
         profile2,
@@ -509,7 +670,18 @@ def build_implicit_pair_from_stage(
         refine_root=refine_root,
         refine_flank=refine_flank,
         fillet=fillet_gear2,
+        **fasten,
     )
+    closing_rad = 0.0
+    if align_contact:
+        # the driven gear's positive step rotation defines the closing sense: rotate gear 2
+        # so its working flank ends up a hair clear of gear 1's (single-flank contact, like
+        # the reference), letting the torque ramp close the remaining ~15 µm
+        closing_rad = _closing_rotation_rad(
+            part1, part2, direction=1.0 if driven_gear == 2 else -1.0
+        )
+        if closing_rad != 0.0:
+            part2 = _rotate_part_about_own_axis(part2, closing_rad)
     z = {1: profile1.z, 2: profile2.z}
     torque_gear = 3 - driven_gear
     kin = RollKinematics(
@@ -523,6 +695,8 @@ def build_implicit_pair_from_stage(
         stabilize=stabilize,
     )
     gap = contact_gap_mm if contact_gap_mm is not None else 1.5 * stage.normal_module_mm
+    if align_contact:
+        heading = f"{heading} | contact-aligned: gear 2 rotated {closing_rad:+.8f} rad"
     return build_implicit_pair_deck(
         part1,
         part2,

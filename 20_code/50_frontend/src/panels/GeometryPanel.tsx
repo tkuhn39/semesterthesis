@@ -1,36 +1,28 @@
 "use client";
 
-// Stage geometry editor (port of the Vite GeometryView into the workbench attribute-table
-// style): edit macro parameters, recompute via the vectorized ISO 21771 kernel.
+// Stage geometry editor. Edits write into THE shared stage (single source of truth,
+// user decision 2026-07-04) — every other tab (capacity, tolerances, tooth form, mesh,
+// deck) derives from the same StageParams, so nothing can diverge. Results are the
+// canonical GearStage values from /api/geometry (DIN ISO 21771).
 
 import { useEffect, useState } from "react";
-import { api, type GeometryRequest, type GeometryResponse } from "@/lib/api";
+import { api, type GeometryResponse, type StageParams } from "@/lib/api";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
+import { useStage } from "@/lib/stage";
 import { useT } from "@/lib/i18n";
-
-const DEFAULTS: GeometryRequest = {
-  normal_module_mm: 1.0,
-  teeth_pinion: 51,
-  teeth_wheel: 52,
-  profile_shift_pinion: 0.2034,
-  profile_shift_wheel: 0.3143,
-  normal_pressure_angle_deg: 20,
-  helix_angle_deg: 0,
-  face_width_mm: 17,
-};
 
 export function GeometryPanel() {
   const t = useT();
-  const [req, setReq] = useState<GeometryRequest>(DEFAULTS);
+  const { stage, setStage } = useStage();
   const [res, setRes] = useState<GeometryResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const run = async (r: GeometryRequest) => {
+  const run = async (s: StageParams) => {
     setBusy(true);
     setErr(null);
     try {
-      setRes(await api.geometry(r));
+      setRes(await api.geometry(s));
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {
@@ -38,12 +30,15 @@ export function GeometryPanel() {
     }
   };
   useEffect(() => {
-    // initial compute on mount; async, so state updates land post-render
+    // recompute whenever the shared stage changes (edits here or in any other tab)
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void run(DEFAULTS);
-  }, []);
+    void run(stage);
+     
+  }, [stage]);
 
-  const set = (k: keyof GeometryRequest) => (v: number) => setReq({ ...req, [k]: v });
+  // editing a geometry value leaves the kst-E example mode (free parameters from then on)
+  const set = (k: keyof StageParams) => (v: number) =>
+    setStage({ ...stage, use_example: false, [k]: v });
 
   return (
     <div className="grid grid-cols-[400px_1fr] gap-3 items-start">
@@ -63,45 +58,46 @@ export function GeometryPanel() {
               <tr>
                 <td>Normalmodul</td>
                 <td className="wb-num text-zinc-400">m_n</td>
-                <td colSpan={2}><Num value={req.normal_module_mm} onChange={set("normal_module_mm")} /></td>
+                <td colSpan={2}><Num value={stage.normal_module_mm} onChange={set("normal_module_mm")} /></td>
                 <td className="text-zinc-400">mm</td>
               </tr>
               <tr>
                 <td>Eingriffswinkel</td>
                 <td className="wb-num text-zinc-400">α_n</td>
-                <td colSpan={2}><Num value={req.normal_pressure_angle_deg} onChange={set("normal_pressure_angle_deg")} /></td>
+                <td colSpan={2}><Num value={stage.normal_pressure_angle_deg} onChange={set("normal_pressure_angle_deg")} /></td>
                 <td className="text-zinc-400">°</td>
               </tr>
               <tr>
                 <td>Zähnezahl</td>
                 <td className="wb-num text-zinc-400">z</td>
-                <td><Num value={req.teeth_pinion} onChange={set("teeth_pinion")} step={1} /></td>
-                <td><Num value={req.teeth_wheel} onChange={set("teeth_wheel")} step={1} /></td>
+                <td><Num value={stage.teeth_pinion} onChange={set("teeth_pinion")} step={1} /></td>
+                <td><Num value={stage.teeth_wheel} onChange={set("teeth_wheel")} step={1} /></td>
                 <td></td>
               </tr>
               <tr>
                 <td>Profilverschiebung</td>
                 <td className="wb-num text-zinc-400">x</td>
-                <td><Num value={req.profile_shift_pinion} onChange={set("profile_shift_pinion")} /></td>
-                <td><Num value={req.profile_shift_wheel} onChange={set("profile_shift_wheel")} /></td>
+                <td><Num value={stage.profile_shift_pinion} onChange={set("profile_shift_pinion")} /></td>
+                <td><Num value={stage.profile_shift_wheel} onChange={set("profile_shift_wheel")} /></td>
                 <td></td>
               </tr>
               <tr>
                 <td>Schrägungswinkel</td>
                 <td className="wb-num text-zinc-400">β</td>
-                <td colSpan={2}><Num value={req.helix_angle_deg} onChange={set("helix_angle_deg")} /></td>
+                <td colSpan={2}><Num value={stage.helix_angle_deg} onChange={set("helix_angle_deg")} /></td>
                 <td className="text-zinc-400">°</td>
               </tr>
               <tr>
                 <td>Zahnbreite</td>
                 <td className="wb-num text-zinc-400">b</td>
-                <td colSpan={2}><Num value={req.face_width_mm} onChange={set("face_width_mm")} /></td>
+                <td><Num value={stage.face_width_pinion_mm} onChange={set("face_width_pinion_mm")} /></td>
+                <td><Num value={stage.face_width_wheel_mm} onChange={set("face_width_wheel_mm")} /></td>
                 <td className="text-zinc-400">mm</td>
               </tr>
             </tbody>
           </table>
           <div className="p-2 border-t border-zinc-100">
-            <Btn onClick={() => void run(req)} busy={busy}>
+            <Btn onClick={() => void run(stage)} busy={busy}>
               {t("common.run")}
             </Btn>
           </div>
