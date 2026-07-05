@@ -30,7 +30,7 @@ from app.services.capacity import (
     evaluate_vdi2736,
     native_dynamic_factors,
 )
-from app.services.geometry.gear import GearStage
+from app.services.geometry.gear import GearStage, line_of_action_points
 from app.services.geometry.root_fillet import with_root_land
 from app.services.geometry.tolerances import (
     FlankTolerances,
@@ -959,10 +959,29 @@ class ToothGear(BaseModel):
     half_flank: list[list[float]]  # one right half-flank [[x, y], …], tooth centred on +y
 
 
+class LineOfAction(BaseModel):
+    """T1/A/B/C/D/E of the line of action in the tooth-profile frame (gear 1 at the
+    origin, gear 2 at (a, 0)) — the zoomed Zahneingriff plot draws these."""
+
+    t1: list[float]
+    t2: list[float]
+    a: list[float]
+    b: list[float]
+    c: list[float]
+    d: list[float]
+    e: list[float]
+    working_pressure_angle_deg: float
+    path_of_contact_mm: float
+    transverse_base_pitch_mm: float
+    working_pitch_radius_mm: list[float]
+    base_radius_mm: list[float]
+
+
 class ToothProfileResponse(BaseModel):
     center_distance_mm: float
     pinion: ToothGear
     wheel: ToothGear
+    line_of_action: LineOfAction | None = None
 
 
 def _tooth_gear_from_profile(stage: GearStage, index: int) -> ToothGear:
@@ -990,7 +1009,28 @@ def tooth_profile(req: StageParams) -> ToothProfileResponse:
     a = stage.working_center_distance_mm
     pinion = _tooth_gear_from_profile(stage, 0)
     wheel = _tooth_gear_from_profile(stage, 1).model_copy(update={"center_x_mm": round(a, 4)})
-    return ToothProfileResponse(center_distance_mm=round(a, 4), pinion=pinion, wheel=wheel)
+    loa = line_of_action_points(stage)
+    line = (
+        LineOfAction(
+            t1=[round(v, 4) for v in loa.t1],
+            t2=[round(v, 4) for v in loa.t2],
+            a=[round(v, 4) for v in loa.a],
+            b=[round(v, 4) for v in loa.b],
+            c=[round(v, 4) for v in loa.c],
+            d=[round(v, 4) for v in loa.d],
+            e=[round(v, 4) for v in loa.e],
+            working_pressure_angle_deg=round(loa.working_pressure_angle_deg, 4),
+            path_of_contact_mm=round(loa.path_of_contact_mm, 4),
+            transverse_base_pitch_mm=round(loa.transverse_base_pitch_mm, 4),
+            working_pitch_radius_mm=[round(v, 4) for v in loa.working_pitch_radius_mm],
+            base_radius_mm=[round(v, 4) for v in loa.base_radius_mm],
+        )
+        if loa is not None
+        else None
+    )
+    return ToothProfileResponse(
+        center_distance_mm=round(a, 4), pinion=pinion, wheel=wheel, line_of_action=line
+    )
 
 
 def _round(value: float | None, digits: int = 3) -> float | None:

@@ -276,6 +276,8 @@ const DICT: Record<string, { de: string; en: string }> = {
   "eng.pause": { de: "⏸ Pause", en: "⏸ Pause" },
   "eng.loading": { de: "Zahneingriff wird geladen …", en: "Loading tooth engagement …" },
   "eng.speed": { de: "Geschwindigkeit", en: "Speed" },
+  "eng.zoom": { de: "Eingriffszone", en: "Mesh zone" },
+  "eng.full": { de: "Gesamtansicht", en: "Full view" },
   "eng.footer": {
     de: "(kinematisch gekoppelt) · echte As-cut-Konturen",
     en: "(kinematically coupled) · real as-cut contours",

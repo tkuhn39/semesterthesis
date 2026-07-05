@@ -257,10 +257,27 @@ export interface ToothGear {
   root_radius_mm: number;
   half_flank: [number, number][];
 }
+// line of action in the tooth-profile frame (gear 1 at origin, gear 2 at (a, 0));
+// verified against the FVA Gesamtsystemreport reference plot (kst-E)
+export interface LineOfAction {
+  t1: [number, number];
+  t2: [number, number];
+  a: [number, number];
+  b: [number, number];
+  c: [number, number];
+  d: [number, number];
+  e: [number, number];
+  working_pressure_angle_deg: number;
+  path_of_contact_mm: number;
+  transverse_base_pitch_mm: number;
+  working_pitch_radius_mm: [number, number];
+  base_radius_mm: [number, number];
+}
 export interface ToothProfileResponse {
   center_distance_mm: number;
   pinion: ToothGear;
   wheel: ToothGear;
+  line_of_action: LineOfAction | null;
 }
 
 export const api = {

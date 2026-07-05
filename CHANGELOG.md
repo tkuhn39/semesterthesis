@@ -9,6 +9,19 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Changed (Zahneingriff: mesh-zone zoom with the exact line of action)
+- **The Zahneingriff view zooms on the meshing zone** (user decision — no full-disc
+  overview; a "Gesamtansicht" toggle keeps the old view) and draws the line of action
+  as a static overlay behind the rotating as-cut contours: tangent line T1–T2 on both
+  base circles, the active path A–E highlighted, single-contact points B/D, pitch
+  point C with a grey crosshair, dashed base + working pitch circles, and the
+  characteristics α_wt / g_α / ε_α in the footer.
+- **Backend `line_of_action_points()`** (`app/services/geometry/gear.py`): T1/A/B/C/D/E
+  in the tooth-profile frame from α_wt, r_b, r_w, d_Na and p_et — the same ISO 21771
+  eq. 77 terms as `path_of_contact_mm`; served as `ToothProfileResponse.line_of_action`.
+  Verified against the FVA Gesamtsystemreport reference coordinates (kst-E, all seven
+  points within 2 µm; |E−A| ≡ g_α, |B−E| = |D−A| = p_et, tangent radii exact).
+
 ### Changed (Stufenvariation: per-gear reference-profile rows sweep for real)
 - **b₂, h_aP*₁/₂, h_fP*₁/₂, ρ_fP*₁/₂ are real sweep parameters now** (previously greyed
   "Rad-1-Wert führt" rows): the vectorized kernel takes per-gear addendum factors

@@ -26,7 +26,14 @@ from app.services.geometry.generation import (
     involute,
 )
 
-__all__ = ["GearStage", "ToolReferenceProfile", "inverse_involute", "involute"]
+__all__ = [
+    "GearStage",
+    "LineOfActionPoints",
+    "ToolReferenceProfile",
+    "inverse_involute",
+    "involute",
+    "line_of_action_points",
+]
 
 _ZERO_PAIR: Pair[float] = Pair(0.0, 0.0)
 
@@ -324,3 +331,73 @@ class GearStage(BaseModel):
                         "< 0.2*m_n (near-pointed tooth)"
                     )
         return issues
+
+
+class LineOfActionPoints(BaseModel):
+    """The transverse-plane line of action of a stage, as 2-D points.
+
+    Frame convention (matches ``/api/tooth-profile``): gear 1 centred at the origin,
+    gear 2 at ``(a_w, 0)`` on the +x axis. The line of action passes through the
+    pitch point C inclined by the working pressure angle against the common pitch
+    tangent and touches both base circles at T1/T2; the active path runs from A
+    (root contact of gear 1 / tip circle of gear 2) to E (tip circle of gear 1),
+    with the single-contact points B = E - p_et and D = A + p_et along the line
+    (ISO 21771 §5.4 wording; same points the FVA Gesamtsystemreport annotates).
+    """
+
+    t1: tuple[float, float]
+    t2: tuple[float, float]
+    a: tuple[float, float]
+    b: tuple[float, float]
+    c: tuple[float, float]
+    d: tuple[float, float]
+    e: tuple[float, float]
+    working_pressure_angle_deg: float
+    path_of_contact_mm: float  # g_alpha = |E - A|
+    transverse_base_pitch_mm: float
+    working_pitch_radius_mm: tuple[float, float]
+    base_radius_mm: tuple[float, float]
+
+
+def line_of_action_points(stage: GearStage) -> LineOfActionPoints | None:
+    """Compute T1/A/B/C/D/E of the line of action (``None`` without generation data).
+
+    Verified against the FVA Gesamtsystemreport reference plot (kst-E): with
+    u = (sin alpha_wt, -cos alpha_wt) through C = (r_w1, 0),
+    T1 = C - u*(r_w1 sin alpha_wt), T2 = C + u*(r_w2 sin alpha_wt),
+    E = T1 + u * 1/2 sqrt(d_Na1^2 - d_b1^2), A = T2 - u * 1/2 sqrt(d_Na2^2 - d_b2^2)
+    — the same terms :meth:`GearStage.path_of_contact_mm` sums (ISO 21771 eq. 77).
+    """
+    usable = stage.usable_tip_diameter_mm
+    if usable is None:
+        return None
+    alpha_wt = math.radians(stage.working_pressure_angle_deg)
+    rw1, rw2 = (d / 2.0 for d in stage.working_pitch_diameter_mm)
+    rb1, rb2 = (d / 2.0 for d in stage.base_diameter_mm)
+    ux, uy = math.sin(alpha_wt), -math.cos(alpha_wt)
+
+    def along(px: float, py: float, dist: float) -> tuple[float, float]:
+        return (px + ux * dist, py + uy * dist)
+
+    c = (rw1, 0.0)
+    t1 = along(*c, -rw1 * math.sin(alpha_wt))
+    t2 = along(*c, rw2 * math.sin(alpha_wt))
+    e = along(*t1, 0.5 * math.sqrt(usable[0] ** 2 - (2.0 * rb1) ** 2))
+    a = along(*t2, -0.5 * math.sqrt(usable[1] ** 2 - (2.0 * rb2) ** 2))
+    p_et = stage.transverse_base_pitch_mm
+    b = along(*e, -p_et)
+    d = along(*a, p_et)
+    return LineOfActionPoints(
+        t1=t1,
+        t2=t2,
+        a=a,
+        b=b,
+        c=c,
+        d=d,
+        e=e,
+        working_pressure_angle_deg=stage.working_pressure_angle_deg,
+        path_of_contact_mm=math.hypot(e[0] - a[0], e[1] - a[1]),
+        transverse_base_pitch_mm=p_et,
+        working_pitch_radius_mm=(rw1, rw2),
+        base_radius_mm=(rb1, rb2),
+    )
