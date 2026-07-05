@@ -169,8 +169,22 @@ dispatch per gear by MATERIAL (steel → ISO 6336, plastic → VDI 2736). FVA-re
 label extraction from the installed Workbench, pydantic editor schema (`app/services/uimodel`)
 at `/api/ui-schema`, FVA-style shell (tree → tab bar), Berechnungsauswahl matrix driving tab
 visibility (FVA 892 → "Dynamisches Abwälzen (FEM)" tab with deck download).
-**Still open:** DIN 3967/3964 tooth-thickness/centre-distance allowance system, protuberance
-tool variant (DIN 3960 Anhang A), micro-geometry mechanics (load distribution).
+**Done (v0.6.0, user review loop with self-screenshots):** FVA replica completed tab-by-tab
+against the 27 reference screenshots — remaining Getriebeeinheit tabs (Leistungsfluss with
+Antrieb/Abtrieb lock rules, Kräfte und Momente, Betriebsdaten, Steuerparameter), Stirnradstufe
+tabs (Toleranzen DIN 3967/3962 with computed A_We/A_Wi, Tragfähigkeit FVA layout, VDI 2736,
+Werkstoff, Schmierstoff, Lastverteilung (FEM)), Flankenmodifikation [34] (5 tabs) and
+Radkörper Stirnrad [40], Ergebnis-Schnellansicht (ISO 21771, live d_w = FVA values), instance
+IDs `[n]` as store data, Achsabstand-Modus lock rule (DIN 21771), 2D FE mesh rendering
+(`/api/mesh/preview` as quality-coloured SVG), Zahneingriff animation (real as-cut contours,
+kinematically coupled), Stufenvariation as the guided FVA 4-step flow (persistent results in
+the store — back-navigation without recompute; Fußform + material matrix as variation
+attributes; Übernehmen writes the variant into the shared stage; parallel-coordinates
+selection keeps colour, rest greys out), and the i18n completion (DE = FVA wording, EN
+complete; ONE locale-aware number format via `useFmt`).
+**Still open:** DIN 3967/3964 tooth-thickness/centre-distance allowance system (full norm
+tables), protuberance tool variant (DIN 3960 Anhang A), micro-geometry mechanics (load
+distribution).
 
 **Progress (2026-06-24, ADR-017):** Native STplus geometry → FE deck pipeline stands. Tooth/root
 geometry is **reference-grade**: clean rounded ρ_F root fillet (`tooth_form.transverse_right_boundary`),

@@ -9,6 +9,13 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-05
+
+FVA-replica completion round: every editor tab field-checked against the 27 reference
+screenshots via the Playwright self-screenshot loop; final pass all green (27 views without
+errors, 176 backend tests, deck-parity verifier incl. `--reference`, ruff, eslint,
+production build).
+
 ### Changed (i18n completion + one locale-aware number format)
 - **One formatter for every user-visible number** (`fmtNum`/`fmtInt` in `lib/format`,
   bound to the active language via the `useFmt()` hook): German UI now shows comma
