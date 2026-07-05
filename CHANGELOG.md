@@ -9,6 +9,14 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-05
+
+User-feedback round after v0.6.0: powerflow SSOT rebuild (one torque on either shaft,
+exclusive load types, shaft-1/2 naming), per-gear variation parameters + controllable
+sample count, mesh-zone zoom with the exact line of action (FVA-reference-verified),
+and the interactive HTML system report. Gates: 189 backend tests, deck-parity verifier
+incl. `--reference`, ruff, mypy, eslint, production build, 27 self-screenshot views.
+
 ### Added (interactive HTML system report — full scope)
 - **`POST /api/report`** renders a self-contained, printable HTML Gesamtsystemreport
   (like the FVA reference, no external requests, < 300 KB): sidebar navigation,

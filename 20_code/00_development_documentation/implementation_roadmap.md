@@ -182,6 +182,20 @@ the store — back-navigation without recompute; Fußform + material matrix as v
 attributes; Übernehmen writes the variant into the shared stage; parallel-coordinates
 selection keeps colour, rest greys out), and the i18n completion (DE = FVA wording, EN
 complete; ONE locale-aware number format via `useFmt`).
+**Done (v0.7.0, user-feedback round):** powerflow SSOT rebuild — ONE system torque entered
+on either shaft (other side derived via z₁/z₂ and locked; clearing resets both; store
+computes from the raw input so kst-E deck parity stays exact), Antrieb/Abtrieb mutually
+exclusive, shaft-1/2 naming in the load tables (tree keeps FVA instance IDs for later
+multi-stage systems — real IDs from the plant then, not from screenshots); Dynamik +
+Stufenvariation read T₁/n₁ from the Leistungsfluss (last 7.85-copies removed).
+Stufenvariation: b₂/h_aP*/h_fP*/ρ_fP* sweep per gear for real (kernel per-gear widths +
+reference profiles, min(b,b₂) flank semantics), sample_count user-controlled (Sobol
+rounds up to 2^n with warning). Zahneingriff: mesh-zone zoom with the exact line of
+action T1–A–B–C–D–E–T2 (backend `line_of_action_points`, verified against the FVA
+Gesamtsystemreport coordinates within 2 µm). Interactive HTML system report
+(`POST /api/report`, self-contained + printable, animated mesh plot, per-gear norm
+sections WITHOUT placeholder rows — better than FVA for mixed pairs, optional variation
+section from the persisted run).
 **Still open:** DIN 3967/3964 tooth-thickness/centre-distance allowance system (full norm
 tables), protuberance tool variant (DIN 3960 Anhang A), micro-geometry mechanics (load
 distribution).
