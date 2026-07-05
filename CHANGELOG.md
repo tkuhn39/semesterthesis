@@ -9,6 +9,21 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (Getriebeeinheit editor complete — Leistungsfluss/Kräfte und Momente/Steuerparameter)
+- **Leistungsfluss** (screenshot parity, values match the FVA quick view): Schaltmatrix,
+  shaft speeds with the derived n₂ = −n₁·z₁/z₂ (kst-E: 2250 → **−2206.73** min⁻¹, grey),
+  load types (Antrieb/Abtrieb) with the norm-active lock rule — the Antrieb torque is THE
+  system load case (kst-E M₂ = 8.0 N·m), Abtrieb torque (7.8462 N·m) and both powers
+  (1.8487 kW) derive read-only. **SSOT chain**: the transient-FEM deck torque now derives
+  from this Antrieb load (`fem.torque_gear2_nmm` is computed; the Abwälz tab has no own
+  torque input — FVA behaviour; also fixes the M₂ semantics: 8000 N·mm at gear 2 → the
+  deck's converted 7846.2 N·mm at the torque gear, the reference AMP level).
+- **Kräfte und Momente**: per-load pair columns (u coordinate, switchability,
+  Einzelkräfte/skalierbare Kräfte, Biegemomente) carried per screenshot.
+- **Betriebsdaten** completed (Schwerkraft/Fliehkraft sections) and **Steuerparameter**
+  (system-run switches, load-distribution block) with honest "FVA solver control — carried,
+  computed natively" notes. Derived store paths power the grey fields (rule-engine start).
+
 ### Changed (self-review round 1 — own Playwright screenshots vs. the FVA dialogs)
 - **Stufenvariation attribute matrix = the FVA dialog row set** (Stufenvariation_Ansicht-1):
   α_n/β/z/x/b per FVA naming plus the per-gear reference-profile rows (h_aP*, h_fP*, ρ_fP*,

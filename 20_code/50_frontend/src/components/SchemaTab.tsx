@@ -25,7 +25,8 @@ function useActions(): Record<string, { label: string; run: () => Promise<void> 
       run: async () => {
         const text = await meshApi.deck({
           stage: wb.stage,
-          torque_gear2_nmm: wb.fem.torque_gear2_nmm,
+          // SSOT chain: the deck torque M₂ derives from the Leistungsfluss Antrieb load
+          torque_gear2_nmm: wb.get("fem.torque_gear2_nmm") as number,
           face_layers: wb.fem.face_layers,
           n_roll_positions: wb.fem.n_roll_positions,
           refine_root: wb.fem.refine_root,

@@ -18,7 +18,6 @@ export interface FemState {
   roll_position_mode: string;
   roll_pitches: number;
   n_roll_positions: number;
-  torque_gear2_nmm: number;
   run_solver: boolean;
   meshing_accuracy: string;
   modeled_teeth: number;
@@ -52,7 +51,6 @@ const FEM_DEFAULTS: FemState = {
   roll_position_mode: "linear_count",
   roll_pitches: 2,
   n_roll_positions: 30,
-  torque_gear2_nmm: 7846.2,
   run_solver: false,
   meshing_accuracy: "converged_root",
   modeled_teeth: 4,
@@ -89,6 +87,58 @@ export interface OperatingUiState {
   ambient_temperature_c: number;
   operating_hours: number;
   oil_temperature_c: number;
+  gravity_enabled: boolean;
+  gravity_u: number;
+  gravity_v: number;
+  gravity_w: number;
+  gravity_m_s2: number;
+  centrifugal_enabled: boolean;
+}
+
+// Leistungsfluss (Getriebeeinheit): THE load-case source — the transient-FEM deck torque
+// derives from the Antrieb load here (SSOT chain: Leistungsfluss → Dyn. Abwälzen).
+// kst-E reference: Welle [4] 2250 min⁻¹ (Abtrieb), Welle [6] Antrieb with M₂ = 8.0 N·m
+// (the deck converts to the torque gear: 8000·51/52 = 7846.2 N·mm — reference AMP level).
+export interface PowerflowState {
+  n_configurations: number;
+  active_configuration: string;
+  load1_switchable: boolean;
+  load2_switchable: boolean;
+  speed_shaft1_min1: number;
+  direction_shaft1: "cw" | "ccw";
+  load1_type: "antrieb" | "abtrieb";
+  load2_type: "antrieb" | "abtrieb";
+  torque_antrieb_nm: number; // T_sc of the Antrieb load (M₂ for load 2 = kst-E)
+  u_load1_mm: number;
+  u_load2_mm: number;
+}
+
+// Kräfte und Momente (per load; FVA defaults 0.0 — carried, no system solver yet)
+export type ForcesState = Record<string, number>;
+
+// Steuerparameter (FVA Gesamtsystem control values; carried for parity — rows that only
+// steer the FVA solver are marked inactive in the schema info texts)
+export interface ControlState {
+  log_io: boolean;
+  nominal_torques: boolean;
+  load_dependent_center_distance: boolean;
+  backlash_mode: string;
+  linear_solver: string;
+  convergence_tolerance: string;
+  max_iterations: number;
+  bearing_method: string;
+  width_load_points: number;
+  width_correction_proposal: boolean;
+  loads_as_point_forces: boolean;
+  idler_tiltable: boolean;
+  deviation_multiplier: number;
+  n_mesh_positions: string;
+  n_fourier: number;
+  transmission_error_norm_um: number;
+  pre_post_engagement: boolean;
+  dynamic_stiffness: boolean;
+  flank_mod_criterion: string;
+  min_contact_line_pct: number;
 }
 
 export interface ShaftUiState {
@@ -133,10 +183,39 @@ interface WorkbenchState {
   fem: FemState;
   geometryUi: GeometryUiState;
   operatingUi: OperatingUiState;
+  powerflow: PowerflowState;
+  forces: ForcesState;
+  control: ControlState;
   shaft: ShaftUiState;
   model: ModelInstances; // tree instances with their [n] IDs (data, not hardcoded)
   label: string;
 }
+
+// Derived (computed) paths — the norm-active couplings the schema rows read as grey
+// values. Each one is documented in the glossary via its uimodel dependency rule.
+const DERIVED: Record<string, (s: WorkbenchState) => unknown> = {
+  // kinematic chain n₂ = −n₁·z₁/z₂ (external mesh reverses the direction)
+  "powerflow.speed_shaft2_min1": (s) =>
+    -(s.powerflow.speed_shaft1_min1 * s.stage.teeth_pinion) / s.stage.teeth_wheel,
+  // torque balance: the Abtrieb load carries T·z-ratio of the Antrieb torque (loss-free)
+  "powerflow.torque_abtrieb_nm": (s) =>
+    (s.powerflow.torque_antrieb_nm * s.stage.teeth_pinion) / s.stage.teeth_wheel,
+  "powerflow.power_load1_kw": (s) =>
+    Math.abs(
+      ((2 * Math.PI * s.powerflow.speed_shaft1_min1) / 60) *
+        ((s.powerflow.torque_antrieb_nm * s.stage.teeth_pinion) / s.stage.teeth_wheel),
+    ) / 1000,
+  "powerflow.power_load2_kw": (s) =>
+    Math.abs(
+      ((2 * Math.PI * (s.powerflow.speed_shaft1_min1 * s.stage.teeth_pinion)) /
+        s.stage.teeth_wheel /
+        60) *
+        s.powerflow.torque_antrieb_nm,
+    ) / 1000,
+  // SSOT chain: the transient-FEM deck torque M₂ [N·mm] IS the Leistungsfluss Antrieb
+  // torque (FVA behaviour — the Abwälz tab has no own torque input)
+  "fem.torque_gear2_nmm": (s) => s.powerflow.torque_antrieb_nm * 1000,
+};
 
 interface WorkbenchStore extends WorkbenchState {
   setStage: (s: StageParams) => void;
@@ -167,6 +246,48 @@ const DEFAULT_STATE: WorkbenchState = {
     ambient_temperature_c: 20.0,
     operating_hours: 100000.0,
     oil_temperature_c: 80.0,
+    gravity_enabled: true,
+    gravity_u: 0.0,
+    gravity_v: 1.0,
+    gravity_w: 0.0,
+    gravity_m_s2: 9.81,
+    centrifugal_enabled: true,
+  },
+  powerflow: {
+    n_configurations: 1,
+    active_configuration: "1",
+    load1_switchable: true,
+    load2_switchable: true,
+    speed_shaft1_min1: 2250.0,
+    direction_shaft1: "cw",
+    load1_type: "abtrieb",
+    load2_type: "antrieb",
+    torque_antrieb_nm: 8.0,
+    u_load1_mm: 0.0,
+    u_load2_mm: 0.0,
+  },
+  forces: {},
+  control: {
+    log_io: false,
+    nominal_torques: false,
+    load_dependent_center_distance: false,
+    backlash_mode: "ignore",
+    linear_solver: "native",
+    convergence_tolerance: "default",
+    max_iterations: 50,
+    bearing_method: "fva_909",
+    width_load_points: 18,
+    width_correction_proposal: true,
+    loads_as_point_forces: false,
+    idler_tiltable: false,
+    deviation_multiplier: 1.0,
+    n_mesh_positions: "24",
+    n_fourier: 4,
+    transmission_error_norm_um: 10.0,
+    pre_post_engagement: false,
+    dynamic_stiffness: false,
+    flank_mod_criterion: "linear_pressure",
+    min_contact_line_pct: 0.0,
   },
   shaft: { u_coordinate_gear1_mm: 23.5, u_coordinate_gear2_mm: 24.5, rotation_negative_u_deg: 0 },
   model: MODEL_DEFAULTS,
@@ -179,8 +300,20 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<WorkbenchState>(DEFAULT_STATE);
 
   const store = useMemo<WorkbenchStore>(() => {
-    const namespaces = ["stage", "calc", "fem", "geometryUi", "operatingUi", "shaft"] as const;
+    const namespaces = [
+      "stage",
+      "calc",
+      "fem",
+      "geometryUi",
+      "operatingUi",
+      "powerflow",
+      "forces",
+      "control",
+      "shaft",
+    ] as const;
     const get = (path: string): unknown => {
+      const derived = DERIVED[path];
+      if (derived) return derived(state);
       const [ns, field] = splitPath(path);
       if (!namespaces.includes(ns as (typeof namespaces)[number])) return undefined;
       return (state[ns as keyof WorkbenchState] as Record<string, unknown>)[field];

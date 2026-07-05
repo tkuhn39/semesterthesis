@@ -619,8 +619,381 @@ ATTRIBUTES: list[AttributeDef] = [
         label_en="Torque at gear 2",
         symbol="M₂",
         unit="N·mm",
+        computed=True,  # SSOT: derives from the Leistungsfluss Antrieb load (FVA behaviour)
         binding="fem.torque_gear2_nmm",
         norm_ref="ADR-021 (T_g = M₂·z_g/z₂ am lastführenden Rad)",
+        info_de="Kommt aus dem Leistungsfluss (Antriebsmoment) — keine eigene Eingabe im "
+        "Abwälz-Reiter, damit der Lastfall systemweit konsistent bleibt.",
+        info_en="Derived from the power flow (input torque) — no separate input here so the "
+        "load case stays consistent system-wide.",
+    ),
+    # --- Getriebeeinheit → Leistungsfluss (screenshot Getriebeeinheit_Leisutungsfluss) --
+    AttributeDef(
+        id="pf_n_configurations",
+        label_de="Anzahl der Konfigurationen",
+        label_en="Number of configurations",
+        kind="int",
+        binding="powerflow.n_configurations",
+    ),
+    AttributeDef(
+        id="pf_active_configuration",
+        label_de="Aktuelle Konfiguration",
+        label_en="Active configuration",
+        kind="enum",
+        options=[_opt("1", "1. Konfig.", "1st config.")],
+        binding="powerflow.active_configuration",
+    ),
+    AttributeDef(
+        id="pf_operating_hours",
+        label_de="Betriebsdauer",
+        label_en="Operating time",
+        symbol="h",
+        unit="h",
+        binding="operatingUi.operating_hours",  # SSOT: same value as the Betriebsdaten tab
+    ),
+    AttributeDef(
+        id="pf_load_switchable",
+        label_de="Belastung ist schaltbar",
+        label_en="Load is switchable",
+        kind="bool",
+        per_gear=True,
+        bindings=("powerflow.load1_switchable", "powerflow.load2_switchable"),
+    ),
+    AttributeDef(
+        id="pf_speed_shaft1",
+        label_de="Drehzahl Welle [4]",
+        label_en="Speed shaft [4]",
+        symbol="n",
+        unit="1/min",
+        precision=2,
+        binding="powerflow.speed_shaft1_min1",
+        norm_ref="Kinematik",
+    ),
+    AttributeDef(
+        id="pf_speed_shaft2",
+        label_de="Drehzahl Welle [6]",
+        label_en="Speed shaft [6]",
+        symbol="n",
+        unit="1/min",
+        precision=2,
+        computed=True,
+        binding="powerflow.speed_shaft2_min1",
+        norm_ref="n₂ = −n₁·z₁/z₂ (Außenverzahnung)",
+        info_de="Berechnet aus der Übersetzung — Eingabe nur an Welle [4].",
+        info_en="Derived from the ratio — input only at shaft [4].",
+    ),
+    AttributeDef(
+        id="pf_load_type",
+        label_de="Typ",
+        label_en="Type",
+        kind="enum",
+        per_gear=True,
+        options=[_opt("antrieb", "Antrieb", "Input"), _opt("abtrieb", "Abtrieb", "Output")],
+        bindings=("powerflow.load1_type", "powerflow.load2_type"),
+        info_de="Antrieb: Drehmoment ist Eingabe, Leistung folgt; Abtrieb: beides berechnet.",
+        info_en="Input: torque is entered, power follows; output: both derived.",
+    ),
+    AttributeDef(
+        id="pf_power",
+        label_de="Leistung",
+        label_en="Power",
+        symbol="P",
+        unit="kW",
+        precision=4,
+        per_gear=True,
+        computed=True,
+        bindings=("powerflow.power_load1_kw", "powerflow.power_load2_kw"),
+        norm_ref="P = 2π·n/60 · T",
+    ),
+    AttributeDef(
+        id="pf_torque_abtrieb",
+        label_de="Drehmoment Belastung [16] (Abtrieb)",
+        label_en="Torque load [16] (output)",
+        symbol="T_sc",
+        unit="N·m",
+        precision=4,
+        computed=True,
+        binding="powerflow.torque_abtrieb_nm",
+        norm_ref="T₁ = M₂·z₁/z₂ (verlustfrei)",
+    ),
+    AttributeDef(
+        id="pf_torque_antrieb",
+        label_de="Drehmoment Belastung [17] (Antrieb)",
+        label_en="Torque load [17] (input)",
+        symbol="T_sc",
+        unit="N·m",
+        precision=4,
+        binding="powerflow.torque_antrieb_nm",
+        info_de="DER Lastfall des Systems — treibt Tragfähigkeit UND das Abwälz-Deck (M₂).",
+        info_en="THE system load case — drives the capacity runs AND the rolling deck (M₂).",
+    ),
+    AttributeDef(
+        id="pf_u_coordinate",
+        label_de="u-Koordinate auf der Welle",
+        label_en="u coordinate on the shaft",
+        unit="mm",
+        precision=3,
+        per_gear=True,
+        bindings=("powerflow.u_load1_mm", "powerflow.u_load2_mm"),
+    ),
+    # --- Getriebeeinheit → Kräfte und Momente (per load; FVA defaults 0) ---------------
+    *[
+        AttributeDef(
+            id=f"force_{key}",
+            label_de=de,
+            label_en=en,
+            symbol=sym,
+            unit=unit,
+            per_gear=True,
+            bindings=(f"forces.load1_{key}", f"forces.load2_{key}"),
+            info_de="Zusatzlast der Systemrechnung — im Nachbau mitgeführt, noch ohne Löser.",
+            info_en="System-run extra load — carried in the replica, solver pending.",
+        )
+        for key, de, en, sym, unit in (
+            ("f_u", "Axiale Kraft", "Axial force", "F_u", "N"),
+            ("f_v", "Einzelkraft in v-Richtung", "Point force in v", "F_v", "N"),
+            ("f_w", "Einzelkraft in w-Richtung", "Point force in w", "F_w", "N"),
+            ("f_r", "Radialkraft", "Radial force", "F_r", "N"),
+            ("phi_r", "Winkel der Radialkraft", "Radial force angle", "φ_r", "°"),
+            ("f_u_sc", "Skalierbare axiale Kraft", "Scalable axial force", "F_u,sc", "N"),
+            (
+                "f_v_sc",
+                "Skalierbare Einzelkraft in v-Richtung",
+                "Scalable force in v",
+                "F_v,sc",
+                "N",
+            ),
+            (
+                "f_w_sc",
+                "Skalierbare Einzelkraft in w-Richtung",
+                "Scalable force in w",
+                "F_w,sc",
+                "N",
+            ),
+            ("f_r_sc", "Skalierbare Radialkraft", "Scalable radial force", "F_r,sc", "N"),
+            (
+                "phi_r_sc",
+                "Winkel der skalierbaren Radialkraft",
+                "Scalable radial force angle",
+                "φ_r,sc",
+                "°",
+            ),
+            ("m_v", "Biegemoment um die v-Achse", "Bending moment about v", "M_v", "N·m"),
+            ("m_w", "Biegemoment um die w-Achse", "Bending moment about w", "M_w", "N·m"),
+            (
+                "m_v_sc",
+                "Skalierbares Biegemoment um die v-Achse",
+                "Scalable bending moment about v",
+                "M_v,sc",
+                "N·m",
+            ),
+            (
+                "m_w_sc",
+                "Skalierbares Biegemoment um die w-Achse",
+                "Scalable bending moment about w",
+                "M_w,sc",
+                "N·m",
+            ),
+        )
+    ],
+    # --- Getriebeeinheit → Steuerparameter (screenshot Getriebeeinheit_Steuerparameter) -
+    AttributeDef(
+        id="ctl_log_io",
+        label_de="Aktiviere Logging der Ein- und Ausgabeparameter der Gesamtsystemberechnung",
+        label_en="Log the system-run input/output parameters",
+        kind="bool",
+        binding="control.log_io",
+    ),
+    AttributeDef(
+        id="ctl_nominal_torques",
+        label_de="Nominelle Drehmomente für Berechnungen verwenden",
+        label_en="Use nominal torques for the calculations",
+        kind="bool",
+        binding="control.nominal_torques",
+    ),
+    AttributeDef(
+        id="ctl_load_dependent_a",
+        label_de="Lastabhängige Achsabstandsveränderung",
+        label_en="Load-dependent centre-distance change",
+        kind="bool",
+        binding="control.load_dependent_center_distance",
+    ),
+    AttributeDef(
+        id="ctl_backlash_mode",
+        label_de="Flankenspiel im mech. Gesamtsystem berücksichtigen",
+        label_en="Consider backlash in the mechanical system",
+        kind="enum",
+        options=[
+            _opt("ignore", "Nicht berücksichtigen", "Not considered"),
+            _opt("consider", "Berücksichtigen", "Considered"),
+        ],
+        binding="control.backlash_mode",
+    ),
+    AttributeDef(
+        id="ctl_linear_solver",
+        label_de="Linearer Gleichungslöser",
+        label_en="Linear equation solver",
+        kind="enum",
+        options=[_opt("native", "NumPy/SciPy (nativ)", "NumPy/SciPy (native)")],
+        binding="control.linear_solver",
+        info_de="FVA nutzt hier Matlab — der Nachbau rechnet nativ in Python.",
+        info_en="FVA uses Matlab here — the replica computes natively in Python.",
+    ),
+    AttributeDef(
+        id="ctl_convergence",
+        label_de="Konvergenztoleranz im Gesamtsystem",
+        label_en="System convergence tolerance",
+        kind="enum",
+        options=[_opt("default", "Default", "Default")],
+        binding="control.convergence_tolerance",
+    ),
+    AttributeDef(
+        id="ctl_max_iterations",
+        label_de="Maximale Iterationszahl für Gesamtsystemberechnung",
+        label_en="Maximum system-run iterations",
+        kind="int",
+        binding="control.max_iterations",
+    ),
+    AttributeDef(
+        id="ctl_bearing_method",
+        label_de="Methode der Wälzlagerberechnung",
+        label_en="Rolling-bearing method",
+        kind="enum",
+        options=[_opt("fva_909", "FVA 909", "FVA 909")],
+        binding="control.bearing_method",
+        info_de="Lagerrechnung ist im Nachbau nicht implementiert (Berechnungsauswahl grau).",
+        info_en="Bearing analysis is not implemented in the replica.",
+    ),
+    AttributeDef(
+        id="ctl_width_load_points",
+        label_de="Stützstellen für die Lastverteilung entlang der Zahnbreite",
+        label_en="Face-width load-distribution points",
+        kind="int",
+        binding="control.width_load_points",
+    ),
+    AttributeDef(
+        id="ctl_width_correction",
+        label_de="Breitenkorrekturvorschlag für gleichmäßige Lastverteilung",
+        label_en="Width-correction proposal for uniform load",
+        kind="bool",
+        binding="control.width_correction_proposal",
+    ),
+    AttributeDef(
+        id="ctl_point_forces",
+        label_de="Verzahnungslasten als Einzelkräfte berücksichtigen",
+        label_en="Mesh loads as point forces",
+        kind="bool",
+        binding="control.loads_as_point_forces",
+    ),
+    AttributeDef(
+        id="ctl_idler_tiltable",
+        label_de="Zwischen- und Planetenräder sind kippweich gelagert",
+        label_en="Idler/planet gears tiltable",
+        kind="bool",
+        binding="control.idler_tiltable",
+    ),
+    AttributeDef(
+        id="ctl_deviation_multiplier",
+        label_de="Multiplikationsfaktor für Verzahnungsabweichung",
+        label_en="Deviation multiplication factor",
+        precision=1,
+        binding="control.deviation_multiplier",
+    ),
+    AttributeDef(
+        id="ctl_mesh_positions",
+        label_de="Anzahl der Eingriffsstellungen",
+        label_en="Number of mesh positions",
+        kind="enum",
+        options=[_opt("24", "24", "24"), _opt("12", "12", "12"), _opt("48", "48", "48")],
+        binding="control.n_mesh_positions",
+    ),
+    AttributeDef(
+        id="ctl_fourier",
+        label_de="Anzahl der Fourierkoeffizienten",
+        label_en="Number of Fourier coefficients",
+        kind="int",
+        binding="control.n_fourier",
+    ),
+    AttributeDef(
+        id="ctl_te_norm",
+        label_de="Drehwegfehler zur Normierung der Soundausgabe",
+        label_en="Transmission error for sound normalisation",
+        unit="µm",
+        precision=1,
+        binding="control.transmission_error_norm_um",
+    ),
+    AttributeDef(
+        id="ctl_pre_post",
+        label_de="Vor- und nachzeitigen Eingriff berücksichtigen",
+        label_en="Consider pre-/post-engagement",
+        kind="bool",
+        binding="control.pre_post_engagement",
+    ),
+    AttributeDef(
+        id="ctl_dyn_stiffness",
+        label_de="Berechnung dynamische Verzahnungssteifigkeit",
+        label_en="Dynamic mesh-stiffness computation",
+        kind="bool",
+        binding="control.dynamic_stiffness",
+    ),
+    AttributeDef(
+        id="ctl_mod_criterion",
+        label_de="Kriterium für Flankenmodifikationen aus der 3d-Lastverteilung",
+        label_en="Criterion for modifications from the 3D load distribution",
+        kind="enum",
+        options=[_opt("linear_pressure", "Linearer Pressungsanstieg", "Linear pressure rise")],
+        binding="control.flank_mod_criterion",
+    ),
+    AttributeDef(
+        id="ctl_min_contact_line",
+        label_de="Minimale relative Berührlinienlänge",
+        label_en="Minimum relative contact-line length",
+        unit="%",
+        precision=1,
+        binding="control.min_contact_line_pct",
+    ),
+    AttributeDef(
+        id="op_gravity_enabled",
+        label_de="Schwerkraft berücksichtigen",
+        label_en="Consider gravity",
+        kind="bool",
+        binding="operatingUi.gravity_enabled",
+    ),
+    AttributeDef(
+        id="op_gravity_u",
+        label_de="Richtungsvektor für Schwerkraft (u)",
+        label_en="Gravity direction (u)",
+        precision=1,
+        binding="operatingUi.gravity_u",
+    ),
+    AttributeDef(
+        id="op_gravity_v",
+        label_de="Richtungsvektor für Schwerkraft (v)",
+        label_en="Gravity direction (v)",
+        precision=1,
+        binding="operatingUi.gravity_v",
+    ),
+    AttributeDef(
+        id="op_gravity_w",
+        label_de="Richtungsvektor für Schwerkraft (w)",
+        label_en="Gravity direction (w)",
+        precision=1,
+        binding="operatingUi.gravity_w",
+    ),
+    AttributeDef(
+        id="op_gravity_g",
+        label_de="Erdbeschleunigung",
+        label_en="Gravitational acceleration",
+        unit="m/s²",
+        precision=2,
+        binding="operatingUi.gravity_m_s2",
+    ),
+    AttributeDef(
+        id="op_centrifugal",
+        label_de="Fliehkraft berücksichtigen",
+        label_en="Consider centrifugal force",
+        kind="bool",
+        binding="operatingUi.centrifugal_enabled",
     ),
     # --- Getriebeeinheit → Betriebsdaten (screenshot) ----------------------------------
     AttributeDef(
@@ -784,6 +1157,163 @@ def _transient_fem_tab() -> TabDef:
     )
 
 
+def _powerflow_tab() -> TabDef:
+    """Getriebeeinheit → Leistungsfluss (screenshot Getriebeeinheit_Leisutungsfluss.png)."""
+    return TabDef(
+        id="powerflow",
+        title_de="Leistungsfluss",
+        title_en="Power flow",
+        sections=[
+            SectionDef(
+                id="switch_matrix",
+                title_de="Schaltmatrix",
+                title_en="Switching matrix",
+                rows=[
+                    RowRef(attr="pf_n_configurations"),
+                    RowRef(attr="pf_active_configuration"),
+                    RowRef(attr="pf_operating_hours"),
+                    RowRef(attr="pf_load_switchable"),
+                ],
+            ),
+            SectionDef(
+                id="io_loads",
+                title_de="Ein- und Ausgangsbelastungen",
+                title_en="Input and output loads",
+                info_de="Es müssen mindestens zwei Belastungskomponenten auf Welle(n) "
+                "vorhanden sein (Antrieb/Abtrieb). Antrieb: T ist Eingabe; alle "
+                "abhängigen Größen (n₂, T-Abtrieb, P) sind berechnet/grau.",
+                info_en="At least two load components (input/output) are required. Input: T "
+                "is entered; every dependent value (n₂, output T, P) is derived/grey.",
+                rows=[
+                    RowRef(attr="pf_speed_shaft1"),
+                    RowRef(attr="pf_speed_shaft2"),
+                    RowRef(attr="pf_load_type"),
+                    RowRef(attr="pf_power"),
+                    RowRef(attr="pf_torque_abtrieb"),
+                    RowRef(attr="pf_torque_antrieb"),
+                    RowRef(attr="pf_u_coordinate"),
+                ],
+            ),
+        ],
+    )
+
+
+def _forces_tab() -> TabDef:
+    """Getriebeeinheit → Kräfte und Momente (screenshot, per-load pair columns)."""
+    force_rows = ["f_u", "f_v", "f_w", "f_r", "phi_r"]
+    scalable_rows = ["f_u_sc", "f_v_sc", "f_w_sc", "f_r_sc", "phi_r_sc"]
+    return TabDef(
+        id="forces",
+        title_de="Kräfte und Momente",
+        title_en="Forces and moments",
+        sections=[
+            SectionDef(
+                id="position",
+                title_de="Position auf der Welle",
+                title_en="Position on the shaft",
+                rows=[RowRef(attr="pf_u_coordinate")],
+            ),
+            SectionDef(
+                id="switchability",
+                title_de="Schaltbarkeit",
+                title_en="Switchability",
+                rows=[RowRef(attr="pf_load_switchable")],
+            ),
+            SectionDef(
+                id="torques",
+                title_de="Drehmomente/Leistungen",
+                title_en="Torques/powers",
+                info_de="Die Übersicht zu allen Drehmomenten, Leistungen und Drehzahlen "
+                "befindet sich im Editor „Leistungsfluss“ unter der Getriebeeinheit.",
+                info_en="The full torque/power/speed overview lives in the power-flow editor.",
+                rows=[
+                    RowRef(attr="pf_load_type"),
+                    RowRef(attr="pf_power"),
+                    RowRef(attr="pf_torque_antrieb"),
+                ],
+            ),
+            SectionDef(
+                id="point_forces",
+                title_de="Einzelkräfte",
+                title_en="Point forces",
+                rows=[RowRef(attr=f"force_{k}") for k in force_rows],
+            ),
+            SectionDef(
+                id="scalable_forces",
+                title_de="Skalierbare Einzelkräfte",
+                title_en="Scalable point forces",
+                rows=[RowRef(attr=f"force_{k}") for k in scalable_rows],
+            ),
+            SectionDef(
+                id="bending",
+                title_de="Biegemomente",
+                title_en="Bending moments",
+                rows=[RowRef(attr="force_m_v"), RowRef(attr="force_m_w")],
+            ),
+            SectionDef(
+                id="scalable_bending",
+                title_de="Skalierbare Biegemomente",
+                title_en="Scalable bending moments",
+                rows=[RowRef(attr="force_m_v_sc"), RowRef(attr="force_m_w_sc")],
+            ),
+        ],
+    )
+
+
+def _control_tab() -> TabDef:
+    """Getriebeeinheit → Steuerparameter (screenshot Getriebeeinheit_Steuerparameter.png)."""
+    return TabDef(
+        id="control",
+        title_de="Steuerparameter",
+        title_en="Control parameters",
+        sections=[
+            SectionDef(
+                id="system",
+                title_de="Berechnungsparameter für Gesamtsystem",
+                title_en="System-run parameters",
+                info_de="Diese Schalter steuern den FVA-Gesamtsystemlöser; der Nachbau führt "
+                "sie mit, gerechnet wird nativ (ISO 6336/VDI 2736 + FE-Deck).",
+                info_en="These switches steer the FVA system solver; the replica carries "
+                "them, computation is native (ISO 6336/VDI 2736 + FE deck).",
+                rows=[
+                    RowRef(attr="ctl_log_io"),
+                    RowRef(attr="ctl_nominal_torques"),
+                    RowRef(attr="ctl_load_dependent_a"),
+                    RowRef(attr="ctl_backlash_mode"),
+                    RowRef(attr="ctl_linear_solver"),
+                    RowRef(attr="ctl_convergence"),
+                    RowRef(attr="ctl_max_iterations"),
+                ],
+            ),
+            SectionDef(
+                id="bearing",
+                title_de="Wälzlagerberechnung",
+                title_en="Rolling-bearing analysis",
+                rows=[RowRef(attr="ctl_bearing_method")],
+            ),
+            SectionDef(
+                id="load_distribution",
+                title_de="Analytische Lastverteilungsberechnung (Stirnräder)",
+                title_en="Analytic load distribution (cylindrical gears)",
+                rows=[
+                    RowRef(attr="ctl_width_load_points"),
+                    RowRef(attr="ctl_width_correction"),
+                    RowRef(attr="ctl_point_forces"),
+                    RowRef(attr="ctl_idler_tiltable"),
+                    RowRef(attr="ctl_deviation_multiplier"),
+                    RowRef(attr="ctl_mesh_positions"),
+                    RowRef(attr="ctl_fourier"),
+                    RowRef(attr="ctl_te_norm"),
+                    RowRef(attr="ctl_pre_post"),
+                    RowRef(attr="ctl_dyn_stiffness"),
+                    RowRef(attr="ctl_mod_criterion"),
+                    RowRef(attr="ctl_min_contact_line"),
+                ],
+            ),
+        ],
+    )
+
+
 def _operating_data_tab() -> TabDef:
     """Getriebeeinheit → Betriebsdaten (screenshot Getriebeeinheit_Betriebsdaten.png)."""
     return TabDef(
@@ -806,6 +1336,24 @@ def _operating_data_tab() -> TabDef:
                 title_de="Betriebsdaten",
                 title_en="Operating data",
                 rows=[RowRef(attr="operating_hours")],
+            ),
+            SectionDef(
+                id="gravity",
+                title_de="Schwerkraft",
+                title_en="Gravity",
+                rows=[
+                    RowRef(attr="op_gravity_enabled"),
+                    RowRef(attr="op_gravity_u"),
+                    RowRef(attr="op_gravity_v"),
+                    RowRef(attr="op_gravity_w"),
+                    RowRef(attr="op_gravity_g"),
+                ],
+            ),
+            SectionDef(
+                id="centrifugal",
+                title_de="Fliehkraft",
+                title_en="Centrifugal force",
+                rows=[RowRef(attr="op_centrifugal")],
             ),
         ],
     )
@@ -909,7 +1457,9 @@ def build_ui_schema() -> UiSchema:
             id="gear_unit",
             label_de="Getriebeeinheit",
             label_en="Gear unit",
-            tabs=[_operating_data_tab()],
+            # FVA tab order: Berechnungsauswahl (frontend matrix) · Leistungsfluss ·
+            # Kräfte und Momente · Betriebsdaten · Steuerparameter
+            tabs=[_powerflow_tab(), _forces_tab(), _operating_data_tab(), _control_tab()],
         ),
         ComponentDef(
             id="cylindrical_mesh",

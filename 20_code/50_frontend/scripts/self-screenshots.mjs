@@ -8,7 +8,16 @@ const OUT = process.argv[2] ?? "self_shots";
 mkdirSync(OUT, { recursive: true });
 
 const NODES = [
-  { node: "Getriebeeinheit [1]", tabs: ["Berechnungsauswahl", "Betriebsdaten"] },
+  {
+    node: "Getriebeeinheit [1]",
+    tabs: [
+      "Berechnungsauswahl",
+      "Leistungsfluss",
+      "Kräfte und Momente",
+      "Betriebsdaten",
+      "Steuerparameter",
+    ],
+  },
   {
     node: "Stirnradstufe [3]",
     tabs: [

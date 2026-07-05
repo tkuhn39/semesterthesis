@@ -191,7 +191,11 @@ function Shell() {
               } satisfies TabSpec,
             ]
           : []),
+        // FVA tab order: Leistungsfluss · Kräfte und Momente · Betriebsdaten · Steuerparameter
+        ...(s ? maybe(schemaTab(s, "gear_unit", "powerflow", locale)) : []),
+        ...(s ? maybe(schemaTab(s, "gear_unit", "forces", locale)) : []),
         ...(s ? maybe(schemaTab(s, "gear_unit", "operating_data", locale)) : []),
+        ...(s ? maybe(schemaTab(s, "gear_unit", "control", locale)) : []),
       ],
       stage: [
         { id: "design", title: locale === "de" ? "Auslegung" : "Design", render: () => <DesignPanel /> },
