@@ -173,15 +173,15 @@ export interface VariationRequest {
   x2: VarSpec;
   beta_deg: VarSpec;
   b: VarSpec; // Zahnbreite Rad 1
-  // per-gear fixed rows (Rad-1 values drive the sweep kernel; differing Rad-2 values warn)
-  b2_mm: number;
-  h_ap1: number; // Kopfhöhenfaktor (Bezugsprofil)
-  h_ap2: number;
-  h_fp1: number; // Fußhöhenfaktor (Bezugsprofil)
-  h_fp2: number;
-  rho_fp1: number; // Fußausrundungsfaktor (Bezugsprofil)
-  rho_fp2: number;
-  q1_mm: number; // Bearbeitungszugabe
+  // per-gear reference-profile rows — real sweep parameters (v0.7)
+  b2: VarSpec; // Zahnbreite Rad 2
+  h_ap1: VarSpec; // Kopfhöhenfaktor (Bezugsprofil)
+  h_ap2: VarSpec;
+  h_fp1: VarSpec; // Fußhöhenfaktor (Bezugsprofil)
+  h_fp2: VarSpec;
+  rho_fp1: VarSpec; // Fußausrundungsfaktor (Bezugsprofil)
+  rho_fp2: VarSpec;
+  q1_mm: number; // Bearbeitungszugabe (not in the kernel — carried, warns)
   q2_mm: number;
   pr_p1_mm: number; // Protuberanzbetrag
   pr_p2_mm: number;
@@ -219,6 +219,13 @@ export interface VariationPoint {
   x2: number;
   beta_deg: number;
   b: number;
+  b2: number;
+  h_ap1: number;
+  h_ap2: number;
+  h_fp1: number;
+  h_fp2: number;
+  rho_fp1: number;
+  rho_fp2: number;
   center_distance_mm: number;
   transverse_contact_ratio: number;
   overlap_ratio: number;

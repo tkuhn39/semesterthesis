@@ -9,6 +9,25 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Changed (Stufenvariation: per-gear reference-profile rows sweep for real)
+- **b₂, h_aP*₁/₂, h_fP*₁/₂, ρ_fP*₁/₂ are real sweep parameters now** (previously greyed
+  "Rad-1-Wert führt" rows): the vectorized kernel takes per-gear addendum factors
+  (`mesh_geometry`), per-gear tool dedendum/tip-radius (`tip_form_factors` inputs) and
+  per-gear face widths — shared-mesh quantities (ε, flank stress) use the common width
+  min(b, b₂), each gear's root stress its own width, the weight each gear's own width.
+  Only q/pr_P/α_prP stay fixed (protuberance is not in the kernel yet — honest warning).
+- **sample_count is user-controlled** (was hardcoded 256): a number field appears next
+  to the method select for Sobol/LHS; Sobol rounds UP to the next power of two (scipy
+  balance) and says so in the warnings — LHS uses the exact count.
+- Fixed: the request-level honesty warnings (`extra_warnings`) were built but never
+  merged into `VariationResponse.warnings`; `evaluate()` now broadcasts all outputs to
+  the batch shape (a sweep that only touches the tooth-root side — h_fP*, ρ_fP*, b₂ —
+  used to collapse the geometry arrays to scalars).
+- `VariationPoint` carries the per-gear values; **Übernehmen** writes b₂ and the gear-1
+  tool factors into the shared stage; the step-4 contour overlay uses the variant's
+  gear-2 reference profile. The sweep request is persisted in the store (`varUi.req`)
+  for the upcoming report.
+
 ### Changed (powerflow rebuild: ONE torque on either shaft, exclusive load types)
 - **One system torque, entered on either shaft** (user decision): the Leistungsfluss
   torque row has a Welle-1 and a Welle-2 field; entering one locks the other, which

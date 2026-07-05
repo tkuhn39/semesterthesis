@@ -614,16 +614,17 @@ class VariationRequest(BaseModel):
     x1: VarSpec = VarSpec(value=0.0, min=-0.3, max=0.6, vary=True, steps=10)
     x2: VarSpec = VarSpec(value=0.0, min=-0.3, max=0.6)
     b: VarSpec = VarSpec(value=20.0, min=10.0, max=40.0)  # Zahnbreite Rad 1
-    # per-gear reference-profile / manufacturing rows (FVA dialog; the sweep kernel does
-    # not separate them per gear yet — Rad-1 values drive it, differing Rad-2 values warn)
-    b2_mm: float = 20.0  # Zahnbreite Rad 2
-    h_ap1: float = 1.0  # Kopfhöhenfaktor (Bezugsprofil) Rad 1
-    h_ap2: float = 1.0
-    h_fp1: float = 1.25  # Fußhöhenfaktor (Bezugsprofil) Rad 1
-    h_fp2: float = 1.25
-    rho_fp1: float = 0.38  # Fußausrundungsfaktor (Bezugsprofil) Rad 1
-    rho_fp2: float = 0.38
-    q1_mm: float = 0.0  # Bearbeitungszugabe
+    # per-gear reference-profile rows — REAL sweep parameters (the kernel is per-gear
+    # for width, addendum, tool dedendum and tool tip radius); shared-mesh quantities
+    # use min(b, b2), each root stress its own width
+    b2: VarSpec = VarSpec(value=20.0, min=10.0, max=40.0)  # Zahnbreite Rad 2
+    h_ap1: VarSpec = VarSpec(value=1.0, min=0.8, max=1.2)  # Kopfhöhenfaktor Rad 1
+    h_ap2: VarSpec = VarSpec(value=1.0, min=0.8, max=1.2)
+    h_fp1: VarSpec = VarSpec(value=1.25, min=1.0, max=1.45)  # Fußhöhenfaktor Rad 1
+    h_fp2: VarSpec = VarSpec(value=1.25, min=1.0, max=1.45)
+    rho_fp1: VarSpec = VarSpec(value=0.38, min=0.2, max=0.48)  # Fußausrundung Rad 1
+    rho_fp2: VarSpec = VarSpec(value=0.38, min=0.2, max=0.48)
+    q1_mm: float = 0.0  # Bearbeitungszugabe (not in the kernel — carried, warns)
     q2_mm: float = 0.0
     pr_p1_mm: float = 0.0  # Protuberanzbetrag
     pr_p2_mm: float = 0.0
@@ -650,7 +651,7 @@ class VariationRequest(BaseModel):
     root_minimum_safety: float = 2.0
     flank_minimum_safety: float = 1.0
     method: str = Field("grid", pattern="^(grid|sobol|lhs)$")
-    sample_count: int = 256
+    sample_count: int = Field(256, ge=8, le=65536)
     # material matrix (user decision/plan v2): each side steel or plastic — steel/steel,
     # plastic/plastic, or mixed in either orientation. The kernel dispatches per gear
     # (steel → ISO 6336 limits, plastic → VDI 2736 limits, ADR-013).
@@ -668,6 +669,13 @@ class VariationPoint(BaseModel):
     x2: float
     beta_deg: float
     b: float
+    b2: float
+    h_ap1: float
+    h_ap2: float
+    h_fp1: float
+    h_fp2: float
+    rho_fp1: float
+    rho_fp2: float
     center_distance_mm: float
     transverse_contact_ratio: float
     overlap_ratio: float
@@ -699,6 +707,13 @@ _VAR_LABELS = {
     "x2": "Shift x₂",
     "beta_deg": "Helix β",
     "b": "Face width b",
+    "b2": "Face width b₂",
+    "h_ap1": "Addendum h_aP*₁",
+    "h_ap2": "Addendum h_aP*₂",
+    "h_fp1": "Dedendum h_fP*₁",
+    "h_fp2": "Dedendum h_fP*₂",
+    "rho_fp1": "Root fillet ρ_fP*₁",
+    "rho_fp2": "Root fillet ρ_fP*₂",
 }
 
 
@@ -739,15 +754,19 @@ def variation(req: VariationRequest) -> VariationResponse:
         "x2": req.x2,
         "beta_deg": req.beta_deg,
         "b": req.b,
+        # per-gear reference-profile rows — real sweep parameters since v0.7
+        "b2": req.b2,
+        "h_ap1": req.h_ap1,
+        "h_ap2": req.h_ap2,
+        "h_fp1": req.h_fp1,
+        "h_fp2": req.h_fp2,
+        "rho_fp1": req.rho_fp1,
+        "rho_fp2": req.rho_fp2,
     }
-    # honesty notes: rows the FVA dialog has but the sweep kernel cannot separate yet —
-    # the Rad-1 value drives the sweep, a differing Rad-2 value is reported, never silently
+    # honesty notes: rows the FVA dialog has but the sweep kernel does not evaluate —
+    # reported, never silently dropped
     extra_warnings: list[str] = []
     for label, v1, v2 in (
-        ("Zahnbreite b", req.b.value, req.b2_mm),
-        ("Kopfhöhenfaktor h_aP*", req.h_ap1, req.h_ap2),
-        ("Fußhöhenfaktor h_fP*", req.h_fp1, req.h_fp2),
-        ("Fußausrundungsfaktor ρ_fP*", req.rho_fp1, req.rho_fp2),
         ("Bearbeitungszugabe q", req.q1_mm, req.q2_mm),
         ("Protuberanzbetrag pr_P", req.pr_p1_mm, req.pr_p2_mm),
         ("Protuberanzwinkel α_prP", req.alpha_pr_p1_deg, req.alpha_pr_p2_deg),
@@ -791,17 +810,28 @@ def variation(req: VariationRequest) -> VariationResponse:
         fixed=fixed,
         normal_pressure_angle_deg=req.alpha_n.value,
         # reference-profile semantics: gear h_aP* = addendum, gear h_fP* = tool h_aP0*,
-        # gear ρ_fP* = tool tip radius (Rad-1 values drive the sweep, see warnings above)
-        addendum_factor=req.h_ap1,
-        tool_addendum_factor=req.h_fp1,
-        tool_tip_radius_factor=req.rho_fp1,
+        # gear ρ_fP* = tool tip radius (scalar fallbacks; the per-gear specs above win)
+        addendum_factor=req.h_ap1.value,
+        tool_addendum_factor=req.h_fp1.value,
+        tool_tip_radius_factor=req.rho_fp1.value,
         root_minimum_safety=req.root_minimum_safety,
         flank_minimum_safety=req.flank_minimum_safety,
     )
+    # Sobol needs a power-of-two count for balance (scipy warns otherwise) — round UP
+    # and say so (honesty: never silently change the user's request)
+    sample_count = req.sample_count
+    if req.method == "sobol":
+        rounded = 1 << (sample_count - 1).bit_length()
+        if rounded != sample_count:
+            extra_warnings.append(
+                f"Sobol: sample count rounded up to the next power of two "
+                f"({req.sample_count} → {rounded})."
+            )
+            sample_count = rounded
     batch = (
         build_grid(spec)
         if req.method == "grid"
-        else build_sample(spec, req.sample_count, method=req.method)
+        else build_sample(spec, sample_count, method=req.method)
     )
     if req.fix_center_distance:
         # derive x₂ so the working centre distance equals the target a (per variant)
@@ -843,9 +873,12 @@ def variation(req: VariationRequest) -> VariationResponse:
         profile_shift_wheel=p["x2"],
         normal_pressure_angle=np.radians(alpha),
         helix_angle=np.radians(beta),
-        face_width_mm=p["b"],
+        face_width_mm=np.minimum(p["b"], p["b2"]),
+        addendum_factor_pinion=p["h_ap1"],
+        addendum_factor_wheel=p["h_ap2"],
     )
-    # solid-disc weight estimate (density follows each gear's material kind), grams
+    # solid-disc weight estimate (density follows each gear's material kind; each gear
+    # its own face width), grams
     quarter_pi = math.pi / 4.0
     weight = (
         (req.steel_density_kg_m3 if req.pinion_material == "steel" else req.plastic_density_kg_m3)
@@ -859,7 +892,7 @@ def variation(req: VariationRequest) -> VariationResponse:
         )
         * quarter_pi
         * (geo.tip_diameter[1] * 1e-3) ** 2
-        * (p["b"] * 1e-3)
+        * (p["b2"] * 1e-3)
     ) * 1000.0
 
     valid = res.valid
@@ -880,6 +913,13 @@ def variation(req: VariationRequest) -> VariationResponse:
             x2=round(float(p["x2"][i]), 4),
             beta_deg=round(float(beta[i]), 2),
             b=round(float(p["b"][i]), 2),
+            b2=round(float(p["b2"][i]), 2),
+            h_ap1=round(float(p["h_ap1"][i]), 3),
+            h_ap2=round(float(p["h_ap2"][i]), 3),
+            h_fp1=round(float(p["h_fp1"][i]), 3),
+            h_fp2=round(float(p["h_fp2"][i]), 3),
+            rho_fp1=round(float(p["rho_fp1"][i]), 3),
+            rho_fp2=round(float(p["rho_fp2"][i]), 3),
             center_distance_mm=round(float(geo.working_center_distance_mm[i]), 3),
             transverse_contact_ratio=round(float(res.transverse_contact_ratio[i]), 4),
             overlap_ratio=round(float(overlap[i]), 4),
@@ -901,7 +941,7 @@ def variation(req: VariationRequest) -> VariationResponse:
         eval_ms=round(eval_ms, 1),
         varied=[_VAR_LABELS[k] for k in varied],
         points=points,
-        warnings=list(res.warnings),
+        warnings=[*res.warnings, *extra_warnings],
     )
 
 

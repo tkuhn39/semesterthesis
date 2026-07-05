@@ -177,13 +177,15 @@ def mesh_geometry(
     normal_pressure_angle: Array,
     helix_angle: Array,
     face_width_mm: Array,
-    addendum_factor: Array = _ONE,
+    addendum_factor_pinion: Array = _ONE,
+    addendum_factor_wheel: Array = _ONE,
 ) -> MeshGeometry:
     """Build the vectorized macro-geometry from the swept parameters.
 
     Tip diameters use the running addendum d_a = d + 2 m_n (h_aP* + x) (no chamfer —
-    a small correction for a macro pre-design); the working centre distance follows
-    the profile-shift sum.
+    a small correction for a macro pre-design), with h_aP* per gear (the FVA dialog
+    carries separate Rad-1/Rad-2 reference profiles); the working centre distance
+    follows the profile-shift sum.
     """
     cos_beta = np.cos(helix_angle)
     transverse_module = normal_module_mm / cos_beta
@@ -192,8 +194,8 @@ def mesh_geometry(
     ref_w = transverse_module * teeth_wheel
     base_p = ref_p * np.cos(alpha_t)
     base_w = ref_w * np.cos(alpha_t)
-    tip_p = ref_p + 2.0 * normal_module_mm * (addendum_factor + profile_shift_pinion)
-    tip_w = ref_w + 2.0 * normal_module_mm * (addendum_factor + profile_shift_wheel)
+    tip_p = ref_p + 2.0 * normal_module_mm * (addendum_factor_pinion + profile_shift_pinion)
+    tip_w = ref_w + 2.0 * normal_module_mm * (addendum_factor_wheel + profile_shift_wheel)
 
     alpha_wt = working_pressure_angle(
         alpha_t,

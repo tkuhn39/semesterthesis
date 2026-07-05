@@ -47,8 +47,11 @@ class VariationSpec:
     """The parameter space and the fixed design context of a Stufenvariation.
 
     Swept parameters live in ``varied`` (keyed by ``m_n``, ``z1``, ``z2``, ``x1``,
-    ``x2``, ``beta_deg``, ``b``, ``alpha_n_deg``); everything not varied takes its
-    ``fixed`` value (``alpha_n_deg`` falls back to ``normal_pressure_angle_deg``).
+    ``x2``, ``beta_deg``, ``b``, ``alpha_n_deg``, and the per-gear rows ``b2``,
+    ``h_ap1``/``h_ap2``, ``h_fp1``/``h_fp2``, ``rho_fp1``/``rho_fp2``); everything not
+    varied takes its ``fixed`` value (``alpha_n_deg`` falls back to
+    ``normal_pressure_angle_deg``; the per-gear rows fall back to the scalar spec
+    fields below — direct ``VariationSpec`` users keep the old behaviour bit-exactly).
     """
 
     materials: tuple[Material, Material]
@@ -134,6 +137,11 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
     def p(name: str) -> Array:
         return spec._value(name, grid)
 
+    def p_opt(name: str, fallback: Array) -> Array:
+        # optional per-gear rows: present in the batch/fixed set → use them, else the
+        # scalar spec field (keeps direct VariationSpec construction bit-identical)
+        return p(name) if name in grid or name in spec.fixed else fallback
+
     # α_n is sweepable (FVA Stufenvariation row "Normaleingriffswinkel Rad 1"): the whole
     # kernel is vectorized in alpha_n already — an "alpha_n_deg" grid/fixed entry wins over
     # the spec scalar.
@@ -151,6 +159,20 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
         else (np.radians(p("beta_deg")) if "beta_deg" in grid else _a(0.0))
     )
     b = p("b")
+    # per-gear rows (FVA dialog): face width, addendum, tool dedendum + tip radius —
+    # the shared-mesh quantities (ε, flank) use the COMMON width min(b, b2), the root
+    # stress of each gear uses its own width
+    b2 = p_opt("b2", b)
+    b_eff = np.minimum(b, b2)
+    h_ap = (p_opt("h_ap1", _a(spec.addendum_factor)), p_opt("h_ap2", _a(spec.addendum_factor)))
+    h_fp = (
+        p_opt("h_fp1", _a(spec.tool_addendum_factor)),
+        p_opt("h_fp2", _a(spec.tool_addendum_factor)),
+    )
+    rho_fp = (
+        p_opt("rho_fp1", _a(spec.tool_tip_radius_factor)),
+        p_opt("rho_fp2", _a(spec.tool_tip_radius_factor)),
+    )
 
     geometry = kernel.mesh_geometry(
         normal_module_mm=m_n,
@@ -160,8 +182,9 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
         profile_shift_wheel=x2,
         normal_pressure_angle=alpha_n,
         helix_angle=beta,
-        face_width_mm=b,
-        addendum_factor=_a(spec.addendum_factor),
+        face_width_mm=b_eff,
+        addendum_factor_pinion=h_ap[0],
+        addendum_factor_wheel=h_ap[1],
     )
     base_helix = np.arcsin(np.sin(beta) * np.cos(alpha_n))
     teeth = (z1, z2)
@@ -173,8 +196,8 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
             normal_pressure_angle=alpha_n,
             helix_angle=beta,
             generation_profile_shift=shifts[i],  # x_E ≈ x for the sweep (allowance = 0)
-            tool_addendum_factor=_a(spec.tool_addendum_factor),
-            tool_tip_radius_factor=_a(spec.tool_tip_radius_factor),
+            tool_addendum_factor=h_fp[i],
+            tool_tip_radius_factor=rho_fp[i],
             tip_diameter_mm=geometry.tip_diameter[i],
         )
         for i in range(2)
@@ -208,7 +231,7 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
         helix_factor=z_beta,
         tangential_force_n=f_t,
         pinion_reference_diameter_mm=geometry.reference_diameter[0],
-        face_width_mm=b,
+        face_width_mm=b_eff,
         gear_ratio=u,
         load_factor_kh=k_h,
     )
@@ -217,10 +240,11 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
     sigma_f: list[Array] = []
     s_f: list[Array] = []
     s_h: list[Array] = []
+    widths = (b, b2)
     for i in range(2):
         stress = kernel.root_stress(
             tangential_force_n=f_t,
-            face_width_mm=b,
+            face_width_mm=widths[i],
             normal_module_mm=m_n,
             form_factor_tip=roots[i].form_factor_tip,
             stress_correction_tip=roots[i].stress_correction_tip,
@@ -235,20 +259,35 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
         s_h.append(sigma_hp / sigma_h if sigma_hp is not None else np.full_like(sigma_h, np.nan))
 
     valid = kernel.validity_mask(geometry, roots)
+    # the batch shape comes from the swept arrays — geometry may stay scalar when the
+    # varied parameter only enters the tooth-root side (h_fP*, ρ_fP*, b2), so every
+    # output is broadcast up to the batch before returning
+    batch_shape = (
+        next(iter(grid.values())).shape if grid else geometry.total_contact_ratio.shape
+    )
+
+    def bx(a: Array) -> Array:
+        return a if a.shape == batch_shape else np.broadcast_to(a, batch_shape).copy()
+
+    extra = tuple(
+        n
+        for n in ("b2", "h_ap1", "h_ap2", "h_fp1", "h_fp2", "rho_fp1", "rho_fp2")
+        if n in grid or n in spec.fixed
+    )
     broadcast = {
-        n: np.broadcast_to(p(n), geometry.total_contact_ratio.shape).copy()
-        for n in ("m_n", "z1", "z2", "x1", "x2", "b")
+        n: np.broadcast_to(p(n), batch_shape).copy()
+        for n in ("m_n", "z1", "z2", "x1", "x2", "b", *extra)
     }
     return VariationResult(
         parameters=broadcast,
-        transverse_contact_ratio=geometry.transverse_contact_ratio,
-        overlap_ratio=geometry.overlap_ratio,
-        total_contact_ratio=geometry.total_contact_ratio,
-        flank_stress_mpa=sigma_h,
-        root_stress_mpa=(sigma_f[0], sigma_f[1]),
-        flank_safety=(s_h[0], s_h[1]),
-        root_safety=(s_f[0], s_f[1]),
-        valid=valid,
+        transverse_contact_ratio=bx(geometry.transverse_contact_ratio),
+        overlap_ratio=bx(geometry.overlap_ratio),
+        total_contact_ratio=bx(geometry.total_contact_ratio),
+        flank_stress_mpa=bx(sigma_h),
+        root_stress_mpa=(bx(sigma_f[0]), bx(sigma_f[1])),
+        flank_safety=(bx(s_h[0]), bx(s_h[1])),
+        root_safety=(bx(s_f[0]), bx(s_f[1])),
+        valid=np.broadcast_to(valid, batch_shape).copy(),
         warnings=tuple(dict.fromkeys(warnings)),  # de-duplicated, order-preserving
     )
 

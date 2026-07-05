@@ -222,6 +222,11 @@ const DICT: Record<string, { de: string; en: string }> = {
   "var.sfMin": { de: "Mindestsicherheit Fuß", en: "Minimum root safety" },
   "var.countCompute": { de: "Es werden {n} Varianten berechnet.", en: "{n} variants will be computed." },
   "var.method.grid": { de: "Gitter", en: "Grid" },
+  "var.sampleCount": { de: "Stichprobenanzahl", en: "Sample count" },
+  "var.sobolHint": {
+    de: "Anzahl der Sobol/LHS-Varianten (Sobol wird auf die nächste 2er-Potenz aufgerundet — Hinweis erscheint in den Warnungen).",
+    en: "Number of Sobol/LHS variants (Sobol rounds up to the next power of two — noted in the warnings).",
+  },
   "var.continueExisting": { de: "Weiter (vorhandene Ergebnisse) >", en: "Next (existing results) >" },
   "var.computeNext": { de: "Weiter > (berechnen)", en: "Next > (compute)" },
   "var.computing": { de: "Berechne {n} Varianten …", en: "Computing {n} variants …" },

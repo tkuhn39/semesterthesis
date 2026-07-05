@@ -12,6 +12,7 @@ import {
   KST_E_STAGE,
   type StageParams,
   type VariationPoint,
+  type VariationRequest,
   type VariationResponse,
 } from "@/lib/api";
 
@@ -245,6 +246,7 @@ export interface VariationFilter {
 export interface VariationUiState {
   step: 1 | 2 | 3 | 4;
   res: VariationResponse | null;
+  req: VariationRequest | null; // the exact sweep settings of `res` (report reuse)
   rows: VariationPoint[]; // sorted working set of the result steps
   compare: number[];
   filters: Record<string, VariationFilter>;
@@ -254,6 +256,7 @@ export interface VariationUiState {
 const VARIATION_UI_DEFAULTS: VariationUiState = {
   step: 1,
   res: null,
+  req: null,
   rows: [],
   compare: [],
   filters: {},

@@ -176,3 +176,45 @@ def test_micro_geometry_symmetry_policy() -> None:
     res = client.post("/api/mesh/preview", json={"stage": stage, "gear": 2})
     assert res.status_code == 200
     assert res.json()["cells_below_035"] == 0
+
+
+def test_variation_sample_count_sobol_rounds_lhs_exact() -> None:
+    """sample_count is user-controlled; Sobol rounds up to a power of two with a warning,
+    LHS uses the exact count."""
+    base = {
+        "z1": {"vary": True, "value": 24, "min": 20, "max": 28, "steps": 5},
+        "x1": {"vary": True, "value": 0.0, "min": -0.3, "max": 0.6, "steps": 5},
+    }
+    res = client.post(
+        "/api/variation", json={**base, "method": "sobol", "sample_count": 100}
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["count"] == 128
+    assert any("power of two" in w for w in body["warnings"])
+
+    res = client.post("/api/variation", json={**base, "method": "lhs", "sample_count": 100})
+    assert res.status_code == 200
+    assert res.json()["count"] == 100
+
+
+def test_variation_per_gear_reference_profile_rows() -> None:
+    """The per-gear rows sweep for real now: varying rho_fp2 changes only gear 2's
+    root safety; the point payload carries the per-gear values."""
+    res = client.post(
+        "/api/variation",
+        json={
+            "rho_fp2": {"vary": True, "value": 0.38, "min": 0.25, "max": 0.45, "steps": 3},
+            "z1": {"vary": False, "value": 24, "min": 20, "max": 28},
+            "x1": {"vary": False, "value": 0.0, "min": -0.3, "max": 0.6},
+        },
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["count"] == 3
+    pts = body["points"]
+    assert {p["rho_fp2"] for p in pts} == {0.25, 0.35, 0.45}
+    assert len({p["root_safety_wheel"] for p in pts}) == 3  # gear 2 responds
+    assert len({p["root_safety_pinion"] for p in pts}) == 1  # gear 1 constant
+    # no more "not separable" warning for the reference-profile rows
+    assert not any("h_fP" in w for w in body["warnings"])

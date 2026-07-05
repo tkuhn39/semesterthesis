@@ -24,15 +24,23 @@ import { useFmt, useT } from "@/lib/i18n";
 import { useStage } from "@/lib/stage";
 import { useWorkbench, type VariationFilter } from "@/lib/store";
 
-type ParamKey = "m_n" | "alpha_n" | "beta_deg" | "z1" | "z2" | "x1" | "x2" | "b";
-type FixedKey =
-  | "b2_mm"
+type ParamKey =
+  | "m_n"
+  | "alpha_n"
+  | "beta_deg"
+  | "z1"
+  | "z2"
+  | "x1"
+  | "x2"
+  | "b"
+  | "b2"
   | "h_ap1"
   | "h_ap2"
   | "h_fp1"
   | "h_fp2"
   | "rho_fp1"
-  | "rho_fp2"
+  | "rho_fp2";
+type FixedKey =
   | "q1_mm"
   | "q2_mm"
   | "pr_p1_mm"
@@ -53,13 +61,13 @@ const ROWS: Row[] = [
   { kind: "spec", key: "x1", labelKey: "attr.x", gear: 1, symbol: "x", unit: "" },
   { kind: "spec", key: "x2", labelKey: "attr.x", gear: 2, symbol: "x", unit: "" },
   { kind: "spec", key: "b", labelKey: "attr.b", gear: 1, symbol: "b", unit: "mm" },
-  { kind: "fixed", key: "b2_mm", labelKey: "attr.b", gear: 2, symbol: "b", unit: "mm" },
-  { kind: "fixed", key: "h_ap1", labelKey: "attr.haP", gear: 1, symbol: "h_aP*", unit: "" },
-  { kind: "fixed", key: "h_ap2", labelKey: "attr.haP", gear: 2, symbol: "h_aP*", unit: "" },
-  { kind: "fixed", key: "h_fp1", labelKey: "attr.hfP", gear: 1, symbol: "h_fP*", unit: "" },
-  { kind: "fixed", key: "h_fp2", labelKey: "attr.hfP", gear: 2, symbol: "h_fP*", unit: "" },
-  { kind: "fixed", key: "rho_fp1", labelKey: "attr.rhofP", gear: 1, symbol: "ρ_fP*", unit: "" },
-  { kind: "fixed", key: "rho_fp2", labelKey: "attr.rhofP", gear: 2, symbol: "ρ_fP*", unit: "" },
+  { kind: "spec", key: "b2", labelKey: "attr.b", gear: 2, symbol: "b", unit: "mm" },
+  { kind: "spec", key: "h_ap1", labelKey: "attr.haP", gear: 1, symbol: "h_aP*", unit: "" },
+  { kind: "spec", key: "h_ap2", labelKey: "attr.haP", gear: 2, symbol: "h_aP*", unit: "" },
+  { kind: "spec", key: "h_fp1", labelKey: "attr.hfP", gear: 1, symbol: "h_fP*", unit: "" },
+  { kind: "spec", key: "h_fp2", labelKey: "attr.hfP", gear: 2, symbol: "h_fP*", unit: "" },
+  { kind: "spec", key: "rho_fp1", labelKey: "attr.rhofP", gear: 1, symbol: "ρ_fP*", unit: "" },
+  { kind: "spec", key: "rho_fp2", labelKey: "attr.rhofP", gear: 2, symbol: "ρ_fP*", unit: "" },
   { kind: "fixed", key: "q1_mm", labelKey: "attr.q", gear: 1, symbol: "q", unit: "mm" },
   { kind: "fixed", key: "q2_mm", labelKey: "attr.q", gear: 2, symbol: "q", unit: "mm" },
   { kind: "fixed", key: "pr_p1_mm", labelKey: "attr.prP", gear: 1, symbol: "pr_P", unit: "mm" },
@@ -100,13 +108,13 @@ function defaultsFromStage(s: StageParams, torqueT1: number | undefined): Variat
     x1: { vary: true, value: s.profile_shift_pinion, min: -1.0, max: 1.0, steps: 10 },
     x2: { vary: false, value: s.profile_shift_wheel, min: -1.0, max: 1.0, steps: 5 },
     b: { vary: false, value: s.face_width_pinion_mm, min: Math.max(5, s.face_width_pinion_mm - 10), max: s.face_width_pinion_mm + 15, steps: 4 },
-    b2_mm: s.face_width_wheel_mm,
-    h_ap1: 1.0,
-    h_ap2: 1.0,
-    h_fp1: s.tool_addendum_factor,
-    h_fp2: s.tool_addendum_factor,
-    rho_fp1: s.tool_tip_radius_factor,
-    rho_fp2: s.tool_tip_radius_factor,
+    b2: { vary: false, value: s.face_width_wheel_mm, min: Math.max(5, s.face_width_wheel_mm - 10), max: s.face_width_wheel_mm + 15, steps: 4 },
+    h_ap1: { vary: false, value: 1.0, min: 0.8, max: 1.2, steps: 5 },
+    h_ap2: { vary: false, value: 1.0, min: 0.8, max: 1.2, steps: 5 },
+    h_fp1: { vary: false, value: s.tool_addendum_factor, min: 1.0, max: 1.45, steps: 5 },
+    h_fp2: { vary: false, value: s.tool_addendum_factor, min: 1.0, max: 1.45, steps: 5 },
+    rho_fp1: { vary: false, value: s.tool_tip_radius_factor, min: 0.2, max: 0.48, steps: 5 },
+    rho_fp2: { vary: false, value: s.tool_tip_radius_factor, min: 0.2, max: 0.48, steps: 5 },
     q1_mm: 0.0,
     q2_mm: 0.0,
     pr_p1_mm: 0.0,
@@ -192,7 +200,8 @@ export function VariationPanel() {
       const rows = [...out.points].sort(
         (a, b) => (b.root_safety_wheel ?? -1) - (a.root_safety_wheel ?? -1),
       );
-      setVar({ res: out, rows, step: 3 });
+      // persist the REQUEST too (report generation reuses the exact sweep settings)
+      setVar({ res: out, rows, req: r, step: 3 });
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
       setVar({ step: 1 });
@@ -221,10 +230,11 @@ export function VariationPanel() {
             normal_pressure_angle_deg: r.normal_pressure_angle_deg,
             helix_angle_deg: p.beta_deg,
             face_width_pinion_mm: p.b ?? 20,
-            face_width_wheel_mm: p.b ?? 20,
+            face_width_wheel_mm: p.b2 ?? p.b ?? 20,
             center_distance_mm: null,
-            tool_addendum_factor: r.tool_addendum_factor,
-            tool_tip_radius_factor: r.tool_tip_radius_factor,
+            // gear-2 contour → the variant's gear-2 reference profile
+            tool_addendum_factor: p.h_fp2 ?? r.tool_addendum_factor,
+            tool_tip_radius_factor: p.rho_fp2 ?? r.tool_tip_radius_factor,
           },
           gear: 2,
           fillet: { kind: v.fillet_kind }, // Fußform (our extension)
@@ -255,7 +265,9 @@ export function VariationPanel() {
   }, [v.step]);
 
   const applyVariant = (p: VariationPoint) => {
-    // Übernehmen (FVA): the picked variant becomes THE stage — every tab follows (SSOT)
+    // Übernehmen (FVA): the picked variant becomes THE stage — every tab follows (SSOT).
+    // The stage carries ONE tool reference profile — the gear-1 values drive it (a
+    // per-gear tool split on the stage is a later extension).
     setStage({
       ...stage,
       use_example: false,
@@ -266,7 +278,9 @@ export function VariationPanel() {
       profile_shift_wheel: p.x2,
       helix_angle_deg: p.beta_deg,
       face_width_pinion_mm: p.b,
-      face_width_wheel_mm: r.b2_mm,
+      face_width_wheel_mm: p.b2,
+      tool_addendum_factor: p.h_fp1,
+      tool_tip_radius_factor: p.rho_fp1,
       center_distance_mm: null,
     });
     setLabel(`Variante z=${Math.round(p.z1)}/${Math.round(p.z2)} x₁=${p.x1.toFixed(2)}`);
@@ -460,6 +474,15 @@ export function VariationPanel() {
               <option value="sobol">Sobol</option>
               <option value="lhs">LHS</option>
             </select>
+            {r.method !== "grid" && (
+              <label
+                className="inline-flex items-center gap-1.5 text-[12px] text-zinc-600"
+                title={t("var.sobolHint")}
+              >
+                {t("var.sampleCount")}
+                <Num width={80} step={1} value={r.sample_count} onChange={set("sample_count")} />
+              </label>
+            )}
             <div className="ml-auto flex gap-2">
               {v.res && (
                 <Btn variant="ghost" onClick={() => setVar({ step: 3 })}>

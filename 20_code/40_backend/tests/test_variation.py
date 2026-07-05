@@ -169,3 +169,71 @@ def test_sobol_and_lhs_samples_within_bounds() -> None:
         assert np.all((sample["x2"] >= -0.3) & (sample["x2"] <= 0.5))
         res = evaluate(spec, sample)
         assert res.total_contact_ratio.shape == (16,)
+
+
+def test_per_gear_rows_match_scalar_path_when_equal() -> None:
+    """Regression: per-gear batch entries equal to the spec scalars reproduce the old
+    scalar path bit-identically (b2=b, h_ap=addendum, h_fp/rho_fp=tool factors)."""
+    fixed_old = {"m_n": 2.0, "z1": 24.0, "z2": 60.0, "x1": 0.1, "x2": 0.0, "b": 20.0}
+    spec_old = VariationSpec(
+        materials=(_STEEL, _PLASTIC),
+        torque_nm=10.0,
+        varied={"z1": Varied(values=(20.0, 24.0, 28.0))},
+        fixed={k: v for k, v in fixed_old.items() if k != "z1"},
+    )
+    res_old = evaluate(spec_old, build_grid(spec_old))
+    spec_new = VariationSpec(
+        materials=(_STEEL, _PLASTIC),
+        torque_nm=10.0,
+        varied={"z1": Varied(values=(20.0, 24.0, 28.0))},
+        fixed={
+            **{k: v for k, v in fixed_old.items() if k != "z1"},
+            "b2": 20.0,
+            "h_ap1": 1.0,
+            "h_ap2": 1.0,
+            "h_fp1": 1.25,
+            "h_fp2": 1.25,
+            "rho_fp1": 0.38,
+            "rho_fp2": 0.38,
+        },
+    )
+    res_new = evaluate(spec_new, build_grid(spec_new))
+    for old, new in (
+        (res_old.root_stress_mpa[0], res_new.root_stress_mpa[0]),
+        (res_old.root_stress_mpa[1], res_new.root_stress_mpa[1]),
+        (res_old.flank_stress_mpa, res_new.flank_stress_mpa),
+        (res_old.total_contact_ratio, res_new.total_contact_ratio),
+    ):
+        assert np.array_equal(old, new)
+
+
+def test_h_fp_variation_affects_only_its_gear() -> None:
+    """Varying the gear-1 tool dedendum changes only gear 1's root stress."""
+    spec = VariationSpec(
+        materials=(_STEEL, _PLASTIC),
+        torque_nm=10.0,
+        varied={"h_fp1": Varied(values=(1.1, 1.25, 1.4))},
+        fixed={"m_n": 2.0, "z1": 24.0, "z2": 60.0, "x1": 0.1, "x2": 0.0, "b": 20.0},
+    )
+    res = evaluate(spec, build_grid(spec))
+    assert np.unique(np.round(res.root_stress_mpa[0], 9)).size == 3  # gear 1 responds
+    assert np.unique(np.round(res.root_stress_mpa[1], 9)).size == 1  # gear 2 constant
+
+
+def test_b2_drives_wheel_root_and_common_flank_width() -> None:
+    """b2 loads gear 2's root with its own width; the flank uses min(b, b2)."""
+    spec = VariationSpec(
+        materials=(_STEEL, _PLASTIC),
+        torque_nm=10.0,
+        varied={"b2": Varied(values=(10.0, 20.0, 30.0))},
+        fixed={"m_n": 2.0, "z1": 24.0, "z2": 60.0, "x1": 0.1, "x2": 0.0, "b": 20.0},
+    )
+    res = evaluate(spec, build_grid(spec))
+    sigma2 = res.root_stress_mpa[1]
+    assert sigma2[0] > sigma2[1] > sigma2[2]  # wider wheel → lower root stress
+    sigma1 = res.root_stress_mpa[0]
+    assert sigma1[0] == sigma1[1] == sigma1[2]  # gear 1 root keeps its own b
+    # flank: min(b, b2) → 10/20/20 → first variant is more stressed, last two equal
+    sh = res.flank_stress_mpa
+    assert sh[0] > sh[1]
+    assert np.isclose(sh[1], sh[2])
