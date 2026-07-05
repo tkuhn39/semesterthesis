@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { api, type GeometryResponse, type StageParams } from "@/lib/api";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
+import { MeshEngagement } from "@/components/MeshEngagement";
 import { useStage } from "@/lib/stage";
 import { useWorkbench } from "@/lib/store";
 import { useT } from "@/lib/i18n";
@@ -182,6 +183,7 @@ export function GeometryPanel() {
               ⚠ {n}
             </div>
           ))}
+          <MeshEngagement height={340} />
         </div>
       )}
     </div>

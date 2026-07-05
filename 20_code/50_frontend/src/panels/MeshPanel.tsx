@@ -12,9 +12,11 @@ import {
   type FilletSpec,
   type FilletSweepResponse,
   type Mesh3DResponse,
+  type MeshPreviewResponse,
 } from "@/lib/api";
 import { useStage } from "@/lib/stage";
 import { MeshViewport } from "@/components/MeshViewport";
+import { Mesh2DView } from "@/components/Mesh2DView";
 import { FilletEditor, ManufacturabilityNote } from "@/panels/ToothFormPanel";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { useT } from "@/lib/i18n";
@@ -34,7 +36,9 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
   const [layers, setLayers] = useState(6);
   const [fillet, setFillet] = useState<FilletSpec>({ kind: "standard" });
   const [heatmap, setHeatmap] = useState(true);
+  const [view, setView] = useState<"3d" | "2d">("3d");
   const [data, setData] = useState<Mesh3DResponse | null>(null);
+  const [preview, setPreview] = useState<MeshPreviewResponse | null>(null);
   const [conv, setConv] = useState<Record<string, ConvergenceResponse>>({});
   const [ranking, setRanking] = useState<FilletCompareResponse | null>(null);
   const [sweep, setSweep] = useState<FilletSweepResponse | null>(null);
@@ -56,12 +60,17 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
 
   const generate = () =>
     guard("mesh", async () => {
-      setData(
-        await meshApi.mesh3d(
-          { stage, gear: props.gear, refine_root: refineRoot, refine_flank: refineFlank, fillet },
-          layers,
-        ),
-      );
+      const req = {
+        stage,
+        gear: props.gear,
+        refine_root: refineRoot,
+        refine_flank: refineFlank,
+        fillet,
+      };
+      // 3D hull for the viewport + the 2D section (FVA FEM-Vernetzer style) in one go
+      const [d3, d2] = await Promise.all([meshApi.mesh3d(req, layers), meshApi.preview(req)]);
+      setData(d3);
+      setPreview(d2);
     });
 
   const runConvergence = (target: "root" | "flank") =>
@@ -152,7 +161,7 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
           </div>
         </Section>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <Btn onClick={generate} busy={busy === "mesh"}>
             {t("mesh.generate")}
           </Btn>
@@ -160,6 +169,14 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
             <input type="checkbox" checked={heatmap} onChange={(e) => setHeatmap(e.target.checked)} />
             Jacobi-Heatmap
           </label>
+          <select
+            className="border border-zinc-300 rounded-md px-1.5 py-0.5 text-[12px] ml-auto"
+            value={view}
+            onChange={(e) => setView(e.target.value as "3d" | "2d")}
+          >
+            <option value="3d">3D-Ansicht</option>
+            <option value="2d">2D-Schnitt</option>
+          </select>
         </div>
         {err && <ErrNote>{err}</ErrNote>}
 
@@ -288,7 +305,11 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
       </div>
 
       <div className="h-full min-h-[560px]" style={{ background: "var(--wb-viewport)", borderRadius: 10 }}>
-        <MeshViewport data={data} heatmap={heatmap} />
+        {view === "2d" && preview ? (
+          <Mesh2DView data={preview} heatmap={heatmap} height={620} />
+        ) : (
+          <MeshViewport data={data} heatmap={heatmap} />
+        )}
       </div>
     </div>
   );

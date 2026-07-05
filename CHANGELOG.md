@@ -9,6 +9,20 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (2D mesh rendering + Zahneingriff animation)
+- **2D-Schnitt view of the FE mesh** (`Mesh2DView`): the previously unrendered
+  `/api/mesh/preview` now draws every quad as an SVG polygon with the scaled-Jacobian
+  heatmap (grey ≥ 0.7, amber, red < 0.35 — same gates as the 3D viewport) plus a legend
+  and min-J readout; selectable next to the 3D hull in the FE-Mesh tab (kst-E wheel:
+  3 024 quads, min J 0.449, 0 cells below the gate — the ADR-019 reference topology is
+  now visually checkable in the app, FVA "FEM-Vernetzer" style).
+- **Zahneingriff animation** (`MeshEngagement`, Vorbild Gesamtsystemreport): both gears'
+  REAL as-cut outlines (from `/api/tooth-profile`) rendered as SVG and rotated
+  kinematically coupled (φ₂ = −φ₁·z₁/z₂) with play/pause + speed slider and pitch-circle
+  construction geometry; embedded in the Geometrie tab. Fixed during self-review: the
+  tooth outline walker now joins consecutive teeth at the root lands (the first version
+  chained the tips and visually covered the gaps).
+
 ### Added (Ergebnis-Schnellansicht + Achsabstand-Modus rule + per-gear column headers)
 - **Ergebnis-Schnellansicht** (FVA right panel): the ISO 21771 Hauptgeometrie and
   Durchmesser tables of the ACTIVE stage (incl. u, b_gem, ε-values and the derived working
