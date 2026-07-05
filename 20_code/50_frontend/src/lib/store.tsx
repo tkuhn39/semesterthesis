@@ -8,7 +8,12 @@
 // backend schema and frontend state can never drift apart silently.
 
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import { KST_E_STAGE, type StageParams } from "@/lib/api";
+import {
+  KST_E_STAGE,
+  type StageParams,
+  type VariationPoint,
+  type VariationResponse,
+} from "@/lib/api";
 
 export interface FemState {
   contour_source_gear1: string;
@@ -229,6 +234,30 @@ const WHEEL_BODY_DEFAULTS: WheelBodyState = {
   cut_diameter_mode: "user",
   cut_diameter_mm: 48.0,
   stiffness_mode: "ideal_stiff",
+};
+
+// Stufenvariation flow state — PERSISTED in the store (user decision: go back to the
+// filter/result steps without recomputing; results survive tab switches).
+export interface VariationFilter {
+  min: number | null;
+  max: number | null;
+}
+export interface VariationUiState {
+  step: 1 | 2 | 3 | 4;
+  res: VariationResponse | null;
+  rows: VariationPoint[]; // sorted working set of the result steps
+  compare: number[];
+  filters: Record<string, VariationFilter>;
+  fillet_kind: "standard" | "trochoid" | "elliptic" | "bezier" | "bionic"; // Fußform
+}
+
+const VARIATION_UI_DEFAULTS: VariationUiState = {
+  step: 1,
+  res: null,
+  rows: [],
+  compare: [],
+  filters: {},
+  fillet_kind: "standard",
 };
 
 // reference-parity defaults (measured deck: bore + cut planes, 30 roll positions, 2 pitches)
@@ -484,6 +513,7 @@ interface WorkbenchState {
   loaddist: LoaddistState;
   correction: CorrectionState;
   wheelBody: WheelBodyState;
+  varUi: VariationUiState;
   powerflow: PowerflowState;
   forces: ForcesState;
   control: ControlState;
@@ -614,6 +644,7 @@ const DEFAULT_STATE: WorkbenchState = {
   loaddist: LOADDIST_DEFAULTS,
   correction: CORRECTION_DEFAULTS,
   wheelBody: WHEEL_BODY_DEFAULTS,
+  varUi: VARIATION_UI_DEFAULTS,
   powerflow: {
     n_configurations: 1,
     active_configuration: "1",
@@ -673,6 +704,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       "loaddist",
       "correction",
       "wheelBody",
+      "varUi",
       "powerflow",
       "forces",
       "control",

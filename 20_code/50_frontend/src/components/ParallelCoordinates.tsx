@@ -22,6 +22,13 @@ export function ParallelCoordinates(props: {
   onSelect: (i: number) => void;
   rootMin: number;
 }): JSX.Element {
+  if (props.points.length === 0) {
+    return (
+      <div style={{ fontSize: 12, color: "var(--text-muted)", padding: "12px 4px" }}>
+        Keine Variante erfüllt die aktuellen Filterkriterien.
+      </div>
+    );
+  }
   const W = 760;
   const H = 230;
   const padX = 18;
@@ -62,24 +69,33 @@ export function ParallelCoordinates(props: {
         </g>
       ))}
       {props.points.map((p, i) => {
-        const sel = i === props.selected;
-        if (sel) return null; // draw selected on top
-        const c = COLOR[safetyVerdict(p.root_safety_wheel, props.rootMin)];
+        if (i === props.selected) return null; // drawn on top below
+        // selection behaviour (user decision): the picked variant KEEPS its colour,
+        // everything else turns grey — a selection must never remove lines
+        const hasSelection = props.selected != null;
+        const c = hasSelection ? "#d4d4d8" : COLOR[safetyVerdict(p.root_safety_wheel, props.rootMin)];
         return (
           <path
             key={i}
             d={path(p)}
             fill="none"
             stroke={c}
-            strokeWidth={p.pareto ? 1.4 : 0.7}
-            strokeOpacity={p.pareto ? 0.9 : 0.42}
+            strokeWidth={p.pareto && !hasSelection ? 1.4 : 0.7}
+            strokeOpacity={hasSelection ? 0.45 : p.pareto ? 0.9 : 0.42}
             style={{ cursor: "pointer" }}
             onClick={() => props.onSelect(i)}
           />
         );
       })}
       {props.selected != null && props.points[props.selected] && (
-        <path d={path(props.points[props.selected])} fill="none" stroke="var(--tum-blue)" strokeWidth={2.4} />
+        <path
+          d={path(props.points[props.selected])}
+          fill="none"
+          stroke={COLOR[safetyVerdict(props.points[props.selected].root_safety_wheel, props.rootMin)]}
+          strokeWidth={2.6}
+          style={{ cursor: "pointer" }}
+          onClick={() => props.onSelect(props.selected as number)}
+        />
       )}
     </svg>
   );

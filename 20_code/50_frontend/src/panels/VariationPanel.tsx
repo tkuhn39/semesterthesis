@@ -1,8 +1,11 @@
 "use client";
 
-// Stufenvariation editor (port + M5 overlay): plastic-capable macro-geometry sweep with
-// Pareto front; up to 4 selected variants overlay their REAL as-cut wheel tooth contours
-// (root_fillet-capable /api/mesh/contour) — the clean visual comparison the FVA lacks.
+// Stufenvariation as the FVA-style GUIDED FLOW inside the tree tab (user decision):
+//   1 Attribute  →  2 Rechnung  →  3 Filterkriterien  →  4 Ergebnisse (+ Übernehmen)
+// Results/filters/selection persist in THE workbench store — going back to step 3/4
+// never recomputes; Übernehmen writes the picked variant into the shared stage so every
+// other tab follows (single source of truth). Extensions beyond FVA: material matrix per
+// gear (norm dispatch), Fußform (root-fillet strategy for the contour comparison + deck).
 
 import { useEffect, useState } from "react";
 import {
@@ -12,14 +15,13 @@ import {
   type StageParams,
   type VariationPoint,
   type VariationRequest,
-  type VariationResponse,
   type VarSpec,
 } from "@/lib/api";
 import { ParallelCoordinates, type PCDim } from "@/components/ParallelCoordinates";
 import { ContourPlot, OVERLAY_COLORS } from "@/components/ContourPlot";
-import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
+import { Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { useStage } from "@/lib/stage";
-import { useT } from "@/lib/i18n";
+import { useWorkbench, type VariationFilter } from "@/lib/store";
 
 type ParamKey = "m_n" | "alpha_n" | "beta_deg" | "z1" | "z2" | "x1" | "x2" | "b";
 type FixedKey =
@@ -37,9 +39,6 @@ type FixedKey =
   | "alpha_pr_p1_deg"
   | "alpha_pr_p2_deg";
 
-// Row set = the FVA Stufenvariation dialog (Stufenvariation_Ansicht-1*.png), same order.
-// kind "spec" rows are sweepable; kind "fixed" rows carry a value the sweep kernel cannot
-// vary (yet) — value editable, Vary checkbox disabled with an honest tooltip.
 type Row =
   | { kind: "spec"; key: ParamKey; label: string; symbol: string; unit: string }
   | { kind: "fixed"; key: FixedKey; label: string; symbol: string; unit: string };
@@ -79,8 +78,17 @@ const PC_DIMS: PCDim[] = [
   { key: "weight_g", label: "Gew." },
 ];
 
-// The variation BASELINE is the currently active stage (single source of truth) —
-// never a hardcoded second gear pair. Ranges open a sensible window around it.
+// step-3 result filters (FVA Ansicht-3: Ergebnis-Attribute with min/max)
+const FILTERS: { key: keyof VariationPoint; label: string; symbol: string }[] = [
+  { key: "total_contact_ratio", label: "Gesamtüberdeckung", symbol: "ε_γ" },
+  { key: "flank_safety_pinion", label: "Sicherheitsfaktor Flanke Rad 1", symbol: "S_H" },
+  { key: "flank_safety_wheel", label: "Sicherheitsfaktor Flanke Rad 2", symbol: "S_H" },
+  { key: "root_safety_pinion", label: "Sicherheitsfaktor Fuß Rad 1", symbol: "S_F" },
+  { key: "root_safety_wheel", label: "Sicherheitsfaktor Fuß Rad 2", symbol: "S_F" },
+  { key: "center_distance_mm", label: "Achsabstand", symbol: "a" },
+  { key: "weight_g", label: "Gewicht der Zahnräder", symbol: "m" },
+];
+
 function defaultsFromStage(s: StageParams): VariationRequest {
   const a0 = s.center_distance_mm ?? (s.normal_module_mm * (s.teeth_pinion + s.teeth_wheel)) / 2;
   return {
@@ -95,7 +103,7 @@ function defaultsFromStage(s: StageParams): VariationRequest {
     b2_mm: s.face_width_wheel_mm,
     h_ap1: 1.0,
     h_ap2: 1.0,
-    h_fp1: s.tool_addendum_factor, // gear h_fP* == tool h_aP0*
+    h_fp1: s.tool_addendum_factor,
     h_fp2: s.tool_addendum_factor,
     rho_fp1: s.tool_tip_radius_factor,
     rho_fp2: s.tool_tip_radius_factor,
@@ -127,57 +135,70 @@ function defaultsFromStage(s: StageParams): VariationRequest {
   };
 }
 
+function applyFilters(points: VariationPoint[], filters: Record<string, VariationFilter>): VariationPoint[] {
+  return points.filter((p) =>
+    FILTERS.every(({ key }) => {
+      const f = filters[key as string];
+      if (!f) return true;
+      const v = p[key] as number | null;
+      if (v == null) return true;
+      if (f.min != null && v < f.min) return false;
+      if (f.max != null && v > f.max) return false;
+      return true;
+    }),
+  );
+}
+
 interface OverlayEntry {
   label: string;
   data: ContourResponse;
 }
 
 export function VariationPanel() {
-  const t = useT();
-  const { stage } = useStage();
+  const { stage, setStage, setLabel } = useStage();
+  const wb = useWorkbench();
+  const v = wb.varUi;
   const [r, setR] = useState<VariationRequest>(() => defaultsFromStage(stage));
-  const [res, setRes] = useState<VariationResponse | null>(null);
-  const [rows, setRows] = useState<VariationPoint[]>([]);
-  const [compare, setCompare] = useState<number[]>([]);
   const [overlays, setOverlays] = useState<OverlayEntry[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    // the baseline follows the shared stage — a geometry edit elsewhere re-seeds the matrix
+    // the baseline follows the shared stage — a geometry edit elsewhere re-seeds step 1
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setR(defaultsFromStage(stage));
-     
   }, [stage]);
+
+  const setVar = (patch: Partial<typeof v>) => {
+    for (const [k, val] of Object.entries(patch)) wb.set(`varUi.${k}`, val);
+  };
 
   const run = async () => {
     setBusy(true);
     setErr(null);
-    setCompare([]);
+    setVar({ step: 2, compare: [] });
     setOverlays([]);
     try {
       const out = await api.variation(r);
-      setRes(out);
-      setRows(
-        [...out.points]
-          .sort((a, b) => (b.root_safety_wheel ?? -1) - (a.root_safety_wheel ?? -1))
-          .slice(0, 120),
+      const rows = [...out.points].sort(
+        (a, b) => (b.root_safety_wheel ?? -1) - (a.root_safety_wheel ?? -1),
       );
+      setVar({ res: out, rows, step: 3 });
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
+      setVar({ step: 1 });
     } finally {
       setBusy(false);
     }
   };
 
-  const toggleCompare = async (i: number) => {
-    const next = compare.includes(i)
-      ? compare.filter((k) => k !== i)
-      : [...compare, i].slice(-4); // keep max 4
-    setCompare(next);
+  const filtered = applyFilters(v.rows, v.filters);
+
+  const buildOverlays = async (indices: number[], pts: VariationPoint[]) => {
     const entries: OverlayEntry[] = [];
-    for (const k of next) {
-      const p = rows[k];
+    for (const k of indices) {
+      const p = pts[k];
+      if (!p) continue;
       try {
         const c = await contourApi.contour({
           stage: {
@@ -197,6 +218,7 @@ export function VariationPanel() {
             tool_tip_radius_factor: r.tool_tip_radius_factor,
           },
           gear: 2,
+          fillet: { kind: v.fillet_kind }, // Fußform (our extension)
         });
         entries.push({ label: `z=${p.z1}/${p.z2} · x₂=${p.x2.toFixed(2)} · m=${p.m_n}`, data: c });
       } catch {
@@ -206,140 +228,226 @@ export function VariationPanel() {
     setOverlays(entries);
   };
 
-  const setSpec = (key: ParamKey, patch: Partial<VarSpec>) =>
-    setR({ ...r, [key]: { ...r[key], ...patch } });
-  const set = (k: keyof VariationRequest) => (v: number) => setR({ ...r, [k]: v });
-  const setFlag = (k: keyof VariationRequest) => (v: boolean) => setR({ ...r, [k]: v });
+  const toggleCompare = (i: number) => {
+    const next = v.compare.includes(i) ? v.compare.filter((k) => k !== i) : [...v.compare, i].slice(-4);
+    setVar({ compare: next });
+    void buildOverlays(next, filtered);
+  };
 
-  // "Es werden N Varianten berechnet." (FVA footer) — grid: product of the varied steps
+  useEffect(() => {
+    // returning to step 4 (tab switch / back-navigation): overlays are local state and
+    // gone, but the persisted compare selection is not — rebuild the contours once
+    if (v.step === 4 && v.compare.length > 0 && overlays.length === 0) {
+      // async fetch — setOverlays fires after the contour round-trip, not synchronously
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      void buildOverlays(v.compare, filtered);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [v.step]);
+
+  const applyVariant = (p: VariationPoint) => {
+    // Übernehmen (FVA): the picked variant becomes THE stage — every tab follows (SSOT)
+    setStage({
+      ...stage,
+      use_example: false,
+      normal_module_mm: p.m_n,
+      teeth_pinion: Math.round(p.z1),
+      teeth_wheel: Math.round(p.z2),
+      profile_shift_pinion: p.x1,
+      profile_shift_wheel: p.x2,
+      helix_angle_deg: p.beta_deg,
+      face_width_pinion_mm: p.b,
+      face_width_wheel_mm: r.b2_mm,
+      center_distance_mm: null,
+    });
+    setLabel(`Variante z=${Math.round(p.z1)}/${Math.round(p.z2)} x₁=${p.x1.toFixed(2)}`);
+  };
+
+  const setSpec = (key: ParamKey, patch: Partial<VarSpec>) => setR({ ...r, [key]: { ...r[key], ...patch } });
+  const set = (k: keyof VariationRequest) => (val: number) => setR({ ...r, [k]: val });
+  const setFlag = (k: keyof VariationRequest) => (val: boolean) => setR({ ...r, [k]: val });
+
   const variantCount = (() => {
     if (r.method !== "grid") return r.sample_count;
     let n = 1;
     for (const row of ROWS) {
       if (row.kind !== "spec") continue;
-      const locked =
-        r.fix_center_distance && (row.key === "z1" || row.key === "z2" || row.key === "x2");
+      const locked = r.fix_center_distance && (row.key === "z1" || row.key === "z2" || row.key === "x2");
       const s = r[row.key];
       if (s.vary && !locked && s.steps > 1) n *= s.steps;
     }
     return n;
   })();
 
+  const stepChip = (n: number, label: string) => (
+    <span
+      key={n}
+      className={`px-2 py-0.5 rounded-full text-[11.5px] ${
+        v.step === n ? "bg-blue-600 text-white" : n < v.step ? "bg-blue-100 text-blue-800" : "bg-zinc-100 text-zinc-500"
+      }`}
+    >
+      {n}. {label}
+    </span>
+  );
+
   return (
-    // FVA wizard layout: the attribute matrix spans the top (separate Wert AND Minimum
-    // columns like the dialog — self-review finding), results render below after a run
-    <div className="flex flex-col gap-3 items-start max-w-[1100px]">
-      <div className="flex flex-col gap-3 w-full">
-        <Section title="Stufenvariation — Attribute">
-          {/* FVA dialog top checkboxes (Stufenvariation_Ansicht-1.png) */}
-          <div className="p-2 flex flex-col gap-1 border-b border-zinc-100 text-[12px] text-zinc-600">
-            <label className="inline-flex items-center gap-1.5">
-              <input
-                type="checkbox"
-                checked={r.fix_center_distance}
-                onChange={(e) => setFlag("fix_center_distance")(e.target.checked)}
-              />
-              Achsabstand fixieren
-              {r.fix_center_distance && (
-                <Num width={84} value={r.center_distance_mm} onChange={set("center_distance_mm")} />
-              )}
-            </label>
-            <label className="inline-flex items-center gap-1.5" title={FIXED_HINT}>
-              <input
-                type="checkbox"
-                checked={r.allow_tip_shortening}
-                onChange={(e) => setFlag("allow_tip_shortening")(e.target.checked)}
-              />
-              Automatische Kopfkürzung zulassen
-            </label>
-            <label className="inline-flex items-center gap-1.5" title={FIXED_HINT}>
-              <input
-                type="checkbox"
-                checked={r.full_root_round}
-                onChange={(e) => setFlag("full_root_round")(e.target.checked)}
-              />
-              Vollausrundung
-            </label>
-            <label className="inline-flex items-center gap-1.5" title={FIXED_HINT}>
-              <input
-                type="checkbox"
-                checked={r.dedendum_with_clearance}
-                onChange={(e) => setFlag("dedendum_with_clearance")(e.target.checked)}
-              />
-              Fußhöhen mit Kopfspiel berechnen
-            </label>
+    <div className="flex flex-col gap-3 items-start max-w-[1150px]">
+      <div className="flex items-center gap-2">
+        {stepChip(1, "Attribute")}
+        <span className="text-zinc-300">→</span>
+        {stepChip(2, "Rechnung")}
+        <span className="text-zinc-300">→</span>
+        {stepChip(3, "Filterkriterien")}
+        <span className="text-zinc-300">→</span>
+        {stepChip(4, "Ergebnisse")}
+        {v.res && v.step !== 4 && (
+          <span className="text-[11.5px] text-zinc-400 ml-2">
+            (Ergebnisse bleiben erhalten — kein Neurechnen beim Zurückblättern)
+          </span>
+        )}
+      </div>
+      {err && <ErrNote>{err}</ErrNote>}
+
+      {v.step === 1 && (
+        <div className="flex flex-col gap-3 w-full">
+          <div className="text-[12.5px] text-zinc-600">
+            Bitte wählen Sie die Attribute aus, die variiert werden sollen.
           </div>
-          <table className="attr-table">
-            <thead>
-              <tr>
-                <th>Attribut</th>
-                <th>Fz</th>
-                <th></th>
-                <th>Wert</th>
-                <th>Minimum</th>
-                <th>Maximum</th>
-                <th>Schrittweite</th>
-                <th>Einh.</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ROWS.map((row) => {
-                if (row.kind === "fixed") {
+          <Section title="Stufenvariation — Attribute">
+            <div className="p-2 flex flex-col gap-1 border-b border-zinc-100 text-[12px] text-zinc-600">
+              <label className="inline-flex items-center gap-1.5">
+                <input type="checkbox" checked={r.fix_center_distance} onChange={(e) => setFlag("fix_center_distance")(e.target.checked)} />
+                Achsabstand fixieren
+                {r.fix_center_distance && <Num width={84} value={r.center_distance_mm} onChange={set("center_distance_mm")} />}
+              </label>
+              <label className="inline-flex items-center gap-1.5" title={FIXED_HINT}>
+                <input type="checkbox" checked={r.allow_tip_shortening} onChange={(e) => setFlag("allow_tip_shortening")(e.target.checked)} />
+                Automatische Kopfkürzung zulassen
+              </label>
+              <label className="inline-flex items-center gap-1.5" title={FIXED_HINT}>
+                <input type="checkbox" checked={r.full_root_round} onChange={(e) => setFlag("full_root_round")(e.target.checked)} />
+                Vollausrundung
+              </label>
+              <label className="inline-flex items-center gap-1.5" title={FIXED_HINT}>
+                <input type="checkbox" checked={r.dedendum_with_clearance} onChange={(e) => setFlag("dedendum_with_clearance")(e.target.checked)} />
+                Fußhöhen mit Kopfspiel berechnen
+              </label>
+            </div>
+            <table className="attr-table">
+              <thead>
+                <tr>
+                  <th>Attribut</th>
+                  <th>Fz</th>
+                  <th></th>
+                  <th>Wert</th>
+                  <th>Minimum</th>
+                  <th>Maximum</th>
+                  <th>Schrittweite</th>
+                  <th>Einh.</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ROWS.map((row) => {
+                  if (row.kind === "fixed") {
+                    return (
+                      <tr key={row.key} title={FIXED_HINT}>
+                        <td>{row.label}</td>
+                        <td className="wb-num text-zinc-400">{row.symbol}</td>
+                        <td style={{ textAlign: "center" }}>
+                          <input type="checkbox" disabled checked={false} />
+                        </td>
+                        <td>
+                          <Num width={74} value={r[row.key]} onChange={set(row.key)} />
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td className="text-zinc-400">{row.unit}</td>
+                      </tr>
+                    );
+                  }
+                  const s = r[row.key];
+                  const locked = r.fix_center_distance && (row.key === "z1" || row.key === "z2" || row.key === "x2");
                   return (
-                    <tr key={row.key} title={FIXED_HINT}>
+                    <tr key={row.key} style={{ opacity: locked ? 0.5 : 1 }}>
                       <td>{row.label}</td>
                       <td className="wb-num text-zinc-400">{row.symbol}</td>
                       <td style={{ textAlign: "center" }}>
-                        <input type="checkbox" disabled checked={false} />
+                        <input type="checkbox" disabled={locked} checked={s.vary && !locked} onChange={(e) => setSpec(row.key, { vary: e.target.checked })} />
                       </td>
                       <td>
-                        <Num width={74} value={r[row.key]} onChange={set(row.key)} />
+                        <Num width={74} value={s.value} onChange={(val) => setSpec(row.key, { value: val })} />
                       </td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
+                      <td>
+                        <Num width={74} disabled={!s.vary || locked} value={s.min} onChange={(val) => setSpec(row.key, { min: val })} />
+                      </td>
+                      <td>
+                        <Num width={74} disabled={!s.vary || locked} value={s.max} onChange={(val) => setSpec(row.key, { max: val })} />
+                      </td>
+                      <td>
+                        <Num width={60} disabled={!s.vary || locked} value={s.steps} step={1} onChange={(val) => setSpec(row.key, { steps: val })} />
+                      </td>
                       <td className="text-zinc-400">{row.unit}</td>
                     </tr>
                   );
-                }
-                const s = r[row.key];
-                const locked =
-                  r.fix_center_distance &&
-                  (row.key === "z1" || row.key === "z2" || row.key === "x2");
-                return (
-                  <tr key={row.key} style={{ opacity: locked ? 0.5 : 1 }}>
-                    <td>{row.label}</td>
-                    <td className="wb-num text-zinc-400">{row.symbol}</td>
-                    <td style={{ textAlign: "center" }}>
-                      <input
-                        type="checkbox"
-                        disabled={locked}
-                        checked={s.vary && !locked}
-                        onChange={(e) => setSpec(row.key, { vary: e.target.checked })}
-                      />
-                    </td>
-                    <td>
-                      <Num width={74} value={s.value} onChange={(v) => setSpec(row.key, { value: v })} />
-                    </td>
-                    <td>
-                      <Num width={74} disabled={!s.vary || locked} value={s.min} onChange={(v) => setSpec(row.key, { min: v })} />
-                    </td>
-                    <td>
-                      <Num width={74} disabled={!s.vary || locked} value={s.max} onChange={(v) => setSpec(row.key, { max: v })} />
-                    </td>
-                    <td>
-                      <Num width={60} disabled={!s.vary || locked} value={s.steps} step={1} onChange={(v) => setSpec(row.key, { steps: v })} />
-                    </td>
-                    <td className="text-zinc-400">{row.unit}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          <div className="p-2 flex items-center gap-3 border-t border-zinc-100 text-[12px] text-zinc-600">
-            <span>Es werden {variantCount.toLocaleString("de-DE")} Varianten berechnet.</span>
+                })}
+              </tbody>
+            </table>
+          </Section>
+
+          <Section title="Werkstoff, Fußform & Sicherheiten (Erweiterung)" defaultOpen={false}>
+            <div className="p-2 flex items-center gap-2 text-[12px] text-zinc-600 flex-wrap">
+              {(["pinion_material", "wheel_material"] as const).map((k) => (
+                <select
+                  key={k}
+                  className="border border-zinc-300 rounded-md px-1.5 py-0.5 text-[12px]"
+                  value={r[k] ?? (k === "pinion_material" ? "steel" : "plastic")}
+                  onChange={(e) => setR({ ...r, [k]: e.target.value as "steel" | "plastic" })}
+                  title="Norm-Dispatch je Rad: Stahl → ISO 6336, Kunststoff → VDI 2736"
+                >
+                  <option value="steel">{k === "pinion_material" ? "Rad 1: Stahl" : "Rad 2: Stahl"}</option>
+                  <option value="plastic">{k === "pinion_material" ? "Rad 1: Kunststoff" : "Rad 2: Kunststoff"}</option>
+                </select>
+              ))}
+              <label className="inline-flex items-center gap-1.5" title="Fußform wirkt auf den Kontur-Vergleich (Schritt 4) und das FE-Deck">
+                Fußform:
+                <select
+                  className="border border-zinc-300 rounded-md px-1.5 py-0.5 text-[12px]"
+                  value={v.fillet_kind}
+                  onChange={(e) => setVar({ fillet_kind: e.target.value as typeof v.fillet_kind })}
+                >
+                  <option value="standard">Standard (ρ_fP-Bogen)</option>
+                  <option value="trochoid">Trochoide (DIN 3960)</option>
+                  <option value="elliptic">Elliptisch</option>
+                  <option value="bezier">Bézier</option>
+                  <option value="bionic">Bionisch</option>
+                </select>
+              </label>
+            </div>
+            <table className="attr-table">
+              <tbody>
+                <tr>
+                  <td>Moment</td>
+                  <td className="wb-num text-zinc-400">T₁</td>
+                  <td><Num value={r.torque_nm} onChange={set("torque_nm")} /></td>
+                  <td className="text-zinc-400">N·m</td>
+                </tr>
+                <tr>
+                  <td>Mindestsicherheit Fuß</td>
+                  <td className="wb-num text-zinc-400">S_Fmin</td>
+                  <td><Num value={r.root_minimum_safety} onChange={set("root_minimum_safety")} /></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </Section>
+
+          <div className="flex items-center gap-3 w-full">
+            <span className="text-[12px] text-zinc-600">
+              Es werden {variantCount.toLocaleString("de-DE")} Varianten berechnet.
+            </span>
             <select
-              className="ml-auto border border-zinc-300 rounded-md px-2 py-1 text-[12px]"
+              className="border border-zinc-300 rounded-md px-2 py-1 text-[12px]"
               value={r.method}
               onChange={(e) => setR({ ...r, method: e.target.value as VariationRequest["method"] })}
             >
@@ -347,86 +455,134 @@ export function VariationPanel() {
               <option value="sobol">Sobol</option>
               <option value="lhs">LHS</option>
             </select>
+            <div className="ml-auto flex gap-2">
+              {v.res && (
+                <Btn variant="ghost" onClick={() => setVar({ step: 3 })}>
+                  Weiter (vorhandene Ergebnisse) &gt;
+                </Btn>
+              )}
+              <Btn onClick={() => void run()} busy={busy}>
+                Weiter &gt; (berechnen)
+              </Btn>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {v.step === 2 && (
+        <Section title="Rechnung">
+          <div className="p-6 text-[13px] text-zinc-600 flex items-center gap-3">
+            <span className="inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            Berechne {variantCount.toLocaleString("de-DE")} Varianten …
           </div>
         </Section>
+      )}
 
-        {/* our extension beyond the FVA dialog (user product vision): material matrix per
-            gear + safety targets — the norm dispatch follows the material in the sweep */}
-        <Section title="Werkstoff & Sicherheiten (Erweiterung)" defaultOpen={false}>
-          <div className="p-2 flex items-center gap-2 text-[12px] text-zinc-600">
-            <span>{t("variation.matrix")}</span>
-            {(["pinion_material", "wheel_material"] as const).map((k) => (
-              <select
-                key={k}
-                className="border border-zinc-300 rounded-md px-1.5 py-0.5 text-[12px]"
-                value={(r as unknown as Record<string, string>)[k] ?? (k === "pinion_material" ? "steel" : "plastic")}
-                onChange={(e) => setR({ ...r, [k]: e.target.value } as VariationRequest)}
-              >
-                <option value="steel">{k === "pinion_material" ? "Ritzel: Stahl" : "Rad: Stahl"}</option>
-                <option value="plastic">{k === "pinion_material" ? "Ritzel: Kunststoff" : "Rad: Kunststoff"}</option>
-              </select>
-            ))}
+      {v.step === 3 && v.res && (
+        <div className="flex flex-col gap-3 w-full">
+          <div className="text-[12.5px] text-zinc-600">
+            Bitte legen Sie die Kriterien fest, nach denen die berechneten Varianten gefiltert
+            werden sollen.
           </div>
-          <table className="attr-table">
-            <tbody>
-              <AttrRow label="Moment" symbol="T₁" unit="N·m">
-                <td><Num value={r.torque_nm} onChange={set("torque_nm")} /></td>
-              </AttrRow>
-              <AttrRow label="Kunststoff" symbol="σ_Flim" unit="N/mm²">
-                <td><Num value={r.plastic_sigma_flim_mpa} onChange={set("plastic_sigma_flim_mpa")} /></td>
-              </AttrRow>
-              <AttrRow label="Kunststoff" symbol="σ_Hlim" unit="N/mm²">
-                <td><Num value={r.plastic_sigma_hlim_mpa} onChange={set("plastic_sigma_hlim_mpa")} /></td>
-              </AttrRow>
-              <AttrRow label="Mindestsicherheit" symbol="S_Fmin" unit="–">
-                <td><Num value={r.root_minimum_safety} onChange={set("root_minimum_safety")} /></td>
-              </AttrRow>
-            </tbody>
-          </table>
-        </Section>
-
-        <Btn onClick={() => void run()} busy={busy}>
-          Stufenvariation starten
-        </Btn>
-        {err && <ErrNote>{err}</ErrNote>}
-        {res && (
-          <div className="grid grid-cols-2 gap-2">
-            <Stat label="Varianten" value={res.count.toLocaleString("de-DE")} />
-            <Stat label="Pareto" value={res.pareto.toLocaleString("de-DE")} />
+          <Section title="Auswahl der anzuzeigenden Ergebnis-Attribute">
+            <table className="attr-table">
+              <thead>
+                <tr>
+                  <th>Attribut</th>
+                  <th>Fz</th>
+                  <th>Minimum</th>
+                  <th>Maximum</th>
+                </tr>
+              </thead>
+              <tbody>
+                {FILTERS.map((f) => {
+                  const cur = v.filters[f.key as string] ?? { min: null, max: null };
+                  // changing a filter re-indexes the filtered list → drop the compare
+                  // selection (its indices would silently point at other variants)
+                  const setF = (patch: Partial<VariationFilter>) =>
+                    setVar({
+                      filters: { ...v.filters, [f.key as string]: { ...cur, ...patch } },
+                      compare: [],
+                    });
+                  return (
+                    <tr key={f.key as string}>
+                      <td>{f.label}</td>
+                      <td className="wb-num text-zinc-400">{f.symbol}</td>
+                      <td>
+                        <input
+                          type="number"
+                          value={cur.min ?? ""}
+                          placeholder="–"
+                          onChange={(e) => setF({ min: e.target.value === "" ? null : Number(e.target.value) })}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          value={cur.max ?? ""}
+                          placeholder="–"
+                          onChange={(e) => setF({ max: e.target.value === "" ? null : Number(e.target.value) })}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </Section>
+          <div className="text-[12px] text-zinc-600">
+            {v.res.count.toLocaleString("de-DE")} Varianten, {v.res.valid.toLocaleString("de-DE")}{" "}
+            erfolgreich, {(v.res.count - v.res.valid).toLocaleString("de-DE")} ohne gültige
+            Geometrie.
+            <br />
+            Entsprechend der gewählten Filterkriterien werden im nächsten Fenster{" "}
+            <span className="font-semibold">{filtered.length.toLocaleString("de-DE")}</span>{" "}
+            Varianten angezeigt.
           </div>
-        )}
-      </div>
+          {v.res.warnings.length > 0 && (
+            <div className="text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5">
+              {v.res.warnings.map((w, i) => (
+                <div key={i}>⚠ {w}</div>
+              ))}
+            </div>
+          )}
+          <div className="flex gap-2">
+            <Btn variant="ghost" onClick={() => setVar({ step: 1 })}>
+              &lt; Zurück
+            </Btn>
+            <Btn onClick={() => setVar({ step: 4 })}>Weiter &gt;</Btn>
+          </div>
+        </div>
+      )}
 
-      <div className="flex flex-col gap-3">
-        {res && rows.length > 0 && (
-          <>
-            <Section title="Parallelkoordinaten" right={<span className="text-[11px] text-zinc-400">Linie wählen = vergleichen</span>}>
-              <div className="p-2">
-                <ParallelCoordinates
-                  points={rows}
-                  dims={PC_DIMS}
-                  selected={compare[compare.length - 1] ?? null}
-                  onSelect={(i) => void toggleCompare(i)}
-                  rootMin={r.root_minimum_safety}
-                />
-              </div>
-            </Section>
-            <Section
-              title={t("variation.overlay")}
-              right={<span className="text-[11px] text-zinc-400">max. 4 Varianten · echte erzeugte Kontur (Rad)</span>}
-            >
-              <div className="p-3">
-                {overlays.length > 0 ? (
-                  <ContourPlot contours={overlays} teethEachSide={1} height={330} />
-                ) : (
-                  <div className="text-zinc-400 text-[12px]">
-                    Varianten in der Tabelle ankreuzen (bis zu 4) — die echten Zahnkonturen werden überlagert.
-                  </div>
-                )}
-              </div>
-            </Section>
-            <Section title="Varianten (nach S_F Rad)">
-              <div className="max-h-[300px] overflow-y-auto">
+      {v.step === 4 && v.res && (
+        <div className="flex flex-col gap-3 w-full">
+          <div className="text-[12.5px] text-zinc-600">
+            Bitte wählen Sie eine Variante aus. Mit „Übernehmen“ wird die ausgewählte Variante in
+            das Modell übernommen — alle Reiter folgen der neuen Geometrie.
+          </div>
+          <div className="grid grid-cols-3 gap-2 max-w-[520px]">
+            <Stat label="Varianten (gefiltert)" value={filtered.length.toLocaleString("de-DE")} />
+            <Stat label="Erfolgreich" value={v.res.valid.toLocaleString("de-DE")} />
+            <Stat label="Pareto" value={v.res.pareto.toLocaleString("de-DE")} />
+          </div>
+          <Section
+            title="Parallelkoordinaten"
+            right={<span className="text-[11px] text-zinc-400">Auswahl bleibt farbig, Rest wird grau</span>}
+          >
+            <div className="p-2">
+              <ParallelCoordinates
+                points={filtered}
+                dims={PC_DIMS}
+                selected={v.compare[v.compare.length - 1] ?? null}
+                onSelect={toggleCompare}
+                rootMin={r.root_minimum_safety}
+              />
+            </div>
+          </Section>
+          <div className="grid grid-cols-[1fr_420px] gap-3 items-start">
+            <Section title="Varianten (nach S_F Rad 2)">
+              <div className="max-h-[340px] overflow-y-auto">
                 <table className="attr-table">
                   <thead>
                     <tr>
@@ -441,20 +597,18 @@ export function VariationPanel() {
                       <th>ε_γ</th>
                       <th>S_F Rad</th>
                       <th>Gew. [g]</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.slice(0, 60).map((p, i) => {
-                      const ci = compare.indexOf(i);
+                    {filtered.slice(0, 80).map((p, i) => {
+                      const ci = v.compare.indexOf(i);
                       return (
-                        <tr key={i}>
+                        <tr key={i} style={ci >= 0 ? { background: "#eff6ff" } : undefined}>
                           <td style={{ textAlign: "center" }}>
-                            <input type="checkbox" checked={ci >= 0} onChange={() => void toggleCompare(i)} />
+                            <input type="checkbox" checked={ci >= 0} onChange={() => toggleCompare(i)} />
                             {ci >= 0 && (
-                              <span
-                                className="inline-block w-2 h-2 rounded-full ml-1"
-                                style={{ background: OVERLAY_COLORS[ci % OVERLAY_COLORS.length] }}
-                              />
+                              <span className="inline-block w-2 h-2 rounded-full ml-1" style={{ background: OVERLAY_COLORS[ci % OVERLAY_COLORS.length] }} />
                             )}
                           </td>
                           <td>{p.pareto ? "★" : ""}</td>
@@ -462,21 +616,20 @@ export function VariationPanel() {
                           <td className="wb-num">{p.z2}</td>
                           <td className="wb-num">{p.x1.toFixed(3)}</td>
                           <td className="wb-num">{p.x2.toFixed(3)}</td>
-                          <td className="wb-num">{p.m_n.toFixed(2)}</td>
-                          <td className="wb-num">{p.center_distance_mm.toFixed(1)}</td>
+                          <td className="wb-num">{p.m_n}</td>
+                          <td className="wb-num">{p.center_distance_mm.toFixed(2)}</td>
                           <td className="wb-num">{p.total_contact_ratio.toFixed(3)}</td>
-                          <td
-                            className="wb-num"
-                            style={{
-                              color:
-                                (p.root_safety_wheel ?? 0) >= r.root_minimum_safety
-                                  ? "#059669"
-                                  : "#dc2626",
-                            }}
-                          >
-                            {p.root_safety_wheel?.toFixed(2) ?? "–"}
+                          <td className="wb-num">{p.root_safety_wheel?.toFixed(2) ?? "–"}</td>
+                          <td className="wb-num">{p.weight_g.toFixed(0)}</td>
+                          <td>
+                            <button
+                              type="button"
+                              className="px-1.5 py-0.5 border border-zinc-300 rounded text-[11px] bg-white hover:bg-zinc-50"
+                              onClick={() => applyVariant(p)}
+                            >
+                              Übernehmen
+                            </button>
                           </td>
-                          <td className="wb-num">{p.weight_g?.toFixed(0) ?? "–"}</td>
                         </tr>
                       );
                     })}
@@ -484,15 +637,29 @@ export function VariationPanel() {
                 </table>
               </div>
             </Section>
-          </>
-        )}
-        {!res && !err && (
-          <div className="border border-dashed border-zinc-300 rounded-lg p-6 text-zinc-400 text-[12.5px]">
-            Variationsraum festlegen und starten — Parallelkoordinaten, Tabelle und der
-            Varianten-Vergleich mit echten Zahnkonturen erscheinen hier.
+            <Section title="Plot des Zahneingriffs / Konturvergleich" right={<span className="text-[11px] text-zinc-400">max. 4 · Fußform: {v.fillet_kind}</span>}>
+              <div className="p-3">
+                {overlays.length > 0 ? (
+                  <ContourPlot contours={overlays} teethEachSide={1} height={300} />
+                ) : (
+                  <div className="text-zinc-400 text-[12px]">
+                    Varianten ankreuzen (bis zu 4) — die echten Zahnkonturen (gewählte Fußform)
+                    werden überlagert.
+                  </div>
+                )}
+              </div>
+            </Section>
           </div>
-        )}
-      </div>
+          <div className="flex gap-2">
+            <Btn variant="ghost" onClick={() => setVar({ step: 3 })}>
+              &lt; Zurück
+            </Btn>
+            <Btn variant="ghost" onClick={() => setVar({ step: 1 })}>
+              Neue Variation
+            </Btn>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

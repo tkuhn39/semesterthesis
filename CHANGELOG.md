@@ -9,6 +9,33 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (Stufenvariation as the FVA guided 4-step flow)
+- **Guided flow in the tree tab** (user decision): 1. Attribute → 2. Rechnung →
+  3. Filterkriterien → 4. Ergebnisse with step chips, Zurück/Weiter and "Neue Variation";
+  wording and table layout per the FVA screenshots (count line "n Varianten, m erfolgreich,
+  k ohne gültige Geometrie", live "Es werden X Varianten angezeigt").
+- **Persistent results in the workbench store** (`varUi` namespace): step, response,
+  sorted rows, compare selection and filters survive tab switches and back-navigation —
+  returning to step 3/4 NEVER recomputes; "Weiter (vorhandene Ergebnisse)" jumps straight
+  back into the existing sweep from step 1.
+- **Filterkriterien step**: min/max per result attribute (ε_γ, S_H/S_F per gear, a,
+  weight) filtering the result set live; changing a filter drops the compare selection
+  (indices would silently remap). Empty filter results render a plain note instead of
+  degenerate −Infinity axes.
+- **Übernehmen (SSOT)**: applying a variant writes it into THE shared stage
+  (`setStage`) — Geometrie/Toleranzen/Tragfähigkeit/Schnellansicht/Zahneingriff/Deck all
+  follow, and the always-visible stage badge (moved out of the scrollable tab strip into
+  the node-title row) renames to "Variante z=… x₁=…".
+- **Fußform & Werkstoff-Matrix as variation extensions**: root-fillet strategy
+  (standard/trochoid/elliptic/Bézier/bionic) drives the step-4 contour overlays, and the
+  per-gear material dropdowns dispatch norms strictly by material (steel → ISO 6336,
+  plastic → VDI 2736).
+- **Parallel coordinates selection behaviour** (user decision): the picked variant keeps
+  its verdict colour and is drawn on top; all other lines turn grey instead of vanishing.
+- Self-review script `scripts/shot-variation.mjs` walks the wizard end to end (run →
+  filter → compare overlay → back-navigation persistence → tab-switch persistence →
+  Übernehmen → Geometrie check) and screenshots every station.
+
 ### Added (2D mesh rendering + Zahneingriff animation)
 - **2D-Schnitt view of the FE mesh** (`Mesh2DView`): the previously unrendered
   `/api/mesh/preview` now draws every quad as an SVG polygon with the scaled-Jacobian

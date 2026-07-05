@@ -363,12 +363,13 @@ function Shell() {
                 {tab.title}
               </button>
             ))}
-            <span className="ml-auto text-[11px] text-zinc-400 whitespace-nowrap">
-              Stufe: {stageLabel}
-            </span>
           </div>
           <div className="h-8 flex items-center px-4 border-b border-zinc-100 bg-white shrink-0">
             <span className="text-[13px] font-semibold text-sky-900">{nodeTitle[active]}</span>
+            {/* active-geometry badge: outside the scrollable tab strip so it never clips */}
+            <span className="ml-auto text-[11px] text-zinc-400 whitespace-nowrap">
+              Stufe: {stageLabel}
+            </span>
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto p-3 bg-zinc-100/70">
             {activeTab?.render() ?? null}
