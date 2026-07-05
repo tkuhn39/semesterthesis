@@ -6,11 +6,12 @@
 // always-on — the Stufenvariation needs both complete for the analytic safeties.
 
 import type { UiSchema } from "@/lib/uischema";
-import { useWorkbench } from "@/lib/store";
+import { instanceLabel, useWorkbench } from "@/lib/store";
 import { useLocale } from "@/lib/i18n";
 
 export function CalcSelectionPanel({ schema }: { schema: UiSchema }) {
   const { locale } = useLocale();
+  const wb = useWorkbench();
   const pick = (de: string, en: string) => (locale === "de" ? de : en);
 
   const groups: { title: string; ids: string[] }[] = [];
@@ -39,8 +40,8 @@ export function CalcSelectionPanel({ schema }: { schema: UiSchema }) {
         <table className="attr-table">
           <thead>
             <tr>
-              <th>Attribut</th>
-              <th style={{ width: 120 }}>Getriebeeinheit [1]</th>
+              <th>{pick("Attribut", "Attribute")}</th>
+              <th style={{ width: 120 }}>{instanceLabel(wb.model.gear_unit, locale)}</th>
             </tr>
           </thead>
           <tbody>

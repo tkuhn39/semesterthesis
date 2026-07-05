@@ -9,7 +9,7 @@
 import { useState } from "react";
 import type { AttributeDef, SectionDef, TabDef, UiSchema } from "@/lib/uischema";
 import { useWorkbench } from "@/lib/store";
-import { useLocale } from "@/lib/i18n";
+import { useLocale, useT } from "@/lib/i18n";
 import { meshApi } from "@/lib/api";
 
 function pick(loc: string, de?: string | null, en?: string | null): string {
@@ -20,6 +20,7 @@ function pick(loc: string, de?: string | null, en?: string | null): string {
  * shown next to the button as the result message. */
 function useActions(): Record<string, { label: string; run: () => Promise<string | void> }> {
   const wb = useWorkbench();
+  const t = useT();
   return {
     "fem.download_deck": {
       label: "implicit_rolling_generated.inp",
@@ -51,7 +52,7 @@ function useActions(): Record<string, { label: string; run: () => Promise<string
       },
     },
     "loaddist.run_meshing": {
-      label: "FEM-Vernetzung durchführen",
+      label: t("loaddist.runMeshing"),
       run: async () => {
         // quick native meshing check (full 2D rendering lands with the mesh viewport)
         const level = { coarse: 1, medium: 1, fine: 2 }[wb.loaddist.meshing_accuracy] ?? 1;
@@ -70,8 +71,8 @@ function useActions(): Record<string, { label: string; run: () => Promise<string
           fillet: { kind: "standard" },
         });
         return (
-          `✓ Rad 1: ${g1.n_quads} Quads (min J = ${g1.min_scaled_jacobian.toFixed(2)}), ` +
-          `Rad 2: ${g2.n_quads} Quads (min J = ${g2.min_scaled_jacobian.toFixed(2)})`
+          `✓ ${t("common.gear")} 1: ${g1.n_quads} Quads (min J = ${g1.min_scaled_jacobian.toFixed(2)}), ` +
+          `${t("common.gear")} 2: ${g2.n_quads} Quads (min J = ${g2.min_scaled_jacobian.toFixed(2)})`
         );
       },
     },
@@ -254,7 +255,7 @@ function SectionBlock({
       <table className="attr-table">
         <thead>
           <tr>
-            <th>Attribut</th>
+            <th>{pick(locale, "Attribut", "Attribute")}</th>
             <th>Fz</th>
             {hasPair && pairHeaders ? (
               <>
@@ -264,7 +265,7 @@ function SectionBlock({
             ) : (
               <th colSpan={2}></th>
             )}
-            <th>Einheit</th>
+            <th>{pick(locale, "Einheit", "Unit")}</th>
           </tr>
         </thead>
         <tbody>

@@ -9,6 +9,23 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Changed (i18n completion + one locale-aware number format)
+- **One formatter for every user-visible number** (`fmtNum`/`fmtInt` in `lib/format`,
+  bound to the active language via the `useFmt()` hook): German UI now shows comma
+  decimals and dot thousands like the FVA Workbench (QuickView 51,495 · ε 1,154), English
+  shows the inverse — the previous mix of `toFixed`, hardcoded `de-DE` and `en-US`
+  formatting is gone. SVG path/transform coordinates deliberately keep raw `toFixed`
+  (machine syntax, never localized).
+- **DE/EN complete across the hand-built panels**: Stufenvariation flow, Ergebnis-
+  Schnellansicht (ISO 21771 labels), Geometrie, Tragfähigkeits-/Lastfall-Karten,
+  Dynamikfaktoren, Auslegung (incl. ISO 1328 rows, micro-geometry fields), Zahnform,
+  Übersicht, Zahneingriff animation, 2D mesh caption, schema-table headers and the
+  "FEM-Vernetzung durchführen" action — shared attribute names live under one `attr.*`
+  key set (DE = exact FVA wording).
+- **Tree material badges are data now**: Stahl/Steel and PA follow the Werkstoff
+  selection (norm-dispatch source) instead of being hardcoded role strings; remaining
+  hardcoded tab titles (Geometrie, Zahnform, Stufenvariation) localized.
+
 ### Added (Stufenvariation as the FVA guided 4-step flow)
 - **Guided flow in the tree tab** (user decision): 1. Attribute → 2. Rechnung →
   3. Filterkriterien → 4. Ergebnisse with step chips, Zurück/Weiter and "Neue Variation";

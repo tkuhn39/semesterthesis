@@ -8,6 +8,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { api, type ToothGear, type ToothProfileResponse } from "@/lib/api";
+import { useT } from "@/lib/i18n";
 import { useWorkbench } from "@/lib/store";
 
 function gearOutline(g: ToothGear): string {
@@ -32,6 +33,7 @@ function gearOutline(g: ToothGear): string {
 
 export function MeshEngagement(props: { height?: number }) {
   const wb = useWorkbench();
+  const t = useT();
   const stage = wb.stage;
   const [data, setData] = useState<ToothProfileResponse | null>(null);
   const [running, setRunning] = useState(true);
@@ -66,7 +68,7 @@ export function MeshEngagement(props: { height?: number }) {
   }, [running, speed]);
 
   if (!data) {
-    return <div className="text-[12px] text-zinc-400 p-3">Zahneingriff wird geladen …</div>;
+    return <div className="text-[12px] text-zinc-400 p-3">{t("eng.loading")}</div>;
   }
   const g1 = data.pinion;
   const g2 = data.wheel;
@@ -87,13 +89,13 @@ export function MeshEngagement(props: { height?: number }) {
   return (
     <div className="border border-zinc-200 rounded-lg overflow-hidden bg-white">
       <div className="flex items-center gap-2 px-3 py-1.5 border-b border-zinc-100">
-        <span className="text-[12px] font-semibold text-sky-800">Zahneingriff</span>
+        <span className="text-[12px] font-semibold text-sky-800">{t("eng.title")}</span>
         <button
           type="button"
           className="ml-auto px-2 py-0.5 border border-zinc-300 rounded-md text-[11.5px] bg-white hover:bg-zinc-50"
           onClick={() => setRunning((r) => !r)}
         >
-          {running ? "⏸ Pause" : "▶ Abspielen"}
+          {running ? t("eng.pause") : t("eng.play")}
         </button>
         <input
           type="range"
@@ -101,7 +103,7 @@ export function MeshEngagement(props: { height?: number }) {
           max={40}
           value={speed}
           onChange={(e) => setSpeed(Number(e.target.value))}
-          title="Geschwindigkeit"
+          title={t("eng.speed")}
         />
       </div>
       <svg
@@ -123,8 +125,7 @@ export function MeshEngagement(props: { height?: number }) {
         <circle cx={a} cy={0} r={0.8} fill="#64748b" />
       </svg>
       <div className="px-3 py-1 text-[11px] text-zinc-500">
-        φ₁ = {(phi % 360).toFixed(1)}° · φ₂ = −φ₁·z₁/z₂ (kinematisch gekoppelt) · echte
-        As-cut-Konturen
+        φ₁ = {(phi % 360).toFixed(1)}° · φ₂ = −φ₁·z₁/z₂ {t("eng.footer")}
       </div>
     </div>
   );

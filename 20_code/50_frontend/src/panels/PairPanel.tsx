@@ -10,10 +10,11 @@ import { meshApi, type FilletSpec, type Mesh3DResponse } from "@/lib/api";
 import { useStage } from "@/lib/stage";
 import { PairViewport } from "@/components/PairViewport";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
-import { useT } from "@/lib/i18n";
+import { useFmt, useT } from "@/lib/i18n";
 
 export function PairPanel() {
   const t = useT();
+  const fm = useFmt();
   const { stage, label } = useStage();
   const [gear1, setGear1] = useState<Mesh3DResponse | null>(null);
   const [gear2, setGear2] = useState<Mesh3DResponse | null>(null);
@@ -146,8 +147,8 @@ export function PairPanel() {
         {gear1 && gear2 && (
           <>
             <div className="grid grid-cols-2 gap-2">
-              <Stat label={`${t("pair.gear1")} · ${t("mesh.hexes")}`} value={gear1.n_hexes.toLocaleString("de-DE")} />
-              <Stat label={`${t("pair.gear2")} · ${t("mesh.hexes")}`} value={gear2.n_hexes.toLocaleString("de-DE")} />
+              <Stat label={`${t("pair.gear1")} · ${t("mesh.hexes")}`} value={fm.int(gear1.n_hexes)} />
+              <Stat label={`${t("pair.gear2")} · ${t("mesh.hexes")}`} value={fm.int(gear2.n_hexes)} />
             </div>
             <Section title={t("pair.roll")}>
               <div className="p-3">

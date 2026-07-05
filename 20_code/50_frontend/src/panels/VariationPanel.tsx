@@ -20,6 +20,7 @@ import {
 import { ParallelCoordinates, type PCDim } from "@/components/ParallelCoordinates";
 import { ContourPlot, OVERLAY_COLORS } from "@/components/ContourPlot";
 import { Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
+import { useFmt, useT } from "@/lib/i18n";
 import { useStage } from "@/lib/stage";
 import { useWorkbench, type VariationFilter } from "@/lib/store";
 
@@ -40,33 +41,32 @@ type FixedKey =
   | "alpha_pr_p2_deg";
 
 type Row =
-  | { kind: "spec"; key: ParamKey; label: string; symbol: string; unit: string }
-  | { kind: "fixed"; key: FixedKey; label: string; symbol: string; unit: string };
+  | { kind: "spec"; key: ParamKey; labelKey: string; gear: 1 | 2; symbol: string; unit: string }
+  | { kind: "fixed"; key: FixedKey; labelKey: string; gear: 1 | 2; symbol: string; unit: string };
+// FVA row set — labels resolve to "<attr> Rad n" via the DICT (DE = exact FVA wording)
 const ROWS: Row[] = [
-  { kind: "spec", key: "m_n", label: "Normalmodul Rad 1", symbol: "m_n", unit: "mm" },
-  { kind: "spec", key: "alpha_n", label: "Normaleingriffswinkel Rad 1", symbol: "α_n", unit: "°" },
-  { kind: "spec", key: "beta_deg", label: "Schrägungswinkel Rad 1", symbol: "β", unit: "°" },
-  { kind: "spec", key: "z1", label: "Zähnezahl Rad 1", symbol: "z", unit: "" },
-  { kind: "spec", key: "z2", label: "Zähnezahl Rad 2", symbol: "z", unit: "" },
-  { kind: "spec", key: "x1", label: "Nennprofilverschiebungsfaktor Rad 1", symbol: "x", unit: "" },
-  { kind: "spec", key: "x2", label: "Nennprofilverschiebungsfaktor Rad 2", symbol: "x", unit: "" },
-  { kind: "spec", key: "b", label: "Zahnbreite Rad 1", symbol: "b", unit: "mm" },
-  { kind: "fixed", key: "b2_mm", label: "Zahnbreite Rad 2", symbol: "b", unit: "mm" },
-  { kind: "fixed", key: "h_ap1", label: "Kopfhöhenfaktor (Bezugsprofil) Rad 1", symbol: "h_aP*", unit: "" },
-  { kind: "fixed", key: "h_ap2", label: "Kopfhöhenfaktor (Bezugsprofil) Rad 2", symbol: "h_aP*", unit: "" },
-  { kind: "fixed", key: "h_fp1", label: "Fußhöhenfaktor (Bezugsprofil) Rad 1", symbol: "h_fP*", unit: "" },
-  { kind: "fixed", key: "h_fp2", label: "Fußhöhenfaktor (Bezugsprofil) Rad 2", symbol: "h_fP*", unit: "" },
-  { kind: "fixed", key: "rho_fp1", label: "Fußausrundungsfaktor (Bezugsprofil) Rad 1", symbol: "ρ_fP*", unit: "" },
-  { kind: "fixed", key: "rho_fp2", label: "Fußausrundungsfaktor (Bezugsprofil) Rad 2", symbol: "ρ_fP*", unit: "" },
-  { kind: "fixed", key: "q1_mm", label: "Bearbeitungszugabe Rad 1", symbol: "q", unit: "mm" },
-  { kind: "fixed", key: "q2_mm", label: "Bearbeitungszugabe Rad 2", symbol: "q", unit: "mm" },
-  { kind: "fixed", key: "pr_p1_mm", label: "Protuberanzbetrag Rad 1", symbol: "pr_P", unit: "mm" },
-  { kind: "fixed", key: "pr_p2_mm", label: "Protuberanzbetrag Rad 2", symbol: "pr_P", unit: "mm" },
-  { kind: "fixed", key: "alpha_pr_p1_deg", label: "Protuberanzwinkel Rad 1", symbol: "α_prP", unit: "°" },
-  { kind: "fixed", key: "alpha_pr_p2_deg", label: "Protuberanzwinkel Rad 2", symbol: "α_prP", unit: "°" },
+  { kind: "spec", key: "m_n", labelKey: "attr.mn", gear: 1, symbol: "m_n", unit: "mm" },
+  { kind: "spec", key: "alpha_n", labelKey: "attr.alphaN", gear: 1, symbol: "α_n", unit: "°" },
+  { kind: "spec", key: "beta_deg", labelKey: "attr.beta", gear: 1, symbol: "β", unit: "°" },
+  { kind: "spec", key: "z1", labelKey: "attr.z", gear: 1, symbol: "z", unit: "" },
+  { kind: "spec", key: "z2", labelKey: "attr.z", gear: 2, symbol: "z", unit: "" },
+  { kind: "spec", key: "x1", labelKey: "attr.x", gear: 1, symbol: "x", unit: "" },
+  { kind: "spec", key: "x2", labelKey: "attr.x", gear: 2, symbol: "x", unit: "" },
+  { kind: "spec", key: "b", labelKey: "attr.b", gear: 1, symbol: "b", unit: "mm" },
+  { kind: "fixed", key: "b2_mm", labelKey: "attr.b", gear: 2, symbol: "b", unit: "mm" },
+  { kind: "fixed", key: "h_ap1", labelKey: "attr.haP", gear: 1, symbol: "h_aP*", unit: "" },
+  { kind: "fixed", key: "h_ap2", labelKey: "attr.haP", gear: 2, symbol: "h_aP*", unit: "" },
+  { kind: "fixed", key: "h_fp1", labelKey: "attr.hfP", gear: 1, symbol: "h_fP*", unit: "" },
+  { kind: "fixed", key: "h_fp2", labelKey: "attr.hfP", gear: 2, symbol: "h_fP*", unit: "" },
+  { kind: "fixed", key: "rho_fp1", labelKey: "attr.rhofP", gear: 1, symbol: "ρ_fP*", unit: "" },
+  { kind: "fixed", key: "rho_fp2", labelKey: "attr.rhofP", gear: 2, symbol: "ρ_fP*", unit: "" },
+  { kind: "fixed", key: "q1_mm", labelKey: "attr.q", gear: 1, symbol: "q", unit: "mm" },
+  { kind: "fixed", key: "q2_mm", labelKey: "attr.q", gear: 2, symbol: "q", unit: "mm" },
+  { kind: "fixed", key: "pr_p1_mm", labelKey: "attr.prP", gear: 1, symbol: "pr_P", unit: "mm" },
+  { kind: "fixed", key: "pr_p2_mm", labelKey: "attr.prP", gear: 2, symbol: "pr_P", unit: "mm" },
+  { kind: "fixed", key: "alpha_pr_p1_deg", labelKey: "attr.alphaPrP", gear: 1, symbol: "α_prP", unit: "°" },
+  { kind: "fixed", key: "alpha_pr_p2_deg", labelKey: "attr.alphaPrP", gear: 2, symbol: "α_prP", unit: "°" },
 ];
-const FIXED_HINT =
-  "Variation dieses Parameters wird vom Sweep-Kernel noch nicht unterstützt — Wert wirkt als Festwert (Rad-1-Wert führt).";
 
 const PC_DIMS: PCDim[] = [
   { key: "z1", label: "z₁" },
@@ -79,14 +79,14 @@ const PC_DIMS: PCDim[] = [
 ];
 
 // step-3 result filters (FVA Ansicht-3: Ergebnis-Attribute with min/max)
-const FILTERS: { key: keyof VariationPoint; label: string; symbol: string }[] = [
-  { key: "total_contact_ratio", label: "Gesamtüberdeckung", symbol: "ε_γ" },
-  { key: "flank_safety_pinion", label: "Sicherheitsfaktor Flanke Rad 1", symbol: "S_H" },
-  { key: "flank_safety_wheel", label: "Sicherheitsfaktor Flanke Rad 2", symbol: "S_H" },
-  { key: "root_safety_pinion", label: "Sicherheitsfaktor Fuß Rad 1", symbol: "S_F" },
-  { key: "root_safety_wheel", label: "Sicherheitsfaktor Fuß Rad 2", symbol: "S_F" },
-  { key: "center_distance_mm", label: "Achsabstand", symbol: "a" },
-  { key: "weight_g", label: "Gewicht der Zahnräder", symbol: "m" },
+const FILTERS: { key: keyof VariationPoint; labelKey: string; gear?: 1 | 2; symbol: string }[] = [
+  { key: "total_contact_ratio", labelKey: "attr.epsGamma", symbol: "ε_γ" },
+  { key: "flank_safety_pinion", labelKey: "attr.sh", gear: 1, symbol: "S_H" },
+  { key: "flank_safety_wheel", labelKey: "attr.sh", gear: 2, symbol: "S_H" },
+  { key: "root_safety_pinion", labelKey: "attr.sf", gear: 1, symbol: "S_F" },
+  { key: "root_safety_wheel", labelKey: "attr.sf", gear: 2, symbol: "S_F" },
+  { key: "center_distance_mm", labelKey: "attr.a", symbol: "a" },
+  { key: "weight_g", labelKey: "attr.weight", symbol: "m" },
 ];
 
 function defaultsFromStage(s: StageParams): VariationRequest {
@@ -157,11 +157,17 @@ interface OverlayEntry {
 export function VariationPanel() {
   const { stage, setStage, setLabel } = useStage();
   const wb = useWorkbench();
+  const t = useT();
+  const fm = useFmt();
   const v = wb.varUi;
   const [r, setR] = useState<VariationRequest>(() => defaultsFromStage(stage));
   const [overlays, setOverlays] = useState<OverlayEntry[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  const gearLabel = (labelKey: string, gear?: 1 | 2) =>
+    gear ? `${t(labelKey)} ${t("common.gear")} ${gear}` : t(labelKey);
+  const fixedHint = t("var.fixedHint");
 
   useEffect(() => {
     // the baseline follows the shared stage — a geometry edit elsewhere re-seeds step 1
@@ -293,65 +299,61 @@ export function VariationPanel() {
   return (
     <div className="flex flex-col gap-3 items-start max-w-[1150px]">
       <div className="flex items-center gap-2">
-        {stepChip(1, "Attribute")}
+        {stepChip(1, t("var.step1"))}
         <span className="text-zinc-300">→</span>
-        {stepChip(2, "Rechnung")}
+        {stepChip(2, t("var.step2"))}
         <span className="text-zinc-300">→</span>
-        {stepChip(3, "Filterkriterien")}
+        {stepChip(3, t("var.step3"))}
         <span className="text-zinc-300">→</span>
-        {stepChip(4, "Ergebnisse")}
+        {stepChip(4, t("var.step4"))}
         {v.res && v.step !== 4 && (
-          <span className="text-[11.5px] text-zinc-400 ml-2">
-            (Ergebnisse bleiben erhalten — kein Neurechnen beim Zurückblättern)
-          </span>
+          <span className="text-[11.5px] text-zinc-400 ml-2">{t("var.persistNote")}</span>
         )}
       </div>
       {err && <ErrNote>{err}</ErrNote>}
 
       {v.step === 1 && (
         <div className="flex flex-col gap-3 w-full">
-          <div className="text-[12.5px] text-zinc-600">
-            Bitte wählen Sie die Attribute aus, die variiert werden sollen.
-          </div>
-          <Section title="Stufenvariation — Attribute">
+          <div className="text-[12.5px] text-zinc-600">{t("var.step1Hint")}</div>
+          <Section title={t("var.attrTitle")}>
             <div className="p-2 flex flex-col gap-1 border-b border-zinc-100 text-[12px] text-zinc-600">
               <label className="inline-flex items-center gap-1.5">
                 <input type="checkbox" checked={r.fix_center_distance} onChange={(e) => setFlag("fix_center_distance")(e.target.checked)} />
-                Achsabstand fixieren
+                {t("var.fixA")}
                 {r.fix_center_distance && <Num width={84} value={r.center_distance_mm} onChange={set("center_distance_mm")} />}
               </label>
-              <label className="inline-flex items-center gap-1.5" title={FIXED_HINT}>
+              <label className="inline-flex items-center gap-1.5" title={fixedHint}>
                 <input type="checkbox" checked={r.allow_tip_shortening} onChange={(e) => setFlag("allow_tip_shortening")(e.target.checked)} />
-                Automatische Kopfkürzung zulassen
+                {t("var.tipShort")}
               </label>
-              <label className="inline-flex items-center gap-1.5" title={FIXED_HINT}>
+              <label className="inline-flex items-center gap-1.5" title={fixedHint}>
                 <input type="checkbox" checked={r.full_root_round} onChange={(e) => setFlag("full_root_round")(e.target.checked)} />
-                Vollausrundung
+                {t("var.fullRound")}
               </label>
-              <label className="inline-flex items-center gap-1.5" title={FIXED_HINT}>
+              <label className="inline-flex items-center gap-1.5" title={fixedHint}>
                 <input type="checkbox" checked={r.dedendum_with_clearance} onChange={(e) => setFlag("dedendum_with_clearance")(e.target.checked)} />
-                Fußhöhen mit Kopfspiel berechnen
+                {t("var.dedClear")}
               </label>
             </div>
             <table className="attr-table">
               <thead>
                 <tr>
-                  <th>Attribut</th>
+                  <th>{t("common.attribute")}</th>
                   <th>Fz</th>
                   <th></th>
-                  <th>Wert</th>
-                  <th>Minimum</th>
-                  <th>Maximum</th>
-                  <th>Schrittweite</th>
-                  <th>Einh.</th>
+                  <th>{t("common.value")}</th>
+                  <th>{t("common.min")}</th>
+                  <th>{t("common.max")}</th>
+                  <th>{t("var.stepSize")}</th>
+                  <th>{t("common.unitShort")}</th>
                 </tr>
               </thead>
               <tbody>
                 {ROWS.map((row) => {
                   if (row.kind === "fixed") {
                     return (
-                      <tr key={row.key} title={FIXED_HINT}>
-                        <td>{row.label}</td>
+                      <tr key={row.key} title={fixedHint}>
+                        <td>{gearLabel(row.labelKey, row.gear)}</td>
                         <td className="wb-num text-zinc-400">{row.symbol}</td>
                         <td style={{ textAlign: "center" }}>
                           <input type="checkbox" disabled checked={false} />
@@ -370,7 +372,7 @@ export function VariationPanel() {
                   const locked = r.fix_center_distance && (row.key === "z1" || row.key === "z2" || row.key === "x2");
                   return (
                     <tr key={row.key} style={{ opacity: locked ? 0.5 : 1 }}>
-                      <td>{row.label}</td>
+                      <td>{gearLabel(row.labelKey, row.gear)}</td>
                       <td className="wb-num text-zinc-400">{row.symbol}</td>
                       <td style={{ textAlign: "center" }}>
                         <input type="checkbox" disabled={locked} checked={s.vary && !locked} onChange={(e) => setSpec(row.key, { vary: e.target.checked })} />
@@ -395,7 +397,7 @@ export function VariationPanel() {
             </table>
           </Section>
 
-          <Section title="Werkstoff, Fußform & Sicherheiten (Erweiterung)" defaultOpen={false}>
+          <Section title={t("var.extTitle")} defaultOpen={false}>
             <div className="p-2 flex items-center gap-2 text-[12px] text-zinc-600 flex-wrap">
               {(["pinion_material", "wheel_material"] as const).map((k) => (
                 <select
@@ -403,37 +405,37 @@ export function VariationPanel() {
                   className="border border-zinc-300 rounded-md px-1.5 py-0.5 text-[12px]"
                   value={r[k] ?? (k === "pinion_material" ? "steel" : "plastic")}
                   onChange={(e) => setR({ ...r, [k]: e.target.value as "steel" | "plastic" })}
-                  title="Norm-Dispatch je Rad: Stahl → ISO 6336, Kunststoff → VDI 2736"
+                  title={t("var.normNote")}
                 >
-                  <option value="steel">{k === "pinion_material" ? "Rad 1: Stahl" : "Rad 2: Stahl"}</option>
-                  <option value="plastic">{k === "pinion_material" ? "Rad 1: Kunststoff" : "Rad 2: Kunststoff"}</option>
+                  <option value="steel">{`${t("common.gear")} ${k === "pinion_material" ? 1 : 2}: ${t("mat.steel")}`}</option>
+                  <option value="plastic">{`${t("common.gear")} ${k === "pinion_material" ? 1 : 2}: ${t("mat.plastic")}`}</option>
                 </select>
               ))}
-              <label className="inline-flex items-center gap-1.5" title="Fußform wirkt auf den Kontur-Vergleich (Schritt 4) und das FE-Deck">
-                Fußform:
+              <label className="inline-flex items-center gap-1.5" title={t("var.fussformNote")}>
+                {t("var.fussform")}:
                 <select
                   className="border border-zinc-300 rounded-md px-1.5 py-0.5 text-[12px]"
                   value={v.fillet_kind}
                   onChange={(e) => setVar({ fillet_kind: e.target.value as typeof v.fillet_kind })}
                 >
-                  <option value="standard">Standard (ρ_fP-Bogen)</option>
-                  <option value="trochoid">Trochoide (DIN 3960)</option>
-                  <option value="elliptic">Elliptisch</option>
-                  <option value="bezier">Bézier</option>
-                  <option value="bionic">Bionisch</option>
+                  <option value="standard">{t("mesh.fillet.standard")}</option>
+                  <option value="trochoid">{t("mesh.fillet.trochoid")}</option>
+                  <option value="elliptic">{t("mesh.fillet.elliptic")}</option>
+                  <option value="bezier">{t("mesh.fillet.bezier")}</option>
+                  <option value="bionic">{t("mesh.fillet.bionic")}</option>
                 </select>
               </label>
             </div>
             <table className="attr-table">
               <tbody>
                 <tr>
-                  <td>Moment</td>
+                  <td>{t("var.torque")}</td>
                   <td className="wb-num text-zinc-400">T₁</td>
                   <td><Num value={r.torque_nm} onChange={set("torque_nm")} /></td>
                   <td className="text-zinc-400">N·m</td>
                 </tr>
                 <tr>
-                  <td>Mindestsicherheit Fuß</td>
+                  <td>{t("var.sfMin")}</td>
                   <td className="wb-num text-zinc-400">S_Fmin</td>
                   <td><Num value={r.root_minimum_safety} onChange={set("root_minimum_safety")} /></td>
                   <td></td>
@@ -444,25 +446,25 @@ export function VariationPanel() {
 
           <div className="flex items-center gap-3 w-full">
             <span className="text-[12px] text-zinc-600">
-              Es werden {variantCount.toLocaleString("de-DE")} Varianten berechnet.
+              {t("var.countCompute").replace("{n}", fm.int(variantCount))}
             </span>
             <select
               className="border border-zinc-300 rounded-md px-2 py-1 text-[12px]"
               value={r.method}
               onChange={(e) => setR({ ...r, method: e.target.value as VariationRequest["method"] })}
             >
-              <option value="grid">Gitter</option>
+              <option value="grid">{t("var.method.grid")}</option>
               <option value="sobol">Sobol</option>
               <option value="lhs">LHS</option>
             </select>
             <div className="ml-auto flex gap-2">
               {v.res && (
                 <Btn variant="ghost" onClick={() => setVar({ step: 3 })}>
-                  Weiter (vorhandene Ergebnisse) &gt;
+                  {t("var.continueExisting")}
                 </Btn>
               )}
               <Btn onClick={() => void run()} busy={busy}>
-                Weiter &gt; (berechnen)
+                {t("var.computeNext")}
               </Btn>
             </div>
           </div>
@@ -470,28 +472,25 @@ export function VariationPanel() {
       )}
 
       {v.step === 2 && (
-        <Section title="Rechnung">
+        <Section title={t("var.step2")}>
           <div className="p-6 text-[13px] text-zinc-600 flex items-center gap-3">
             <span className="inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            Berechne {variantCount.toLocaleString("de-DE")} Varianten …
+            {t("var.computing").replace("{n}", fm.int(variantCount))}
           </div>
         </Section>
       )}
 
       {v.step === 3 && v.res && (
         <div className="flex flex-col gap-3 w-full">
-          <div className="text-[12.5px] text-zinc-600">
-            Bitte legen Sie die Kriterien fest, nach denen die berechneten Varianten gefiltert
-            werden sollen.
-          </div>
-          <Section title="Auswahl der anzuzeigenden Ergebnis-Attribute">
+          <div className="text-[12.5px] text-zinc-600">{t("var.step3Hint")}</div>
+          <Section title={t("var.filterTitle")}>
             <table className="attr-table">
               <thead>
                 <tr>
-                  <th>Attribut</th>
+                  <th>{t("common.attribute")}</th>
                   <th>Fz</th>
-                  <th>Minimum</th>
-                  <th>Maximum</th>
+                  <th>{t("common.min")}</th>
+                  <th>{t("common.max")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -506,7 +505,7 @@ export function VariationPanel() {
                     });
                   return (
                     <tr key={f.key as string}>
-                      <td>{f.label}</td>
+                      <td>{gearLabel(f.labelKey, f.gear)}</td>
                       <td className="wb-num text-zinc-400">{f.symbol}</td>
                       <td>
                         <input
@@ -531,13 +530,14 @@ export function VariationPanel() {
             </table>
           </Section>
           <div className="text-[12px] text-zinc-600">
-            {v.res.count.toLocaleString("de-DE")} Varianten, {v.res.valid.toLocaleString("de-DE")}{" "}
-            erfolgreich, {(v.res.count - v.res.valid).toLocaleString("de-DE")} ohne gültige
-            Geometrie.
+            {t("var.countResult")
+              .replace("{n}", fm.int(v.res.count))
+              .replace("{m}", fm.int(v.res.valid))
+              .replace("{k}", fm.int(v.res.count - v.res.valid))}
             <br />
-            Entsprechend der gewählten Filterkriterien werden im nächsten Fenster{" "}
-            <span className="font-semibold">{filtered.length.toLocaleString("de-DE")}</span>{" "}
-            Varianten angezeigt.
+            <span className="font-semibold">
+              {t("var.countShown").replace("{n}", fm.int(filtered.length))}
+            </span>
           </div>
           {v.res.warnings.length > 0 && (
             <div className="text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5">
@@ -548,27 +548,24 @@ export function VariationPanel() {
           )}
           <div className="flex gap-2">
             <Btn variant="ghost" onClick={() => setVar({ step: 1 })}>
-              &lt; Zurück
+              {t("var.back")}
             </Btn>
-            <Btn onClick={() => setVar({ step: 4 })}>Weiter &gt;</Btn>
+            <Btn onClick={() => setVar({ step: 4 })}>{t("var.next")}</Btn>
           </div>
         </div>
       )}
 
       {v.step === 4 && v.res && (
         <div className="flex flex-col gap-3 w-full">
-          <div className="text-[12.5px] text-zinc-600">
-            Bitte wählen Sie eine Variante aus. Mit „Übernehmen“ wird die ausgewählte Variante in
-            das Modell übernommen — alle Reiter folgen der neuen Geometrie.
-          </div>
+          <div className="text-[12.5px] text-zinc-600">{t("var.step4Hint")}</div>
           <div className="grid grid-cols-3 gap-2 max-w-[520px]">
-            <Stat label="Varianten (gefiltert)" value={filtered.length.toLocaleString("de-DE")} />
-            <Stat label="Erfolgreich" value={v.res.valid.toLocaleString("de-DE")} />
-            <Stat label="Pareto" value={v.res.pareto.toLocaleString("de-DE")} />
+            <Stat label={t("var.filteredStat")} value={fm.int(filtered.length)} />
+            <Stat label={t("var.okStat")} value={fm.int(v.res.valid)} />
+            <Stat label={t("var.paretoStat")} value={fm.int(v.res.pareto)} />
           </div>
           <Section
-            title="Parallelkoordinaten"
-            right={<span className="text-[11px] text-zinc-400">Auswahl bleibt farbig, Rest wird grau</span>}
+            title={t("var.pcTitle")}
+            right={<span className="text-[11px] text-zinc-400">{t("var.pcNote")}</span>}
           >
             <div className="p-2">
               <ParallelCoordinates
@@ -581,12 +578,12 @@ export function VariationPanel() {
             </div>
           </Section>
           <div className="grid grid-cols-[1fr_420px] gap-3 items-start">
-            <Section title="Varianten (nach S_F Rad 2)">
+            <Section title={t("var.tableTitle")}>
               <div className="max-h-[340px] overflow-y-auto">
                 <table className="attr-table">
                   <thead>
                     <tr>
-                      <th>Vgl.</th>
+                      <th>{t("var.compareCol")}</th>
                       <th>★</th>
                       <th>z₁</th>
                       <th>z₂</th>
@@ -614,20 +611,20 @@ export function VariationPanel() {
                           <td>{p.pareto ? "★" : ""}</td>
                           <td className="wb-num">{p.z1}</td>
                           <td className="wb-num">{p.z2}</td>
-                          <td className="wb-num">{p.x1.toFixed(3)}</td>
-                          <td className="wb-num">{p.x2.toFixed(3)}</td>
+                          <td className="wb-num">{fm.num(p.x1, 3)}</td>
+                          <td className="wb-num">{fm.num(p.x2, 3)}</td>
                           <td className="wb-num">{p.m_n}</td>
-                          <td className="wb-num">{p.center_distance_mm.toFixed(2)}</td>
-                          <td className="wb-num">{p.total_contact_ratio.toFixed(3)}</td>
-                          <td className="wb-num">{p.root_safety_wheel?.toFixed(2) ?? "–"}</td>
-                          <td className="wb-num">{p.weight_g.toFixed(0)}</td>
+                          <td className="wb-num">{fm.num(p.center_distance_mm, 2)}</td>
+                          <td className="wb-num">{fm.num(p.total_contact_ratio, 3)}</td>
+                          <td className="wb-num">{fm.num(p.root_safety_wheel, 2)}</td>
+                          <td className="wb-num">{fm.num(p.weight_g, 0)}</td>
                           <td>
                             <button
                               type="button"
                               className="px-1.5 py-0.5 border border-zinc-300 rounded text-[11px] bg-white hover:bg-zinc-50"
                               onClick={() => applyVariant(p)}
                             >
-                              Übernehmen
+                              {t("var.apply")}
                             </button>
                           </td>
                         </tr>
@@ -637,25 +634,29 @@ export function VariationPanel() {
                 </table>
               </div>
             </Section>
-            <Section title="Plot des Zahneingriffs / Konturvergleich" right={<span className="text-[11px] text-zinc-400">max. 4 · Fußform: {v.fillet_kind}</span>}>
+            <Section
+              title={t("var.plotTitle")}
+              right={
+                <span className="text-[11px] text-zinc-400">
+                  max. 4 · {t("var.fussform")}: {v.fillet_kind}
+                </span>
+              }
+            >
               <div className="p-3">
                 {overlays.length > 0 ? (
                   <ContourPlot contours={overlays} teethEachSide={1} height={300} />
                 ) : (
-                  <div className="text-zinc-400 text-[12px]">
-                    Varianten ankreuzen (bis zu 4) — die echten Zahnkonturen (gewählte Fußform)
-                    werden überlagert.
-                  </div>
+                  <div className="text-zinc-400 text-[12px]">{t("var.plotHint")}</div>
                 )}
               </div>
             </Section>
           </div>
           <div className="flex gap-2">
             <Btn variant="ghost" onClick={() => setVar({ step: 3 })}>
-              &lt; Zurück
+              {t("var.back")}
             </Btn>
             <Btn variant="ghost" onClick={() => setVar({ step: 1 })}>
-              Neue Variation
+              {t("var.newVariation")}
             </Btn>
           </div>
         </div>

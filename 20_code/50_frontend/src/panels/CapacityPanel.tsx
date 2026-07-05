@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api, type CapacityRequest, type CapacityResponse, type GearCapacity } from "@/lib/api";
 import { AttrRow, Btn, ErrNote, Section, Stat } from "@/components/ui";
 import { useWorkbench } from "@/lib/store";
-import { useT } from "@/lib/i18n";
+import { useFmt, useT } from "@/lib/i18n";
 
 type Wb = ReturnType<typeof useWorkbench>;
 
@@ -61,6 +61,7 @@ function buildRequest(wb: Wb): CapacityRequest {
 
 export function CapacityPanel() {
   const t = useT();
+  const fm = useFmt();
   const wb = useWorkbench();
   const [res, setRes] = useState<CapacityResponse | null>(null);
   const [busy, setBusy] = useState(false);
@@ -91,29 +92,28 @@ export function CapacityPanel() {
   return (
     <div className="grid grid-cols-[360px_1fr] gap-3 items-start">
       <div className="flex flex-col gap-3">
-        <Section title="Lastfall (aus Leistungsfluss)">
+        <Section title={t("cap.loadcase")}>
           <table className="attr-table">
             <tbody>
-              <AttrRow label="Ritzelmoment" symbol="T₁" unit="N·m">
-                <td className="wb-num text-zinc-500">{req.pinion_torque_nm.toFixed(4)}</td>
+              <AttrRow label={t("cap.pinionTorque")} symbol="T₁" unit="N·m">
+                <td className="wb-num text-zinc-500">{fm.num(req.pinion_torque_nm, 4)}</td>
               </AttrRow>
-              <AttrRow label="Drehzahl" symbol="n₁" unit="min⁻¹">
-                <td className="wb-num text-zinc-500">{req.pinion_speed_min1.toFixed(1)}</td>
+              <AttrRow label={t("cap.speed")} symbol="n₁" unit="min⁻¹">
+                <td className="wb-num text-zinc-500">{fm.num(req.pinion_speed_min1, 1)}</td>
               </AttrRow>
-              <AttrRow label="Leistung" symbol="P" unit="W">
-                <td className="wb-num text-zinc-500">{req.power_w?.toFixed(1)}</td>
+              <AttrRow label={t("cap.power")} symbol="P" unit="W">
+                <td className="wb-num text-zinc-500">{fm.num(req.power_w, 1)}</td>
               </AttrRow>
-              <AttrRow label="Lastspiele (Rad)" symbol="N_L" unit="–">
+              <AttrRow label={t("cap.cycles")} symbol="N_L" unit="–">
                 <td className="wb-num text-zinc-500">{req.load_cycles.toExponential(3)}</td>
               </AttrRow>
-              <AttrRow label="Umgebungstemperatur" symbol="ϑ_0" unit="°C">
-                <td className="wb-num text-zinc-500">{req.ambient_temperature_c?.toFixed(1)}</td>
+              <AttrRow label={t("cap.ambient")} symbol="ϑ_0" unit="°C">
+                <td className="wb-num text-zinc-500">{fm.num(req.ambient_temperature_c, 1)}</td>
               </AttrRow>
             </tbody>
           </table>
           <div className="px-3 py-1.5 text-[11.5px] text-zinc-500 border-t border-zinc-100">
-            Alle Eingaben liegen in ihren FVA-Reitern (Leistungsfluss, Tragfähigkeit,
-            VDI 2736, Werkstoff, Schmierstoff, Toleranzen) — hier nur der wirksame Lastfall.
+            {t("cap.inputsNote")}
           </div>
         </Section>
         <Btn onClick={() => void run()} busy={busy}>
@@ -125,9 +125,9 @@ export function CapacityPanel() {
       {res && (
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-3 gap-2">
-            <Stat label="K_v" value={res.factors.dynamic_factor.toFixed(3)} />
-            <Stat label="K_Hα" value={res.factors.transverse_factor.toFixed(3)} />
-            <Stat label="K_Hβ" value={res.factors.face_load_factor.toFixed(3)} />
+            <Stat label="K_v" value={fm.num(res.factors.dynamic_factor, 3)} />
+            <Stat label="K_Hα" value={fm.num(res.factors.transverse_factor, 3)} />
+            <Stat label="K_Hβ" value={fm.num(res.factors.face_load_factor, 3)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <GearCard title={t("common.pinion")} g={res.pinion} minRoot={req.root_minimum_safety} minFlank={req.flank_minimum_safety} />
@@ -141,46 +141,48 @@ export function CapacityPanel() {
 
 function GearCard(props: { title: string; g: GearCapacity; minRoot: number; minFlank: number }) {
   const { g } = props;
+  const t = useT();
+  const fm = useFmt();
   const tone = (v: number | null, min: number) =>
     v == null ? undefined : v >= min ? ("good" as const) : ("bad" as const);
   return (
     <Section title={`${props.title} — ${g.material} (${g.method})`}>
       <table className="attr-table">
         <tbody>
-          <AttrRow label="Zahnfußspannung" symbol="σ_F" unit="N/mm²">
-            <td className="wb-num">{g.root_stress_mpa.toFixed(1)}</td>
+          <AttrRow label={t("cap.sigmaF")} symbol="σ_F" unit="N/mm²">
+            <td className="wb-num">{fm.num(g.root_stress_mpa, 1)}</td>
           </AttrRow>
-          <AttrRow label="Fußsicherheit" symbol="S_F" unit="–">
+          <AttrRow label={t("cap.sF")} symbol="S_F" unit="–">
             <td className={`wb-num ${tone(g.root_safety, props.minRoot) === "bad" ? "text-red-600" : "text-emerald-600"}`}>
-              {g.root_safety?.toFixed(2) ?? "–"}
+              {fm.num(g.root_safety, 2)}
             </td>
           </AttrRow>
-          <AttrRow label="Flankenpressung" symbol="σ_H" unit="N/mm²">
-            <td className="wb-num">{g.flank_stress_mpa.toFixed(1)}</td>
+          <AttrRow label={t("cap.sigmaH")} symbol="σ_H" unit="N/mm²">
+            <td className="wb-num">{fm.num(g.flank_stress_mpa, 1)}</td>
           </AttrRow>
-          <AttrRow label="Flankensicherheit" symbol="S_H" unit="–">
+          <AttrRow label={t("cap.sH")} symbol="S_H" unit="–">
             <td className={`wb-num ${tone(g.flank_safety, props.minFlank) === "bad" ? "text-red-600" : "text-emerald-600"}`}>
-              {g.flank_safety?.toFixed(2) ?? "–"}
+              {fm.num(g.flank_safety, 2)}
             </td>
           </AttrRow>
           {g.peak_stress_mpa != null && (
-            <AttrRow label="Statische Spitzenlast" symbol="σ_F,P" unit="N/mm²">
-              <td className="wb-num">{g.peak_stress_mpa.toFixed(1)}</td>
+            <AttrRow label={t("cap.staticPeak")} symbol="σ_F,P" unit="N/mm²">
+              <td className="wb-num">{fm.num(g.peak_stress_mpa, 1)}</td>
             </AttrRow>
           )}
           {g.peak_safety != null && (
-            <AttrRow label="Statische Sicherheit" symbol="S_stat" unit="–">
-              <td className="wb-num">{g.peak_safety.toFixed(2)}</td>
+            <AttrRow label={t("cap.staticSafety")} symbol="S_stat" unit="–">
+              <td className="wb-num">{fm.num(g.peak_safety, 2)}</td>
             </AttrRow>
           )}
           {g.tooth_temperature_c != null && (
-            <AttrRow label="Zahntemperatur" symbol="ϑ_Z" unit="°C">
-              <td className="wb-num">{g.tooth_temperature_c.toFixed(1)}</td>
+            <AttrRow label={t("cap.toothTemp")} symbol="ϑ_Z" unit="°C">
+              <td className="wb-num">{fm.num(g.tooth_temperature_c, 1)}</td>
             </AttrRow>
           )}
           {g.wear_um != null && (
-            <AttrRow label="Verschleiß" symbol="W_m" unit="µm">
-              <td className="wb-num">{g.wear_um.toFixed(1)}</td>
+            <AttrRow label={t("cap.wear")} symbol="W_m" unit="µm">
+              <td className="wb-num">{fm.num(g.wear_um, 1)}</td>
             </AttrRow>
           )}
         </tbody>

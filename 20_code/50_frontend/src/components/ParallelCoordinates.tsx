@@ -1,6 +1,7 @@
 import type { JSX } from "react";
 import type { VariationPoint } from "../lib/api";
 import { safetyVerdict } from "../lib/format";
+import { useT } from "../lib/i18n";
 
 export interface PCDim {
   key: keyof VariationPoint;
@@ -22,10 +23,11 @@ export function ParallelCoordinates(props: {
   onSelect: (i: number) => void;
   rootMin: number;
 }): JSX.Element {
+  const t = useT();
   if (props.points.length === 0) {
     return (
       <div style={{ fontSize: 12, color: "var(--text-muted)", padding: "12px 4px" }}>
-        Keine Variante erfüllt die aktuellen Filterkriterien.
+        {t("var.noFilterMatch")}
       </div>
     );
   }

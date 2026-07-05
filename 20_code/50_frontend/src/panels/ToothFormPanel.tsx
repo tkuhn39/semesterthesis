@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { contourApi, type ContourResponse, type FilletSpec } from "@/lib/api";
 import { ContourPlot } from "@/components/ContourPlot";
 import { AttrRow, Btn, ErrNote, Section, Stat } from "@/components/ui";
-import { useT } from "@/lib/i18n";
+import { useFmt, useT } from "@/lib/i18n";
 import { useStage } from "@/lib/stage";
 
 export function FilletEditor(props: { value: FilletSpec; onChange: (f: FilletSpec) => void }) {
@@ -38,7 +38,7 @@ export function FilletEditor(props: { value: FilletSpec; onChange: (f: FilletSpe
           </td>
         </AttrRow>
         {f.kind === "elliptic" && (
-          <AttrRow label="Fußkreis-Offset" symbol="e_f" unit="·m_n">
+          <AttrRow label={t("tf.ef")} symbol="e_f" unit="·m_n">
             <td>
               <input
                 type="number"
@@ -52,7 +52,7 @@ export function FilletEditor(props: { value: FilletSpec; onChange: (f: FilletSpe
           </AttrRow>
         )}
         {f.kind === "bezier" && (
-          <AttrRow label="Bézier-Faktor" symbol="Be" unit="–">
+          <AttrRow label={t("tf.be")} symbol="Be" unit="–">
             <td>
               <input
                 type="number"
@@ -67,7 +67,7 @@ export function FilletEditor(props: { value: FilletSpec; onChange: (f: FilletSpe
         )}
         {f.kind === "bionic" && (
           <>
-            <AttrRow label="Keilwinkel" symbol="γ_b" unit="°">
+            <AttrRow label={t("tf.gamma")} symbol="γ_b" unit="°">
               <td>
                 <input
                   type="number"
@@ -82,7 +82,7 @@ export function FilletEditor(props: { value: FilletSpec; onChange: (f: FilletSpe
                 />
               </td>
             </AttrRow>
-            <AttrRow label="Bogenfaktor" symbol="b_f" unit="–">
+            <AttrRow label={t("tf.bf")} symbol="b_f" unit="–">
               <td>
                 <input
                   type="number"
@@ -113,6 +113,7 @@ export function ManufacturabilityNote(props: { kind: FilletSpec["kind"] }) {
 
 export function ToothFormPanel(props: { gear: 1 | 2 }) {
   const t = useT();
+  const fm = useFmt();
   const { stage } = useStage();
   const [fillet, setFillet] = useState<FilletSpec>({ kind: "standard" });
   const [standard, setStandard] = useState<ContourResponse | null>(null);
@@ -173,17 +174,17 @@ export function ToothFormPanel(props: { gear: 1 | 2 }) {
           <Section title={t("toothform.title")}>
             <table className="attr-table">
               <tbody>
-                <AttrRow label="Fußkreis" symbol="d_f" unit="mm">
-                  <td className="wb-num">{current.root_diameter_mm.toFixed(3)}</td>
+                <AttrRow label={t("attr.df")} symbol="d_f" unit="mm">
+                  <td className="wb-num">{fm.num(current.root_diameter_mm, 3)}</td>
                 </AttrRow>
-                <AttrRow label="Fußformkreis" symbol="d_Ff" unit="mm">
-                  <td className="wb-num">{current.root_form_diameter_mm.toFixed(3)}</td>
+                <AttrRow label={t("attr.dFf")} symbol="d_Ff" unit="mm">
+                  <td className="wb-num">{fm.num(current.root_form_diameter_mm, 3)}</td>
                 </AttrRow>
-                <AttrRow label="Nutzkopfkreis" symbol="d_Na" unit="mm">
-                  <td className="wb-num">{current.usable_tip_diameter_mm.toFixed(3)}</td>
+                <AttrRow label={t("tf.dNa")} symbol="d_Na" unit="mm">
+                  <td className="wb-num">{fm.num(current.usable_tip_diameter_mm, 3)}</td>
                 </AttrRow>
-                <AttrRow label="Kopfkreis" symbol="d_a" unit="mm">
-                  <td className="wb-num">{current.tip_diameter_mm?.toFixed(3) ?? "–"}</td>
+                <AttrRow label={t("attr.daCircle")} symbol="d_a" unit="mm">
+                  <td className="wb-num">{fm.num(current.tip_diameter_mm, 3)}</td>
                 </AttrRow>
               </tbody>
             </table>
@@ -192,7 +193,7 @@ export function ToothFormPanel(props: { gear: 1 | 2 }) {
         {current?.clearance_mm != null && (
           <Stat
             label={t("mesh.clearance")}
-            value={current.clearance_mm.toFixed(3)}
+            value={fm.num(current.clearance_mm, 3)}
             unit="mm"
             tone={current.clearance_mm > 0.05 ? "good" : "bad"}
           />

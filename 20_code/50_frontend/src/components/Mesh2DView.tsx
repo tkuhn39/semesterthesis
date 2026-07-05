@@ -7,6 +7,7 @@
 
 import { useMemo } from "react";
 import type { MeshPreviewResponse } from "@/lib/api";
+import { useFmt, useT } from "@/lib/i18n";
 
 function qualityColor(q: number, heatmap: boolean): string {
   if (!heatmap) return "#d4d4d8";
@@ -26,6 +27,8 @@ export function Mesh2DView(props: {
   height?: number;
 }) {
   const { data } = props;
+  const t = useT();
+  const fm = useFmt();
   const heatmap = props.heatmap ?? true;
   const height = props.height ?? 560;
 
@@ -65,13 +68,12 @@ export function Mesh2DView(props: {
       </svg>
       <div className="flex items-center gap-3 px-3 py-1.5 text-[11px] text-zinc-400">
         <span>
-          {data.n_quads.toLocaleString("de-DE")} Quads · {data.n_nodes.toLocaleString("de-DE")}{" "}
-          Knoten
+          {fm.int(data.n_quads)} {t("mesh2d.quads")} · {fm.int(data.n_nodes)} {t("mesh.nodes")}
         </span>
         <span>
           min J ={" "}
           <span className={data.min_scaled_jacobian >= 0.35 ? "text-emerald-400" : "text-red-400"}>
-            {data.min_scaled_jacobian.toFixed(3)}
+            {fm.num(data.min_scaled_jacobian, 3)}
           </span>
         </span>
         <span className="ml-auto flex items-center gap-1.5">

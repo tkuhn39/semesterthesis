@@ -19,7 +19,7 @@ import { MeshViewport } from "@/components/MeshViewport";
 import { Mesh2DView } from "@/components/Mesh2DView";
 import { FilletEditor, ManufacturabilityNote } from "@/panels/ToothFormPanel";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
-import { useT } from "@/lib/i18n";
+import { useFmt, useT } from "@/lib/i18n";
 
 const DENSITY_PRESETS: { id: string; root: number; flank: number }[] = [
   { id: "reference", root: 1, flank: 1 },
@@ -30,6 +30,7 @@ const DENSITY_PRESETS: { id: string; root: number; flank: number }[] = [
 
 export function MeshPanel(props: { gear: 1 | 2 }) {
   const t = useT();
+  const fm = useFmt();
   const { stage } = useStage();
   const [refineRoot, setRefineRoot] = useState(1);
   const [refineFlank, setRefineFlank] = useState(1);
@@ -182,8 +183,8 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
 
         {data && (
           <div className="grid grid-cols-2 gap-2">
-            <Stat label={t("mesh.hexes")} value={data.n_hexes.toLocaleString("de-DE")} />
-            <Stat label={t("mesh.nodes")} value={data.n_nodes_3d.toLocaleString("de-DE")} />
+            <Stat label={t("mesh.hexes")} value={fm.int(data.n_hexes)} />
+            <Stat label={t("mesh.nodes")} value={fm.int(data.n_nodes_3d)} />
             <Stat
               label={t("mesh.minJ")}
               value={data.min_scaled_jacobian.toFixed(3)}

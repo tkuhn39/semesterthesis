@@ -48,8 +48,13 @@ interface TreeNode {
 }
 
 // The [n] numbers are per-instance model IDs (data from the store, FVA behaviour) —
-// the tree is built from the instance table, never from hardcoded label strings.
-function buildTree(model: ModelInstances, locale: string): TreeNode {
+// the tree is built from the instance table, never from hardcoded label strings. The
+// material badges follow the Werkstoff selection (norm-dispatch source), not the role.
+function buildTree(
+  model: ModelInstances,
+  locale: string,
+  badges: { gear1: string; gear2: string },
+): TreeNode {
   const lab = (key: string) => instanceLabel(model[key], locale);
   return {
     label: "Modell",
@@ -69,7 +74,7 @@ function buildTree(model: ModelInstances, locale: string): TreeNode {
                   {
                     id: "pinion",
                     label: lab("pinion"),
-                    badge: "Stahl",
+                    badge: badges.gear1,
                     children: [{ id: "correction", label: lab("correction") }],
                   },
                 ],
@@ -80,7 +85,7 @@ function buildTree(model: ModelInstances, locale: string): TreeNode {
                   {
                     id: "wheel",
                     label: lab("wheel"),
-                    badge: "PA",
+                    badge: badges.gear2,
                     children: [{ id: "wheel_body", label: lab("wheel_body") }],
                   },
                 ],
@@ -232,7 +237,7 @@ function Shell() {
       stage: [
         // FVA tab order: Geometrie · Toleranzen · Tragfähigkeit · VDI 2736 · Werkstoff ·
         // Schmierstoff · Lastverteilung (FEM) · Dyn. Abwälzen (FEM) — then our extras
-        { id: "geometry", title: "Geometrie", render: () => <GeometryPanel /> },
+        { id: "geometry", title: locale === "de" ? "Geometrie" : "Geometry", render: () => <GeometryPanel /> },
         ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "tolerances", locale, gearHeads)) : []),
         ...(s
           ? [
@@ -263,7 +268,7 @@ function Shell() {
         { id: "pair", title: locale === "de" ? "FE-Abwälzmodell (Ansicht)" : "FE rolling model (view)", render: () => <PairPanel /> },
       ],
       pinion: [
-        { id: "toothform", title: "Zahnform", render: () => <ToothFormPanel gear={1} /> },
+        { id: "toothform", title: locale === "de" ? "Zahnform" : "Tooth form", render: () => <ToothFormPanel gear={1} /> },
         { id: "mesh", title: "FE-Mesh", render: () => <MeshPanel gear={1} /> },
       ],
       correction: s
@@ -275,12 +280,12 @@ function Shell() {
           }))
         : [],
       wheel: [
-        { id: "toothform", title: "Zahnform", render: () => <ToothFormPanel gear={2} /> },
+        { id: "toothform", title: locale === "de" ? "Zahnform" : "Tooth form", render: () => <ToothFormPanel gear={2} /> },
         { id: "mesh", title: "FE-Mesh", render: () => <MeshPanel gear={2} /> },
       ],
       wheel_body: s ? maybe(schemaTab(s, "wheel_body_cylindrical_gear", "wheel_body", locale)) : [],
       variation: [
-        { id: "variation", title: "Stufenvariation", render: () => <VariationPanel /> },
+        { id: "variation", title: locale === "de" ? "Stufenvariation" : "Stage variation", render: () => <VariationPanel /> },
       ],
       glossary: [
         { id: "glossary", title: locale === "de" ? "Legende & Parameter" : "Glossary & parameters", render: () => <GlossaryPanel /> },
@@ -295,7 +300,17 @@ function Shell() {
   const activeTabId = tabByNode[active] ?? visibleTabs[0]?.id;
   const activeTab = visibleTabs.find((x) => x.id === activeTabId) ?? visibleTabs[0];
 
-  const tree = useMemo(() => buildTree(wb.model, locale), [wb.model, locale]);
+  // material badges follow the Werkstoff selection (steel → "Stahl"/"Steel", plastic → "PA")
+  const g1k = wb.materials.gear1_kind;
+  const g2k = wb.materials.gear2_kind;
+  const tree = useMemo(
+    () =>
+      buildTree(wb.model, locale, {
+        gear1: g1k === "steel" ? (locale === "de" ? "Stahl" : "Steel") : "PA",
+        gear2: g2k === "steel" ? (locale === "de" ? "Stahl" : "Steel") : "PA",
+      }),
+    [wb.model, locale, g1k, g2k],
+  );
   const nodeTitle: Record<NodeId, string> = {
     overview: locale === "de" ? "Übersicht" : "Overview",
     unit: instanceLabel(wb.model.gear_unit, locale),
@@ -304,7 +319,7 @@ function Shell() {
     correction: instanceLabel(wb.model.correction, locale),
     wheel: instanceLabel(wb.model.wheel, locale),
     wheel_body: instanceLabel(wb.model.wheel_body, locale),
-    variation: "Stufenvariation",
+    variation: locale === "de" ? "Stufenvariation" : "Stage variation",
     glossary: locale === "de" ? "Legende & Parameter" : "Glossary & parameters",
   };
 
@@ -368,7 +383,7 @@ function Shell() {
             <span className="text-[13px] font-semibold text-sky-900">{nodeTitle[active]}</span>
             {/* active-geometry badge: outside the scrollable tab strip so it never clips */}
             <span className="ml-auto text-[11px] text-zinc-400 whitespace-nowrap">
-              Stufe: {stageLabel}
+              {t("pair.stageLabel")}: {stageLabel}
             </span>
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto p-3 bg-zinc-100/70">

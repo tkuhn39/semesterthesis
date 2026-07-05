@@ -11,10 +11,11 @@ import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { MeshEngagement } from "@/components/MeshEngagement";
 import { useStage } from "@/lib/stage";
 import { useWorkbench } from "@/lib/store";
-import { useT } from "@/lib/i18n";
+import { useFmt, useT } from "@/lib/i18n";
 
 export function GeometryPanel() {
   const t = useT();
+  const fm = useFmt();
   const { stage, setStage } = useStage();
   const wb = useWorkbench();
   const aMode = wb.geometryUi.center_distance_mode;
@@ -60,60 +61,60 @@ export function GeometryPanel() {
             </thead>
             <tbody>
               <tr>
-                <td>Normalmodul</td>
+                <td>{t("attr.mn")}</td>
                 <td className="wb-num text-zinc-400">m_n</td>
                 <td colSpan={2}><Num value={stage.normal_module_mm} onChange={set("normal_module_mm")} /></td>
                 <td className="text-zinc-400">mm</td>
               </tr>
               <tr>
-                <td>Eingriffswinkel</td>
+                <td>{t("attr.alpha")}</td>
                 <td className="wb-num text-zinc-400">α_n</td>
                 <td colSpan={2}><Num value={stage.normal_pressure_angle_deg} onChange={set("normal_pressure_angle_deg")} /></td>
                 <td className="text-zinc-400">°</td>
               </tr>
               <tr>
-                <td>Zähnezahl</td>
+                <td>{t("attr.z")}</td>
                 <td className="wb-num text-zinc-400">z</td>
                 <td><Num value={stage.teeth_pinion} onChange={set("teeth_pinion")} step={1} /></td>
                 <td><Num value={stage.teeth_wheel} onChange={set("teeth_wheel")} step={1} /></td>
                 <td></td>
               </tr>
               <tr>
-                <td>Profilverschiebung</td>
+                <td>{t("attr.xShort")}</td>
                 <td className="wb-num text-zinc-400">x</td>
                 <td><Num value={stage.profile_shift_pinion} onChange={set("profile_shift_pinion")} /></td>
                 <td><Num value={stage.profile_shift_wheel} onChange={set("profile_shift_wheel")} /></td>
                 <td></td>
               </tr>
               <tr>
-                <td>Schrägungswinkel</td>
+                <td>{t("attr.beta")}</td>
                 <td className="wb-num text-zinc-400">β</td>
                 <td colSpan={2}><Num value={stage.helix_angle_deg} onChange={set("helix_angle_deg")} /></td>
                 <td className="text-zinc-400">°</td>
               </tr>
               <tr>
-                <td>Zahnbreite</td>
+                <td>{t("attr.b")}</td>
                 <td className="wb-num text-zinc-400">b</td>
                 <td><Num value={stage.face_width_pinion_mm} onChange={set("face_width_pinion_mm")} /></td>
                 <td><Num value={stage.face_width_wheel_mm} onChange={set("face_width_wheel_mm")} /></td>
                 <td className="text-zinc-400">mm</td>
               </tr>
               <tr>
-                <td>Achsabstand definieren</td>
+                <td>{t("geo.aMode")}</td>
                 <td></td>
                 <td colSpan={2}>
                   <select
                     value={aMode}
                     onChange={(e) => wb.set("geometryUi.center_distance_mode", e.target.value)}
                   >
-                    <option value="a_and_x">Achsabstand und Profilverschiebung definieren</option>
-                    <option value="from_x">Aus den Profilverschiebungen berechnen</option>
+                    <option value="a_and_x">{t("geo.aModeAX")}</option>
+                    <option value="from_x">{t("geo.aModeFromX")}</option>
                   </select>
                 </td>
                 <td></td>
               </tr>
-              <tr title="DIN 21771: inv α_wt = inv α_t + 2·Σx·tan α_n/Σz — bei 'aus x berechnen' ist a Ergebnis und gesperrt">
-                <td>Achsabstand</td>
+              <tr title={t("geo.aModeNote")}>
+                <td>{t("attr.a")}</td>
                 <td className="wb-num text-zinc-400">a</td>
                 <td colSpan={2}>
                   {aMode === "from_x" ? (
@@ -141,9 +142,9 @@ export function GeometryPanel() {
       {res && (
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-3 gap-2">
-            <Stat label="Profilüberdeckung ε_α" value={res.transverse_contact_ratio.toFixed(3)} tone={res.valid ? "good" : "bad"} />
-            <Stat label="Sprungüberdeckung ε_β" value={res.overlap_ratio.toFixed(3)} />
-            <Stat label="Gesamtüberdeckung ε_γ" value={res.total_contact_ratio.toFixed(3)} />
+            <Stat label={`${t("attr.epsAlpha")} ε_α`} value={fm.num(res.transverse_contact_ratio, 3)} tone={res.valid ? "good" : "bad"} />
+            <Stat label={`${t("attr.epsBeta")} ε_β`} value={fm.num(res.overlap_ratio, 3)} />
+            <Stat label={`${t("attr.epsGamma")} ε_γ`} value={fm.num(res.total_contact_ratio, 3)} />
           </div>
           <Section title={t("geo.diameters")}>
             <table className="attr-table">
@@ -157,23 +158,23 @@ export function GeometryPanel() {
                 </tr>
               </thead>
               <tbody>
-                <AttrRow label="Teilkreis" symbol="d" unit="mm">
-                  <td className="wb-num">{res.reference_diameter_mm[0].toFixed(3)}</td>
-                  <td className="wb-num">{res.reference_diameter_mm[1].toFixed(3)}</td>
+                <AttrRow label={t("attr.dCircle")} symbol="d" unit="mm">
+                  <td className="wb-num">{fm.num(res.reference_diameter_mm[0], 3)}</td>
+                  <td className="wb-num">{fm.num(res.reference_diameter_mm[1], 3)}</td>
                 </AttrRow>
-                <AttrRow label="Grundkreis" symbol="d_b" unit="mm">
-                  <td className="wb-num">{res.base_diameter_mm[0].toFixed(3)}</td>
-                  <td className="wb-num">{res.base_diameter_mm[1].toFixed(3)}</td>
+                <AttrRow label={t("attr.dbCircle")} symbol="d_b" unit="mm">
+                  <td className="wb-num">{fm.num(res.base_diameter_mm[0], 3)}</td>
+                  <td className="wb-num">{fm.num(res.base_diameter_mm[1], 3)}</td>
                 </AttrRow>
-                <AttrRow label="Kopfkreis" symbol="d_a" unit="mm">
-                  <td className="wb-num">{res.tip_diameter_mm[0].toFixed(3)}</td>
-                  <td className="wb-num">{res.tip_diameter_mm[1].toFixed(3)}</td>
+                <AttrRow label={t("attr.daCircle")} symbol="d_a" unit="mm">
+                  <td className="wb-num">{fm.num(res.tip_diameter_mm[0], 3)}</td>
+                  <td className="wb-num">{fm.num(res.tip_diameter_mm[1], 3)}</td>
                 </AttrRow>
-                <AttrRow label="Betriebsachsabstand" symbol="a_w" unit="mm">
-                  <td className="wb-num" colSpan={2}>{res.working_center_distance_mm.toFixed(3)}</td>
+                <AttrRow label={t("attr.aw")} symbol="a_w" unit="mm">
+                  <td className="wb-num" colSpan={2}>{fm.num(res.working_center_distance_mm, 3)}</td>
                 </AttrRow>
-                <AttrRow label="Betriebseingriffswinkel" symbol="α_wt" unit="°">
-                  <td className="wb-num" colSpan={2}>{res.working_pressure_angle_deg.toFixed(3)}</td>
+                <AttrRow label={t("attr.alphaWt")} symbol="α_wt" unit="°">
+                  <td className="wb-num" colSpan={2}>{fm.num(res.working_pressure_angle_deg, 3)}</td>
                 </AttrRow>
               </tbody>
             </table>

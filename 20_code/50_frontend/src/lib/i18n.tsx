@@ -3,7 +3,8 @@
 // Minimal i18n (plan v2 workstream D): every new view uses keys from day one; the locale
 // switch lives in the workbench header. German is the default, English complete for handover.
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { fmtInt, fmtNum } from "./format";
 
 export type Locale = "de" | "en";
 
@@ -143,6 +144,238 @@ const DICT: Record<string, { de: string; en: string }> = {
   "glossary.seeAlso": { de: "Siehe auch", en: "See also" },
   "glossary.filterNorm": { de: "Nach dieser Norm filtern", en: "Filter by this norm" },
   "glossary.jump": { de: "Zum Parameter springen", en: "Jump to parameter" },
+  // ---- shared attribute names (ISO 21771 / DIN 21771 wording, FVA labels in DE) ----
+  "common.gear": { de: "Rad", en: "Gear" },
+  "common.unitShort": { de: "Einh.", en: "Unit" },
+  "common.min": { de: "Minimum", en: "Minimum" },
+  "common.max": { de: "Maximum", en: "Maximum" },
+  "mat.steel": { de: "Stahl", en: "Steel" },
+  "mat.plastic": { de: "Kunststoff", en: "Plastic" },
+  "attr.alphaN": { de: "Normaleingriffswinkel", en: "Normal pressure angle" },
+  "attr.mn": { de: "Normalmodul", en: "Normal module" },
+  "attr.beta": { de: "Schrägungswinkel", en: "Helix angle" },
+  "attr.z": { de: "Zähnezahl", en: "Number of teeth" },
+  "attr.u": { de: "Zähnezahlverhältnis", en: "Gear ratio" },
+  "attr.a": { de: "Achsabstand", en: "Centre distance" },
+  "attr.x": { de: "Nennprofilverschiebungsfaktor", en: "Nominal profile shift coefficient" },
+  "attr.b": { de: "Zahnbreite", en: "Face width" },
+  "attr.bGem": { de: "Gemeinsame Zahnbreite", en: "Common face width" },
+  "attr.epsAlpha": { de: "Profilüberdeckung", en: "Transverse contact ratio" },
+  "attr.epsBeta": { de: "Sprungüberdeckung", en: "Overlap ratio" },
+  "attr.epsGamma": { de: "Gesamtüberdeckung", en: "Total contact ratio" },
+  "attr.d": { de: "Teilkreisdurchmesser", en: "Reference diameter" },
+  "attr.dw": { de: "Wälzkreisdurchmesser", en: "Working pitch diameter" },
+  "attr.db": { de: "Grundkreisdurchmesser", en: "Base diameter" },
+  "attr.da": { de: "Kopfkreisdurchmesser", en: "Tip diameter" },
+  "attr.df": { de: "Fußkreis", en: "Root circle" },
+  "attr.dFf": { de: "Fußformkreis", en: "Root form circle" },
+  "attr.alphaWt": { de: "Betriebseingriffswinkel", en: "Working pressure angle" },
+  "attr.haP": { de: "Kopfhöhenfaktor (Bezugsprofil)", en: "Addendum factor (basic rack)" },
+  "attr.hfP": { de: "Fußhöhenfaktor (Bezugsprofil)", en: "Dedendum factor (basic rack)" },
+  "attr.rhofP": { de: "Fußausrundungsfaktor (Bezugsprofil)", en: "Root fillet factor (basic rack)" },
+  "attr.q": { de: "Bearbeitungszugabe", en: "Machining allowance" },
+  "attr.prP": { de: "Protuberanzbetrag", en: "Protuberance amount" },
+  "attr.alphaPrP": { de: "Protuberanzwinkel", en: "Protuberance angle" },
+  "attr.sh": { de: "Sicherheitsfaktor Flanke", en: "Flank safety factor" },
+  "attr.sf": { de: "Sicherheitsfaktor Fuß", en: "Root safety factor" },
+  "attr.weight": { de: "Gewicht der Zahnräder", en: "Gear weight" },
+  // ---- Ergebnis-Schnellansicht ----
+  "quick.mainTitle": { de: "ISO 21771 - Hauptgeometrie", en: "ISO 21771 - Main geometry" },
+  "quick.diaTitle": { de: "ISO 21771 - Durchmesser", en: "ISO 21771 - Diameters" },
+  // ---- Stufenvariation guided flow ----
+  "var.step1": { de: "Attribute", en: "Attributes" },
+  "var.step2": { de: "Rechnung", en: "Computation" },
+  "var.step3": { de: "Filterkriterien", en: "Filter criteria" },
+  "var.step4": { de: "Ergebnisse", en: "Results" },
+  "var.persistNote": {
+    de: "(Ergebnisse bleiben erhalten — kein Neurechnen beim Zurückblättern)",
+    en: "(results are kept — going back never recomputes)",
+  },
+  "var.step1Hint": {
+    de: "Bitte wählen Sie die Attribute aus, die variiert werden sollen.",
+    en: "Select the attributes to vary.",
+  },
+  "var.attrTitle": { de: "Stufenvariation — Attribute", en: "Stage variation — attributes" },
+  "var.fixA": { de: "Achsabstand fixieren", en: "Fix centre distance" },
+  "var.tipShort": { de: "Automatische Kopfkürzung zulassen", en: "Allow automatic tip shortening" },
+  "var.fullRound": { de: "Vollausrundung", en: "Full root rounding" },
+  "var.dedClear": { de: "Fußhöhen mit Kopfspiel berechnen", en: "Compute dedendum with tip clearance" },
+  "var.stepSize": { de: "Schrittweite", en: "Step size" },
+  "var.fixedHint": {
+    de: "Variation dieses Parameters wird vom Sweep-Kernel noch nicht unterstützt — Wert wirkt als Festwert (Rad-1-Wert führt).",
+    en: "Varying this parameter is not yet supported by the sweep kernel — the value acts as a constant (gear-1 value drives).",
+  },
+  "var.extTitle": {
+    de: "Werkstoff, Fußform & Sicherheiten (Erweiterung)",
+    en: "Material, root fillet & safeties (extension)",
+  },
+  "var.fussform": { de: "Fußform", en: "Root fillet form" },
+  "var.fussformNote": {
+    de: "Fußform wirkt auf den Kontur-Vergleich (Schritt 4) und das FE-Deck",
+    en: "The fillet form drives the contour comparison (step 4) and the FE deck",
+  },
+  "var.normNote": {
+    de: "Norm-Dispatch je Rad: Stahl → ISO 6336, Kunststoff → VDI 2736",
+    en: "Norm dispatch per gear: steel → ISO 6336, plastic → VDI 2736",
+  },
+  "var.torque": { de: "Moment", en: "Torque" },
+  "var.sfMin": { de: "Mindestsicherheit Fuß", en: "Minimum root safety" },
+  "var.countCompute": { de: "Es werden {n} Varianten berechnet.", en: "{n} variants will be computed." },
+  "var.method.grid": { de: "Gitter", en: "Grid" },
+  "var.continueExisting": { de: "Weiter (vorhandene Ergebnisse) >", en: "Next (existing results) >" },
+  "var.computeNext": { de: "Weiter > (berechnen)", en: "Next > (compute)" },
+  "var.computing": { de: "Berechne {n} Varianten …", en: "Computing {n} variants …" },
+  "var.step3Hint": {
+    de: "Bitte legen Sie die Kriterien fest, nach denen die berechneten Varianten gefiltert werden sollen.",
+    en: "Define the criteria used to filter the computed variants.",
+  },
+  "var.filterTitle": {
+    de: "Auswahl der anzuzeigenden Ergebnis-Attribute",
+    en: "Result attributes to display",
+  },
+  "var.countResult": {
+    de: "{n} Varianten, {m} erfolgreich, {k} ohne gültige Geometrie.",
+    en: "{n} variants, {m} successful, {k} without valid geometry.",
+  },
+  "var.countShown": {
+    de: "Entsprechend der gewählten Filterkriterien werden im nächsten Fenster {n} Varianten angezeigt.",
+    en: "According to the chosen filter criteria the next window shows {n} variants.",
+  },
+  "var.back": { de: "< Zurück", en: "< Back" },
+  "var.next": { de: "Weiter >", en: "Next >" },
+  "var.step4Hint": {
+    de: "Bitte wählen Sie eine Variante aus. Mit „Übernehmen“ wird die ausgewählte Variante in das Modell übernommen — alle Reiter folgen der neuen Geometrie.",
+    en: "Select a variant. “Apply” writes it into the model — every tab follows the new geometry.",
+  },
+  "var.filteredStat": { de: "Varianten (gefiltert)", en: "Variants (filtered)" },
+  "var.okStat": { de: "Erfolgreich", en: "Successful" },
+  "var.paretoStat": { de: "Pareto", en: "Pareto" },
+  "var.pcTitle": { de: "Parallelkoordinaten", en: "Parallel coordinates" },
+  "var.pcNote": { de: "Auswahl bleibt farbig, Rest wird grau", en: "Selection stays coloured, rest turns grey" },
+  "var.tableTitle": { de: "Varianten (nach S_F Rad 2)", en: "Variants (by S_F gear 2)" },
+  "var.apply": { de: "Übernehmen", en: "Apply" },
+  "var.plotTitle": { de: "Plot des Zahneingriffs / Konturvergleich", en: "Mesh plot / contour comparison" },
+  "var.plotHint": {
+    de: "Varianten ankreuzen (bis zu 4) — die echten Zahnkonturen (gewählte Fußform) werden überlagert.",
+    en: "Tick variants (up to 4) — the real tooth contours (chosen fillet form) are overlaid.",
+  },
+  "var.newVariation": { de: "Neue Variation", en: "New variation" },
+  "var.compareCol": { de: "Vgl.", en: "Cmp." },
+  "var.noFilterMatch": {
+    de: "Keine Variante erfüllt die aktuellen Filterkriterien.",
+    en: "No variant matches the current filter criteria.",
+  },
+  // ---- Zahneingriff animation + 2D mesh view ----
+  "eng.title": { de: "Zahneingriff", en: "Tooth engagement" },
+  "eng.play": { de: "▶ Abspielen", en: "▶ Play" },
+  "eng.pause": { de: "⏸ Pause", en: "⏸ Pause" },
+  "eng.loading": { de: "Zahneingriff wird geladen …", en: "Loading tooth engagement …" },
+  "eng.speed": { de: "Geschwindigkeit", en: "Speed" },
+  "eng.footer": {
+    de: "(kinematisch gekoppelt) · echte As-cut-Konturen",
+    en: "(kinematically coupled) · real as-cut contours",
+  },
+  "mesh2d.quads": { de: "Quads", en: "quads" },
+  "mesh2d.caption": { de: "2D-Schnitt (Jacobi-Güte)", en: "2D section (scaled Jacobian)" },
+  // ---- Geometrie tab (own extras beyond the schema rows) ----
+  "geo.aMode": { de: "Achsabstand definieren", en: "Define centre distance" },
+  "geo.aModeAX": {
+    de: "Achsabstand und Profilverschiebung definieren",
+    en: "Define centre distance and profile shift",
+  },
+  "geo.aModeFromX": {
+    de: "Aus den Profilverschiebungen berechnen",
+    en: "Derive from the profile shifts",
+  },
+  "attr.alpha": { de: "Eingriffswinkel", en: "Pressure angle" },
+  "attr.xShort": { de: "Profilverschiebung", en: "Profile shift" },
+  "geo.aModeNote": {
+    de: "DIN 21771: inv α_wt = inv α_t + 2·Σx·tan α_n/Σz — bei 'aus x berechnen' ist a Ergebnis und gesperrt",
+    en: "DIN 21771: inv α_wt = inv α_t + 2·Σx·tan α_n/Σz — in 'derive from x' mode, a is a result and locked",
+  },
+  "attr.dCircle": { de: "Teilkreis", en: "Reference circle" },
+  "attr.dbCircle": { de: "Grundkreis", en: "Base circle" },
+  "attr.daCircle": { de: "Kopfkreis", en: "Tip circle" },
+  "attr.aw": { de: "Betriebsachsabstand", en: "Working centre distance" },
+  // ---- Tragfähigkeit (analytic results card) ----
+  "cap.loadcase": { de: "Lastfall (aus Leistungsfluss)", en: "Load case (from power flow)" },
+  "cap.pinionTorque": { de: "Ritzelmoment", en: "Pinion torque" },
+  "cap.speed": { de: "Drehzahl", en: "Speed" },
+  "cap.power": { de: "Leistung", en: "Power" },
+  "cap.cycles": { de: "Lastspiele (Rad)", en: "Load cycles (wheel)" },
+  "cap.ambient": { de: "Umgebungstemperatur", en: "Ambient temperature" },
+  "cap.sigmaF": { de: "Zahnfußspannung", en: "Tooth root stress" },
+  "cap.sF": { de: "Fußsicherheit", en: "Root safety" },
+  "cap.sigmaH": { de: "Flankenpressung", en: "Contact stress (flank)" },
+  "cap.sH": { de: "Flankensicherheit", en: "Flank safety" },
+  "cap.staticPeak": { de: "Statische Spitzenlast", en: "Static peak load" },
+  "cap.staticSafety": { de: "Statische Sicherheit", en: "Static safety" },
+  "cap.toothTemp": { de: "Zahntemperatur", en: "Tooth temperature" },
+  "cap.wear": { de: "Verschleiß", en: "Wear" },
+  "cap.inputsNote": {
+    de: "Alle Eingaben liegen in ihren FVA-Reitern (Leistungsfluss, Tragfähigkeit, VDI 2736, Werkstoff, Schmierstoff, Toleranzen) — hier nur der wirksame Lastfall.",
+    en: "All inputs live in their FVA tabs (power flow, load capacity, VDI 2736, material, lubricant, tolerances) — this card only shows the effective load case.",
+  },
+  // ---- Auslegung (design extras) ----
+  "design.toolAddendum": { de: "Kopfhöhenfaktor", en: "Addendum factor" },
+  "design.toolTipRadius": { de: "Kopfrundung", en: "Tip corner radius" },
+  "design.aPreset": { de: "Achsabstand-Vorgabe", en: "Centre distance target" },
+  "design.ratio": { de: "Übersetzung u", en: "Ratio u" },
+  "design.free": { de: "frei", en: "free" },
+  "design.parametric": { de: "parametrisch", en: "parametric" },
+  "micro.tipRelief": { de: "Kopfrücknahme", en: "Tip relief" },
+  "micro.crownBeta": { de: "Breitenballigkeit", en: "Helix crowning" },
+  "micro.endRelief": { de: "Endrücknahme", en: "End relief" },
+  "micro.left": { de: "links", en: "left" },
+  "micro.right": { de: "rechts", en: "right" },
+  // ---- ISO 1328-1 tolerance rows ----
+  "tol.fpt": { de: "Einzelteilungsabweichung", en: "Single pitch deviation" },
+  "tol.Fp": { de: "Gesamtteilungsabweichung", en: "Total cumulative pitch deviation" },
+  "tol.ffa": { de: "Profil-Formabweichung", en: "Profile form deviation" },
+  "tol.Fa": { de: "Profil-Gesamtabweichung", en: "Total profile deviation" },
+  "tol.Fb": { de: "Flankenlinien-Gesamtabweichung", en: "Total helix deviation" },
+  "tol.fpb": { de: "Eingriffsteilungsabweichung", en: "Transverse base pitch deviation" },
+  // ---- Zahnform (fillet parameters) ----
+  "tf.ef": { de: "Fußkreis-Offset", en: "Root circle offset" },
+  "tf.be": { de: "Bézier-Faktor", en: "Bézier factor" },
+  "tf.gamma": { de: "Keilwinkel", en: "Wedge angle" },
+  "tf.bf": { de: "Bogenfaktor", en: "Arc factor" },
+  "tf.dNa": { de: "Nutzkopfkreis", en: "Usable tip circle" },
+  // ---- Dynamikfaktoren ----
+  "dyn.ka": { de: "Anwendungsfaktor", en: "Application factor" },
+  "dyn.kv": { de: "Dynamikfaktor K_v", en: "Dynamic factor K_v" },
+  "dyn.kha": { de: "Stirnfaktor K_Hα", en: "Transverse factor K_Hα" },
+  "dyn.khb": { de: "Breitenfaktor K_Hβ", en: "Face load factor K_Hβ" },
+  "dyn.resonance": { de: "Resonanz (ISO 6336-1)", en: "Resonance (ISO 6336-1)" },
+  "dyn.cGamma": { de: "Eingriffssteifigkeit", en: "Mesh stiffness" },
+  "dyn.mRed": { de: "Reduzierte Masse", en: "Reduced mass" },
+  "dyn.nE1": { de: "Resonanzdrehzahl", en: "Resonance speed" },
+  "dyn.refN": { de: "Bezugsdrehzahl", en: "Reference speed ratio" },
+  "dyn.range": { de: "Bereich", en: "Range" },
+  // ---- Berechnungsauswahl banner + schema actions ----
+  "calc.banner": {
+    de: "Für jede Stufe werden immer die Geometrie (ISO 21771) und die analytischen Tragfähigkeiten (ISO 6336, VDI 2736) berechnet — die Stufenvariation benötigt beide vollständig. Zusätzlich können die folgenden Berechnungen aktiviert werden; ihre Reiter erscheinen nach der Aktivierung.",
+    en: "Every stage always computes the geometry (ISO 21771) and the analytic load capacities (ISO 6336, VDI 2736) — the stage variation needs both complete. The following calculations can be enabled additionally; their tabs appear once activated.",
+  },
+  "loaddist.runMeshing": { de: "FEM-Vernetzung durchführen", en: "Run FEM meshing" },
+  // ---- Übersicht ----
+  "ov.loading": { de: "Lade kst-E …", en: "Loading kst-E …" },
+  "ov.role": { de: "Rolle", en: "Role" },
+  "ov.material": { de: "Werkstoff", en: "Material" },
+  "ov.card.mesh": { de: "FE-Mesh (Kunststoffrad)", en: "FE mesh (plastic wheel)" },
+  "ov.card.meshSub": {
+    de: "Referenz-Topologie, Feinheit, Fußkurven, 3D",
+    en: "Reference topology, density, fillets, 3D",
+  },
+  "ov.card.toothform": { de: "Zahnform", en: "Tooth form" },
+  "ov.card.toothformSub": {
+    de: "Echte erzeugte Kontur inkl. optimierter Fußkurven",
+    en: "Real as-cut contour incl. optimized fillets",
+  },
+  "ov.card.variationSub": {
+    de: "Sweep + Pareto + Varianten-Vergleich",
+    en: "Sweep + Pareto + variant comparison",
+  },
 };
 
 const LocaleCtx = createContext<{ locale: Locale; setLocale: (l: Locale) => void }>({
@@ -162,4 +395,24 @@ export function useLocale() {
 export function useT(): (key: string) => string {
   const { locale } = useContext(LocaleCtx);
   return (key: string) => DICT[key]?.[locale] ?? key;
+}
+
+export interface Fmt {
+  /** locale-aware fixed-digit number for display (de: comma decimals like the FVA UI) */
+  num: (v: number | null | undefined, digits?: number) => string;
+  /** locale-aware integer with thousands grouping (counts) */
+  int: (v: number | null | undefined) => string;
+}
+
+/** THE formatter for user-visible numbers — bound to the active locale so a language
+ *  switch re-renders consumers. SVG path/transform coordinates keep raw toFixed. */
+export function useFmt(): Fmt {
+  const { locale } = useContext(LocaleCtx);
+  return useMemo(
+    () => ({
+      num: (v: number | null | undefined, digits = 2) => fmtNum(v, digits, locale),
+      int: (v: number | null | undefined) => fmtInt(v, locale),
+    }),
+    [locale],
+  );
 }

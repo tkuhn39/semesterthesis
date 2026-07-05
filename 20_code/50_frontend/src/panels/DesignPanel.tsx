@@ -15,10 +15,11 @@ import {
 } from "@/lib/api";
 import { useStage } from "@/lib/stage";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
-import { useT } from "@/lib/i18n";
+import { useFmt, useT } from "@/lib/i18n";
 
 export function DesignPanel() {
   const t = useT();
+  const fm = useFmt();
   const { stage, setStage, setLabel } = useStage();
   const [draft, setDraft] = useState<StageParams>(stage);
   const [presets, setPresets] = useState<PresetsResponse | null>(null);
@@ -154,7 +155,7 @@ export function DesignPanel() {
             </thead>
             <tbody>
               <tr>
-                <td>Normalmodul</td>
+                <td>{t("attr.mn")}</td>
                 <td className="wb-num text-zinc-400">m_n</td>
                 <td colSpan={2}>
                   <Num value={draft.normal_module_mm} onChange={set("normal_module_mm")} />
@@ -162,7 +163,7 @@ export function DesignPanel() {
                 <td className="text-zinc-400">mm</td>
               </tr>
               <tr>
-                <td>Zähnezahl</td>
+                <td>{t("attr.z")}</td>
                 <td className="wb-num text-zinc-400">z</td>
                 <td>
                   <Num value={draft.teeth_pinion} onChange={set("teeth_pinion")} step={1} />
@@ -173,7 +174,7 @@ export function DesignPanel() {
                 <td></td>
               </tr>
               <tr>
-                <td>Profilverschiebung</td>
+                <td>{t("attr.xShort")}</td>
                 <td className="wb-num text-zinc-400">x</td>
                 <td>
                   <Num value={draft.profile_shift_pinion} onChange={set("profile_shift_pinion")} />
@@ -184,7 +185,7 @@ export function DesignPanel() {
                 <td></td>
               </tr>
               <tr>
-                <td>Zahnbreite</td>
+                <td>{t("attr.b")}</td>
                 <td className="wb-num text-zinc-400">b</td>
                 <td>
                   <Num value={draft.face_width_pinion_mm} onChange={set("face_width_pinion_mm")} />
@@ -195,7 +196,7 @@ export function DesignPanel() {
                 <td className="text-zinc-400">mm</td>
               </tr>
               <tr>
-                <td>Eingriffswinkel</td>
+                <td>{t("attr.alpha")}</td>
                 <td className="wb-num text-zinc-400">α_n</td>
                 <td colSpan={2}>
                   <Num
@@ -206,7 +207,7 @@ export function DesignPanel() {
                 <td className="text-zinc-400">°</td>
               </tr>
               <tr>
-                <td>Schrägungswinkel</td>
+                <td>{t("attr.beta")}</td>
                 <td className="wb-num text-zinc-400">β</td>
                 <td colSpan={2}>
                   <Num value={draft.helix_angle_deg} onChange={set("helix_angle_deg")} />
@@ -237,12 +238,12 @@ export function DesignPanel() {
           </div>
           <table className="attr-table">
             <tbody>
-              <AttrRow label="Kopfhöhenfaktor" symbol="h_aP0*" unit="·m_n">
+              <AttrRow label={t("design.toolAddendum")} symbol="h_aP0*" unit="·m_n">
                 <td>
                   <Num value={draft.tool_addendum_factor} onChange={set("tool_addendum_factor")} />
                 </td>
               </AttrRow>
-              <AttrRow label="Kopfrundung" symbol="ρ_aP0*" unit="·m_n">
+              <AttrRow label={t("design.toolTipRadius")} symbol="ρ_aP0*" unit="·m_n">
                 <td>
                   <Num
                     value={draft.tool_tip_radius_factor}
@@ -291,14 +292,14 @@ export function DesignPanel() {
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-3 gap-2">
           <Stat
-            label="Achsabstand-Vorgabe"
-            value={draft.center_distance_mm ? draft.center_distance_mm.toFixed(2) : "frei"}
+            label={t("design.aPreset")}
+            value={draft.center_distance_mm ? fm.num(draft.center_distance_mm, 2) : t("design.free")}
             unit={draft.center_distance_mm ? "mm" : undefined}
           />
-          <Stat label="Übersetzung u" value={(draft.teeth_wheel / draft.teeth_pinion).toFixed(3)} />
+          <Stat label={t("design.ratio")} value={fm.num(draft.teeth_wheel / draft.teeth_pinion, 3)} />
           <Stat
-            label="Quelle"
-            value={draft.use_example ? "kst-E" : "parametrisch"}
+            label={t("design.source")}
+            value={draft.use_example ? "kst-E" : t("design.parametric")}
           />
         </div>
 
@@ -321,23 +322,23 @@ export function DesignPanel() {
                 </tr>
               </thead>
               <tbody>
-                <AttrRow label="Einzelteilungsabweichung" symbol="f_ptT" unit="µm">
-                  <td className="wb-num">{tol.tolerances.single_pitch.toFixed(1)}</td>
+                <AttrRow label={t("tol.fpt")} symbol="f_ptT" unit="µm">
+                  <td className="wb-num">{fm.num(tol.tolerances.single_pitch, 1)}</td>
                 </AttrRow>
-                <AttrRow label="Gesamtteilungsabweichung" symbol="F_pT" unit="µm">
-                  <td className="wb-num">{tol.tolerances.total_pitch.toFixed(1)}</td>
+                <AttrRow label={t("tol.Fp")} symbol="F_pT" unit="µm">
+                  <td className="wb-num">{fm.num(tol.tolerances.total_pitch, 1)}</td>
                 </AttrRow>
-                <AttrRow label="Profil-Formabweichung" symbol="f_fαT" unit="µm">
-                  <td className="wb-num">{tol.tolerances.profile_form.toFixed(1)}</td>
+                <AttrRow label={t("tol.ffa")} symbol="f_fαT" unit="µm">
+                  <td className="wb-num">{fm.num(tol.tolerances.profile_form, 1)}</td>
                 </AttrRow>
-                <AttrRow label="Profil-Gesamtabweichung" symbol="F_αT" unit="µm">
-                  <td className="wb-num">{tol.tolerances.profile_total.toFixed(1)}</td>
+                <AttrRow label={t("tol.Fa")} symbol="F_αT" unit="µm">
+                  <td className="wb-num">{fm.num(tol.tolerances.profile_total, 1)}</td>
                 </AttrRow>
-                <AttrRow label="Flankenlinien-Gesamtabweichung" symbol="F_βT" unit="µm">
-                  <td className="wb-num">{tol.tolerances.helix_total.toFixed(1)}</td>
+                <AttrRow label={t("tol.Fb")} symbol="F_βT" unit="µm">
+                  <td className="wb-num">{fm.num(tol.tolerances.helix_total, 1)}</td>
                 </AttrRow>
-                <AttrRow label="Eingriffsteilungsabweichung" symbol="f_pb" unit="µm">
-                  <td className="wb-num">{tol.base_pitch_deviation_um.toFixed(1)}</td>
+                <AttrRow label={t("tol.fpb")} symbol="f_pb" unit="µm">
+                  <td className="wb-num">{fm.num(tol.base_pitch_deviation_um, 1)}</td>
                 </AttrRow>
               </tbody>
             </table>
@@ -360,9 +361,9 @@ function MicroEditor(props: { value: StageParams; onChange: (s: StageParams) => 
     "modifications_wheel",
   ];
   const fields: { key: "tip_relief_um" | "helix_crowning_um" | "end_relief_um"; label: string; symbol: string }[] = [
-    { key: "tip_relief_um", label: "Kopfrücknahme", symbol: "C_αa" },
-    { key: "helix_crowning_um", label: "Breitenballigkeit", symbol: "C_β" },
-    { key: "end_relief_um", label: "Endrücknahme", symbol: "C_βe" },
+    { key: "tip_relief_um", label: t("micro.tipRelief"), symbol: "C_αa" },
+    { key: "helix_crowning_um", label: t("micro.crownBeta"), symbol: "C_β" },
+    { key: "end_relief_um", label: t("micro.endRelief"), symbol: "C_βe" },
   ];
   return (
     <table className="attr-table">
@@ -370,8 +371,8 @@ function MicroEditor(props: { value: StageParams; onChange: (s: StageParams) => 
         <tr>
           <th>{t("common.attribute")}</th>
           <th></th>
-          <th>links</th>
-          <th>rechts</th>
+          <th>{t("micro.left")}</th>
+          <th>{t("micro.right")}</th>
           <th>{t("common.unit")}</th>
         </tr>
       </thead>
