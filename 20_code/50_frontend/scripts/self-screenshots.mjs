@@ -34,7 +34,12 @@ const NODES = [
     ],
   },
   { node: "Stahlritzel [8]", tabs: ["Zahnform", "FE-Mesh"] },
+  {
+    node: "Flankenmodifikation [34]",
+    tabs: ["Allgemeine Angaben", "Flankenlinie", "Stirnprofil", "Weitere Formen", "Matrix"],
+  },
   { node: "Kunststoffrad [9]", tabs: ["Zahnform", "FE-Mesh"] },
+  { node: "Radkörper Stirnrad [40]", tabs: ["Radkörper"] },
   { node: "Stufenvariation", tabs: ["Stufenvariation"] },
   { node: "Legende & Parameter", tabs: [] },
 ];

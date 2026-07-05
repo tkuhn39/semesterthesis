@@ -1158,6 +1158,217 @@ ATTRIBUTES: list[AttributeDef] = [
         info_de="Erzeugt das 2D-Sektornetz (Transplant-Mesher) und zeigt es an.",
         info_en="Generates and displays the 2D sector mesh (transplant mesher).",
     ),
+    # --- Flankenmodifikation [34] (screenshots Flankenmodifikation_*.png) ---------------
+    AttributeDef(
+        id="corr_length_mode",
+        label_de="Längenangaben der Modifikationen",
+        label_en="Length specifications",
+        kind="enum",
+        options=[
+            _opt("diameter_mm", "in mm des Durchmessers", "in mm of the diameter"),
+            _opt("roll_length", "als Wälzlänge", "as roll length"),
+        ],
+        binding="correction.length_mode",
+        norm_ref="ISO 21771 §6",
+    ),
+    AttributeDef(
+        id="corr_width_mode",
+        label_de="Breitenangaben der Modifikationen",
+        label_en="Width specifications",
+        kind="enum",
+        options=[_opt("mm", "in mm", "in mm")],
+        binding="correction.width_mode",
+    ),
+    AttributeDef(
+        id="corr_flank_mode",
+        label_de="Flanke",
+        label_en="Flank",
+        kind="enum",
+        options=[
+            _opt("both_equal", "beide Flanken gleich", "both flanks equal"),
+            _opt("separate", "links/rechts getrennt", "left/right separate"),
+        ],
+        binding="correction.flank_mode",
+        info_de="Flanken-Symmetrie-Politik: gespiegelt nur bei identischen Daten "
+        "(datengetriebene Prüfung, nie angenommen).",
+        info_en="Flank symmetry policy: mirrored only for identical data.",
+    ),
+    AttributeDef(
+        id="corr_non_additive",
+        label_de="Nicht-additive Modifikationen zulassen",
+        label_en="Allow non-additive modifications",
+        kind="bool",
+        binding="correction.non_additive",
+    ),
+    AttributeDef(
+        id="corr_scope",
+        label_de="Vorgabe Definitionsbereich",
+        label_en="Definition range",
+        kind="enum",
+        options=[_opt("full_field", "Ganzes Eingriffsfeld", "Full field of action")],
+        binding="correction.scope_mode",
+    ),
+    *[
+        AttributeDef(
+            id=f"corr_{key}_{suffix}",
+            label_de=de,
+            label_en=en,
+            symbol=sym,
+            unit=unit,
+            kind=kind,  # type: ignore[arg-type]
+            options=(
+                [
+                    _opt("linear", "linear", "linear"),
+                    _opt("circular", "kreisbogenförmig", "circular arc"),
+                    _opt("symmetric_arc", "Symmetrisch ein Kreisbogen", "Symmetric arc"),
+                    _opt(
+                        "start_width",
+                        "Am Beginn der Zahnbreite (kleinere u-Koordinate)",
+                        "At the face-width start (smaller u)",
+                    ),
+                ]
+                if kind == "enum"
+                else None
+            ),
+            binding=f"correction.{key}_{suffix}",
+            norm_ref="ISO 21771 §6",
+        )
+        for key, base_de, base_en, sym in (
+            (
+                "helix_slope",
+                "Winkelmodifikation (Flankenlinie)",
+                "helix slope modification",
+                "C_Hβ",
+            ),
+            ("helix_crown", "Balligkeit (Flankenlinie)", "helix crowning", "C_β"),
+            ("end_relief_left", "Endrücknahme links", "end relief left", "C_βI"),
+            ("end_relief_right", "Endrücknahme rechts", "end relief right", "C_βII"),
+            (
+                "profile_slope",
+                "Winkelmodifikation (Stirnprofil)",
+                "profile slope modification",
+                "C_Hα",
+            ),
+            ("profile_crown", "Balligkeit (Stirnprofil)", "profile crowning", "C_α"),
+            ("tip_relief", "Kopfrücknahme", "tip relief", "C_αa"),
+            ("root_relief", "Fußrücknahme", "root relief", "C_αf"),
+            ("tri_tip", "Dreieckförmige Endrücknahme am Kopf", "triangular tip end relief", "C_Ea"),
+            (
+                "tri_root",
+                "Dreieckförmige Endrücknahme am Fuß",
+                "triangular root end relief",
+                "C_Ef",
+            ),
+            ("twist", "Verschränkung", "twist", "S_α"),
+            ("waviness", "Periodische Flankenwelligkeit", "periodic flank waviness", "C_sin"),
+        )
+        for suffix, de, en, unit, kind in (
+            ("on", f"{base_de} berücksichtigen", f"Consider {base_en}", None, "bool"),
+            ("form", f"Form der {base_de}", f"Form of the {base_en}", None, "enum"),
+            ("um", f"Betrag der {base_de}", f"Amount of the {base_en}", "µm", "float"),
+        )
+        if not (key in ("profile_slope", "twist", "waviness") and suffix == "form")
+    ],
+    AttributeDef(
+        id="corr_end_relief_left_len",
+        label_de="Länge der Endrücknahme links",
+        label_en="End relief length left",
+        symbol="l_CI",
+        unit="mm",
+        binding="correction.end_relief_left_len_mm",
+    ),
+    AttributeDef(
+        id="corr_end_relief_right_len",
+        label_de="Länge der Endrücknahme rechts",
+        label_en="End relief length right",
+        symbol="l_CII",
+        unit="mm",
+        binding="correction.end_relief_right_len_mm",
+    ),
+    AttributeDef(
+        id="corr_tip_relief_dca",
+        label_de="Beginn der Kopfrücknahme (Durchmesser)",
+        label_en="Tip relief start diameter",
+        symbol="d_Ca",
+        unit="mm",
+        precision=3,
+        binding="correction.tip_relief_dca_mm",
+        norm_ref="ISO 21771 §6 (kst-E: 51.946)",
+    ),
+    AttributeDef(
+        id="corr_waviness_len",
+        label_de="Wellenlänge der periodischen Flankenwelligkeit",
+        label_en="Waviness wavelength",
+        symbol="λ_sin",
+        unit="mm",
+        precision=3,
+        binding="correction.waviness_length_mm",
+    ),
+    # --- Radkörper Stirnrad [40] (screenshot Radkoerper_Allgemein.png) ------------------
+    AttributeDef(
+        id="wb_material",
+        label_de="Werkstoff",
+        label_en="Material",
+        kind="enum",
+        options=[
+            _opt("Stanyl_TW200F6_cond_80", "Stanyl_TW200F6_cond_80", "Stanyl_TW200F6_cond_80")
+        ],
+        binding="materials.gear2_name",  # SSOT: same material as the plastic wheel
+    ),
+    AttributeDef(
+        id="wb_design_mode",
+        label_de="Radkörpergestaltung",
+        label_en="Wheel-body design",
+        kind="enum",
+        options=[
+            _opt(
+                "none_reference",
+                "ohne Radkörper (Referenz-Deck, Fesselung am Kranz)",
+                "without wheel body (reference deck, rim fixation)",
+            ),
+            _opt(
+                "elastic_cad",
+                "elast. Radkörper aus CAD-Datei",
+                "elastic wheel body from a CAD file",
+            ),
+        ],
+        binding="wheelBody.design_mode",
+        info_de="Das validierte Abwälz-Deck ist die 'ohne Radkörper'-Variante; die "
+        "CAD-Anbindung (STP + Tie, C3D10) folgt (Roadmap Workstream C).",
+        info_en="The validated rolling deck is the 'without wheel body' variant; the CAD "
+        "tie-in (STP, C3D10) follows.",
+    ),
+    AttributeDef(
+        id="wb_angular_position",
+        label_de="Winkellagenmodifikation",
+        label_en="Angular position modification",
+        unit="°",
+        precision=1,
+        binding="wheelBody.angular_position_deg",
+    ),
+    AttributeDef(
+        id="wb_cad_name",
+        label_de="CAD-Körper Name",
+        label_en="CAD body name",
+        kind="path",
+        binding="wheelBody.cad_name",
+    ),
+    AttributeDef(
+        id="wb_cut_diameter",
+        label_de="CAD-Radkörper Zuschnittdurchmesser",
+        label_en="CAD wheel-body cut diameter",
+        unit="mm",
+        precision=1,
+        binding="wheelBody.cut_diameter_mm",
+    ),
+    AttributeDef(
+        id="wb_stiffness_mode",
+        label_de="Anbindesteifigkeit Verzahnungshebelarm in Gesamtsystemberechnung",
+        label_en="Coupling stiffness in the system run",
+        kind="enum",
+        options=[_opt("ideal_stiff", "ideal steif", "ideally stiff")],
+        binding="wheelBody.stiffness_mode",
+    ),
     # --- Getriebeeinheit → Leistungsfluss (screenshot Getriebeeinheit_Leisutungsfluss) --
     AttributeDef(
         id="pf_n_configurations",
@@ -1968,6 +2179,227 @@ def _transient_fem_tab() -> TabDef:
     )
 
 
+def _mod_block(key: str, extra: list[RowRef] | None = None) -> list[RowRef]:
+    """on / form / amount rows of one modification (+ optional extra rows)."""
+    rows = [RowRef(attr=f"corr_{key}_on")]
+    rows.append(RowRef(attr=f"corr_{key}_form", visible_if=f"correction.{key}_on"))
+    rows.append(RowRef(attr=f"corr_{key}_um", visible_if=f"correction.{key}_on"))
+    return rows + (extra or [])
+
+
+def _correction_tabs() -> list[TabDef]:
+    """Flankenmodifikation [34] — the five FVA editor tabs (screenshots)."""
+    general = TabDef(
+        id="general",
+        title_de="Allgemeine Angaben",
+        title_en="General",
+        sections=[
+            SectionDef(
+                id="general",
+                title_de="Allgemeine Angaben",
+                title_en="General",
+                rows=[
+                    RowRef(attr="corr_length_mode"),
+                    RowRef(attr="corr_width_mode"),
+                    RowRef(attr="corr_flank_mode"),
+                    RowRef(attr="corr_non_additive"),
+                    RowRef(attr="corr_scope"),
+                ],
+                info_de="Die Beträge, die unser Mikrogeometrie-Modell trägt (C_Hβ, C_β, "
+                "C_βI/II, C_α, C_αa, C_αf), fließen in die Stage — weitere Formen werden "
+                "mitgeführt (Mechanik folgt mit der Lastverteilung).",
+                info_en="Amounts our micro-geometry model carries flow into the stage; "
+                "further forms are carried (mechanics follows with the load distribution).",
+            ),
+        ],
+    )
+    helix = TabDef(
+        id="helix",
+        title_de="Flankenlinie",
+        title_en="Helix",
+        sections=[
+            SectionDef(
+                id="slope",
+                title_de="Winkelmodifikation",
+                title_en="Slope modification",
+                rows=_mod_block("helix_slope"),
+            ),
+            SectionDef(
+                id="crown",
+                title_de="Balligkeit",
+                title_en="Crowning",
+                rows=_mod_block("helix_crown"),
+            ),
+            SectionDef(
+                id="end_left",
+                title_de="Endrücknahme links",
+                title_en="End relief left",
+                rows=_mod_block(
+                    "end_relief_left",
+                    [
+                        RowRef(
+                            attr="corr_end_relief_left_len",
+                            visible_if="correction.end_relief_left_on",
+                        )
+                    ],
+                ),
+            ),
+            SectionDef(
+                id="end_right",
+                title_de="Endrücknahme rechts",
+                title_en="End relief right",
+                rows=_mod_block(
+                    "end_relief_right",
+                    [
+                        RowRef(
+                            attr="corr_end_relief_right_len",
+                            visible_if="correction.end_relief_right_on",
+                        )
+                    ],
+                ),
+            ),
+        ],
+    )
+    profile = TabDef(
+        id="profile",
+        title_de="Stirnprofil",
+        title_en="Profile",
+        sections=[
+            SectionDef(
+                id="slope",
+                title_de="Winkelmodifikation",
+                title_en="Slope modification",
+                rows=[
+                    RowRef(attr="corr_profile_slope_on"),
+                    RowRef(attr="corr_profile_slope_um", visible_if="correction.profile_slope_on"),
+                ],
+            ),
+            SectionDef(
+                id="crown",
+                title_de="Balligkeit",
+                title_en="Crowning",
+                rows=_mod_block("profile_crown"),
+            ),
+            SectionDef(
+                id="tip",
+                title_de="Kopfrücknahme",
+                title_en="Tip relief",
+                rows=_mod_block(
+                    "tip_relief",
+                    [RowRef(attr="corr_tip_relief_dca", visible_if="correction.tip_relief_on")],
+                ),
+                info_de="kst-E: C_αa = 8 µm ab d_Ca = 51.946 mm (Referenz).",
+                info_en="kst-E: C_αa = 8 µm from d_Ca = 51.946 mm (reference).",
+            ),
+            SectionDef(
+                id="root",
+                title_de="Fußrücknahme",
+                title_en="Root relief",
+                rows=_mod_block("root_relief"),
+            ),
+        ],
+    )
+    further = TabDef(
+        id="further",
+        title_de="Weitere Formen",
+        title_en="Further forms",
+        sections=[
+            SectionDef(
+                id="tri_tip",
+                title_de="Dreieckförmige Endrücknahme am Kopf",
+                title_en="Triangular tip end relief",
+                rows=_mod_block("tri_tip"),
+            ),
+            SectionDef(
+                id="tri_root",
+                title_de="Dreieckförmige Endrücknahme am Fuß",
+                title_en="Triangular root end relief",
+                rows=_mod_block("tri_root"),
+            ),
+            SectionDef(
+                id="twist",
+                title_de="Verschränkung",
+                title_en="Twist",
+                rows=[
+                    RowRef(attr="corr_twist_on"),
+                    RowRef(attr="corr_twist_um", visible_if="correction.twist_on"),
+                ],
+            ),
+            SectionDef(
+                id="waviness",
+                title_de="Periodische Flankenwelligkeit",
+                title_en="Periodic flank waviness",
+                rows=[
+                    RowRef(attr="corr_waviness_on"),
+                    RowRef(attr="corr_waviness_um", visible_if="correction.waviness_on"),
+                    RowRef(attr="corr_waviness_len", visible_if="correction.waviness_on"),
+                ],
+            ),
+        ],
+    )
+    matrix = TabDef(
+        id="matrix",
+        title_de="Matrix",
+        title_en="Matrix",
+        sections=[
+            SectionDef(
+                id="matrix",
+                title_de="Eingaben einer Modifikationsmatrix",
+                title_en="Modification matrix input",
+                rows=[],
+                info_de="Der Matrixeditor (Breiten-/Höhenstützpunkte, Import, Invertieren, "
+                "Spiegeln) folgt mit der 3D-Lastverteilung.",
+                info_en="The matrix editor follows with the 3D load distribution.",
+            ),
+        ],
+    )
+    return [general, helix, profile, further, matrix]
+
+
+def _wheel_body_tab() -> TabDef:
+    """Radkörper Stirnrad [40] (screenshot Radkoerper_Allgemein.png)."""
+    return TabDef(
+        id="wheel_body",
+        title_de="Radkörper",
+        title_en="Wheel body",
+        sections=[
+            SectionDef(
+                id="material",
+                title_de="Werkstoffdaten",
+                title_en="Material data",
+                rows=[RowRef(attr="wb_material")],
+            ),
+            SectionDef(
+                id="design",
+                title_de="Radkörpergestaltung",
+                title_en="Wheel-body design",
+                rows=[RowRef(attr="wb_design_mode")],
+            ),
+            SectionDef(
+                id="mounting",
+                title_de="Einbaulage",
+                title_en="Mounting position",
+                rows=[RowRef(attr="wb_angular_position")],
+            ),
+            SectionDef(
+                id="fem_binding",
+                title_de="Schrittweise FEM-Anbindung durchführen (nur einmal notwendig)",
+                title_en="Step-wise FEM tie-in (only once)",
+                visible_if="wheelBody.design_is_cad",
+                rows=[
+                    RowRef(attr="wb_cad_name"),
+                    RowRef(attr="wb_cut_diameter"),
+                    RowRef(attr="wb_stiffness_mode"),
+                ],
+                info_de="Schritte 1–5 (Positionierung, FEM-Vernetzung, Netzqualität, "
+                "FE-Ankoppelknoten, Steifigkeitsberechnung) folgen mit der "
+                "CAD-Radkörper-Anbindung.",
+                info_en="Steps 1–5 follow with the CAD wheel-body tie-in.",
+            ),
+        ],
+    )
+
+
 def _powerflow_tab() -> TabDef:
     """Getriebeeinheit → Leistungsfluss (screenshot Getriebeeinheit_Leisutungsfluss.png)."""
     return TabDef(
@@ -2288,6 +2720,18 @@ def build_ui_schema() -> UiSchema:
                 _loaddist_fem_tab(),
                 _transient_fem_tab(),
             ],
+        ),
+        ComponentDef(
+            id="gear_correction",
+            label_de="Flankenmodifikation",
+            label_en="Flank modification",
+            tabs=_correction_tabs(),
+        ),
+        ComponentDef(
+            id="wheel_body_cylindrical_gear",
+            label_de="Radkörper Stirnrad",
+            label_en="Cylindrical gear wheel body",
+            tabs=[_wheel_body_tab()],
         ),
     ]
     return UiSchema(

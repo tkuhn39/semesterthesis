@@ -118,6 +118,119 @@ export interface LoaddistState {
   meshing_accuracy: string;
 }
 
+// Flankenmodifikation [34] (pinion; FVA editor tabs Allgemein/Flankenlinie/Stirnprofil/
+// Weitere Formen/Matrix). The subset our micro-geometry model carries (ISO 21771 §6)
+// merges into the effective stage: C_Hβ→helix_slope, C_β→helix_crowning, C_βI/II→
+// end_relief, C_Hα→(slope, carried), C_α→profile_crowning, C_αa→tip_relief,
+// C_αf→root_relief. Forms/lengths are carried for parity (mechanics pending).
+export interface CorrectionState {
+  length_mode: string; // Längenangaben der Modifikationen
+  width_mode: string; // Breitenangaben
+  flank_mode: string; // beide Flanken gleich
+  non_additive: boolean;
+  scope_mode: string; // Ganzes Eingriffsfeld
+  // Flankenlinie
+  helix_slope_on: boolean; // Winkelmodifikation C_Hβ
+  helix_slope_form: string;
+  helix_slope_um: number;
+  helix_crown_on: boolean; // Balligkeit C_β
+  helix_crown_form: string;
+  helix_crown_um: number;
+  end_relief_left_on: boolean; // Endrücknahme links C_βI
+  end_relief_left_form: string;
+  end_relief_left_um: number;
+  end_relief_left_len_mm: number;
+  end_relief_right_on: boolean; // C_βII
+  end_relief_right_form: string;
+  end_relief_right_um: number;
+  end_relief_right_len_mm: number;
+  // Stirnprofil
+  profile_slope_on: boolean; // C_Hα
+  profile_slope_um: number;
+  profile_crown_on: boolean; // C_α
+  profile_crown_form: string;
+  profile_crown_um: number;
+  tip_relief_on: boolean; // C_αa
+  tip_relief_form: string;
+  tip_relief_um: number;
+  tip_relief_dca_mm: number; // Beginn der Kopfrücknahme (Durchmesser)
+  root_relief_on: boolean; // C_αf
+  root_relief_form: string;
+  root_relief_um: number;
+  // Weitere Formen (carried)
+  tri_tip_on: boolean;
+  tri_tip_um: number;
+  tri_root_on: boolean;
+  tri_root_um: number;
+  twist_on: boolean; // Verschränkung S_α
+  twist_um: number;
+  waviness_on: boolean; // periodische Flankenwelligkeit
+  waviness_um: number;
+  waviness_length_mm: number;
+}
+
+const CORRECTION_DEFAULTS: CorrectionState = {
+  length_mode: "diameter_mm",
+  width_mode: "mm",
+  flank_mode: "both_equal",
+  non_additive: false,
+  scope_mode: "full_field",
+  helix_slope_on: false,
+  helix_slope_form: "start_width",
+  helix_slope_um: 0,
+  helix_crown_on: false,
+  helix_crown_form: "symmetric_arc",
+  helix_crown_um: 0,
+  end_relief_left_on: false,
+  end_relief_left_form: "linear",
+  end_relief_left_um: 0,
+  end_relief_left_len_mm: 0,
+  end_relief_right_on: false,
+  end_relief_right_form: "linear",
+  end_relief_right_um: 0,
+  end_relief_right_len_mm: 0,
+  profile_slope_on: false,
+  profile_slope_um: 0,
+  profile_crown_on: false,
+  profile_crown_form: "symmetric_arc",
+  profile_crown_um: 0,
+  tip_relief_on: true, // kst-E: Kopfrücknahme C_a = 8 µm aktiv (Tragfähigkeit sheet)
+  tip_relief_form: "linear",
+  tip_relief_um: 8.0,
+  tip_relief_dca_mm: 51.946,
+  root_relief_on: false,
+  root_relief_form: "linear",
+  root_relief_um: 0,
+  tri_tip_on: false,
+  tri_tip_um: 0,
+  tri_root_on: false,
+  tri_root_um: 0,
+  twist_on: false,
+  twist_um: 0,
+  waviness_on: false,
+  waviness_um: 0,
+  waviness_length_mm: 0,
+};
+
+// Radkörper Stirnrad [40] (wheel body of the plastic wheel)
+export interface WheelBodyState {
+  design_mode: string; // ohne Radkörper (Referenz) | elast. aus CAD
+  angular_position_deg: number; // Winkellagenmodifikation
+  cad_name: string;
+  cut_diameter_mode: string;
+  cut_diameter_mm: number;
+  stiffness_mode: string; // Anbindesteifigkeit
+}
+
+const WHEEL_BODY_DEFAULTS: WheelBodyState = {
+  design_mode: "none_reference",
+  angular_position_deg: 0.0,
+  cad_name: "kst-E_cut_dyn-Ab.stp",
+  cut_diameter_mode: "user",
+  cut_diameter_mm: 48.0,
+  stiffness_mode: "ideal_stiff",
+};
+
 // reference-parity defaults (measured deck: bore + cut planes, 30 roll positions, 2 pitches)
 const FEM_DEFAULTS: FemState = {
   contour_source_gear1: "generated",
@@ -369,6 +482,8 @@ interface WorkbenchState {
   materials: MaterialsState;
   tol: TolerancesState;
   loaddist: LoaddistState;
+  correction: CorrectionState;
+  wheelBody: WheelBodyState;
   powerflow: PowerflowState;
   forces: ForcesState;
   control: ControlState;
@@ -424,16 +539,32 @@ const DERIVED: Record<string, (s: WorkbenchState) => unknown> = {
     s.operating.ambient_mode === "equals_oil" ? s.operatingUi.oil_temperature_c : 20.0,
   // dropdown-dependent row visibility (µ value only when "Nutzereingabe" is selected)
   "operating.friction_is_user": (s) => s.operating.friction_mode === "value",
+  // Radkörper: the FEM tie-in section exists only for the CAD variant
+  "wheelBody.design_is_cad": (s) => s.wheelBody.design_mode === "elastic_cad",
 };
 
 /** The EFFECTIVE stage every API call receives: the raw stage merged with the values
  * other tabs own — the Toleranzen tab's mean tooth-width allowance A_We (drives x_E and
- * the deck backlash / contact-closing rotation). One stage, no divergent copies. */
+ * the deck backlash / contact-closing rotation) and the Flankenmodifikation amounts that
+ * map onto the ISO 21771 §6 micro-geometry model. One stage, no divergent copies. */
 function effectiveStage(s: WorkbenchState): StageParams {
+  const c = s.correction;
+  const flank = {
+    tip_relief_um: c.tip_relief_on ? c.tip_relief_um : 0,
+    root_relief_um: c.root_relief_on ? c.root_relief_um : 0,
+    profile_crowning_um: c.profile_crown_on ? c.profile_crown_um : 0,
+    helix_crowning_um: c.helix_crown_on ? c.helix_crown_um : 0,
+    end_relief_um: c.end_relief_left_on || c.end_relief_right_on
+      ? Math.max(c.end_relief_left_um, c.end_relief_right_um)
+      : 0,
+    helix_slope_um: c.helix_slope_on ? c.helix_slope_um : 0,
+  };
   return {
     ...s.stage,
     tooth_width_allowance_pinion_mm: (s.tol.awe1_um + s.tol.awi1_um) / 2 / 1000,
     tooth_width_allowance_wheel_mm: (s.tol.awe2_um + s.tol.awi2_um) / 2 / 1000,
+    // Flankenmodifikation [34] sits at the pinion (kst-E tree); "beide Flanken gleich"
+    modifications_pinion: { left: flank, right: flank },
   };
 }
 
@@ -477,6 +608,8 @@ const DEFAULT_STATE: WorkbenchState = {
   materials: MATERIALS_DEFAULTS,
   tol: TOLERANCES_DEFAULTS,
   loaddist: LOADDIST_DEFAULTS,
+  correction: CORRECTION_DEFAULTS,
+  wheelBody: WHEEL_BODY_DEFAULTS,
   powerflow: {
     n_configurations: 1,
     active_configuration: "1",
@@ -534,6 +667,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       "materials",
       "tol",
       "loaddist",
+      "correction",
+      "wheelBody",
       "powerflow",
       "forces",
       "control",

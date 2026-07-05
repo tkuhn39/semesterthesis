@@ -32,7 +32,9 @@ type NodeId =
   | "unit"
   | "stage"
   | "pinion"
+  | "correction"
   | "wheel"
+  | "wheel_body"
   | "variation"
   | "glossary";
 
@@ -62,11 +64,25 @@ function buildTree(model: ModelInstances, locale: string): TreeNode {
             children: [
               {
                 label: lab("shaft1"),
-                children: [{ id: "pinion", label: lab("pinion"), badge: "Stahl" }],
+                children: [
+                  {
+                    id: "pinion",
+                    label: lab("pinion"),
+                    badge: "Stahl",
+                    children: [{ id: "correction", label: lab("correction") }],
+                  },
+                ],
               },
               {
                 label: lab("shaft2"),
-                children: [{ id: "wheel", label: lab("wheel"), badge: "PA" }],
+                children: [
+                  {
+                    id: "wheel",
+                    label: lab("wheel"),
+                    badge: "PA",
+                    children: [{ id: "wheel_body", label: lab("wheel_body") }],
+                  },
+                ],
               },
               { id: "variation", label: "Stufenvariation", labelEn: "Stage variation" },
             ],
@@ -234,10 +250,19 @@ function Shell() {
         { id: "toothform", title: "Zahnform", render: () => <ToothFormPanel gear={1} /> },
         { id: "mesh", title: "FE-Mesh", render: () => <MeshPanel gear={1} /> },
       ],
+      correction: s
+        ? (s.components.find((c) => c.id === "gear_correction")?.tabs ?? []).map((tab) => ({
+            id: tab.id,
+            title: locale === "de" ? tab.title_de : tab.title_en,
+            visibleIfMethod: tab.visible_if_method,
+            render: () => <SchemaTab schema={s} tab={tab} />,
+          }))
+        : [],
       wheel: [
         { id: "toothform", title: "Zahnform", render: () => <ToothFormPanel gear={2} /> },
         { id: "mesh", title: "FE-Mesh", render: () => <MeshPanel gear={2} /> },
       ],
+      wheel_body: s ? maybe(schemaTab(s, "wheel_body_cylindrical_gear", "wheel_body", locale)) : [],
       variation: [
         { id: "variation", title: "Stufenvariation", render: () => <VariationPanel /> },
       ],
@@ -260,7 +285,9 @@ function Shell() {
     unit: instanceLabel(wb.model.gear_unit, locale),
     stage: instanceLabel(wb.model.stage, locale),
     pinion: instanceLabel(wb.model.pinion, locale),
+    correction: instanceLabel(wb.model.correction, locale),
     wheel: instanceLabel(wb.model.wheel, locale),
+    wheel_body: instanceLabel(wb.model.wheel_body, locale),
     variation: "Stufenvariation",
     glossary: locale === "de" ? "Legende & Parameter" : "Glossary & parameters",
   };

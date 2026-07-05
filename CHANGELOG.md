@@ -9,6 +9,19 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (Flankenmodifikation [34] + Radkörper Stirnrad [40] tree nodes)
+- **Flankenmodifikation** editor with the five FVA tabs (Allgemeine Angaben, Flankenlinie,
+  Stirnprofil, Weitere Formen, Matrix): every modification as consider-checkbox + form
+  dropdown + amount with FVA-style conditional rows (form/amount appear only while the
+  modification is active). The amounts our ISO 21771 §6 micro-geometry model carries
+  (C_Hβ, C_β, C_βI/II, C_α, C_αa, C_αf) merge into the EFFECTIVE stage; kst-E default:
+  Kopfrücknahme C_αa = 8 µm from d_Ca = 51.946 mm active. Matrix editor honestly pending.
+- **Radkörper Stirnrad** tab (Werkstoff = SSOT with the plastic wheel's material,
+  Radkörpergestaltung with the validated "ohne Radkörper" reference variant as default,
+  Einbaulage; the CAD tie-in steps section appears only for the CAD variant).
+- Tree: both nodes hang under their gears (Stahlritzel [8] → Flankenmodifikation [34],
+  Kunststoffrad [9] → Radkörper Stirnrad [40]) with instance-ID labels from the store.
+
 ### Added (Stirnradstufe editor tabs — Toleranzen/Tragfähigkeit/VDI 2736/Werkstoff/Schmierstoff/Lastverteilung)
 - **Toleranzen** (screenshot parity): DIN 3967 Zahnweitenabmaße A_We/A_Wi per gear
   (kst-E −278/−207 µm) with the norm-active coupling — the MEAN allowance merges into the
