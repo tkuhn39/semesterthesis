@@ -262,9 +262,7 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
     # the batch shape comes from the swept arrays — geometry may stay scalar when the
     # varied parameter only enters the tooth-root side (h_fP*, ρ_fP*, b2), so every
     # output is broadcast up to the batch before returning
-    batch_shape = (
-        next(iter(grid.values())).shape if grid else geometry.total_contact_ratio.shape
-    )
+    batch_shape = next(iter(grid.values())).shape if grid else geometry.total_contact_ratio.shape
 
     def bx(a: Array) -> Array:
         return a if a.shape == batch_shape else np.broadcast_to(a, batch_shape).copy()

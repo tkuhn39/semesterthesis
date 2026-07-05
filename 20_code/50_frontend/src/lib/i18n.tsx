@@ -369,6 +369,11 @@ const DICT: Record<string, { de: string; en: string }> = {
     de: "Kein Drehmoment gesetzt — bitte im Leistungsfluss an Welle 1 oder Welle 2 eingeben.",
     en: "No torque set — enter it in the power flow at shaft 1 or shaft 2.",
   },
+  "report.button": { de: "Report erzeugen", en: "Generate report" },
+  "report.hint": {
+    de: "Interaktiver HTML-Gesamtsystemreport (selbst-enthalten, druckbar) — wird serverseitig aus dem aktuellen Eingabezustand gerechnet; die letzte Stufenvariation wird mit aufgenommen.",
+    en: "Interactive HTML system report (self-contained, printable) — computed server-side from the current input state; the last stage variation is included.",
+  },
   // ---- Übersicht ----
   "ov.loading": { de: "Lade kst-E …", en: "Loading kst-E …" },
   "ov.role": { de: "Rolle", en: "Role" },

@@ -185,9 +185,7 @@ def test_variation_sample_count_sobol_rounds_lhs_exact() -> None:
         "z1": {"vary": True, "value": 24, "min": 20, "max": 28, "steps": 5},
         "x1": {"vary": True, "value": 0.0, "min": -0.3, "max": 0.6, "steps": 5},
     }
-    res = client.post(
-        "/api/variation", json={**base, "method": "sobol", "sample_count": 100}
-    )
+    res = client.post("/api/variation", json={**base, "method": "sobol", "sample_count": 100})
     assert res.status_code == 200
     body = res.json()
     assert body["count"] == 128

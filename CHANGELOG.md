@@ -9,6 +9,30 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (interactive HTML system report — full scope)
+- **`POST /api/report`** renders a self-contained, printable HTML Gesamtsystemreport
+  (like the FVA reference, no external requests, < 300 KB): sidebar navigation,
+  Getriebeeinheit (power-flow table in the shaft-1/2 convention), Stirnradstufe
+  (ISO 21771 geometry with per-gear columns + colspan pairing rows, the ANIMATED
+  Zahneingriff with the labelled line of action as inline SVG + ~30 lines vanilla JS,
+  ISO 1328 tolerances per gear, K factors, dynamics/resonance) and — better than FVA
+  (user decision) — **each gear only under its own norm**: a mixed pair gets two
+  separate sections (ISO 6336 steel / VDI 2736 plastic incl. ϑ_Z, wear, deflection,
+  peak load) instead of one table with "−" placeholder rows; a same-material pair
+  shares one two-column table. Optional Stufenvariation section (summary, warnings,
+  top-20 table, static parallel-coordinates SVG) from the store-persisted last run.
+- The endpoint recomputes everything SERVER-SIDE from the input state (stage +
+  capacity request + powerflow block) via the same functions the live tabs use —
+  the frontend never ships computed values. Plain string templating (no jinja2
+  dependency); `app/services/report/builder.py` + `app/api/report.py`.
+- Frontend: "Report erzeugen" button in the header (collects the store state incl.
+  `varUi` results); `buildCapacityRequest` extracted to `lib/capacityRequest.ts`
+  (shared by CapacityPanel + report collector, no duplication).
+- Tests (`tests/test_report.py`): mixed pair → plastic rows only in the VDI section,
+  no placeholders in the ISO table; steel/steel → one shared ISO table; self-contained
+  (no external URLs) with animated SVG + T1…E labels; variation section from real
+  sweep points; EN locale.
+
 ### Changed (Zahneingriff: mesh-zone zoom with the exact line of action)
 - **The Zahneingriff view zooms on the meshing zone** (user decision — no full-disc
   overview; a "Gesamtansicht" toggle keeps the old view) and draws the line of action

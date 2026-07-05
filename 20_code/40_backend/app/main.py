@@ -17,6 +17,7 @@ from app import __version__
 from app.api.analysis import router as analysis_router
 from app.api.design import router as design_router
 from app.api.mesh import router as mesh_router
+from app.api.report import router as report_router
 from app.api.routes import router as api_router
 from app.api.ui_schema import router as ui_schema_router
 from app.config import get_settings
@@ -53,6 +54,7 @@ def create_app() -> FastAPI:
     app.include_router(analysis_router)
     app.include_router(design_router)
     app.include_router(mesh_router)
+    app.include_router(report_router)
     app.include_router(ui_schema_router)
 
     # In production the Next.js static export (50_frontend/out) is copied next to the app

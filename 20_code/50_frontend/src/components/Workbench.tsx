@@ -14,6 +14,7 @@ import { fetchUiSchema, type TabDef, type UiSchema } from "@/lib/uischema";
 import { LocaleProvider, useLocale, useT } from "@/lib/i18n";
 import { StageProvider, useStage } from "@/lib/stage";
 import { instanceLabel, useWorkbench, type ModelInstances } from "@/lib/store";
+import { downloadReport } from "@/lib/report";
 import { SchemaTab } from "@/components/SchemaTab";
 import { QuickView } from "@/components/QuickView";
 import { CalcSelectionPanel } from "@/panels/CalcSelectionPanel";
@@ -189,6 +190,8 @@ function Shell() {
   const [tabByNode, setTabByNode] = useState<Record<string, string>>({});
   const [version, setVersion] = useState<string | null>(null);
   const [online, setOnline] = useState<boolean | null>(null);
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reportErr, setReportErr] = useState<string | null>(null);
 
   useEffect(() => {
     api
@@ -342,6 +345,22 @@ function Shell() {
               }`}
             />
           </span>
+          <button
+            type="button"
+            className="border border-zinc-300 rounded-md px-2 py-0.5 text-[11.5px] bg-white hover:bg-zinc-50 disabled:opacity-50"
+            disabled={reportBusy}
+            title={t("report.hint")}
+            onClick={() => {
+              setReportBusy(true);
+              setReportErr(null);
+              downloadReport(wb, locale)
+                .catch((e) => setReportErr(e instanceof Error ? e.message : String(e)))
+                .finally(() => setReportBusy(false));
+            }}
+          >
+            {reportBusy ? "…" : t("report.button")}
+          </button>
+          {reportErr && <span className="text-[11px] text-red-600">{reportErr}</span>}
           <select
             value={locale}
             onChange={(e) => setLocale(e.target.value as "de" | "en")}
