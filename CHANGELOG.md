@@ -9,6 +9,31 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (Stirnradstufe editor tabs — Toleranzen/Tragfähigkeit/VDI 2736/Werkstoff/Schmierstoff/Lastverteilung)
+- **Toleranzen** (screenshot parity): DIN 3967 Zahnweitenabmaße A_We/A_Wi per gear
+  (kst-E −278/−207 µm) with the norm-active coupling — the MEAN allowance merges into the
+  effective stage (x_E generation AND the rolling-deck backlash/closing rotation), DIN 3964
+  centre-distance allowances, DIN 3962 quality grades (feed the dynamics deviations),
+  tooth-plot checkboxes.
+- **Tragfähigkeit** inputs per FVA sheet (Radkörper modes, Rauheiten R_a/R_z with
+  auto-conversion switch, Kopfrücknahme C_a, c_γ mode, K_A) + the results block; the
+  capacity request now derives ENTIRELY from the store (stage + Leistungsfluss load case
+  with derived T₁/n₁/P/N_L = 60·|n₂|·L_H + operating + materials) — the panel-local
+  DEFAULTS copy is gone.
+- **VDI 2736 (2014)** tab: Schmierungsart, Zahntemperatur block (ϑ₀ = Öltemperatur-Modus,
+  ED, Gehäuse, A_G, µ/k_ϑ/H_v modes with the µ-value row appearing only for
+  "Nutzereingabe"), Fuß-/Flanken-Mindestsicherheiten, Verschleiß (W_zul = 0.1·m_n, k_W),
+  Verformung, Spitzenlasten — all bound to the SAME operating store the capacity run uses.
+- **Werkstoff** tab: catalog selection + Werkstoffart per gear (THE norm/deck dispatch),
+  steel/plastic property blocks. **Schmierstoff** tab (ISO-VG-100 data, ν_40/ν_100, ρ15).
+- **Lastverteilung (FEM, FVA 377)** tab (visible only while FVA 377 is selected):
+  parameters, meshing with a working "FEM-Vernetzung durchführen" action (native
+  transplant-mesher check reporting quads + min Jacobian), SHARED Fesselung switches with
+  the rolling deck, expert section — solver honestly marked pending.
+- Store: `operating`/`materials`/`tol`/`loaddist` namespaces + derived paths
+  (`friction_is_user`, capacity load case, deck material kinds) and the effective-stage
+  merge; deck action pulls materials from the Werkstoff selection.
+
 ### Added (Getriebeeinheit editor complete — Leistungsfluss/Kräfte und Momente/Steuerparameter)
 - **Leistungsfluss** (screenshot parity, values match the FVA quick view): Schaltmatrix,
   shaft speeds with the derived n₂ = −n₁·z₁/z₂ (kst-E: 2250 → **−2206.73** min⁻¹, grey),

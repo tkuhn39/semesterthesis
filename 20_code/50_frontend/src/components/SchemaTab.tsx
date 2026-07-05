@@ -16,8 +16,9 @@ function pick(loc: string, de?: string | null, en?: string | null): string {
   return (loc === "de" ? de ?? en : en ?? de) ?? "";
 }
 
-/** Action buttons referenced by schema bindings (kind == "action"). */
-function useActions(): Record<string, { label: string; run: () => Promise<void> }> {
+/** Action buttons referenced by schema bindings (kind == "action"); a returned string is
+ * shown next to the button as the result message. */
+function useActions(): Record<string, { label: string; run: () => Promise<string | void> }> {
   const wb = useWorkbench();
   return {
     "fem.download_deck": {
@@ -25,14 +26,14 @@ function useActions(): Record<string, { label: string; run: () => Promise<void> 
       run: async () => {
         const text = await meshApi.deck({
           stage: wb.stage,
-          // SSOT chain: the deck torque M₂ derives from the Leistungsfluss Antrieb load
+          // SSOT chains: torque M₂ from the Leistungsfluss, materials from the Werkstoff tab
           torque_gear2_nmm: wb.get("fem.torque_gear2_nmm") as number,
           face_layers: wb.fem.face_layers,
           n_roll_positions: wb.fem.n_roll_positions,
           refine_root: wb.fem.refine_root,
           refine_flank: wb.fem.refine_flank,
-          gear1_material: wb.fem.gear1_material,
-          gear2_material: wb.fem.gear2_material,
+          gear1_material: wb.get("fem.gear1_material") as "steel" | "plastic",
+          gear2_material: wb.get("fem.gear2_material") as "steel" | "plastic",
           steel_shell: wb.fem.steel_shell,
           align_contact: wb.fem.align_contact,
           fasten_bore: wb.fem.fasten_bore,
@@ -47,6 +48,31 @@ function useActions(): Record<string, { label: string; run: () => Promise<void> 
         a.download = "implicit_rolling_generated.inp";
         a.click();
         URL.revokeObjectURL(url);
+      },
+    },
+    "loaddist.run_meshing": {
+      label: "FEM-Vernetzung durchführen",
+      run: async () => {
+        // quick native meshing check (full 2D rendering lands with the mesh viewport)
+        const level = { coarse: 1, medium: 1, fine: 2 }[wb.loaddist.meshing_accuracy] ?? 1;
+        const g1 = await meshApi.preview({
+          stage: wb.stage,
+          gear: 1,
+          refine_root: level,
+          refine_flank: level,
+          fillet: { kind: "standard" },
+        });
+        const g2 = await meshApi.preview({
+          stage: wb.stage,
+          gear: 2,
+          refine_root: level,
+          refine_flank: level,
+          fillet: { kind: "standard" },
+        });
+        return (
+          `✓ Rad 1: ${g1.n_quads} Quads (min J = ${g1.min_scaled_jacobian.toFixed(2)}), ` +
+          `Rad 2: ${g2.n_quads} Quads (min J = ${g2.min_scaled_jacobian.toFixed(2)})`
+        );
       },
     },
   };
@@ -127,6 +153,7 @@ function ActionCell({ attr }: { attr: AttributeDef }) {
   const actions = useActions();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const action = attr.binding ? actions[attr.binding] : undefined;
   if (!action) return <td className="text-zinc-400">—</td>;
   return (
@@ -137,8 +164,10 @@ function ActionCell({ attr }: { attr: AttributeDef }) {
         onClick={() => {
           setBusy(true);
           setErr(null);
+          setInfo(null);
           action
             .run()
+            .then((msg) => setInfo(typeof msg === "string" ? msg : null))
             .catch((e) => setErr(e instanceof Error ? e.message : String(e)))
             .finally(() => setBusy(false));
         }}
@@ -146,6 +175,7 @@ function ActionCell({ attr }: { attr: AttributeDef }) {
         {busy ? "…" : action.label}
       </button>
       {err && <span className="text-red-600 text-[11px] ml-2">{err}</span>}
+      {info && <span className="text-emerald-700 text-[11px] ml-2">{info}</span>}
     </td>
   );
 }

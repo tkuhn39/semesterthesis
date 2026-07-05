@@ -37,9 +37,85 @@ export interface FemState {
   face_layers: number;
   refine_root: number;
   refine_flank: number;
-  gear1_material: "steel" | "plastic";
-  gear2_material: "steel" | "plastic";
   steel_shell: boolean;
+}
+
+// Werkstoffwahl per input slot (ADR-021) — THE dispatch source: steel → ISO 6336,
+// plastic → VDI 2736, deck material card, rigid-shell/slave roles all derive from it.
+export interface MaterialsState {
+  gear1_kind: "steel" | "plastic";
+  gear2_kind: "steel" | "plastic";
+  gear1_name: string;
+  gear2_name: string;
+  steel_modulus_mpa: number;
+  steel_poisson: number;
+  steel_sigma_hlim_mpa: number;
+  steel_sigma_flim_mpa: number;
+  steel_density_kg_dm3: number;
+  plastic_modulus_mpa: number;
+  plastic_poisson: number;
+  plastic_sigma_hlim_mpa: number;
+  plastic_sigma_flim_mpa: number;
+  plastic_density_kg_dm3: number;
+  plastic_yield_strength_mpa: number;
+  plastic_allowable_temperature_c: number;
+}
+
+// Operating conditions of the capacity methods (ISO 6336 + VDI 2736) — shared by the
+// Tragfähigkeit panel and the VDI-2736/Schmierstoff schema tabs (never duplicated).
+// Torque/speed/power/load cycles DERIVE from the Leistungsfluss + Betriebsdauer.
+export interface OperatingState {
+  application_factor: number; // K_A
+  compute_dynamics: boolean;
+  dynamic_factor: number; // K_v override
+  face_load_factor: number; // K_Hβ
+  accuracy_grade: number | null; // ISO 1328 / DIN 3962 grade (from the Toleranzen tab)
+  base_pitch_deviation_um: number;
+  profile_form_deviation_um: number;
+  lubricant_viscosity_40_mm2s: number; // ν_40
+  lubricant_viscosity_100_mm2s: number; // ν_100 (display; Schmierstoff tab)
+  lubricant_density_15c_kg_dm3: number; // ρ bei 15 °C (display)
+  flank_roughness_rz_um: number; // R_zH
+  root_roughness_rz_um: number; // R_zF
+  flank_roughness_ra_um: number; // R_aH (display, FVA row)
+  root_roughness_ra_um: number; // R_aF (display)
+  tip_relief_ca_um: number; // C_a Kopfrücknahme (Tragfähigkeit tab)
+  flank_life_factor: number; // Z_NT
+  root_life_factor: number; // Y_NT
+  duty_cycle: number; // ED
+  housing_surface_m2: number; // A_G
+  housing_type: string; // Bauart des Getriebegehäuses
+  lubrication_kind: string; // Schmierungsart (VDI 2736)
+  friction_coefficient: number; // μ
+  friction_mode: string; // nach VDI 2736:2014 / Nutzereingabe
+  heat_transfer_mode: string; // k_ϑ nach VDI 2736 Tabelle 3
+  tooth_loss_mode: string; // H_v nach Wimmer
+  wear_coefficient_e6: number; // k_W ×1e-6 mm³/(N·m)
+  allowable_wear_mode: string; // W_zul = 0.1·m_n
+  root_minimum_safety: number; // S_Fmin
+  flank_minimum_safety: number; // S_Hmin
+  static_overload_factor: number | null; // K_A,stat
+  static_minimum_safety: number; // S_Smin
+  static_mode: string; // "Keine statische Berechnung" | Nutzereingabe
+  ambient_mode: string; // ϑ_0 entspricht Öltemperatur
+  deformation_condition: string; // Umgebungsbedingung (Verformung): Trocken
+  // Tragfähigkeit tab (FVA rows)
+  web_mode_gear1: string; // Bezogene Stegbreite b_s/b
+  web_mode_gear2: string;
+  rim_mode_gear1: string; // Relative Kranzdicke s_R/m_n
+  rim_mode_gear2: string;
+  roughness_auto: boolean;
+  mesh_stiffness_mode: string; // c_γ nach ISO 6336
+}
+
+// Lastverteilung (FEM, FVA 377) tab options — solver pending, meshing/Fesselung functional
+export interface LoaddistState {
+  position_mode: string;
+  n_positions: number;
+  stress_eval: string;
+  save_influence: boolean;
+  auto_overroll: boolean;
+  meshing_accuracy: string;
 }
 
 // reference-parity defaults (measured deck: bore + cut planes, 30 roll positions, 2 pitches)
@@ -70,9 +146,80 @@ const FEM_DEFAULTS: FemState = {
   face_layers: 6,
   refine_root: 1,
   refine_flank: 1,
-  gear1_material: "steel",
-  gear2_material: "plastic",
   steel_shell: false,
+};
+
+// kst-E defaults (materials catalog names; property values = the FVA Werkstoff sheet)
+const MATERIALS_DEFAULTS: MaterialsState = {
+  gear1_kind: "steel",
+  gear2_kind: "plastic",
+  gear1_name: "20MnCr5",
+  gear2_name: "Stanyl_TW200F6_cond_80",
+  steel_modulus_mpa: 210000,
+  steel_poisson: 0.3,
+  steel_sigma_hlim_mpa: 1500,
+  steel_sigma_flim_mpa: 430,
+  steel_density_kg_dm3: 7.85,
+  plastic_modulus_mpa: 4156,
+  plastic_poisson: 0.34,
+  plastic_sigma_hlim_mpa: 60,
+  plastic_sigma_flim_mpa: 35,
+  plastic_density_kg_dm3: 1.41,
+  plastic_yield_strength_mpa: 65,
+  plastic_allowable_temperature_c: 100,
+};
+
+// kst-E operating defaults (FVA screenshots: Tragfähigkeit/VDI 2736/Schmierstoff tabs)
+const OPERATING_DEFAULTS: OperatingState = {
+  application_factor: 1.0,
+  compute_dynamics: true,
+  dynamic_factor: 1.0,
+  face_load_factor: 1.0,
+  accuracy_grade: 7, // DIN 3962 Qualität 7 (Toleranzen screenshot)
+  base_pitch_deviation_um: 6.0,
+  profile_form_deviation_um: 5.0,
+  lubricant_viscosity_40_mm2s: 100.0,
+  lubricant_viscosity_100_mm2s: 11.0,
+  lubricant_density_15c_kg_dm3: 0.88,
+  flank_roughness_rz_um: 5.0,
+  root_roughness_rz_um: 20.0,
+  flank_roughness_ra_um: 0.8,
+  root_roughness_ra_um: 3.3,
+  tip_relief_ca_um: 8.0,
+  flank_life_factor: 1.0,
+  root_life_factor: 1.0,
+  duty_cycle: 1.0,
+  housing_surface_m2: 0.01,
+  housing_type: "closed",
+  lubrication_kind: "oil_circulation",
+  friction_coefficient: 0.04,
+  friction_mode: "vdi_2736_2014",
+  heat_transfer_mode: "vdi_2736_table3",
+  tooth_loss_mode: "wimmer",
+  wear_coefficient_e6: 1.0,
+  allowable_wear_mode: "0.1_mn",
+  root_minimum_safety: 2.0,
+  flank_minimum_safety: 1.4,
+  static_overload_factor: null, // FVA default: "Keine statische Berechnung"
+  static_minimum_safety: 1.5,
+  static_mode: "none",
+  ambient_mode: "equals_oil",
+  deformation_condition: "dry",
+  web_mode_gear1: "solid",
+  web_mode_gear2: "solid",
+  rim_mode_gear1: "solid",
+  rim_mode_gear2: "solid",
+  roughness_auto: true,
+  mesh_stiffness_mode: "iso6336",
+};
+
+const LOADDIST_DEFAULTS: LoaddistState = {
+  position_mode: "linear_count",
+  n_positions: 7,
+  stress_eval: "tangential",
+  save_influence: false,
+  auto_overroll: false,
+  meshing_accuracy: "medium",
 };
 
 export interface GeometryUiState {
@@ -177,12 +324,51 @@ export function instanceLabel(inst: ModelInstance, locale: string): string {
   return `${locale === "de" ? inst.name_de : inst.name_en} [${inst.id}]`;
 }
 
+// Toleranzen tab (DIN 3967 Zahnweitenabmaße + Achsabstandsabmaße + DIN 3962 Qualität).
+// Writing A_We/A_Wi ALSO updates the stage's mean tooth-width allowance (drives x_E and
+// the deck backlash — the closing rotation) via the write-through rule in set().
+export interface TolerancesState {
+  awe1_um: number; // oberes Zahnweitenabmaß A_We Rad 1
+  awi1_um: number; // unteres A_Wi Rad 1
+  awe2_um: number;
+  awi2_um: number;
+  aw_factor_mode: string; // Zahnweitenabmaßfaktor (0.94)
+  aw_selection: string; // "Mit mittlerem Zahnweitenabmaß"
+  a_upper_um: number; // oberes Achsabstandsabmaß A_Ae
+  a_lower_um: number; // unteres A_Ai
+  quality_standard: string; // DIN 3962 (1978)
+  grade1: number;
+  grade2: number;
+  custom_diameter1: boolean; // Anzeige benutzerdefinierter Durchmesser im Zahnplot
+  custom_diameter2: boolean;
+}
+
+const TOLERANCES_DEFAULTS: TolerancesState = {
+  awe1_um: -278.0,
+  awi1_um: -278.0,
+  awe2_um: -207.0,
+  awi2_um: -207.0,
+  aw_factor_mode: "0.94",
+  aw_selection: "mean",
+  a_upper_um: 15.0,
+  a_lower_um: -15.0,
+  quality_standard: "din_3962_1978",
+  grade1: 7,
+  grade2: 7,
+  custom_diameter1: false,
+  custom_diameter2: false,
+};
+
 interface WorkbenchState {
   stage: StageParams;
   calc: Record<string, boolean>; // Berechnungsauswahl (method id → selected)
   fem: FemState;
   geometryUi: GeometryUiState;
   operatingUi: OperatingUiState;
+  operating: OperatingState;
+  materials: MaterialsState;
+  tol: TolerancesState;
+  loaddist: LoaddistState;
   powerflow: PowerflowState;
   forces: ForcesState;
   control: ControlState;
@@ -215,7 +401,41 @@ const DERIVED: Record<string, (s: WorkbenchState) => unknown> = {
   // SSOT chain: the transient-FEM deck torque M₂ [N·mm] IS the Leistungsfluss Antrieb
   // torque (FVA behaviour — the Abwälz tab has no own torque input)
   "fem.torque_gear2_nmm": (s) => s.powerflow.torque_antrieb_nm * 1000,
+  // deck material cards + norm dispatch follow the Werkstoff selection (per slot)
+  "fem.gear1_material": (s) => s.materials.gear1_kind,
+  "fem.gear2_material": (s) => s.materials.gear2_kind,
+  // capacity load case = the Leistungsfluss (T₁ at the pinion, n₁ at shaft [4])
+  "operating.pinion_torque_nm": (s) =>
+    (s.powerflow.torque_antrieb_nm * s.stage.teeth_pinion) / s.stage.teeth_wheel,
+  "operating.pinion_speed_min1": (s) => s.powerflow.speed_shaft1_min1,
+  // N_L = 60·|n₂|·L_H (load cycles of the wheel over the Betriebsdauer)
+  "operating.load_cycles": (s) =>
+    60.0 *
+    Math.abs((s.powerflow.speed_shaft1_min1 * s.stage.teeth_pinion) / s.stage.teeth_wheel) *
+    s.operatingUi.operating_hours,
+  // VDI 2736 power = the transmitted power from the Leistungsfluss [W]
+  "operating.power_w": (s) =>
+    Math.abs(
+      ((2 * Math.PI * s.powerflow.speed_shaft1_min1) / 60) *
+        ((s.powerflow.torque_antrieb_nm * s.stage.teeth_pinion) / s.stage.teeth_wheel),
+    ),
+  // VDI 2736 ambient ϑ₀ "entspricht Öltemperatur" (FVA default mode)
+  "operating.ambient_temperature_c": (s) =>
+    s.operating.ambient_mode === "equals_oil" ? s.operatingUi.oil_temperature_c : 20.0,
+  // dropdown-dependent row visibility (µ value only when "Nutzereingabe" is selected)
+  "operating.friction_is_user": (s) => s.operating.friction_mode === "value",
 };
+
+/** The EFFECTIVE stage every API call receives: the raw stage merged with the values
+ * other tabs own — the Toleranzen tab's mean tooth-width allowance A_We (drives x_E and
+ * the deck backlash / contact-closing rotation). One stage, no divergent copies. */
+function effectiveStage(s: WorkbenchState): StageParams {
+  return {
+    ...s.stage,
+    tooth_width_allowance_pinion_mm: (s.tol.awe1_um + s.tol.awi1_um) / 2 / 1000,
+    tooth_width_allowance_wheel_mm: (s.tol.awe2_um + s.tol.awi2_um) / 2 / 1000,
+  };
+}
 
 interface WorkbenchStore extends WorkbenchState {
   setStage: (s: StageParams) => void;
@@ -253,6 +473,10 @@ const DEFAULT_STATE: WorkbenchState = {
     gravity_m_s2: 9.81,
     centrifugal_enabled: true,
   },
+  operating: OPERATING_DEFAULTS,
+  materials: MATERIALS_DEFAULTS,
+  tol: TOLERANCES_DEFAULTS,
+  loaddist: LOADDIST_DEFAULTS,
   powerflow: {
     n_configurations: 1,
     active_configuration: "1",
@@ -306,6 +530,10 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       "fem",
       "geometryUi",
       "operatingUi",
+      "operating",
+      "materials",
+      "tol",
+      "loaddist",
       "powerflow",
       "forces",
       "control",
@@ -330,6 +558,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     };
     return {
       ...state,
+      // every consumer sees the EFFECTIVE stage (raw stage + tab-owned merges like the
+      // Toleranzen allowances) — API calls therefore always carry the coupled values
+      stage: effectiveStage(state),
       setStage: (s) => setState((p) => ({ ...p, stage: s })),
       setLabel: (l) => setState((p) => ({ ...p, label: l })),
       setCalc: (id, on) => setState((p) => ({ ...p, calc: { ...p.calc, [id]: on } })),

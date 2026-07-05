@@ -627,6 +627,537 @@ ATTRIBUTES: list[AttributeDef] = [
         info_en="Derived from the power flow (input torque) — no separate input here so the "
         "load case stays consistent system-wide.",
     ),
+    # --- Stirnradstufe → Tragfähigkeit (screenshot Stirnradstufe_Tragfaehigkeit.png) ----
+    AttributeDef(
+        id="cap_web_mode",
+        label_de="Bezogene Stegbreite",
+        label_en="Related web width",
+        symbol="b_s / b",
+        kind="enum",
+        per_gear=True,
+        options=[_opt("solid", "Vollscheibenrad", "Solid disc gear")],
+        bindings=("operating.web_mode_gear1", "operating.web_mode_gear2"),
+        norm_ref="ISO 6336-3 (Y_B)",
+    ),
+    AttributeDef(
+        id="cap_rim_mode",
+        label_de="Relative Kranzdicke",
+        label_en="Related rim thickness",
+        symbol="s_R / m_n",
+        kind="enum",
+        per_gear=True,
+        options=[_opt("solid", "Vollscheibenrad", "Solid disc gear")],
+        bindings=("operating.rim_mode_gear1", "operating.rim_mode_gear2"),
+        norm_ref="ISO 6336-3 (Y_B)",
+    ),
+    AttributeDef(
+        id="cap_roughness_auto",
+        label_de="Rauheiten automatisch umrechnen",
+        label_en="Convert roughness automatically",
+        kind="bool",
+        binding="operating.roughness_auto",
+        info_de="R_a ↔ R_z Umrechnung (R_z ≈ 6·R_a) — gilt für beide Räder.",
+        info_en="R_a ↔ R_z conversion (R_z ≈ 6·R_a) — applies to both gears.",
+    ),
+    AttributeDef(
+        id="cap_ra_flank",
+        label_de="Arithmetischer Mittenrauwert Flanke",
+        label_en="Arithmetic mean roughness, flank",
+        symbol="R_aH",
+        unit="µm",
+        precision=1,
+        binding="operating.flank_roughness_ra_um",
+    ),
+    AttributeDef(
+        id="cap_rz_flank",
+        label_de="Gemittelte Rautiefe Flanke",
+        label_en="Mean roughness depth, flank",
+        symbol="R_zH",
+        unit="µm",
+        precision=1,
+        binding="operating.flank_roughness_rz_um",
+        norm_ref="ISO 6336-2 (Z_R)",
+    ),
+    AttributeDef(
+        id="cap_ra_root",
+        label_de="Arithmetischer Mittenrauwert Fuß",
+        label_en="Arithmetic mean roughness, root",
+        symbol="R_aF",
+        unit="µm",
+        precision=1,
+        binding="operating.root_roughness_ra_um",
+    ),
+    AttributeDef(
+        id="cap_rz_root",
+        label_de="Gemittelte Rautiefe Fuß",
+        label_en="Mean roughness depth, root",
+        symbol="R_zF",
+        unit="µm",
+        precision=1,
+        binding="operating.root_roughness_rz_um",
+        norm_ref="ISO 6336-3 (Y_RrelT)",
+    ),
+    AttributeDef(
+        id="cap_tip_relief",
+        label_de="Kopfrücknahme",
+        label_en="Tip relief",
+        symbol="C_a",
+        unit="µm",
+        precision=1,
+        binding="operating.tip_relief_ca_um",
+        norm_ref="ISO 6336-1 (K_v, Anregung)",
+    ),
+    AttributeDef(
+        id="cap_mesh_stiffness_mode",
+        label_de="Eingriffsfedersteifigkeit im Gesamtsystem",
+        label_en="Mesh stiffness in the system run",
+        symbol="c_γ",
+        kind="enum",
+        options=[_opt("iso6336", "Nach ISO 6336", "Acc. ISO 6336")],
+        binding="operating.mesh_stiffness_mode",
+        norm_ref="ISO 6336-1 §9",
+    ),
+    AttributeDef(
+        id="cap_application_factor",
+        label_de="Anwendungsfaktor",
+        label_en="Application factor",
+        symbol="K_A",
+        precision=2,
+        binding="operating.application_factor",
+        norm_ref="ISO 6336-1 / VDI 2736",
+    ),
+    # --- Stirnradstufe → Toleranzen (screenshot Stirnradstufe_Toleranz.png) ------------
+    AttributeDef(
+        id="tol_awe",
+        label_de="Oberes Zahnweitenabmaß",
+        label_en="Upper tooth-width allowance",
+        symbol="A_We",
+        unit="µm",
+        precision=1,
+        per_gear=True,
+        bindings=("tol.awe1_um", "tol.awe2_um"),
+        norm_ref="DIN 3967",
+        info_de="Mittelwert (A_We+A_Wi)/2 fließt als A̅_We in Erzeugung (x_E) UND ins "
+        "Abwälz-Deck (Flankenspiel → spielschließende Drehung).",
+        info_en="The mean flows into the generation (x_E) AND the rolling deck (backlash "
+        "→ closing rotation).",
+    ),
+    AttributeDef(
+        id="tol_awi",
+        label_de="Unteres Zahnweitenabmaß",
+        label_en="Lower tooth-width allowance",
+        symbol="A_Wi",
+        unit="µm",
+        precision=1,
+        per_gear=True,
+        bindings=("tol.awi1_um", "tol.awi2_um"),
+        norm_ref="DIN 3967",
+    ),
+    AttributeDef(
+        id="tol_aw_factor",
+        label_de="Zahnweitenabmaßfaktor",
+        label_en="Tooth-width allowance factor",
+        symbol="A_W/A_s",
+        kind="enum",
+        options=[_opt("0.94", "0.94", "0.94")],
+        binding="tol.aw_factor_mode",
+    ),
+    AttributeDef(
+        id="tol_aw_selection",
+        label_de="Auswahl des Zahnweitenabmaßes",
+        label_en="Tooth-width allowance selection",
+        kind="enum",
+        options=[
+            _opt("mean", "Mit mittlerem Zahnweitenabmaß", "With the mean allowance"),
+            _opt("upper", "Mit oberem Zahnweitenabmaß", "With the upper allowance"),
+            _opt("lower", "Mit unterem Zahnweitenabmaß", "With the lower allowance"),
+        ],
+        binding="tol.aw_selection",
+    ),
+    AttributeDef(
+        id="tol_a_upper",
+        label_de="Oberes Achsabstandsabmaß",
+        label_en="Upper centre-distance allowance",
+        symbol="A_Ae",
+        unit="µm",
+        precision=1,
+        binding="tol.a_upper_um",
+        norm_ref="DIN 3964",
+    ),
+    AttributeDef(
+        id="tol_a_lower",
+        label_de="Unteres Achsabstandsabmaß",
+        label_en="Lower centre-distance allowance",
+        symbol="A_Ai",
+        unit="µm",
+        precision=1,
+        binding="tol.a_lower_um",
+        norm_ref="DIN 3964",
+    ),
+    AttributeDef(
+        id="tol_quality_standard",
+        label_de="Verzahnungsqualität",
+        label_en="Gear quality standard",
+        kind="enum",
+        options=[
+            _opt("din_3962_1978", "DIN 3962 (1978)", "DIN 3962 (1978)"),
+            _opt("iso_1328_2013", "ISO 1328 (2013)", "ISO 1328 (2013)"),
+        ],
+        binding="tol.quality_standard",
+    ),
+    AttributeDef(
+        id="tol_grade",
+        label_de="Verzahnungsqualität DIN 3962",
+        label_en="Quality grade DIN 3962",
+        symbol="A",
+        kind="int",
+        per_gear=True,
+        bindings=("tol.grade1", "tol.grade2"),
+        norm_ref="DIN 3962 / ISO 1328-1",
+        info_de="Die Qualität speist die Flankenabweichungen (f_pb, f_fα) der Dynamik.",
+        info_en="The grade feeds the flank deviations (f_pb, f_fα) of the dynamics run.",
+    ),
+    AttributeDef(
+        id="tol_custom_diameter",
+        label_de="Benutzerdefinierter Durchmesser",
+        label_en="Custom diameter",
+        kind="bool",
+        per_gear=True,
+        bindings=("tol.custom_diameter1", "tol.custom_diameter2"),
+    ),
+    # --- Stirnradstufe → Werkstoff (screenshot Stirnradstufe_Werkstoff.png) -------------
+    AttributeDef(
+        id="mat_name",
+        label_de="Werkstoff",
+        label_en="Material",
+        kind="enum",
+        per_gear=True,
+        options=[
+            _opt("20MnCr5", "20MnCr5", "20MnCr5"),
+            _opt("Stanyl_TW200F6_cond_80", "Stanyl_TW200F6_cond_80", "Stanyl_TW200F6_cond_80"),
+        ],
+        bindings=("materials.gear1_name", "materials.gear2_name"),
+        info_de="Katalogwerkstoffe (app.services.materials.CATALOG) — erweiterbar.",
+        info_en="Catalog materials (app.services.materials.CATALOG) — extensible.",
+    ),
+    AttributeDef(
+        id="mat_kind",
+        label_de="Werkstoffart",
+        label_en="Material kind",
+        kind="enum",
+        per_gear=True,
+        options=[_opt("steel", "Stahl", "Steel"), _opt("plastic", "Kunststoff", "Plastic")],
+        bindings=("materials.gear1_kind", "materials.gear2_kind"),
+        norm_ref="Norm-Dispatch: Stahl → ISO 6336, Kunststoff → VDI 2736",
+        info_de="DIE Weiche des Systems: bestimmt Norm, Deck-Materialkarte, Rigid-Shell- "
+        "und Kontakt-Slave-Rolle je Rad.",
+        info_en="THE system dispatch: sets the norm, deck material card, rigid-shell and "
+        "contact-slave role per gear.",
+    ),
+    *[
+        AttributeDef(
+            id=f"mat_steel_{key}",
+            label_de=f"{de} (Stahl)",
+            label_en=f"{en} (steel)",
+            symbol=sym,
+            unit=unit,
+            precision=prec,
+            binding=f"materials.steel_{key}",
+        )
+        for key, de, en, sym, unit, prec in (
+            ("modulus_mpa", "Elastizitätsmodul", "Young's modulus", "E", "N/mm²", 0),
+            ("poisson", "Querkontraktionszahl", "Poisson ratio", "ν", None, 2),
+            (
+                "sigma_hlim_mpa",
+                "Dauerfestigkeit Flanke",
+                "Flank endurance limit",
+                "σ_Hlim",
+                "N/mm²",
+                1,
+            ),
+            ("sigma_flim_mpa", "Dauerfestigkeit Fuß", "Root endurance limit", "σ_Flim", "N/mm²", 1),
+            ("density_kg_dm3", "Dichte", "Density", "ρ", "kg/dm³", 2),
+        )
+    ],
+    *[
+        AttributeDef(
+            id=f"mat_plastic_{key}",
+            label_de=f"{de} (Kunststoff)",
+            label_en=f"{en} (plastic)",
+            symbol=sym,
+            unit=unit,
+            precision=prec,
+            binding=f"materials.plastic_{key}",
+        )
+        for key, de, en, sym, unit, prec in (
+            ("modulus_mpa", "Elastizitätsmodul", "Young's modulus", "E", "N/mm²", 0),
+            ("poisson", "Querkontraktionszahl", "Poisson ratio", "ν", None, 2),
+            ("sigma_hlim_mpa", "Zeitwälzfestigkeit", "Flank strength", "σ_HlimN", "N/mm²", 1),
+            ("sigma_flim_mpa", "Zeitschwellfestigkeit", "Root strength", "σ_FlimN", "N/mm²", 1),
+            ("density_kg_dm3", "Dichte", "Density", "ρ", "kg/dm³", 2),
+            ("yield_strength_mpa", "Dehngrenze", "Yield strength", "R_p0.2", "MPa", 1),
+            (
+                "allowable_temperature_c",
+                "Zulässige Temperatur",
+                "Allowable temperature",
+                "ϑ_zul",
+                "°C",
+                1,
+            ),
+        )
+    ],
+    # --- Stirnradstufe → Schmierstoff (screenshot Stirnradstufe_Schmirstoff.png) --------
+    AttributeDef(
+        id="lub_density",
+        label_de="Dichte bei 15 °C",
+        label_en="Density at 15 °C",
+        symbol="ρ",
+        unit="kg/dm³",
+        precision=2,
+        binding="operating.lubricant_density_15c_kg_dm3",
+    ),
+    AttributeDef(
+        id="lub_visc40",
+        label_de="Nennviskosität bei 40 °C",
+        label_en="Nominal viscosity at 40 °C",
+        symbol="ν_40",
+        unit="mm²/s",
+        precision=1,
+        binding="operating.lubricant_viscosity_40_mm2s",
+        norm_ref="ISO 6336-2 (Z_L)",
+    ),
+    AttributeDef(
+        id="lub_visc100",
+        label_de="Nennviskosität bei 100 °C",
+        label_en="Nominal viscosity at 100 °C",
+        symbol="ν_100",
+        unit="mm²/s",
+        precision=1,
+        binding="operating.lubricant_viscosity_100_mm2s",
+    ),
+    # --- Stirnradstufe → VDI 2736 (2014) (screenshot Stirnradstufe_VDI-2736.png) --------
+    AttributeDef(
+        id="vdi_lubrication_kind",
+        label_de="Schmierungsart",
+        label_en="Lubrication kind",
+        kind="enum",
+        options=[
+            _opt("oil_circulation", "Ölumlauf", "Oil circulation"),
+            _opt("grease", "Fett", "Grease"),
+            _opt("dry", "Trockenlauf", "Dry running"),
+        ],
+        binding="operating.lubrication_kind",
+        norm_ref="VDI 2736-2 (Zahntemperatur)",
+    ),
+    AttributeDef(
+        id="vdi_ambient_mode",
+        label_de="Umgebungstemperatur",
+        label_en="Ambient temperature",
+        symbol="ϑ_0",
+        kind="enum",
+        options=[
+            _opt("equals_oil", "entspricht Öltemperatur", "equals oil temperature"),
+            _opt("value", "Nutzereingabe", "User input"),
+        ],
+        binding="operating.ambient_mode",
+    ),
+    AttributeDef(
+        id="vdi_duty_cycle",
+        label_de="Relative Einschaltdauer bezogen auf 10 min",
+        label_en="Relative duty cycle (per 10 min)",
+        symbol="ED",
+        precision=3,
+        binding="operating.duty_cycle",
+        norm_ref="VDI 2736-2",
+    ),
+    AttributeDef(
+        id="vdi_housing_type",
+        label_de="Bauart des Getriebegehäuses",
+        label_en="Housing type",
+        kind="enum",
+        options=[
+            _opt("closed", "Geschlossenes Gehäuse", "Closed housing"),
+            _opt("open", "Offenes Gehäuse", "Open housing"),
+        ],
+        binding="operating.housing_type",
+    ),
+    AttributeDef(
+        id="vdi_housing_surface",
+        label_de="Wärmeabführende Oberfläche des Gehäuses",
+        label_en="Heat-dissipating housing surface",
+        symbol="A_G",
+        unit="m²",
+        precision=3,
+        binding="operating.housing_surface_m2",
+        norm_ref="VDI 2736-2 (Zahntemperatur)",
+    ),
+    AttributeDef(
+        id="vdi_friction_mode",
+        label_de="Reibbeiwert",
+        label_en="Friction coefficient",
+        symbol="µ",
+        kind="enum",
+        options=[
+            _opt("vdi_2736_2014", "nach VDI 2736:2014", "acc. VDI 2736:2014"),
+            _opt("value", "Nutzereingabe", "User input"),
+        ],
+        binding="operating.friction_mode",
+    ),
+    AttributeDef(
+        id="vdi_friction_value",
+        label_de="Reibbeiwert (Wert)",
+        label_en="Friction coefficient (value)",
+        symbol="µ",
+        precision=3,
+        binding="operating.friction_coefficient",
+    ),
+    AttributeDef(
+        id="vdi_heat_transfer",
+        label_de="Wärmeübergangsbeiwert (Fuß/Flanke)",
+        label_en="Heat-transfer coefficient (root/flank)",
+        symbol="k_ϑ",
+        kind="enum",
+        options=[_opt("vdi_2736_table3", "nach VDI 2736 Tabelle 3", "acc. VDI 2736 table 3")],
+        binding="operating.heat_transfer_mode",
+    ),
+    AttributeDef(
+        id="vdi_tooth_loss",
+        label_de="Zahnverlustgrad",
+        label_en="Tooth loss factor",
+        symbol="H_v",
+        kind="enum",
+        options=[_opt("wimmer", "nach Wimmer", "acc. Wimmer")],
+        binding="operating.tooth_loss_mode",
+    ),
+    AttributeDef(
+        id="vdi_root_min_safety",
+        label_de="Mindestsicherheit Zahnfuß",
+        label_en="Minimum root safety",
+        symbol="S_Fmin",
+        precision=2,
+        binding="operating.root_minimum_safety",
+        norm_ref="VDI 2736-2 (S_Fmin ≥ 2.0 empfohlen)",
+    ),
+    AttributeDef(
+        id="vdi_flank_min_safety",
+        label_de="Mindestsicherheit Zahnflanke",
+        label_en="Minimum flank safety",
+        symbol="S_Hmin",
+        precision=2,
+        binding="operating.flank_minimum_safety",
+        norm_ref="VDI 2736-2 (S_Hmin ≥ 1.4 empfohlen)",
+    ),
+    AttributeDef(
+        id="vdi_wear_allowable",
+        label_de="Zulässiger linearer Verschleiß",
+        label_en="Allowable linear wear",
+        symbol="W_zul",
+        kind="enum",
+        options=[_opt("0.1_mn", "0.1 · m_n", "0.1 · m_n")],
+        binding="operating.allowable_wear_mode",
+        norm_ref="VDI 2736-2 §7",
+    ),
+    AttributeDef(
+        id="vdi_wear_coefficient",
+        label_de="Verschleißkoeffizient",
+        label_en="Wear coefficient",
+        symbol="k_W",
+        unit="10⁻⁶ mm³/(N·m)",
+        precision=3,
+        binding="operating.wear_coefficient_e6",
+        norm_ref="VDI 2736-2 Tabelle 7",
+    ),
+    AttributeDef(
+        id="vdi_deformation_condition",
+        label_de="Umgebungsbedingung (Verformung)",
+        label_en="Ambient condition (deformation)",
+        kind="enum",
+        options=[_opt("dry", "Trocken", "Dry"), _opt("humid", "Feucht", "Humid")],
+        binding="operating.deformation_condition",
+        norm_ref="VDI 2736-2 §8 (λ)",
+    ),
+    AttributeDef(
+        id="vdi_static_overload",
+        label_de="Statischer Überlastfaktor",
+        label_en="Static overload factor",
+        symbol="K_A,stat",
+        kind="enum",
+        options=[
+            _opt("none", "Keine statische Berechnung", "No static analysis"),
+            _opt("value", "Nutzereingabe", "User input"),
+        ],
+        binding="operating.static_mode",
+        norm_ref="VDI 2736-2 §5.3 (Spitzenlasten)",
+    ),
+    # --- Stirnradstufe → Lastverteilung (FEM, FVA 377) ----------------------------------
+    AttributeDef(
+        id="ld_position_mode",
+        label_de="Vorgabe der Wälzstellungen",
+        label_en="Roll position specification",
+        kind="enum",
+        options=[
+            _opt(
+                "linear_count",
+                "lineare Verteilung mit Vorgabe der Anzahl",
+                "linear distribution with given count",
+            )
+        ],
+        binding="loaddist.position_mode",
+    ),
+    AttributeDef(
+        id="ld_positions",
+        label_de="Anzahl der Wälzstellungen",
+        label_en="Number of roll positions",
+        kind="int",
+        binding="loaddist.n_positions",
+    ),
+    AttributeDef(
+        id="ld_stress_eval",
+        label_de="Spannungsauswertung",
+        label_en="Stress evaluation",
+        kind="enum",
+        options=[
+            _opt("tangential", "Tangentialspannungen", "Tangential stresses"),
+            _opt("principal", "Hauptspannungen", "Principal stresses"),
+        ],
+        binding="loaddist.stress_eval",
+        norm_ref="FVA 377 / eigene FE-Auswertung",
+    ),
+    AttributeDef(
+        id="ld_save_influence",
+        label_de="Einflusszahlen im Modell speichern",
+        label_en="Store influence numbers in the model",
+        kind="bool",
+        binding="loaddist.save_influence",
+    ),
+    AttributeDef(
+        id="ld_auto_overroll",
+        label_de="Automatische Überrollung durchführen",
+        label_en="Automatic overroll",
+        kind="bool",
+        binding="loaddist.auto_overroll",
+    ),
+    AttributeDef(
+        id="ld_meshing_accuracy",
+        label_de="Vernetzungsgrad",
+        label_en="Meshing accuracy",
+        kind="enum",
+        options=[
+            _opt("coarse", "Grob", "Coarse"),
+            _opt("medium", "Mittel", "Medium"),
+            _opt("fine", "Fein", "Fine"),
+        ],
+        binding="loaddist.meshing_accuracy",
+    ),
+    AttributeDef(
+        id="ld_run_meshing",
+        label_de="FEM-Vernetzung Visualisierung",
+        label_en="FEM meshing visualisation",
+        kind="action",
+        binding="loaddist.run_meshing",
+        info_de="Erzeugt das 2D-Sektornetz (Transplant-Mesher) und zeigt es an.",
+        info_en="Generates and displays the 2D sector mesh (transplant mesher).",
+    ),
     # --- Getriebeeinheit → Leistungsfluss (screenshot Getriebeeinheit_Leisutungsfluss) --
     AttributeDef(
         id="pf_n_configurations",
@@ -1084,6 +1615,286 @@ def _geometry_tab() -> TabDef:
     )
 
 
+def _tolerances_tab() -> TabDef:
+    """Stirnradstufe → Toleranzen (screenshot Stirnradstufe_Toleranz.png)."""
+    return TabDef(
+        id="tolerances",
+        title_de="Toleranzen",
+        title_en="Tolerances",
+        sections=[
+            SectionDef(
+                id="tooth_width_allowances",
+                title_de="Zahnweitenabmaße",
+                title_en="Tooth-width allowances",
+                rows=[
+                    RowRef(attr="tol_awe"),
+                    RowRef(attr="tol_awi"),
+                    RowRef(attr="tol_aw_factor"),
+                    RowRef(attr="tol_aw_selection"),
+                ],
+                info_de="Das mittlere Zahnweitenabmaß fließt in die Erzeugung (x_E) und "
+                "bestimmt das Flankenspiel des Abwälz-Decks (spielschließende Drehung).",
+                info_en="The mean allowance feeds the generation (x_E) and sets the rolling "
+                "deck backlash (closing rotation).",
+            ),
+            SectionDef(
+                id="centre_distance_allowances",
+                title_de="Achsabstandsabmaße",
+                title_en="Centre-distance allowances",
+                rows=[RowRef(attr="tol_a_upper"), RowRef(attr="tol_a_lower")],
+            ),
+            SectionDef(
+                id="quality",
+                title_de="Verzahnungsqualität",
+                title_en="Gear quality",
+                rows=[RowRef(attr="tol_quality_standard"), RowRef(attr="tol_grade")],
+            ),
+            SectionDef(
+                id="tooth_plot",
+                title_de="Anzeige eines benutzerdefinierten Durchmessers im Zahnplot",
+                title_en="Custom diameter in the tooth plot",
+                rows=[RowRef(attr="tol_custom_diameter")],
+            ),
+        ],
+    )
+
+
+def _capacity_tab() -> TabDef:
+    """Stirnradstufe → Tragfähigkeit (screenshot Stirnradstufe_Tragfaehigkeit.png)."""
+    return TabDef(
+        id="capacity_inputs",
+        title_de="Tragfähigkeit",
+        title_en="Load capacity",
+        sections=[
+            SectionDef(
+                id="general",
+                title_de="Allgemeine Eingaben zur Tragfähigkeit",
+                title_en="General capacity inputs",
+                rows=[
+                    RowRef(attr="cap_web_mode"),
+                    RowRef(attr="cap_rim_mode"),
+                    RowRef(attr="cap_roughness_auto"),
+                    RowRef(attr="cap_ra_flank"),
+                    RowRef(attr="cap_rz_flank"),
+                    RowRef(attr="cap_ra_root"),
+                    RowRef(attr="cap_rz_root"),
+                    RowRef(attr="cap_tip_relief"),
+                    RowRef(attr="cap_application_factor"),
+                ],
+            ),
+            SectionDef(
+                id="system_parameters",
+                title_de="Berechnungsparameter für Gesamtsystem",
+                title_en="System-run parameters",
+                rows=[RowRef(attr="cap_mesh_stiffness_mode")],
+            ),
+        ],
+    )
+
+
+def _material_tab() -> TabDef:
+    """Stirnradstufe → Werkstoff (screenshot Stirnradstufe_Werkstoff.png)."""
+    steel_keys = ["modulus_mpa", "poisson", "sigma_hlim_mpa", "sigma_flim_mpa", "density_kg_dm3"]
+    plastic_keys = [
+        "modulus_mpa",
+        "poisson",
+        "sigma_hlim_mpa",
+        "sigma_flim_mpa",
+        "density_kg_dm3",
+        "yield_strength_mpa",
+        "allowable_temperature_c",
+    ]
+    return TabDef(
+        id="material",
+        title_de="Werkstoff",
+        title_en="Material",
+        sections=[
+            SectionDef(
+                id="selection",
+                title_de="Allgemeine Werkstoffdaten",
+                title_en="General material data",
+                rows=[RowRef(attr="mat_name"), RowRef(attr="mat_kind")],
+                info_de="Die Werkstoffart ist DIE Weiche: Stahl → ISO 6336, Kunststoff → "
+                "VDI 2736 (je Rad); Deck-Materialkarte und Kontaktrollen folgen.",
+                info_en="The material kind is THE dispatch: steel → ISO 6336, plastic → "
+                "VDI 2736 (per gear); deck cards and contact roles follow.",
+            ),
+            SectionDef(
+                id="steel",
+                title_de="Kennwerte Stahl (ISO 6336)",
+                title_en="Steel properties (ISO 6336)",
+                rows=[RowRef(attr=f"mat_steel_{k}") for k in steel_keys],
+            ),
+            SectionDef(
+                id="plastic",
+                title_de="Kennwerte Kunststoff (VDI 2736)",
+                title_en="Plastic properties (VDI 2736)",
+                rows=[RowRef(attr=f"mat_plastic_{k}") for k in plastic_keys],
+            ),
+        ],
+    )
+
+
+def _lubricant_tab() -> TabDef:
+    """Stirnradstufe → Schmierstoff (screenshot Stirnradstufe_Schmirstoff.png)."""
+    return TabDef(
+        id="lubricant",
+        title_de="Schmierstoff",
+        title_en="Lubricant",
+        sections=[
+            SectionDef(
+                id="selection",
+                title_de="Schmierstoff",
+                title_en="Lubricant",
+                rows=[RowRef(attr="lubricant_name"), RowRef(attr="oil_temperature")],
+            ),
+            SectionDef(
+                id="properties",
+                title_de="Schmierstoffangaben",
+                title_en="Lubricant data",
+                rows=[
+                    RowRef(attr="lub_density"),
+                    RowRef(attr="lub_visc40"),
+                    RowRef(attr="lub_visc100"),
+                ],
+            ),
+        ],
+    )
+
+
+def _vdi2736_tab() -> TabDef:
+    """Stirnradstufe → VDI 2736 (2014) (screenshot Stirnradstufe_VDI-2736.png)."""
+    return TabDef(
+        id="vdi2736",
+        title_de="VDI 2736 (2014)",
+        title_en="VDI 2736 (2014)",
+        visible_if_method="vdi_2736_2014",
+        sections=[
+            SectionDef(
+                id="lubrication",
+                title_de="VDI 2736 - Schmierungsart",
+                title_en="VDI 2736 - lubrication kind",
+                rows=[RowRef(attr="vdi_lubrication_kind")],
+            ),
+            SectionDef(
+                id="temperature",
+                title_de="VDI 2736 - Zahntemperatur",
+                title_en="VDI 2736 - tooth temperature",
+                rows=[
+                    RowRef(attr="vdi_ambient_mode"),
+                    RowRef(attr="oil_temperature"),
+                    RowRef(attr="vdi_duty_cycle"),
+                    RowRef(attr="vdi_housing_type"),
+                    RowRef(attr="vdi_housing_surface"),
+                    RowRef(attr="vdi_friction_mode"),
+                    RowRef(attr="vdi_friction_value", visible_if="operating.friction_is_user"),
+                    RowRef(attr="vdi_heat_transfer"),
+                    RowRef(attr="vdi_tooth_loss"),
+                ],
+            ),
+            SectionDef(
+                id="root",
+                title_de="VDI 2736 - Fußtragfähigkeit",
+                title_en="VDI 2736 - root capacity",
+                rows=[RowRef(attr="cap_application_factor"), RowRef(attr="vdi_root_min_safety")],
+            ),
+            SectionDef(
+                id="flank",
+                title_de="VDI 2736 - Flankentragfähigkeit",
+                title_en="VDI 2736 - flank capacity",
+                rows=[RowRef(attr="vdi_flank_min_safety")],
+            ),
+            SectionDef(
+                id="wear",
+                title_de="VDI 2736 - Verschleißtragfähigkeit",
+                title_en="VDI 2736 - wear capacity",
+                rows=[RowRef(attr="vdi_wear_allowable"), RowRef(attr="vdi_wear_coefficient")],
+            ),
+            SectionDef(
+                id="deformation",
+                title_de="VDI 2736 - Verformung",
+                title_en="VDI 2736 - deformation",
+                rows=[RowRef(attr="vdi_deformation_condition")],
+            ),
+            SectionDef(
+                id="peak_loads",
+                title_de="VDI 2736 - Spitzenlasten",
+                title_en="VDI 2736 - peak loads",
+                rows=[RowRef(attr="vdi_static_overload")],
+            ),
+        ],
+    )
+
+
+def _loaddist_fem_tab() -> TabDef:
+    """Stirnradstufe → Lastverteilung (FEM, FVA 377) (screenshot)."""
+    return TabDef(
+        id="loaddist_fem",
+        title_de="Lastverteilung (FEM)",
+        title_en="Load distribution (FEM)",
+        visible_if_method="fva_377_fem",
+        sections=[
+            SectionDef(
+                id="tooth_contour",
+                title_de="Zahnkontur",
+                title_en="Tooth contour",
+                rows=[
+                    RowRef(attr="fem_contour_source"),
+                    RowRef(attr="fem_modifications_source"),
+                ],
+            ),
+            SectionDef(
+                id="parameters",
+                title_de="Berechnungsparameter",
+                title_en="Parameters",
+                info_de="Der FVA-377-Löser (3D-Lastverteilung) ist im Nachbau noch nicht "
+                "implementiert — Vernetzung und Fesselung sind funktional.",
+                info_en="The FVA-377 solver is not implemented in the replica yet — meshing "
+                "and fixation are functional.",
+                rows=[
+                    RowRef(attr="ld_position_mode"),
+                    RowRef(attr="ld_positions"),
+                    RowRef(attr="ld_stress_eval"),
+                    RowRef(attr="ld_save_influence"),
+                    RowRef(attr="ld_auto_overroll"),
+                ],
+            ),
+            SectionDef(
+                id="meshing",
+                title_de="Vernetzung",
+                title_en="Meshing",
+                rows=[
+                    RowRef(attr="ld_meshing_accuracy"),
+                    RowRef(attr="ld_run_meshing"),
+                    RowRef(attr="fem_angle_limit"),
+                    RowRef(attr="fem_jacobi_quality"),
+                    RowRef(attr="fem_auto_smoothing"),
+                ],
+            ),
+            SectionDef(
+                id="fastening",
+                title_de="Fesselung",
+                title_en="Fixation",
+                rows=[
+                    RowRef(attr="fasten_bore"),
+                    RowRef(attr="fasten_cuts"),
+                    RowRef(attr="fasten_top"),
+                    RowRef(attr="fasten_bottom"),
+                ],
+                info_de="Gleiche Fesselung wie das Abwälz-Deck (gemeinsame Einstellung).",
+                info_en="Same fixation as the rolling deck (shared setting).",
+            ),
+            SectionDef(
+                id="expert",
+                title_de="Individuelle Konfiguration für die FE-Stirnradberechnung "
+                "(Expertenfunktion)",
+                title_en="Individual FE configuration (expert function)",
+                rows=[RowRef(attr="fem_expert_stirak")],
+            ),
+        ],
+    )
+
+
 def _transient_fem_tab() -> TabDef:
     """Stirnradstufe → Dynamisches Abwälzen (FEM) (screenshot, FVA 892)."""
     return TabDef(
@@ -1465,7 +2276,18 @@ def build_ui_schema() -> UiSchema:
             id="cylindrical_mesh",
             label_de="Stirnradstufe",
             label_en="Cylindrical gear stage",
-            tabs=[_geometry_tab(), _transient_fem_tab()],
+            # FVA tab order: Geometrie · Toleranzen · Tragfähigkeit · VDI 2736 (2014) ·
+            # Werkstoff · Schmierstoff · Lastverteilung (FEM) · Dynamisches Abwälzen (FEM)
+            tabs=[
+                _geometry_tab(),
+                _tolerances_tab(),
+                _capacity_tab(),
+                _vdi2736_tab(),
+                _material_tab(),
+                _lubricant_tab(),
+                _loaddist_fem_tab(),
+                _transient_fem_tab(),
+            ],
         ),
     ]
     return UiSchema(

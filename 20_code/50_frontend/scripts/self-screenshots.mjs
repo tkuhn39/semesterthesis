@@ -21,11 +21,15 @@ const NODES = [
   {
     node: "Stirnradstufe [3]",
     tabs: [
-      "Auslegung",
       "Geometrie",
+      "Toleranzen",
       "Tragfähigkeit",
-      "Dynamikfaktoren",
+      "VDI 2736 (2014)",
+      "Werkstoff",
+      "Schmierstoff",
       "Dynamisches Abwälzen (FEM)",
+      "Auslegung",
+      "Dynamikfaktoren",
       "FE-Abwälzmodell (Ansicht)",
     ],
   },

@@ -198,11 +198,36 @@ function Shell() {
         ...(s ? maybe(schemaTab(s, "gear_unit", "control", locale)) : []),
       ],
       stage: [
-        { id: "design", title: locale === "de" ? "Auslegung" : "Design", render: () => <DesignPanel /> },
+        // FVA tab order: Geometrie · Toleranzen · Tragfähigkeit · VDI 2736 · Werkstoff ·
+        // Schmierstoff · Lastverteilung (FEM) · Dyn. Abwälzen (FEM) — then our extras
         { id: "geometry", title: "Geometrie", render: () => <GeometryPanel /> },
-        { id: "capacity", title: locale === "de" ? "Tragfähigkeit" : "Load capacity", render: () => <CapacityPanel /> },
-        { id: "dynamics", title: locale === "de" ? "Dynamikfaktoren" : "Dynamic factors", render: () => <DynamicsPanel /> },
+        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "tolerances", locale)) : []),
+        ...(s
+          ? [
+              {
+                id: "capacity",
+                title: locale === "de" ? "Tragfähigkeit" : "Load capacity",
+                render: () => {
+                  const tab = s.components
+                    .find((c) => c.id === "cylindrical_mesh")
+                    ?.tabs.find((x) => x.id === "capacity_inputs");
+                  return (
+                    <div className="flex flex-col gap-3">
+                      {tab && <SchemaTab schema={s} tab={tab} />}
+                      <CapacityPanel />
+                    </div>
+                  );
+                },
+              } satisfies TabSpec,
+            ]
+          : [{ id: "capacity", title: locale === "de" ? "Tragfähigkeit" : "Load capacity", render: () => <CapacityPanel /> }]),
+        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "vdi2736", locale)) : []),
+        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "material", locale)) : []),
+        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "lubricant", locale)) : []),
+        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "loaddist_fem", locale)) : []),
         ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "transient_fem", locale)) : []),
+        { id: "design", title: locale === "de" ? "Auslegung" : "Design", render: () => <DesignPanel /> },
+        { id: "dynamics", title: locale === "de" ? "Dynamikfaktoren" : "Dynamic factors", render: () => <DynamicsPanel /> },
         { id: "pair", title: locale === "de" ? "FE-Abwälzmodell (Ansicht)" : "FE rolling model (view)", render: () => <PairPanel /> },
       ],
       pinion: [
