@@ -71,6 +71,12 @@ export function CapacityPanel() {
   const reqKey = useMemo(() => JSON.stringify(req), [req]);
 
   const run = async () => {
+    // powerflow torque cleared (reset state) — nothing to compute yet
+    if (req.pinion_torque_nm == null || !Number.isFinite(req.pinion_torque_nm)) {
+      setRes(null);
+      setErr(t("pf.noTorque"));
+      return;
+    }
     setBusy(true);
     setErr(null);
     try {

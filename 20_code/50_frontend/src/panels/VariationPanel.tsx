@@ -89,7 +89,7 @@ const FILTERS: { key: keyof VariationPoint; labelKey: string; gear?: 1 | 2; symb
   { key: "weight_g", labelKey: "attr.weight", symbol: "m" },
 ];
 
-function defaultsFromStage(s: StageParams): VariationRequest {
+function defaultsFromStage(s: StageParams, torqueT1: number | undefined): VariationRequest {
   const a0 = s.center_distance_mm ?? (s.normal_module_mm * (s.teeth_pinion + s.teeth_wheel)) / 2;
   return {
     m_n: { vary: false, value: s.normal_module_mm, min: s.normal_module_mm / 2, max: s.normal_module_mm * 2, steps: 4 },
@@ -121,7 +121,8 @@ function defaultsFromStage(s: StageParams): VariationRequest {
     normal_pressure_angle_deg: s.normal_pressure_angle_deg,
     tool_addendum_factor: s.tool_addendum_factor,
     tool_tip_radius_factor: s.tool_tip_radius_factor,
-    torque_nm: 7.85,
+    // T₁ from THE Leistungsfluss (SSOT) — never a panel-local torque copy
+    torque_nm: torqueT1 ?? 0.0,
     steel_density_kg_m3: 7850,
     plastic_density_kg_m3: 1410,
     steel_sigma_hlim_mpa: 1500,
@@ -160,7 +161,8 @@ export function VariationPanel() {
   const t = useT();
   const fm = useFmt();
   const v = wb.varUi;
-  const [r, setR] = useState<VariationRequest>(() => defaultsFromStage(stage));
+  const torqueT1 = wb.get("operating.pinion_torque_nm") as number | undefined;
+  const [r, setR] = useState<VariationRequest>(() => defaultsFromStage(stage, torqueT1));
   const [overlays, setOverlays] = useState<OverlayEntry[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -170,10 +172,11 @@ export function VariationPanel() {
   const fixedHint = t("var.fixedHint");
 
   useEffect(() => {
-    // the baseline follows the shared stage — a geometry edit elsewhere re-seeds step 1
+    // the baseline follows the shared stage AND the Leistungsfluss load case —
+    // an edit elsewhere re-seeds step 1 (SSOT)
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setR(defaultsFromStage(stage));
-  }, [stage]);
+    setR(defaultsFromStage(stage, torqueT1));
+  }, [stage, torqueT1]);
 
   const setVar = (patch: Partial<typeof v>) => {
     for (const [k, val] of Object.entries(patch)) wb.set(`varUi.${k}`, val);
@@ -428,10 +431,10 @@ export function VariationPanel() {
             </div>
             <table className="attr-table">
               <tbody>
-                <tr>
+                <tr title={t("cap.inputsNote")}>
                   <td>{t("var.torque")}</td>
                   <td className="wb-num text-zinc-400">T₁</td>
-                  <td><Num value={r.torque_nm} onChange={set("torque_nm")} /></td>
+                  <td className="wb-num text-zinc-500">{fm.num(r.torque_nm, 4)}</td>
                   <td className="text-zinc-400">N·m</td>
                 </tr>
                 <tr>

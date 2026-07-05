@@ -20,6 +20,10 @@ export interface AttributeDef {
   computed: boolean;
   binding?: string | null;
   bindings?: [string, string] | null;
+  // per-column dynamic locking (store paths; truthy = that column renders locked)
+  locked_ifs?: [string, string] | null;
+  // emptying the field writes null instead of being ignored (reset semantics)
+  nullable?: boolean;
   norm_ref?: string | null;
   info_de?: string | null;
   info_en?: string | null;

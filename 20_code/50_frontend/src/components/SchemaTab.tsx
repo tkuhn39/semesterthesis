@@ -7,7 +7,7 @@
 // tab uses — adding a tab is backend schema work, not new frontend code.
 
 import { useState } from "react";
-import type { AttributeDef, SectionDef, TabDef, UiSchema } from "@/lib/uischema";
+import type { AttributeDef, RowRef, SectionDef, TabDef, UiSchema } from "@/lib/uischema";
 import { useWorkbench } from "@/lib/store";
 import { useLocale, useT } from "@/lib/i18n";
 import { meshApi } from "@/lib/api";
@@ -25,10 +25,16 @@ function useActions(): Record<string, { label: string; run: () => Promise<string
     "fem.download_deck": {
       label: "implicit_rolling_generated.inp",
       run: async () => {
+        const m2 = wb.get("fem.torque_gear2_nmm");
+        if (typeof m2 !== "number" || !Number.isFinite(m2)) {
+          throw new Error(
+            t("pf.noTorque"),
+          );
+        }
         const text = await meshApi.deck({
           stage: wb.stage,
           // SSOT chains: torque M₂ from the Leistungsfluss, materials from the Werkstoff tab
-          torque_gear2_nmm: wb.get("fem.torque_gear2_nmm") as number,
+          torque_gear2_nmm: m2,
           face_layers: wb.fem.face_layers,
           n_roll_positions: wb.fem.n_roll_positions,
           refine_root: wb.fem.refine_root,
@@ -132,17 +138,27 @@ function ValueCell({
       </select>
     );
   }
+  const isEmpty = value == null;
   const num = typeof value === "number" ? value : Number(value ?? 0);
-  const shown =
-    attr.precision != null && Number.isFinite(num) ? num.toFixed(attr.precision) : String(num);
+  const shown = isEmpty
+    ? ""
+    : attr.precision != null && Number.isFinite(num)
+      ? num.toFixed(attr.precision)
+      : String(num);
   return (
     <input
       type="number"
       defaultValue={shown}
-      key={`${binding}:${shown}`}
+      key={`${binding}:${shown}:${disabled}`}
       disabled={disabled}
       step={attr.step ?? (attr.kind === "int" ? 1 : undefined)}
       onBlur={(e) => {
+        // nullable fields: emptying writes null (reset semantics — e.g. the one
+        // powerflow torque, where clearing frees both shaft fields again)
+        if (e.target.value === "" && attr.nullable) {
+          if (!isEmpty) wb.set(binding, null);
+          return;
+        }
         const v = attr.kind === "int" ? parseInt(e.target.value, 10) : Number(e.target.value);
         if (Number.isFinite(v) && v !== num) wb.set(binding, v);
       }}
@@ -181,10 +197,15 @@ function ActionCell({ attr }: { attr: AttributeDef }) {
   );
 }
 
-function Row({ schema, attrId }: { schema: UiSchema; attrId: string }) {
+function Row({ schema, row }: { schema: UiSchema; row: RowRef }) {
   const { locale } = useLocale();
-  const attr = schema.attributes[attrId];
+  const wb = useWorkbench();
+  const attr = schema.attributes[row.attr];
   if (!attr) return null;
+  // row-level dynamic lock (dependency rules: DIN 21771 a-mode, torque single input …)
+  const rowLocked = row.locked_if ? Boolean(wb.get(row.locked_if)) : false;
+  const colLocked = (i: 0 | 1) =>
+    rowLocked || (attr.locked_ifs ? Boolean(wb.get(attr.locked_ifs[i])) : false);
   const unit = attr.unit ? <td className="text-zinc-400">{attr.unit}</td> : <td></td>;
   const label = (
     <td title={pick(locale, attr.info_de, attr.info_en) || attr.norm_ref || undefined}>
@@ -208,10 +229,10 @@ function Row({ schema, attrId }: { schema: UiSchema; attrId: string }) {
         {label}
         {fz}
         <td>
-          <ValueCell attr={attr} binding={attr.bindings[0]} locked={false} />
+          <ValueCell attr={attr} binding={attr.bindings[0]} locked={colLocked(0)} />
         </td>
         <td>
-          <ValueCell attr={attr} binding={attr.bindings[1]} locked={false} />
+          <ValueCell attr={attr} binding={attr.bindings[1]} locked={colLocked(1)} />
         </td>
         {unit}
       </tr>
@@ -222,7 +243,9 @@ function Row({ schema, attrId }: { schema: UiSchema; attrId: string }) {
       {label}
       {fz}
       <td colSpan={2}>
-        {attr.binding ? <ValueCell attr={attr} binding={attr.binding} locked={false} /> : null}
+        {attr.binding ? (
+          <ValueCell attr={attr} binding={attr.binding} locked={rowLocked} />
+        ) : null}
       </td>
       {unit}
     </tr>
@@ -271,7 +294,7 @@ function SectionBlock({
         <tbody>
           {section.rows.map((r) => {
             if (r.visible_if && !wb.get(r.visible_if)) return null;
-            return <Row key={r.attr} schema={schema} attrId={r.attr} />;
+            return <Row key={r.attr} schema={schema} row={r} />;
           })}
         </tbody>
       </table>

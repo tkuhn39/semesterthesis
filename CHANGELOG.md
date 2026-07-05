@@ -9,6 +9,29 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Changed (powerflow rebuild: ONE torque on either shaft, exclusive load types)
+- **One system torque, entered on either shaft** (user decision): the Leistungsfluss
+  torque row has a Welle-1 and a Welle-2 field; entering one locks the other, which
+  displays the loss-free converted value (T₁ = T₂·z₁/z₂). Clearing the entered field
+  resets both to empty. The store keeps `{torque_nm, torque_shaft}` and always computes
+  from the RAW entered value — never from the rounded display — so kst-E parity stays
+  exact (8 N·m at shaft 2 → deck M₂ = 8000 N·mm, T₁ = 7.8462 N·m).
+- **Antrieb/Abtrieb mutually exclusive**: flipping one load's type flips the other to
+  the complement (store-level coupling, one setState patch). Both couplings are recorded
+  as norm-referenced dependency rules in the schema/glossary.
+- **Shaft-1/2 naming in the load tables** (user decision): the Leistungsfluss/Kräfte
+  column headers and torque labels use the "Welle 1 / Welle 2" convention (1 = left,
+  2 = right gear per ADR-021) instead of "Belastung [16]/[17]"; the model tree keeps its
+  FVA instance IDs — the ID system stays in the store for later multi-stage systems.
+- **Schema renderer honours dynamic locks**: `RowRef.locked_if` and the new per-column
+  `AttributeDef.locked_ifs` are now evaluated (previously ignored); `nullable` number
+  fields write null on empty (reset semantics). Downstream guards: capacity/dynamics/
+  deck-download show "Kein Drehmoment gesetzt …" instead of sending NaN.
+- **Torque SSOT closed in the last two panels**: Dynamikfaktoren and the Stufenvariation
+  now read T₁/n₁ from the Leistungsfluss derived values (grey display rows) instead of
+  panel-local 7.85/1000 copies; K_A and the deviations write back to the shared
+  operating values.
+
 ## [0.6.0] - 2026-07-05
 
 FVA-replica completion round: every editor tab field-checked against the 27 reference

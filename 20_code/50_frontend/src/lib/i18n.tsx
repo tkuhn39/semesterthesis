@@ -358,6 +358,10 @@ const DICT: Record<string, { de: string; en: string }> = {
     en: "Every stage always computes the geometry (ISO 21771) and the analytic load capacities (ISO 6336, VDI 2736) — the stage variation needs both complete. The following calculations can be enabled additionally; their tabs appear once activated.",
   },
   "loaddist.runMeshing": { de: "FEM-Vernetzung durchführen", en: "Run FEM meshing" },
+  "pf.noTorque": {
+    de: "Kein Drehmoment gesetzt — bitte im Leistungsfluss an Welle 1 oder Welle 2 eingeben.",
+    en: "No torque set — enter it in the power flow at shaft 1 or shaft 2.",
+  },
   // ---- Übersicht ----
   "ov.loading": { de: "Lade kst-E …", en: "Loading kst-E …" },
   "ov.role": { de: "Rolle", en: "Role" },

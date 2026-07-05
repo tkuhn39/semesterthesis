@@ -385,9 +385,13 @@ export interface OperatingUiState {
 }
 
 // Leistungsfluss (Getriebeeinheit): THE load-case source — the transient-FEM deck torque
-// derives from the Antrieb load here (SSOT chain: Leistungsfluss → Dyn. Abwälzen).
-// kst-E reference: Welle [4] 2250 min⁻¹ (Abtrieb), Welle [6] Antrieb with M₂ = 8.0 N·m
-// (the deck converts to the torque gear: 8000·51/52 = 7846.2 N·mm — reference AMP level).
+// derives from the one torque input here (SSOT chain: Leistungsfluss → Dyn. Abwälzen).
+// The torque may be entered on EITHER shaft (user decision): torque_shaft says which
+// field holds the raw input; the other side is derived via z₁/z₂ and rendered locked.
+// torque_nm === null means both fields are empty/editable (cleared state). The store
+// always computes from the ENTERED value — never from a rounded derived display value —
+// so the kst-E parity chain stays exact: Welle 2 input M₂ = 8.0 N·m → deck AMP level
+// 8000·51/52 = 7846.2 N·mm.
 export interface PowerflowState {
   n_configurations: number;
   active_configuration: string;
@@ -397,9 +401,29 @@ export interface PowerflowState {
   direction_shaft1: "cw" | "ccw";
   load1_type: "antrieb" | "abtrieb";
   load2_type: "antrieb" | "abtrieb";
-  torque_antrieb_nm: number; // T_sc of the Antrieb load (M₂ for load 2 = kst-E)
+  torque_nm: number | null; // raw torque input at torque_shaft (null = both empty)
+  torque_shaft: 1 | 2; // which shaft the input belongs to (kst-E: 2)
   u_load1_mm: number;
   u_load2_mm: number;
+}
+
+/** Canonical torque at gear 2 (M₂, the deck/reference quantity) from the one input. */
+function torqueM2(s: WorkbenchState): number | undefined {
+  const t = s.powerflow.torque_nm;
+  if (t == null || !Number.isFinite(t)) return undefined;
+  return s.powerflow.torque_shaft === 2
+    ? t
+    : (t * s.stage.teeth_wheel) / s.stage.teeth_pinion;
+}
+
+/** Torque at gear 1 (pinion). Raw input when entered on shaft 1 (no float round-trip);
+ * otherwise M₂ scaled by z₁/z₂ (loss-free balance). */
+function torqueT1(s: WorkbenchState): number | undefined {
+  const t = s.powerflow.torque_nm;
+  if (t == null || !Number.isFinite(t)) return undefined;
+  return s.powerflow.torque_shaft === 1
+    ? t
+    : (t * s.stage.teeth_pinion) / s.stage.teeth_wheel;
 }
 
 // Kräfte und Momente (per load; FVA defaults 0.0 — carried, no system solver yet)
@@ -528,30 +552,43 @@ const DERIVED: Record<string, (s: WorkbenchState) => unknown> = {
   // kinematic chain n₂ = −n₁·z₁/z₂ (external mesh reverses the direction)
   "powerflow.speed_shaft2_min1": (s) =>
     -(s.powerflow.speed_shaft1_min1 * s.stage.teeth_pinion) / s.stage.teeth_wheel,
-  // torque balance: the Abtrieb load carries T·z-ratio of the Antrieb torque (loss-free)
-  "powerflow.torque_abtrieb_nm": (s) =>
-    (s.powerflow.torque_antrieb_nm * s.stage.teeth_pinion) / s.stage.teeth_wheel,
-  "powerflow.power_load1_kw": (s) =>
-    Math.abs(
-      ((2 * Math.PI * s.powerflow.speed_shaft1_min1) / 60) *
-        ((s.powerflow.torque_antrieb_nm * s.stage.teeth_pinion) / s.stage.teeth_wheel),
-    ) / 1000,
-  "powerflow.power_load2_kw": (s) =>
-    Math.abs(
-      ((2 * Math.PI * (s.powerflow.speed_shaft1_min1 * s.stage.teeth_pinion)) /
-        s.stage.teeth_wheel /
-        60) *
-        s.powerflow.torque_antrieb_nm,
-    ) / 1000,
-  // SSOT chain: the transient-FEM deck torque M₂ [N·mm] IS the Leistungsfluss Antrieb
-  // torque (FVA behaviour — the Abwälz tab has no own torque input)
-  "fem.torque_gear2_nmm": (s) => s.powerflow.torque_antrieb_nm * 1000,
+  // torque balance (user decision): ONE torque, entered on shaft 1 OR shaft 2 — the
+  // entered side echoes the raw value, the other side shows the z₁/z₂-converted value
+  // and locks; clearing the entered field resets both (torque_nm = null)
+  "powerflow.torque_shaft1_nm": (s) => torqueT1(s),
+  "powerflow.torque_shaft2_nm": (s) => torqueM2(s),
+  "powerflow.torque_shaft1_locked": (s) =>
+    s.powerflow.torque_nm != null && s.powerflow.torque_shaft !== 1,
+  "powerflow.torque_shaft2_locked": (s) =>
+    s.powerflow.torque_nm != null && s.powerflow.torque_shaft !== 2,
+  "powerflow.power_load1_kw": (s) => {
+    const t1 = torqueT1(s);
+    if (t1 == null) return undefined;
+    return Math.abs(((2 * Math.PI * s.powerflow.speed_shaft1_min1) / 60) * t1) / 1000;
+  },
+  "powerflow.power_load2_kw": (s) => {
+    const m2 = torqueM2(s);
+    if (m2 == null) return undefined;
+    return (
+      Math.abs(
+        ((2 * Math.PI * (s.powerflow.speed_shaft1_min1 * s.stage.teeth_pinion)) /
+          s.stage.teeth_wheel /
+          60) *
+          m2,
+      ) / 1000
+    );
+  },
+  // SSOT chain: the transient-FEM deck torque M₂ [N·mm] IS the Leistungsfluss torque
+  // (FVA behaviour — the Abwälz tab has no own torque input)
+  "fem.torque_gear2_nmm": (s) => {
+    const m2 = torqueM2(s);
+    return m2 == null ? undefined : m2 * 1000;
+  },
   // deck material cards + norm dispatch follow the Werkstoff selection (per slot)
   "fem.gear1_material": (s) => s.materials.gear1_kind,
   "fem.gear2_material": (s) => s.materials.gear2_kind,
   // capacity load case = the Leistungsfluss (T₁ at the pinion, n₁ at shaft [4])
-  "operating.pinion_torque_nm": (s) =>
-    (s.powerflow.torque_antrieb_nm * s.stage.teeth_pinion) / s.stage.teeth_wheel,
+  "operating.pinion_torque_nm": (s) => torqueT1(s),
   "operating.pinion_speed_min1": (s) => s.powerflow.speed_shaft1_min1,
   // N_L = 60·|n₂|·L_H (load cycles of the wheel over the Betriebsdauer)
   "operating.load_cycles": (s) =>
@@ -559,11 +596,11 @@ const DERIVED: Record<string, (s: WorkbenchState) => unknown> = {
     Math.abs((s.powerflow.speed_shaft1_min1 * s.stage.teeth_pinion) / s.stage.teeth_wheel) *
     s.operatingUi.operating_hours,
   // VDI 2736 power = the transmitted power from the Leistungsfluss [W]
-  "operating.power_w": (s) =>
-    Math.abs(
-      ((2 * Math.PI * s.powerflow.speed_shaft1_min1) / 60) *
-        ((s.powerflow.torque_antrieb_nm * s.stage.teeth_pinion) / s.stage.teeth_wheel),
-    ),
+  "operating.power_w": (s) => {
+    const t1 = torqueT1(s);
+    if (t1 == null) return undefined;
+    return Math.abs(((2 * Math.PI * s.powerflow.speed_shaft1_min1) / 60) * t1);
+  },
   // VDI 2736 ambient ϑ₀ "entspricht Öltemperatur" (FVA default mode)
   "operating.ambient_temperature_c": (s) =>
     s.operating.ambient_mode === "equals_oil" ? s.operatingUi.oil_temperature_c : 20.0,
@@ -654,7 +691,8 @@ const DEFAULT_STATE: WorkbenchState = {
     direction_shaft1: "cw",
     load1_type: "abtrieb",
     load2_type: "antrieb",
-    torque_antrieb_nm: 8.0,
+    torque_nm: 8.0,
+    torque_shaft: 2,
     u_load1_mm: 0.0,
     u_load2_mm: 0.0,
   },
@@ -721,6 +759,32 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       const [ns, field] = splitPath(path);
       setState((prev) => {
         const bucket = prev[ns as keyof WorkbenchState] as Record<string, unknown>;
+        // powerflow couplings (one setState patch — no nested set() calls):
+        if (ns === "powerflow") {
+          // Antrieb/Abtrieb are mutually exclusive — flipping one flips the other
+          if (field === "load1_type" || field === "load2_type") {
+            const other = field === "load1_type" ? "load2_type" : "load1_type";
+            const inverse = value === "antrieb" ? "abtrieb" : "antrieb";
+            return {
+              ...prev,
+              powerflow: { ...prev.powerflow, [field]: value, [other]: inverse },
+            };
+          }
+          // ONE torque, entered on either shaft: writing a virtual shaft field stores
+          // the raw value + which shaft it belongs to; an emptied field resets both
+          if (field === "torque_shaft1_nm" || field === "torque_shaft2_nm") {
+            const shaft = field === "torque_shaft1_nm" ? 1 : 2;
+            const num = typeof value === "number" && Number.isFinite(value) ? value : null;
+            return {
+              ...prev,
+              powerflow: {
+                ...prev.powerflow,
+                torque_nm: num,
+                torque_shaft: num == null ? prev.powerflow.torque_shaft : (shaft as 1 | 2),
+              },
+            };
+          }
+        }
         const next = { ...bucket, [field]: value };
         // editing a stage value leaves the kst-E example mode (free parameters from then on)
         if (ns === "stage" && field !== "use_example") next.use_example = false;

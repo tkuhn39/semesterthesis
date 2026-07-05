@@ -51,6 +51,11 @@ class AttributeDef(BaseModel):
     # store binding (dot-path); per_gear attributes carry [gear1, gear2] bindings
     binding: str | None = None
     bindings: tuple[str, str] | None = None
+    # per-column dynamic locking: each column renders locked while its store path is
+    # truthy (Leistungsfluss torque: entering one shaft locks the other)
+    locked_ifs: tuple[str, str] | None = None
+    # emptying the field writes null instead of being ignored (reset semantics)
+    nullable: bool = False
     norm_ref: str | None = None  # e.g. "DIN 21771", "ISO 6336-1:2019 §6", "VDI 2736-2"
     info_de: str | None = None  # short glossary/help text (Legende)
     info_en: str | None = None

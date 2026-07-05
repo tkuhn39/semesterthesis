@@ -207,15 +207,16 @@ function Shell() {
   const nodeTabs: Record<NodeId, TabSpec[]> = useMemo(() => {
     const s = schema;
     const maybe = (spec: TabSpec | null) => (spec ? [spec] : []);
-    // per-gear / per-load column headers from the model-instance table (never hardcoded)
+    // per-gear column headers from the model-instance table (never hardcoded)
     const gearHeads: [string, string] = [
       instanceLabel(wb.model.pinion, locale),
       instanceLabel(wb.model.wheel, locale),
     ];
-    const loadHeads: [string, string] = [
-      instanceLabel(wb.model.load1, locale),
-      instanceLabel(wb.model.load2, locale),
-    ];
+    // load columns use the shaft-1/2 convention (user decision: instance IDs stay in
+    // the store/tree for later multi-stage systems, but a single stage reads clearer
+    // as "Welle 1 / Welle 2" — 1 = left gear, 2 = right gear per ADR-021)
+    const loadHeads: [string, string] =
+      locale === "de" ? ["Welle 1", "Welle 2"] : ["Shaft 1", "Shaft 2"];
     return {
       overview: [{ id: "overview", title: locale === "de" ? "Übersicht" : "Overview", render: () => <OverviewPanel onNavigate={() => setActive("stage")} /> }],
       unit: [

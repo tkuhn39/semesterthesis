@@ -1403,8 +1403,8 @@ ATTRIBUTES: list[AttributeDef] = [
     ),
     AttributeDef(
         id="pf_speed_shaft1",
-        label_de="Drehzahl Welle [4]",
-        label_en="Speed shaft [4]",
+        label_de="Drehzahl Welle 1",
+        label_en="Speed shaft 1",
         symbol="n",
         unit="1/min",
         precision=2,
@@ -1413,16 +1413,16 @@ ATTRIBUTES: list[AttributeDef] = [
     ),
     AttributeDef(
         id="pf_speed_shaft2",
-        label_de="Drehzahl Welle [6]",
-        label_en="Speed shaft [6]",
+        label_de="Drehzahl Welle 2",
+        label_en="Speed shaft 2",
         symbol="n",
         unit="1/min",
         precision=2,
         computed=True,
         binding="powerflow.speed_shaft2_min1",
         norm_ref="n₂ = −n₁·z₁/z₂ (Außenverzahnung)",
-        info_de="Berechnet aus der Übersetzung — Eingabe nur an Welle [4].",
-        info_en="Derived from the ratio — input only at shaft [4].",
+        info_de="Berechnet aus der Übersetzung — Eingabe nur an Welle 1.",
+        info_en="Derived from the ratio — input only at shaft 1.",
     ),
     AttributeDef(
         id="pf_load_type",
@@ -1448,26 +1448,28 @@ ATTRIBUTES: list[AttributeDef] = [
         norm_ref="P = 2π·n/60 · T",
     ),
     AttributeDef(
-        id="pf_torque_abtrieb",
-        label_de="Drehmoment Belastung [16] (Abtrieb)",
-        label_en="Torque load [16] (output)",
-        symbol="T_sc",
+        id="pf_torque",
+        label_de="Drehmoment",
+        label_en="Torque",
+        symbol="T",
         unit="N·m",
         precision=4,
-        computed=True,
-        binding="powerflow.torque_abtrieb_nm",
-        norm_ref="T₁ = M₂·z₁/z₂ (verlustfrei)",
-    ),
-    AttributeDef(
-        id="pf_torque_antrieb",
-        label_de="Drehmoment Belastung [17] (Antrieb)",
-        label_en="Torque load [17] (input)",
-        symbol="T_sc",
-        unit="N·m",
-        precision=4,
-        binding="powerflow.torque_antrieb_nm",
-        info_de="DER Lastfall des Systems — treibt Tragfähigkeit UND das Abwälz-Deck (M₂).",
-        info_en="THE system load case — drives the capacity runs AND the rolling deck (M₂).",
+        per_gear=True,
+        nullable=True,
+        bindings=("powerflow.torque_shaft1_nm", "powerflow.torque_shaft2_nm"),
+        locked_ifs=("powerflow.torque_shaft1_locked", "powerflow.torque_shaft2_locked"),
+        norm_ref="T₁ = T₂·z₁/z₂ (verlustfrei)",
+        info_de=(
+            "DER Lastfall des Systems — Eingabe an Welle 1 ODER Welle 2; die andere "
+            "Seite wird über die Übersetzung berechnet und gesperrt. Feld leeren = "
+            "Reset (beide Felder frei). Treibt Tragfähigkeit, Stufenvariation, "
+            "Dynamik UND das Abwälz-Deck (M₂)."
+        ),
+        info_en=(
+            "THE system load case — enter at shaft 1 OR shaft 2; the other side is "
+            "derived via the ratio and locked. Clearing the field resets both. Drives "
+            "capacity, variation, dynamics AND the rolling deck (M₂)."
+        ),
     ),
     AttributeDef(
         id="pf_u_coordinate",
@@ -2422,18 +2424,19 @@ def _powerflow_tab() -> TabDef:
                 id="io_loads",
                 title_de="Ein- und Ausgangsbelastungen",
                 title_en="Input and output loads",
-                info_de="Es müssen mindestens zwei Belastungskomponenten auf Welle(n) "
-                "vorhanden sein (Antrieb/Abtrieb). Antrieb: T ist Eingabe; alle "
-                "abhängigen Größen (n₂, T-Abtrieb, P) sind berechnet/grau.",
-                info_en="At least two load components (input/output) are required. Input: T "
-                "is entered; every dependent value (n₂, output T, P) is derived/grey.",
+                info_de="Antrieb und Abtrieb schließen sich gegenseitig aus (Umschalten "
+                "wechselt die Gegenseite mit). Drehmoment an Welle 1 ODER Welle 2 "
+                "eingeben — die andere Seite wird über z₁/z₂ berechnet und gesperrt; "
+                "Feld leeren setzt beide zurück.",
+                info_en="Input and output are mutually exclusive (flipping one flips the "
+                "other). Enter the torque at shaft 1 OR shaft 2 — the other side is "
+                "derived via z₁/z₂ and locked; clearing the field resets both.",
                 rows=[
                     RowRef(attr="pf_speed_shaft1"),
                     RowRef(attr="pf_speed_shaft2"),
                     RowRef(attr="pf_load_type"),
                     RowRef(attr="pf_power"),
-                    RowRef(attr="pf_torque_abtrieb"),
-                    RowRef(attr="pf_torque_antrieb"),
+                    RowRef(attr="pf_torque"),
                     RowRef(attr="pf_u_coordinate"),
                 ],
             ),
@@ -2472,7 +2475,7 @@ def _forces_tab() -> TabDef:
                 rows=[
                     RowRef(attr="pf_load_type"),
                     RowRef(attr="pf_power"),
-                    RowRef(attr="pf_torque_antrieb"),
+                    RowRef(attr="pf_torque"),
                 ],
             ),
             SectionDef(
@@ -2606,6 +2609,42 @@ def _operating_data_tab() -> TabDef:
 # dependency rules (norm-referenced; each one is a glossary entry)
 # ------------------------------------------------------------------------------------------
 RULES: list[DependencyRule] = [
+    DependencyRule(
+        id="load_types_mutually_exclusive",
+        when="powerflow.load1_type",
+        effect="compute",
+        targets=["powerflow.load2_type"],
+        description_de=(
+            "Antrieb und Abtrieb schließen sich gegenseitig aus: Umschalten des Typs "
+            "einer Welle stellt die Gegenseite automatisch auf das Komplement (eine "
+            "Welle treibt, die andere wird getrieben)."
+        ),
+        description_en=(
+            "Input and output are mutually exclusive: flipping one shaft's type sets "
+            "the other shaft to the complement (one drives, one is driven)."
+        ),
+        norm_ref="Leistungsbilanz",
+    ),
+    DependencyRule(
+        id="torque_single_input_converts",
+        when="powerflow.torque_shaft1_locked",
+        effect="lock",
+        targets=["powerflow.torque_shaft1_nm", "powerflow.torque_shaft2_nm"],
+        description_de=(
+            "EIN Drehmoment für das System: Eingabe an Welle 1 ODER Welle 2; die "
+            "Gegenseite wird verlustfrei über die Übersetzung berechnet "
+            "(T₁ = T₂·z₁/z₂) und gesperrt. Feld leeren setzt beide zurück. Dieser "
+            "eine Wert speist Tragfähigkeit, Stufenvariation, Dynamik und das "
+            "Abwälz-Deck (M₂)."
+        ),
+        description_en=(
+            "ONE system torque: entered at shaft 1 OR shaft 2; the other side is "
+            "derived loss-free via the ratio (T₁ = T₂·z₁/z₂) and locked. Clearing "
+            "resets both. This single value feeds capacity, variation, dynamics and "
+            "the rolling deck (M₂)."
+        ),
+        norm_ref="Leistungsbilanz (verlustfrei)",
+    ),
     DependencyRule(
         id="center_distance_input_mode",
         when="geometryUi.center_distance_mode",
