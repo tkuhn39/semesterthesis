@@ -58,9 +58,10 @@ body {
 .attr-table input,
 .attr-table select {
   /* wide enough for long magnitudes (1.324e7, 0.3143, 210000) — the old 132px cap
-     clipped values (user report); min-width guards against dense grid columns */
+     clipped values (user report). min-width stays small so dense matrix columns
+     (Stufenvariation Schrittweite) may narrow themselves via their width prop. */
   width: 100%;
-  min-width: 96px;
+  min-width: 56px;
   max-width: 180px;
   border: 1px solid var(--color-zinc-300);
   border-radius: 6px;
@@ -71,7 +72,11 @@ body {
   text-align: right;
 }
 .attr-table select {
+  /* dropdown labels are long FVA phrases ("lineare Verteilung mit Vorgabe der Anzahl") —
+     never clip them to the numeric input width */
   text-align: left;
+  min-width: 220px;
+  max-width: 320px;
 }
 /* FVA-style computed/locked fields: grey background, not editable */
 .attr-table input:disabled,

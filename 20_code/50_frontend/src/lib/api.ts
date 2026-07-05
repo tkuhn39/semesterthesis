@@ -164,13 +164,32 @@ export interface VarSpec {
   steps: number;
 }
 export interface VariationRequest {
+  // FVA Stufenvariation row set (screenshots Stufenvariation_Ansicht-1*.png)
   m_n: VarSpec;
+  alpha_n: VarSpec; // Normaleingriffswinkel Rad 1 (sweepable)
   z1: VarSpec;
   z2: VarSpec;
   x1: VarSpec;
   x2: VarSpec;
   beta_deg: VarSpec;
-  b: VarSpec;
+  b: VarSpec; // Zahnbreite Rad 1
+  // per-gear fixed rows (Rad-1 values drive the sweep kernel; differing Rad-2 values warn)
+  b2_mm: number;
+  h_ap1: number; // Kopfhöhenfaktor (Bezugsprofil)
+  h_ap2: number;
+  h_fp1: number; // Fußhöhenfaktor (Bezugsprofil)
+  h_fp2: number;
+  rho_fp1: number; // Fußausrundungsfaktor (Bezugsprofil)
+  rho_fp2: number;
+  q1_mm: number; // Bearbeitungszugabe
+  q2_mm: number;
+  pr_p1_mm: number; // Protuberanzbetrag
+  pr_p2_mm: number;
+  alpha_pr_p1_deg: number; // Protuberanzwinkel
+  alpha_pr_p2_deg: number;
+  allow_tip_shortening: boolean; // Automatische Kopfkürzung zulassen
+  full_root_round: boolean; // Vollausrundung
+  dedendum_with_clearance: boolean; // Fußhöhen mit Kopfspiel berechnen
   fix_center_distance: boolean;
   center_distance_mm: number;
   normal_pressure_angle_deg: number;

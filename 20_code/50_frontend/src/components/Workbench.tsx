@@ -13,7 +13,7 @@ import { api } from "@/lib/api";
 import { fetchUiSchema, type TabDef, type UiSchema } from "@/lib/uischema";
 import { LocaleProvider, useLocale, useT } from "@/lib/i18n";
 import { StageProvider, useStage } from "@/lib/stage";
-import { useWorkbench } from "@/lib/store";
+import { instanceLabel, useWorkbench, type ModelInstances } from "@/lib/store";
 import { SchemaTab } from "@/components/SchemaTab";
 import { CalcSelectionPanel } from "@/panels/CalcSelectionPanel";
 import { OverviewPanel } from "@/panels/OverviewPanel";
@@ -38,45 +38,46 @@ type NodeId =
 
 interface TreeNode {
   id?: NodeId;
-  label: string; // FVA-exact German node names incl. [n] numbering
+  label: string;
   labelEn?: string;
   children?: TreeNode[];
   badge?: string;
 }
 
-const TREE: TreeNode = {
-  label: "Modell",
-  labelEn: "Model",
-  children: [
-    {
-      id: "unit",
-      label: "Getriebeeinheit [1]",
-      labelEn: "Gear unit [1]",
-      children: [
-        {
-          id: "stage",
-          label: "Stirnradstufe [3]",
-          labelEn: "Cylindrical gear stage [3]",
-          children: [
-            {
-              label: "Welle [4]",
-              labelEn: "Shaft [4]",
-              children: [{ id: "pinion", label: "Stahlritzel [8]", labelEn: "Steel pinion [8]", badge: "Stahl" }],
-            },
-            {
-              label: "Welle [6]",
-              labelEn: "Shaft [6]",
-              children: [{ id: "wheel", label: "Kunststoffrad [9]", labelEn: "Plastic wheel [9]", badge: "PA" }],
-            },
-            { id: "variation", label: "Stufenvariation", labelEn: "Stage variation" },
-          ],
-        },
-      ],
-    },
-    { id: "overview", label: "Übersicht", labelEn: "Overview" },
-    { id: "glossary", label: "Legende & Parameter", labelEn: "Glossary & parameters" },
-  ],
-};
+// The [n] numbers are per-instance model IDs (data from the store, FVA behaviour) —
+// the tree is built from the instance table, never from hardcoded label strings.
+function buildTree(model: ModelInstances, locale: string): TreeNode {
+  const lab = (key: string) => instanceLabel(model[key], locale);
+  return {
+    label: "Modell",
+    labelEn: "Model",
+    children: [
+      {
+        id: "unit",
+        label: lab("gear_unit"),
+        children: [
+          {
+            id: "stage",
+            label: lab("stage"),
+            children: [
+              {
+                label: lab("shaft1"),
+                children: [{ id: "pinion", label: lab("pinion"), badge: "Stahl" }],
+              },
+              {
+                label: lab("shaft2"),
+                children: [{ id: "wheel", label: lab("wheel"), badge: "PA" }],
+              },
+              { id: "variation", label: "Stufenvariation", labelEn: "Stage variation" },
+            ],
+          },
+        ],
+      },
+      { id: "overview", label: "Übersicht", labelEn: "Overview" },
+      { id: "glossary", label: "Legende & Parameter", labelEn: "Glossary & parameters" },
+    ],
+  };
+}
 
 interface TabSpec {
   id: string;
@@ -224,12 +225,13 @@ function Shell() {
   const activeTabId = tabByNode[active] ?? visibleTabs[0]?.id;
   const activeTab = visibleTabs.find((x) => x.id === activeTabId) ?? visibleTabs[0];
 
+  const tree = useMemo(() => buildTree(wb.model, locale), [wb.model, locale]);
   const nodeTitle: Record<NodeId, string> = {
     overview: locale === "de" ? "Übersicht" : "Overview",
-    unit: "Getriebeeinheit [1]",
-    stage: "Stirnradstufe [3]",
-    pinion: "Stahlritzel [8]",
-    wheel: "Kunststoffrad [9]",
+    unit: instanceLabel(wb.model.gear_unit, locale),
+    stage: instanceLabel(wb.model.stage, locale),
+    pinion: instanceLabel(wb.model.pinion, locale),
+    wheel: instanceLabel(wb.model.wheel, locale),
     variation: "Stufenvariation",
     glossary: locale === "de" ? "Legende & Parameter" : "Glossary & parameters",
   };
@@ -269,7 +271,7 @@ function Shell() {
           <div className="text-[10.5px] uppercase tracking-wider text-zinc-400 px-2 pb-1">
             {locale === "de" ? "Modellbaum" : "Model tree"}
           </div>
-          <TreeItem node={TREE} depth={0} active={active} onSelect={setActive} />
+          <TreeItem node={tree} depth={0} active={active} onSelect={setActive} />
         </aside>
 
         {/* editor: node title + FVA tab bar + panel */}

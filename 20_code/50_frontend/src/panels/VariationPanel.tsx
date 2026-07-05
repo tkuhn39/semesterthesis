@@ -21,16 +21,53 @@ import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { useStage } from "@/lib/stage";
 import { useT } from "@/lib/i18n";
 
-type ParamKey = "m_n" | "z1" | "z2" | "x1" | "x2" | "beta_deg" | "b";
-const PARAMS: { key: ParamKey; label: string; unit: string }[] = [
-  { key: "m_n", label: "Modul m_n", unit: "mm" },
-  { key: "z1", label: "Zähnezahl z₁", unit: "" },
-  { key: "z2", label: "Zähnezahl z₂", unit: "" },
-  { key: "x1", label: "Profilv. x₁", unit: "" },
-  { key: "x2", label: "Profilv. x₂", unit: "" },
-  { key: "beta_deg", label: "Schrägung β", unit: "°" },
-  { key: "b", label: "Breite b", unit: "mm" },
+type ParamKey = "m_n" | "alpha_n" | "beta_deg" | "z1" | "z2" | "x1" | "x2" | "b";
+type FixedKey =
+  | "b2_mm"
+  | "h_ap1"
+  | "h_ap2"
+  | "h_fp1"
+  | "h_fp2"
+  | "rho_fp1"
+  | "rho_fp2"
+  | "q1_mm"
+  | "q2_mm"
+  | "pr_p1_mm"
+  | "pr_p2_mm"
+  | "alpha_pr_p1_deg"
+  | "alpha_pr_p2_deg";
+
+// Row set = the FVA Stufenvariation dialog (Stufenvariation_Ansicht-1*.png), same order.
+// kind "spec" rows are sweepable; kind "fixed" rows carry a value the sweep kernel cannot
+// vary (yet) — value editable, Vary checkbox disabled with an honest tooltip.
+type Row =
+  | { kind: "spec"; key: ParamKey; label: string; symbol: string; unit: string }
+  | { kind: "fixed"; key: FixedKey; label: string; symbol: string; unit: string };
+const ROWS: Row[] = [
+  { kind: "spec", key: "m_n", label: "Normalmodul Rad 1", symbol: "m_n", unit: "mm" },
+  { kind: "spec", key: "alpha_n", label: "Normaleingriffswinkel Rad 1", symbol: "α_n", unit: "°" },
+  { kind: "spec", key: "beta_deg", label: "Schrägungswinkel Rad 1", symbol: "β", unit: "°" },
+  { kind: "spec", key: "z1", label: "Zähnezahl Rad 1", symbol: "z", unit: "" },
+  { kind: "spec", key: "z2", label: "Zähnezahl Rad 2", symbol: "z", unit: "" },
+  { kind: "spec", key: "x1", label: "Nennprofilverschiebungsfaktor Rad 1", symbol: "x", unit: "" },
+  { kind: "spec", key: "x2", label: "Nennprofilverschiebungsfaktor Rad 2", symbol: "x", unit: "" },
+  { kind: "spec", key: "b", label: "Zahnbreite Rad 1", symbol: "b", unit: "mm" },
+  { kind: "fixed", key: "b2_mm", label: "Zahnbreite Rad 2", symbol: "b", unit: "mm" },
+  { kind: "fixed", key: "h_ap1", label: "Kopfhöhenfaktor (Bezugsprofil) Rad 1", symbol: "h_aP*", unit: "" },
+  { kind: "fixed", key: "h_ap2", label: "Kopfhöhenfaktor (Bezugsprofil) Rad 2", symbol: "h_aP*", unit: "" },
+  { kind: "fixed", key: "h_fp1", label: "Fußhöhenfaktor (Bezugsprofil) Rad 1", symbol: "h_fP*", unit: "" },
+  { kind: "fixed", key: "h_fp2", label: "Fußhöhenfaktor (Bezugsprofil) Rad 2", symbol: "h_fP*", unit: "" },
+  { kind: "fixed", key: "rho_fp1", label: "Fußausrundungsfaktor (Bezugsprofil) Rad 1", symbol: "ρ_fP*", unit: "" },
+  { kind: "fixed", key: "rho_fp2", label: "Fußausrundungsfaktor (Bezugsprofil) Rad 2", symbol: "ρ_fP*", unit: "" },
+  { kind: "fixed", key: "q1_mm", label: "Bearbeitungszugabe Rad 1", symbol: "q", unit: "mm" },
+  { kind: "fixed", key: "q2_mm", label: "Bearbeitungszugabe Rad 2", symbol: "q", unit: "mm" },
+  { kind: "fixed", key: "pr_p1_mm", label: "Protuberanzbetrag Rad 1", symbol: "pr_P", unit: "mm" },
+  { kind: "fixed", key: "pr_p2_mm", label: "Protuberanzbetrag Rad 2", symbol: "pr_P", unit: "mm" },
+  { kind: "fixed", key: "alpha_pr_p1_deg", label: "Protuberanzwinkel Rad 1", symbol: "α_prP", unit: "°" },
+  { kind: "fixed", key: "alpha_pr_p2_deg", label: "Protuberanzwinkel Rad 2", symbol: "α_prP", unit: "°" },
 ];
+const FIXED_HINT =
+  "Variation dieses Parameters wird vom Sweep-Kernel noch nicht unterstützt — Wert wirkt als Festwert (Rad-1-Wert führt).";
 
 const PC_DIMS: PCDim[] = [
   { key: "z1", label: "z₁" },
@@ -48,12 +85,29 @@ function defaultsFromStage(s: StageParams): VariationRequest {
   const a0 = s.center_distance_mm ?? (s.normal_module_mm * (s.teeth_pinion + s.teeth_wheel)) / 2;
   return {
     m_n: { vary: false, value: s.normal_module_mm, min: s.normal_module_mm / 2, max: s.normal_module_mm * 2, steps: 4 },
+    alpha_n: { vary: false, value: s.normal_pressure_angle_deg, min: s.normal_pressure_angle_deg - 2.5, max: s.normal_pressure_angle_deg + 2.5, steps: 6 },
+    beta_deg: { vary: false, value: s.helix_angle_deg, min: 0.0, max: 25.0, steps: 4 },
     z1: { vary: true, value: s.teeth_pinion, min: Math.max(8, s.teeth_pinion - 10), max: s.teeth_pinion + 10, steps: 21 },
     z2: { vary: false, value: s.teeth_wheel, min: Math.max(8, s.teeth_wheel - 10), max: s.teeth_wheel + 10, steps: 5 },
     x1: { vary: true, value: s.profile_shift_pinion, min: -1.0, max: 1.0, steps: 10 },
     x2: { vary: false, value: s.profile_shift_wheel, min: -1.0, max: 1.0, steps: 5 },
-    beta_deg: { vary: false, value: s.helix_angle_deg, min: 0.0, max: 25.0, steps: 4 },
     b: { vary: false, value: s.face_width_pinion_mm, min: Math.max(5, s.face_width_pinion_mm - 10), max: s.face_width_pinion_mm + 15, steps: 4 },
+    b2_mm: s.face_width_wheel_mm,
+    h_ap1: 1.0,
+    h_ap2: 1.0,
+    h_fp1: s.tool_addendum_factor, // gear h_fP* == tool h_aP0*
+    h_fp2: s.tool_addendum_factor,
+    rho_fp1: s.tool_tip_radius_factor,
+    rho_fp2: s.tool_tip_radius_factor,
+    q1_mm: 0.0,
+    q2_mm: 0.0,
+    pr_p1_mm: 0.0,
+    pr_p2_mm: 0.0,
+    alpha_pr_p1_deg: 0.0,
+    alpha_pr_p2_deg: 0.0,
+    allow_tip_shortening: false,
+    full_root_round: false,
+    dedendum_with_clearance: false,
     fix_center_distance: false,
     center_distance_mm: a0,
     normal_pressure_angle_deg: s.normal_pressure_angle_deg,
@@ -155,71 +209,137 @@ export function VariationPanel() {
   const setSpec = (key: ParamKey, patch: Partial<VarSpec>) =>
     setR({ ...r, [key]: { ...r[key], ...patch } });
   const set = (k: keyof VariationRequest) => (v: number) => setR({ ...r, [k]: v });
+  const setFlag = (k: keyof VariationRequest) => (v: boolean) => setR({ ...r, [k]: v });
+
+  // "Es werden N Varianten berechnet." (FVA footer) — grid: product of the varied steps
+  const variantCount = (() => {
+    if (r.method !== "grid") return r.sample_count;
+    let n = 1;
+    for (const row of ROWS) {
+      if (row.kind !== "spec") continue;
+      const locked =
+        r.fix_center_distance && (row.key === "z1" || row.key === "z2" || row.key === "x2");
+      const s = r[row.key];
+      if (s.vary && !locked && s.steps > 1) n *= s.steps;
+    }
+    return n;
+  })();
 
   return (
-    <div className="grid grid-cols-[380px_1fr] gap-3 items-start">
-      <div className="flex flex-col gap-3">
-        <Section title="Variations-Matrix">
+    // FVA wizard layout: the attribute matrix spans the top (separate Wert AND Minimum
+    // columns like the dialog — self-review finding), results render below after a run
+    <div className="flex flex-col gap-3 items-start max-w-[1100px]">
+      <div className="flex flex-col gap-3 w-full">
+        <Section title="Stufenvariation — Attribute">
+          {/* FVA dialog top checkboxes (Stufenvariation_Ansicht-1.png) */}
+          <div className="p-2 flex flex-col gap-1 border-b border-zinc-100 text-[12px] text-zinc-600">
+            <label className="inline-flex items-center gap-1.5">
+              <input
+                type="checkbox"
+                checked={r.fix_center_distance}
+                onChange={(e) => setFlag("fix_center_distance")(e.target.checked)}
+              />
+              Achsabstand fixieren
+              {r.fix_center_distance && (
+                <Num width={84} value={r.center_distance_mm} onChange={set("center_distance_mm")} />
+              )}
+            </label>
+            <label className="inline-flex items-center gap-1.5" title={FIXED_HINT}>
+              <input
+                type="checkbox"
+                checked={r.allow_tip_shortening}
+                onChange={(e) => setFlag("allow_tip_shortening")(e.target.checked)}
+              />
+              Automatische Kopfkürzung zulassen
+            </label>
+            <label className="inline-flex items-center gap-1.5" title={FIXED_HINT}>
+              <input
+                type="checkbox"
+                checked={r.full_root_round}
+                onChange={(e) => setFlag("full_root_round")(e.target.checked)}
+              />
+              Vollausrundung
+            </label>
+            <label className="inline-flex items-center gap-1.5" title={FIXED_HINT}>
+              <input
+                type="checkbox"
+                checked={r.dedendum_with_clearance}
+                onChange={(e) => setFlag("dedendum_with_clearance")(e.target.checked)}
+              />
+              Fußhöhen mit Kopfspiel berechnen
+            </label>
+          </div>
           <table className="attr-table">
             <thead>
               <tr>
-                <th>Parameter</th>
-                <th>Var.</th>
-                <th>Wert / Min</th>
-                <th>Max</th>
-                <th>Schr.</th>
+                <th>Attribut</th>
+                <th>Fz</th>
+                <th></th>
+                <th>Wert</th>
+                <th>Minimum</th>
+                <th>Maximum</th>
+                <th>Schrittweite</th>
+                <th>Einh.</th>
               </tr>
             </thead>
             <tbody>
-              {PARAMS.map((pp) => {
-                const s = r[pp.key];
+              {ROWS.map((row) => {
+                if (row.kind === "fixed") {
+                  return (
+                    <tr key={row.key} title={FIXED_HINT}>
+                      <td>{row.label}</td>
+                      <td className="wb-num text-zinc-400">{row.symbol}</td>
+                      <td style={{ textAlign: "center" }}>
+                        <input type="checkbox" disabled checked={false} />
+                      </td>
+                      <td>
+                        <Num width={74} value={r[row.key]} onChange={set(row.key)} />
+                      </td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td className="text-zinc-400">{row.unit}</td>
+                    </tr>
+                  );
+                }
+                const s = r[row.key];
                 const locked =
-                  r.fix_center_distance && (pp.key === "z1" || pp.key === "z2" || pp.key === "x2");
+                  r.fix_center_distance &&
+                  (row.key === "z1" || row.key === "z2" || row.key === "x2");
                 return (
-                  <tr key={pp.key} style={{ opacity: locked ? 0.5 : 1 }}>
-                    <td>
-                      {pp.label} <span className="text-zinc-400">{pp.unit}</span>
-                    </td>
+                  <tr key={row.key} style={{ opacity: locked ? 0.5 : 1 }}>
+                    <td>{row.label}</td>
+                    <td className="wb-num text-zinc-400">{row.symbol}</td>
                     <td style={{ textAlign: "center" }}>
                       <input
                         type="checkbox"
                         disabled={locked}
                         checked={s.vary && !locked}
-                        onChange={(e) => setSpec(pp.key, { vary: e.target.checked })}
+                        onChange={(e) => setSpec(row.key, { vary: e.target.checked })}
                       />
                     </td>
                     <td>
-                      <Num
-                        width={78}
-                        value={s.vary && !locked ? s.min : s.value}
-                        onChange={(v) => setSpec(pp.key, s.vary && !locked ? { min: v } : { value: v })}
-                      />
+                      <Num width={74} value={s.value} onChange={(v) => setSpec(row.key, { value: v })} />
                     </td>
                     <td>
-                      <Num width={78} disabled={!s.vary || locked} value={s.max} onChange={(v) => setSpec(pp.key, { max: v })} />
+                      <Num width={74} disabled={!s.vary || locked} value={s.min} onChange={(v) => setSpec(row.key, { min: v })} />
                     </td>
                     <td>
-                      <Num width={56} disabled={!s.vary || locked} value={s.steps} step={1} onChange={(v) => setSpec(pp.key, { steps: v })} />
+                      <Num width={74} disabled={!s.vary || locked} value={s.max} onChange={(v) => setSpec(row.key, { max: v })} />
                     </td>
+                    <td>
+                      <Num width={60} disabled={!s.vary || locked} value={s.steps} step={1} onChange={(v) => setSpec(row.key, { steps: v })} />
+                    </td>
+                    <td className="text-zinc-400">{row.unit}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-          <div className="p-2 flex items-center gap-3 border-t border-zinc-100">
-            <label className="inline-flex items-center gap-1.5 text-[12px] text-zinc-600">
-              <input
-                type="checkbox"
-                checked={r.fix_center_distance}
-                onChange={(e) => setR({ ...r, fix_center_distance: e.target.checked })}
-              />
-              Achsabstand fixieren
-            </label>
-            {r.fix_center_distance && (
-              <Num width={84} value={r.center_distance_mm} onChange={set("center_distance_mm")} />
-            )}
+          <div className="p-2 flex items-center gap-3 border-t border-zinc-100 text-[12px] text-zinc-600">
+            <span>Es werden {variantCount.toLocaleString("de-DE")} Varianten berechnet.</span>
             <select
-              className="border border-zinc-300 rounded-md px-2 py-1 text-[12px]"
+              className="ml-auto border border-zinc-300 rounded-md px-2 py-1 text-[12px]"
               value={r.method}
               onChange={(e) => setR({ ...r, method: e.target.value as VariationRequest["method"] })}
             >
@@ -230,7 +350,9 @@ export function VariationPanel() {
           </div>
         </Section>
 
-        <Section title="Werkstoff & Sicherheiten" defaultOpen={false}>
+        {/* our extension beyond the FVA dialog (user product vision): material matrix per
+            gear + safety targets — the norm dispatch follows the material in the sweep */}
+        <Section title="Werkstoff & Sicherheiten (Erweiterung)" defaultOpen={false}>
           <div className="p-2 flex items-center gap-2 text-[12px] text-zinc-600">
             <span>{t("variation.matrix")}</span>
             {(["pinion_material", "wheel_material"] as const).map((k) => (

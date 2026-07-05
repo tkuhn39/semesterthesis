@@ -149,10 +149,10 @@ class GeometryResponse(BaseModel):
 
 
 def _tip_diameters(stage: GearStage) -> Pair[float]:
-    """d_a from the generation (as cut) or the DIN 21771 nominal fallback."""
-    tip = stage.usable_tip_diameter_mm
-    if tip is not None:
-        return tip
+    """The REAL tip diameter d_a (FVA parity: kst-E wheel 54.022, not the usable d_Na
+    53.788 after the tip edge break) — generation value, else the DIN 21771 nominal."""
+    if stage.generation is not None:
+        return Pair(stage.generation[0].tip_diameter_mm, stage.generation[1].tip_diameter_mm)
     d = stage.reference_diameter_mm
     x = stage.profile_shift
     m = stage.normal_module_mm
@@ -604,14 +604,35 @@ class VarSpec(BaseModel):
 
 
 class VariationRequest(BaseModel):
-    # the macro-geometry matrix (vary → min/max/steps, else fixed at value)
+    # the macro-geometry matrix (vary → min/max/steps, else fixed at value) — the row set
+    # mirrors the FVA Stufenvariation dialog (screenshots Stufenvariation_Ansicht-1*.png)
     m_n: VarSpec = VarSpec(value=2.0, min=1.0, max=4.0)
+    alpha_n: VarSpec = VarSpec(value=20.0, min=17.5, max=22.5)  # Normaleingriffswinkel Rad 1
+    beta_deg: VarSpec = VarSpec(value=0.0, min=0.0, max=25.0)  # Schrägungswinkel Rad 1
     z1: VarSpec = VarSpec(value=24, min=16, max=34, vary=True, steps=19)
     z2: VarSpec = VarSpec(value=60, min=40, max=80)
     x1: VarSpec = VarSpec(value=0.0, min=-0.3, max=0.6, vary=True, steps=10)
     x2: VarSpec = VarSpec(value=0.0, min=-0.3, max=0.6)
-    beta_deg: VarSpec = VarSpec(value=0.0, min=0.0, max=25.0)
-    b: VarSpec = VarSpec(value=20.0, min=10.0, max=40.0)
+    b: VarSpec = VarSpec(value=20.0, min=10.0, max=40.0)  # Zahnbreite Rad 1
+    # per-gear reference-profile / manufacturing rows (FVA dialog; the sweep kernel does
+    # not separate them per gear yet — Rad-1 values drive it, differing Rad-2 values warn)
+    b2_mm: float = 20.0  # Zahnbreite Rad 2
+    h_ap1: float = 1.0  # Kopfhöhenfaktor (Bezugsprofil) Rad 1
+    h_ap2: float = 1.0
+    h_fp1: float = 1.25  # Fußhöhenfaktor (Bezugsprofil) Rad 1
+    h_fp2: float = 1.25
+    rho_fp1: float = 0.38  # Fußausrundungsfaktor (Bezugsprofil) Rad 1
+    rho_fp2: float = 0.38
+    q1_mm: float = 0.0  # Bearbeitungszugabe
+    q2_mm: float = 0.0
+    pr_p1_mm: float = 0.0  # Protuberanzbetrag
+    pr_p2_mm: float = 0.0
+    alpha_pr_p1_deg: float = 0.0  # Protuberanzwinkel
+    alpha_pr_p2_deg: float = 0.0
+    # FVA dialog top checkboxes (geometry-generation options; not in the sweep kernel yet)
+    allow_tip_shortening: bool = False  # Automatische Kopfkürzung zulassen
+    full_root_round: bool = False  # Vollausrundung
+    dedendum_with_clearance: bool = False  # Fußhöhen mit Kopfspiel berechnen
     # center-distance coupling: hold a fixed → teeth locked, x₂ derived from a
     fix_center_distance: bool = False
     center_distance_mm: float = 80.0
@@ -671,6 +692,7 @@ class VariationResponse(BaseModel):
 
 _VAR_LABELS = {
     "m_n": "Module m_n",
+    "alpha_n_deg": "Pressure angle α_n",
     "z1": "Teeth z₁",
     "z2": "Teeth z₂",
     "x1": "Shift x₁",
@@ -710,6 +732,7 @@ def variation(req: VariationRequest) -> VariationResponse:
     wheel_mat = _material(req.wheel_material)  # gear 2
     specs = {
         "m_n": req.m_n,
+        "alpha_n_deg": req.alpha_n,
         "z1": req.z1,
         "z2": req.z2,
         "x1": req.x1,
@@ -717,6 +740,35 @@ def variation(req: VariationRequest) -> VariationResponse:
         "beta_deg": req.beta_deg,
         "b": req.b,
     }
+    # honesty notes: rows the FVA dialog has but the sweep kernel cannot separate yet —
+    # the Rad-1 value drives the sweep, a differing Rad-2 value is reported, never silently
+    extra_warnings: list[str] = []
+    for label, v1, v2 in (
+        ("Zahnbreite b", req.b.value, req.b2_mm),
+        ("Kopfhöhenfaktor h_aP*", req.h_ap1, req.h_ap2),
+        ("Fußhöhenfaktor h_fP*", req.h_fp1, req.h_fp2),
+        ("Fußausrundungsfaktor ρ_fP*", req.rho_fp1, req.rho_fp2),
+        ("Bearbeitungszugabe q", req.q1_mm, req.q2_mm),
+        ("Protuberanzbetrag pr_P", req.pr_p1_mm, req.pr_p2_mm),
+        ("Protuberanzwinkel α_prP", req.alpha_pr_p1_deg, req.alpha_pr_p2_deg),
+    ):
+        if abs(v1 - v2) > 1e-12:
+            extra_warnings.append(
+                f"{label}: per-gear values not separable in the sweep kernel yet — "
+                f"Rad-1 value {v1:g} drives the sweep (Rad 2: {v2:g})."
+            )
+    if any((req.q1_mm, req.q2_mm, req.pr_p1_mm, req.pr_p2_mm)):
+        extra_warnings.append(
+            "Bearbeitungszugabe/Protuberanz are carried as inputs but not evaluated in the "
+            "sweep kernel yet."
+        )
+    for flag, name in (
+        (req.allow_tip_shortening, "Automatische Kopfkürzung"),
+        (req.full_root_round, "Vollausrundung"),
+        (req.dedendum_with_clearance, "Fußhöhen mit Kopfspiel"),
+    ):
+        if flag:
+            extra_warnings.append(f"{name}: option not implemented in the sweep kernel yet.")
     varied: dict[str, Varied] = {}
     fixed: dict[str, float] = {}
     for key, s in specs.items():
@@ -737,9 +789,12 @@ def variation(req: VariationRequest) -> VariationResponse:
         torque_nm=req.torque_nm,
         varied=varied,
         fixed=fixed,
-        normal_pressure_angle_deg=req.normal_pressure_angle_deg,
-        tool_addendum_factor=req.tool_addendum_factor,
-        tool_tip_radius_factor=req.tool_tip_radius_factor,
+        normal_pressure_angle_deg=req.alpha_n.value,
+        # reference-profile semantics: gear h_aP* = addendum, gear h_fP* = tool h_aP0*,
+        # gear ρ_fP* = tool tip radius (Rad-1 values drive the sweep, see warnings above)
+        addendum_factor=req.h_ap1,
+        tool_addendum_factor=req.h_fp1,
+        tool_tip_radius_factor=req.rho_fp1,
         root_minimum_safety=req.root_minimum_safety,
         flank_minimum_safety=req.flank_minimum_safety,
     )
@@ -756,7 +811,7 @@ def variation(req: VariationRequest) -> VariationResponse:
             return batch[key] if key in batch else np.full(size, fixed[key])
 
         beta_r = np.radians(_col("beta_deg"))
-        alpha_n = np.radians(req.normal_pressure_angle_deg)
+        alpha_n = np.radians(_col("alpha_n_deg"))  # sweepable α_n (per variant)
         m_t = _col("m_n") / np.cos(beta_r)
         alpha_t = np.arctan(np.tan(alpha_n) / np.cos(beta_r))
         a_ref = (_col("z1") + _col("z2")) * m_t / 2.0
@@ -775,13 +830,18 @@ def variation(req: VariationRequest) -> VariationResponse:
     p = res.parameters
     overlap = np.broadcast_to(res.overlap_ratio, (n,))
     beta = batch["beta_deg"] if "beta_deg" in batch else np.full(n, fixed.get("beta_deg", 0.0))
+    alpha = (
+        batch["alpha_n_deg"]
+        if "alpha_n_deg" in batch
+        else np.full(n, fixed.get("alpha_n_deg", req.alpha_n.value))
+    )
     geo = kernel.mesh_geometry(
         normal_module_mm=p["m_n"],
         teeth_pinion=p["z1"],
         teeth_wheel=p["z2"],
         profile_shift_pinion=p["x1"],
         profile_shift_wheel=p["x2"],
-        normal_pressure_angle=np.radians(req.normal_pressure_angle_deg),
+        normal_pressure_angle=np.radians(alpha),
         helix_angle=np.radians(beta),
         face_width_mm=p["b"],
     )

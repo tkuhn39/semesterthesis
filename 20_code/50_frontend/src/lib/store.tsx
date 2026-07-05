@@ -30,6 +30,11 @@ export interface FemState {
   fasten_top: boolean;
   fasten_bottom: boolean;
   align_contact: boolean;
+  result_in_model: boolean;
+  auto_smoothing: boolean;
+  expert_stirak: boolean;
+  odb_path: string | null; // set after a solver run (roadmap steps 4/5)
+  result_path: string | null;
   face_layers: number;
   refine_root: number;
   refine_flank: number;
@@ -59,6 +64,11 @@ const FEM_DEFAULTS: FemState = {
   fasten_top: false,
   fasten_bottom: false,
   align_contact: true,
+  result_in_model: false,
+  auto_smoothing: true,
+  expert_stirak: false,
+  odb_path: null,
+  result_path: null,
   face_layers: 6,
   refine_root: 1,
   refine_flank: 1,
@@ -87,6 +97,36 @@ export interface ShaftUiState {
   rotation_negative_u_deg: number;
 }
 
+// Model instances: the [n] numbers on the tree nodes are per-instance IDs the model
+// assigns on insertion (FVA behaviour) — data, never hardcoded label strings. The default
+// model mirrors the kst-E example project (IDs as in the reference screenshots); a model
+// editor can renumber/extend this later.
+export interface ModelInstance {
+  id: number;
+  type: string;
+  name_de: string;
+  name_en: string;
+}
+export type ModelInstances = Record<string, ModelInstance>;
+const MODEL_DEFAULTS: ModelInstances = {
+  gear_unit: { id: 1, type: "gear_unit", name_de: "Getriebeeinheit", name_en: "Gear unit" },
+  housing: { id: 2, type: "housing", name_de: "Gehäuse", name_en: "Housing" },
+  stage: { id: 3, type: "cylindrical_mesh", name_de: "Stirnradstufe", name_en: "Cylindrical gear stage" },
+  shaft1: { id: 4, type: "shaft", name_de: "Welle", name_en: "Shaft" },
+  shaft2: { id: 6, type: "shaft", name_de: "Welle", name_en: "Shaft" },
+  pinion: { id: 8, type: "cylindrical_gear", name_de: "Stahlritzel", name_en: "Steel pinion" },
+  wheel: { id: 9, type: "cylindrical_gear", name_de: "Kunststoffrad", name_en: "Plastic wheel" },
+  load1: { id: 16, type: "force", name_de: "Belastung", name_en: "Load" },
+  load2: { id: 17, type: "force", name_de: "Belastung", name_en: "Load" },
+  correction: { id: 34, type: "gear_correction", name_de: "Flankenmodifikation", name_en: "Flank modification" },
+  wheel_body: { id: 40, type: "wheel_body_cylindrical_gear", name_de: "Radkörper Stirnrad", name_en: "Wheel body" },
+};
+
+/** "Getriebeeinheit [1]" — instance label in the FVA notation, from data. */
+export function instanceLabel(inst: ModelInstance, locale: string): string {
+  return `${locale === "de" ? inst.name_de : inst.name_en} [${inst.id}]`;
+}
+
 interface WorkbenchState {
   stage: StageParams;
   calc: Record<string, boolean>; // Berechnungsauswahl (method id → selected)
@@ -94,6 +134,7 @@ interface WorkbenchState {
   geometryUi: GeometryUiState;
   operatingUi: OperatingUiState;
   shaft: ShaftUiState;
+  model: ModelInstances; // tree instances with their [n] IDs (data, not hardcoded)
   label: string;
 }
 
@@ -128,6 +169,7 @@ const DEFAULT_STATE: WorkbenchState = {
     oil_temperature_c: 80.0,
   },
   shaft: { u_coordinate_gear1_mm: 23.5, u_coordinate_gear2_mm: 24.5, rotation_negative_u_deg: 0 },
+  model: MODEL_DEFAULTS,
   label: "kst-E",
 };
 

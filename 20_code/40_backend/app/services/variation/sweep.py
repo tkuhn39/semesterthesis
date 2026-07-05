@@ -47,7 +47,8 @@ class VariationSpec:
     """The parameter space and the fixed design context of a Stufenvariation.
 
     Swept parameters live in ``varied`` (keyed by ``m_n``, ``z1``, ``z2``, ``x1``,
-    ``x2``, ``beta_deg``, ``b``); everything not varied takes its ``fixed`` value.
+    ``x2``, ``beta_deg``, ``b``, ``alpha_n_deg``); everything not varied takes its
+    ``fixed`` value (``alpha_n_deg`` falls back to ``normal_pressure_angle_deg``).
     """
 
     materials: tuple[Material, Material]
@@ -129,10 +130,17 @@ def _a(value: float) -> Array:
 def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
     """Evaluate a batch (grid or sample) through the kernel with material dispatch."""
     warnings: list[str] = []
-    alpha_n = _a(np.radians(spec.normal_pressure_angle_deg))
 
     def p(name: str) -> Array:
         return spec._value(name, grid)
+
+    # α_n is sweepable (FVA Stufenvariation row "Normaleingriffswinkel Rad 1"): the whole
+    # kernel is vectorized in alpha_n already — an "alpha_n_deg" grid/fixed entry wins over
+    # the spec scalar.
+    if "alpha_n_deg" in grid or "alpha_n_deg" in spec.fixed:
+        alpha_n = np.radians(p("alpha_n_deg"))
+    else:
+        alpha_n = _a(np.radians(spec.normal_pressure_angle_deg))
 
     m_n = p("m_n")
     z1, z2 = p("z1"), p("z2")

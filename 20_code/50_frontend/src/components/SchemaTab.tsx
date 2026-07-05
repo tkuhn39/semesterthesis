@@ -79,6 +79,16 @@ function ValueCell({
       />
     );
   }
+  if (attr.kind === "text" || attr.kind === "path") {
+    return (
+      <input
+        type="text"
+        value={String(value ?? "")}
+        disabled={disabled}
+        onChange={(e) => wb.set(binding, e.target.value)}
+      />
+    );
+  }
   if (attr.kind === "enum") {
     return (
       <select

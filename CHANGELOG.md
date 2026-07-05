@@ -9,7 +9,25 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
-_Nothing yet._
+### Changed (self-review round 1 — own Playwright screenshots vs. the FVA dialogs)
+- **Stufenvariation attribute matrix = the FVA dialog row set** (Stufenvariation_Ansicht-1):
+  α_n/β/z/x/b per FVA naming plus the per-gear reference-profile rows (h_aP*, h_fP*, ρ_fP*,
+  Bearbeitungszugabe q, Protuberanz pr_P/α_prP, Zahnbreite Rad 2) and the four dialog
+  checkboxes; separate Wert/Minimum/Maximum/Schrittweite/Einh. columns (values were clipped
+  by the old two-column layout); "Es werden N Varianten berechnet." footer. α_n is now
+  sweepable end-to-end (`alpha_n_deg` in the sweep kernel); per-gear values the kernel
+  cannot separate yet surface as explicit response warnings instead of silently averaging.
+- **Tree instance IDs are data**: the `[n]` numbers come from the model-instance table in
+  the store (kst-E defaults 1/3/4/6/8/9/…, FVA assigns them on insertion) — no hardcoded
+  label strings.
+- Dyn. Abwälzen (FEM) tab completed against its screenshot: FE-Löser-Ergebnisdatei switch,
+  greyed odb/result path rows, Automatische Netzglättung, Expertenfunktion section.
+- Fixes from the screenshot round: dropdowns no longer truncate their FVA phrases
+  (select min-width), `/api/geometry` returns the REAL tip diameter d_a (kst-E wheel
+  54.022, not the usable d_Na 53.788), Schmierstofftemperatur binding (showed 0 instead
+  of 80 °C), dev CORS for localhost:3000 + `NEXT_PUBLIC_API_BASE_URL` in the shared .env.
+- New tooling: `50_frontend/scripts/self-screenshots.mjs` (Playwright walk through every
+  tree node/tab for the self-review loop).
 
 ## [0.5.0] - 2026-07-04
 
