@@ -15,6 +15,7 @@ import { LocaleProvider, useLocale, useT } from "@/lib/i18n";
 import { StageProvider, useStage } from "@/lib/stage";
 import { instanceLabel, useWorkbench, type ModelInstances } from "@/lib/store";
 import { SchemaTab } from "@/components/SchemaTab";
+import { QuickView } from "@/components/QuickView";
 import { CalcSelectionPanel } from "@/panels/CalcSelectionPanel";
 import { OverviewPanel } from "@/panels/OverviewPanel";
 import { DesignPanel } from "@/panels/DesignPanel";
@@ -102,7 +103,13 @@ interface TabSpec {
   visibleIfMethod?: string | null;
 }
 
-function schemaTab(schema: UiSchema, componentId: string, tabId: string, locale: string): TabSpec | null {
+function schemaTab(
+  schema: UiSchema,
+  componentId: string,
+  tabId: string,
+  locale: string,
+  pairHeaders?: [string, string],
+): TabSpec | null {
   const comp = schema.components.find((c) => c.id === componentId);
   const tab: TabDef | undefined = comp?.tabs.find((t) => t.id === tabId);
   if (!tab) return null;
@@ -110,7 +117,7 @@ function schemaTab(schema: UiSchema, componentId: string, tabId: string, locale:
     id: tabId,
     title: locale === "de" ? tab.title_de : tab.title_en,
     visibleIfMethod: tab.visible_if_method,
-    render: () => <SchemaTab schema={schema} tab={tab} />,
+    render: () => <SchemaTab schema={schema} tab={tab} pairHeaders={pairHeaders} />,
   };
 }
 
@@ -195,6 +202,15 @@ function Shell() {
   const nodeTabs: Record<NodeId, TabSpec[]> = useMemo(() => {
     const s = schema;
     const maybe = (spec: TabSpec | null) => (spec ? [spec] : []);
+    // per-gear / per-load column headers from the model-instance table (never hardcoded)
+    const gearHeads: [string, string] = [
+      instanceLabel(wb.model.pinion, locale),
+      instanceLabel(wb.model.wheel, locale),
+    ];
+    const loadHeads: [string, string] = [
+      instanceLabel(wb.model.load1, locale),
+      instanceLabel(wb.model.load2, locale),
+    ];
     return {
       overview: [{ id: "overview", title: locale === "de" ? "Übersicht" : "Overview", render: () => <OverviewPanel onNavigate={() => setActive("stage")} /> }],
       unit: [
@@ -208,8 +224,8 @@ function Shell() {
             ]
           : []),
         // FVA tab order: Leistungsfluss · Kräfte und Momente · Betriebsdaten · Steuerparameter
-        ...(s ? maybe(schemaTab(s, "gear_unit", "powerflow", locale)) : []),
-        ...(s ? maybe(schemaTab(s, "gear_unit", "forces", locale)) : []),
+        ...(s ? maybe(schemaTab(s, "gear_unit", "powerflow", locale, loadHeads)) : []),
+        ...(s ? maybe(schemaTab(s, "gear_unit", "forces", locale, loadHeads)) : []),
         ...(s ? maybe(schemaTab(s, "gear_unit", "operating_data", locale)) : []),
         ...(s ? maybe(schemaTab(s, "gear_unit", "control", locale)) : []),
       ],
@@ -217,7 +233,7 @@ function Shell() {
         // FVA tab order: Geometrie · Toleranzen · Tragfähigkeit · VDI 2736 · Werkstoff ·
         // Schmierstoff · Lastverteilung (FEM) · Dyn. Abwälzen (FEM) — then our extras
         { id: "geometry", title: "Geometrie", render: () => <GeometryPanel /> },
-        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "tolerances", locale)) : []),
+        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "tolerances", locale, gearHeads)) : []),
         ...(s
           ? [
               {
@@ -229,7 +245,7 @@ function Shell() {
                     ?.tabs.find((x) => x.id === "capacity_inputs");
                   return (
                     <div className="flex flex-col gap-3">
-                      {tab && <SchemaTab schema={s} tab={tab} />}
+                      {tab && <SchemaTab schema={s} tab={tab} pairHeaders={gearHeads} />}
                       <CapacityPanel />
                     </div>
                   );
@@ -237,11 +253,11 @@ function Shell() {
               } satisfies TabSpec,
             ]
           : [{ id: "capacity", title: locale === "de" ? "Tragfähigkeit" : "Load capacity", render: () => <CapacityPanel /> }]),
-        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "vdi2736", locale)) : []),
-        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "material", locale)) : []),
-        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "lubricant", locale)) : []),
-        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "loaddist_fem", locale)) : []),
-        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "transient_fem", locale)) : []),
+        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "vdi2736", locale, gearHeads)) : []),
+        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "material", locale, gearHeads)) : []),
+        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "lubricant", locale, gearHeads)) : []),
+        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "loaddist_fem", locale, gearHeads)) : []),
+        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "transient_fem", locale, gearHeads)) : []),
         { id: "design", title: locale === "de" ? "Auslegung" : "Design", render: () => <DesignPanel /> },
         { id: "dynamics", title: locale === "de" ? "Dynamikfaktoren" : "Dynamic factors", render: () => <DynamicsPanel /> },
         { id: "pair", title: locale === "de" ? "FE-Abwälzmodell (Ansicht)" : "FE rolling model (view)", render: () => <PairPanel /> },
@@ -270,7 +286,7 @@ function Shell() {
         { id: "glossary", title: locale === "de" ? "Legende & Parameter" : "Glossary & parameters", render: () => <GlossaryPanel /> },
       ],
     };
-  }, [schema, locale]);
+  }, [schema, locale, wb.model]);
 
   // Berechnungsauswahl drives tab visibility (state preserved while hidden)
   const visibleTabs = (nodeTabs[active] ?? []).filter(
@@ -358,6 +374,16 @@ function Shell() {
             {activeTab?.render() ?? null}
           </div>
         </main>
+
+        {/* Ergebnis-Schnellansicht (FVA right panel) — ISO 21771 tables of the ONE stage */}
+        {["unit", "stage", "pinion", "wheel", "correction", "wheel_body"].includes(active) && (
+          <aside className="w-[390px] shrink-0 border-l border-zinc-200 bg-zinc-50 overflow-y-auto p-2 hidden xl:block">
+            <div className="text-[10.5px] uppercase tracking-wider text-zinc-400 px-2 pb-1">
+              {locale === "de" ? "Ergebnis-Schnellansicht" : "Result quick view"}
+            </div>
+            <QuickView />
+          </aside>
+        )}
       </div>
 
       {/* messages strip */}

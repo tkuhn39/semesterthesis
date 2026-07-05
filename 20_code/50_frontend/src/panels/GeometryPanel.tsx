@@ -9,11 +9,14 @@ import { useEffect, useState } from "react";
 import { api, type GeometryResponse, type StageParams } from "@/lib/api";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { useStage } from "@/lib/stage";
+import { useWorkbench } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 
 export function GeometryPanel() {
   const t = useT();
   const { stage, setStage } = useStage();
+  const wb = useWorkbench();
+  const aMode = wb.geometryUi.center_distance_mode;
   const [res, setRes] = useState<GeometryResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -41,7 +44,7 @@ export function GeometryPanel() {
     setStage({ ...stage, use_example: false, [k]: v });
 
   return (
-    <div className="grid grid-cols-[400px_1fr] gap-3 items-start">
+    <div className="grid grid-cols-[460px_1fr] gap-3 items-start">
       <div className="flex flex-col gap-3">
         <Section title={t("geo.main")}>
           <table className="attr-table">
@@ -92,6 +95,35 @@ export function GeometryPanel() {
                 <td className="wb-num text-zinc-400">b</td>
                 <td><Num value={stage.face_width_pinion_mm} onChange={set("face_width_pinion_mm")} /></td>
                 <td><Num value={stage.face_width_wheel_mm} onChange={set("face_width_wheel_mm")} /></td>
+                <td className="text-zinc-400">mm</td>
+              </tr>
+              <tr>
+                <td>Achsabstand definieren</td>
+                <td></td>
+                <td colSpan={2}>
+                  <select
+                    value={aMode}
+                    onChange={(e) => wb.set("geometryUi.center_distance_mode", e.target.value)}
+                  >
+                    <option value="a_and_x">Achsabstand und Profilverschiebung definieren</option>
+                    <option value="from_x">Aus den Profilverschiebungen berechnen</option>
+                  </select>
+                </td>
+                <td></td>
+              </tr>
+              <tr title="DIN 21771: inv α_wt = inv α_t + 2·Σx·tan α_n/Σz — bei 'aus x berechnen' ist a Ergebnis und gesperrt">
+                <td>Achsabstand</td>
+                <td className="wb-num text-zinc-400">a</td>
+                <td colSpan={2}>
+                  {aMode === "from_x" ? (
+                    <input type="number" disabled value={res?.working_center_distance_mm ?? ""} />
+                  ) : (
+                    <Num
+                      value={stage.center_distance_mm ?? res?.working_center_distance_mm ?? 0}
+                      onChange={set("center_distance_mm")}
+                    />
+                  )}
+                </td>
                 <td className="text-zinc-400">mm</td>
               </tr>
             </tbody>

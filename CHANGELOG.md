@@ -9,6 +9,18 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (Ergebnis-Schnellansicht + Achsabstand-Modus rule + per-gear column headers)
+- **Ergebnis-Schnellansicht** (FVA right panel): the ISO 21771 Hauptgeometrie and
+  Durchmesser tables of the ACTIVE stage (incl. u, b_gem, ε-values and the derived working
+  pitch diameters d_w = 2a·z_i/Σz — kst-E 51.495/52.505 like the FVA quick view),
+  recomputed live on every stage change; shown for all component nodes on wide screens.
+- **Achsabstand-Modus** (DIN 21771 lock rule): the Geometrie tab carries the FVA dropdown
+  "Achsabstand definieren" — in "aus den Profilverschiebungen berechnen" mode the a field
+  turns computed/grey and the effective stage sends a = null so the backend derives it
+  from inv α_wt(Σx); in "definieren" mode a is the input.
+- Schema tables now show the per-gear/per-load **column headers from the instance table**
+  (Stahlritzel [8] / Kunststoffrad [9], Belastung [16] / [17]) instead of anonymous columns.
+
 ### Added (Flankenmodifikation [34] + Radkörper Stirnrad [40] tree nodes)
 - **Flankenmodifikation** editor with the five FVA tabs (Allgemeine Angaben, Flankenlinie,
   Stirnprofil, Weitere Formen, Matrix): every modification as consider-checkbox + form

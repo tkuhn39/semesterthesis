@@ -228,10 +228,19 @@ function Row({ schema, attrId }: { schema: UiSchema; attrId: string }) {
   );
 }
 
-function SectionBlock({ schema, section }: { schema: UiSchema; section: SectionDef }) {
+function SectionBlock({
+  schema,
+  section,
+  pairHeaders,
+}: {
+  schema: UiSchema;
+  section: SectionDef;
+  pairHeaders?: [string, string];
+}) {
   const { locale } = useLocale();
   const wb = useWorkbench();
   if (section.visible_if && !wb.get(section.visible_if)) return null;
+  const hasPair = section.rows.some((r) => schema.attributes[r.attr]?.per_gear);
   return (
     <div className="border border-zinc-200 rounded-lg overflow-hidden bg-white">
       <div className="px-3 py-1.5 text-[12px] font-semibold text-sky-800 bg-sky-50 border-b border-zinc-200">
@@ -247,7 +256,14 @@ function SectionBlock({ schema, section }: { schema: UiSchema; section: SectionD
           <tr>
             <th>Attribut</th>
             <th>Fz</th>
-            <th colSpan={2}></th>
+            {hasPair && pairHeaders ? (
+              <>
+                <th>{pairHeaders[0]}</th>
+                <th>{pairHeaders[1]}</th>
+              </>
+            ) : (
+              <th colSpan={2}></th>
+            )}
             <th>Einheit</th>
           </tr>
         </thead>
@@ -262,11 +278,19 @@ function SectionBlock({ schema, section }: { schema: UiSchema; section: SectionD
   );
 }
 
-export function SchemaTab({ schema, tab }: { schema: UiSchema; tab: TabDef }) {
+export function SchemaTab({
+  schema,
+  tab,
+  pairHeaders,
+}: {
+  schema: UiSchema;
+  tab: TabDef;
+  pairHeaders?: [string, string];
+}) {
   return (
     <div className="flex flex-col gap-3 max-w-[860px]">
       {tab.sections.map((s) => (
-        <SectionBlock key={s.id} schema={schema} section={s} />
+        <SectionBlock key={s.id} schema={schema} section={s} pairHeaders={pairHeaders} />
       ))}
     </div>
   );

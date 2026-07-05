@@ -561,6 +561,10 @@ function effectiveStage(s: WorkbenchState): StageParams {
   };
   return {
     ...s.stage,
+    // Achsabstand-Modus (DIN 21771): "aus den Profilverschiebungen berechnen" sends
+    // a = null so the backend derives it from inv α_wt(Σx) — the a field locks/greys
+    center_distance_mm:
+      s.geometryUi.center_distance_mode === "from_x" ? null : s.stage.center_distance_mm,
     tooth_width_allowance_pinion_mm: (s.tol.awe1_um + s.tol.awi1_um) / 2 / 1000,
     tooth_width_allowance_wheel_mm: (s.tol.awe2_um + s.tol.awi2_um) / 2 / 1000,
     // Flankenmodifikation [34] sits at the pinion (kst-E tree); "beide Flanken gleich"
