@@ -15,6 +15,23 @@ import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { FilletEditor, ManufacturabilityNote } from "@/panels/ToothFormPanel";
 import { useFmt, useT } from "@/lib/i18n";
 
+interface Refine {
+  root: number;
+  flank: number;
+  thickness: number;
+}
+interface Effective {
+  root: number;
+  flank: number;
+  thickness: number;
+}
+
+const toMeshRefine = (r: Refine) => ({
+  refine_root: r.root,
+  refine_flank: r.flank,
+  refine_thickness: r.thickness,
+});
+
 export function PairPanel() {
   const t = useT();
   const fm = useFmt();
@@ -23,8 +40,11 @@ export function PairPanel() {
   const [pair, setPair] = useState<PairAssemblyResponse | null>(null);
   const [position, setPosition] = useState(0); // Wälzstellung k (continuous 0 … n−1)
   const [layers, setLayers] = useState(6);
-  const [refineRoot, setRefineRoot] = useState(1);
-  const [refineFlank, setRefineFlank] = useState(1);
+  // FVA mesh-fineness dialog PER GEAR (user point 7): root = Zahnfuß, flank = Zahnhöhe,
+  // thickness = Zahndicke (factors on the reference topology); Zahnbreite = layers, shared
+  const [refine1, setRefine1] = useState<Refine>({ root: 1, flank: 1, thickness: 1 });
+  const [refine2, setRefine2] = useState<Refine>({ root: 1, flank: 1, thickness: 1 });
+  const [eff, setEff] = useState<Record<1 | 2, Effective | null>>({ 1: null, 2: null });
   // root-fillet strategy PER GEAR, chosen BEFORE generating the pair (user point 6,
   // 2026-07-06) — drives the preview mesh AND the deck identically
   const [filletGear1, setFilletGear1] = useState<FilletSpec>({ kind: "standard" });
@@ -61,8 +81,12 @@ export function PairPanel() {
     n_roll_positions: rollPositions,
     rotation_sense: wb.get("fem.rotation_sense") as "cw" | "ccw",
     roll_pitches: wb.fem.roll_pitches,
-    refine_root: refineRoot,
-    refine_flank: refineFlank,
+    refine_root: refine1.root,
+    refine_flank: refine1.flank,
+    refine_thickness: refine1.thickness,
+    refine_root_gear2: refine2.root,
+    refine_flank_gear2: refine2.flank,
+    refine_thickness_gear2: refine2.thickness,
     axial_offset_gear1_mm: offsetGear1,
     axial_offset_gear2_mm: offsetGear2,
     steel_shell: steelShell,
@@ -79,9 +103,34 @@ export function PairPanel() {
 
   const generate = () =>
     guard("pair", async () => {
-      const res = await meshApi.pair(deckPayload());
+      // assembly + the effective per-tooth element counts of both 2D sections in parallel
+      const [res, p1, p2] = await Promise.all([
+        meshApi.pair(deckPayload()),
+        meshApi.preview({ stage, gear: 1, ...toMeshRefine(refine1), fillet: filletGear1 }),
+        meshApi.preview({ stage, gear: 2, ...toMeshRefine(refine2), fillet: filletGear2 }),
+      ]);
       setPair(res);
       setPosition(0); // start of the roll = the deck's edge-tooth start position
+      setEff({
+        1: { root: p1.elements_root, flank: p1.elements_flank, thickness: p1.elements_thickness },
+        2: { root: p2.elements_root, flank: p2.elements_flank, thickness: p2.elements_thickness },
+      });
+    });
+
+  // 2D quick convergence per gear (user point 7): preseed root/flank factors with the
+  // converged level of the native plane-FE check
+  const preseed = (gear: 1 | 2) =>
+    guard(`conv${gear}`, async () => {
+      const [root, flank] = await Promise.all([
+        meshApi.convergence(stage, gear, "root"),
+        meshApi.convergence(stage, gear, "flank"),
+      ]);
+      const setR = gear === 1 ? setRefine1 : setRefine2;
+      setR((r) => ({
+        ...r,
+        root: root.converged_level ?? r.root,
+        flank: flank.converged_level ?? r.flank,
+      }));
     });
 
   const downloadDeck = () =>
@@ -111,37 +160,73 @@ export function PairPanel() {
         </div>
 
         <Section title={t("mesh.density")}>
+          {/* FVA mesh-fineness dialog per gear: factor dropdowns + effective per-tooth
+              counts (after generating); Zahnbreite (layers) is shared like the deck */}
           <table className="attr-table">
+            <thead>
+              <tr>
+                <th>{t("common.attribute")}</th>
+                <th></th>
+                <th>{t("pair.gear1")}</th>
+                <th>{t("pair.gear2")}</th>
+              </tr>
+            </thead>
             <tbody>
-              <AttrRow label={t("mesh.densityRoot")} symbol="f_Fuß" unit="×">
-                <td>
-                  <select value={refineRoot} onChange={(e) => setRefineRoot(Number(e.target.value))}>
-                    {[1, 2, 3].map((v) => (
-                      <option key={v} value={v}>
-                        {v}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-              </AttrRow>
-              <AttrRow label={t("mesh.densityFlank")} symbol="f_Flanke" unit="×">
-                <td>
-                  <select value={refineFlank} onChange={(e) => setRefineFlank(Number(e.target.value))}>
-                    {[1, 2, 3].map((v) => (
-                      <option key={v} value={v}>
-                        {v}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-              </AttrRow>
-              <AttrRow label={t("mesh.layers")} symbol="n_breite" unit="–">
-                <td>
+              {(
+                [
+                  ["root", t("mesh.elemsRoot"), "f_Fuß"],
+                  ["flank", t("mesh.elemsHeight"), "f_Höhe"],
+                  ["thickness", t("mesh.elemsThickness"), "f_Dicke"],
+                ] as const
+              ).map(([key, label, symbol]) => (
+                <AttrRow key={key} label={label} symbol={symbol} unit="">
+                  {([1, 2] as const).map((gear) => {
+                    const refine = gear === 1 ? refine1 : refine2;
+                    const setRefine = gear === 1 ? setRefine1 : setRefine2;
+                    const effective = eff[gear];
+                    return (
+                      <td key={gear}>
+                        <span className="inline-flex items-center gap-1.5">
+                          <select
+                            value={refine[key]}
+                            onChange={(e) =>
+                              setRefine({ ...refine, [key]: Number(e.target.value) })
+                            }
+                          >
+                            {[1, 2, 3].map((v) => (
+                              <option key={v} value={v}>
+                                ×{v}
+                              </option>
+                            ))}
+                          </select>
+                          {effective && (
+                            <span
+                              className="wb-num text-[11px] text-zinc-500 whitespace-nowrap"
+                              title={t("mesh.effective")}
+                            >
+                              ≙ {effective[key]}
+                            </span>
+                          )}
+                        </span>
+                      </td>
+                    );
+                  })}
+                </AttrRow>
+              ))}
+              <AttrRow label={t("mesh.elemsWidth")} symbol="n_breite" unit="–">
+                <td colSpan={2}>
                   <Num value={layers} onChange={setLayers} step={1} />
                 </td>
               </AttrRow>
             </tbody>
           </table>
+          <div className="p-2 flex items-center gap-2 border-t border-zinc-100">
+            {([1, 2] as const).map((gear) => (
+              <Btn key={gear} onClick={() => preseed(gear)} busy={busy === `conv${gear}`}>
+                {t("mesh.preseed")} · {t(`pair.gear${gear}`)}
+              </Btn>
+            ))}
+          </div>
         </Section>
 
         <Section title={t("pair.axial")}>

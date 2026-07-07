@@ -37,7 +37,7 @@ body.
 | ADR-016 | Native ISO 1328-1 accuracy-grade tolerances (grade → deviations) | Accepted | 2026-06-18 |
 | ADR-017 | FE rolling-model mesh: ρ_F-arc root, transfinite tooth, all-quad body fan | Accepted | 2026-06-24 |
 | ADR-018 | Block-structured FVA/STIRAK gear mesh on a fixed scaffold (MESHING_SPEC.md) | Superseded by ADR-019 | 2026-07-03 |
-| ADR-019 | Reference-topology transplant mesher: mined ground truth, canonical symmetry, chord density, quick FE, fillet strategies | Accepted | 2026-07-03 |
+| ADR-019 | Reference-topology transplant mesher: mined ground truth, canonical symmetry, chord density, quick FE, fillet strategies (amended: Zahndicke chord group, effective counts, per-gear deck fineness) | Accepted | 2026-07-07 |
 | ADR-020 | Next.js workbench frontend (FVA layout language, Geist, static export; amended: backend-served pair assembly, ortho + CATIA viewports) | Accepted | 2026-07-07 |
 | ADR-021 | Deck gear numbering follows the stage input order; mid-plane-centred extrusion with parametric axial offsets (amended: rig-view slot layout + Fesselung parity + per-position torque cycle, edge start, position series) | Accepted | 2026-07-06 |
 
@@ -725,6 +725,18 @@ refinement invariants, fillet tangency/clearance/stress ranking); checkpoint plo
 convergence quick check confirms the mined reference density is already converged for the root
 stress (Δ < 0.1 %), matching the FVA "Konvergenz Fuß" preset. Fillet-shape parameters become
 Stufenvariation axes with the quick solver as objective.
+
+**Amendment (2026-07-07 — third chord group + effective counts, user point 7, round v0.8):**
+`refine_thickness` ("Elemente über Zahndicke") completes the FVA mesh-fineness quartet
+(root/flank/thickness factors + face-width layers). Its chords are seeded ONLY at the flat
+tip-land surface edges — they run tangentially down through the whole tooth; chamfer edges
+(d_Na…d_a) are excluded because their chords slice the 45° corner cells into slivers
+(measured SJ 0.22 on kst-E gear 2; land-only seeding keeps min SJ ≈ 0.45 at factors 1–3 on
+both gears). The mesher meta now reports the EFFECTIVE per-tooth element counts (one gap
+rounding, one flank, the tip land — counted on the final mesh) which `/api/mesh/preview`
+exposes for the dialog's "effektive Werte"; the deck path carries per-gear
+`(root, flank, thickness)` tuples, and the pair view preseeds root/flank per gear from the
+native 2D quick convergence.
 
 ---
 

@@ -186,15 +186,19 @@ def generate_sector_2d(
     lift_below: float = 0.4,
     refine_root: int = 1,
     refine_flank: int = 1,
+    refine_thickness: int = 1,
     fillet: object | None = None,
     mirror_symmetric: bool | None = None,
     template: SectorTemplate | None = None,
 ) -> SectorMesh2D:
     """Transplant the reference sector topology onto ``profile``'s geometry (see module doc).
 
-    ``refine_root`` / ``refine_flank`` are FVA-style density factors (1 = reference density,
-    2/3 = split every root/flank chord into 2/3 strips — conformal, structure-preserving; the
-    selection is radius-based and therefore identical on every tooth and both flanks).
+    ``refine_root`` / ``refine_flank`` / ``refine_thickness`` are FVA-style density factors
+    (1 = reference density, 2/3 = split every chord of that band into 2/3 strips — conformal,
+    structure-preserving; the selection is radius-based and therefore identical on every tooth
+    and both flanks). Root = along the fillet rounding ("Elemente am Zahnfuß"), flank = up the
+    involute ("Elemente über Zahnhöhe"), thickness = across the tooth, seeded at the tip-land
+    edges ("Elemente über Zahndicke" — the chords run down through the whole tooth).
     ``fillet`` selects an optimized root-fillet strategy (root_fillet module); ``None`` = the
     standard tool-generated ρ_F fillet. Run :func:`root_fillet.mating_tip_clearance` before
     using an optimized fillet in a deck.
@@ -300,17 +304,24 @@ def generate_sector_2d(
     # are exactly canonical and the bands are rotation/mirror-equivariant, so the inserted
     # nodes inherit exact tooth congruence; new surface nodes are re-projected on the contour.
     kinds_out = list(tpl.kind)
-    if refine_root > 1 or refine_flank > 1:
-        r_split = profile.d_Ff / 2.0 + 0.02
+    r_split = profile.d_Ff / 2.0 + 0.02
+    r_flank_hi = profile.d_Na / 2.0 - 0.02
 
-        def tooth_zone_nodes(p: Array) -> set[int]:
-            phi_now = (np.arctan2(p[:, 1], p[:, 0]) - math.pi / 2.0) / pitch_new
-            return {int(i) for i in np.where(np.abs(phi_now) <= TOOTH_ZONE)[0]}
+    def tooth_zone_nodes(p: Array) -> set[int]:
+        phi_now = (np.arctan2(p[:, 1], p[:, 0]) - math.pi / 2.0) / pitch_new
+        return {int(i) for i in np.where(np.abs(phi_now) <= TOOTH_ZONE)[0]}
 
-        for factor, r_lo, r_hi in (
-            (refine_root, 0.0, r_split),
-            (refine_flank, r_split, profile.d_Na / 2.0 - 0.02),
-        ):
+    bands = (
+        (refine_root, 0.0, r_split),
+        (refine_flank, r_split, r_flank_hi),
+        # thickness: seeded ONLY at the flat tip land (r ≈ d_a/2) — those chords run
+        # tangentially down through the whole tooth, adding elements over the tooth
+        # THICKNESS. Chamfer edges (d_Na … d_a) are deliberately excluded: their chords
+        # cut the 45° corner cells into slivers (measured: SJ 0.22 on kst-E gear 2).
+        (refine_thickness, r_tip_new - 0.02, r_tip_new + 0.05),
+    )
+    if any(factor > 1 for factor, _, _ in bands):
+        for factor, r_lo, r_hi in bands:
             if factor <= 1:
                 continue
             edges = chords_with_surface_edges(
@@ -325,6 +336,26 @@ def generate_sector_2d(
                 pts[reproject] = _project_to_contour(pts[reproject], cloud, cloud_breaks)
         coords = [(float(x), float(y), 0.0) for x, y in pts]
 
+    # Effective per-tooth element counts along the contour ("effektive Werte" of the FVA
+    # mesh-fineness dialog): surface edges of the MIDDLE tooth counted per band — flank =
+    # one flank (Zahnhöhe), root = one full gap rounding (Zahnfuß), thickness = the tip land
+    # (Zahndicke). Counted on the final mesh, so density factors are included.
+    def band_count(r_lo: float, r_hi: float, phi_lo: float, phi_hi: float) -> int:
+        edges_seen: set[tuple[int, int]] = set()
+        for q in quads:
+            for a, b in ((q[0], q[1]), (q[1], q[2]), (q[2], q[3]), (q[3], q[0])):
+                if kinds_out[a] != "surface" or kinds_out[b] != "surface":
+                    continue
+                key = (a, b) if a < b else (b, a)
+                if key in edges_seen:
+                    continue
+                mid = 0.5 * (pts[a] + pts[b])
+                r = float(np.hypot(mid[0], mid[1]))
+                phi = (math.atan2(mid[1], mid[0]) - math.pi / 2.0) / pitch_new
+                if r_lo <= r <= r_hi and phi_lo <= phi <= phi_hi:
+                    edges_seen.add(key)
+        return len(edges_seen)
+
     sj = scaled_jacobians(coords, quads)
     out_meta: dict[str, float | int | str] = {
         "z_teeth": profile.z,
@@ -335,6 +366,10 @@ def generate_sector_2d(
         "cells_below_035": int((sj < 0.35).sum()),
         "refine_root": refine_root,
         "refine_flank": refine_flank,
+        "refine_thickness": refine_thickness,
+        "elements_root": band_count(0.0, r_split, 0.1, 0.9),  # the gap right of the tooth
+        "elements_flank": band_count(r_split, r_flank_hi, 0.0, 0.5),  # one flank
+        "elements_thickness": band_count(r_flank_hi, r_tip_new + 0.05, -0.5, 0.5),  # tip land
         "template_part": str(meta["part"]),
     }
     return SectorMesh2D(coords=coords, quads=quads, kind=kinds_out, meta=out_meta)

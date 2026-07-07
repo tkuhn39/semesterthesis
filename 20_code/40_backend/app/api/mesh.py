@@ -84,6 +84,7 @@ class MeshRequest(BaseModel):
     gear: Literal[1, 2] = 1  # input slot: 1 = the stage's first gear, 2 = the second (ADR-021)
     refine_root: int = Field(1, ge=1, le=3)
     refine_flank: int = Field(1, ge=1, le=3)
+    refine_thickness: int = Field(1, ge=1, le=3)  # Elemente über Zahndicke (FVA dialog)
     fillet: FilletSpec = Field(default_factory=FilletSpec)
     bore_radius_mm: float | None = Field(None, gt=0.0)
 
@@ -123,8 +124,15 @@ class DeckRequest(BaseModel):
         description="Drehrichtung of the drive (Leistungsfluss): cw = validated default "
         "(torque gear clockwise in the rig top view); ccw mirrors the load case",
     )
+    # FVA mesh-fineness factors ("Vernetzungsparameter" dialog): the plain fields apply to
+    # BOTH gears, each *_gear2 field overrides gear 2 (root = Zahnfuß, flank = Zahnhöhe,
+    # thickness = Zahndicke; Zahnbreite = face_layers, shared)
     refine_root: int = Field(1, ge=1, le=3)
     refine_flank: int = Field(1, ge=1, le=3)
+    refine_thickness: int = Field(1, ge=1, le=3)
+    refine_root_gear2: int | None = Field(None, ge=1, le=3)
+    refine_flank_gear2: int | None = Field(None, ge=1, le=3)
+    refine_thickness_gear2: int | None = Field(None, ge=1, le=3)
     gear1_material: Literal["steel", "plastic"] = "steel"
     gear2_material: Literal["steel", "plastic"] = "plastic"
     axial_offset_gear1_mm: float = Field(0.0, ge=-50.0, le=50.0)
@@ -217,6 +225,7 @@ def _sector(req: MeshRequest) -> tuple[ToothProfile, SectorMesh2D]:
             bore_radius_mm=req.bore_radius_mm,
             refine_root=req.refine_root,
             refine_flank=req.refine_flank,
+            refine_thickness=req.refine_thickness,
             fillet=strategy,
             mirror_symmetric=req.stage.mirror_symmetric(req.gear),
         )
@@ -240,6 +249,11 @@ class MeshPreviewResponse(BaseModel):
     min_scaled_jacobian: float
     cells_below_035: int
     kind_surface: list[int]  # node indices on the gear surface (contour plotting)
+    # effective per-tooth element counts (FVA mesh-fineness dialog "effektive Werte"):
+    # one gap rounding (Zahnfuß), one flank (Zahnhöhe), the tip land (Zahndicke)
+    elements_root: int
+    elements_flank: int
+    elements_thickness: int
 
 
 @router.post("/preview", response_model=MeshPreviewResponse)
@@ -258,6 +272,9 @@ def mesh_preview(req: MeshRequest) -> MeshPreviewResponse:
         min_scaled_jacobian=float(sj.min()),
         cells_below_035=int((sj < 0.35).sum()),
         kind_surface=[i for i, k in enumerate(mesh.kind) if k == "surface"],
+        elements_root=int(mesh.meta["elements_root"]),
+        elements_flank=int(mesh.meta["elements_flank"]),
+        elements_thickness=int(mesh.meta["elements_thickness"]),
     )
 
 
@@ -584,8 +601,7 @@ def build_deck(req: DeckRequest) -> PlainTextResponse:
         start_at_edge=req.start_at_edge,
         rotation_sense=req.rotation_sense,
         tip_relief=(req.stage.tip_relief(0), req.stage.tip_relief(1)),
-        refine_root=req.refine_root,
-        refine_flank=req.refine_flank,
+        **_deck_refine(req),
         fillet_gear1=req.fillet_gear1.strategy(),
         fillet_gear2=req.fillet_gear2.strategy(),
         align_contact=req.align_contact,
@@ -601,6 +617,20 @@ def build_deck(req: DeckRequest) -> PlainTextResponse:
         "X-Roll-Pitch-Deg": f"{pitch_deg:.4f}",
     }
     return PlainTextResponse(deck, media_type="text/plain", headers=headers)
+
+
+def _deck_refine(req: DeckRequest) -> dict:
+    """Per-gear (root, flank, thickness) fineness tuples; *_gear2 overrides the shared value."""
+    return {
+        "refine_gear1": (req.refine_root, req.refine_flank, req.refine_thickness),
+        "refine_gear2": (
+            req.refine_root if req.refine_root_gear2 is None else req.refine_root_gear2,
+            req.refine_flank if req.refine_flank_gear2 is None else req.refine_flank_gear2,
+            req.refine_thickness
+            if req.refine_thickness_gear2 is None
+            else req.refine_thickness_gear2,
+        ),
+    }
 
 
 def _deck_roles(req: DeckRequest) -> dict:
@@ -664,8 +694,7 @@ def build_deck_series(req: DeckRequest) -> Response:
         start_at_edge=req.start_at_edge,
         rotation_sense=req.rotation_sense,
         tip_relief=(req.stage.tip_relief(0), req.stage.tip_relief(1)),
-        refine_root=req.refine_root,
-        refine_flank=req.refine_flank,
+        **_deck_refine(req),
         fillet_gear1=req.fillet_gear1.strategy(),
         fillet_gear2=req.fillet_gear2.strategy(),
         align_contact=req.align_contact,
@@ -751,8 +780,7 @@ def pair_assembly(req: DeckRequest) -> PairAssemblyResponse:
             roll_sign=roll_sign,
             rigid_gears=roles["rigid_gears"],
             tip_relief=(req.stage.tip_relief(0), req.stage.tip_relief(1)),
-            refine_root=req.refine_root,
-            refine_flank=req.refine_flank,
+            **_deck_refine(req),
             fillet_gear1=req.fillet_gear1.strategy(),
             fillet_gear2=req.fillet_gear2.strategy(),
             fasten_bore=req.fasten_bore,

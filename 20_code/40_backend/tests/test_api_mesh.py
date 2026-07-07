@@ -130,6 +130,32 @@ def test_deck_download_with_steel_shell() -> None:
     assert "Rot_Node_Rad2, 6, 6" in deck  # the plastic side (gear 2) is angle-driven
 
 
+def test_mesh_fineness_per_gear() -> None:
+    """FVA mesh-fineness dialog (user point 7): thickness factor splits the tip-land band,
+    the preview reports the effective per-tooth counts, and the deck honours *_gear2."""
+    res = client.post("/api/mesh/preview", json={"gear": 2})
+    assert res.status_code == 200
+    base = res.json()
+    assert base["elements_flank"] > 10 and base["elements_root"] > 20
+    res = client.post("/api/mesh/preview", json={"gear": 2, "refine_thickness": 2})
+    assert res.status_code == 200
+    body = res.json()
+    assert body["cells_below_035"] == 0  # land-only seeding keeps the chamfer cells intact
+    assert body["elements_thickness"] > 1.5 * base["elements_thickness"]
+    assert body["elements_flank"] == base["elements_flank"]  # bands are independent
+    # per-gear deck fineness: only gear 2 grows
+    r1 = client.post(
+        "/api/mesh/pair",
+        json={"face_layers": 2, "n_roll_positions": 3, "refine_flank_gear2": 2},
+    )
+    assert r1.status_code == 200
+    b1 = r1.json()
+    r0 = client.post("/api/mesh/pair", json={"face_layers": 2, "n_roll_positions": 3})
+    b0 = r0.json()
+    assert b1["gear1"]["n_elements"] == b0["gear1"]["n_elements"]
+    assert b1["gear2"]["n_elements"] > b0["gear2"]["n_elements"]
+
+
 def test_pair_assembly_is_the_deck_positioning() -> None:
     """/api/mesh/pair serves THE deck assembly (SSOT): closing rotation baked in, edge-start
     angle schedule with kinematic coupling, rigid shell on the steel slot."""

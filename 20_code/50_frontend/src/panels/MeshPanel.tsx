@@ -34,6 +34,7 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
   const { stage } = useStage();
   const [refineRoot, setRefineRoot] = useState(1);
   const [refineFlank, setRefineFlank] = useState(1);
+  const [refineThickness, setRefineThickness] = useState(1);
   const [layers, setLayers] = useState(6);
   const [fillet, setFillet] = useState<FilletSpec>({ kind: "standard" });
   const [heatmap, setHeatmap] = useState(true);
@@ -66,6 +67,7 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
         gear: props.gear,
         refine_root: refineRoot,
         refine_flank: refineFlank,
+        refine_thickness: refineThickness,
         fillet,
       };
       // 3D hull for the viewport + the 2D section (FVA FEM-Vernetzer style) in one go
@@ -146,11 +148,34 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
                   </select>
                 </td>
               </AttrRow>
+              <AttrRow label={t("mesh.densityThickness")} symbol="f_Dicke" unit="×">
+                <td>
+                  <select
+                    value={refineThickness}
+                    onChange={(e) => setRefineThickness(Number(e.target.value))}
+                  >
+                    {[1, 2, 3].map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+              </AttrRow>
               <AttrRow label={t("mesh.layers")} symbol="n_breite" unit="–">
                 <td>
                   <Num value={layers} onChange={setLayers} step={1} />
                 </td>
               </AttrRow>
+              {preview && (
+                <AttrRow label={t("mesh.effective")} symbol="" unit="">
+                  <td className="wb-num text-[11.5px] text-zinc-500">
+                    {t("mesh.elemsRoot")}: {preview.elements_root} ·{" "}
+                    {t("mesh.elemsHeight")}: {preview.elements_flank} ·{" "}
+                    {t("mesh.elemsThickness")}: {preview.elements_thickness}
+                  </td>
+                </AttrRow>
+              )}
             </tbody>
           </table>
         </Section>

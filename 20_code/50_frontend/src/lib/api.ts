@@ -389,6 +389,7 @@ export interface MeshRequest {
   gear: 1 | 2;
   refine_root: number;
   refine_flank: number;
+  refine_thickness?: number; // Elemente über Zahndicke (FVA mesh-fineness dialog)
   fillet: FilletSpec;
 }
 export interface MeshPreviewResponse {
@@ -401,6 +402,10 @@ export interface MeshPreviewResponse {
   min_scaled_jacobian: number;
   cells_below_035: number;
   kind_surface: number[];
+  // effective per-tooth element counts (FVA dialog "effektive Werte")
+  elements_root: number;
+  elements_flank: number;
+  elements_thickness: number;
 }
 export interface Mesh3DResponse {
   gear: number;
@@ -451,8 +456,13 @@ export interface DeckRequest {
   torque_gear2_nmm: number;
   face_layers: number;
   n_roll_positions: number;
+  // fineness factors: plain fields = both gears, *_gear2 overrides gear 2 (FVA dialog)
   refine_root: number;
   refine_flank: number;
+  refine_thickness?: number;
+  refine_root_gear2?: number | null;
+  refine_flank_gear2?: number | null;
+  refine_thickness_gear2?: number | null;
   gear1_material?: "steel" | "plastic";
   gear2_material?: "steel" | "plastic";
   axial_offset_gear1_mm?: number;

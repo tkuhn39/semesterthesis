@@ -103,6 +103,26 @@ Dates are ISO 8601 (YYYY-MM-DD).
   (full 360°, no polar clamp), wheel = ortho zoom; middle-click autoscroll
   suppressed. Rigid-shell gears render as semi-transparent open mantles.
 
+### Added (mesh fineness per gear — phase E, user point 7)
+- **New chord group "über Zahndicke"** (`refine_thickness`, ADR-019 mesher): conformal
+  chord splits seeded ONLY at the flat tip land — those chords run tangentially down
+  through the whole tooth, multiplying the elements over the tooth THICKNESS. Chamfer
+  edges are deliberately excluded from the seeds (they cut the 45° corner cells into
+  slivers — measured SJ 0.22 on kst-E gear 2; land-only seeding keeps min SJ ≈ 0.45,
+  zero sub-gate cells at factors 1–3 on both gears).
+- **Per-gear fineness in the deck** (`refine_gear1/2 = (root, flank, thickness)`
+  through `assemble_centered_pair` and both deck builders; `DeckRequest` gains
+  `refine_thickness` + `refine_{root,flank,thickness}_gear2` overrides — plain fields
+  keep applying to both gears).
+- **FVA mesh-fineness dialog in the pair view**: per-gear factor table (Elemente am
+  Zahnfuß / über Zahnhöhe / über Zahndicke; Zahnbreite = shared layers) with the
+  EFFECTIVE per-tooth element counts (counted on the final mesh: one gap rounding,
+  one flank, the tip land — new `elements_root/flank/thickness` in
+  `/api/mesh/preview`); FE-Mesh tab gets the thickness factor + effective row too.
+- **2D quick-convergence preseed per gear**: one button per gear runs the native
+  plane-FE convergence for root AND flank and preseeds the factors with the
+  converged level.
+
 ### Fixed
 - Powerflow torque reset: entering **0** (not only clearing) now frees both shaft
   fields again (user report).

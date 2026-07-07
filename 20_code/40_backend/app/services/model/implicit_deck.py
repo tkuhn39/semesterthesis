@@ -215,6 +215,7 @@ def build_gear_part(
     bore_radius_mm: float | None = None,
     refine_root: int = 1,
     refine_flank: int = 1,
+    refine_thickness: int = 1,
     fillet: object | None = None,
     fasten_bore: bool = True,
     fasten_cuts: bool = True,
@@ -243,6 +244,7 @@ def build_gear_part(
         bore_radius_mm=bore_radius_mm,
         refine_root=refine_root,
         refine_flank=refine_flank,
+        refine_thickness=refine_thickness,
         fillet=fillet,
     )
     section = Mesh2D(sector.points, np.asarray(sector.quads, dtype=np.int64))
@@ -827,8 +829,8 @@ def assemble_centered_pair(
         (0.0, None),
         (0.0, None),
     ),
-    refine_root: int,
-    refine_flank: int,
+    refine_gear1: tuple[int, int, int] = (1, 1, 1),
+    refine_gear2: tuple[int, int, int] = (1, 1, 1),
     fillet_gear1: object | None,
     fillet_gear2: object | None,
     fasten_bore: bool,
@@ -840,6 +842,8 @@ def assemble_centered_pair(
 
     ``tip_relief`` carries per-gear (C_αa [µm], d_Ca [mm] or None) into the tooth profiles
     so the FE contour includes the Kopfrücknahme like the FVA transient FEM.
+    ``refine_gear1``/``refine_gear2`` are the FVA mesh-fineness factors per gear as
+    (root, flank, thickness) — Zahnfuß / Zahnhöhe / Zahndicke (user point 7, 2026-07-06).
     """
     profile1 = ToothProfile.from_stage(
         stage, 0, tip_relief_um=tip_relief[0][0], tip_relief_start_diameter_mm=tip_relief[0][1]
@@ -866,8 +870,9 @@ def assemble_centered_pair(
         face_layers=face_layers,
         rot_rad=-math.pi / 2.0,
         axial_offset_mm=axial_offset_mm[0],
-        refine_root=refine_root,
-        refine_flank=refine_flank,
+        refine_root=refine_gear1[0],
+        refine_flank=refine_gear1[1],
+        refine_thickness=refine_gear1[2],
         fillet=fillet_gear1,
         rigid_shell=1 in rigid_gears,
         **fasten,
@@ -881,8 +886,9 @@ def assemble_centered_pair(
         rot_rad=math.pi / 2.0 + math.pi / profile2.z + phase_rad,
         dx=a,
         axial_offset_mm=axial_offset_mm[1],
-        refine_root=refine_root,
-        refine_flank=refine_flank,
+        refine_root=refine_gear2[0],
+        refine_flank=refine_gear2[1],
+        refine_thickness=refine_gear2[2],
         fillet=fillet_gear2,
         rigid_shell=2 in rigid_gears,
         **fasten,
@@ -954,8 +960,8 @@ def build_implicit_pair_from_stage(
     ),
     driven_gear: int = 2,
     slave_gear: int = 2,
-    refine_root: int = 1,
-    refine_flank: int = 1,
+    refine_gear1: tuple[int, int, int] = (1, 1, 1),
+    refine_gear2: tuple[int, int, int] = (1, 1, 1),
     fillet_gear1: object | None = None,
     fillet_gear2: object | None = None,
     fasten_bore: bool = True,
@@ -999,8 +1005,9 @@ def build_implicit_pair_from_stage(
     unequal width roll centred on each other by default, and both rotation nodes sit at their
     gear's mid-plane instead of on a side face.
 
-    Both sectors come from the reference-topology transplant mesher; ``refine_root`` /
-    ``refine_flank`` set the FVA density factors and ``fillet_gear1`` / ``fillet_gear2`` an
+    Both sectors come from the reference-topology transplant mesher; ``refine_gear1`` /
+    ``refine_gear2`` set the FVA density factors per gear as (root, flank, thickness) —
+    Zahnfuß / Zahnhöhe / Zahndicke — and ``fillet_gear1`` / ``fillet_gear2`` an
     optional optimized root-fillet strategy per gear (run the mating-tip clearance check
     first). ``rigid_gears`` lists gears rendered ideally stiff (mixed-pairing rule — pass the
     steel side); ``slave_gear`` is the contact slave (the plastic side).
@@ -1027,8 +1034,8 @@ def build_implicit_pair_from_stage(
         roll_sign=roll_sign,
         rigid_gears=rigid_gears,
         tip_relief=tip_relief,
-        refine_root=refine_root,
-        refine_flank=refine_flank,
+        refine_gear1=refine_gear1,
+        refine_gear2=refine_gear2,
         fillet_gear1=fillet_gear1,
         fillet_gear2=fillet_gear2,
         fasten_bore=fasten_bore,
@@ -1119,8 +1126,8 @@ def build_position_series(
     ),
     driven_gear: int = 2,
     slave_gear: int = 2,
-    refine_root: int = 1,
-    refine_flank: int = 1,
+    refine_gear1: tuple[int, int, int] = (1, 1, 1),
+    refine_gear2: tuple[int, int, int] = (1, 1, 1),
     fillet_gear1: object | None = None,
     fillet_gear2: object | None = None,
     fasten_bore: bool = True,
@@ -1166,8 +1173,8 @@ def build_position_series(
         roll_sign=roll_sign,
         rigid_gears=rigid_gears,
         tip_relief=tip_relief,
-        refine_root=refine_root,
-        refine_flank=refine_flank,
+        refine_gear1=refine_gear1,
+        refine_gear2=refine_gear2,
         fillet_gear1=fillet_gear1,
         fillet_gear2=fillet_gear2,
         fasten_bore=fasten_bore,
