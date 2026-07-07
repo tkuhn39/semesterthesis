@@ -9,7 +9,7 @@ It complements, and does not replace:
 - [`architecture_decisions.md`](architecture_decisions.md) — the ADRs (why).
 - The master plan in plan mode — the FE-modelling vision and trade-offs.
 
-_Last updated: 2026-07-04 (v0.4.1) — deck conventions finalized for the cluster run (ADR-021 + amendment: STE-order slot numbering with gear 1 left/origin, mid-plane centring, axial offsets, torque conversion, Fesselung = bore + cut faces) + glossary panel. Step 3: transplant mesher + deck + mesh API + Next.js workbench done (ADR-019/020). Previously: reference-grade tooth/root geometry +
+_Last updated: 2026-07-07 (v0.8.0) — rolling INP made physically correct end-to-end (per-position torque cycle, edge-tooth start, position-series default, rigid R3D4 Außenhülle per gear, per-gear tools + Kopfrücknahme in the FE contour) + backend-served pair assembly with ortho/CATIA viewport + Zahndicke mesh fineness + PairPanel SSOT + own postprocessing with the path-of-contact 3-D result viewer (ADR-022). Previously v0.4.1: deck conventions finalized for the cluster run (ADR-021 + amendment: STE-order slot numbering with gear 1 left/origin, mid-plane centring, axial offsets, torque conversion, Fesselung = bore + cut faces) + glossary panel. Step 3: transplant mesher + deck + mesh API + Next.js workbench done (ADR-019/020). Earlier: reference-grade tooth/root geometry +
 transfinite mesh (boundary layer, deep rim, Jacobi ≥ 0.9) and the validated all-quad body-coarsening
 template (ADR-017); 136 tests green._
 
@@ -196,6 +196,29 @@ Gesamtsystemreport coordinates within 2 µm). Interactive HTML system report
 (`POST /api/report`, self-contained + printable, animated mesh plot, per-gear norm
 sections WITHOUT placeholder rows — better than FVA for mixed pairs, optional variation
 section from the persisted run).
+**Done (v0.8.0, user-feedback round — the rolling INP made physically correct + the result
+pipeline):** the dynamic-rolling deck is now reference-faithful end-to-end. Load case: a
+per-Wälzstellung torque cycle (angle side held, torque side SMOOTH-STEP base→full→base, first
+ramp from 0, measurement at the full-torque hold; `ALLSDTOL=0`, `*RESTART`, `*TIME POINTS`
+per-flank-set outputs), roll **starts at an edge tooth** so the middle teeth sweep the whole
+engagement boundary-free, sweep-union contact pairing reproduces the reference's 7 pairs,
+Drehrichtung from the Leistungsfluss. Default deck mode = **position series** (one independent
+static INP per Wälzstellung; path-independent Marlow+frictionless ⇒ result-identical, robust,
+parallelisable; shared `*INCLUDE` mesh + `manifest.json` + runners). Rigid **Außenhülle per
+gear** = R3D4 lateral shell (tooth contour + cut faces + bore swept, axial end faces open,
+massive element reduction). Geometry: **one tool per gear** (kst-E h_aP0* 1.1/1.25, wheel-only
+45° Kantenbrechwinkel), **Kopfrücknahme C_αa in the FE contour** (like the FVA transient FEM),
+per-gear root fillet before pairing, chamfer verifier (gear 1 no chamfer, gear 2 h_K=0.117).
+Viewport: the pair assembly comes from the backend (`/api/mesh/pair`, exact deck positioning +
+roll schedule), orthographic camera + CATIA mouse controls (free 360°). Mesh fineness: the FVA
+quartet per gear (Zahnfuß/Zahnhöhe/**Zahndicke**/Zahnbreite) with effective per-tooth counts +
+2D quick-convergence preseed. SSOT: PairPanel fully on the store, ONE `deckPayload()` builder,
+resizable split panes that never clip. **Result pipeline (ADR-022):** own Abaqus-Python
+postprocessing (against our sets, neutral `fem_results.json`), `POST /api/fem/results` unwraps
+r→path-of-contact ξ from the GearStage, and the "Ergebnisse (3D)" tab renders per contact
+flank pair a three.js surface (ξ × face width × σ/ε/CPRESS/|u|, A…E markers, Wälzstellungs-
+slider, maxima flagged, range beyond A/E to d_Nf…d_Na). Step 5 (own postprocessing) now has
+a native path; remaining is the live-cluster validation of the dump against a real solve.
 **Still open:** DIN 3967/3964 tooth-thickness/centre-distance allowance system (full norm
 tables), protuberance tool variant (DIN 3960 Anhang A), micro-geometry mechanics (load
 distribution).

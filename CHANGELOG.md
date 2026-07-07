@@ -9,6 +9,22 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-07
+
+User-feedback round v0.8 — the rolling INP made physically correct end-to-end plus the
+result pipeline. Seven committed phases: (A) per-position torque cycle with SMOOTH-STEP
+ramps, edge-tooth start, position-series default deck mode, Drehrichtung, powerflow fixes;
+(B) rigid Außenhülle per gear as an R3D4 lateral shell (open end faces); (C) per-gear tools,
+Kopfrücknahme C_αa in the FE contour, per-gear root fillet, chamfer verifier; (D)
+backend-served pair assembly (`/api/mesh/pair`) + orthographic camera with CATIA controls +
+schedule slider; (E) Zahndicke mesh-fineness group, per-gear factors, effective counts, 2D
+convergence preseed; (F) PairPanel store-SSOT + one deck payload + resizable panes (never
+clip); (G) own Abaqus postprocessing + path-of-contact 3-D stress/strain viewer (ADR-022).
+Gates each phase: 201 backend tests, deck-parity verifier incl. `--reference`, ruff, mypy,
+eslint, production build, own Playwright screenshots. New ADRs/amendments: ADR-012 (per-gear
+tools + C_αa), ADR-019 (Zahndicke group), ADR-020 (backend pair assembly + ortho/CATIA),
+ADR-021 (third amendment: load cycle/edge start/series), ADR-022 (postprocessing pipeline).
+
 ### Changed (rolling deck load case — user feedback round 2026-07-06, phase A)
 - **Per-position torque cycle** replaces the constant-torque staircase
   (`RollKinematics` + `_torque_cycle_pairs`): the angle-driven gear is HELD at each
