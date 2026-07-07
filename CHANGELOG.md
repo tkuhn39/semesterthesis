@@ -143,6 +143,32 @@ Dates are ISO 8601 (YYYY-MM-DD).
   the 27-view `self-screenshots.mjs`): per-gear fineness table with ≙ effective
   counts, closed assembly in the viewport, no swallowed fields/units.
 
+### Added (FE postprocessing + 3-D result viewer — phase G, user goal, ADR-022)
+- **Own Abaqus-Python postprocessing script**
+  (`app/services/model/postprocessing/abaqus_fem_postprocessing.py`, shipped in the
+  series ZIP and runnable on a single deck): works against OUR set naming
+  (`G{g}T{ttt}F{f}`, `Rot_Node_Rad{g}`) — NOT the frozen FVA script's
+  `REFERENCE_POINT_`/`Geometrieberechnung_E1` text files — and dumps a neutral
+  `fem_results.json` (schema `zahnfuss.fem_results/1`): per measurement frame, per
+  flank set, per surface node the radius, axial z, S/E von-Mises & principals
+  (ELEMENT_NODAL-averaged), CPRESS and |U|. Measurement frames auto-detected (a frame
+  carries the `S` field iff it is a `*TIME POINTS=MEASURE` hold), series roll angles
+  from `manifest.json`. Kept Abaqus-Python (2.7/3.10) compatible and out of the py312
+  ruff/mypy scope as a shipped resource.
+- **`POST /api/fem/results`**: uploads the dump (client-side file read, like the .ste
+  import) and does the path-of-contact unwrapping on the backend from THE GearStage
+  (single source): `ξ(r) = ±(√(r²−r_b²) − r_w·sin α_wt)` relative to the pitch point C
+  (gear 1 → E, gear 2 → A), returning structure-of-arrays viewer data plus the ISO
+  21771 A/B/C/D/E markers and the extended d_Nf…d_Na range (pre-/post-engagement).
+- **3-D stress/strain viewer** ("Ergebnisse (3D)" tab, `FemResultsPanel` +
+  `FemResultsViewport`): per contact flank pair a three.js surface — axis 1 = path of
+  contact ξ (beyond A/E to d_Nf…d_Na, A…E drawn as markers), axis 2 = face width,
+  axis 3 + heat color = selectable σ_v/σ₁/σ₃/ε/CPRESS/|u| — with a position slider over
+  the Wälzstellungen, a stable per-tag color scale, the frame maximum flagged, and the
+  shared orthographic CATIA controls. Verified with own Playwright screenshots
+  (`shot-femresults.mjs`): the contact stress peak travels along ξ with the roll
+  position, as it must.
+
 ### Fixed
 - Powerflow torque reset: entering **0** (not only clearing) now frees both shaft
   fields again (user report).

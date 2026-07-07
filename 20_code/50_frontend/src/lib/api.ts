@@ -574,6 +574,51 @@ export const contourApi = {
   contour: (req: ContourRequest) => post<ContourResponse>("/api/mesh/contour", req),
 };
 
+// ---- FEM results (phase G): Abaqus dump upload → path-of-contact viewer data ----
+// the per-node array fields of a flank frame that the viewer can plot (axis 3 / color)
+export type FemField = "s_mises" | "s_maxp" | "s_minp" | "e_mises" | "e_maxp" | "cpress" | "u";
+export interface FlankFrameData {
+  xi: number[]; // path-of-contact coordinate relative to C [mm] (gear-signed)
+  z: number[]; // axial coordinate over the face width [mm]
+  s_mises: number[];
+  s_maxp: number[];
+  s_minp: number[];
+  e_mises: number[];
+  e_maxp: number[];
+  cpress: number[];
+  u: number[];
+  max_mises: number;
+  max_cpress: number;
+  n_z: number; // grid hint: n_z · n_xi == nodes → structured surface
+  n_xi: number;
+}
+export interface FemFrame {
+  index: number;
+  phi_driven_rad: number | null;
+  flanks: Record<string, FlankFrameData>;
+}
+export interface LineOfActionMarkers {
+  a: number;
+  b: number;
+  c: number;
+  d: number;
+  e: number;
+  xi_min: number; // extended range d_Nf…d_Na (pre-/post-engagement)
+  xi_max: number;
+  transverse_base_pitch_mm: number;
+}
+export interface FemResultsResponse {
+  mode: string;
+  n_frames: number;
+  flank_tags: string[];
+  markers: LineOfActionMarkers;
+  frames: FemFrame[];
+}
+export const femApi = {
+  results: (stage: StageParams, results: unknown) =>
+    post<FemResultsResponse>("/api/fem/results", { stage, results }),
+};
+
 // ---- Tolerances (ISO 1328-1) + free evaluate ----
 export interface ToleranceRequest {
   accuracy_grade: number;

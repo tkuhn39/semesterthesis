@@ -40,6 +40,7 @@ body.
 | ADR-019 | Reference-topology transplant mesher: mined ground truth, canonical symmetry, chord density, quick FE, fillet strategies (amended: Zahndicke chord group, effective counts, per-gear deck fineness) | Accepted | 2026-07-07 |
 | ADR-020 | Next.js workbench frontend (FVA layout language, Geist, static export; amended: backend-served pair assembly, ortho + CATIA viewports) | Accepted | 2026-07-07 |
 | ADR-021 | Deck gear numbering follows the stage input order; mid-plane-centred extrusion with parametric axial offsets (amended: rig-view slot layout + Fesselung parity + per-position torque cycle, edge start, position series) | Accepted | 2026-07-06 |
+| ADR-022 | Own FE postprocessing: neutral JSON dump + backend path-of-contact transform (GearStage SSOT) + 3-D stress/strain viewer | Accepted | 2026-07-07 |
 
 ---
 
@@ -892,3 +893,54 @@ convention (wheel triad = driven/green, pinion triad = torque/amber, offsets in 
    quasi-static deck stays available ("Referenz/Animation" mode).
 4. **Drehrichtung** (`rotation_sense`, from the Leistungsfluss) mirrors roll sign,
    closing flank and start offset consistently.
+
+---
+
+## ADR-022: Own FE postprocessing — neutral JSON dump + backend path-of-contact transform + 3-D viewer
+
+**Status:** accepted (2026-07-07) · user goal of the v0.8 feedback round.
+
+**Context:** the target of the whole rolling pipeline is the user's 3-D result plot — per
+contact flank pair, tooth-root/flank stress (and strain, contact pressure) over the
+**path-of-contact coordinate × the face width**, sliderable over the Wälzstellungen, with the
+range extended beyond A/E for the pre-/post-engagement of the compliant plastic pair. The
+frozen FVA script (`31_FVA/abaqus_postprocessing.py`) cannot produce it against our decks: it
+reads `REFERENCE_POINT_` node sets and `Geometrieberechnung_E1`/`eingabedaten.fsk` text files
+that our decks never emit, couples the measurement frames to a hard-coded `%3` cadence, and
+writes an FVA-XML tied to Workbench component IDs. It is a structural template only.
+
+**Decision:** a decoupled three-stage pipeline, each stage owning what it is best placed to:
+1. **Own Abaqus-Python script** (`app/services/model/postprocessing/abaqus_fem_postprocessing.py`,
+   shipped in the series ZIP and runnable on the single deck) that works against OUR set
+   naming (`G{g}T{ttt}F{f}_NODESET`/`_ELEMENTSET`, `Rot_Node_Rad{g}`) and dumps a **neutral
+   JSON** (`fem_results.json`, schema `zahnfuss.fem_results/1`): per measurement frame, per
+   flank set, per surface node the radius-from-axis, the axial z, the S/E von-Mises &
+   principals (averaged from ELEMENT_NODAL like the reference), CPRESS and |U|. Measurement
+   frames are auto-detected (a frame is one iff it carries the `S` field — the
+   `*TIME POINTS=MEASURE` holds; the U-only animation frames are skipped), and the series
+   mode reads `manifest.json` for the per-position roll angles. The script is deliberately
+   **geometry-light** — it never re-derives gear data — and stays Abaqus-Python (2.7/3.10)
+   compatible (kept out of the py312 ruff/mypy scope as a shipped resource).
+2. **Backend transform** (`POST /api/fem/results`, `app/api/fem_results.py`): the r → ξ
+   unwrapping onto the line of action is done HERE from THE `GearStage` (single source of
+   truth, same quantities as the Zahneingriff plot), never in the script or the client:
+   `ξ(r) = ±(sqrt(r² − r_b²) − r_w·sin α_wt)` relative to the pitch point C (gear 1 towards
+   E, gear 2 towards A), with the ISO 21771 A/B/C/D/E markers and the extended d_Nf…d_Na
+   range (root form circles from the validated tooth-profile chain) as axis annotations.
+3. **Client viewer** (`FemResultsPanel` + `FemResultsViewport`, "Ergebnisse (3D)" tab): upload
+   the dump (client-side file read like the .ste import) → the endpoint returns
+   structure-of-arrays viewer data → three.js renders each flank set as a vertex-colored
+   surface (ξ × z × field height/heat), with the A…E markers on the ξ axis, the frame maximum
+   flagged, a stable per-tag color scale, a position slider over the Wälzstellungen, and the
+   shared orthographic CATIA controls (ADR-020 amendment).
+
+**Alternatives:** run the frozen FVA script (rejected — not runnable on our decks, FVA-XML
+output, brittle); do the r→ξ transform in the Abaqus script (rejected — would duplicate the
+gear geometry away from the GearStage SSOT and couple the dump to a stage); do it in the
+browser (rejected — the geometry belongs on the backend). 
+
+**Consequences:** the dump is stage-agnostic and small (structure-of-arrays, rounded); a run
+can be re-viewed against a corrected stage without re-solving. The measurement-frame
+auto-detection means the viewer works for BOTH deck modes without a cadence constant. The
+extended ξ range shows the deformation-driven pre-/post-engagement the compliant plastic pair
+exhibits beyond the theoretical A/E. See [[commit-doc-chain]].

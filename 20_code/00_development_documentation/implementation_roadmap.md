@@ -227,14 +227,19 @@ Build the quasi-static rolling Abaqus model in `model/` + `body/`:
 Drive Abaqus 2025 via subprocess (`abq2025le`); odbAccess scripting runs in the
 Abaqus Python 3.10 interpreter (not 2.7). Monitor energy balance (ALLSD/ALLIE/ALLAE).
 
-### Step 5 — Own post-processing (decoupled, robust) ⬜  ← target of this roadmap
-A standalone Abaqus-Python-3.10 extractor (template: `31_FVA/abaqus_postprocessing.py`),
-**decoupled from FVA-Workbench names** so it does not break on every `.inp` change:
-- Extract `S`/`LE` (maxPrincipal + mises), `CPRESS`, `U` → neutral **CSV/JSON** in `80_output`.
-- Tooth-root tangent stress over the face width over A–E (**full field**, location not
-  fixed a priori), tip deformation, flank pressures — per tooth, per roll position.
-Acceptance: reproduces the FVA quantities on an unmodified WB run within tolerance,
-**and** runs on a modified `.inp` without breaking.
+### Step 5 — Own post-processing (decoupled, robust) 🟩 native path stands (v0.8.0, ADR-022)
+A standalone Abaqus-Python extractor (`app/services/model/postprocessing/
+abaqus_fem_postprocessing.py`, shipped with the deck), **decoupled from FVA-Workbench names**:
+- Works against OUR sets (`G{g}T{ttt}F{f}`, `Rot_Node_Rad{g}`), NOT the frozen script's
+  `REFERENCE_POINT_`/text files; auto-detects measurement frames (the `S`-carrying
+  `*TIME POINTS=MEASURE` holds) and reads `manifest.json` for the series roll angles.
+- Dumps a neutral **`fem_results.json`** (schema `zahnfuss.fem_results/1`): per frame, per
+  flank set, per surface node the radius, axial z, S/E mises+principals, CPRESS, |U|.
+- `POST /api/fem/results` unwraps r → path-of-contact ξ from THE GearStage (SSOT) with the
+  A…E markers + extended d_Nf…d_Na range; the "Ergebnisse (3D)" tab renders the flank
+  surface (ξ × face width × field) with a Wälzstellungs-slider and the maximum flagged.
+Remaining (real solve): validate the dump against a live Abaqus run of the series on the
+user's cluster and reproduce the FVA quantities within tolerance.
 
 ### Step 6 — Evaluation & visualisation ⬜ (beyond this roadmap)
 `evaluation/` derives the engineering results; `visualization/` + the modern

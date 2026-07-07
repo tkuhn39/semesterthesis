@@ -252,7 +252,12 @@ def test_position_series_files() -> None:
         "manifest.json",
         "run_all.bat",
         "run_all.sh",
+        "abaqus_fem_postprocessing.py",
     } <= set(files)
+    # the bundled Abaqus-Python companion targets OUR sets and stays 2.7-parseable
+    script = files["abaqus_fem_postprocessing.py"]
+    assert "ROT_NODE_RAD" in script and "_NODESET" in script and "fem_results.json" in script
+    assert 'f"' not in script and "f'" not in script  # no f-strings (Abaqus Python 2.7)
     common = files["pair_common.inp"]
     assert "*PART, NAME=Part_Rad_Vz_1" in common and "*PART, NAME=Part_Rad_Vz_2" in common
     assert "*STEP" not in common

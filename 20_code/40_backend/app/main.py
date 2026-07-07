@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from app import __version__
 from app.api.analysis import router as analysis_router
 from app.api.design import router as design_router
+from app.api.fem_results import router as fem_results_router
 from app.api.mesh import router as mesh_router
 from app.api.report import router as report_router
 from app.api.routes import router as api_router
@@ -53,6 +54,7 @@ def create_app() -> FastAPI:
     app.include_router(api_router)
     app.include_router(analysis_router)
     app.include_router(design_router)
+    app.include_router(fem_results_router)
     app.include_router(mesh_router)
     app.include_router(report_router)
     app.include_router(ui_schema_router)

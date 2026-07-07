@@ -317,7 +317,9 @@ const FEM_DEFAULTS: FemState = {
   axial_offset_gear2_mm: 0,
   fillet_gear1: { kind: "standard" },
   fillet_gear2: { kind: "standard" },
-  steel_shell: false,
+  // mixed-pairing default (plan B, user decision): the steel side rolls as an ideally
+  // stiff Außenhülle — the backend shortcut only acts when the pairing IS mixed
+  steel_shell: true,
   rigid_shell_gear1: false,
   rigid_shell_gear2: false,
 };

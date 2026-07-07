@@ -28,6 +28,7 @@ import { VariationPanel } from "@/panels/VariationPanel";
 import { ToothFormPanel } from "@/panels/ToothFormPanel";
 import { MeshPanel } from "@/panels/MeshPanel";
 import { PairPanel } from "@/panels/PairPanel";
+import { FemResultsPanel } from "@/panels/FemResultsPanel";
 import { GlossaryPanel } from "@/panels/GlossaryPanel";
 
 type NodeId =
@@ -275,6 +276,7 @@ function Shell() {
         { id: "design", title: locale === "de" ? "Auslegung" : "Design", render: () => <DesignPanel /> },
         { id: "dynamics", title: locale === "de" ? "Dynamikfaktoren" : "Dynamic factors", render: () => <DynamicsPanel /> },
         { id: "pair", title: locale === "de" ? "FE-Abwälzmodell (Ansicht)" : "FE rolling model (view)", render: () => <PairPanel /> },
+        { id: "fem_results", title: locale === "de" ? "Ergebnisse (3D)" : "Results (3D)", visibleIfMethod: "fva_892_transient_fem", render: () => <FemResultsPanel /> },
       ],
       pinion: [
         { id: "toothform", title: locale === "de" ? "Zahnform" : "Tooth form", render: () => <ToothFormPanel gear={1} /> },

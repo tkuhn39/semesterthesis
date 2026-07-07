@@ -42,6 +42,7 @@ from app.services.model.mesh_sets import (
     build_rigid_shell,
     tag_gear_reference,
 )
+from app.services.model.postprocessing import SCRIPT_NAME, postprocessing_script_text
 from app.services.model.template_mesher import generate_sector_2d, scaled_jacobians
 from app.services.model.tooth_mesh import Mesh2D
 
@@ -1364,4 +1365,8 @@ def build_position_series(
     )
     files.append(("run_all.bat", bat))
     files.append(("run_all.sh", sh))
+    # ship the Abaqus-Python postprocessing companion: after the jobs finish it reads
+    # manifest.json + the pos_NNN.odb files and dumps fem_results.json for the workbench
+    # 3-D stress/strain viewer (POST /api/fem/results)
+    files.append((SCRIPT_NAME, postprocessing_script_text()))
     return files
