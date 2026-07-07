@@ -17,6 +17,7 @@ import { instanceLabel, useWorkbench, type ModelInstances } from "@/lib/store";
 import { downloadReport } from "@/lib/report";
 import { SchemaTab } from "@/components/SchemaTab";
 import { QuickView } from "@/components/QuickView";
+import { clampWidth, Resizer } from "@/components/SplitPane";
 import { CalcSelectionPanel } from "@/panels/CalcSelectionPanel";
 import { OverviewPanel } from "@/panels/OverviewPanel";
 import { DesignPanel } from "@/panels/DesignPanel";
@@ -192,6 +193,10 @@ function Shell() {
   const [online, setOnline] = useState<boolean | null>(null);
   const [reportBusy, setReportBusy] = useState(false);
   const [reportErr, setReportErr] = useState<string | null>(null);
+  // resizable shell columns (user request): drag the dividers, widths clamp at the
+  // content minimum so tree/quick-view content never gets squeezed into clipping
+  const [treeW, setTreeW] = useState(250);
+  const [quickW, setQuickW] = useState(470);
 
   useEffect(() => {
     api
@@ -373,13 +378,17 @@ function Shell() {
       </header>
 
       <div className="flex flex-1 min-h-0">
-        {/* model tree */}
-        <aside className="w-[250px] shrink-0 border-r border-zinc-200 bg-zinc-50 overflow-y-auto p-2">
+        {/* model tree (resizable, min-width lock) */}
+        <aside
+          className="shrink-0 border-r border-zinc-200 bg-zinc-50 overflow-y-auto overflow-x-auto p-2"
+          style={{ width: treeW, minWidth: 190 }}
+        >
           <div className="text-[10.5px] uppercase tracking-wider text-zinc-400 px-2 pb-1">
             {locale === "de" ? "Modellbaum" : "Model tree"}
           </div>
           <TreeItem node={tree} depth={0} active={active} onSelect={setActive} />
         </aside>
+        <Resizer onDrag={(dx) => setTreeW((w) => clampWidth(w + dx, 190, 480))} />
 
         {/* editor: node title + FVA tab bar + panel */}
         <main className="flex-1 min-w-0 flex flex-col">
@@ -411,14 +420,23 @@ function Shell() {
           </div>
         </main>
 
-        {/* Ergebnis-Schnellansicht (FVA right panel) — ISO 21771 tables of the ONE stage */}
+        {/* Ergebnis-Schnellansicht (FVA right panel) — ISO 21771 tables of the ONE stage;
+            resizable with a min-width lock, tables scroll instead of clipping */}
         {["unit", "stage", "pinion", "wheel", "correction", "wheel_body"].includes(active) && (
-          <aside className="w-[390px] shrink-0 border-l border-zinc-200 bg-zinc-50 overflow-y-auto p-2 hidden xl:block">
-            <div className="text-[10.5px] uppercase tracking-wider text-zinc-400 px-2 pb-1">
-              {locale === "de" ? "Ergebnis-Schnellansicht" : "Result quick view"}
+          <>
+            <div className="hidden xl:flex self-stretch">
+              <Resizer onDrag={(dx) => setQuickW((w) => clampWidth(w - dx, 330, 640))} />
             </div>
-            <QuickView />
-          </aside>
+            <aside
+              className="shrink-0 border-l border-zinc-200 bg-zinc-50 overflow-y-auto p-2 hidden xl:block"
+              style={{ width: quickW, minWidth: 330 }}
+            >
+              <div className="text-[10.5px] uppercase tracking-wider text-zinc-400 px-2 pb-1">
+                {locale === "de" ? "Ergebnis-Schnellansicht" : "Result quick view"}
+              </div>
+              <QuickView />
+            </aside>
+          </>
         )}
       </div>
 

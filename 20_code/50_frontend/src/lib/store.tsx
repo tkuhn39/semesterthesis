@@ -10,6 +10,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import {
   KST_E_STAGE,
+  type FilletSpec,
   type StageParams,
   type VariationPoint,
   type VariationRequest,
@@ -42,8 +43,19 @@ export interface FemState {
   odb_path: string | null; // set after a solver run (roadmap steps 4/5)
   result_path: string | null;
   face_layers: number;
+  // FVA mesh-fineness factors PER GEAR (root = Zahnfuß, flank = Zahnhöhe, thickness =
+  // Zahndicke; Zahnbreite = face_layers, shared) — the plain fields are gear 1
   refine_root: number;
   refine_flank: number;
+  refine_thickness: number;
+  refine_root_gear2: number;
+  refine_flank_gear2: number;
+  refine_thickness_gear2: number;
+  axial_offset_gear1_mm: number;
+  axial_offset_gear2_mm: number;
+  // root-fillet strategy per gear (drives preview mesh AND deck identically)
+  fillet_gear1: FilletSpec;
+  fillet_gear2: FilletSpec;
   steel_shell: boolean;
   // ideally stiff Außenhülle per gear (R3D4 lateral surface, open axial end faces);
   // the contact slave (plastic side) must stay deformable
@@ -297,6 +309,14 @@ const FEM_DEFAULTS: FemState = {
   face_layers: 6,
   refine_root: 1,
   refine_flank: 1,
+  refine_thickness: 1,
+  refine_root_gear2: 1,
+  refine_flank_gear2: 1,
+  refine_thickness_gear2: 1,
+  axial_offset_gear1_mm: 0,
+  axial_offset_gear2_mm: 0,
+  fillet_gear1: { kind: "standard" },
+  fillet_gear2: { kind: "standard" },
   steel_shell: false,
   rigid_shell_gear1: false,
   rigid_shell_gear2: false,

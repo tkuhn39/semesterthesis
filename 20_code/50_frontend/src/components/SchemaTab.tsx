@@ -11,6 +11,7 @@ import type { AttributeDef, RowRef, SectionDef, TabDef, UiSchema } from "@/lib/u
 import { useWorkbench } from "@/lib/store";
 import { useLocale, useT } from "@/lib/i18n";
 import { meshApi } from "@/lib/api";
+import { deckPayload } from "@/lib/deck";
 
 function pick(loc: string, de?: string | null, en?: string | null): string {
   return (loc === "de" ? de ?? en : en ?? de) ?? "";
@@ -32,29 +33,9 @@ function useActions(): Record<string, { label: string; run: () => Promise<string
         if (typeof m2 !== "number" || !Number.isFinite(m2)) {
           throw new Error(t("pf.noTorque"));
         }
-        // ONE payload for both modes — SSOT chains: torque M₂ + Drehrichtung from the
-        // Leistungsfluss, materials from the Werkstoff tab, everything else from fem.*
-        const req = {
-          stage: wb.stage,
-          torque_gear2_nmm: m2,
-          face_layers: wb.fem.face_layers,
-          n_roll_positions: wb.fem.n_roll_positions,
-          roll_pitches: wb.fem.roll_pitches,
-          start_at_edge: true,
-          rotation_sense: wb.get("fem.rotation_sense") as "cw" | "ccw",
-          refine_root: wb.fem.refine_root,
-          refine_flank: wb.fem.refine_flank,
-          gear1_material: wb.get("fem.gear1_material") as "steel" | "plastic",
-          gear2_material: wb.get("fem.gear2_material") as "steel" | "plastic",
-          steel_shell: wb.fem.steel_shell,
-          rigid_shell_gear1: wb.fem.rigid_shell_gear1,
-          rigid_shell_gear2: wb.fem.rigid_shell_gear2,
-          align_contact: wb.fem.align_contact,
-          fasten_bore: wb.fem.fasten_bore,
-          fasten_cuts: wb.fem.fasten_cuts,
-          fasten_top: wb.fem.fasten_top,
-          fasten_bottom: wb.fem.fasten_bottom,
-        };
+        // THE shared payload builder (phase F): identical settings ⇒ byte-identical decks
+        // from this tab and the pair view; torque M₂ from the Leistungsfluss on top
+        const req = { ...deckPayload(wb), torque_gear2_nmm: m2 };
         const series = wb.fem.deck_mode === "series";
         const blob = series
           ? await meshApi.deckSeries(req)

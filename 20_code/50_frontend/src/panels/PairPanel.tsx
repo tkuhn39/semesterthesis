@@ -7,30 +7,21 @@
 // the deck schedule, and the deck download (series ZIP or single INP).
 
 import { useState } from "react";
-import { meshApi, type FilletSpec, type PairAssemblyResponse } from "@/lib/api";
+import { meshApi, type PairAssemblyResponse } from "@/lib/api";
 import { useStage } from "@/lib/stage";
 import { useWorkbench } from "@/lib/store";
+import { deckPayload } from "@/lib/deck";
 import { PairViewport } from "@/components/PairViewport";
+import { SplitPair } from "@/components/SplitPane";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { FilletEditor, ManufacturabilityNote } from "@/panels/ToothFormPanel";
 import { useFmt, useT } from "@/lib/i18n";
 
-interface Refine {
-  root: number;
-  flank: number;
-  thickness: number;
-}
 interface Effective {
   root: number;
   flank: number;
   thickness: number;
 }
-
-const toMeshRefine = (r: Refine) => ({
-  refine_root: r.root,
-  refine_flank: r.flank,
-  refine_thickness: r.thickness,
-});
 
 export function PairPanel() {
   const t = useT();
@@ -39,24 +30,13 @@ export function PairPanel() {
   const wb = useWorkbench();
   const [pair, setPair] = useState<PairAssemblyResponse | null>(null);
   const [position, setPosition] = useState(0); // Wälzstellung k (continuous 0 … n−1)
-  const [layers, setLayers] = useState(6);
-  // FVA mesh-fineness dialog PER GEAR (user point 7): root = Zahnfuß, flank = Zahnhöhe,
-  // thickness = Zahndicke (factors on the reference topology); Zahnbreite = layers, shared
-  const [refine1, setRefine1] = useState<Refine>({ root: 1, flank: 1, thickness: 1 });
-  const [refine2, setRefine2] = useState<Refine>({ root: 1, flank: 1, thickness: 1 });
   const [eff, setEff] = useState<Record<1 | 2, Effective | null>>({ 1: null, 2: null });
-  // root-fillet strategy PER GEAR, chosen BEFORE generating the pair (user point 6,
-  // 2026-07-06) — drives the preview mesh AND the deck identically
-  const [filletGear1, setFilletGear1] = useState<FilletSpec>({ kind: "standard" });
-  const [filletGear2, setFilletGear2] = useState<FilletSpec>({ kind: "standard" });
-  const [rollPositions, setRollPositions] = useState(30);
-  const [steelShell, setSteelShell] = useState(true);
-  const [offsetGear1, setOffsetGear1] = useState(0);
-  const [offsetGear2, setOffsetGear2] = useState(0);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  // SSOT (user point 7a): the deck torque M₂ comes from the Leistungsfluss — never a
-  // panel-local value (the full PairPanel→store migration follows in phase F)
+  // FULL store SSOT (phase F): every deck setting lives in fem.* — this panel and the
+  // Dyn-Abwälzen tab edit the SAME values, and both build their request through
+  // deckPayload(); torque M₂ comes from the Leistungsfluss (user point 7a)
+  const fem = wb.fem;
   const m2 = wb.get("fem.torque_gear2_nmm");
 
   const centerDistance = stage.center_distance_mm ?? (stage.normal_module_mm * (stage.teeth_pinion + stage.teeth_wheel)) / 2;
@@ -73,41 +53,26 @@ export function PairPanel() {
     }
   };
 
-  // ONE payload for preview assembly AND deck download (SSOT — the viewport shows exactly
-  // what the .inp contains); the torque is added only for the download
-  const deckPayload = () => ({
-    stage,
-    face_layers: layers,
-    n_roll_positions: rollPositions,
-    rotation_sense: wb.get("fem.rotation_sense") as "cw" | "ccw",
-    roll_pitches: wb.fem.roll_pitches,
-    refine_root: refine1.root,
-    refine_flank: refine1.flank,
-    refine_thickness: refine1.thickness,
-    refine_root_gear2: refine2.root,
-    refine_flank_gear2: refine2.flank,
-    refine_thickness_gear2: refine2.thickness,
-    axial_offset_gear1_mm: offsetGear1,
-    axial_offset_gear2_mm: offsetGear2,
-    steel_shell: steelShell,
-    rigid_shell_gear1: wb.fem.rigid_shell_gear1,
-    rigid_shell_gear2: wb.fem.rigid_shell_gear2,
-    fillet_gear1: filletGear1,
-    fillet_gear2: filletGear2,
-    align_contact: wb.fem.align_contact,
-    fasten_bore: wb.fem.fasten_bore,
-    fasten_cuts: wb.fem.fasten_cuts,
-    fasten_top: wb.fem.fasten_top,
-    fasten_bottom: wb.fem.fasten_bottom,
-  });
+  const refineOf = (gear: 1 | 2) =>
+    gear === 1
+      ? {
+          refine_root: fem.refine_root,
+          refine_flank: fem.refine_flank,
+          refine_thickness: fem.refine_thickness,
+        }
+      : {
+          refine_root: fem.refine_root_gear2,
+          refine_flank: fem.refine_flank_gear2,
+          refine_thickness: fem.refine_thickness_gear2,
+        };
 
   const generate = () =>
     guard("pair", async () => {
       // assembly + the effective per-tooth element counts of both 2D sections in parallel
       const [res, p1, p2] = await Promise.all([
-        meshApi.pair(deckPayload()),
-        meshApi.preview({ stage, gear: 1, ...toMeshRefine(refine1), fillet: filletGear1 }),
-        meshApi.preview({ stage, gear: 2, ...toMeshRefine(refine2), fillet: filletGear2 }),
+        meshApi.pair(deckPayload(wb)),
+        meshApi.preview({ stage, gear: 1, ...refineOf(1), fillet: fem.fillet_gear1 }),
+        meshApi.preview({ stage, gear: 2, ...refineOf(2), fillet: fem.fillet_gear2 }),
       ]);
       setPair(res);
       setPosition(0); // start of the roll = the deck's edge-tooth start position
@@ -125,12 +90,14 @@ export function PairPanel() {
         meshApi.convergence(stage, gear, "root"),
         meshApi.convergence(stage, gear, "flank"),
       ]);
-      const setR = gear === 1 ? setRefine1 : setRefine2;
-      setR((r) => ({
-        ...r,
-        root: root.converged_level ?? r.root,
-        flank: flank.converged_level ?? r.flank,
-      }));
+      const patch: Record<string, number> = {};
+      if (root.converged_level != null) {
+        patch[gear === 1 ? "refine_root" : "refine_root_gear2"] = root.converged_level;
+      }
+      if (flank.converged_level != null) {
+        patch[gear === 1 ? "refine_flank" : "refine_flank_gear2"] = flank.converged_level;
+      }
+      wb.setFem(patch);
     });
 
   const downloadDeck = () =>
@@ -138,7 +105,7 @@ export function PairPanel() {
       if (typeof m2 !== "number" || !Number.isFinite(m2)) {
         throw new Error(t("pf.noTorque"));
       }
-      const req = { ...deckPayload(), torque_gear2_nmm: m2 };
+      const req = { ...deckPayload(wb), torque_gear2_nmm: m2 };
       const series = wb.fem.deck_mode === "series";
       const blob = series
         ? await meshApi.deckSeries(req)
@@ -151,9 +118,8 @@ export function PairPanel() {
       URL.revokeObjectURL(url);
     });
 
-  return (
-    <div className="grid grid-cols-[340px_1fr] gap-3 items-start h-full">
-      <div className="flex flex-col gap-3 overflow-y-auto pr-1" style={{ maxHeight: "100%" }}>
+  const leftPane = (
+    <>
         <div className="text-[12px] text-zinc-500">
           {t("pair.stageLabel")}: <span className="font-medium text-zinc-800">{label}</span> · a ={" "}
           <span className="wb-num">{centerDistance.toFixed(2)} mm</span>
@@ -181,17 +147,21 @@ export function PairPanel() {
               ).map(([key, label, symbol]) => (
                 <AttrRow key={key} label={label} symbol={symbol} unit="">
                   {([1, 2] as const).map((gear) => {
-                    const refine = gear === 1 ? refine1 : refine2;
-                    const setRefine = gear === 1 ? setRefine1 : setRefine2;
+                    const field = (gear === 1 ? `refine_${key}` : `refine_${key}_gear2`) as
+                      | "refine_root"
+                      | "refine_flank"
+                      | "refine_thickness"
+                      | "refine_root_gear2"
+                      | "refine_flank_gear2"
+                      | "refine_thickness_gear2";
                     const effective = eff[gear];
                     return (
                       <td key={gear}>
                         <span className="inline-flex items-center gap-1.5">
                           <select
-                            value={refine[key]}
-                            onChange={(e) =>
-                              setRefine({ ...refine, [key]: Number(e.target.value) })
-                            }
+                            className="sel-narrow"
+                            value={fem[field]}
+                            onChange={(e) => wb.setFem({ [field]: Number(e.target.value) })}
                           >
                             {[1, 2, 3].map((v) => (
                               <option key={v} value={v}>
@@ -215,7 +185,11 @@ export function PairPanel() {
               ))}
               <AttrRow label={t("mesh.elemsWidth")} symbol="n_breite" unit="–">
                 <td colSpan={2}>
-                  <Num value={layers} onChange={setLayers} step={1} />
+                  <Num
+                    value={fem.face_layers}
+                    onChange={(v) => wb.setFem({ face_layers: v })}
+                    step={1}
+                  />
                 </td>
               </AttrRow>
             </tbody>
@@ -234,12 +208,20 @@ export function PairPanel() {
             <tbody>
               <AttrRow label={`${t("pair.axialOffset")} · ${t("pair.gear1")}`} symbol="Δz₁" unit="mm">
                 <td>
-                  <Num value={offsetGear1} onChange={setOffsetGear1} step={0.5} />
+                  <Num
+                    value={fem.axial_offset_gear1_mm}
+                    onChange={(v) => wb.setFem({ axial_offset_gear1_mm: v })}
+                    step={0.5}
+                  />
                 </td>
               </AttrRow>
               <AttrRow label={`${t("pair.axialOffset")} · ${t("pair.gear2")}`} symbol="Δz₂" unit="mm">
                 <td>
-                  <Num value={offsetGear2} onChange={setOffsetGear2} step={0.5} />
+                  <Num
+                    value={fem.axial_offset_gear2_mm}
+                    onChange={(v) => wb.setFem({ axial_offset_gear2_mm: v })}
+                    step={0.5}
+                  />
                 </td>
               </AttrRow>
             </tbody>
@@ -248,15 +230,21 @@ export function PairPanel() {
         </Section>
 
         <Section title={`${t("mesh.fillet")} · ${t("pair.gear1")}`} defaultOpen={false}>
-          <FilletEditor value={filletGear1} onChange={setFilletGear1} />
+          <FilletEditor
+            value={fem.fillet_gear1}
+            onChange={(f) => wb.setFem({ fillet_gear1: f })}
+          />
           <div className="px-2.5 pb-2">
-            <ManufacturabilityNote kind={filletGear1.kind} />
+            <ManufacturabilityNote kind={fem.fillet_gear1.kind} />
           </div>
         </Section>
         <Section title={`${t("mesh.fillet")} · ${t("pair.gear2")}`} defaultOpen={false}>
-          <FilletEditor value={filletGear2} onChange={setFilletGear2} />
+          <FilletEditor
+            value={fem.fillet_gear2}
+            onChange={(f) => wb.setFem({ fillet_gear2: f })}
+          />
           <div className="px-2.5 pb-2">
-            <ManufacturabilityNote kind={filletGear2.kind} />
+            <ManufacturabilityNote kind={fem.fillet_gear2.kind} />
           </div>
         </Section>
 
@@ -279,17 +267,9 @@ export function PairPanel() {
             </div>
             <Section title={t("pair.roll")}>
               <div className="p-3">
-                {/* the REAL Wälzstellungen of the deck schedule (edge start → far edge) */}
-                <input
-                  type="range"
-                  min={0}
-                  max={pair.n_positions - 1}
-                  step={0.1}
-                  value={position}
-                  onChange={(e) => setPosition(Number(e.target.value))}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-[11px] text-zinc-500">
+                {/* caption ABOVE the slider — a horizontal scrollbar of the section can
+                    then never overlay it (user report: swallowed text lines) */}
+                <div className="flex flex-wrap justify-between gap-x-2 pb-1.5 text-[11px] text-zinc-500">
                   <span>1</span>
                   <span className="wb-num">
                     {t("pair.position")} {Math.round(position) + 1}/{pair.n_positions}
@@ -305,6 +285,16 @@ export function PairPanel() {
                   </span>
                   <span>{pair.n_positions}</span>
                 </div>
+                {/* the REAL Wälzstellungen of the deck schedule (edge start → far edge) */}
+                <input
+                  type="range"
+                  min={0}
+                  max={pair.n_positions - 1}
+                  step={0.1}
+                  value={position}
+                  onChange={(e) => setPosition(Number(e.target.value))}
+                  className="w-full"
+                />
               </div>
             </Section>
             <div className="text-[11.5px] text-zinc-500 leading-relaxed border border-zinc-200 rounded-lg bg-white p-2.5">
@@ -344,7 +334,11 @@ export function PairPanel() {
               </AttrRow>
               <AttrRow label={t("deck.rollPositions")} symbol="n_W" unit="–">
                 <td>
-                  <Num value={rollPositions} onChange={setRollPositions} step={1} />
+                  <Num
+                    value={fem.n_roll_positions}
+                    onChange={(v) => wb.setFem({ n_roll_positions: v })}
+                    step={1}
+                  />
                 </td>
               </AttrRow>
             </tbody>
@@ -353,8 +347,8 @@ export function PairPanel() {
             <label className="inline-flex items-center gap-1.5 text-[12px] text-zinc-600">
               <input
                 type="checkbox"
-                checked={steelShell}
-                onChange={(e) => setSteelShell(e.target.checked)}
+                checked={fem.steel_shell}
+                onChange={(e) => wb.setFem({ steel_shell: e.target.checked })}
               />
               {t("deck.steelShell")}
             </label>
@@ -363,11 +357,19 @@ export function PairPanel() {
             </Btn>
           </div>
         </Section>
-      </div>
+    </>
+  );
 
-      <div className="h-full min-h-[560px]" style={{ background: "var(--wb-viewport)", borderRadius: 10 }}>
-        <PairViewport pair={pair} position={position} />
-      </div>
-    </div>
+  return (
+    <SplitPair
+      initial={475}
+      min={430}
+      left={leftPane}
+      right={
+        <div className="h-full min-h-[560px]" style={{ background: "var(--wb-viewport)", borderRadius: 10 }}>
+          <PairViewport pair={pair} position={position} />
+        </div>
+      }
+    />
   );
 }

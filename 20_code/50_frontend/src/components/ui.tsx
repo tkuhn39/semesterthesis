@@ -24,7 +24,9 @@ export function Section(props: {
         <span className="font-medium text-[12.5px] text-zinc-700">{props.title}</span>
         <span className="ml-auto">{props.right}</span>
       </button>
-      {open && <div>{props.children}</div>}
+      {/* NEVER clip values/units (user report): content wider than the pane scrolls
+          horizontally instead of being cut off by the rounded-corner clip above */}
+      {open && <div className="overflow-x-auto">{props.children}</div>}
     </div>
   );
 }

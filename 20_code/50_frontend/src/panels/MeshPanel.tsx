@@ -17,6 +17,7 @@ import {
 import { useStage } from "@/lib/stage";
 import { MeshViewport } from "@/components/MeshViewport";
 import { Mesh2DView } from "@/components/Mesh2DView";
+import { SplitPair } from "@/components/SplitPane";
 import { FilletEditor, ManufacturabilityNote } from "@/panels/ToothFormPanel";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { useFmt, useT } from "@/lib/i18n";
@@ -87,9 +88,8 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
       setRanking(await meshApi.filletCompare(stage, props.gear));
     });
 
-  return (
-    <div className="grid grid-cols-[360px_1fr] gap-3 items-start h-full">
-      <div className="flex flex-col gap-3 overflow-y-auto pr-1" style={{ maxHeight: "100%" }}>
+  const leftPane = (
+    <>
         <Section title={t("mesh.density")}>
           <div className="p-2 border-b border-zinc-100">
             <select
@@ -128,7 +128,11 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
             <tbody>
               <AttrRow label={t("mesh.densityRoot")} symbol="f_Fuß" unit="×">
                 <td>
-                  <select value={refineRoot} onChange={(e) => setRefineRoot(Number(e.target.value))}>
+                  <select
+                    className="sel-narrow"
+                    value={refineRoot}
+                    onChange={(e) => setRefineRoot(Number(e.target.value))}
+                  >
                     {[1, 2, 3].map((v) => (
                       <option key={v} value={v}>
                         {v}
@@ -139,7 +143,11 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
               </AttrRow>
               <AttrRow label={t("mesh.densityFlank")} symbol="f_Flanke" unit="×">
                 <td>
-                  <select value={refineFlank} onChange={(e) => setRefineFlank(Number(e.target.value))}>
+                  <select
+                    className="sel-narrow"
+                    value={refineFlank}
+                    onChange={(e) => setRefineFlank(Number(e.target.value))}
+                  >
                     {[1, 2, 3].map((v) => (
                       <option key={v} value={v}>
                         {v}
@@ -151,6 +159,7 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
               <AttrRow label={t("mesh.densityThickness")} symbol="f_Dicke" unit="×">
                 <td>
                   <select
+                    className="sel-narrow"
                     value={refineThickness}
                     onChange={(e) => setRefineThickness(Number(e.target.value))}
                   >
@@ -328,15 +337,23 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
             </div>
           )}
         </Section>
-      </div>
+    </>
+  );
 
-      <div className="h-full min-h-[560px]" style={{ background: "var(--wb-viewport)", borderRadius: 10 }}>
-        {view === "2d" && preview ? (
-          <Mesh2DView data={preview} heatmap={heatmap} height={620} />
-        ) : (
-          <MeshViewport data={data} heatmap={heatmap} />
-        )}
-      </div>
-    </div>
+  return (
+    <SplitPair
+      initial={380}
+      min={340}
+      left={leftPane}
+      right={
+        <div className="h-full min-h-[560px]" style={{ background: "var(--wb-viewport)", borderRadius: 10 }}>
+          {view === "2d" && preview ? (
+            <Mesh2DView data={preview} heatmap={heatmap} height={620} />
+          ) : (
+            <MeshViewport data={data} heatmap={heatmap} />
+          )}
+        </div>
+      }
+    />
   );
 }

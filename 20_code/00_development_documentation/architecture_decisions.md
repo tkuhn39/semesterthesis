@@ -777,6 +777,17 @@ convergence quick check, fillet ranking, deck download incl. rigid-shell rule), 
    `CatiaControls`): MMB drag = pan, MMB+LMB/RMB = quaternion free-tumble (full 360°, no
    polar clamp), wheel = orthographic zoom; middle-click autoscroll suppressed. Rigid-shell
    gears render as semi-transparent open mantles (the missing end faces are deliberate).
+3. **One deck payload builder + store SSOT** (`lib/deck.ts`): every deck consumer — the
+   Dyn-Abwälzen tab action, the pair-view assembly preview and the deck/series download —
+   builds its request through `deckPayload()`, so identical settings give byte-identical
+   decks. The PairPanel's panel-local state (layers, fineness, fillets, offsets,
+   rigid-shell, roll positions) moved into `fem.*`; the tab and the pair view edit the
+   same values.
+4. **Resizable panes + no clipping** (`components/SplitPane.tsx`): the tree, the
+   Ergebnis-Schnellansicht and the viewport panels get a draggable divider clamped at a
+   content min-width (user: "verschieben, aber ein Block, dass man nicht mehr
+   verkleinern kann"); `Section`/QuickView wrappers use `overflow-x-auto` (scroll, never
+   cut); numeric fineness selects use a narrow variant so per-gear column pairs fit.
 
 ---
 

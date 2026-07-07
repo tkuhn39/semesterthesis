@@ -123,6 +123,26 @@ Dates are ISO 8601 (YYYY-MM-DD).
   plane-FE convergence for root AND flank and preseeds the factors with the
   converged level.
 
+### Changed (PairPanel SSOT + layout — phase F, user "Felder/Einheit verschluckt")
+- **PairPanel fully on the store**: face layers, per-gear fineness factors
+  (root/flank/thickness), roll positions, rigid-shell flag, axial offsets and both
+  root fillets moved out of panel-local `useState` into `fem.*` — the Dyn-Abwälzen
+  tab and the pair view now edit the SAME values. A new `lib/deck.ts` `deckPayload()`
+  is THE single request builder; the SchemaTab action and the pair view both call it,
+  so identical settings yield byte-identical decks (no more divergent deck paths).
+- **Resizable split panes with a min-width lock** (`components/SplitPane.tsx`): the
+  model tree, the Ergebnis-Schnellansicht and the viewport panels (PairPanel,
+  MeshPanel) get a draggable divider that CLAMPS at the content minimum — the user's
+  "Fenster verschieben, aber ein Block, dass man nicht mehr verkleinern kann".
+- **Never clip values/units** (user report): `Section` bodies and the QuickView table
+  wrappers switched from `overflow-hidden` to `overflow-x-auto` (content scrolls
+  instead of being cut by the rounded-corner clip); the ×1/×2/×3 fineness dropdowns
+  use a narrow `.sel-narrow` variant so the per-gear column pairs fit without pushing
+  units out of the pane; the roll-slider caption moved above the track.
+- Verified by own Playwright screenshots (`shot-pair.mjs`, `shot-femesh.mjs` +
+  the 27-view `self-screenshots.mjs`): per-gear fineness table with ≙ effective
+  counts, closed assembly in the viewport, no swallowed fields/units.
+
 ### Fixed
 - Powerflow torque reset: entering **0** (not only clearing) now frees both shaft
   fields again (user report).

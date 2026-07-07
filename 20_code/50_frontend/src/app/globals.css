@@ -78,6 +78,12 @@ body {
   min-width: 220px;
   max-width: 320px;
 }
+.attr-table select.sel-narrow {
+  /* short numeric choices (×1/×2/×3 fineness factors) — the 220px phrase minimum would
+     push per-gear column pairs out of the pane (user report: values swallowed) */
+  min-width: 56px;
+  max-width: 88px;
+}
 /* FVA-style computed/locked fields: grey background, not editable */
 .attr-table input:disabled,
 .attr-table select:disabled,

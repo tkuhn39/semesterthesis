@@ -54,7 +54,7 @@ export function QuickView() {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="border border-zinc-200 rounded-lg overflow-hidden bg-white">
+      <div className="border border-zinc-200 rounded-lg overflow-x-auto bg-white">
         <div className="px-3 py-1.5 text-[12px] font-semibold text-white bg-sky-900">
           {t("quick.mainTitle")}
         </div>
@@ -84,7 +84,7 @@ export function QuickView() {
           </tbody>
         </table>
       </div>
-      <div className="border border-zinc-200 rounded-lg overflow-hidden bg-white">
+      <div className="border border-zinc-200 rounded-lg overflow-x-auto bg-white">
         <div className="px-3 py-1.5 text-[12px] font-semibold text-white bg-sky-900">
           {t("quick.diaTitle")}
         </div>
