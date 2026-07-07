@@ -451,6 +451,16 @@ export interface DeckRequest {
   fasten_cuts?: boolean;
   fasten_top?: boolean;
   fasten_bottom?: boolean;
+  // per-position torque cycle + roll setup (user decisions 2026-07-06)
+  roll_pitches?: number;
+  ramp_up?: number;
+  hold?: number;
+  ramp_down?: number;
+  move?: number;
+  settle?: number;
+  base_torque_fraction?: number;
+  start_at_edge?: boolean;
+  rotation_sense?: "cw" | "ccw";
 }
 export interface ContourRequest {
   stage: StageParams;
@@ -492,6 +502,15 @@ export const meshApi = {
   filletSweep: (stage: StageParams, gear: 1 | 2, kind: "elliptic" | "bezier" | "bionic") =>
     post<FilletSweepResponse>("/api/mesh/fillet-sweep", { stage, gear, kind, points: 6 }),
   deck: (req: DeckRequest) => postText("/api/mesh/deck", req),
+  deckSeries: async (req: DeckRequest): Promise<Blob> => {
+    const res = await fetch(`${BASE}/api/mesh/deck-series`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req),
+    });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}: ${await res.text()}`);
+    return res.blob();
+  },
 };
 export const contourApi = {
   contour: (req: ContourRequest) => post<ContourResponse>("/api/mesh/contour", req),

@@ -463,13 +463,52 @@ ATTRIBUTES: list[AttributeDef] = [
         info_en="Without a local Abaqus solver only the deck export is active.",
     ),
     AttributeDef(
+        id="fem_deck_mode",
+        label_de="Berechnungsmodus",
+        label_en="Calculation mode",
+        kind="enum",
+        options=[
+            _opt(
+                "series",
+                "Positions-Serie (ein INP je Wälzstellung)",
+                "Position series (one INP per roll position)",
+            ),
+            _opt(
+                "single",
+                "Ein Deck (quasi-statische Durchfahrt)",
+                "Single deck (quasi-static sweep)",
+            ),
+        ],
+        binding="fem.deck_mode",
+        norm_ref="pfadunabhängig: Marlow-Hyperelastizität + reibungsfreier Kontakt",
+        info_de=(
+            "Serie (Default): je Wälzstellung eine unabhängige statische Rechnung — "
+            "ergebnisgleich (pfadunabhängiges Modell), robust gegen Konvergenzabbrüche, "
+            "parallelisierbar. Ein-Deck: Referenzmodus mit Momentzyklus je Position "
+            "(durchgängige Animation)."
+        ),
+        info_en=(
+            "Series (default): one independent static solve per roll position — same "
+            "results (path-independent model), robust, parallelisable. Single deck: "
+            "reference mode with the per-position torque cycle."
+        ),
+    ),
+    AttributeDef(
         id="fem_inp_path",
         label_de="Abaqus inp Datei abspeichern",
         label_en="Save Abaqus inp file",
         kind="action",
         binding="fem.download_deck",
-        info_de="Erzeugt das referenzgetreue implizite Abwälz-Deck (.inp) zum Download.",
-        info_en="Generates the reference-faithful implicit rolling deck (.inp) for download.",
+        info_de=(
+            "Erzeugt den Abwälz-Lastfall zum Download — je nach Berechnungsmodus das "
+            "Einzel-Deck (.inp) oder die Positions-Serie (.zip mit pair_common.inp, "
+            "pos_NNN.inp, manifest.json und Run-Skripten)."
+        ),
+        info_en=(
+            "Generates the rolling load case for download — the single deck (.inp) or "
+            "the position series (.zip with shared mesh, per-position files, manifest "
+            "and run scripts), per the calculation mode."
+        ),
     ),
     AttributeDef(
         id="fem_result_in_model",
@@ -1425,6 +1464,27 @@ ATTRIBUTES: list[AttributeDef] = [
         info_en="Derived from the ratio — input only at shaft 1.",
     ),
     AttributeDef(
+        id="pf_direction",
+        label_de="Drehrichtung Welle 1",
+        label_en="Rotation sense shaft 1",
+        kind="enum",
+        options=[
+            _opt("cw", "rechtslaufend", "clockwise"),
+            _opt("ccw", "linkslaufend", "counter-clockwise"),
+        ],
+        binding="powerflow.direction_shaft1",
+        norm_ref="Prüfstand-Draufsicht (ADR-021)",
+        info_de=(
+            "Drehsinn des Antriebs — bestimmt die Vorzeichen von Moment und Wälzrichtung "
+            "im Abwälz-Deck (rechtslaufend = validierter Referenzfall: Momentenrad dreht "
+            "im Uhrzeigersinn)."
+        ),
+        info_en=(
+            "Drive rotation sense — sets the torque/roll signs of the rolling deck "
+            "(clockwise = the validated reference case)."
+        ),
+    ),
+    AttributeDef(
         id="pf_load_type",
         label_de="Typ",
         label_en="Type",
@@ -2135,6 +2195,7 @@ def _transient_fem_tab() -> TabDef:
                     RowRef(attr="roll_positions"),
                     RowRef(attr="torque_gear2"),
                     RowRef(attr="align_contact"),
+                    RowRef(attr="fem_deck_mode"),
                     RowRef(attr="fem_result_in_model"),
                     RowRef(attr="fem_run_solver"),
                     RowRef(attr="fem_inp_path"),
@@ -2434,6 +2495,7 @@ def _powerflow_tab() -> TabDef:
                 rows=[
                     RowRef(attr="pf_speed_shaft1"),
                     RowRef(attr="pf_speed_shaft2"),
+                    RowRef(attr="pf_direction"),
                     RowRef(attr="pf_load_type"),
                     RowRef(attr="pf_power"),
                     RowRef(attr="pf_torque"),

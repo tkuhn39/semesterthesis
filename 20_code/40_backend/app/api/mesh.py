@@ -17,7 +17,7 @@ from collections import defaultdict
 from typing import Annotated, Literal
 
 import numpy as np
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
@@ -35,7 +35,7 @@ from app.services.geometry.root_fillet import (
 )
 from app.services.geometry.tooth_form import ToothProfile
 from app.services.materials import catalog_material
-from app.services.model.implicit_deck import build_implicit_pair_from_stage
+from app.services.model.implicit_deck import build_implicit_pair_from_stage, build_position_series
 from app.services.model.materials_card import LinearElastic, MarlowUniaxial, card_from_catalog
 from app.services.model.mesh3d import extrude_to_hex
 from app.services.model.plane_fe import density_convergence, root_tensile_stress
@@ -101,6 +101,24 @@ class DeckRequest(BaseModel):
     torque_gear2_nmm: float = Field(20000.0, gt=0.0)
     face_layers: int = Field(6, ge=1, le=80)
     n_roll_positions: int = Field(30, ge=1, le=200)
+    # per-position torque cycle (user decision 2026-07-06; increments per phase)
+    roll_pitches: float = Field(3.0, gt=0.0, le=4.0)
+    ramp_up: int = Field(2, ge=1, le=20)
+    hold: int = Field(2, ge=1, le=20)
+    ramp_down: int = Field(2, ge=1, le=20)
+    move: int = Field(2, ge=1, le=20)
+    settle: int = Field(6, ge=1, le=40)
+    base_torque_fraction: float = Field(0.01, ge=0.0, le=0.5)
+    start_at_edge: bool = Field(
+        True,
+        description="Begin the roll at an edge tooth so the middle teeth sweep the full "
+        "engagement boundary-free (user decision 2026-07-06)",
+    )
+    rotation_sense: Literal["cw", "ccw"] = Field(
+        "cw",
+        description="Drehrichtung of the drive (Leistungsfluss): cw = validated default "
+        "(torque gear clockwise in the rig top view); ccw mirrors the load case",
+    )
     refine_root: int = Field(1, ge=1, le=3)
     refine_flank: int = Field(1, ge=1, le=3)
     gear1_material: Literal["steel", "plastic"] = "steel"
@@ -530,32 +548,24 @@ def tooth_contour(req: ContourRequest) -> ContourResponse:
 def build_deck(req: DeckRequest) -> PlainTextResponse:
     """The full implicit rolling deck (.inp) for the stage with the requested options."""
     stage = req.stage.stage()
-
-    def deck_material(kind: str) -> LinearElastic | MarlowUniaxial:
-        # properties from THE material catalog (single source, user decision 2026-07-04)
-        return card_from_catalog(catalog_material(kind))
-
-    kinds = (req.gear1_material, req.gear2_material)
-    # roles follow the MATERIAL (reference parity), the chain follows the input slot:
-    # the plastic side is angle-driven and the contact slave; same-material pairs keep gear 2
-    plastic_side = 1 if kinds == ("plastic", "steel") else 2
-    # the mixed-pairing rigid-shell rule only applies to the steel side of a mixed pair
-    rigid_gears: frozenset[int] = frozenset()
-    if req.steel_shell and "plastic" in kinds and "steel" in kinds:
-        rigid_gears = frozenset({1 + kinds.index("steel")})
+    roles = _deck_roles(req)
     deck = build_implicit_pair_from_stage(
         stage,
-        gear1_material=deck_material(req.gear1_material),
-        gear2_material=deck_material(req.gear2_material),
         torque_gear2_nmm=req.torque_gear2_nmm,
         face_layers=req.face_layers,
         axial_offset_mm=(req.axial_offset_gear1_mm, req.axial_offset_gear2_mm),
+        roll_pitches=req.roll_pitches,
         n_roll_positions=req.n_roll_positions,
+        ramp_up=req.ramp_up,
+        hold=req.hold,
+        ramp_down=req.ramp_down,
+        move=req.move,
+        settle=req.settle,
+        base_torque_fraction=req.base_torque_fraction,
+        start_at_edge=req.start_at_edge,
+        rotation_sense=req.rotation_sense,
         refine_root=req.refine_root,
         refine_flank=req.refine_flank,
-        rigid_gears=rigid_gears,
-        driven_gear=plastic_side,
-        slave_gear=plastic_side,
         fillet_gear1=req.fillet_gear1.strategy(),
         fillet_gear2=req.fillet_gear2.strategy(),
         align_contact=req.align_contact,
@@ -563,10 +573,79 @@ def build_deck(req: DeckRequest) -> PlainTextResponse:
         fasten_cuts=req.fasten_cuts,
         fasten_bottom=req.fasten_bottom,
         fasten_top=req.fasten_top,
+        **roles,
     )
-    pitch_deg = 360.0 / stage.teeth[plastic_side - 1]  # the angle-driven gear's pitch
+    pitch_deg = 360.0 / stage.teeth[roles["driven_gear"] - 1]  # the angle-driven gear's pitch
     headers = {
         "Content-Disposition": "attachment; filename=implicit_rolling_generated.inp",
         "X-Roll-Pitch-Deg": f"{pitch_deg:.4f}",
     }
     return PlainTextResponse(deck, media_type="text/plain", headers=headers)
+
+
+def _deck_roles(req: DeckRequest) -> dict:
+    """Materials + role assignment shared by both deck modes (single file and series).
+
+    Roles follow the MATERIAL (reference parity), the chain follows the input slot: the
+    plastic side is angle-driven and the contact slave; same-material pairs keep gear 2.
+    The mixed-pairing rigid-shell rule applies to the steel side only.
+    """
+
+    def deck_material(kind: str) -> LinearElastic | MarlowUniaxial:
+        # properties from THE material catalog (single source, user decision 2026-07-04)
+        return card_from_catalog(catalog_material(kind))
+
+    kinds = (req.gear1_material, req.gear2_material)
+    plastic_side = 1 if kinds == ("plastic", "steel") else 2
+    rigid_gears: frozenset[int] = frozenset()
+    if req.steel_shell and "plastic" in kinds and "steel" in kinds:
+        rigid_gears = frozenset({1 + kinds.index("steel")})
+    return {
+        "gear1_material": deck_material(req.gear1_material),
+        "gear2_material": deck_material(req.gear2_material),
+        "rigid_gears": rigid_gears,
+        "driven_gear": plastic_side,
+        "slave_gear": plastic_side,
+    }
+
+
+@router.post("/deck-series")
+def build_deck_series(req: DeckRequest) -> Response:
+    """The position series (default mode): one INP per Wälzstellung as a ZIP.
+
+    Contains ``pair_common.inp`` (shared mesh), ``pos_NNN.inp`` per position,
+    ``manifest.json`` (angles/torque/files for the postprocessing) and run scripts.
+    """
+    import io
+    import zipfile
+
+    stage = req.stage.stage()
+    roles = _deck_roles(req)
+    files = build_position_series(
+        stage,
+        torque_gear2_nmm=req.torque_gear2_nmm,
+        face_layers=req.face_layers,
+        axial_offset_mm=(req.axial_offset_gear1_mm, req.axial_offset_gear2_mm),
+        roll_pitches=req.roll_pitches,
+        n_roll_positions=req.n_roll_positions,
+        hold=req.hold,
+        settle=req.settle,
+        start_at_edge=req.start_at_edge,
+        rotation_sense=req.rotation_sense,
+        refine_root=req.refine_root,
+        refine_flank=req.refine_flank,
+        fillet_gear1=req.fillet_gear1.strategy(),
+        fillet_gear2=req.fillet_gear2.strategy(),
+        align_contact=req.align_contact,
+        fasten_bore=req.fasten_bore,
+        fasten_cuts=req.fasten_cuts,
+        fasten_bottom=req.fasten_bottom,
+        fasten_top=req.fasten_top,
+        **roles,
+    )
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as zf:
+        for name, content in files:
+            zf.writestr(name, content)
+    headers = {"Content-Disposition": "attachment; filename=rolling_position_series.zip"}
+    return Response(buf.getvalue(), media_type="application/zip", headers=headers)

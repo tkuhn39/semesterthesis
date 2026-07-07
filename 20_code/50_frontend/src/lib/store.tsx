@@ -35,6 +35,7 @@ export interface FemState {
   fasten_top: boolean;
   fasten_bottom: boolean;
   align_contact: boolean;
+  deck_mode: "series" | "single"; // Positions-Serie (default) vs. quasi-static single deck
   result_in_model: boolean;
   auto_smoothing: boolean;
   expert_stirak: boolean;
@@ -283,6 +284,7 @@ const FEM_DEFAULTS: FemState = {
   fasten_top: false,
   fasten_bottom: false,
   align_contact: true,
+  deck_mode: "series",
   result_in_model: false,
   auto_smoothing: true,
   expert_stirak: false,
@@ -590,6 +592,8 @@ const DERIVED: Record<string, (s: WorkbenchState) => unknown> = {
   // deck material cards + norm dispatch follow the Werkstoff selection (per slot)
   "fem.gear1_material": (s) => s.materials.gear1_kind,
   "fem.gear2_material": (s) => s.materials.gear2_kind,
+  // the deck's roll/torque signs follow the Leistungsfluss Drehrichtung (user point 7b)
+  "fem.rotation_sense": (s) => s.powerflow.direction_shaft1,
   // capacity load case = the Leistungsfluss (T₁ at the pinion, n₁ at shaft [4])
   "operating.pinion_torque_nm": (s) => torqueT1(s),
   "operating.pinion_speed_min1": (s) => s.powerflow.speed_shaft1_min1,
@@ -774,10 +778,12 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
             };
           }
           // ONE torque, entered on either shaft: writing a virtual shaft field stores
-          // the raw value + which shaft it belongs to; an emptied field resets both
+          // the raw value + which shaft it belongs to; an emptied field OR the value 0
+          // resets both (user report 2026-07-06: 0 must free the other side again)
           if (field === "torque_shaft1_nm" || field === "torque_shaft2_nm") {
             const shaft = field === "torque_shaft1_nm" ? 1 : 2;
-            const num = typeof value === "number" && Number.isFinite(value) ? value : null;
+            const num =
+              typeof value === "number" && Number.isFinite(value) && value !== 0 ? value : null;
             return {
               ...prev,
               powerflow: {

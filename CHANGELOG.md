@@ -9,6 +9,53 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Changed (rolling deck load case — user feedback round 2026-07-06, phase A)
+- **Per-position torque cycle** replaces the constant-torque staircase
+  (`RollKinematics` + `_torque_cycle_pairs`): the angle-driven gear is HELD at each
+  Wälzstellung while the torque gear ramps base→full (`ramp_up`), holds at full
+  (`hold`, measurement at the END — Newton equilibrium each increment, STABILIZE
+  energy decayed), ramps back to the **base fraction** (default 1 % of the powerflow
+  torque — flanks stay seated, no free spin; the very first ramp starts at 0), and
+  only then the angle sub-ramps to the next position (`move` increments). This is
+  what the FVA reference deck does (its AMP-TORQUE alternates −78.5/−7846.2).
+- **SMOOTH STEP amplitudes** (`*AMPLITUDE, DEFINITION=SMOOTH STEP`): zero slope at
+  both ends of every ramp — gentle contact seating at low torque, no overshoot at
+  full torque (addresses the user's convergence aborts at high torque).
+- **Roll starts at an EDGE tooth** (`start_at_edge`, default on): the pair is
+  pre-rotated ±roll/2 (kinematically coupled) so the sweep walks the contact across
+  the sector and the MIDDLE teeth complete the full engagement boundary-free;
+  `roll_pitches` default 3 (gear-1 tooth T1 has no working partner in the window).
+- **Sweep-union contact pairing** (`_sweep_contact_pairs`): flank centroids are
+  rotated through the whole coupled roll and every pairing found becomes a
+  `*CONTACT PAIR` — reproduces exactly the reference deck's **7 pairs** (working
+  F2 g1-i↔g2-(6−i), back F1 g1-i↔g2-(5−i)); proximity-at-t0 had found only 6.
+- **Reference-parity outputs**: `*STATIC …, ALLSDTOL=0.0, CONTINUE=NO`;
+  `*RESTART, WRITE`; `*TIME POINTS, NAME=MEASURE` (exact full-torque equilibrium
+  instants, hit exactly by Standard) with the full per-flank-set payload (NODE
+  CF/RF/U · CONTACT CFORCE/CSTRESS/CDISP · ELEMENT E/MISESMAX/…/S per
+  `G{g}T{nnn}F{f}` set + MASTERKNOTEN + global U) plus a cheap all-increment
+  animation request (U only); measure table also in the deck header.
+- **Drehrichtung** (`rotation_sense` cw/ccw, from the Leistungsfluss "Drehrichtung
+  Welle 1" dropdown — new schema row): mirrors roll sign, closing flank and start
+  offset consistently.
+
+### Added (position series — the new default deck mode)
+- **`POST /api/mesh/deck-series`** (+ `build_position_series`): one INDEPENDENT
+  static INP per Wälzstellung — legitimate because the model is path-independent
+  (Marlow hyperelasticity + frictionless contact) — robust against convergence
+  aborts (one failure costs one position) and trivially parallelisable. ZIP layout:
+  `pair_common.inp` (shared mesh via `*INCLUDE`, positioned per file through
+  `*INSTANCE` rotation lines — 252 kB instead of ~30 full decks), `pos_NNN.inp`,
+  `manifest.json` (angles/torque/files for the postprocessing), `run_all.bat/.sh`.
+  The Dyn-Abwälzen tab gets a "Berechnungsmodus" dropdown (series default); both
+  frontend download paths share one payload.
+
+### Fixed
+- Powerflow torque reset: entering **0** (not only clearing) now frees both shaft
+  fields again (user report).
+- PairPanel deck download no longer uses a panel-local M₂=20000: the torque comes
+  from the Leistungsfluss (SSOT), incl. Drehrichtung/fasten/align flags.
+
 ## [0.7.0] - 2026-07-05
 
 User-feedback round after v0.6.0: powerflow SSOT rebuild (one torque on either shaft,

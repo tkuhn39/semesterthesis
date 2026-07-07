@@ -23,20 +23,25 @@ function useActions(): Record<string, { label: string; run: () => Promise<string
   const t = useT();
   return {
     "fem.download_deck": {
-      label: "implicit_rolling_generated.inp",
+      label:
+        wb.fem.deck_mode === "series"
+          ? "rolling_position_series.zip"
+          : "implicit_rolling_generated.inp",
       run: async () => {
         const m2 = wb.get("fem.torque_gear2_nmm");
         if (typeof m2 !== "number" || !Number.isFinite(m2)) {
-          throw new Error(
-            t("pf.noTorque"),
-          );
+          throw new Error(t("pf.noTorque"));
         }
-        const text = await meshApi.deck({
+        // ONE payload for both modes — SSOT chains: torque M₂ + Drehrichtung from the
+        // Leistungsfluss, materials from the Werkstoff tab, everything else from fem.*
+        const req = {
           stage: wb.stage,
-          // SSOT chains: torque M₂ from the Leistungsfluss, materials from the Werkstoff tab
           torque_gear2_nmm: m2,
           face_layers: wb.fem.face_layers,
           n_roll_positions: wb.fem.n_roll_positions,
+          roll_pitches: wb.fem.roll_pitches,
+          start_at_edge: true,
+          rotation_sense: wb.get("fem.rotation_sense") as "cw" | "ccw",
           refine_root: wb.fem.refine_root,
           refine_flank: wb.fem.refine_flank,
           gear1_material: wb.get("fem.gear1_material") as "steel" | "plastic",
@@ -47,12 +52,15 @@ function useActions(): Record<string, { label: string; run: () => Promise<string
           fasten_cuts: wb.fem.fasten_cuts,
           fasten_top: wb.fem.fasten_top,
           fasten_bottom: wb.fem.fasten_bottom,
-        });
-        const blob = new Blob([text], { type: "text/plain" });
+        };
+        const series = wb.fem.deck_mode === "series";
+        const blob = series
+          ? await meshApi.deckSeries(req)
+          : new Blob([await meshApi.deck(req)], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "implicit_rolling_generated.inp";
+        a.download = series ? "rolling_position_series.zip" : "implicit_rolling_generated.inp";
         a.click();
         URL.revokeObjectURL(url);
       },

@@ -10,13 +10,16 @@
           bore surface plus BOTH radial cut planes as complete cross-sections (every single
           node of those faces, bore → root circle, all face-width planes; the reference holds
           2 268 / 2 225 nodes per cut plane and nothing else).
-       2. **Initial contact** — minimal flank-to-flank distance at t=0 in [0, 35] um on the
-          -y flank (single-flank contact; reference ≈ 25 um). The gears must not "run in
-          the air" with the allowance backlash split onto both flanks.
-       3. **Step & amplitudes** — exactly one ``*STATIC`` step; AMP-TORQUE reaches full level
-          while AMP-ANGLE still dwells at 0 (the torque ramp closes the last um of gap).
-       4. **Contact pairs** — ≥ 5 flank-wise ``*CONTACT PAIR`` (reference: 7 for 4-tooth
-          sectors), slave (plastic side) listed first.
+       2. **Initial contact** — minimal flank-to-flank distance at t=0 in [0, 35] um,
+          single-flank, and located at an EDGE tooth of gear 1 (working flank F2) so the
+          middle teeth sweep the full engagement boundary-free (user decision 2026-07-06).
+       3. **Step & torque cycle** — exactly one ``*STATIC`` step with SMOOTH-STEP amplitudes,
+          ``ALLSDTOL=0.0, CONTINUE=NO``, ``*RESTART``; one ``*TIME POINTS`` measurement
+          instant per Wälzstellung, full torque at every measurement, torque back at the
+          base fraction between positions, angle moves only while the torque is at base;
+          per-flank-set measurement outputs (reference grouping).
+       4. **Contact pairs** — exactly the 7 reference pairs (sweep-union pairing: working
+          F2 g1-i↔g2-(6−i), back F1 g1-i↔g2-(5−i)), slave (plastic side) listed first.
 
        Optionally repeats the Fesselung/gap measurement on the reference deck itself
        (``--reference``; slow, parses a 74 MB file). Run from ``20_code/``:
@@ -77,6 +80,7 @@ def parse_deck(lines: Iterable[str]) -> dict:
     nodes: dict[str, dict[int, tuple[float, float, float]]] = {}
     nsets: dict[str, tuple[str | None, list[int]]] = {}
     amplitudes: dict[str, list[tuple[float, float]]] = {}
+    time_points: dict[str, list[float]] = {}
     contact_pairs: list[str] = []
     n_static = 0
     part: str | None = None
@@ -104,12 +108,18 @@ def parse_deck(lines: Iterable[str]) -> dict:
                 inst = re.search(r"INSTANCE\s*=\s*([^,\s]+)", s, re.I)
                 name = m.group(1) if m else "?"
                 generate = "GENERATE" in u
-                if "FESSELUNG" in name.upper():
-                    cur = name
-                    nsets[name] = (inst.group(1) if inst else None, [])
+                if "FESSELUNG" in name.upper() or re.fullmatch(r"G\dT\d{3}F\d_NODESET", name, re.I):
+                    cur = name if inst is None else name
+                    # flank nsets live inside a part; remember which part we are in
+                    nsets[name] = (inst.group(1) if inst else part, [])
                     mode = "nset"
                 else:
                     cur, mode = None, "skip"
+            elif u.startswith("*TIME POINTS"):
+                m = re.search(r"NAME\s*=\s*([^,\s]+)", s, re.I)
+                cur = f"timepoints:{m.group(1) if m else '?'}"
+                time_points[m.group(1) if m else "?"] = []
+                mode = "tp"
             elif u.startswith("*AMPLITUDE"):
                 m = re.search(r"NAME\s*=\s*([^,\s]+)", s, re.I)
                 cur = m.group(1) if m else "?"
@@ -137,6 +147,9 @@ def parse_deck(lines: Iterable[str]) -> dict:
         elif mode == "amp" and cur:
             vals = [float(v) for v in s.split(",") if v.strip()]
             amplitudes[cur].extend(zip(vals[0::2], vals[1::2], strict=False))
+        elif mode == "tp" and cur:
+            name = cur.split(":", 1)[1]
+            time_points[name].extend(float(v) for v in s.split(",") if v.strip())
         elif mode == "cpair":
             contact_pairs.append(s)
             mode = None
@@ -144,6 +157,7 @@ def parse_deck(lines: Iterable[str]) -> dict:
         "nodes": nodes,
         "nsets": nsets,
         "amplitudes": amplitudes,
+        "time_points": time_points,
         "contact_pairs": contact_pairs,
         "n_static": n_static,
     }
@@ -181,12 +195,11 @@ def classify_fesselung(
     check(f"{label} spans all face-width planes", n_z >= 2, f"{n_z} distinct z planes")
 
 
-def min_gap_mm(
-    t1: np.ndarray, t2: np.ndarray, chunk: int = 2000
-) -> tuple[float, float, np.ndarray]:
-    """Minimal 2D distance between two node clouds (chunked, numpy only)."""
+def min_gap_mm(t1: np.ndarray, t2: np.ndarray, chunk: int = 2000) -> tuple[float, float, int]:
+    """Minimal 2D distance between two node clouds → (gap, y at contact, index into t1)."""
     best = math.inf
-    best_pair = (np.zeros(2), np.zeros(2))
+    best_y = 0.0
+    best_i = 0
     for i in range(0, len(t1), chunk):
         block = t1[i : i + chunk, None, :2] - t2[None, :, :2]
         d = np.hypot(block[..., 0], block[..., 1])
@@ -194,8 +207,9 @@ def min_gap_mm(
         bi, bj = np.unravel_index(j, d.shape)
         if float(d[bi, bj]) < best:
             best = float(d[bi, bj])
-            best_pair = (t1[i + bi], t2[bj])
-    return best, float(best_pair[0][1]), best_pair[0]
+            best_y = float(t1[i + bi][1])
+            best_i = i + int(bi)
+    return best, best_y, best_i
 
 
 def tooth_zone(
@@ -240,40 +254,96 @@ def main() -> None:
         "Part_Rad_Vz_2": profile2.root_diameter_mm / 2.0,
     }
     for name, (inst, ids) in sorted(parsed["nsets"].items()):
+        if "Fesselung" not in name:
+            continue  # flank nsets are used by the edge-tooth check via ids only
         pn = inst2part.get(inst or "", "?")
         coords = parsed["nodes"].get(pn, {})
         pts = np.array([coords[i] for i in ids if i in coords])
         check(f"{name} resolves", len(pts) == len(ids), f"{len(pts)}/{len(ids)} ids resolved")
         classify_fesselung(pts, centres[pn], name, roots[pn])
 
-    # 2) initial contact: single-flank, [0, 35] um, on the -y side
+    # 2) initial contact: single-flank, [0, 35] um, at an EDGE tooth of gear 1
+    #    (start_at_edge — the middle teeth must sweep the full engagement boundary-free)
+    ids1 = np.array(list(parsed["nodes"]["Part_Rad_Vz_1"].keys()))
     n1 = np.array(list(parsed["nodes"]["Part_Rad_Vz_1"].values()))
     n2 = np.array(list(parsed["nodes"]["Part_Rad_Vz_2"].values()))
-    t1 = tooth_zone(n1, 0.0, profile1.d_Ff / 2.0, facing_positive=True)
+    r1 = np.hypot(n1[:, 0], n1[:, 1])
+    keep1 = (r1 > profile1.d_Ff / 2.0) & (n1[:, 0] > 0.7 * r1.max())
+    t1, t1_ids = n1[keep1], ids1[keep1]
     t2 = tooth_zone(n2, a, profile2.d_Ff / 2.0, facing_positive=False)
-    gap, y_at, _ = min_gap_mm(t1, t2)
+    gap, _, i1 = min_gap_mm(t1, t2)
     check("initial flank gap <= 35 um", gap <= 0.035, f"{gap * 1000:.1f} um")
-    check("contact on the -y flank (single-flank)", y_at < 0.0, f"y = {y_at:+.3f}")
-
-    # 3) one static step; torque switches on before the angle leaves zero
-    check("exactly one *STATIC step", parsed["n_static"] == 1, f"{parsed['n_static']} steps")
-    amp_a = parsed["amplitudes"].get("AMP-ANGLE", [])
-    amp_t = parsed["amplitudes"].get("AMP-TORQUE", [])
-    t_angle_moves = next((t for t, v in amp_a if abs(v) > 1e-12), math.inf)
-    t_torque_full = next((t for t, v in amp_t if abs(v) >= 1.0 - 1e-12), math.inf)
+    contact_id = int(t1_ids[i1])
+    contact_tooth, contact_flank = None, None
+    for tooth in (1, 2, 3, 4):
+        for flank in (1, 2):
+            name = f"G1T{tooth:03d}F{flank}_NODESET"
+            entry = parsed["nsets"].get(name)
+            if entry and contact_id in set(entry[1]):
+                contact_tooth, contact_flank = tooth, flank
     check(
-        "torque reaches full level before the angle moves",
-        t_torque_full <= t_angle_moves,
-        f"torque full at t={t_torque_full:.4f}, angle moves at t={t_angle_moves:.4f}",
+        "roll starts at an EDGE tooth of gear 1 (working flank F2)",
+        contact_tooth in (1, 4) and contact_flank == 2,
+        f"initial contact at gear-1 tooth {contact_tooth}, flank F{contact_flank}",
     )
 
-    # 4) contact pairs, slave (plastic = gear 2) first
-    pairs = parsed["contact_pairs"]
-    check(">= 5 flank contact pairs (reference: 7)", len(pairs) >= 5, f"{len(pairs)} pairs")
+    # 3) one static step with the per-position torque cycle (SMOOTH STEP)
+    check("exactly one *STATIC step", parsed["n_static"] == 1, f"{parsed['n_static']} steps")
+    check("SMOOTH STEP amplitudes", "DEFINITION=SMOOTH STEP" in deck, "S-shaped ramps")
     check(
-        "plastic side listed first (slave)",
-        all(p.startswith("Rad_Vz_2.") for p in pairs),
-        f"first entries: {sorted({p.split(',')[0] for p in pairs})}",
+        "ALLSDTOL=0.0, CONTINUE=NO (reference parity)",
+        "ALLSDTOL=0.0, CONTINUE=NO" in deck,
+        "stabilisation honest, no carry-over",
+    )
+    check("*RESTART, WRITE present", "*RESTART, WRITE, FREQUENCY=0" in deck, "restartable")
+    amp_a = dict(parsed["amplitudes"].get("AMP-ANGLE", []))
+    amp_t = dict(parsed["amplitudes"].get("AMP-TORQUE", []))
+    measure = parsed["time_points"].get("MEASURE", [])
+    check(
+        "one measurement instant per Wälzstellung",
+        len(measure) == 30,
+        f"{len(measure)} time points",
+    )
+    full_at_measure = all(
+        abs(amp_t.get(round(t, 9), amp_t.get(t, 0.0)) - 1.0) < 1e-9 for t in measure
+    )
+    check("full torque at every measurement instant", full_at_measure, "TIME POINTS = holds")
+    base = min((v for v in amp_t.values() if 0.0 < v < 1.0), default=None)
+    check(
+        "torque returns to the base fraction between positions",
+        base is not None and abs(base - 0.01) < 1e-9,
+        f"base fraction = {base}",
+    )
+    times = sorted(amp_a)
+    angle_moves_at_base = all(
+        abs(amp_t[t_now] - (base or 0.0)) < 1e-9
+        for t_prev, t_now in zip(times, times[1:], strict=False)
+        if abs(amp_a[t_now] - amp_a[t_prev]) > 1e-12
+    )
+    check("angle changes only while the torque is at base", angle_moves_at_base, "cycle shape")
+    check(
+        "per-flank-set measurement outputs present",
+        "*NODE OUTPUT, NSET=Rad_Vz_1.G1T001F1_NODESET" in deck
+        and "*ELEMENT OUTPUT, ELSET=Rad_Vz_2.G2T004F2_ELEMENTSET" in deck
+        and "TIME POINTS=MEASURE" in deck,
+        "reference-parity output grouping",
+    )
+
+    # 4) contact pairs: the exact 7-pair reference mapping (working F2: g1 i - g2 6-i;
+    #    back F1: g1 i - g2 5-i), slave (plastic = gear 2) first
+    pairs = {p.replace(" ", "") for p in parsed["contact_pairs"]}
+    expected = {
+        f"Rad_Vz_2.TOOTH-2-{j:03d}F2,Rad_Vz_1.TOOTH-1-{i:03d}F2"
+        for i, j in ((2, 4), (3, 3), (4, 2))
+    } | {
+        f"Rad_Vz_2.TOOTH-2-{j:03d}F1,Rad_Vz_1.TOOTH-1-{i:03d}F1"
+        for i, j in ((1, 4), (2, 3), (3, 2), (4, 1))
+    }
+    delta = f"missing: {sorted(expected - pairs)}; extra: {sorted(pairs - expected)}"
+    check(
+        "contact pairs = the 7 reference pairs (sweep union)",
+        pairs == expected,
+        f"{len(pairs)} pairs; {delta}",
     )
 
     if run_reference:

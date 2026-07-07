@@ -39,7 +39,7 @@ body.
 | ADR-018 | Block-structured FVA/STIRAK gear mesh on a fixed scaffold (MESHING_SPEC.md) | Superseded by ADR-019 | 2026-07-03 |
 | ADR-019 | Reference-topology transplant mesher: mined ground truth, canonical symmetry, chord density, quick FE, fillet strategies | Accepted | 2026-07-03 |
 | ADR-020 | Next.js workbench frontend (FVA layout language, Geist, static export) | Accepted | 2026-07-03 |
-| ADR-021 | Deck gear numbering follows the stage input order; mid-plane-centred extrusion with parametric axial offsets (amended: rig-view slot layout + Fesselung parity) | Accepted | 2026-07-04 |
+| ADR-021 | Deck gear numbering follows the stage input order; mid-plane-centred extrusion with parametric axial offsets (amended: rig-view slot layout + Fesselung parity + per-position torque cycle, edge start, position series) | Accepted | 2026-07-06 |
 
 ---
 
@@ -812,3 +812,27 @@ convention (wheel triad = driven/green, pinion triad = torque/amber, offsets in 
    `10_verifiers/verify_deck_parity.py` (Fesselung composition, ≤35 µm single-flank gap on
    −y, torque-before-angle amplitudes, flank-wise contact pairs; `--reference` re-measures
    the FVA deck).
+
+**Third amendment (2026-07-06 — load-case redesign, user feedback round):**
+1. **Per-position torque cycle** (user requirement, matches the reference deck's
+   −78.5/−7846.2 alternation): the angle side is HELD per Wälzstellung; the torque side
+   ramps base→full (SMOOTH STEP), holds at full (measurement at the END of the hold —
+   Newton equilibrium each increment plus STABILIZE-energy decay), ramps back to the
+   base fraction (default 1 % of the powerflow torque; first ramp from 0), then the
+   angle sub-ramps to the next position at base torque. `*STATIC` gains
+   `ALLSDTOL=0.0, CONTINUE=NO`; `*RESTART, WRITE`; measurement frames via
+   `*TIME POINTS, NAME=MEASURE` with the reference's per-flank-set output grouping,
+   plus a U-only all-increment animation request.
+2. **Roll starts at an edge tooth** (`start_at_edge`, default): pre-rotation ±roll/2,
+   kinematically coupled — the middle teeth are the evaluation teeth (boundary-free
+   full engagement); `roll_pitches` default 3. Contact pairs come from the
+   **sweep-union pairing** (centroids rotated through the whole roll) and reproduce
+   the reference's 7 pairs exactly.
+3. **Position series is the default deck mode** (`POST /api/mesh/deck-series`): one
+   independent static INP per Wälzstellung — result-identical because the model is
+   path-independent (Marlow hyperelastic + frictionless), robust against convergence
+   aborts and parallelisable. Shared mesh via `*INCLUDE, INPUT=pair_common.inp`,
+   per-position `*INSTANCE` rotations, `manifest.json` + run scripts. The single
+   quasi-static deck stays available ("Referenz/Animation" mode).
+4. **Drehrichtung** (`rotation_sense`, from the Leistungsfluss) mirrors roll sign,
+   closing flank and start offset consistently.

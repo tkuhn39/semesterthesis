@@ -25,9 +25,11 @@ from app.services.model.implicit_deck import (
     RollKinematics,
     _closing_rotation_rad,
     _rotate_part_about_own_axis,
+    _torque_cycle_pairs,
     build_gear_part,
     build_implicit_pair_deck,
     build_implicit_pair_from_stage,
+    build_position_series,
 )
 from app.services.model.materials_card import LinearElastic, MarlowUniaxial
 
@@ -76,7 +78,7 @@ def _deck(rigid_gear1: bool = False) -> str:
         torque_nmm=7846.0,
         roll_angle_rad=0.25,
         n_roll_positions=10,
-        settle_positions=3,
+        settle=6,
     )
     return build_implicit_pair_deck(
         part_pinion,
@@ -163,6 +165,118 @@ def test_rotation_nodes_sit_at_the_gear_mid_planes() -> None:
     assert parsed.blocks  # parsed above; keep the parse in the test path
 
 
+def test_torque_cycle_amplitudes() -> None:
+    """Per-position torque cycle (user decision 2026-07-06): full torque only during the
+    holds (measurement at the END of each hold); the angle changes ONLY while the torque
+    is at the base fraction; totals and measurement instants land on the increment grid."""
+    kin = RollKinematics(
+        center_distance_mm=52.0,
+        torque_nmm=1000.0,
+        roll_angle_rad=0.2,
+        n_roll_positions=5,
+        ramp_up=2,
+        hold=2,
+        ramp_down=2,
+        move=2,
+        settle=4,
+        base_fraction=0.01,
+    )
+    angle, torque, measure = _torque_cycle_pairs(kin)
+    total = kin.total_increments
+    assert total == 4 + 2 + 4 * (2 + 2 + 2 + 2)
+    assert len(measure) == kin.n_roll_positions
+    dt = 1.0 / total
+    # measurement instants are exact grid multiples and carry FULL torque
+    torque_at = dict(torque)
+    for t in measure:
+        assert abs(round(t / dt) - t / dt) < 1e-9
+        assert torque_at[t] == 1.0
+    # the torque returns to base between positions (vertices at base exist per cycle)
+    base_vertices = [t for t, v in torque if v == kin.base_fraction]
+    assert len(base_vertices) == 2 * (kin.n_roll_positions - 1)
+    # angle vertices change value only where the torque sits at base
+    angle_at = dict(angle)
+    times = sorted(angle_at)
+    for t_prev, t_now in zip(times, times[1:], strict=False):
+        if angle_at[t_now] != angle_at[t_prev]:  # an angle move ends at t_now
+            assert torque_at[t_now] == kin.base_fraction
+    # endpoints: angle sweeps 0 -> 1, torque starts at 0 (first ramp from zero)
+    assert angle[0][1] == 0.0 and angle[-1][1] == 1.0
+    assert torque[0][1] == 0.0 and torque[-1][1] == 1.0
+
+
+def test_from_stage_starts_at_edge_tooth() -> None:
+    """start_at_edge pre-rotates the pair so the roll begins at an edge tooth: the deck
+    documents the pre-rotation, and the initial single-flank contact sits OFF-centre
+    (near an edge tooth pair), not at the sector middle."""
+    deck = build_implicit_pair_from_stage(
+        _stage(),
+        gear1_material=LinearElastic("STEEL", 210000.0, 0.3),
+        gear2_material=MarlowUniaxial("PA_kstE"),
+        torque_gear2_nmm=7846.0,
+        face_layers=1,
+        n_roll_positions=4,
+        settle=2,
+    )
+    assert "roll start at edge tooth" in deck
+    assert "DEFINITION=SMOOTH STEP" in deck
+    assert "*TIME POINTS, NAME=MEASURE" in deck
+    assert "TIME POINTS=MEASURE" in deck
+    assert "ALLSDTOL=0.0, CONTINUE=NO" in deck
+    assert "*RESTART, WRITE, FREQUENCY=0" in deck
+    # per-flank-set measurement outputs (reference grouping)
+    assert "*NODE OUTPUT, NSET=Rad_Vz_1.G1T001F1_NODESET" in deck
+    assert "*ELEMENT OUTPUT, ELSET=Rad_Vz_2.G2T004F2_ELEMENTSET" in deck
+
+
+def test_position_series_files() -> None:
+    """The series mode emits a shared mesh include + one small INP per position with
+    instance rotations, a manifest and run scripts; positions are kinematically coupled."""
+    files = dict(
+        build_position_series(
+            _stage(),
+            gear1_material=LinearElastic("STEEL", 210000.0, 0.3),
+            gear2_material=MarlowUniaxial("PA_kstE"),
+            torque_gear2_nmm=7846.0,
+            face_layers=1,
+            n_roll_positions=3,
+            settle=3,
+            hold=1,
+        )
+    )
+    assert {
+        "pair_common.inp",
+        "pos_001.inp",
+        "pos_002.inp",
+        "pos_003.inp",
+        "manifest.json",
+        "run_all.bat",
+        "run_all.sh",
+    } <= set(files)
+    common = files["pair_common.inp"]
+    assert "*PART, NAME=Part_Rad_Vz_1" in common and "*PART, NAME=Part_Rad_Vz_2" in common
+    assert "*STEP" not in common
+    import json
+
+    manifest = json.loads(files["manifest.json"])
+    assert manifest["n_positions"] == 3
+    phis = [p["phi_driven_rad"] for p in manifest["positions"]]
+    assert phis[0] < 0.0 < phis[-1]  # edge start: sweep from -roll/2 to +roll/2
+    assert abs(phis[0] + phis[-1]) < 1e-9
+    pos2 = files["pos_002.inp"]
+    assert "*INCLUDE, INPUT=pair_common.inp" in pos2
+    assert "*CONTACT PAIR" in pos2
+    # driven gear fully locked at its position; torque gear loaded on DOF 6
+    assert "Rot_Node_Rad2, 1, 6" in pos2
+    assert "Rot_Node_Rad1, 1, 5" in pos2 and "Rot_Node_Rad1, 6," in pos2
+    # kinematic coupling of the instance rotations: phi1 = -phi2 * z2/z1
+    for p in manifest["positions"]:
+        assert math.isclose(p["phi_other_rad"], -p["phi_driven_rad"] * 60 / 24, rel_tol=1e-9)
+    for name, content in files.items():
+        if name.endswith(".inp"):
+            content.encode("latin-1")
+
+
 def test_deck_materials_and_amplitudes() -> None:
     deck = _deck()
     parsed = parse_inp(deck)
@@ -187,7 +301,7 @@ def test_one_call_build_from_stage() -> None:
         face_layers=2,
         axial_offset_mm=(0.0, -1.0),
         n_roll_positions=8,
-        settle_positions=2,
+        settle=4,
     )
     parsed = parse_inp(deck)
     parts = {b.parameter("NAME") for b in parsed.blocks if b.keyword == "PART"}
@@ -332,7 +446,7 @@ def test_from_stage_documents_the_contact_alignment() -> None:
         torque_gear2_nmm=7846.0,
         face_layers=1,
         n_roll_positions=4,
-        settle_positions=1,
+        settle=2,
     )
     assert "contact-aligned: gear 2 rotated" in deck
 

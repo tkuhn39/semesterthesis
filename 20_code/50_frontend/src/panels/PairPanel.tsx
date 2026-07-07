@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { meshApi, type FilletSpec, type Mesh3DResponse } from "@/lib/api";
 import { useStage } from "@/lib/stage";
+import { useWorkbench } from "@/lib/store";
 import { PairViewport } from "@/components/PairViewport";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { useFmt, useT } from "@/lib/i18n";
@@ -16,6 +17,7 @@ export function PairPanel() {
   const t = useT();
   const fm = useFmt();
   const { stage, label } = useStage();
+  const wb = useWorkbench();
   const [gear1, setGear1] = useState<Mesh3DResponse | null>(null);
   const [gear2, setGear2] = useState<Mesh3DResponse | null>(null);
   const [roll, setRoll] = useState(0);
@@ -23,13 +25,15 @@ export function PairPanel() {
   const [refineRoot, setRefineRoot] = useState(1);
   const [refineFlank, setRefineFlank] = useState(1);
   const [filletGear2, setFilletGear2] = useState<FilletSpec>({ kind: "standard" });
-  const [torque, setTorque] = useState(20000);
   const [rollPositions, setRollPositions] = useState(30);
   const [steelShell, setSteelShell] = useState(true);
   const [offsetGear1, setOffsetGear1] = useState(0);
   const [offsetGear2, setOffsetGear2] = useState(0);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  // SSOT (user point 7a): the deck torque M₂ comes from the Leistungsfluss — never a
+  // panel-local value (the full PairPanel→store migration follows in phase F)
+  const m2 = wb.get("fem.torque_gear2_nmm");
 
   const centerDistance = stage.center_distance_mm ?? (stage.normal_module_mm * (stage.teeth_pinion + stage.teeth_wheel)) / 2;
 
@@ -58,23 +62,36 @@ export function PairPanel() {
 
   const downloadDeck = () =>
     guard("deck", async () => {
-      const text = await meshApi.deck({
+      if (typeof m2 !== "number" || !Number.isFinite(m2)) {
+        throw new Error(t("pf.noTorque"));
+      }
+      const req = {
         stage,
-        torque_gear2_nmm: torque,
+        torque_gear2_nmm: m2,
         face_layers: layers,
         n_roll_positions: rollPositions,
+        rotation_sense: wb.get("fem.rotation_sense") as "cw" | "ccw",
+        roll_pitches: wb.fem.roll_pitches,
         refine_root: refineRoot,
         refine_flank: refineFlank,
         axial_offset_gear1_mm: offsetGear1,
         axial_offset_gear2_mm: offsetGear2,
         steel_shell: steelShell,
         fillet_gear2: filletGear2,
-      });
-      const blob = new Blob([text], { type: "text/plain" });
+        align_contact: wb.fem.align_contact,
+        fasten_bore: wb.fem.fasten_bore,
+        fasten_cuts: wb.fem.fasten_cuts,
+        fasten_top: wb.fem.fasten_top,
+        fasten_bottom: wb.fem.fasten_bottom,
+      };
+      const series = wb.fem.deck_mode === "series";
+      const blob = series
+        ? await meshApi.deckSeries(req)
+        : new Blob([await meshApi.deck(req)], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "implicit_rolling_generated.inp";
+      a.download = series ? "rolling_position_series.zip" : "implicit_rolling_generated.inp";
       a.click();
       URL.revokeObjectURL(url);
     });
@@ -191,7 +208,13 @@ export function PairPanel() {
             <tbody>
               <AttrRow label={t("deck.torque")} symbol="M₂" unit="N·mm">
                 <td>
-                  <Num value={torque} onChange={setTorque} />
+                  {/* SSOT: from the Leistungsfluss — edit it there, never here */}
+                  <input
+                    type="text"
+                    value={typeof m2 === "number" ? m2.toFixed(1) : "—"}
+                    disabled
+                    title={t("pf.torqueSource")}
+                  />
                 </td>
               </AttrRow>
               <AttrRow label={t("deck.rollPositions")} symbol="n_W" unit="–">

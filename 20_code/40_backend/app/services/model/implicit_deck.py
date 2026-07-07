@@ -283,46 +283,81 @@ def build_gear_part(
 
 
 # ----------------------------------------------------------------------------------------------
-# kinematics + staircase amplitudes
+# kinematics + per-position torque-cycle amplitudes
 # ----------------------------------------------------------------------------------------------
 @dataclass(frozen=True)
 class RollKinematics:
-    """The single-step rolling load case — every value a parameter (WoBe-892 §3.3.1)."""
+    """The rolling load case — per-Wälzstellung torque cycle (user decision 2026-07-06).
+
+    Physics per position k (reference parity — the FVA deck alternates base/full torque the
+    same way): the angle-driven gear is HELD at position k while the torque gear ramps its
+    moment ``base → full`` (SMOOTH STEP), holds ``hold`` increments at full torque (Newton
+    equilibrium every increment; the hold lets the STABILIZE artificial-damping energy decay
+    before the measurement frame at the END of the hold), ramps back down to the base torque
+    (``base_fraction`` of full — keeps the flanks seated, no free rigid-body spin), and only
+    then the angle sub-ramps to position k+1 over ``move`` increments. The very first ramp
+    starts from 0 over ``settle`` increments.
+    """
 
     center_distance_mm: float
-    torque_nmm: float  # resisting torque applied at the NON-driven gear's rotation node, DOF6
-    roll_angle_rad: float  # total driven-gear rotation over the roll (A–E + pre/post margins)
-    n_roll_positions: int = 30  # Wälzstellungen captured over the roll
-    sub_increments: int = 3  # solver sub-steps held per Wälzstellung (reference uses 3)
-    settle_positions: int = 6  # leading flat (angle 0) positions while the torque ramps in
+    torque_nmm: float  # full torque applied at the NON-driven gear's rotation node, DOF6
+    roll_angle_rad: float  # total driven-gear rotation over the roll
+    n_roll_positions: int = 30  # Wälzstellungen (measurement positions) over the roll
+    ramp_up: int = 2  # increments per position: base → full torque
+    hold: int = 2  # increments held at full torque (measurement at the END)
+    ramp_down: int = 2  # increments per position: full → base torque
+    move: int = 2  # increments of the angle sub-ramp between positions (at base torque)
+    settle: int = 6  # increments of the very first ramp 0 → full (contact seating)
+    base_fraction: float = 0.01  # holding torque between positions, fraction of full
     stabilize: float = 2.0e-4  # *STATIC, STABILIZE (contact-driven rigid-body damping)
 
     @property
+    def per_position_increments(self) -> int:
+        return self.ramp_down + self.move + self.ramp_up + self.hold
+
+    @property
     def total_increments(self) -> int:
-        return (self.settle_positions + self.n_roll_positions) * self.sub_increments
+        return self.settle + self.hold + (self.n_roll_positions - 1) * self.per_position_increments
 
 
-def _staircase_pairs(kin: RollKinematics) -> tuple[AmpTable, AmpTable]:
-    """Return the (time, value) tables for AMP-ANGLE (0→1 staircase) and AMP-TORQUE (0→1 ramp-hold).
+def _torque_cycle_pairs(kin: RollKinematics) -> tuple[AmpTable, AmpTable, list[float]]:
+    """(AMP-ANGLE, AMP-TORQUE, measurement instants) for the per-position torque cycle.
 
-    Time is normalised to [0, 1] at ``total_increments`` equal steps. AMP-ANGLE holds the angle
-    flat through the settle phase, then steps up once per Wälzstellung (held ``sub_increments``
-    increments each). AMP-TORQUE ramps linearly to 1 over the settle phase, then holds.
+    Time is normalised to [0, 1] over ``total_increments`` equal increments; the tables carry
+    only the PHASE BOUNDARY vertices (the amplitudes are emitted as ``SMOOTH STEP``, so ramps
+    are S-shaped with zero slope at both ends — gentle contact seating at low torque, no
+    overshoot when reaching full torque; constant segments stay exactly constant). Measurement
+    instants are the ends of the full-torque holds — exact multiples of dt by construction —
+    and become the ``*TIME POINTS, NAME=MEASURE`` table.
     """
-    settle_inc = kin.settle_positions * kin.sub_increments
     total = kin.total_increments
-    angle: list[tuple[float, float]] = []
-    torque: list[tuple[float, float]] = []
-    for j in range(total + 1):
-        t = j / total
-        if j <= settle_inc:
-            angle.append((t, 0.0))
-            torque.append((t, min(1.0, j / max(settle_inc, 1))))
-        else:
-            position = (j - settle_inc - 1) // kin.sub_increments + 1
-            angle.append((t, min(1.0, position / kin.n_roll_positions)))
-            torque.append((t, 1.0))
-    return angle, torque
+    dt = 1.0 / total
+    beta = kin.base_fraction
+    dphi = 1.0 / max(kin.n_roll_positions - 1, 1)  # angle fraction per move
+    angle: AmpTable = [(0.0, 0.0)]
+    torque: AmpTable = [(0.0, 0.0)]
+    measure: list[float] = []
+    j = 0  # increment cursor
+
+    def seg(n: int, torque_value: float, angle_value: float) -> None:
+        nonlocal j
+        if n > 0:
+            j += n
+            torque.append((j * dt, torque_value))
+            angle.append((j * dt, angle_value))
+
+    seg(kin.settle, 1.0, 0.0)  # position 1: first ramp 0 → full
+    seg(kin.hold, 1.0, 0.0)
+    measure.append(j * dt)
+    for k in range(2, kin.n_roll_positions + 1):
+        a_prev, a_new = (k - 2) * dphi, (k - 1) * dphi
+        seg(kin.ramp_down, beta, a_prev)  # full → base, angle held
+        seg(kin.move, beta, a_new)  # angle sub-ramp at base torque (smooth)
+        seg(kin.ramp_up, 1.0, a_new)  # base → full at the new position
+        seg(kin.hold, 1.0, a_new)
+        measure.append(j * dt)  # measurement = end of hold
+    assert j == total, f"cycle increments mismatch: {j} != {total}"
+    return angle, torque, measure
 
 
 # ----------------------------------------------------------------------------------------------
@@ -334,11 +369,24 @@ def _wrap(ids: list[int] | IntArray, per_line: int = 16) -> str:
     return "\n".join(", ".join(str(v) for v in row) for row in rows)
 
 
-def _amplitude_block(name: str, pairs: list[tuple[float, float]], per_line: int = 4) -> str:
+def _amplitude_block(
+    name: str, pairs: list[tuple[float, float]], per_line: int = 4, *, smooth_step: bool = True
+) -> str:
+    """An ``*AMPLITUDE`` table; ``smooth_step`` emits ``DEFINITION=SMOOTH STEP`` (S-shaped
+    transitions with zero slope at both vertices — user decision 2026-07-06; constant
+    segments between equal vertices stay exactly constant)."""
     flat = [f"{t:.9f}, {v:.9f}" for t, v in pairs]
     rows = [flat[i : i + per_line] for i in range(0, len(flat), per_line)]
     body = "\n".join(", ".join(r) for r in rows)
-    return f"*AMPLITUDE, NAME={name}\n{body}"
+    definition = ", DEFINITION=SMOOTH STEP" if smooth_step else ""
+    return f"*AMPLITUDE, NAME={name}{definition}\n{body}"
+
+
+def _time_points_block(name: str, times: list[float], per_line: int = 8) -> str:
+    flat = [f"{t:.9f}" for t in times]
+    rows = [flat[i : i + per_line] for i in range(0, len(flat), per_line)]
+    body = "\n".join(", ".join(r) for r in rows)
+    return f"*TIME POINTS, NAME={name}\n{body}"
 
 
 def _foldable(deck: str) -> str:
@@ -405,21 +453,102 @@ def _meshing_contact_pairs(
     Geometry-driven so it adapts to the assembly phase: only flanks that face each other across the
     mesh (near the line of centres) fall within the gap and become explicit contact pairs.
     """
-    part1, part2 = slave, master
-    c1, c2 = _flank_centroids(part1), _flank_centroids(part2)
+    c1, c2 = _flank_centroids(slave), _flank_centroids(master)
+    return _nearest_flank_pairs(slave.gear, c1, master.gear, c2, max_gap_mm=max_gap_mm)
+
+
+def _nearest_flank_pairs(
+    slave_gear: int,
+    slave_centroids: dict[tuple[int, int], Array],
+    master_gear: int,
+    master_centroids: dict[tuple[int, int], Array],
+    *,
+    max_gap_mm: float,
+) -> list[tuple[str, str]]:
     pairs: list[tuple[str, str]] = []
-    for (t1, f1), p1 in sorted(c1.items()):
+    for (t1, f1), p1 in sorted(slave_centroids.items()):
         best: tuple[float, tuple[int, int]] | None = None
-        for (t2, f2), p2 in c2.items():
+        for (t2, f2), p2 in master_centroids.items():
             d = float(np.linalg.norm(p1 - p2))
             if best is None or d < best[0]:
                 best = (d, (t2, f2))
         if best is not None and best[0] <= max_gap_mm:
             t2, f2 = best[1]
-            s1 = f"Rad_Vz_{part1.gear}.TOOTH-{part1.gear}-{t1:03d}F{f1}"
-            s2 = f"Rad_Vz_{part2.gear}.TOOTH-{part2.gear}-{t2:03d}F{f2}"
+            s1 = f"Rad_Vz_{slave_gear}.TOOTH-{slave_gear}-{t1:03d}F{f1}"
+            s2 = f"Rad_Vz_{master_gear}.TOOTH-{master_gear}-{t2:03d}F{f2}"
             pairs.append((s1, s2))
     return pairs
+
+
+def _sweep_contact_pairs(
+    slave: GearPart,
+    master: GearPart,
+    *,
+    max_gap_mm: float,
+    roll_angle_rad: float,
+    start_at_edge: bool,
+    driven_gear: int,
+    z: dict[int, int],
+    samples: int = 9,
+) -> list[tuple[str, str]]:
+    """Union of the nearest-flank pairings over the WHOLE roll (kinematically sampled).
+
+    Proximity pairing at one configuration misses flank pairs that only engage later in the
+    sweep (the reference deck pairs the edge teeth too — 7 pairs for kst-E). The flank
+    centroids are rotated through ``samples`` coupled roll positions and every pairing found
+    within ``max_gap_mm`` at any position becomes a *CONTACT PAIR* (an open pair is harmless;
+    a missing pair means undetected penetration mid-roll).
+    """
+
+    def rotate(centroids: dict[tuple[int, int], Array], part: GearPart, phi: float) -> dict:
+        cx, cy = part.center_xy
+        c, s = math.cos(phi), math.sin(phi)
+        out = {}
+        for key, p in centroids.items():
+            x, y = p[0] - cx, p[1] - cy
+            out[key] = np.array([c * x - s * y + cx, s * x + c * y + cy, p[2]])
+        return out
+
+    c_slave = _flank_centroids(slave)
+    c_master = _flank_centroids(master)
+    torque_gear = 3 - driven_gear
+    union: set[tuple[str, str]] = set()
+    n = max(samples, 2)
+    for i in range(n):
+        s = i / (n - 1)
+        phi_driven = (-roll_angle_rad / 2.0 if start_at_edge else 0.0) + s * roll_angle_rad
+        phis = {driven_gear: phi_driven, torque_gear: -phi_driven * z[driven_gear] / z[torque_gear]}
+        rs = rotate(c_slave, slave, phis[slave.gear])
+        rm = rotate(c_master, master, phis[master.gear])
+        union.update(_nearest_flank_pairs(slave.gear, rs, master.gear, rm, max_gap_mm=max_gap_mm))
+    return sorted(union)
+
+
+def _measurement_output_lines(parts: dict[int, GearPart], rigid_gears: frozenset[int]) -> list[str]:
+    """Per-flank-set output requests (reference grouping: NODE F1, NODE F2, CONTACT F1,
+    CONTACT F2, ELEMENT F1, ELEMENT F2 per tooth per gear). Rigid gears get no ELEMENT
+    output (E/S undefined on rigid elements) and no CONTACT output (master side carries
+    no contact data under surface-to-surface)."""
+    lines = ["*NODE OUTPUT, NSET=MASTERKNOTEN_NODE_SET\nCF, RF, U,"]
+    for g in sorted(parts):
+        part = parts[g]
+        rigid = g in rigid_gears
+        for tooth in sorted({t for t, _ in part.sets.flank_nodes}):
+            tags = [f"G{g}T{tooth:03d}F{f}" for f in (1, 2) if (tooth, f) in part.sets.flank_nodes]
+            for tag in tags:
+                lines.append(f"*NODE OUTPUT, NSET=Rad_Vz_{g}.{tag}_NODESET\nCF,RF,U,")
+            if not rigid:
+                for tag in tags:
+                    lines.append(
+                        f"*CONTACT OUTPUT, NSET=Rad_Vz_{g}.{tag}_NODESET\nCFORCE,CSTRESS,CDISP,"
+                    )
+                for tag in tags:
+                    lines.append(
+                        f"*ELEMENT OUTPUT, ELSET=Rad_Vz_{g}.{tag}_ELEMENTSET, directions=YES\n"
+                        "E, MISESMAX, MISESONLY, NE, PRESSONLY, S,"
+                    )
+    lines.append("*NODE OUTPUT\nU,")
+    return lines
 
 
 def build_implicit_pair_deck(
@@ -428,6 +557,7 @@ def build_implicit_pair_deck(
     *,
     kin: RollKinematics,
     contact_gap_mm: float | None = None,
+    contact_pairs: list[tuple[str, str]] | None = None,
     element_type: str = "C3D8R",
     rigid_gears: frozenset[int] = frozenset(),
     driven_gear: int = 2,
@@ -439,25 +569,34 @@ def build_implicit_pair_deck(
     Each gear's rotation node ``Rot_Node_Rad{g}`` sits on its rotation axis at the gear's
     mid-plane (``center_xy``, ``z_mid_mm``). Contact is frictionless hard, as explicit meshing
     flank pairs with the ``slave_gear`` flank listed first (slave — the plastic side, reference
-    parity). One static step drives ``driven_gear`` through ``kin.roll_angle_rad`` as a
-    staircase while the other gear holds ``kin.torque_nmm``. ``element_type`` defaults to C3D8R
-    (the reference choice). Data lines are tab-indented so the long mesh blocks fold in an
-    editor. A comment table in the heading documents the gear mapping (z, b, material, role,
-    position) — the FVA reference deck numbers its gears the other way around (ADR-021).
+    parity); pass ``contact_pairs`` when the pairing was computed at a different configuration
+    (e.g. the closed centered state before the edge-start pre-rotation — the pair set is
+    roll-invariant). One static step runs the per-position torque cycle (``RollKinematics``):
+    the ``driven_gear`` angle staircases through ``kin.roll_angle_rad`` with smooth sub-ramps
+    while the other gear cycles ``kin.torque_nmm`` base→full→base per position; field frames
+    land on every increment (animation, U only) plus the exact measurement instants
+    (``*TIME POINTS, NAME=MEASURE`` — full reference payload per flank set).
+    ``element_type`` defaults to C3D8R (the reference choice). Data lines are tab-indented so
+    the long mesh blocks fold in an editor. A comment table in the heading documents the gear
+    mapping — the FVA reference deck numbers its gears the other way around (ADR-021).
 
     ``rigid_gears`` implements the material-mode rule for mixed pairings (user decision): the
-    listed gears become **ideally stiff** — the whole element set is a rigid body about the
-    rotation node (all internal DOFs eliminated, only the reference node moves), instead of the
-    bore + cut-face Fesselung tie. Contact surfaces and set names are unchanged, so the frozen FVA
-    postprocessing still runs.
+    listed gears become **ideally stiff** rigid bodies about their rotation node instead of the
+    bore + cut-face Fesselung tie. Contact surfaces and set names are unchanged.
     """
     if driven_gear not in (1, 2) or slave_gear not in (1, 2):
         raise ValueError("driven_gear and slave_gear must be 1 or 2")
+    if slave_gear in rigid_gears:
+        raise ValueError("the contact slave must stay deformable (rigid side is the master)")
     gap = 2.0 if contact_gap_mm is None else contact_gap_mm  # mm; ~one module, caller-tunable
     torque_gear = 3 - driven_gear
     parts = {part1.gear: part1, part2.gear: part2}
-    angle_pairs, torque_pairs = _staircase_pairs(kin)
-    pairs = _meshing_contact_pairs(parts[slave_gear], parts[3 - slave_gear], max_gap_mm=gap)
+    angle_pairs, torque_pairs, measure_times = _torque_cycle_pairs(kin)
+    pairs = (
+        contact_pairs
+        if contact_pairs is not None
+        else _meshing_contact_pairs(parts[slave_gear], parts[3 - slave_gear], max_gap_mm=gap)
+    )
 
     def fastening(part: GearPart) -> str:
         g = part.gear
@@ -516,14 +655,21 @@ def build_implicit_pair_deck(
         )
     )
     dt = 1.0 / kin.total_increments
+    # dt = initial = MAX pins the increment grid (frame alignment); tiny min lets a cutback
+    # recover instead of aborting. TIME POINTS are hit exactly by Standard regardless.
     step = "\n".join(
         (
             "*STEP, NAME=STEP-1, NLGEOM=YES, INC=100000",
-            f"*STATIC, STABILIZE={kin.stabilize:.4g}\n{dt:.8g}, 1.0, 1e-08, {dt:.8g}",
-            f"*OUTPUT, FIELD, NUMBER INTERVAL={kin.total_increments}",
-            "*ELEMENT OUTPUT, directions=YES\nE, MISESMAX, MISESONLY, NE, PRESSONLY, S",
-            "*NODE OUTPUT\nCF, RF, U",
-            "*CONTACT OUTPUT\nCFORCE, CSTRESS, CDISP",
+            f"*STATIC, STABILIZE={kin.stabilize:.4g}, ALLSDTOL=0.0, CONTINUE=NO\n"
+            f"{dt:.8g}, 1.0, 1e-08, {dt:.8g}",
+            "*RESTART, WRITE, FREQUENCY=0",
+            _time_points_block("MEASURE", measure_times),
+            "** animation frames: one per increment, displacements only",
+            f"*OUTPUT, FIELD, NUMBER INTERVAL={kin.total_increments}, TIMEMARKS=NO",
+            "*NODE OUTPUT\nU,",
+            "** measurement frames: full-torque equilibrium at the end of every hold",
+            "*OUTPUT, FIELD, TIME POINTS=MEASURE",
+            *_measurement_output_lines(parts, rigid_gears),
             "*BOUNDARY\nRot_Node_Rad1, 1, 5",
             "*BOUNDARY\nRot_Node_Rad2, 1, 5",
             f"*BOUNDARY, AMPLITUDE=AMP-ANGLE\nRot_Node_Rad{driven_gear}, 6, 6, "
@@ -531,6 +677,16 @@ def build_implicit_pair_deck(
             f"*CLOAD, AMPLITUDE=AMP-TORQUE\nRot_Node_Rad{torque_gear}, 6, {kin.torque_nmm:.8g}",
             "*END STEP",
         )
+    )
+    cycle_comment = (
+        f"** Load cycle per Wälzstellung (SMOOTH STEP): torque {kin.base_fraction:.0%}"
+        f"->100%->{kin.base_fraction:.0%} of {kin.torque_nmm:.6g} N·mm "
+        f"(ramp_up={kin.ramp_up}, hold={kin.hold}, ramp_down={kin.ramp_down}, "
+        f"move={kin.move}, settle={kin.settle}); angle steps only at base torque."
+    )
+    measure_comment = "\n".join(
+        "** measure t = " + ", ".join(f"{t:.9f}" for t in measure_times[i : i + 8])
+        for i in range(0, len(measure_times), 8)
     )
     return _foldable(
         "\n".join(
@@ -543,6 +699,8 @@ def build_implicit_pair_deck(
                 "** deck kst-E_8_DY2-0_WS30 numbers its gears the other way around.)",
                 gear_comment(part1),
                 gear_comment(part2),
+                cycle_comment,
+                measure_comment,
                 "**",
                 _part_block(part1, element_type),
                 "**",
@@ -563,75 +721,50 @@ def build_implicit_pair_deck(
     )
 
 
-def build_implicit_pair_from_stage(
+@dataclass(frozen=True)
+class AssembledPair:
+    """A meshed, positioned, backlash-closed pair at the CENTERED configuration.
+
+    The shared assembly stage of BOTH deck modes (single quasi-static file and position
+    series) — one code path, one geometry (SSOT). ``pairs`` is the roll-invariant contact
+    pair list computed at this closed configuration.
+    """
+
+    part1: GearPart
+    part2: GearPart
+    pairs: list[tuple[str, str]]
+    a: float
+    z: dict[int, int]
+    closing_rad: float
+    gap: float
+
+
+def _assemble_centered_pair(
     stage: GearStage,
     *,
     gear1_material: Material,
     gear2_material: Material,
-    torque_gear2_nmm: float,
-    face_layers: int = 6,
-    face_width_mm: tuple[float, float] | None = None,
-    axial_offset_mm: tuple[float, float] = (0.0, 0.0),
-    roll_pitches: float = 2.0,
-    n_roll_positions: int = 30,
-    settle_positions: int = 6,
-    sub_increments: int = 3,
-    stabilize: float = 2.0e-4,
-    phase_rad: float = 0.0,
-    align_contact: bool = True,
-    contact_gap_mm: float | None = None,
-    element_type: str = "C3D8R",
-    rigid_gears: frozenset[int] = frozenset(),
-    driven_gear: int = 2,
-    slave_gear: int = 2,
-    refine_root: int = 1,
-    refine_flank: int = 1,
-    fillet_gear1: object | None = None,
-    fillet_gear2: object | None = None,
-    fasten_bore: bool = True,
-    fasten_cuts: bool = True,
-    fasten_bottom: bool = False,
-    fasten_top: bool = False,
-    heading: str = "FE rolling model (implicit, ohne Radkoerper) - generated from GearStage",
-) -> str:
-    """One-call build: a ``GearStage`` → meshed, positioned pair → reference-faithful implicit deck.
-
-    **Slot semantics (ADR-021, amended):** everything is keyed by the stage INPUT position —
-    gear 1 = the stage's first gear, gear 2 = the second — and never re-ordered by role or
-    tooth count (kst-E: gear 1 = steel pinion z=51, gear 2 = plastic wheel z=52; but gear 1
-    may just as well be the larger wheel). All per-gear inputs (materials, face widths, axial
-    offsets, fillets) follow that chain. Layout matches the Kleingetriebeprüfstand top view:
-    **gear 1 at the origin (left), gear 2 at the working centre distance (right)**, gear 2
-    rotated half a pitch so a gap meshes gear 1's tooth (``phase_rad`` adds a tunable
-    mounting offset).
-
-    ``align_contact`` (default, reference parity) then rotates gear 2 about its own axis by
-    the backlash-closing angle so the WORKING flanks start a hair (~15 µm arc) clear of
-    contact — measured 2026-07-04: the reference deck stands in single-flank contact
-    (~25 µm node gap on the −y flanks) and lets the torque ramp close the rest, instead of
-    the tooth floating centred in the gap with the full allowance backlash on each side.
-    ``fasten_bore``/``fasten_cuts``/``fasten_bottom``/``fasten_top`` mirror the FVA
-    "Fesselung" checkboxes (defaults = the reference: bore + both cut planes, complete).
-
-    Load case (reference parity): ``driven_gear`` (default 2 — the plastic wheel for kst-E)
-    is angle-driven through ``roll_pitches`` of its pitches; the other gear carries the
-    resisting torque. ``torque_gear2_nmm`` is the torque level expressed AT GEAR 2 (M₂, the
-    kst-E load-stage convention); it is converted to the torque actually applied at the
-    non-driven gear via the tooth counts (T_g = M₂ · z_g/z₂). The contact gap defaults to
-    1.5·mₙ.
-
-    Each gear keeps its own face width (``face_width_mm`` overrides the stage values, order
-    (gear 1, gear 2)) and is extruded symmetric about its mid-plane, shifted by
-    ``axial_offset_mm`` (gear 1, gear 2) along the rotation axis — reference parity: gears of
-    unequal width roll centred on each other by default, and both rotation nodes sit at their
-    gear's mid-plane instead of on a side face.
-
-    Both sectors come from the reference-topology transplant mesher; ``refine_root`` /
-    ``refine_flank`` set the FVA density factors and ``fillet_gear1`` / ``fillet_gear2`` an
-    optional optimized root-fillet strategy per gear (run the mating-tip clearance check
-    first). ``rigid_gears`` lists gears rendered ideally stiff (mixed-pairing rule — pass the
-    steel side); ``slave_gear`` is the contact slave (the plastic side).
-    """
+    face_layers: int,
+    face_width_mm: tuple[float, float] | None,
+    axial_offset_mm: tuple[float, float],
+    phase_rad: float,
+    align_contact: bool,
+    contact_gap_mm: float | None,
+    roll_angle_rad: float,
+    start_at_edge: bool,
+    driven_gear: int,
+    slave_gear: int,
+    roll_sign: float = 1.0,
+    refine_root: int,
+    refine_flank: int,
+    fillet_gear1: object | None,
+    fillet_gear2: object | None,
+    fasten_bore: bool,
+    fasten_cuts: bool,
+    fasten_bottom: bool,
+    fasten_top: bool,
+) -> AssembledPair:
+    """Mesh, position (centered), close the backlash and pair the contact flanks."""
     profile1 = ToothProfile.from_stage(stage, 0)
     profile2 = ToothProfile.from_stage(stage, 1)
     a = stage.working_center_distance_mm
@@ -674,37 +807,461 @@ def build_implicit_pair_from_stage(
     )
     closing_rad = 0.0
     if align_contact:
-        # the driven gear's positive step rotation defines the closing sense: rotate gear 2
-        # so its working flank ends up a hair clear of gear 1's (single-flank contact, like
-        # the reference), letting the torque ramp close the remaining ~15 µm
+        # the driven gear's step rotation defines the closing sense (flips with the drive's
+        # Drehrichtung): rotate gear 2 so its working flank ends up a hair clear of gear 1's
+        # (single-flank contact, like the reference), letting the torque ramp close the rest
         closing_rad = _closing_rotation_rad(
-            part1, part2, direction=1.0 if driven_gear == 2 else -1.0
+            part1, part2, direction=roll_sign * (1.0 if driven_gear == 2 else -1.0)
         )
         if closing_rad != 0.0:
             part2 = _rotate_part_about_own_axis(part2, closing_rad)
+    gap = contact_gap_mm if contact_gap_mm is not None else 1.5 * stage.normal_module_mm
+    # Contact pairs as the union over the WHOLE kinematically sampled roll — proximity at
+    # one configuration would miss the edge-tooth pairs that only engage later (the
+    # reference deck pairs them too: 7 pairs for kst-E).
+    parts = {1: part1, 2: part2}
     z = {1: profile1.z, 2: profile2.z}
+    pairs = _sweep_contact_pairs(
+        parts[slave_gear],
+        parts[3 - slave_gear],
+        max_gap_mm=gap,
+        roll_angle_rad=roll_angle_rad,
+        start_at_edge=start_at_edge,
+        driven_gear=driven_gear,
+        z=z,
+    )
+    return AssembledPair(
+        part1=part1,
+        part2=part2,
+        pairs=pairs,
+        a=a,
+        z=z,
+        closing_rad=closing_rad,
+        gap=gap,
+    )
+
+
+def build_implicit_pair_from_stage(
+    stage: GearStage,
+    *,
+    gear1_material: Material,
+    gear2_material: Material,
+    torque_gear2_nmm: float,
+    face_layers: int = 6,
+    face_width_mm: tuple[float, float] | None = None,
+    axial_offset_mm: tuple[float, float] = (0.0, 0.0),
+    roll_pitches: float = 3.0,
+    n_roll_positions: int = 30,
+    ramp_up: int = 2,
+    hold: int = 2,
+    ramp_down: int = 2,
+    move: int = 2,
+    settle: int = 6,
+    base_torque_fraction: float = 0.01,
+    stabilize: float = 2.0e-4,
+    phase_rad: float = 0.0,
+    align_contact: bool = True,
+    start_at_edge: bool = True,
+    rotation_sense: str = "cw",
+    contact_gap_mm: float | None = None,
+    element_type: str = "C3D8R",
+    rigid_gears: frozenset[int] = frozenset(),
+    driven_gear: int = 2,
+    slave_gear: int = 2,
+    refine_root: int = 1,
+    refine_flank: int = 1,
+    fillet_gear1: object | None = None,
+    fillet_gear2: object | None = None,
+    fasten_bore: bool = True,
+    fasten_cuts: bool = True,
+    fasten_bottom: bool = False,
+    fasten_top: bool = False,
+    heading: str = "FE rolling model (implicit, ohne Radkoerper) - generated from GearStage",
+) -> str:
+    """One-call build: a ``GearStage`` → meshed, positioned pair → reference-faithful implicit deck.
+
+    **Slot semantics (ADR-021, amended):** everything is keyed by the stage INPUT position —
+    gear 1 = the stage's first gear, gear 2 = the second — and never re-ordered by role or
+    tooth count (kst-E: gear 1 = steel pinion z=51, gear 2 = plastic wheel z=52; but gear 1
+    may just as well be the larger wheel). All per-gear inputs (materials, face widths, axial
+    offsets, fillets) follow that chain. Layout matches the Kleingetriebeprüfstand top view:
+    **gear 1 at the origin (left), gear 2 at the working centre distance (right)**, gear 2
+    rotated half a pitch so a gap meshes gear 1's tooth (``phase_rad`` adds a tunable
+    mounting offset).
+
+    ``align_contact`` (default, reference parity) then rotates gear 2 about its own axis by
+    the backlash-closing angle so the WORKING flanks start a hair (~15 µm arc) clear of
+    contact — measured 2026-07-04: the reference deck stands in single-flank contact
+    (~25 µm node gap on the −y flanks) and lets the torque ramp close the rest, instead of
+    the tooth floating centred in the gap with the full allowance backlash on each side.
+    ``fasten_bore``/``fasten_cuts``/``fasten_bottom``/``fasten_top`` mirror the FVA
+    "Fesselung" checkboxes (defaults = the reference: bore + both cut planes, complete).
+
+    Load case (user decision 2026-07-06, reference-parity cycle): ``driven_gear`` (default 2
+    — the plastic wheel for kst-E) is angle-STEPPED through ``roll_pitches`` of its pitches
+    (default 3 — with the 4-tooth sector the middle two teeth complete the whole engagement
+    boundary-free; the edge teeth carry the run-in/run-out); the other gear cycles the torque
+    base→full→base per position (see :class:`RollKinematics`). ``start_at_edge`` pre-rotates
+    the pair so the roll BEGINS at an edge tooth instead of the middle. ``torque_gear2_nmm``
+    is the torque level expressed AT GEAR 2 (M₂); it is converted to the loaded gear via the
+    tooth counts (T_g = M₂ · z_g/z₂). Contact pairs are computed at the closed, centered
+    configuration (roll-invariant set) and passed through. The contact gap defaults to 1.5·mₙ.
+
+    Each gear keeps its own face width (``face_width_mm`` overrides the stage values, order
+    (gear 1, gear 2)) and is extruded symmetric about its mid-plane, shifted by
+    ``axial_offset_mm`` (gear 1, gear 2) along the rotation axis — reference parity: gears of
+    unequal width roll centred on each other by default, and both rotation nodes sit at their
+    gear's mid-plane instead of on a side face.
+
+    Both sectors come from the reference-topology transplant mesher; ``refine_root`` /
+    ``refine_flank`` set the FVA density factors and ``fillet_gear1`` / ``fillet_gear2`` an
+    optional optimized root-fillet strategy per gear (run the mating-tip clearance check
+    first). ``rigid_gears`` lists gears rendered ideally stiff (mixed-pairing rule — pass the
+    steel side); ``slave_gear`` is the contact slave (the plastic side).
+    """
+    # rotation sense of the drive (Leistungsfluss "Drehrichtung"): "cw" = the validated
+    # default (torque gear turns clockwise in the rig top view, user images 2026-07-06);
+    # "ccw" mirrors the whole load case (roll sign, closing flank, start offset).
+    roll_sign = 1.0 if rotation_sense != "ccw" else -1.0
+    roll_angle_rad = roll_sign * roll_pitches * 2.0 * math.pi / stage.teeth[driven_gear - 1]
+    pair = _assemble_centered_pair(
+        stage,
+        gear1_material=gear1_material,
+        gear2_material=gear2_material,
+        face_layers=face_layers,
+        face_width_mm=face_width_mm,
+        axial_offset_mm=axial_offset_mm,
+        phase_rad=phase_rad,
+        align_contact=align_contact,
+        contact_gap_mm=contact_gap_mm,
+        roll_angle_rad=roll_angle_rad,
+        start_at_edge=start_at_edge,
+        driven_gear=driven_gear,
+        slave_gear=slave_gear,
+        roll_sign=roll_sign,
+        refine_root=refine_root,
+        refine_flank=refine_flank,
+        fillet_gear1=fillet_gear1,
+        fillet_gear2=fillet_gear2,
+        fasten_bore=fasten_bore,
+        fasten_cuts=fasten_cuts,
+        fasten_bottom=fasten_bottom,
+        fasten_top=fasten_top,
+    )
+    part1, part2 = pair.part1, pair.part2
+    a, z, closing_rad, gap, pairs = pair.a, pair.z, pair.closing_rad, pair.gap, pair.pairs
     torque_gear = 3 - driven_gear
+
+    start_offset_rad = 0.0
+    if start_at_edge:
+        # start of roll at an EDGE tooth (user decision 2026-07-06): pre-rotate the driven
+        # gear by −roll/2 and counter-rotate the other kinematically (φ_other = −φ·z_d/z_o),
+        # so the sweep walks the contact across the sector and the MIDDLE teeth see the
+        # full, boundary-free engagement.
+        start_offset_rad = -roll_angle_rad / 2.0
+        if driven_gear == 2:
+            part2 = _rotate_part_about_own_axis(part2, start_offset_rad)
+            part1 = _rotate_part_about_own_axis(part1, -start_offset_rad * z[2] / z[1])
+        else:
+            part1 = _rotate_part_about_own_axis(part1, start_offset_rad)
+            part2 = _rotate_part_about_own_axis(part2, -start_offset_rad * z[1] / z[2])
+
     kin = RollKinematics(
         center_distance_mm=a,
         # M₂ (torque at gear 2) converted to the gear that actually carries the load
         torque_nmm=torque_gear2_nmm * z[torque_gear] / z[2],
-        roll_angle_rad=roll_pitches * 2.0 * math.pi / z[driven_gear],
+        roll_angle_rad=roll_angle_rad,
         n_roll_positions=n_roll_positions,
-        settle_positions=settle_positions,
-        sub_increments=sub_increments,
+        ramp_up=ramp_up,
+        hold=hold,
+        ramp_down=ramp_down,
+        move=move,
+        settle=settle,
+        base_fraction=base_torque_fraction,
         stabilize=stabilize,
     )
-    gap = contact_gap_mm if contact_gap_mm is not None else 1.5 * stage.normal_module_mm
     if align_contact:
         heading = f"{heading} | contact-aligned: gear 2 rotated {closing_rad:+.8f} rad"
+    if start_at_edge:
+        heading = (
+            f"{heading} | roll start at edge tooth: driven gear pre-rotated "
+            f"{start_offset_rad:+.8f} rad (middle teeth = evaluation teeth)"
+        )
     return build_implicit_pair_deck(
         part1,
         part2,
         kin=kin,
         contact_gap_mm=gap,
+        contact_pairs=pairs,
         element_type=element_type,
         rigid_gears=rigid_gears,
         driven_gear=driven_gear,
         slave_gear=slave_gear,
         heading=heading,
     )
+
+
+# ----------------------------------------------------------------------------------------------
+# position series — one INP per Wälzstellung (default mode, user decision 2026-07-06)
+# ----------------------------------------------------------------------------------------------
+def build_position_series(
+    stage: GearStage,
+    *,
+    gear1_material: Material,
+    gear2_material: Material,
+    torque_gear2_nmm: float,
+    face_layers: int = 6,
+    face_width_mm: tuple[float, float] | None = None,
+    axial_offset_mm: tuple[float, float] = (0.0, 0.0),
+    roll_pitches: float = 3.0,
+    n_roll_positions: int = 30,
+    hold: int = 2,
+    settle: int = 6,
+    stabilize: float = 2.0e-4,
+    phase_rad: float = 0.0,
+    align_contact: bool = True,
+    start_at_edge: bool = True,
+    rotation_sense: str = "cw",
+    contact_gap_mm: float | None = None,
+    element_type: str = "C3D8R",
+    rigid_gears: frozenset[int] = frozenset(),
+    driven_gear: int = 2,
+    slave_gear: int = 2,
+    refine_root: int = 1,
+    refine_flank: int = 1,
+    fillet_gear1: object | None = None,
+    fillet_gear2: object | None = None,
+    fasten_bore: bool = True,
+    fasten_cuts: bool = True,
+    fasten_bottom: bool = False,
+    fasten_top: bool = False,
+) -> list[tuple[str, str]]:
+    """One independent static INP per Wälzstellung + shared mesh include + manifest + runners.
+
+    Rationale (user decision 2026-07-06): the model is hyperelastic (Marlow) + frictionless,
+    hence PATH-INDEPENDENT — each position's equilibrium does not depend on the roll history,
+    so a series of independent static solves yields the same stresses as the quasi-static
+    single-file sweep while being robust (a non-convergence costs one position, not the run)
+    and trivially parallelisable.
+
+    Layout: ``pair_common.inp`` carries the two ``*PART`` blocks + material cards ONCE (baked
+    at the closed, centered configuration); every ``pos_NNN.inp`` is small — it ``*INCLUDE``\\ s
+    the common file and positions the pair via ``*INSTANCE`` rotation lines (driven gear at
+    its Wälzstellung, the other kinematically coupled), locks the driven gear in ALL DOFs,
+    and SMOOTH-STEP-ramps the torque 0→full over ``settle`` increments + ``hold`` increments
+    at full torque; the measurement frame is the step end (``*TIME POINTS, NAME=MEASURE``).
+    ``manifest.json`` records angles/torque/files for the postprocessing; ``run_all.bat`` /
+    ``run_all.sh`` run the jobs sequentially (edit for parallel queues).
+    """
+    import json
+
+    roll_sign = 1.0 if rotation_sense != "ccw" else -1.0
+    roll_angle_rad = roll_sign * roll_pitches * 2.0 * math.pi / stage.teeth[driven_gear - 1]
+    pair = _assemble_centered_pair(
+        stage,
+        gear1_material=gear1_material,
+        gear2_material=gear2_material,
+        face_layers=face_layers,
+        face_width_mm=face_width_mm,
+        axial_offset_mm=axial_offset_mm,
+        phase_rad=phase_rad,
+        align_contact=align_contact,
+        contact_gap_mm=contact_gap_mm,
+        roll_angle_rad=roll_angle_rad,
+        start_at_edge=start_at_edge,
+        driven_gear=driven_gear,
+        slave_gear=slave_gear,
+        roll_sign=roll_sign,
+        refine_root=refine_root,
+        refine_flank=refine_flank,
+        fillet_gear1=fillet_gear1,
+        fillet_gear2=fillet_gear2,
+        fasten_bore=fasten_bore,
+        fasten_cuts=fasten_cuts,
+        fasten_bottom=fasten_bottom,
+        fasten_top=fasten_top,
+    )
+    if slave_gear in rigid_gears:
+        raise ValueError("the contact slave must stay deformable (rigid side is the master)")
+    part1, part2 = pair.part1, pair.part2
+    z = pair.z
+    torque_gear = 3 - driven_gear
+    torque_nmm = torque_gear2_nmm * z[torque_gear] / z[2]
+    total_inc = settle + hold
+    dt = 1.0 / total_inc
+    ramp_end = settle * dt
+    parts = {1: part1, 2: part2}
+
+    def fastening(part: GearPart) -> str:
+        g = part.gear
+        if g in rigid_gears:
+            return f"*RIGID BODY, REF NODE={g}, ELSET=Rad_Vz_{g}.ALL_ELEMENTS_Part_Rad_Vz_{g}"
+        return f"*RIGID BODY, REF NODE={g}, TIE NSET=Fesselung_Rad{g}"
+
+    def rot_node(part: GearPart) -> str:
+        cx, cy = part.center_xy
+        return f"{part.gear}, {cx:.6f}, {cy:.6f}, {part.z_mid_mm:.6f}"
+
+    def gear_comment(part: GearPart) -> str:
+        role = "position-locked" if part.gear == driven_gear else "torque (AMP-TORQUE)"
+        rigid = ", RIGID (ideally stiff)" if part.gear in rigid_gears else ""
+        cx, cy = part.center_xy
+        return (
+            f"** Gear {part.gear}: z={part.teeth}, b={part.face_width_mm:g} mm, "
+            f"material={part.material.name}, axis at ({cx:g}, {cy:g}), "
+            f"mid-plane z={part.z_mid_mm:g} mm, {role}{rigid}"
+        )
+
+    common = _foldable(
+        "\n".join(
+            (
+                "** pair_common.inp - shared mesh of the position series (closed, centered "
+                "configuration; each pos_NNN.inp positions it via *INSTANCE rotations)",
+                gear_comment(part1),
+                gear_comment(part2),
+                f"** contact-aligned: gear 2 rotated {pair.closing_rad:+.8f} rad",
+                "**",
+                _part_block(part1, element_type),
+                "**",
+                _part_block(part2, element_type),
+                "**",
+                "**MATERIALS",
+                _material_card_for(part1),
+                _material_card_for(part2),
+            )
+        )
+    )
+
+    def instance_block(part: GearPart, phi_rad: float) -> str:
+        cx, cy = part.center_xy
+        lines = [f"*INSTANCE, NAME=Rad_Vz_{part.gear}, PART=Part_Rad_Vz_{part.gear}"]
+        if abs(phi_rad) > 1e-15:
+            lines.append("0., 0., 0.")
+            lines.append(
+                f"{cx:.6f}, {cy:.6f}, 0., {cx:.6f}, {cy:.6f}, 1., {math.degrees(phi_rad):.9f}"
+            )
+        lines.append("*END INSTANCE")
+        return "\n".join(lines)
+
+    files: list[tuple[str, str]] = [("pair_common.inp", common)]
+    manifest_positions = []
+    n = max(n_roll_positions, 1)
+    for k in range(n):
+        s = k / (n - 1) if n > 1 else 0.0
+        phi_driven = (-roll_angle_rad / 2.0 if start_at_edge else 0.0) + s * roll_angle_rad
+        phi_other = -phi_driven * z[driven_gear] / z[torque_gear]
+        phis = {driven_gear: phi_driven, torque_gear: phi_other}
+        assembly = "\n".join(
+            (
+                "*ASSEMBLY, NAME=Assembly",
+                instance_block(part1, phis[1]),
+                instance_block(part2, phis[2]),
+                "*NODE",
+                rot_node(part1),
+                "*NODE",
+                rot_node(part2),
+                "*NSET, NSET=Rot_Node_Rad1\n1,",
+                "*NSET, NSET=Rot_Node_Rad2\n2,",
+                "*NSET, NSET=MASTERKNOTEN_NODE_SET\n1, 2",
+                f"*NSET, NSET=Fesselung_Rad1, INSTANCE=Rad_Vz_1\n"
+                f"{_wrap(part1.sets.fastening_nodes)}",
+                f"*NSET, NSET=Fesselung_Rad2, INSTANCE=Rad_Vz_2\n"
+                f"{_wrap(part2.sets.fastening_nodes)}",
+                fastening(part1),
+                fastening(part2),
+                "*SURFACE INTERACTION, NAME=INTPROP-1",
+                "1.,",
+                "*SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=HARD",
+                *(
+                    f"*CONTACT PAIR, INTERACTION=INTPROP-1, TYPE=SURFACE TO SURFACE\n{s1}, {s2}"
+                    for s1, s2 in pair.pairs
+                ),
+                "*END ASSEMBLY",
+            )
+        )
+        step = "\n".join(
+            (
+                "*STEP, NAME=STEP-1, NLGEOM=YES, INC=100000",
+                f"*STATIC, STABILIZE={stabilize:.4g}, ALLSDTOL=0.0, CONTINUE=NO\n"
+                f"{dt:.8g}, 1.0, 1e-08, {dt:.8g}",
+                "*RESTART, WRITE, FREQUENCY=0",
+                _time_points_block("MEASURE", [1.0]),
+                f"*OUTPUT, FIELD, NUMBER INTERVAL={total_inc}, TIMEMARKS=NO",
+                "*NODE OUTPUT\nU,",
+                "*OUTPUT, FIELD, TIME POINTS=MEASURE",
+                *_measurement_output_lines(parts, rigid_gears),
+                f"*BOUNDARY\nRot_Node_Rad{driven_gear}, 1, 6",
+                f"*BOUNDARY\nRot_Node_Rad{torque_gear}, 1, 5",
+                f"*CLOAD, AMPLITUDE=AMP-TORQUE\nRot_Node_Rad{torque_gear}, 6, {torque_nmm:.8g}",
+                "*END STEP",
+            )
+        )
+        deck = _foldable(
+            "\n".join(
+                (
+                    f"*HEADING\nposition {k + 1}/{n} of the rolling series | "
+                    f"phi_driven={phi_driven:+.8f} rad (gear {driven_gear}) | "
+                    f"torque {torque_nmm:.6g} N·mm SMOOTH-STEP 0->full over t=[0,{ramp_end:.4g}]"
+                    f", measure at t=1.0",
+                    "*INCLUDE, INPUT=pair_common.inp",
+                    "**",
+                    assembly,
+                    "**",
+                    _amplitude_block("AMP-TORQUE", [(0.0, 0.0), (ramp_end, 1.0), (1.0, 1.0)]),
+                    "**",
+                    step,
+                )
+            )
+        )
+        name = f"pos_{k + 1:03d}.inp"
+        files.append((name, deck))
+        manifest_positions.append(
+            {
+                "index": k + 1,
+                "file": name,
+                "phi_driven_rad": round(phi_driven, 10),
+                "phi_other_rad": round(phi_other, 10),
+                "measure_time": 1.0,
+            }
+        )
+
+    manifest = {
+        "mode": "position_series",
+        "n_positions": n,
+        "roll_pitches": roll_pitches,
+        "roll_angle_rad": round(roll_angle_rad, 10),
+        "start_at_edge": start_at_edge,
+        "driven_gear": driven_gear,
+        "torque_gear": torque_gear,
+        "torque_nmm": round(torque_nmm, 6),
+        "torque_gear2_nmm": torque_gear2_nmm,
+        "base_torque_fraction": 0.0,
+        "closing_rad": round(pair.closing_rad, 10),
+        "gears": {
+            str(g): {
+                "z": parts[g].teeth,
+                "b_mm": parts[g].face_width_mm,
+                "material": parts[g].material.name,
+                "rigid": g in rigid_gears,
+            }
+            for g in (1, 2)
+        },
+        "positions": manifest_positions,
+    }
+    files.append(("manifest.json", json.dumps(manifest, indent=1)))
+    bat = "\r\n".join(
+        ["@echo off", "rem run all rolling positions sequentially (edit for parallel queues)"]
+        + [
+            f"call abaqus job=pos_{k + 1:03d} input=pos_{k + 1:03d}.inp interactive"
+            for k in range(n)
+        ]
+        + [""]
+    )
+    sh = "\n".join(
+        ["#!/bin/sh", "# run all rolling positions sequentially (edit for parallel queues)"]
+        + [f"abaqus job=pos_{k + 1:03d} input=pos_{k + 1:03d}.inp interactive" for k in range(n)]
+        + [""]
+    )
+    files.append(("run_all.bat", bat))
+    files.append(("run_all.sh", sh))
+    return files

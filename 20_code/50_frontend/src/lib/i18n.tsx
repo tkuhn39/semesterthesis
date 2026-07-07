@@ -369,6 +369,10 @@ const DICT: Record<string, { de: string; en: string }> = {
     de: "Kein Drehmoment gesetzt — bitte im Leistungsfluss an Welle 1 oder Welle 2 eingeben.",
     en: "No torque set — enter it in the power flow at shaft 1 or shaft 2.",
   },
+  "pf.torqueSource": {
+    de: "Aus dem Leistungsfluss (Getriebeeinheit) — dort ändern.",
+    en: "From the power flow (gear unit) — edit it there.",
+  },
   "report.button": { de: "Report erzeugen", en: "Generate report" },
   "report.hint": {
     de: "Interaktiver HTML-Gesamtsystemreport (selbst-enthalten, druckbar) — wird serverseitig aus dem aktuellen Eingabezustand gerechnet; die letzte Stufenvariation wird mit aufgenommen.",
