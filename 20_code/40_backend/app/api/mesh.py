@@ -35,7 +35,11 @@ from app.services.geometry.root_fillet import (
 )
 from app.services.geometry.tooth_form import ToothProfile
 from app.services.materials import catalog_material
-from app.services.model.implicit_deck import build_implicit_pair_from_stage, build_position_series
+from app.services.model.implicit_deck import (
+    assemble_centered_pair,
+    build_implicit_pair_from_stage,
+    build_position_series,
+)
 from app.services.model.materials_card import LinearElastic, MarlowUniaxial, card_from_catalog
 from app.services.model.mesh3d import extrude_to_hex
 from app.services.model.plane_fe import density_convergence, root_tensile_stress
@@ -257,6 +261,23 @@ def mesh_preview(req: MeshRequest) -> MeshPreviewResponse:
     )
 
 
+def _outer_hull(hexes: np.ndarray) -> list[tuple[tuple[int, ...], int]]:
+    """(face node tuple, source hex index) for every hex face used exactly once.
+
+    C3D8 face node patterns (bottom, top, 4 sides) — the render-ready outer surface.
+    """
+    patterns = ((0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7))
+    count: dict[frozenset[int], int] = defaultdict(int)
+    keeper: dict[frozenset[int], tuple[tuple[int, ...], int]] = {}
+    for hi, hexa in enumerate(hexes):
+        for pat in patterns:
+            face = tuple(int(hexa[p]) for p in pat)
+            key = frozenset(face)
+            count[key] += 1
+            keeper[key] = (face, hi)
+    return [keeper[k] for k, c in count.items() if c == 1]
+
+
 class Mesh3DResponse(BaseModel):
     """Render-ready extruded sector: outer surface quad faces + per-face quality."""
 
@@ -289,19 +310,7 @@ def mesh_3d(
     # mid-plane-symmetric extrusion (z = ±b/2, reference parity): gears of different width
     # roll centred on each other and the rotation nodes sit at mid-width, not on a side face
     m3 = extrude_to_hex(section, quality, width=face_width_mm, layers=layers, z0=-face_width_mm / 2)
-
-    # Outer hull: hex faces used exactly once. C3D8 face node patterns (bottom, top, 4 sides).
-    patterns = ((0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7))
-    count: dict[frozenset[int], int] = defaultdict(int)
-    keeper: dict[frozenset[int], tuple[tuple[int, ...], int]] = {}
-    for hi, hexa in enumerate(m3.hexes):
-        for pat in patterns:
-            face = tuple(int(hexa[p]) for p in pat)
-            key = frozenset(face)
-            count[key] += 1
-            keeper[key] = (face, hi)
-    hull = [keeper[k] for k, c in count.items() if c == 1]
-
+    hull = _outer_hull(m3.hexes)
     used = sorted({v for face, _ in hull for v in face})
     remap = {v: i for i, v in enumerate(used)}
     verts = m3.nodes[used]
@@ -672,3 +681,132 @@ def build_deck_series(req: DeckRequest) -> Response:
             zf.writestr(name, content)
     headers = {"Content-Disposition": "attachment; filename=rolling_position_series.zip"}
     return Response(buf.getvalue(), media_type="application/zip", headers=headers)
+
+
+class PairGearOut(BaseModel):
+    """One gear of the assembled pair, render-ready and positioned like the deck.
+
+    ``vertices`` are absolute assembly coordinates at the CLOSED, CENTERED configuration
+    (backlash-closing rotation baked in). The viewer animates the Wälzstellungen by rotating
+    the gear about its own axis: φ_g(k) = ``start_angle_rad`` + k · ``step_angle_rad``
+    (k = 0 … n_positions−1; position 0 = the edge-tooth start of the deck).
+    """
+
+    gear: int
+    teeth: int
+    center: list[float]  # [cx, cy] rotation-axis position in the assembly
+    z_mid_mm: float  # mid-plane z (= axial offset; rotation node sits here)
+    face_width_mm: float
+    rigid_shell: bool
+    n_elements: int  # hexes (solid) or R3D4 quads (rigid shell)
+    vertices: list[float]  # x, y, z per surface vertex
+    faces: list[int]  # 4 vertex indices per quad face
+    start_angle_rad: float
+    step_angle_rad: float
+
+
+class PairAssemblyResponse(BaseModel):
+    """THE deck assembly for the viewport (single source of truth, user point 3):
+    exactly the geometry, positioning and roll schedule of the generated .inp."""
+
+    center_distance_mm: float
+    closing_rad: float  # backlash-closing rotation of gear 2 (baked into the vertices)
+    driven_gear: int  # angle-driven gear (the plastic side)
+    n_positions: int  # Wälzstellungen (measurement positions)
+    roll_angle_rad: float  # driven gear total sweep (signed by the Drehrichtung)
+    contact_pairs: list[str]  # slave surface, master surface
+    gear1: PairGearOut
+    gear2: PairGearOut
+
+
+@router.post("/pair", response_model=PairAssemblyResponse)
+def pair_assembly(req: DeckRequest) -> PairAssemblyResponse:
+    """Both gears assembled EXACTLY like the deck (one code path — no viewport-local math).
+
+    Runs the same :func:`assemble_centered_pair` the deck builders use (fillets, tip relief,
+    rigid shells, closing rotation, sweep contact pairing) and returns the outer hulls plus
+    the per-gear angle schedule of the roll (edge start + kinematic coupling).
+    """
+    stage = req.stage.stage()
+    roles = _deck_roles(req)
+    roll_sign = 1.0 if req.rotation_sense != "ccw" else -1.0
+    driven = int(roles["driven_gear"])
+    z = (stage.teeth[0], stage.teeth[1])
+    roll_angle = roll_sign * req.roll_pitches * 2.0 * math.pi / z[driven - 1]
+    try:
+        pair = assemble_centered_pair(
+            stage,
+            gear1_material=roles["gear1_material"],
+            gear2_material=roles["gear2_material"],
+            face_layers=req.face_layers,
+            face_width_mm=None,
+            axial_offset_mm=(req.axial_offset_gear1_mm, req.axial_offset_gear2_mm),
+            phase_rad=0.0,
+            align_contact=req.align_contact,
+            contact_gap_mm=None,
+            roll_angle_rad=roll_angle,
+            start_at_edge=req.start_at_edge,
+            driven_gear=driven,
+            slave_gear=int(roles["slave_gear"]),
+            roll_sign=roll_sign,
+            rigid_gears=roles["rigid_gears"],
+            tip_relief=(req.stage.tip_relief(0), req.stage.tip_relief(1)),
+            refine_root=req.refine_root,
+            refine_flank=req.refine_flank,
+            fillet_gear1=req.fillet_gear1.strategy(),
+            fillet_gear2=req.fillet_gear2.strategy(),
+            fasten_bore=req.fasten_bore,
+            fasten_cuts=req.fasten_cuts,
+            fasten_bottom=req.fasten_bottom,
+            fasten_top=req.fasten_top,
+        )
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+    # per-gear angle schedule (mirrors build_implicit_pair_from_stage): the driven gear
+    # starts at −roll/2 (edge tooth) and steps roll/(n−1); the other gear counter-rotates
+    # kinematically by the tooth-count ratio
+    n = req.n_roll_positions
+    step_driven = roll_angle / max(n - 1, 1)
+    start_driven = -roll_angle / 2.0 if req.start_at_edge else 0.0
+    other = 3 - driven
+    coupling = -z[driven - 1] / z[other - 1]
+
+    def gear_out(part_gear: int) -> PairGearOut:
+        part = pair.part1 if part_gear == 1 else pair.part2
+        if part.shell_quads is not None:
+            verts = part.mesh.nodes
+            faces = [int(i) for quad in part.shell_quads for i in quad]
+            n_elements = len(part.shell_quads)
+        else:
+            hull = _outer_hull(part.mesh.hexes)
+            used = sorted({v for face, _ in hull for v in face})
+            remap = {v: i for i, v in enumerate(used)}
+            verts = part.mesh.nodes[used]
+            faces = [remap[v] for face, _ in hull for v in face]
+            n_elements = len(part.mesh.hexes)
+        driven_side = part_gear == driven
+        return PairGearOut(
+            gear=part_gear,
+            teeth=part.teeth,
+            center=[round(part.center_xy[0], 6), round(part.center_xy[1], 6)],
+            z_mid_mm=part.z_mid_mm,
+            face_width_mm=part.face_width_mm,
+            rigid_shell=part.shell_quads is not None,
+            n_elements=n_elements,
+            vertices=[round(float(v), 5) for v in verts.ravel()],
+            faces=faces,
+            start_angle_rad=start_driven if driven_side else start_driven * coupling,
+            step_angle_rad=step_driven if driven_side else step_driven * coupling,
+        )
+
+    return PairAssemblyResponse(
+        center_distance_mm=round(pair.a, 6),
+        closing_rad=round(pair.closing_rad, 8),
+        driven_gear=driven,
+        n_positions=n,
+        roll_angle_rad=roll_angle,
+        contact_pairs=[f"{s}, {m}" for s, m in pair.pairs],
+        gear1=gear_out(1),
+        gear2=gear_out(2),
+    )

@@ -1,12 +1,13 @@
 "use client";
 
 // FE rolling-model panel (M6): both gears of the current stage in one dark viewport —
-// exactly the combined .inp assembly — with co-moving DOF triads (locked 1–5 gray, free
-// rotation green/amber), a roll slider (kinematic coupling), and the deck download with
-// the mixed-pairing rigid-shell rule.
+// exactly the combined .inp assembly, served by /api/mesh/pair (backend SSOT: closing
+// rotation, edge start, rigid shells, fillets, tip relief) — with co-moving DOF triads
+// (locked 1–5 gray, free rotation green/amber), a slider over the REAL Wälzstellungen of
+// the deck schedule, and the deck download (series ZIP or single INP).
 
 import { useState } from "react";
-import { meshApi, type FilletSpec, type Mesh3DResponse } from "@/lib/api";
+import { meshApi, type FilletSpec, type PairAssemblyResponse } from "@/lib/api";
 import { useStage } from "@/lib/stage";
 import { useWorkbench } from "@/lib/store";
 import { PairViewport } from "@/components/PairViewport";
@@ -19,9 +20,8 @@ export function PairPanel() {
   const fm = useFmt();
   const { stage, label } = useStage();
   const wb = useWorkbench();
-  const [gear1, setGear1] = useState<Mesh3DResponse | null>(null);
-  const [gear2, setGear2] = useState<Mesh3DResponse | null>(null);
-  const [roll, setRoll] = useState(0);
+  const [pair, setPair] = useState<PairAssemblyResponse | null>(null);
+  const [position, setPosition] = useState(0); // Wälzstellung k (continuous 0 … n−1)
   const [layers, setLayers] = useState(6);
   const [refineRoot, setRefineRoot] = useState(1);
   const [refineFlank, setRefineFlank] = useState(1);
@@ -53,15 +53,35 @@ export function PairPanel() {
     }
   };
 
+  // ONE payload for preview assembly AND deck download (SSOT — the viewport shows exactly
+  // what the .inp contains); the torque is added only for the download
+  const deckPayload = () => ({
+    stage,
+    face_layers: layers,
+    n_roll_positions: rollPositions,
+    rotation_sense: wb.get("fem.rotation_sense") as "cw" | "ccw",
+    roll_pitches: wb.fem.roll_pitches,
+    refine_root: refineRoot,
+    refine_flank: refineFlank,
+    axial_offset_gear1_mm: offsetGear1,
+    axial_offset_gear2_mm: offsetGear2,
+    steel_shell: steelShell,
+    rigid_shell_gear1: wb.fem.rigid_shell_gear1,
+    rigid_shell_gear2: wb.fem.rigid_shell_gear2,
+    fillet_gear1: filletGear1,
+    fillet_gear2: filletGear2,
+    align_contact: wb.fem.align_contact,
+    fasten_bore: wb.fem.fasten_bore,
+    fasten_cuts: wb.fem.fasten_cuts,
+    fasten_top: wb.fem.fasten_top,
+    fasten_bottom: wb.fem.fasten_bottom,
+  });
+
   const generate = () =>
     guard("pair", async () => {
-      const base = { stage, refine_root: refineRoot, refine_flank: refineFlank };
-      const [g1, g2] = await Promise.all([
-        meshApi.mesh3d({ ...base, gear: 1, fillet: filletGear1 }, layers),
-        meshApi.mesh3d({ ...base, gear: 2, fillet: filletGear2 }, layers),
-      ]);
-      setGear1(g1);
-      setGear2(g2);
+      const res = await meshApi.pair(deckPayload());
+      setPair(res);
+      setPosition(0); // start of the roll = the deck's edge-tooth start position
     });
 
   const downloadDeck = () =>
@@ -69,28 +89,7 @@ export function PairPanel() {
       if (typeof m2 !== "number" || !Number.isFinite(m2)) {
         throw new Error(t("pf.noTorque"));
       }
-      const req = {
-        stage,
-        torque_gear2_nmm: m2,
-        face_layers: layers,
-        n_roll_positions: rollPositions,
-        rotation_sense: wb.get("fem.rotation_sense") as "cw" | "ccw",
-        roll_pitches: wb.fem.roll_pitches,
-        refine_root: refineRoot,
-        refine_flank: refineFlank,
-        axial_offset_gear1_mm: offsetGear1,
-        axial_offset_gear2_mm: offsetGear2,
-        steel_shell: steelShell,
-        rigid_shell_gear1: wb.fem.rigid_shell_gear1,
-        rigid_shell_gear2: wb.fem.rigid_shell_gear2,
-        fillet_gear1: filletGear1,
-        fillet_gear2: filletGear2,
-        align_contact: wb.fem.align_contact,
-        fasten_bore: wb.fem.fasten_bore,
-        fasten_cuts: wb.fem.fasten_cuts,
-        fasten_top: wb.fem.fasten_top,
-        fasten_bottom: wb.fem.fasten_bottom,
-      };
+      const req = { ...deckPayload(), torque_gear2_nmm: m2 };
       const series = wb.fem.deck_mode === "series";
       const blob = series
         ? await meshApi.deckSeries(req)
@@ -181,30 +180,51 @@ export function PairPanel() {
         </Btn>
         {err && <ErrNote>{err}</ErrNote>}
 
-        {gear1 && gear2 && (
+        {pair && (
           <>
             <div className="grid grid-cols-2 gap-2">
-              <Stat label={`${t("pair.gear1")} · ${t("mesh.hexes")}`} value={fm.int(gear1.n_hexes)} />
-              <Stat label={`${t("pair.gear2")} · ${t("mesh.hexes")}`} value={fm.int(gear2.n_hexes)} />
+              <Stat
+                label={`${t("pair.gear1")} · ${pair.gear1.rigid_shell ? "R3D4" : t("mesh.hexes")}`}
+                value={fm.int(pair.gear1.n_elements)}
+              />
+              <Stat
+                label={`${t("pair.gear2")} · ${pair.gear2.rigid_shell ? "R3D4" : t("mesh.hexes")}`}
+                value={fm.int(pair.gear2.n_elements)}
+              />
             </div>
             <Section title={t("pair.roll")}>
               <div className="p-3">
+                {/* the REAL Wälzstellungen of the deck schedule (edge start → far edge) */}
                 <input
                   type="range"
-                  min={-15}
-                  max={15}
-                  step={0.2}
-                  value={roll}
-                  onChange={(e) => setRoll(Number(e.target.value))}
+                  min={0}
+                  max={pair.n_positions - 1}
+                  step={0.1}
+                  value={position}
+                  onChange={(e) => setPosition(Number(e.target.value))}
                   className="w-full"
                 />
                 <div className="flex justify-between text-[11px] text-zinc-500">
-                  <span>−15°</span>
-                  <span className="wb-num">φ₂ = {roll.toFixed(1)}°</span>
-                  <span>+15°</span>
+                  <span>1</span>
+                  <span className="wb-num">
+                    {t("pair.position")} {Math.round(position) + 1}/{pair.n_positions}
+                    {Math.abs(position - Math.round(position)) < 0.05
+                      ? ` · ${t("pair.measurePoint")}`
+                      : ""}{" "}
+                    · φ ={" "}
+                    {(
+                      ((pair.gear2.start_angle_rad + position * pair.gear2.step_angle_rad) * 180) /
+                      Math.PI
+                    ).toFixed(2)}
+                    °
+                  </span>
+                  <span>{pair.n_positions}</span>
                 </div>
               </div>
             </Section>
+            <div className="text-[11.5px] text-zinc-500 leading-relaxed border border-zinc-200 rounded-lg bg-white p-2.5">
+              {t("pair.mouseHint")}
+            </div>
             <div className="text-[11.5px] text-zinc-500 leading-relaxed border border-zinc-200 rounded-lg bg-white p-2.5">
               <div className="font-medium text-zinc-700 mb-1">{t("pair.legend")}</div>
               <div>
@@ -261,17 +281,7 @@ export function PairPanel() {
       </div>
 
       <div className="h-full min-h-[560px]" style={{ background: "var(--wb-viewport)", borderRadius: 10 }}>
-        <PairViewport
-          gear1={gear1}
-          gear2={gear2}
-          centerDistance={centerDistance}
-          teethGear1={stage.teeth_pinion}
-          teethGear2={stage.teeth_wheel}
-          drivenGear={2}
-          rollDeg={roll}
-          offsetGear1Z={offsetGear1}
-          offsetGear2Z={offsetGear2}
-        />
+        <PairViewport pair={pair} position={position} />
       </div>
     </div>
   );

@@ -3,10 +3,11 @@
 // three.js viewport for the extruded FE sector (dark, ANSA-like: light-gray hull with thin
 // edges, optional scaled-Jacobian heatmap). Pure client component; geometry arrives as the
 // /api/mesh/3d hull payload (deduplicated vertices + outer quad faces + per-face quality).
+// Orthographic camera + CATIA mouse controls (user decision 2026-07-06).
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { CatiaControls } from "@/components/CatiaControls";
 import type { Mesh3DResponse } from "@/lib/api";
 
 function qualityColor(q: number): [number, number, number] {
@@ -28,8 +29,8 @@ export function MeshViewport(props: { data: Mesh3DResponse | null; heatmap: bool
   const state = useRef<{
     renderer: THREE.WebGLRenderer;
     scene: THREE.Scene;
-    camera: THREE.PerspectiveCamera;
-    controls: OrbitControls;
+    camera: THREE.OrthographicCamera;
+    controls: CatiaControls;
     group: THREE.Group;
   } | null>(null);
 
@@ -41,31 +42,26 @@ export function MeshViewport(props: { data: Mesh3DResponse | null; heatmap: bool
     renderer.setClearColor(0x10161f);
     el.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 2000);
-    camera.position.set(0, -40, 55);
+    // orthographic ("gerade geführt") — frustum managed by CatiaControls.fit/resize
+    const camera = new THREE.OrthographicCamera(-50, 50, 50, -50, 0.01, 5000);
     camera.up.set(0, 0, 1);
     scene.add(new THREE.AmbientLight(0xffffff, 0.75));
     const dir = new THREE.DirectionalLight(0xffffff, 1.4);
     dir.position.set(30, -50, 80);
     scene.add(dir);
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
+    const controls = new CatiaControls(camera, el);
     const group = new THREE.Group();
     scene.add(group);
     state.current = { renderer, scene, camera, controls, group };
 
     let raf = 0;
     const loop = () => {
-      controls.update();
       renderer.render(scene, camera);
       raf = requestAnimationFrame(loop);
     };
     const resize = () => {
-      const w = el.clientWidth;
-      const h = el.clientHeight;
-      renderer.setSize(w, h);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      renderer.setSize(el.clientWidth, el.clientHeight);
+      controls.resize(el.clientWidth, el.clientHeight);
     };
     const obs = new ResizeObserver(resize);
     obs.observe(el);
@@ -148,9 +144,7 @@ export function MeshViewport(props: { data: Mesh3DResponse | null; heatmap: bool
     );
 
     const size = box.getSize(new THREE.Vector3()).length();
-    s.camera.position.set(0, -size * 0.9, size * 0.8);
-    s.controls.target.set(0, 0, 0);
-    s.controls.update();
+    s.controls.fit(new THREE.Vector3(0, 0, 0), size * 0.55);
   }, [props.data, props.heatmap]);
 
   return <div ref={mount} className="w-full h-full min-h-[420px] rounded-lg overflow-hidden" />;

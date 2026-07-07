@@ -481,6 +481,32 @@ export interface DeckRequest {
   start_at_edge?: boolean;
   rotation_sense?: "cw" | "ccw";
 }
+// THE deck assembly for the pair viewport (SSOT): vertices in absolute assembly
+// coordinates at the closed, centered configuration; the viewer animates position k by
+// rotating each gear about its own center by start_angle_rad + k · step_angle_rad.
+export interface PairGearOut {
+  gear: number;
+  teeth: number;
+  center: [number, number];
+  z_mid_mm: number;
+  face_width_mm: number;
+  rigid_shell: boolean;
+  n_elements: number;
+  vertices: number[];
+  faces: number[];
+  start_angle_rad: number;
+  step_angle_rad: number;
+}
+export interface PairAssemblyResponse {
+  center_distance_mm: number;
+  closing_rad: number;
+  driven_gear: number;
+  n_positions: number;
+  roll_angle_rad: number;
+  contact_pairs: string[];
+  gear1: PairGearOut;
+  gear2: PairGearOut;
+}
 export interface ContourRequest {
   stage: StageParams;
   gear: 1 | 2;
@@ -520,6 +546,9 @@ export const meshApi = {
     post<FilletCompareResponse>("/api/mesh/fillet-compare", { stage, gear }),
   filletSweep: (stage: StageParams, gear: 1 | 2, kind: "elliptic" | "bezier" | "bionic") =>
     post<FilletSweepResponse>("/api/mesh/fillet-sweep", { stage, gear, kind, points: 6 }),
+  // preview assembly: same request shape as the deck, torque not needed (geometry only)
+  pair: (req: Omit<DeckRequest, "torque_gear2_nmm">) =>
+    post<PairAssemblyResponse>("/api/mesh/pair", req),
   deck: (req: DeckRequest) => postText("/api/mesh/deck", req),
   deckSeries: async (req: DeckRequest): Promise<Blob> => {
     const res = await fetch(`${BASE}/api/mesh/deck-series`, {

@@ -130,6 +130,36 @@ def test_deck_download_with_steel_shell() -> None:
     assert "Rot_Node_Rad2, 6, 6" in deck  # the plastic side (gear 2) is angle-driven
 
 
+def test_pair_assembly_is_the_deck_positioning() -> None:
+    """/api/mesh/pair serves THE deck assembly (SSOT): closing rotation baked in, edge-start
+    angle schedule with kinematic coupling, rigid shell on the steel slot."""
+    res = client.post(
+        "/api/mesh/pair",
+        json={"face_layers": 2, "n_roll_positions": 5, "steel_shell": True},
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["driven_gear"] == 2  # plastic side (kst-E: gear 2) is angle-driven
+    assert abs(body["center_distance_mm"] - 52.0) < 1e-6
+    assert body["closing_rad"] != 0.0  # single-flank contact alignment applied
+    assert len(body["contact_pairs"]) == 7  # sweep-union reference pairs
+    g1, g2 = body["gear1"], body["gear2"]
+    assert g1["rigid_shell"] is True and g2["rigid_shell"] is False
+    assert g1["center"] == [0.0, 0.0] and g2["center"][0] > 50.0
+    # schedule: driven gear from −roll/2 in steps of roll/(n−1); gear 1 counter-rotates by z2/z1
+    roll = 3.0 * 2.0 * math.pi / 52.0
+    assert abs(body["roll_angle_rad"] - roll) < 1e-12
+    assert abs(g2["start_angle_rad"] + roll / 2.0) < 1e-12
+    assert abs(g2["step_angle_rad"] - roll / 4.0) < 1e-12
+    assert abs(g1["start_angle_rad"] - roll / 2.0 * 52.0 / 51.0) < 1e-12
+    assert abs(g1["step_angle_rad"] + roll / 4.0 * 52.0 / 51.0) < 1e-12
+    # payload consistency: quad indices address the vertex list
+    for g in (g1, g2):
+        assert len(g["faces"]) % 4 == 0 and len(g["vertices"]) % 3 == 0
+        assert max(g["faces"]) < len(g["vertices"]) // 3
+    assert len(g1["vertices"]) < len(g2["vertices"])  # R3D4 shell ≪ solid hull? (lateral only)
+
+
 def test_presets_and_ste_import() -> None:
     res = client.get("/api/presets")
     assert res.status_code == 200

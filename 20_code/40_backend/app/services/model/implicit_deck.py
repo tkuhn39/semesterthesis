@@ -806,7 +806,7 @@ class AssembledPair:
     gap: float
 
 
-def _assemble_centered_pair(
+def assemble_centered_pair(
     stage: GearStage,
     *,
     gear1_material: Material,
@@ -1010,7 +1010,7 @@ def build_implicit_pair_from_stage(
     # "ccw" mirrors the whole load case (roll sign, closing flank, start offset).
     roll_sign = 1.0 if rotation_sense != "ccw" else -1.0
     roll_angle_rad = roll_sign * roll_pitches * 2.0 * math.pi / stage.teeth[driven_gear - 1]
-    pair = _assemble_centered_pair(
+    pair = assemble_centered_pair(
         stage,
         gear1_material=gear1_material,
         gear2_material=gear2_material,
@@ -1149,7 +1149,7 @@ def build_position_series(
 
     roll_sign = 1.0 if rotation_sense != "ccw" else -1.0
     roll_angle_rad = roll_sign * roll_pitches * 2.0 * math.pi / stage.teeth[driven_gear - 1]
-    pair = _assemble_centered_pair(
+    pair = assemble_centered_pair(
         stage,
         gear1_material=gear1_material,
         gear2_material=gear2_material,

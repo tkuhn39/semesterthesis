@@ -1,28 +1,34 @@
 "use client";
 
-// Pair viewport (user request, M6): both meshed sectors positioned exactly like the combined
-// implicit deck (ADR-021 amended — Kleingetriebeprüfstand top view: gear 1 = the stage's
-// FIRST gear at the origin, on the LEFT of the default camera; gear 2 at the working centre
-// distance on the RIGHT, half-pitch phase), with CO-MOVING coordinate triads at the two
-// rotation nodes showing which DOFs the deck locks: DOF 1–5 fixed (gray struts + lock ring),
-// DOF 6 free (green rotation arrow on the angle-driven gear, amber on the torque-loaded one).
-// The hulls arrive mid-plane-symmetric (z = ±b/2) and each gear can be displaced along its
-// rotation axis (parametric axial offset, mirrors the deck's axial_offset_*). A roll slider
-// turns the driven gear with the correct kinematic coupling, so the triads visibly rotate
-// with their gears — consistent with *BOUNDARY / *CLOAD in the .inp.
+// Pair viewport (user points 1–3, 2026-07-06): renders THE deck assembly from
+// /api/mesh/pair — vertices arrive in absolute assembly coordinates at the closed, centered
+// configuration (backlash-closing rotation baked in by the backend; NO viewport-local
+// positioning math). The roll slider walks the REAL Wälzstellungen of the deck schedule:
+// each gear rotates about its own axis by start_angle_rad + k · step_angle_rad (edge-tooth
+// start, kinematic coupling — both from the backend). Camera is ORTHOGRAPHIC with CATIA
+// mouse controls (MMB pan, MMB+LMB/RMB free 360° tumble, wheel zoom). CO-MOVING DOF triads
+// at the rotation nodes show the deck BCs: DOF 1–5 locked (gray + lock ring), DOF 6 free
+// (green = angle-driven, amber = torque side).
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import type { Mesh3DResponse } from "@/lib/api";
+import { CatiaControls } from "@/components/CatiaControls";
+import type { PairAssemblyResponse, PairGearOut } from "@/lib/api";
 
-function buildHull(data: Mesh3DResponse, tint: number): THREE.Group {
+/** Hull/shell group in GEAR-LOCAL coordinates (assembly vertices minus the gear center),
+ *  so rotating the parent group about z rolls the gear about its own axis. */
+function buildGear(data: PairGearOut, tint: number): THREE.Group {
   const group = new THREE.Group();
+  const [cx, cy] = data.center;
   const nVerts = data.vertices.length / 3;
   const verts: THREE.Vector3[] = [];
   for (let i = 0; i < nVerts; i++) {
     verts.push(
-      new THREE.Vector3(data.vertices[3 * i], data.vertices[3 * i + 1], data.vertices[3 * i + 2]),
+      new THREE.Vector3(
+        data.vertices[3 * i] - cx,
+        data.vertices[3 * i + 1] - cy,
+        data.vertices[3 * i + 2],
+      ),
     );
   }
   const nFaces = data.faces.length / 4;
@@ -53,6 +59,10 @@ function buildHull(data: Mesh3DResponse, tint: number): THREE.Group {
       new THREE.MeshLambertMaterial({
         color: tint,
         side: THREE.DoubleSide,
+        // rigid Außenhülle: render the open lateral shell semi-transparent so the
+        // missing end faces (deliberate — ideally stiff R3D4 mantle) read as such
+        transparent: data.rigid_shell,
+        opacity: data.rigid_shell ? 0.8 : 1.0,
         polygonOffset: true,
         polygonOffsetFactor: 1,
         polygonOffsetUnits: 1,
@@ -120,22 +130,15 @@ function buildTriad(size: number, moment: boolean): THREE.Group {
 }
 
 export function PairViewport(props: {
-  gear1: Mesh3DResponse | null; // the stage's first gear — at the origin, LEFT (rig view)
-  gear2: Mesh3DResponse | null; // the second gear — at the centre distance, RIGHT
-  centerDistance: number;
-  teethGear1: number;
-  teethGear2: number;
-  drivenGear: 1 | 2; // angle-driven gear (green triad; the other carries the torque, amber)
-  rollDeg: number; // driven-gear angle (the slider)
-  offsetGear1Z?: number; // axial offset along the rotation axis (deck axial_offset_gear1_mm)
-  offsetGear2Z?: number;
+  pair: PairAssemblyResponse | null; // THE deck assembly (backend SSOT)
+  position: number; // Wälzstellung k, continuous 0 … n_positions−1 (the slider)
 }) {
   const mount = useRef<HTMLDivElement>(null);
   const state = useRef<{
     renderer: THREE.WebGLRenderer;
     scene: THREE.Scene;
-    camera: THREE.PerspectiveCamera;
-    controls: OrbitControls;
+    camera: THREE.OrthographicCamera;
+    controls: CatiaControls;
     g1: THREE.Group;
     g2: THREE.Group;
   } | null>(null);
@@ -148,14 +151,14 @@ export function PairViewport(props: {
     renderer.setClearColor(0x10161f);
     el.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 3000);
+    // orthographic ("gerade geführt") — frustum managed by CatiaControls.fit/resize
+    const camera = new THREE.OrthographicCamera(-50, 50, 50, -50, 0.01, 5000);
     camera.up.set(0, 0, 1);
     scene.add(new THREE.AmbientLight(0xffffff, 0.8));
     const dir = new THREE.DirectionalLight(0xffffff, 1.3);
     dir.position.set(40, -70, 90);
     scene.add(dir);
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
+    const controls = new CatiaControls(camera, el);
     const g1 = new THREE.Group();
     const g2 = new THREE.Group();
     scene.add(g1, g2);
@@ -163,14 +166,12 @@ export function PairViewport(props: {
 
     let raf = 0;
     const loop = () => {
-      controls.update();
       renderer.render(scene, camera);
       raf = requestAnimationFrame(loop);
     };
     const resize = () => {
       renderer.setSize(el.clientWidth, el.clientHeight);
-      camera.aspect = el.clientWidth / el.clientHeight;
-      camera.updateProjectionMatrix();
+      controls.resize(el.clientWidth, el.clientHeight);
     };
     const obs = new ResizeObserver(resize);
     obs.observe(el);
@@ -186,55 +187,40 @@ export function PairViewport(props: {
     };
   }, []);
 
-  // (re)build the two gear groups when payloads arrive
+  // (re)build the two gear groups when the assembly arrives — geometry as delivered,
+  // each group at its gear's rotation axis so group.rotation.z = the deck angle
   useEffect(() => {
     const s = state.current;
     if (!s) return;
     s.g1.clear();
     s.g2.clear();
-    if (!props.gear1 || !props.gear2) return;
-    const a = props.centerDistance;
+    const p = props.pair;
+    if (!p) return;
+    const a = p.center_distance_mm;
     const size = a * 0.16;
 
-    // gear 1 at the origin (screen LEFT), sector rotated -90° to face +x (deck convention);
-    // the hull is mid-plane symmetric, so the triad at the group origin sits at mid-width
-    const hull1 = buildHull(props.gear1, 0xb9c2cf);
-    hull1.rotation.z = -Math.PI / 2;
-    s.g1.add(hull1, buildTriad(size, props.drivenGear !== 1));
-    s.g1.position.set(0, 0, props.offsetGear1Z ?? 0);
+    for (const [group, gear, tint] of [
+      [s.g1, p.gear1, 0xb9c2cf],
+      [s.g2, p.gear2, 0xd5d9df],
+    ] as const) {
+      group.add(buildGear(gear, tint));
+      const triad = buildTriad(size, gear.gear !== p.driven_gear);
+      triad.position.set(0, 0, gear.z_mid_mm);
+      group.add(triad);
+      group.position.set(gear.center[0], gear.center[1], 0);
+    }
+    s.controls.fit(new THREE.Vector3(a / 2, 0, 0), a * 0.95);
+  }, [props.pair]);
 
-    // gear 2 at (a, 0) (screen RIGHT), rotated +90° + half pitch (deck convention)
-    const hull2 = buildHull(props.gear2, 0xd5d9df);
-    hull2.rotation.z = Math.PI / 2 + Math.PI / props.teethGear2;
-    s.g2.add(hull2, buildTriad(size, props.drivenGear !== 2));
-    s.g2.position.set(a, 0, props.offsetGear2Z ?? 0);
-
-    s.camera.position.set(a / 2, -a * 1.6, a * 1.1);
-    s.controls.target.set(a / 2, 0, 8);
-    s.controls.update();
-  }, [
-    props.gear1,
-    props.gear2,
-    props.centerDistance,
-    props.teethGear2,
-    props.drivenGear,
-    props.offsetGear1Z,
-    props.offsetGear2Z,
-  ]);
-
-  // roll coupling: the driven gear follows the slider, the other counter-rotates by the ratio
+  // roll schedule: position k rotates each gear by its backend angle law (edge start +
+  // kinematic coupling — the same numbers the .inp uses)
   useEffect(() => {
     const s = state.current;
-    if (!s) return;
-    const phi = (props.rollDeg * Math.PI) / 180;
-    if (props.drivenGear === 2) {
-      s.g2.rotation.z = phi;
-      s.g1.rotation.z = (-phi * props.teethGear2) / props.teethGear1;
-    } else {
-      s.g1.rotation.z = phi;
-      s.g2.rotation.z = (-phi * props.teethGear1) / props.teethGear2;
-    }
-  }, [props.rollDeg, props.teethGear1, props.teethGear2, props.drivenGear]);
+    const p = props.pair;
+    if (!s || !p) return;
+    s.g1.rotation.z = p.gear1.start_angle_rad + props.position * p.gear1.step_angle_rad;
+    s.g2.rotation.z = p.gear2.start_angle_rad + props.position * p.gear2.step_angle_rad;
+  }, [props.position, props.pair]);
 
   return <div ref={mount} className="w-full h-full min-h-[520px] rounded-lg overflow-hidden" />;
 }

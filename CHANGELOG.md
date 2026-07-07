@@ -87,6 +87,22 @@ Dates are ISO 8601 (YYYY-MM-DD).
   both gears' mesh flank sets end at d_Na, and C_αa = 8 µm pulls the tip flank back
   by ≈ C_αa/cos α (8.83 µm measured).
 
+### Added (viewport parity — phase D, user points 1–3)
+- **`POST /api/mesh/pair`**: THE deck assembly for the viewport — runs the deck
+  builders' own `assemble_centered_pair` (fillets, tip relief, rigid R3D4 shells,
+  closing rotation, sweep contact pairing) and returns the outer hulls in absolute
+  assembly coordinates plus the per-gear angle law (edge start + kinematic coupling)
+  and the contact-pair list. The PairViewport's local positioning math (half-pitch
+  heuristic, no closing rotation — the "gears don't touch" report) is deleted;
+  preview and .inp share one payload builder in the panel.
+- **Roll slider = real Wälzstellungen**: position k over the deck schedule
+  (1 … n, measurement points marked, φ from the backend angle law) instead of a
+  free ±15° angle.
+- **Orthographic camera + CATIA mouse controls** (shared `CatiaControls`) in the
+  pair AND mesh viewports: MMB drag = pan, MMB+LMB/RMB = quaternion free-tumble
+  (full 360°, no polar clamp), wheel = ortho zoom; middle-click autoscroll
+  suppressed. Rigid-shell gears render as semi-transparent open mantles.
+
 ### Fixed
 - Powerflow torque reset: entering **0** (not only clearing) now frees both shaft
   fields again (user report).

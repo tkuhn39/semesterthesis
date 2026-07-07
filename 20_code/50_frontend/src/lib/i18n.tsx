@@ -105,6 +105,12 @@ const DICT: Record<string, { de: string; en: string }> = {
   "pair.stageLabel": { de: "Stufe", en: "Stage" },
   "pair.generate": { de: "Paar erzeugen", en: "Generate pair" },
   "pair.roll": { de: "Abwälzen (kinematisch gekoppelt)", en: "Roll (kinematically coupled)" },
+  "pair.position": { de: "Wälzstellung", en: "Roll position" },
+  "pair.measurePoint": { de: "Messpunkt", en: "Measurement point" },
+  "pair.mouseHint": {
+    de: "CATIA-Maus: MMT ziehen = verschieben · MMT + LMT/RMT = frei drehen (360°) · Rad = Zoom",
+    en: "CATIA mouse: MMB drag = pan · MMB + LMB/RMB = free 360° tumble · wheel = zoom",
+  },
   "pair.legend": { de: "Koordinatensysteme (Rot_Node_Rad1/2)", en: "Coordinate systems (Rot_Node_Rad1/2)" },
   "pair.legendLocked": { de: "DOF 1–5 gesperrt (Ring + Streben)", en: "DOF 1–5 locked (ring + struts)" },
   "pair.legendDriven": {

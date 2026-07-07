@@ -38,7 +38,7 @@ body.
 | ADR-017 | FE rolling-model mesh: ρ_F-arc root, transfinite tooth, all-quad body fan | Accepted | 2026-06-24 |
 | ADR-018 | Block-structured FVA/STIRAK gear mesh on a fixed scaffold (MESHING_SPEC.md) | Superseded by ADR-019 | 2026-07-03 |
 | ADR-019 | Reference-topology transplant mesher: mined ground truth, canonical symmetry, chord density, quick FE, fillet strategies | Accepted | 2026-07-03 |
-| ADR-020 | Next.js workbench frontend (FVA layout language, Geist, static export) | Accepted | 2026-07-03 |
+| ADR-020 | Next.js workbench frontend (FVA layout language, Geist, static export; amended: backend-served pair assembly, ortho + CATIA viewports) | Accepted | 2026-07-07 |
 | ADR-021 | Deck gear numbering follows the stage input order; mid-plane-centred extrusion with parametric axial offsets (amended: rig-view slot layout + Fesselung parity + per-position torque cycle, edge start, position series) | Accepted | 2026-07-06 |
 
 ---
@@ -752,6 +752,19 @@ its own reviewed commit. New panels shipped now: Übersicht, Geometrie, Zahnform
 contour + fillet strategies + clearance), FE-Mesh (density, 3D hull viewer with Jacobian heatmap,
 convergence quick check, fillet ranking, deck download incl. rigid-shell rule), Stufenvariation
 (parallel coordinates, Pareto, variants table + up-to-4 real-contour overlay comparison).
+
+**Amendment (2026-07-07 — viewport parity, user feedback round v0.8, points 1–3):**
+1. **Pair positioning comes from the backend** (`POST /api/mesh/pair`): the endpoint runs the
+   deck builders' own `assemble_centered_pair` (fillets, tip relief, rigid R3D4 shells,
+   backlash-closing rotation, sweep contact pairing) and returns the outer hulls in absolute
+   assembly coordinates plus the per-gear angle law of the roll (edge start + kinematic
+   coupling). The viewport-local positioning math (half-pitch heuristic, no closing rotation)
+   is deleted — what the viewer shows IS the .inp; the roll slider walks the deck's real
+   Wälzstellungen (position k/n, measurement points marked).
+2. **Orthographic camera + CATIA mouse controls** in both three.js viewports (shared
+   `CatiaControls`): MMB drag = pan, MMB+LMB/RMB = quaternion free-tumble (full 360°, no
+   polar clamp), wheel = orthographic zoom; middle-click autoscroll suppressed. Rigid-shell
+   gears render as semi-transparent open mantles (the missing end faces are deliberate).
 
 ---
 
