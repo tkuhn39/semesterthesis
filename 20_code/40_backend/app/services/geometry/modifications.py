@@ -21,6 +21,9 @@ class FlankModification(BaseModel):
     """One flank's profile/lead modifications (ISO 21771 §6.2/§6.3), all in µm."""
 
     tip_relief_um: Annotated[float, Field(ge=0.0, le=500.0)] = 0.0  # C_αa (Kopfrücknahme)
+    # Beginn der Kopfrücknahme d_Ca (ISO 21771 — the diameter where the relief ramp starts);
+    # None → the tooth profile defaults to d_Na − m_n
+    tip_relief_start_diameter_mm: Annotated[float, Field(gt=0.0)] | None = None
     root_relief_um: Annotated[float, Field(ge=0.0, le=500.0)] = 0.0  # C_αf (Fußrücknahme)
     profile_crowning_um: Annotated[float, Field(ge=0.0, le=500.0)] = 0.0  # C_α (Profilballigkeit)
     helix_crowning_um: Annotated[float, Field(ge=0.0, le=500.0)] = 0.0  # C_β (Breitenballigkeit)

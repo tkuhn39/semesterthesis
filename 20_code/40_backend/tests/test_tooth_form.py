@@ -76,3 +76,40 @@ def test_transverse_boundary_rounded_root_monotone() -> None:
         # C0: no jump between consecutive boundary points (continuous fillet→flank stitch)
         steps = [math.dist(boundary[k], boundary[k - 1]) for k in range(1, len(boundary))]
         assert max(steps) < 0.3 * profile.mn
+
+
+@pytest.mark.skipif(not _REF_STE.exists(), reason="STplus reference .ste not present")
+def test_tip_relief_pulls_the_tip_flank_back() -> None:
+    """Kopfrücknahme C_αa: the boundary loses ≈ C_αa/cos α_y normal material at the tip,
+    is untouched below d_Ca, and the removal ramps linearly in between (ISO 21771)."""
+    stage = GearStage.from_ste(gear_stage_from_ste(load_ste(_REF_STE)))
+    plain = ToothProfile.from_stage(stage, 0)
+    relieved = ToothProfile.from_stage(
+        stage, 0, tip_relief_um=8.0, tip_relief_start_diameter_mm=51.946
+    )
+    assert relieved.c_aa == pytest.approx(0.008)
+    assert relieved.d_Ca == pytest.approx(51.946)
+
+    b0 = plain.transverse_right_boundary(fillet_points=16, flank_points=120)
+    b8 = relieved.transverse_right_boundary(fillet_points=16, flank_points=120)
+    assert len(b0) == len(b8)
+    for p0, p8 in zip(b0, b8, strict=True):
+        r = _radius(p0)
+        assert r == pytest.approx(_radius(p8), abs=1e-9)  # relief is tangential, not radial
+        chord = math.dist(p0, p8)
+        if 2.0 * r <= 51.946 + 1e-9:
+            assert chord < 1e-9  # untouched below d_Ca
+        else:
+            assert chord <= 0.012  # bounded by C_αa/cos α at the tip (~8.8 µm)
+    tip_chord = math.dist(b0[-1], b8[-1])
+    assert 0.007 <= tip_chord <= 0.011  # ≈ C_αa/cos α_tip
+    # relieved flank stays inside the plain one (material only removed, x shrinks)
+    assert all(p8[0] <= p0[0] + 1e-12 for p0, p8 in zip(b0, b8, strict=True))
+
+
+@pytest.mark.skipif(not _REF_STE.exists(), reason="STplus reference .ste not present")
+def test_tip_relief_default_start_diameter() -> None:
+    """Without d_Ca the relief starts one module below the usable tip (d_Na − m_n)."""
+    stage = GearStage.from_ste(gear_stage_from_ste(load_ste(_REF_STE)))
+    relieved = ToothProfile.from_stage(stage, 1, tip_relief_um=10.0)
+    assert relieved.d_Ca == pytest.approx(relieved.d_Na - relieved.mn)

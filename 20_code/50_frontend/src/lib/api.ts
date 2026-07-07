@@ -293,6 +293,7 @@ export const api = {
 // ---- Stage definition (design.py — kst-E example or free parameters, M6) ----
 export interface FlankModification {
   tip_relief_um?: number;
+  tip_relief_start_diameter_mm?: number | null; // d_Ca (null → backend default d_Na − m_n)
   root_relief_um?: number;
   profile_crowning_um?: number;
   helix_crowning_um?: number;
@@ -315,11 +316,18 @@ export interface StageParams {
   face_width_pinion_mm: number;
   face_width_wheel_mm: number;
   center_distance_mm?: number | null;
+  // gear-1 tool (and gear-2 default); *_gear2 overrides the wheel tool when set
+  // (kst-E: h_aP0* 1.1/1.25, Kantenbrechwinkel 45° only on the wheel tool)
   tool_addendum_factor: number;
   tool_tip_radius_factor: number;
   tool_dedendum_factor?: number | null;
   tool_root_form_height_factor?: number | null;
   tool_edge_break_angle_deg?: number | null;
+  tool_addendum_factor_gear2?: number | null;
+  tool_tip_radius_factor_gear2?: number | null;
+  tool_dedendum_factor_gear2?: number | null;
+  tool_root_form_height_factor_gear2?: number | null;
+  tool_edge_break_angle_deg_gear2?: number | null;
   gear_addendum_factor?: number;
   tip_diameter_pinion_mm?: number | null;
   tip_diameter_wheel_mm?: number | null;
@@ -341,8 +349,16 @@ export const KST_E_STAGE: StageParams = {
   face_width_pinion_mm: 17,
   face_width_wheel_mm: 15,
   center_distance_mm: 52,
-  tool_addendum_factor: 1.25,
-  tool_tip_radius_factor: 0.38,
+  // per-gear tools from the kst-E .ste ground truth (WKZ_Profil_B_Ritzel / _Rad):
+  // pinion h_aP0*=1.1 ρ*=0.2; wheel h_aP0*=1.25 ρ*=0.2 h_FfP0*=0.8456 + 45° edge break
+  tool_addendum_factor: 1.1,
+  tool_tip_radius_factor: 0.2,
+  tool_dedendum_factor: 1.0,
+  tool_addendum_factor_gear2: 1.25,
+  tool_tip_radius_factor_gear2: 0.2,
+  tool_dedendum_factor_gear2: 1.0,
+  tool_root_form_height_factor_gear2: 0.8456,
+  tool_edge_break_angle_deg_gear2: 45.0,
 };
 export interface PresetInfo {
   id: string;

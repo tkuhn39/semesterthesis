@@ -63,6 +63,30 @@ Dates are ISO 8601 (YYYY-MM-DD).
   The contact slave (plastic side) must stay deformable (422 otherwise); the legacy
   `steel_shell` shortcut maps onto the steel slot.
 
+### Added (per-gear geometry — phase C, user points 5/6)
+- **One tool reference profile per gear** (`StageParams.tool_*_gear2` overrides,
+  None = same as gear 1): the free-parameter path now matches the .ste ground truth
+  (kst-E: h_aP0* **1.1/1.25**, ρ_aP0* 0.2, 45° Kantenbrechwinkel ONLY on the wheel
+  tool → h_K 0/0.117 mm). The .ste importer fills both tools, the Geometrie tab
+  renders h_aP0*/ρ_fP*/h_fP0*/h_FfP0*/α_Kn0 per gear, the Stufenvariation
+  "Übernehmen" writes h_fP*/ρ_fP* per gear, and the frontend kst-E snapshot carries
+  the true per-gear values (was: a single 1.25/0.38 tool for both).
+- **Kopfrücknahme C_αa in the FE contour** (like the FVA transient FEM, ADR-012
+  amendment): `ToothProfile.from_stage(…, tip_relief_um, tip_relief_start_diameter_mm)`
+  applies the relief as an angular reduction δ/(r·cos α_y) ramping linearly from d_Ca
+  (default d_Na − m_n) to the tip — contour preview, Zahneingriff plot, mesher
+  reprojection, deck assembly and collision alignment all inherit the SAME modified
+  boundary (SSOT). Values flow from the Flankenmodifikation editor
+  (`tip_relief_dca_mm` now sent as `tip_relief_start_diameter_mm`) via
+  `StageParams.tip_relief()`; symmetric flanks only (asymmetric relief stays carried).
+- **Root fillet per gear in the pair view**: full `FilletEditor` (strategy +
+  parameters) for gear 1 AND gear 2 BEFORE "Paar erzeugen" — drives the preview mesh
+  and the deck identically (`fillet_gear1/2`); gear 1 was hard-coded "standard".
+- **Verifier tip-geometry checks** (user point 5c, measured not assumed): gear 1 cuts
+  NO chamfer (d_Na = d_a — its look is the Kopfrücknahme), gear 2 h_K = 0.117 mm,
+  both gears' mesh flank sets end at d_Na, and C_αa = 8 µm pulls the tip flank back
+  by ≈ C_αa/cos α (8.83 µm measured).
+
 ### Fixed
 - Powerflow torque reset: entering **0** (not only clearing) now frees both shaft
   fields again (user report).

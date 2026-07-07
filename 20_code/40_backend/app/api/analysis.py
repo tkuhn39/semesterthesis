@@ -984,9 +984,17 @@ class ToothProfileResponse(BaseModel):
     line_of_action: LineOfAction | None = None
 
 
-def _tooth_gear_from_profile(stage: GearStage, index: int) -> ToothGear:
-    """One gear's right tooth boundary (root fillet → flank → tip), as cut."""
-    profile = ToothProfile.from_stage(stage, index)
+def _tooth_gear_from_profile(
+    stage: GearStage, index: int, tip_relief: tuple[float, float | None] = (0.0, None)
+) -> ToothGear:
+    """One gear's right tooth boundary (root fillet → flank → tip), as cut.
+
+    ``tip_relief`` = (C_αa [µm], d_Ca [mm] or None) so the Zahneingriff plot shows the
+    SAME modified contour that goes into the FE mesh (SSOT, user decision 2026-07-06).
+    """
+    profile = ToothProfile.from_stage(
+        stage, index, tip_relief_um=tip_relief[0], tip_relief_start_diameter_mm=tip_relief[1]
+    )
     pts = with_root_land(
         profile,
         profile.transverse_right_boundary(fillet_points=24, flank_points=48, to_tip_circle=True),
@@ -1007,8 +1015,10 @@ def tooth_profile(req: StageParams) -> ToothProfileResponse:
     """Both gears' real tooth flanks for the mesh plot (Zahneingriff), from THE shared stage."""
     stage = req.stage()
     a = stage.working_center_distance_mm
-    pinion = _tooth_gear_from_profile(stage, 0)
-    wheel = _tooth_gear_from_profile(stage, 1).model_copy(update={"center_x_mm": round(a, 4)})
+    pinion = _tooth_gear_from_profile(stage, 0, req.tip_relief(0))
+    wheel = _tooth_gear_from_profile(stage, 1, req.tip_relief(1)).model_copy(
+        update={"center_x_mm": round(a, 4)}
+    )
     loa = line_of_action_points(stage)
     line = (
         LineOfAction(

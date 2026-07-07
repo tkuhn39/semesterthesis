@@ -150,6 +150,51 @@ def test_presets_and_ste_import() -> None:
         params = res.json()["params"]
         assert params["teeth_pinion"] == 51 and params["teeth_wheel"] == 52
         assert params["use_example"] is False
+        # per-gear tools survive the import (kst-E: h_aP0* 1.1/1.25, edge break wheel-only)
+        assert params["tool_addendum_factor"] == 1.1
+        assert params["tool_addendum_factor_gear2"] == 1.25
+        assert params["tool_edge_break_angle_deg"] is None
+        assert params["tool_edge_break_angle_deg_gear2"] == 45.0
+        assert params["tool_root_form_height_factor_gear2"] == 0.8456
+
+
+def test_per_gear_tool_fields_change_only_their_gear() -> None:
+    """A deeper gear-2 tool (h_aP0*↑) cuts a smaller gear-2 root; gear 1 is untouched."""
+
+    def roots(stage: dict[str, object]) -> tuple[float, float]:
+        out = []
+        for gear in (1, 2):
+            res = client.post("/api/mesh/contour", json={"stage": stage, "gear": gear})
+            assert res.status_code == 200
+            out.append(res.json()["root_diameter_mm"])
+        return out[0], out[1]
+
+    base: dict[str, object] = dict(_FREE_STAGE, tool_addendum_factor=1.1)
+    r1_base, r2_base = roots(base)
+    r1_deep, r2_deep = roots(dict(base, tool_addendum_factor_gear2=1.3))
+    assert r1_deep == r1_base  # gear-1 tool unchanged
+    assert r2_deep < r2_base - 0.1  # deeper wheel tool cuts a smaller root circle
+
+
+def test_tip_relief_enters_the_fe_contour() -> None:
+    """Kopfrücknahme C_αa (symmetric flanks) narrows the contour near the tip only —
+    the FE mesh boundary shows the modification like the FVA transient FEM."""
+    relief = {"tip_relief_um": 30.0, "tip_relief_start_diameter_mm": 86.0}
+    stage: dict[str, object] = dict(
+        _FREE_STAGE, modifications_wheel={"left": relief, "right": relief}
+    )
+    plain = client.post("/api/mesh/contour", json={"stage": _FREE_STAGE, "gear": 2}).json()
+    modified = client.post("/api/mesh/contour", json={"stage": stage, "gear": 2}).json()
+    assert modified["usable_tip_diameter_mm"] == plain["usable_tip_diameter_mm"]  # d_Na keeps
+    bx_p, bx_m = plain["boundary_xy"][0::2], modified["boundary_xy"][0::2]
+    by = plain["boundary_xy"][1::2]
+    radii = [2.0 * math.hypot(x, y) for x, y in zip(bx_p, by, strict=True)]
+    moved = [abs(xm - xp) for xp, xm, d in zip(bx_p, bx_m, radii, strict=True) if d > 86.0 + 0.05]
+    untouched = [
+        abs(xm - xp) for xp, xm, d in zip(bx_p, bx_m, radii, strict=True) if d < 86.0 - 0.05
+    ]
+    assert max(untouched) < 1e-6  # below d_Ca nothing changes
+    assert max(moved) > 0.02  # at the tip ~C_αa/cos α (30 µm+) is removed
 
 
 def test_variation_material_matrix() -> None:

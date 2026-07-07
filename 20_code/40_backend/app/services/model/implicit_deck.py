@@ -823,6 +823,10 @@ def _assemble_centered_pair(
     slave_gear: int,
     roll_sign: float = 1.0,
     rigid_gears: frozenset[int] = frozenset(),
+    tip_relief: tuple[tuple[float, float | None], tuple[float, float | None]] = (
+        (0.0, None),
+        (0.0, None),
+    ),
     refine_root: int,
     refine_flank: int,
     fillet_gear1: object | None,
@@ -832,9 +836,17 @@ def _assemble_centered_pair(
     fasten_bottom: bool,
     fasten_top: bool,
 ) -> AssembledPair:
-    """Mesh, position (centered), close the backlash and pair the contact flanks."""
-    profile1 = ToothProfile.from_stage(stage, 0)
-    profile2 = ToothProfile.from_stage(stage, 1)
+    """Mesh, position (centered), close the backlash and pair the contact flanks.
+
+    ``tip_relief`` carries per-gear (C_αa [µm], d_Ca [mm] or None) into the tooth profiles
+    so the FE contour includes the Kopfrücknahme like the FVA transient FEM.
+    """
+    profile1 = ToothProfile.from_stage(
+        stage, 0, tip_relief_um=tip_relief[0][0], tip_relief_start_diameter_mm=tip_relief[0][1]
+    )
+    profile2 = ToothProfile.from_stage(
+        stage, 1, tip_relief_um=tip_relief[1][0], tip_relief_start_diameter_mm=tip_relief[1][1]
+    )
     a = stage.working_center_distance_mm
     if face_width_mm is None:
         if stage.face_width_mm is None:
@@ -936,6 +948,10 @@ def build_implicit_pair_from_stage(
     contact_gap_mm: float | None = None,
     element_type: str = "C3D8R",
     rigid_gears: frozenset[int] = frozenset(),
+    tip_relief: tuple[tuple[float, float | None], tuple[float, float | None]] = (
+        (0.0, None),
+        (0.0, None),
+    ),
     driven_gear: int = 2,
     slave_gear: int = 2,
     refine_root: int = 1,
@@ -1010,6 +1026,7 @@ def build_implicit_pair_from_stage(
         slave_gear=slave_gear,
         roll_sign=roll_sign,
         rigid_gears=rigid_gears,
+        tip_relief=tip_relief,
         refine_root=refine_root,
         refine_flank=refine_flank,
         fillet_gear1=fillet_gear1,
@@ -1096,6 +1113,10 @@ def build_position_series(
     contact_gap_mm: float | None = None,
     element_type: str = "C3D8R",
     rigid_gears: frozenset[int] = frozenset(),
+    tip_relief: tuple[tuple[float, float | None], tuple[float, float | None]] = (
+        (0.0, None),
+        (0.0, None),
+    ),
     driven_gear: int = 2,
     slave_gear: int = 2,
     refine_root: int = 1,
@@ -1144,6 +1165,7 @@ def build_position_series(
         slave_gear=slave_gear,
         roll_sign=roll_sign,
         rigid_gears=rigid_gears,
+        tip_relief=tip_relief,
         refine_root=refine_root,
         refine_flank=refine_flank,
         fillet_gear1=fillet_gear1,

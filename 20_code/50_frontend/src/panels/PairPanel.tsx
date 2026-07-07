@@ -11,6 +11,7 @@ import { useStage } from "@/lib/stage";
 import { useWorkbench } from "@/lib/store";
 import { PairViewport } from "@/components/PairViewport";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
+import { FilletEditor, ManufacturabilityNote } from "@/panels/ToothFormPanel";
 import { useFmt, useT } from "@/lib/i18n";
 
 export function PairPanel() {
@@ -24,6 +25,9 @@ export function PairPanel() {
   const [layers, setLayers] = useState(6);
   const [refineRoot, setRefineRoot] = useState(1);
   const [refineFlank, setRefineFlank] = useState(1);
+  // root-fillet strategy PER GEAR, chosen BEFORE generating the pair (user point 6,
+  // 2026-07-06) — drives the preview mesh AND the deck identically
+  const [filletGear1, setFilletGear1] = useState<FilletSpec>({ kind: "standard" });
   const [filletGear2, setFilletGear2] = useState<FilletSpec>({ kind: "standard" });
   const [rollPositions, setRollPositions] = useState(30);
   const [steelShell, setSteelShell] = useState(true);
@@ -53,7 +57,7 @@ export function PairPanel() {
     guard("pair", async () => {
       const base = { stage, refine_root: refineRoot, refine_flank: refineFlank };
       const [g1, g2] = await Promise.all([
-        meshApi.mesh3d({ ...base, gear: 1, fillet: { kind: "standard" } }, layers),
+        meshApi.mesh3d({ ...base, gear: 1, fillet: filletGear1 }, layers),
         meshApi.mesh3d({ ...base, gear: 2, fillet: filletGear2 }, layers),
       ]);
       setGear1(g1);
@@ -79,6 +83,7 @@ export function PairPanel() {
         steel_shell: steelShell,
         rigid_shell_gear1: wb.fem.rigid_shell_gear1,
         rigid_shell_gear2: wb.fem.rigid_shell_gear2,
+        fillet_gear1: filletGear1,
         fillet_gear2: filletGear2,
         align_contact: wb.fem.align_contact,
         fasten_bore: wb.fem.fasten_bore,
@@ -158,6 +163,19 @@ export function PairPanel() {
           <div className="px-2.5 pb-2 text-[11px] text-zinc-500">{t("pair.axialNote")}</div>
         </Section>
 
+        <Section title={`${t("mesh.fillet")} · ${t("pair.gear1")}`} defaultOpen={false}>
+          <FilletEditor value={filletGear1} onChange={setFilletGear1} />
+          <div className="px-2.5 pb-2">
+            <ManufacturabilityNote kind={filletGear1.kind} />
+          </div>
+        </Section>
+        <Section title={`${t("mesh.fillet")} · ${t("pair.gear2")}`} defaultOpen={false}>
+          <FilletEditor value={filletGear2} onChange={setFilletGear2} />
+          <div className="px-2.5 pb-2">
+            <ManufacturabilityNote kind={filletGear2.kind} />
+          </div>
+        </Section>
+
         <Btn onClick={generate} busy={busy === "pair"}>
           {t("pair.generate")}
         </Btn>
@@ -222,20 +240,6 @@ export function PairPanel() {
               <AttrRow label={t("deck.rollPositions")} symbol="n_W" unit="–">
                 <td>
                   <Num value={rollPositions} onChange={setRollPositions} step={1} />
-                </td>
-              </AttrRow>
-              <AttrRow label={`${t("mesh.fillet")} · ${t("pair.gear2")}`} symbol="" unit="">
-                <td>
-                  <select
-                    value={filletGear2.kind}
-                    onChange={(e) => setFilletGear2({ kind: e.target.value as FilletSpec["kind"] })}
-                  >
-                    {["standard", "trochoid", "elliptic", "bezier", "bionic"].map((k) => (
-                      <option key={k} value={k}>
-                        {t(`mesh.fillet.${k}`)}
-                      </option>
-                    ))}
-                  </select>
                 </td>
               </AttrRow>
             </tbody>

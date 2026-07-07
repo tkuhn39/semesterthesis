@@ -69,12 +69,20 @@ class StageParams(BaseModel):
     face_width_pinion_mm: Annotated[float, Field(gt=0.0)] = 17.0
     face_width_wheel_mm: Annotated[float, Field(gt=0.0)] = 15.0
     center_distance_mm: Annotated[float, Field(gt=0.0)] | None = None
-    # tool reference profile (DIN 867 semantics; presets: design.TOOL_PRESETS)
+    # tool reference profile (DIN 867 semantics; presets: design.TOOL_PRESETS).
+    # The plain fields are the gear-1 tool AND the gear-2 default; each *_gear2 field
+    # overrides the wheel tool when set (kst-E ground truth: h_aP0* = 1.1 / 1.25 and the
+    # Kantenbrechwinkel 45° exists ONLY on the wheel tool — one tool per gear).
     tool_addendum_factor: Annotated[float, Field(gt=0.5, lt=2.0)] = 1.25
     tool_tip_radius_factor: Annotated[float, Field(ge=0.0, lt=0.47)] = 0.38
     tool_dedendum_factor: Annotated[float, Field(gt=0.5, lt=2.0)] | None = None
     tool_root_form_height_factor: Annotated[float, Field(gt=0.0, lt=2.0)] | None = None
     tool_edge_break_angle_deg: Annotated[float, Field(gt=0.0, lt=80.0)] | None = None
+    tool_addendum_factor_gear2: Annotated[float, Field(gt=0.5, lt=2.0)] | None = None
+    tool_tip_radius_factor_gear2: Annotated[float, Field(ge=0.0, lt=0.47)] | None = None
+    tool_dedendum_factor_gear2: Annotated[float, Field(gt=0.5, lt=2.0)] | None = None
+    tool_root_form_height_factor_gear2: Annotated[float, Field(gt=0.0, lt=2.0)] | None = None
+    tool_edge_break_angle_deg_gear2: Annotated[float, Field(gt=0.0, lt=80.0)] | None = None
     # tip circles: explicit d_a, else from the gear addendum factor (DIN 21771)
     gear_addendum_factor: float = 1.0
     tip_diameter_pinion_mm: Annotated[float, Field(gt=0.0)] | None = None
@@ -97,6 +105,35 @@ class StageParams(BaseModel):
             normal_pressure_angle_deg=self.normal_pressure_angle_deg,
             edge_break_angle_deg=self.tool_edge_break_angle_deg,
         )
+        # per-gear wheel tool: any set *_gear2 field overrides its gear-1 counterpart
+        tool2 = ToolReferenceProfile(
+            addendum_factor=(
+                self.tool_addendum_factor
+                if self.tool_addendum_factor_gear2 is None
+                else self.tool_addendum_factor_gear2
+            ),
+            tip_radius_factor=(
+                self.tool_tip_radius_factor
+                if self.tool_tip_radius_factor_gear2 is None
+                else self.tool_tip_radius_factor_gear2
+            ),
+            dedendum_factor=(
+                self.tool_dedendum_factor
+                if self.tool_dedendum_factor_gear2 is None
+                else self.tool_dedendum_factor_gear2
+            ),
+            root_form_height_factor=(
+                self.tool_root_form_height_factor
+                if self.tool_root_form_height_factor_gear2 is None
+                else self.tool_root_form_height_factor_gear2
+            ),
+            normal_pressure_angle_deg=self.normal_pressure_angle_deg,
+            edge_break_angle_deg=(
+                self.tool_edge_break_angle_deg
+                if self.tool_edge_break_angle_deg_gear2 is None
+                else self.tool_edge_break_angle_deg_gear2
+            ),
+        )
         tip = (
             Pair(self.tip_diameter_pinion_mm, self.tip_diameter_wheel_mm)
             if self.tip_diameter_pinion_mm is not None and self.tip_diameter_wheel_mm is not None
@@ -108,7 +145,7 @@ class StageParams(BaseModel):
                 teeth=Pair(self.teeth_pinion, self.teeth_wheel),
                 profile_shift=Pair(self.profile_shift_pinion, self.profile_shift_wheel),
                 face_width_mm=Pair(self.face_width_pinion_mm, self.face_width_wheel_mm),
-                tool=Pair(tool, tool),
+                tool=Pair(tool, tool2),
                 normal_pressure_angle_deg=self.normal_pressure_angle_deg,
                 helix_angle_deg=self.helix_angle_deg,
                 center_distance_mm=self.center_distance_mm,
@@ -125,3 +162,15 @@ class StageParams(BaseModel):
         """Flank-symmetry policy: mirror the tooth only when left/right data agree."""
         mods = self.modifications_pinion if gear == 1 else self.modifications_wheel
         return mods.is_symmetric
+
+    def tip_relief(self, index: int) -> tuple[float, float | None]:
+        """(C_αa [µm], d_Ca [mm]) of gear ``index`` (0/1) for the FE contour.
+
+        Applied only for SYMMETRIC flanks (the transverse profile is mirrored; per-flank
+        asymmetric relief needs the per-flank mesher extension). User decision 2026-07-06:
+        the FE contour includes the Kopfrücknahme like the FVA transient FEM.
+        """
+        mods = self.modifications_pinion if index == 0 else self.modifications_wheel
+        if not mods.is_symmetric:
+            return 0.0, None
+        return mods.right.tip_relief_um, mods.right.tip_relief_start_diameter_mm

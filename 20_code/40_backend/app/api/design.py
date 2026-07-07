@@ -110,6 +110,7 @@ def import_ste(req: SteImportRequest) -> SteImportResponse:
     width = stage.face_width_mm or Pair(17.0, 15.0)
     gen = stage.generation
     tool0 = gen[0].tool if gen is not None else None
+    tool1 = gen[1].tool if gen is not None else None  # per-gear tools (kst-E: 1.1/1.25)
     params = StageParams(
         use_example=False,
         normal_module_mm=stage.normal_module_mm,
@@ -124,7 +125,15 @@ def import_ste(req: SteImportRequest) -> SteImportResponse:
         center_distance_mm=stage.center_distance_mm,
         tool_addendum_factor=tool0.addendum_factor if tool0 is not None else 1.25,
         tool_tip_radius_factor=(tool0.tip_radius_factor or 0.38) if tool0 is not None else 0.38,
+        tool_dedendum_factor=tool0.dedendum_factor if tool0 is not None else None,
         tool_root_form_height_factor=tool0.root_form_height_factor if tool0 is not None else None,
         tool_edge_break_angle_deg=tool0.edge_break_angle_deg if tool0 is not None else None,
+        tool_addendum_factor_gear2=tool1.addendum_factor if tool1 is not None else None,
+        tool_tip_radius_factor_gear2=tool1.tip_radius_factor if tool1 is not None else None,
+        tool_dedendum_factor_gear2=tool1.dedendum_factor if tool1 is not None else None,
+        tool_root_form_height_factor_gear2=(
+            tool1.root_form_height_factor if tool1 is not None else None
+        ),
+        tool_edge_break_angle_deg_gear2=tool1.edge_break_angle_deg if tool1 is not None else None,
     )
     return SteImportResponse(params=params, notes=stage.check_validity())

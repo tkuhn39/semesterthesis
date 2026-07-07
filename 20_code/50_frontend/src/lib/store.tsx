@@ -631,6 +631,9 @@ function effectiveStage(s: WorkbenchState): StageParams {
   const c = s.correction;
   const flank = {
     tip_relief_um: c.tip_relief_on ? c.tip_relief_um : 0,
+    // d_Ca "Beginn der Kopfrücknahme" — null lets the backend default to d_Na − m_n
+    tip_relief_start_diameter_mm:
+      c.tip_relief_on && c.tip_relief_dca_mm > 0 ? c.tip_relief_dca_mm : null,
     root_relief_um: c.root_relief_on ? c.root_relief_um : 0,
     profile_crowning_um: c.profile_crown_on ? c.profile_crown_um : 0,
     helix_crowning_um: c.helix_crown_on ? c.helix_crown_um : 0,

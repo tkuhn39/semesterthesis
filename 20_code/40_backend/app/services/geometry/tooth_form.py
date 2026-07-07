@@ -47,6 +47,8 @@ class ToothProfile:
         root_fillet_radius_mm: float,
         tip_diameter_mm: float | None = None,
         edge_break_flank_transverse: tuple[float, float] | None = None,
+        tip_relief_mm: float = 0.0,
+        tip_relief_start_diameter_mm: float | None = None,
     ) -> None:
         self.mn = normal_module_mm
         self.z = teeth
@@ -60,10 +62,32 @@ class ToothProfile:
         self.rho_F = root_fillet_radius_mm  # DIN 3990 / ISO 6336-3 root fillet radius ρ_F
         self.d_a = tip_diameter_mm  # tip circle; the chamfer spans d_Na … d_a when present
         self.edge_break = edge_break_flank_transverse  # (d_bK, ψ_bK) of the Kopfkantenbruch
+        # Kopfrücknahme C_αa (ISO 21771 §6.2, linear form): material removed NORMAL to the
+        # involute, ramping 0 → C_αa between d_Ca and d_Na. Applied inside
+        # _involute_half_angle, so EVERY consumer (boundary, mesher reprojection, collision
+        # segments, interference checks) sees the relieved flank — user decision 2026-07-06:
+        # the FE contour includes the micro-geometry like the FVA transient FEM does.
+        self.c_aa = tip_relief_mm
+        self.d_Ca = (
+            tip_relief_start_diameter_mm
+            if tip_relief_start_diameter_mm is not None
+            else (usable_tip_diameter_mm - normal_module_mm if tip_relief_mm > 0.0 else None)
+        )
 
     @classmethod
-    def from_stage(cls, stage: GearStage, index: int) -> "ToothProfile":
-        """Build for gear ``index`` (0 = pinion, 1 = wheel) from a built `GearStage`."""
+    def from_stage(
+        cls,
+        stage: GearStage,
+        index: int,
+        *,
+        tip_relief_um: float = 0.0,
+        tip_relief_start_diameter_mm: float | None = None,
+    ) -> "ToothProfile":
+        """Build for gear ``index`` (0 = pinion, 1 = wheel) from a built `GearStage`.
+
+        ``tip_relief_um`` (C_αa) comes from the stage's micro-geometry (symmetric flanks
+        only — the flank-symmetry policy gates it); 0 keeps the unmodified involute.
+        """
         if stage.generation is None or stage.usable_tip_diameter_mm is None:
             raise ValueError("tooth profile needs the generation/tip data (tool + KOPFKREISDM)")
         gen = stage.generation[index]
@@ -81,6 +105,8 @@ class ToothProfile:
             root_fillet_radius_mm=root.root_fillet_radius_mn * stage.normal_module_mm,
             tip_diameter_mm=gen.tip_diameter_mm,
             edge_break_flank_transverse=gen.edge_break_flank_transverse,
+            tip_relief_mm=tip_relief_um / 1000.0,
+            tip_relief_start_diameter_mm=tip_relief_start_diameter_mm,
         )
 
     @property
@@ -103,9 +129,20 @@ class ToothProfile:
         return half + involute(self.alpha)
 
     def _involute_half_angle(self, radius: float) -> float:
-        """Right-flank involute half-angle θ(r) from the tooth centre line (+y), radius ≥ d_b/2."""
+        """Right-flank involute half-angle θ(r) from the tooth centre line (+y), radius ≥ d_b/2.
+
+        Includes the tip relief C_αa when set: normal material removal
+        δ(r) = C_αa·(2r − d_Ca)/(d_Na − d_Ca) (linear form, clamped 0…C_αa) converts to an
+        angular reduction δ/(r·cos α_y).
+        """
         alpha_y = math.acos(min(1.0, self.d_b / 2.0 / radius))
-        return self._psi_base - involute(alpha_y)
+        theta = self._psi_base - involute(alpha_y)
+        if self.c_aa > 0.0 and self.d_Ca is not None and self.d_Na > self.d_Ca:
+            ramp = (2.0 * radius - self.d_Ca) / (self.d_Na - self.d_Ca)
+            delta = self.c_aa * min(max(ramp, 0.0), 1.0)
+            if delta > 0.0:
+                theta -= delta / (radius * max(math.cos(alpha_y), 1e-6))
+        return theta
 
     def flank_points(self, count: int = 60) -> list[Pair[float]]:
         """Involute right-flank points from d_Ff to d_Na (root form → usable tip)."""

@@ -153,13 +153,20 @@ class DeckRequest(BaseModel):
 # helpers
 # ----------------------------------------------------------------------------------------------
 def _profiles(stage_params: StageParams, gear: int) -> tuple[GearStage, ToothProfile, ToothProfile]:
-    """(stage, this gear's profile, mating profile) for a 1-based gear index."""
+    """(stage, this gear's profile, mating profile) for a 1-based gear index.
+
+    The tooth profiles carry the stage's micro-geometry (Kopfrücknahme C_αa) so preview,
+    mesh and deck all show the SAME as-meshed contour (user decision 2026-07-06).
+    """
     stage = stage_params.stage()
-    return (
-        stage,
-        ToothProfile.from_stage(stage, gear - 1),
-        ToothProfile.from_stage(stage, 2 - gear),
-    )
+
+    def prof(index: int) -> ToothProfile:
+        c_aa, d_ca = stage_params.tip_relief(index)
+        return ToothProfile.from_stage(
+            stage, index, tip_relief_um=c_aa, tip_relief_start_diameter_mm=d_ca
+        )
+
+    return stage, prof(gear - 1), prof(2 - gear)
 
 
 def _clearance(
@@ -567,6 +574,7 @@ def build_deck(req: DeckRequest) -> PlainTextResponse:
         base_torque_fraction=req.base_torque_fraction,
         start_at_edge=req.start_at_edge,
         rotation_sense=req.rotation_sense,
+        tip_relief=(req.stage.tip_relief(0), req.stage.tip_relief(1)),
         refine_root=req.refine_root,
         refine_flank=req.refine_flank,
         fillet_gear1=req.fillet_gear1.strategy(),
@@ -646,6 +654,7 @@ def build_deck_series(req: DeckRequest) -> Response:
         settle=req.settle,
         start_at_edge=req.start_at_edge,
         rotation_sense=req.rotation_sense,
+        tip_relief=(req.stage.tip_relief(0), req.stage.tip_relief(1)),
         refine_root=req.refine_root,
         refine_flank=req.refine_flank,
         fillet_gear1=req.fillet_gear1.strategy(),

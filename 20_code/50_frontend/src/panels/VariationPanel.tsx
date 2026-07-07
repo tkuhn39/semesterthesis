@@ -112,9 +112,9 @@ function defaultsFromStage(s: StageParams, torqueT1: number | undefined): Variat
     h_ap1: { vary: false, value: 1.0, min: 0.8, max: 1.2, steps: 5 },
     h_ap2: { vary: false, value: 1.0, min: 0.8, max: 1.2, steps: 5 },
     h_fp1: { vary: false, value: s.tool_addendum_factor, min: 1.0, max: 1.45, steps: 5 },
-    h_fp2: { vary: false, value: s.tool_addendum_factor, min: 1.0, max: 1.45, steps: 5 },
+    h_fp2: { vary: false, value: s.tool_addendum_factor_gear2 ?? s.tool_addendum_factor, min: 1.0, max: 1.45, steps: 5 },
     rho_fp1: { vary: false, value: s.tool_tip_radius_factor, min: 0.2, max: 0.48, steps: 5 },
-    rho_fp2: { vary: false, value: s.tool_tip_radius_factor, min: 0.2, max: 0.48, steps: 5 },
+    rho_fp2: { vary: false, value: s.tool_tip_radius_factor_gear2 ?? s.tool_tip_radius_factor, min: 0.2, max: 0.48, steps: 5 },
     q1_mm: 0.0,
     q2_mm: 0.0,
     pr_p1_mm: 0.0,
@@ -232,9 +232,10 @@ export function VariationPanel() {
             face_width_pinion_mm: p.b ?? 20,
             face_width_wheel_mm: p.b2 ?? p.b ?? 20,
             center_distance_mm: null,
-            // gear-2 contour → the variant's gear-2 reference profile
-            tool_addendum_factor: p.h_fp2 ?? r.tool_addendum_factor,
-            tool_tip_radius_factor: p.rho_fp2 ?? r.tool_tip_radius_factor,
+            // gear-2 contour → the variant's gear-2 tool (the *_gear2 fields override
+            // the shared ones, so they must carry the variant values themselves)
+            tool_addendum_factor_gear2: p.h_fp2 ?? r.tool_addendum_factor,
+            tool_tip_radius_factor_gear2: p.rho_fp2 ?? r.tool_tip_radius_factor,
           },
           gear: 2,
           fillet: { kind: v.fillet_kind }, // Fußform (our extension)
@@ -266,8 +267,7 @@ export function VariationPanel() {
 
   const applyVariant = (p: VariationPoint) => {
     // Übernehmen (FVA): the picked variant becomes THE stage — every tab follows (SSOT).
-    // The stage carries ONE tool reference profile — the gear-1 values drive it (a
-    // per-gear tool split on the stage is a later extension).
+    // The stage carries one tool reference profile PER GEAR (kst-E: 1.1/1.25).
     setStage({
       ...stage,
       use_example: false,
@@ -281,6 +281,8 @@ export function VariationPanel() {
       face_width_wheel_mm: p.b2,
       tool_addendum_factor: p.h_fp1,
       tool_tip_radius_factor: p.rho_fp1,
+      tool_addendum_factor_gear2: p.h_fp2 ?? p.h_fp1,
+      tool_tip_radius_factor_gear2: p.rho_fp2 ?? p.rho_fp1,
       center_distance_mm: null,
     });
     setLabel(`Variante z=${Math.round(p.z1)}/${Math.round(p.z2)} x₁=${p.x1.toFixed(2)}`);

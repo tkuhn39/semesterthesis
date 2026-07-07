@@ -20,6 +20,11 @@
           per-flank-set measurement outputs (reference grouping).
        4. **Contact pairs** — exactly the 7 reference pairs (sweep-union pairing: working
           F2 g1-i↔g2-(6−i), back F1 g1-i↔g2-(5−i)), slave (plastic side) listed first.
+       5. **Rigid Außenhülle** — the steel side as R3D4 lateral shell: no section/material,
+          SPOS surfaces, massive node reduction, no Fesselung nset.
+       6. **Tip geometry** — gear 1 has NO tip chamfer (d_Na = d_a), gear 2's wheel tool
+          cuts h_K = 0.117 mm, the mesh flank sets end at d_Na, and the Kopfrücknahme
+          C_αa = 8 µm pulls the tip flank back by ≈ C_αa/cos α (user point 5, 2026-07-06).
 
        Optionally repeats the Fesselung/gap measurement on the reference deck itself
        (``--reference``; slow, parses a 74 MB file). Run from ``20_code/``:
@@ -373,6 +378,51 @@ def main() -> None:
         "rigid shell: massive node reduction + no Fesselung nset",
         n1 < n2 / 4 and "NSET=Fesselung_Rad1" not in shell_deck,
         f"reduction x{n2 / max(n1, 1):.1f}",
+    )
+
+    # 6) tip geometry vs analytics (user point 5, 2026-07-06: gear 1 has NO chamfer — a
+    #    "chamfer look" would be a bug; only the WHEEL tool breaks the tip edge, h_K =
+    #    0.117 mm; the Kopfruecknahme C_aa enters the contour as a normal removal)
+    check(
+        "gear 1 tool cuts no tip chamfer (d_Na = d_a)",
+        profile1.d_a is not None and abs(profile1.d_Na - profile1.d_a) < 1e-9,
+        f"d_Na {profile1.d_Na:.4f} vs d_a {profile1.d_a or 0.0:.4f} mm",
+    )
+    h_k2 = ((profile2.d_a or 0.0) - profile2.d_Na) / 2.0
+    check(
+        "gear 2 tip edge break h_K = 0.117 mm (45 deg wheel tool)",
+        abs(h_k2 - 0.117) < 2e-3,
+        f"h_K = {h_k2:.4f} mm",
+    )
+    for g, prof, (cx, cy) in ((1, profile1, (0.0, 0.0)), (2, profile2, (a, 0.0))):
+        coords = parsed["nodes"][f"Part_Rad_Vz_{g}"]
+        r_flank = 0.0
+        for tooth in (1, 2, 3, 4):
+            for flank in (1, 2):
+                entry = parsed["nsets"].get(f"G{g}T{tooth:03d}F{flank}_NODESET")
+                if not entry:
+                    continue
+                pts = np.array([coords[i] for i in entry[1] if i in coords])
+                r_flank = max(r_flank, float(np.hypot(pts[:, 0] - cx, pts[:, 1] - cy).max()))
+        check(
+            f"gear {g} mesh flank ends at the usable tip d_Na (chamfer only on gear 2)",
+            abs(r_flank - prof.d_Na / 2.0) < 0.03,
+            f"max flank node radius {r_flank:.4f} vs d_Na/2 {prof.d_Na / 2.0:.4f} mm",
+        )
+    relieved = ToothProfile.from_stage(
+        stage, 0, tip_relief_um=8.0, tip_relief_start_diameter_mm=51.946
+    )
+    tip0 = profile1.transverse_right_boundary(
+        fillet_points=8, flank_points=64, to_tip_circle=False
+    )[-1]
+    tip8 = relieved.transverse_right_boundary(
+        fillet_points=8, flank_points=64, to_tip_circle=False
+    )[-1]
+    pull_um = float(np.hypot(tip0[0] - tip8[0], tip0[1] - tip8[1])) * 1000.0
+    check(
+        "Kopfruecknahme C_aa=8 um pulls the tip flank back by ~C_aa/cos(alpha)",
+        6.0 <= pull_um <= 11.0,
+        f"tip pull-back {pull_um:.2f} um (kst-E C_a=8 um, d_Ca=51.946 mm)",
     )
 
     if run_reference:

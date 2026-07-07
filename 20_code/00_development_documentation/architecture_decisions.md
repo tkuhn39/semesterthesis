@@ -30,7 +30,7 @@ body.
 | ADR-009 | Unified gear toolchain: app pipeline (STplus/RIKOR/FE) replacing the FVA-Workbench | Accepted | 2026-06-16 |
 | ADR-010 | Three independent analyses (STplus/RIKOR/rolling) with pluggable runners | Accepted | 2026-06-16 |
 | ADR-011 | Compute on current standards only; withdrawn norms are cross-checks | Accepted | 2026-06-17 |
-| ADR-012 | Native involute geometry incl. tool-generated tip chamfer | Accepted | 2026-06-17 |
+| ADR-012 | Native involute geometry incl. tool-generated tip chamfer (amended: per-gear tool fields, Kopfrücknahme C_αa in the FE contour) | Accepted | 2026-07-07 |
 | ADR-013 | Plastic-capable Stufenvariation and its performance strategy | Accepted | 2026-06-17 |
 | ADR-014 | Native ISO 6336-1 dynamic/load factors (K_v, K_Hα, K_Hβ) | Accepted | 2026-06-17 |
 | ADR-015 | Native VDI 2736 plastic-gear capacity (root/flank/temperature/wear/deformation) | Accepted | 2026-06-17 |
@@ -344,6 +344,26 @@ tool-chamfered gears); defer the chamfer (rejected: ε_α off by ~8 %).
 **Consequences:** ε_α and the usable tip circle d_Na are exact; the same generation
 layer yields the root form circle d_Ff, feeding the tooth-root capacity work.
 See [[iso21771-geometry-formulas]], [[tool-generation-kantenbruch]].
+
+**Amendment (2026-07-07 — per-gear tools + micro-geometry in the FE contour, user
+feedback round v0.8, points 5/6):**
+1. **One tool reference profile per gear** in the free-parameter path: `StageParams`
+   gains `tool_*_gear2` override fields (None → same as gear 1), matching the .ste
+   ground truth (kst-E: h_aP0* 1.1/1.25, ρ_aP0* 0.2/0.2, and the 45° Kantenbrechwinkel
+   exists ONLY on the wheel tool → h_K = 0/0.117 mm). The .ste importer fills both
+   tools; the Geometrie tab renders the tool rows per gear; the Stufenvariation
+   "Übernehmen" writes h_fP*/ρ_fP* per gear.
+2. **Kopfrücknahme C_αa enters the FE contour** (like the FVA transient FEM):
+   `ToothProfile` accepts `(C_αa, d_Ca)` and applies the relief inside
+   `_involute_half_angle` as an angular reduction δ/(r·cos α_y) with a linear ramp from
+   d_Ca (default d_Na − m_n) to d_Na — every consumer (contour preview, mesher
+   reprojection, deck assembly, collision alignment) inherits the SAME modified
+   boundary. Values come from the Flankenmodifikation editor via
+   `StageParams.tip_relief()` (symmetric flanks only; asymmetric per-flank relief needs
+   the per-flank mesher extension and stays carried). Gear 1's "chamfer look" was a
+   misreading: it has a Kopfrücknahme, no chamfer — now guarded by verifier checks
+   (gear 1 d_Na = d_a, gear 2 h_K = 0.117 mm, flank sets end at d_Na, tip pull-back
+   ≈ C_αa/cos α).
 
 ---
 
