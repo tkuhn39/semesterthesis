@@ -36,7 +36,12 @@ from app.services.geometry.gear import GearStage
 from app.services.geometry.tooth_form import ToothProfile
 from app.services.model.materials_card import Material, material_card
 from app.services.model.mesh3d import Mesh3D, extrude_to_hex
-from app.services.model.mesh_sets import GearReferenceSets, _boundary_edges, tag_gear_reference
+from app.services.model.mesh_sets import (
+    GearReferenceSets,
+    _boundary_edges,
+    build_rigid_shell,
+    tag_gear_reference,
+)
 from app.services.model.template_mesher import generate_sector_2d, scaled_jacobians
 from app.services.model.tooth_mesh import Mesh2D
 
@@ -63,6 +68,9 @@ class GearPart:
     # 2-D section boundary polyline segments (E, 2, 2) in assembly coordinates — the
     # contact-closing rotation collides these against the mating gear's segments.
     boundary_segments_xy: Array | None = None
+    # rigid Außenhülle (user decision 2026-07-06): when set, ``mesh.nodes`` are the LATERAL
+    # boundary nodes only and these R3D4 quads replace the hexes (open axial end faces)
+    shell_quads: IntArray | None = None
 
 
 def _transform(nodes: Array, *, rot_rad: float, dx: float, dy: float) -> Array:
@@ -212,6 +220,7 @@ def build_gear_part(
     fasten_cuts: bool = True,
     fasten_bottom: bool = False,
     fasten_top: bool = False,
+    rigid_shell: bool = False,
 ) -> GearPart:
     """Mesh one gear sector, tag its reference sets, and position it in the assembly.
 
@@ -237,28 +246,52 @@ def build_gear_part(
         fillet=fillet,
     )
     section = Mesh2D(sector.points, np.asarray(sector.quads, dtype=np.int64))
-    quality = scaled_jacobians(sector.coords, sector.quads)
-    mesh = extrude_to_hex(
-        section,
-        quality,
-        width=face_width_mm,
-        layers=face_layers,
-        z0=-face_width_mm / 2.0 + axial_offset_mm,
-    )
-    nodes = _transform(mesh.nodes, rot_rad=rot_rad, dx=dx, dy=dy)
-    mesh = Mesh3D(nodes, mesh.hexes, quality=mesh.quality)
-    sets = tag_gear_reference(
-        section,
-        profile=profile,
-        gear=gear,
-        n_teeth=n_teeth,
-        n_segments=n_segments,
-        layers=face_layers,
-        fasten_bore=fasten_bore,
-        fasten_cuts=fasten_cuts,
-        fasten_bottom=fasten_bottom,
-        fasten_top=fasten_top,
-    )
+    z0 = -face_width_mm / 2.0 + axial_offset_mm
+    shell_quads: IntArray | None = None
+    if rigid_shell:
+        # ideally stiff Außenhülle: LATERAL boundary surface only (open axial end faces),
+        # renumbered to the boundary nodes — the element reduction is the whole point
+        shell_nodes, shell_quads, sets = build_rigid_shell(
+            section,
+            profile=profile,
+            gear=gear,
+            n_teeth=n_teeth,
+            n_segments=n_segments,
+            layers=face_layers,
+            width_mm=face_width_mm,
+            z0_mm=z0,
+        )
+        mesh = Mesh3D(
+            _transform(shell_nodes, rot_rad=rot_rad, dx=dx, dy=dy),
+            np.zeros((0, 8), dtype=np.int64),
+            quality=None,
+        )
+    else:
+        quality = scaled_jacobians(sector.coords, sector.quads)
+        solid = extrude_to_hex(
+            section,
+            quality,
+            width=face_width_mm,
+            layers=face_layers,
+            z0=z0,
+        )
+        mesh = Mesh3D(
+            _transform(solid.nodes, rot_rad=rot_rad, dx=dx, dy=dy),
+            solid.hexes,
+            quality=solid.quality,
+        )
+        sets = tag_gear_reference(
+            section,
+            profile=profile,
+            gear=gear,
+            n_teeth=n_teeth,
+            n_segments=n_segments,
+            layers=face_layers,
+            fasten_bore=fasten_bore,
+            fasten_cuts=fasten_cuts,
+            fasten_bottom=fasten_bottom,
+            fasten_top=fasten_top,
+        )
     segments = np.array(
         [
             [
@@ -279,6 +312,7 @@ def build_gear_part(
         center_xy=(dx, dy),
         z_mid_mm=axial_offset_mm,
         boundary_segments_xy=segments,
+        shell_quads=shell_quads,
     )
 
 
@@ -408,6 +442,28 @@ def _part_block(part: GearPart, element_type: str) -> str:
     nodes = "\n".join(
         f"{i + 1}, {x:.6f}, {y:.6f}, {z:.6f}" for i, (x, y, z) in enumerate(mesh.nodes)
     )
+    if part.shell_quads is not None:
+        # rigid Außenhülle: R3D4 lateral surface, open end faces, no section/material;
+        # every quad is outward-oriented by construction → contact surfaces are SPOS
+        elems = "\n".join(
+            f"{e + 1}, " + ", ".join(str(n + 1) for n in quad)
+            for e, quad in enumerate(part.shell_quads)
+        )
+        lines = [
+            f"*PART, NAME=Part_Rad_Vz_{g}",
+            f"*NODE\n{nodes}",
+            f"*ELEMENT, TYPE=R3D4, ELSET={elset}\n{elems}",
+        ]
+        for (tooth, flank), node_ids in sorted(sets.flank_nodes.items()):
+            tag = f"G{g}T{tooth:03d}F{flank}"
+            surf = f"TOOTH-{g}-{tooth:03d}F{flank}"
+            lines += [
+                f"*NSET, NSET={tag}_NODESET\n{_wrap(node_ids)}",
+                f"*ELSET, ELSET={tag}_ELEMENTSET\n{_wrap(sets.flank_elements[(tooth, flank)])}",
+                f"*SURFACE, NAME={surf}, TYPE=ELEMENT\n{tag}_ELEMENTSET, SPOS",
+            ]
+        lines.append("*END PART")
+        return "\n".join(lines)
     elems = "\n".join(
         f"{e + 1}, " + ", ".join(str(n + 1) for n in hexa) for e, hexa in enumerate(mesh.hexes)
     )
@@ -610,7 +666,11 @@ def build_implicit_pair_deck(
 
     def gear_comment(part: GearPart) -> str:
         role = "angle-driven (AMP-ANGLE)" if part.gear == driven_gear else "torque (AMP-TORQUE)"
-        rigid = ", RIGID (ideally stiff)" if part.gear in rigid_gears else ""
+        rigid = (
+            ", RIGID SHELL (R3D4 lateral surface, open end faces)"
+            if part.gear in rigid_gears
+            else ""
+        )
         cx, cy = part.center_xy
         return (
             f"** Gear {part.gear}: z={part.teeth}, b={part.face_width_mm:g} mm, "
@@ -618,6 +678,14 @@ def build_implicit_pair_deck(
             f"mid-plane z={part.z_mid_mm:g} mm, {role}{rigid}"
         )
 
+    # rigid gears carry no Fesselung nset (the rigid body IS the constraint; the shell has
+    # no interior nodes an empty tie set could reference)
+    fesselung_nsets = [
+        f"*NSET, NSET=Fesselung_Rad{p.gear}, INSTANCE=Rad_Vz_{p.gear}\n"
+        f"{_wrap(p.sets.fastening_nodes)}"
+        for p in (part1, part2)
+        if p.gear not in rigid_gears
+    ]
     assembly_nodes = "\n".join(
         (
             "*NODE",
@@ -627,8 +695,7 @@ def build_implicit_pair_deck(
             "*NSET, NSET=Rot_Node_Rad1\n1,",
             "*NSET, NSET=Rot_Node_Rad2\n2,",
             "*NSET, NSET=MASTERKNOTEN_NODE_SET\n1, 2",
-            f"*NSET, NSET=Fesselung_Rad1, INSTANCE=Rad_Vz_1\n{_wrap(part1.sets.fastening_nodes)}",
-            f"*NSET, NSET=Fesselung_Rad2, INSTANCE=Rad_Vz_2\n{_wrap(part2.sets.fastening_nodes)}",
+            *fesselung_nsets,
             fastening(part1),
             fastening(part2),
         )
@@ -709,8 +776,8 @@ def build_implicit_pair_deck(
                 assembly,
                 "**",
                 "**MATERIALS",
-                _material_card_for(part1),
-                _material_card_for(part2),
+                # rigid shells take no section/material card
+                *(_material_card_for(p) for p in (part1, part2) if p.gear not in rigid_gears),
                 "**",
                 _amplitude_block("AMP-ANGLE", angle_pairs),
                 _amplitude_block("AMP-TORQUE", torque_pairs),
@@ -755,6 +822,7 @@ def _assemble_centered_pair(
     driven_gear: int,
     slave_gear: int,
     roll_sign: float = 1.0,
+    rigid_gears: frozenset[int] = frozenset(),
     refine_root: int,
     refine_flank: int,
     fillet_gear1: object | None,
@@ -789,6 +857,7 @@ def _assemble_centered_pair(
         refine_root=refine_root,
         refine_flank=refine_flank,
         fillet=fillet_gear1,
+        rigid_shell=1 in rigid_gears,
         **fasten,
     )
     part2 = build_gear_part(
@@ -803,6 +872,7 @@ def _assemble_centered_pair(
         refine_root=refine_root,
         refine_flank=refine_flank,
         fillet=fillet_gear2,
+        rigid_shell=2 in rigid_gears,
         **fasten,
     )
     closing_rad = 0.0
@@ -939,6 +1009,7 @@ def build_implicit_pair_from_stage(
         driven_gear=driven_gear,
         slave_gear=slave_gear,
         roll_sign=roll_sign,
+        rigid_gears=rigid_gears,
         refine_root=refine_root,
         refine_flank=refine_flank,
         fillet_gear1=fillet_gear1,
@@ -1072,6 +1143,7 @@ def build_position_series(
         driven_gear=driven_gear,
         slave_gear=slave_gear,
         roll_sign=roll_sign,
+        rigid_gears=rigid_gears,
         refine_root=refine_root,
         refine_flank=refine_flank,
         fillet_gear1=fillet_gear1,
@@ -1126,8 +1198,7 @@ def build_position_series(
                 _part_block(part2, element_type),
                 "**",
                 "**MATERIALS",
-                _material_card_for(part1),
-                _material_card_for(part2),
+                *(_material_card_for(p) for p in (part1, part2) if p.gear not in rigid_gears),
             )
         )
     )

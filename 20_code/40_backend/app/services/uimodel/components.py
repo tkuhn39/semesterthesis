@@ -463,6 +463,26 @@ ATTRIBUTES: list[AttributeDef] = [
         info_en="Without a local Abaqus solver only the deck export is active.",
     ),
     AttributeDef(
+        id="fem_rigid_shell",
+        label_de="Ideal steife Außenhülle",
+        label_en="Ideally stiff outer shell",
+        kind="bool",
+        per_gear=True,
+        bindings=("fem.rigid_shell_gear1", "fem.rigid_shell_gear2"),
+        norm_ref="R3D4-Mantelfläche (Starrkörper um den Rotationsknoten)",
+        info_de=(
+            "Ersetzt den vollen Solid des Rades durch seine Mantelfläche (Zahnkontur, "
+            "Schnittflächen, Bohrung; Stirnseiten offen) als Starrkörper — massive "
+            "Elementreduktion, sinnvoll für die Stahlseite einer Stahl-Kunststoff-Paarung. "
+            "Die Kunststoffseite (Kontakt-Slave) muss verformbar bleiben."
+        ),
+        info_en=(
+            "Replaces the gear's solid by its lateral surface (tooth contour, cut faces, "
+            "bore; open end faces) as a rigid body — massive element reduction for the "
+            "steel side of a mixed pairing. The plastic contact slave stays deformable."
+        ),
+    ),
+    AttributeDef(
         id="fem_deck_mode",
         label_de="Berechnungsmodus",
         label_en="Calculation mode",
@@ -2195,6 +2215,7 @@ def _transient_fem_tab() -> TabDef:
                     RowRef(attr="roll_positions"),
                     RowRef(attr="torque_gear2"),
                     RowRef(attr="align_contact"),
+                    RowRef(attr="fem_rigid_shell"),
                     RowRef(attr="fem_deck_mode"),
                     RowRef(attr="fem_result_in_model"),
                     RowRef(attr="fem_run_solver"),

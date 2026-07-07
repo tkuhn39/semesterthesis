@@ -77,6 +77,8 @@ export function PairPanel() {
         axial_offset_gear1_mm: offsetGear1,
         axial_offset_gear2_mm: offsetGear2,
         steel_shell: steelShell,
+        rigid_shell_gear1: wb.fem.rigid_shell_gear1,
+        rigid_shell_gear2: wb.fem.rigid_shell_gear2,
         fillet_gear2: filletGear2,
         align_contact: wb.fem.align_contact,
         fasten_bore: wb.fem.fasten_bore,

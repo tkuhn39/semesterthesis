@@ -346,6 +346,35 @@ def main() -> None:
         f"{len(pairs)} pairs; {delta}",
     )
 
+    # 5) rigid Außenhülle spot-check (steel side as R3D4 lateral shell, open end faces)
+    shell_deck = build_implicit_pair_from_stage(
+        stage,
+        gear1_material=LinearElastic("STEEL", 210000.0, 0.3),
+        gear2_material=MarlowUniaxial("PA_kstE"),
+        torque_gear2_nmm=7846.2,
+        face_layers=4,
+        n_roll_positions=4,
+        settle=2,
+        rigid_gears=frozenset({1}),
+    )
+    p1 = shell_deck.split("*PART, NAME=Part_Rad_Vz_1")[1].split("*END PART")[0]
+    p2 = shell_deck.split("*PART, NAME=Part_Rad_Vz_2")[1].split("*END PART")[0]
+    n1 = p1.split("*ELEMENT")[0].count("\n")
+    n2 = p2.split("*ELEMENT")[0].count("\n")
+    check(
+        "rigid shell: R3D4 lateral surface, no section/material, SPOS surfaces",
+        "*ELEMENT, TYPE=R3D4" in p1
+        and "*SOLID SECTION" not in p1
+        and "G1T001F1_ELEMENTSET, SPOS" in p1
+        and "MATERIAL-Part_Rad_Vz_1" not in shell_deck,
+        f"shell nodes {n1} vs solid nodes {n2}",
+    )
+    check(
+        "rigid shell: massive node reduction + no Fesselung nset",
+        n1 < n2 / 4 and "NSET=Fesselung_Rad1" not in shell_deck,
+        f"reduction x{n2 / max(n1, 1):.1f}",
+    )
+
     if run_reference:
         print("== reference deck (measure-only) ==")
         with REFERENCE.open("r", errors="ignore") as fh:

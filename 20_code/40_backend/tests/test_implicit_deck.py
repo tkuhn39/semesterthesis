@@ -451,6 +451,45 @@ def test_from_stage_documents_the_contact_alignment() -> None:
     assert "contact-aligned: gear 2 rotated" in deck
 
 
+def test_rigid_shell_replaces_the_solid_by_the_lateral_surface() -> None:
+    """User decision 2026-07-06: an ideally stiff gear becomes its Außenhülle — R3D4
+    lateral surface only (tooth contour + cut faces + bore, OPEN axial end faces),
+    renumbered nodes, no section/material, no Fesselung nset; contact surfaces SPOS."""
+    deck = build_implicit_pair_from_stage(
+        _stage(),
+        gear1_material=LinearElastic("STEEL", 210000.0, 0.3),
+        gear2_material=MarlowUniaxial("PA_kstE"),
+        torque_gear2_nmm=7846.0,
+        face_layers=2,
+        n_roll_positions=3,
+        settle=2,
+        rigid_gears=frozenset({1}),
+    )
+    part1 = deck.split("*PART, NAME=Part_Rad_Vz_1")[1].split("*END PART")[0]
+    part2 = deck.split("*PART, NAME=Part_Rad_Vz_2")[1].split("*END PART")[0]
+    assert "*ELEMENT, TYPE=R3D4" in part1
+    assert "*SOLID SECTION" not in part1 and "*SOLID SECTION" in part2
+    assert "G1T001F1_ELEMENTSET, SPOS" in part1
+    # massive element reduction: shell node table ≪ solid node table
+    n_shell = part1.split("*ELEMENT")[0].count("\n")
+    n_solid = part2.split("*ELEMENT")[0].count("\n")
+    assert n_shell < n_solid / 4
+    # every shell element is a quad (5 comma-separated fields), never a hex (9)
+    elem_block = part1.split("*ELEMENT, TYPE=R3D4")[1].split("\n", 1)[1].split("*")[0]
+    elem_lines = elem_block.strip().splitlines()
+    assert elem_lines and all(len(ln.split(",")) == 5 for ln in elem_lines)
+    # no Fesselung for the rigid gear; the deformable gear keeps its tie
+    assert "NSET=Fesselung_Rad1" not in deck
+    assert "NSET=Fesselung_Rad2" in deck
+    assert "MATERIAL-Part_Rad_Vz_1" not in deck
+    assert "MATERIAL-Part_Rad_Vz_2" in deck
+    # rigid flank sets keep NODE output but no ELEMENT/CONTACT measurement output
+    assert "*NODE OUTPUT, NSET=Rad_Vz_1.G1T001F1_NODESET" in deck
+    assert "*ELEMENT OUTPUT, ELSET=Rad_Vz_1.G1T001F1_ELEMENTSET" not in deck
+    assert "*ELEMENT OUTPUT, ELSET=Rad_Vz_2.G2T001F1_ELEMENTSET" in deck
+    deck.encode("latin-1")
+
+
 def test_steel_shell_mode_makes_the_steel_pinion_rigid() -> None:
     """Mixed-pairing material rule: the steel pinion (gear 1) becomes an ideally stiff rigid
     body (whole element set about its rotation node) instead of the Fesselung tie;

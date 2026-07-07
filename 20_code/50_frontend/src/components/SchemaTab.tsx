@@ -47,6 +47,8 @@ function useActions(): Record<string, { label: string; run: () => Promise<string
           gear1_material: wb.get("fem.gear1_material") as "steel" | "plastic",
           gear2_material: wb.get("fem.gear2_material") as "steel" | "plastic",
           steel_shell: wb.fem.steel_shell,
+          rigid_shell_gear1: wb.fem.rigid_shell_gear1,
+          rigid_shell_gear2: wb.fem.rigid_shell_gear2,
           align_contact: wb.fem.align_contact,
           fasten_bore: wb.fem.fasten_bore,
           fasten_cuts: wb.fem.fasten_cuts,

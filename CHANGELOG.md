@@ -50,6 +50,19 @@ Dates are ISO 8601 (YYYY-MM-DD).
   The Dyn-Abwälzen tab gets a "Berechnungsmodus" dropdown (series default); both
   frontend download paths share one payload.
 
+### Added (rigid Außenhülle — phase B)
+- **R3D4 lateral shell per gear** (`build_rigid_shell` + `rigid_shell_gear1/2`,
+  schema row "Ideal steife Außenhülle" per gear): an ideally stiff gear is no longer
+  a full solid declared rigid (the ANSA finding — every face constrained, zero
+  element reduction) but its **lateral boundary surface only** — tooth contour, both
+  radial cut planes and the bore swept over the width, axial end faces OPEN — as
+  R3D4 rigid elements about the rotation node. Nodes renumbered to the boundary
+  (kst-E: 3 042 vs 16 647 solid nodes at 4 layers), no section/material card, no
+  Fesselung nset, contact surfaces uniformly `ELSET, SPOS` (outward by the CCW-edge
+  orientation proof); ELEMENT/CONTACT measurement outputs skipped on the rigid side.
+  The contact slave (plastic side) must stay deformable (422 otherwise); the legacy
+  `steel_shell` shortcut maps onto the steel slot.
+
 ### Fixed
 - Powerflow torque reset: entering **0** (not only clearing) now frees both shaft
   fields again (user report).

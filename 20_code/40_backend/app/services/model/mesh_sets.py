@@ -134,6 +134,97 @@ class GearReferenceSets:
     flank_faces: dict[tuple[int, int], list[tuple[int, str]]]  # (tooth, flank) -> (hex id, face)
 
 
+def build_rigid_shell(
+    section: Mesh2D,
+    *,
+    profile: ToothProfile,
+    gear: int,
+    n_teeth: int,
+    n_segments: int,
+    layers: int,
+    width_mm: float,
+    z0_mm: float,
+    tol_mm: float | None = None,
+) -> tuple[Array, IntArray, GearReferenceSets]:
+    """The ideally stiff Außenhülle of a gear sector: the LATERAL boundary surface only.
+
+    User decision 2026-07-06: for a rigid gear the full solid is replaced by its prismatic
+    lateral surface — tooth contour, both radial cut faces and the bore, swept over the face
+    width; the axial END faces stay OPEN (see-through along the axis). One R3D4 element per
+    2-D boundary edge per layer; nodes are RENUMBERED to the boundary nodes only (a full
+    node table would leave thousands of dead nodes → zero-pivot warnings).
+
+    Orientation: ``_boundary_edges`` yields each edge in its owning quad's CCW order, so the
+    material lies left of (n0→n1) and the swept quad ``[n0@k, n1@k, n1@k+1, n0@k+1]`` has an
+    OUTWARD right-hand normal — identical to the solid's S(3+p) face cycle. Every element
+    face is therefore uniformly ``SPOS`` for the ``TOOTH-…`` contact surfaces.
+
+    Returns ``(nodes, quads, sets)``: nodes ``(B·(layers+1), 3)`` in section coordinates
+    (z from ``z0_mm`` over ``width_mm``), quads 0-based, and reference sets in the NEW
+    1-based shell ids (``fastening_nodes`` empty — a rigid body needs no Fesselung tie;
+    ``flank_faces`` empty — the surfaces are emitted as ``ELSET, SPOS``).
+    """
+    tol = tol_mm if tol_mm is not None else 0.02 * profile.mn
+    pitch = 2.0 * math.pi / profile.z
+    total = n_teeth + 2 * n_segments
+    centres = [(n_segments + i - (total - 1) / 2.0) * pitch for i in range(n_teeth)]
+    r_na, r_ff = profile.d_Na / 2.0, profile.d_Ff / 2.0
+
+    boundary = _boundary_edges(section)
+    edges = [(int(section.quads[qi][p]), int(section.quads[qi][(p + 1) % 4])) for qi, p in boundary]
+    node2d = sorted({n for e in edges for n in e})
+    rank = {n: i for i, n in enumerate(node2d)}
+    n_boundary_nodes = len(node2d)
+    n_edges = len(edges)
+
+    zs = [z0_mm + width_mm * k / layers for k in range(layers + 1)]
+    nodes = np.array(
+        [[section.nodes[n, 0], section.nodes[n, 1], z] for z in zs for n in node2d],
+        dtype=np.float64,
+    )
+    quads = np.array(
+        [
+            [
+                k * n_boundary_nodes + rank[n0],
+                k * n_boundary_nodes + rank[n1],
+                (k + 1) * n_boundary_nodes + rank[n1],
+                (k + 1) * n_boundary_nodes + rank[n0],
+            ]
+            for k in range(layers)
+            for n0, n1 in edges
+        ],
+        dtype=np.int64,
+    )
+
+    flank_nodes: dict[tuple[int, int], set[int]] = defaultdict(set)
+    flank_elems: dict[tuple[int, int], set[int]] = defaultdict(set)
+    for e, (n0, n1) in enumerate(edges):
+        mid = section.nodes[[n0, n1]].mean(axis=0)
+        r = float(np.hypot(mid[0], mid[1]))
+        ang = math.atan2(mid[0], mid[1])
+        if r_ff + tol < r < r_na - tol:
+            tooth = int(np.argmin([abs(ang - c) for c in centres])) + 1
+            flank = 1 if ang > centres[tooth - 1] else 2
+            key = (tooth, flank)
+            flank_nodes[key].update(
+                k * n_boundary_nodes + rank[n] + 1 for k in range(layers + 1) for n in (n0, n1)
+            )
+            flank_elems[key].update(k * n_edges + e + 1 for k in range(layers))
+
+    def arr(ids: set[int]) -> IntArray:
+        return np.array(sorted(ids), dtype=np.int64)
+
+    sets = GearReferenceSets(
+        gear=gear,
+        n_teeth=n_teeth,
+        fastening_nodes=np.array([], dtype=np.int64),
+        flank_nodes={k: arr(v) for k, v in flank_nodes.items()},
+        flank_elements={k: arr(v) for k, v in flank_elems.items()},
+        flank_faces={k: [] for k in flank_elems},
+    )
+    return nodes, quads, sets
+
+
 def tag_gear_reference(
     section: Mesh2D,
     *,

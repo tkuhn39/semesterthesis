@@ -45,6 +45,10 @@ export interface FemState {
   refine_root: number;
   refine_flank: number;
   steel_shell: boolean;
+  // ideally stiff Außenhülle per gear (R3D4 lateral surface, open axial end faces);
+  // the contact slave (plastic side) must stay deformable
+  rigid_shell_gear1: boolean;
+  rigid_shell_gear2: boolean;
 }
 
 // Werkstoffwahl per input slot (ADR-021) — THE dispatch source: steel → ISO 6336,
@@ -294,6 +298,8 @@ const FEM_DEFAULTS: FemState = {
   refine_root: 1,
   refine_flank: 1,
   steel_shell: false,
+  rigid_shell_gear1: false,
+  rigid_shell_gear2: false,
 };
 
 // kst-E defaults (materials catalog names; property values = the FVA Werkstoff sheet)

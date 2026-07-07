@@ -127,10 +127,13 @@ class DeckRequest(BaseModel):
     axial_offset_gear2_mm: float = Field(0.0, ge=-50.0, le=50.0)
     steel_shell: bool = Field(
         False,
-        description="Mixed-pairing rule: the steel side as ideally stiff rigid body "
-        "(saves DOFs; only effective for mixed pairings; default False = "
-        "reference-faithful deformable pair)",
+        description="Legacy mixed-pairing shortcut: the steel side as ideally stiff "
+        "Außenhülle (equivalent to setting rigid_shell_gear{n} on the steel slot)",
     )
+    # per-gear ideally stiff Außenhülle (R3D4 lateral surface, open axial end faces —
+    # user decision 2026-07-06); the contact slave must stay deformable
+    rigid_shell_gear1: bool = Field(False, description="Rad 1 als ideal steife Außenhülle")
+    rigid_shell_gear2: bool = Field(False, description="Rad 2 als ideal steife Außenhülle")
     fillet_gear1: FilletSpec = Field(default_factory=FilletSpec)
     fillet_gear2: FilletSpec = Field(default_factory=FilletSpec)
     align_contact: bool = Field(
@@ -597,13 +600,24 @@ def _deck_roles(req: DeckRequest) -> dict:
 
     kinds = (req.gear1_material, req.gear2_material)
     plastic_side = 1 if kinds == ("plastic", "steel") else 2
-    rigid_gears: frozenset[int] = frozenset()
+    rigid: set[int] = set()
+    if req.rigid_shell_gear1:
+        rigid.add(1)
+    if req.rigid_shell_gear2:
+        rigid.add(2)
+    # legacy shortcut: "Stahlseite ideal steif" of a mixed pairing
     if req.steel_shell and "plastic" in kinds and "steel" in kinds:
-        rigid_gears = frozenset({1 + kinds.index("steel")})
+        rigid.add(1 + kinds.index("steel"))
+    if plastic_side in rigid:
+        raise HTTPException(
+            422,
+            "the contact slave (plastic side) must stay deformable — "
+            "only the mating gear can be an ideally stiff Außenhülle",
+        )
     return {
         "gear1_material": deck_material(req.gear1_material),
         "gear2_material": deck_material(req.gear2_material),
-        "rigid_gears": rigid_gears,
+        "rigid_gears": frozenset(rigid),
         "driven_gear": plastic_side,
         "slave_gear": plastic_side,
     }

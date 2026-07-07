@@ -451,6 +451,9 @@ export interface DeckRequest {
   fasten_cuts?: boolean;
   fasten_top?: boolean;
   fasten_bottom?: boolean;
+  // ideally stiff Außenhülle per gear (R3D4 lateral surface, open end faces)
+  rigid_shell_gear1?: boolean;
+  rigid_shell_gear2?: boolean;
   // per-position torque cycle + roll setup (user decisions 2026-07-06)
   roll_pitches?: number;
   ramp_up?: number;
