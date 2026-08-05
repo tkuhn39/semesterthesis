@@ -22,17 +22,21 @@ from app.api.analysis import (
     CapacityRequest,
     DynamicsRequest,
     GearCapacity,
+    GeometryReportRequest,
     ToleranceRequest,
     ToothGear,
     ToothProfileResponse,
     VariationPoint,
     VariationRequest,
+    _report_allowances,
     capacity,
     dynamics,
     geometry,
     tolerances,
     tooth_profile,
 )
+from app.api.stage_params import StageParams
+from app.services.geometry.report import compute_geometry_report
 
 router = APIRouter(prefix="/api", tags=["report"])
 
@@ -451,6 +455,206 @@ def report(req: ReportRequest) -> HTMLResponse:
             "",
         ),
     ]
+    # --- full SSOT geometry block (DIN ISO 21771 / DIN 21773 / DIN 3967) ---
+    grq = GeometryReportRequest(
+        stage=req.capacity.stage or StageParams(),
+        fillet_gear1=None,
+        fillet_gear2=None,
+        ball_diameter_gear1_mm=None,
+        ball_diameter_gear2_mm=None,
+        center_distance_allowance_mm=None,
+        span_allowance_upper_um=None,
+        span_allowance_lower_um=None,
+    )
+    up_al, low_al = _report_allowances(grq)
+    rep = compute_geometry_report(
+        stage, span_allowance_upper_mm=up_al, span_allowance_lower_mm=low_al
+    )
+    g1, g2, pr = rep.gear1, rep.gear2, rep.pair
+    stage_rows += [
+        (d(loc, "Stirnteilung", "Transverse pitch"), "p_t", n(pr.transverse_pitch_mm), None, "mm"),
+        (
+            d(loc, "Eingriffsteilung", "Base pitch"),
+            "p_et",
+            n(pr.transverse_base_pitch_mm),
+            None,
+            "mm",
+        ),
+        (
+            d(loc, "Eingriffsstrecke", "Path of contact"),
+            "g_α",
+            n(pr.path_of_contact_mm),
+            None,
+            "mm",
+        ),
+        (
+            d(loc, "Gemeinsame Zahnhöhe", "Common tooth height"),
+            "h_gem",
+            n(pr.common_tooth_height_mm),
+            None,
+            "mm",
+        ),
+        (
+            d(loc, "Wälzkreisdurchmesser", "Working pitch diameter"),
+            "d_w",
+            n(g1.working_pitch_diameter_mm),
+            n(g2.working_pitch_diameter_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Kopf-Formkreisdurchmesser", "Tip form diameter"),
+            "d_Fa",
+            n(g1.tip_form_diameter_mm),
+            n(g2.tip_form_diameter_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Kopfkantenbruch (radial)", "Tip edge break (radial)"),
+            "h_K",
+            n(g1.tip_chamfer_radial_mm),
+            n(g2.tip_chamfer_radial_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Nutzkreisdurchmesser am Kopf", "Usable tip diameter"),
+            "d_Na",
+            n(g1.usable_tip_diameter_mm),
+            n(g2.usable_tip_diameter_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Nutzkreisdurchmesser am Fuß", "Usable root diameter"),
+            "d_Nf",
+            n(g1.usable_root_diameter_mm),
+            n(g2.usable_root_diameter_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Fuß-Formkreisdurchmesser", "Root form diameter"),
+            "d_Ff",
+            n(g1.root_form_diameter_mm),
+            n(g2.root_form_diameter_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Formübermaß", "Form reserve"),
+            "c_n",
+            n(g1.form_reserve_mm),
+            n(g2.form_reserve_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Fußkreisdurchmesser", "Root diameter"),
+            "d_f",
+            n(g1.root_diameter_mm),
+            n(g2.root_diameter_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Zahnhöhe", "Tooth height"),
+            "h",
+            n(g1.tooth_height_mm),
+            n(g2.tooth_height_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Kopfspiel (Istwert)", "Tip clearance (actual)"),
+            "c",
+            n(g1.tip_clearance_mm),
+            n(g2.tip_clearance_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Gleitfaktor am Zahnkopf", "Sliding factor at tip"),
+            "K_ga",
+            n(g1.sliding_factor_tip),
+            n(g2.sliding_factor_tip),
+            "",
+        ),
+        (
+            d(loc, "Spez. Gleiten (Kopf/Fuß)", "Specific sliding (tip/root)"),
+            "ζ_a / ζ_f",
+            f"{n(g1.specific_sliding_tip)} / {n(g1.specific_sliding_root)}",
+            f"{n(g2.specific_sliding_tip)} / {n(g2.specific_sliding_root)}",
+            "",
+        ),
+        (
+            d(loc, "Zahndicke (Normalschnitt)", "Tooth thickness (normal)"),
+            "s_n",
+            n(g1.tooth_thickness_normal_mm),
+            n(g2.tooth_thickness_normal_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Zahnlückenweite", "Space width"),
+            "e_n",
+            n(g1.space_width_normal_mm),
+            n(g2.space_width_normal_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Erz.-Profilverschiebungsfaktor", "Generation profile shift"),
+            "x_E",
+            n(g1.generation_profile_shift, 4),
+            n(g2.generation_profile_shift, 4),
+            "",
+        ),
+        (
+            d(loc, "Zahndickensehne (d_a − 2·m_n)", "Chordal thickness (d_a − 2·m_n)"),
+            "s̄_cn",
+            n(g1.chordal_thickness_mm),
+            n(g2.chordal_thickness_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Höhe über der Sehne", "Height over chord"),
+            "h̄_c",
+            n(g1.chordal_height_mm),
+            n(g2.chordal_height_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Zahnweite (Messzähnezahl)", "Span measurement (tooth count)"),
+            "W_k (k)",
+            f"{n(g1.span_measurement_mm)} ({g1.span_teeth})",
+            f"{n(g2.span_measurement_mm)} ({g2.span_teeth})",
+            "mm",
+        ),
+        (
+            d(loc, "Diam. Zweikugelmaß", "Diametral two-ball measure"),
+            "M_dK",
+            n(g1.two_ball_measure_mm),
+            n(g2.two_ball_measure_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Messtückdurchmesser", "Measuring element diameter"),
+            "D_M",
+            n(g1.ball_diameter_mm),
+            n(g2.ball_diameter_mm),
+            "mm",
+        ),
+    ]
+    if g1.thickness_allowance_upper_mm is not None:
+        stage_rows += [
+            (
+                d(loc, "Zahndickenabmaße (ob./unt.)", "Thickness allowances (up/low)"),
+                "E_sns/E_sni",
+                f"{n(g1.thickness_allowance_upper_mm)} / {n(g1.thickness_allowance_lower_mm)}",
+                f"{n(g2.thickness_allowance_upper_mm)} / {n(g2.thickness_allowance_lower_mm)}",
+                "mm",
+            ),
+        ]
+    if pr.backlash_normal_mm is not None:
+        stage_rows += [
+            (
+                d(loc, "Verdreh-/Normalflankenspiel", "Circumferential/normal backlash"),
+                "j_t / j_n",
+                f"{n(pr.backlash_circumferential_mm)} / {n(pr.backlash_normal_mm)}",
+                None,
+                "mm",
+            ),
+        ]
 
     tol_rows = [
         (

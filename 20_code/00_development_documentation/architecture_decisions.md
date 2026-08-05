@@ -997,3 +997,39 @@ bionic γ axis, the Stufenvariation carries the FULL FilletSpec (the kind-only f
 silently dropped parameters is fixed), and the contour reports `fillet_approach` +
 `effective_root_diameter_mm` (Frühe's deeper root is visible in the UI incl. d_f/d_Ff
 reference circles). The measured kst-E ranking lives in `root_fillet_strategies.md`.
+
+## ADR-024: Geometry SSOT report on current norms; native K_Hβ by default
+
+**Date:** 2026-08-05 · **Status:** Accepted
+
+**Context:** The frontend showed only 8 geometry numbers although the reference output
+(kst-E .sta Blatt 6–8, legacy DIN 3960/STplus) prints ~80; several quantities were computed
+but never serialized, and a whole block (tooth-thickness chords, span with auto tooth
+count, ball/roller measures, allowance conversion, backlash, specific sliding) was not
+computed at all. User direction: verify the norm supersession chain FIRST (the successors
+DIN ISO 21771:2014 + DIN 21773:2014 are in the repo; DIN 3967/3964 remain valid), compute
+on current norms only, and provide ONE backend source of truth the frontend reads
+everywhere — with the selected root-fillet strategy's influence visible in the output.
+
+**Decision:** `app/services/geometry/report.py::compute_geometry_report` is the SSOT: it
+computes the full per-gear + pair value set on DIN ISO 21771 (incl. Annex NB corrected
+equations), DIN 21773 §5–§14 (inspection measures; allowances as EXACT measure differences
+at the allowance-equivalent generation shift, not linearized factors), DIN 3967 (E_sn =
+A_W/cos α_n input route) and DIN 3964 (A_a → Δj). Auto measuring tooth count k per the
+classic V-circle rule clamped to the §7.2 k_min/k_max bounds. Fillet-aware: callers pass
+the selected strategies' deepest contour radii; the report carries nominal (tool) AND
+effective root diameters. Exposed via `POST /api/geometry/report` (FastAPI serializes the
+service dataclasses directly); the Geometrie tab renders it as grouped sections and the
+HTML report appends the same rows. `/api/capacity` now also returns the previously dropped
+K_Fα/K_Fβ/Z_ε/Z_B/Z_D/F_t/v/line-load/z_n and per-gear σ_H0/σ_F0 + the 30°-tangent section
+values. **Bugfix:** `face_load_factor = null` now means the NATIVE ISO 6336-1 Method C
+K_Hβ/K_Fβ (they were computed and discarded); an explicit number remains an override.
+
+**Consequences:** kst-E parity is pinned by `tests/test_geometry_report.py` (27 transcribed
+.sta literals; two documented norm-over-tool deviations: the chordal-measure cylinder
+d_a − 2·m_n per DIN 21773 §5, and the as-cut tip thickness at d_Na). Legacy
+`/api/geometry` stays untouched for compatibility. Open follow-ups: scuffing per
+ISO/TS 6336-20/-21 (primary sources now in the repo, pdftotext-readable), the individual
+Z_L/Z_v/Z_R/Z_W/Z_X and Y_δrelT/Y_RrelT/Y_X sub-factors as explicit response fields (they
+are currently folded into σ_HP/σ_FP inside the strength modules), and the DIN 3967
+allowance-series tables as an input alternative to direct A_W values.

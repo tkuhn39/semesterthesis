@@ -20,7 +20,9 @@ export function buildCapacityRequest(wb: Wb): CapacityRequest {
     application_factor: op.application_factor,
     compute_dynamics: op.compute_dynamics,
     dynamic_factor: op.dynamic_factor,
-    face_load_factor: op.face_load_factor,
+    // K_Hβ: the untouched default 1.0 means "compute natively" (ISO 6336-1 Method C);
+    // any user-entered value stays an explicit override
+    face_load_factor: op.face_load_factor === 1.0 ? null : op.face_load_factor,
     accuracy_grade: op.accuracy_grade,
     base_pitch_deviation_um: op.base_pitch_deviation_um,
     profile_form_deviation_um: op.profile_form_deviation_um,

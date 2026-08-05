@@ -18,8 +18,8 @@ import numpy as np
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from app.api.stage_params import StageParams, kst_e_stage
-from app.io.ste import Pair
+from app.api.stage_params import StageParams, _example_ste_path, kst_e_stage
+from app.io.ste import Pair, gear_stage_from_ste, load_ste
 from app.services.capacity import (
     DynamicConditions,
     Iso6336Conditions,
@@ -31,6 +31,7 @@ from app.services.capacity import (
     native_dynamic_factors,
 )
 from app.services.geometry.gear import GearStage, line_of_action_points
+from app.services.geometry.report import GeometryReport, compute_geometry_report
 from app.services.geometry.root_fillet import with_root_land
 from app.services.geometry.tolerances import (
     FlankTolerances,
@@ -182,6 +183,93 @@ def geometry(req: StageParams) -> GeometryResponse:
 
 
 # --------------------------------------------------------------------------- #
+# Full geometry report — the backend SSOT (DIN ISO 21771 / DIN 21773 / 3967 /  #
+# 3964), fillet-aware. FastAPI serializes the service dataclasses directly.    #
+# --------------------------------------------------------------------------- #
+class GeometryReportRequest(BaseModel):
+    stage: StageParams = Field(default_factory=StageParams)
+    # full FilletSpec dicts (validated by the mesh router's model on use); kept loose here
+    # to avoid a router-to-router import — resolved via the shared strategy factory below
+    fillet_gear1: dict | None = None
+    fillet_gear2: dict | None = None
+    ball_diameter_gear1_mm: float | None = Field(None, gt=0.0)
+    ball_diameter_gear2_mm: float | None = Field(None, gt=0.0)
+    center_distance_allowance_mm: float | None = Field(None, ge=0.0)  # DIN 3964 js field
+    span_allowance_upper_um: tuple[float, float] | None = None  # A_We per gear
+    span_allowance_lower_um: tuple[float, float] | None = None  # A_Wi per gear
+
+
+def _report_allowances(
+    req: GeometryReportRequest,
+) -> tuple[Pair[float] | None, Pair[float] | None]:
+    """A_We/A_Wi per gear: explicit request > example STE sidecar > StageParams mean."""
+    if req.span_allowance_upper_um is not None and req.span_allowance_lower_um is not None:
+        up, low = req.span_allowance_upper_um, req.span_allowance_lower_um
+        return (
+            Pair(up[0] / 1000.0, up[1] / 1000.0),
+            Pair(low[0] / 1000.0, low[1] / 1000.0),
+        )
+    if req.stage.use_example:
+        path = _example_ste_path()
+        if path is not None:
+            data = gear_stage_from_ste(load_ste(path))
+            if (
+                data.tooth_width_allowance_upper_um is not None
+                and data.tooth_width_allowance_lower_um is not None
+            ):
+                u, lo = data.tooth_width_allowance_upper_um, data.tooth_width_allowance_lower_um
+                return (
+                    Pair(u[0] / 1000.0, u[1] / 1000.0),
+                    Pair(lo[0] / 1000.0, lo[1] / 1000.0),
+                )
+        return None, None
+    mean = Pair(req.stage.tooth_width_allowance_pinion_mm, req.stage.tooth_width_allowance_wheel_mm)
+    if mean[0] == 0.0 and mean[1] == 0.0:
+        return None, None
+    return mean, mean
+
+
+def _fillet_min_radii(req: GeometryReportRequest, stage: GearStage) -> Pair[float] | None:
+    """Deepest contour radius per gear for the selected root-fillet strategies."""
+    from app.api.mesh import FilletSpec  # runtime import: routers stay independent
+
+    specs = (req.fillet_gear1, req.fillet_gear2)
+    if all(s is None or s.get("kind", "standard") == "standard" for s in specs):
+        return None
+    radii: list[float] = []
+    for i, raw in enumerate(specs):
+        profile = ToothProfile.from_stage(stage, i)
+        strategy = FilletSpec(**raw).strategy() if raw is not None else None
+        if strategy is None:
+            radii.append(profile.root_diameter_mm / 2.0)
+            continue
+        pts = strategy.right_half(profile)
+        radii.append(min(math.hypot(p[0], p[1]) for p in pts))
+    return Pair(radii[0], radii[1])
+
+
+@router.post("/geometry/report", response_model=GeometryReport)
+def geometry_report(req: GeometryReportRequest) -> GeometryReport:
+    """The FULL geometry report (SSOT): every DIN ISO 21771 / DIN 21773 quantity at once."""
+    stage = req.stage.stage()
+    up, low = _report_allowances(req)
+    balls = None
+    if req.ball_diameter_gear1_mm is not None or req.ball_diameter_gear2_mm is not None:
+        mn = stage.normal_module_mm
+        balls = Pair(
+            req.ball_diameter_gear1_mm or 1.75 * mn, req.ball_diameter_gear2_mm or 1.75 * mn
+        )
+    return compute_geometry_report(
+        stage,
+        ball_diameter_mm=balls,
+        span_allowance_upper_mm=up,
+        span_allowance_lower_mm=low,
+        center_distance_allowance_mm=req.center_distance_allowance_mm,
+        fillet_contour_min_radius_mm=_fillet_min_radii(req, stage),
+    )
+
+
+# --------------------------------------------------------------------------- #
 # Tolerances (ISO 1328-1:2018 — accuracy grade → flank deviations)             #
 # --------------------------------------------------------------------------- #
 class ToleranceRequest(BaseModel):
@@ -241,7 +329,10 @@ class CapacityRequest(BaseModel):
     # --- dynamics (ISO 6336-1): native K_v from accuracy, or override ---
     compute_dynamics: bool = True
     dynamic_factor: float = 1.0  # K_v (override when compute_dynamics = False)
-    face_load_factor: float = 1.0  # K_Hβ (override; native K_Hβ needs RIKOR)
+    # K_Hβ: None = use the NATIVE ISO 6336-1 Method-C value when compute_dynamics is on
+    # (bugfix 2026-08-05: the computed value was silently discarded before); a number
+    # overrides it (legacy payloads with an explicit value keep their behaviour)
+    face_load_factor: float | None = None
     accuracy_grade: int | None = None  # ISO 1328-1 class; if set, derives f_pb/f_fα
     base_pitch_deviation_um: float = 6.0  # f_pb (ISO 1328) — used when no grade given
     profile_form_deviation_um: float = 5.0  # f_fα
@@ -281,9 +372,18 @@ class CapacityFactors(BaseModel):
     application_factor: float  # K_A
     dynamic_factor: float  # K_v
     transverse_factor: float  # K_Hα
-    face_load_factor: float  # K_Hβ
+    transverse_factor_root: float  # K_Fα
+    face_load_factor: float  # K_Hβ (native ISO 6336-1 Method C unless overridden)
+    face_load_factor_root: float  # K_Fβ
     elasticity_factor: float  # Z_E
     zone_factor: float  # Z_H
+    contact_ratio_factor: float  # Z_ε (ISO 6336-2 §8)
+    single_contact_b: float  # Z_B
+    single_contact_d: float  # Z_D
+    tangential_force_n: float  # F_t at the reference circle
+    pitch_velocity_ms: float  # v at the reference circle
+    line_load_n_mm: float  # F_t·K_A / b_gem
+    virtual_teeth: list[float]  # z_n per gear (spur: = z)
 
 
 class GearCapacity(BaseModel):
@@ -298,6 +398,17 @@ class GearCapacity(BaseModel):
     root_safety: float | None = None
     form_factor: float
     stress_correction: float
+    # ISO branch: nominal stresses + the critical-section geometry behind Y_F/Y_S
+    nominal_flank_stress_mpa: float | None = None  # σ_H0
+    nominal_root_stress_mpa: float | None = None  # σ_F0
+    root_chord_mn: float | None = None  # s_Fn* (30°-tangent, ·m_n)
+    fillet_radius_mn: float | None = None  # ρ_F* (·m_n)
+    notch_parameter: float | None = None  # q_s
+    bending_lever_mn: float | None = None  # h_Fe* (·m_n)
+    load_angle_deg: float | None = None  # α_Fen
+    # VDI branch extras
+    flank_temperature_c: float | None = None  # ϑ_Fla
+    loss_factor: float | None = None  # H_V
     tooth_temperature_c: float | None = None
     wear_um: float | None = None
     allowable_wear_um: float | None = None
@@ -357,7 +468,12 @@ def _run_capacity(
     Works for any generated stage (the preloaded kst-E or a free `from_parameters`) and any
     material pairing — steel/steel, plastic/plastic, or mixed in either orientation.
     """
-    from app.services.capacity.iso6336 import elasticity_factor, zone_factor
+    from app.services.capacity.iso6336 import (
+        elasticity_factor,
+        flank_contact_ratio_factor,
+        single_contact_factors,
+        zone_factor,
+    )
 
     width = stage.face_width_mm or Pair(17.0, 15.0)
     u = stage.teeth[1] / stage.teeth[0]
@@ -397,17 +513,29 @@ def _run_capacity(
             ),
         )
         k_v, k_ha = dyn.dynamic_factor, dyn.transverse_factor_flank
+        k_fa = dyn.transverse_factor_root
+        # native K_Hβ/K_Fβ (ISO 6336-1 §7 Method C) unless explicitly overridden
+        k_hb = (
+            req.face_load_factor
+            if req.face_load_factor is not None
+            else (dyn.face_load_factor_flank)
+        )
+        k_fb = (
+            req.face_load_factor
+            if req.face_load_factor is not None
+            else (dyn.face_load_factor_root)
+        )
     else:
-        k_v, k_ha = req.dynamic_factor, 1.0
-    k_hb = req.face_load_factor
+        k_v, k_ha, k_fa = req.dynamic_factor, 1.0, 1.0
+        k_hb = k_fb = req.face_load_factor if req.face_load_factor is not None else 1.0
 
     iso_load = base_load.model_copy(
         update={
             "dynamic_factor": k_v,
             "face_load_factor_flank": k_hb,
-            "face_load_factor_root": k_hb,
+            "face_load_factor_root": k_fb,
             "transverse_factor_flank": k_ha,
-            "transverse_factor_root": k_ha,
+            "transverse_factor_root": k_fa,
         }
     )
     iso_conditions = Iso6336Conditions(
@@ -459,6 +587,13 @@ def _run_capacity(
         """Norm dispatch by MATERIAL: steel → ISO 6336, plastic → VDI 2736 (never by role)."""
         mat = materials[i]
         slot = "Ritzel" if i == 0 else "Rad"
+        section = {
+            "root_chord_mn": round(roots[i].critical_root_chord_mn, 4),
+            "fillet_radius_mn": round(roots[i].root_fillet_radius_mn, 4),
+            "notch_parameter": round(roots[i].notch_parameter, 4),
+            "bending_lever_mn": round(roots[i].bending_lever_mn, 4),
+            "load_angle_deg": round(roots[i].load_application_angle_deg, 4),
+        }
         if mat.is_plastic:
             assert vdi is not None
             r = vdi[i]
@@ -474,6 +609,9 @@ def _run_capacity(
                 root_permissible_mpa=_round(_safe_mul(r.root_safety, r.root_stress_mpa)),
                 form_factor=round(roots[i].form_factor_tip, 4),
                 stress_correction=round(roots[i].stress_correction_factor_tip, 4),
+                **section,
+                flank_temperature_c=round(r.flank_temperature_c, 2),
+                loss_factor=round(r.loss_factor, 4),
                 tooth_temperature_c=round(r.root_temperature_c, 2),
                 wear_um=round(r.linear_wear_um, 2),
                 allowable_wear_um=round(r.allowable_wear_um, 1),
@@ -495,15 +633,30 @@ def _run_capacity(
             root_permissible_mpa=_round(_safe_mul(s.root_safety, s.root_stress_mpa)),
             form_factor=round(roots[i].form_factor, 4),
             stress_correction=round(roots[i].stress_correction_factor, 4),
+            nominal_flank_stress_mpa=round(s.nominal_flank_stress_mpa, 3),
+            nominal_root_stress_mpa=round(s.nominal_root_stress_mpa, 3),
+            **section,
         )
 
+    z_bd = single_contact_factors(stage)
     factors = CapacityFactors(
         application_factor=round(req.application_factor, 3),
         dynamic_factor=round(k_v, 4),
         transverse_factor=round(k_ha, 4),
+        transverse_factor_root=round(k_fa, 4),
         face_load_factor=round(k_hb, 4),
+        face_load_factor_root=round(k_fb, 4),
         elasticity_factor=round(elasticity_factor(materials[0], materials[1]), 3),
         zone_factor=round(zone_factor(stage), 4),
+        contact_ratio_factor=round(
+            flank_contact_ratio_factor(stage.transverse_contact_ratio, stage.overlap_ratio), 4
+        ),
+        single_contact_b=round(z_bd[0], 4),
+        single_contact_d=round(z_bd[1], 4),
+        tangential_force_n=round(f_t, 2),
+        pitch_velocity_ms=round(v_t, 4),
+        line_load_n_mm=round(f_t * req.application_factor / min(width), 3),
+        virtual_teeth=[round(roots[i].virtual_teeth, 3) for i in range(2)],
     )
     return CapacityResponse(factors=factors, pinion=gear_result(0), wheel=gear_result(1))
 

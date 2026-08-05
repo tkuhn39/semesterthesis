@@ -72,6 +72,15 @@ export interface GearCapacity {
   root_safety: number | null;
   form_factor: number;
   stress_correction: number;
+  nominal_flank_stress_mpa?: number | null; // σ_H0 (ISO branch)
+  nominal_root_stress_mpa?: number | null; // σ_F0
+  root_chord_mn?: number | null; // s_Fn* (30°-tangent)
+  fillet_radius_mn?: number | null; // ρ_F*
+  notch_parameter?: number | null; // q_s
+  bending_lever_mn?: number | null; // h_Fe*
+  load_angle_deg?: number | null; // α_Fen
+  flank_temperature_c?: number | null; // ϑ_Fla (VDI branch)
+  loss_factor?: number | null; // H_V
   tooth_temperature_c: number | null;
   wear_um: number | null;
   allowable_wear_um: number | null;
@@ -83,9 +92,18 @@ export interface CapacityFactors {
   application_factor: number;
   dynamic_factor: number;
   transverse_factor: number;
+  transverse_factor_root: number;
   face_load_factor: number;
+  face_load_factor_root: number;
   elasticity_factor: number;
   zone_factor: number;
+  contact_ratio_factor: number;
+  single_contact_b: number;
+  single_contact_d: number;
+  tangential_force_n: number;
+  pitch_velocity_ms: number;
+  line_load_n_mm: number;
+  virtual_teeth: number[];
 }
 export interface CapacityResponse {
   factors: CapacityFactors;
@@ -103,7 +121,7 @@ export interface CapacityRequest {
   application_factor: number;
   compute_dynamics: boolean;
   dynamic_factor: number;
-  face_load_factor: number;
+  face_load_factor: number | null; // null = native ISO 6336-1 Method C K_Hβ/K_Fβ
   base_pitch_deviation_um: number;
   profile_form_deviation_um: number;
   lubricant_viscosity_40_mm2s: number;
@@ -284,6 +302,8 @@ export const api = {
   health: () => get<{ status: string; version: string }>("/api/health"),
   example: () => get<ExampleResponse>("/api/example/kst-e"),
   geometry: (stage: StageParams) => post<GeometryResponse>("/api/geometry", stage),
+  geometryReport: (req: GeometryReportRequest) =>
+    post<GeometryReportResponse>("/api/geometry/report", req),
   capacity: (req: CapacityRequest) => post<CapacityResponse>("/api/capacity", req),
   dynamics: (req: DynamicsRequest) => post<DynamicsResponse>("/api/dynamics", req),
   variation: (req: VariationRequest) => post<VariationResponse>("/api/variation", req),
@@ -375,6 +395,106 @@ export const designApi = {
   importSte: (content: string) =>
     post<{ params: StageParams; notes: string[] }>("/api/import/ste", { content }),
 };
+
+// ---- Full geometry report (backend SSOT: DIN ISO 21771 / DIN 21773 / 3967 / 3964) ----
+export interface GearReport {
+  teeth: number;
+  profile_shift: number;
+  generation_profile_shift: number;
+  reference_diameter_mm: number;
+  base_diameter_mm: number;
+  tip_diameter_mm: number;
+  tip_form_diameter_mm: number;
+  tip_chamfer_radial_mm: number;
+  usable_tip_diameter_mm: number;
+  usable_root_diameter_mm: number | null;
+  root_form_diameter_mm: number;
+  root_diameter_mm: number;
+  effective_root_diameter_mm: number | null;
+  form_reserve_mm: number | null;
+  working_pitch_diameter_mm: number;
+  tooth_height_mm: number;
+  addendum_mm: number;
+  addendum_factor_actual: number;
+  tip_clearance_mm: number | null;
+  tip_path_of_contact_mm: number | null;
+  tooth_thickness_transverse_mm: number;
+  tooth_thickness_normal_mm: number;
+  space_width_normal_mm: number;
+  tip_tooth_thickness_mm: number | null;
+  rest_tip_thickness_mm: number | null;
+  chordal_thickness_mm: number;
+  chordal_height_mm: number;
+  span_teeth: number | null;
+  span_teeth_min: number | null;
+  span_teeth_max: number | null;
+  span_measurement_mm: number | null;
+  span_contact_diameter_mm: number | null;
+  ball_diameter_mm: number | null;
+  two_ball_measure_mm: number | null;
+  two_roller_measure_mm: number | null;
+  ball_contact_diameter_mm: number | null;
+  thickness_allowance_upper_mm: number | null;
+  thickness_allowance_lower_mm: number | null;
+  span_allowance_upper_mm: number | null;
+  span_allowance_lower_mm: number | null;
+  ball_allowance_factor: number | null;
+  ball_allowance_upper_mm: number | null;
+  ball_allowance_lower_mm: number | null;
+  sliding_factor_tip: number | null;
+  specific_sliding_tip: number | null;
+  specific_sliding_root: number | null;
+  undercut_min_shift: number | null;
+  has_undercut: boolean | null;
+  tool_module_mm: number;
+  tool_pressure_angle_deg: number;
+  tool_addendum_factor: number;
+  tool_tip_radius_factor: number;
+  tool_dedendum_factor: number | null;
+}
+export interface PairReport {
+  normal_module_mm: number;
+  transverse_module_mm: number;
+  normal_pressure_angle_deg: number;
+  transverse_pressure_angle_deg: number;
+  working_pressure_angle_deg: number;
+  helix_angle_deg: number;
+  base_helix_angle_deg: number;
+  gear_ratio: number;
+  center_distance_mm: number;
+  reference_center_distance_mm: number;
+  profile_shift_sum: number;
+  transverse_pitch_mm: number;
+  normal_pitch_mm: number;
+  transverse_base_pitch_mm: number;
+  normal_base_pitch_mm: number;
+  path_of_contact_mm: number;
+  transverse_contact_ratio: number;
+  overlap_ratio: number;
+  total_contact_ratio: number;
+  common_face_width_mm: number | null;
+  common_tooth_height_mm: number | null;
+  common_height_factor: number | null;
+  backlash_circumferential_mm: number | null;
+  backlash_normal_mm: number | null;
+  backlash_delta_upper_mm: [number, number] | null;
+  backlash_delta_lower_mm: [number, number] | null;
+  center_distance_allowance_mm: number | null;
+}
+export interface GeometryReportResponse {
+  gear1: GearReport;
+  gear2: GearReport;
+  pair: PairReport;
+  notes: string[];
+}
+export interface GeometryReportRequest {
+  stage: StageParams;
+  fillet_gear1?: FilletSpec | null;
+  fillet_gear2?: FilletSpec | null;
+  ball_diameter_gear1_mm?: number | null;
+  ball_diameter_gear2_mm?: number | null;
+  center_distance_allowance_mm?: number | null;
+}
 
 // ---- Mesh (FE sector, ADR-019 transplant mesher) ----
 export type FilletApproach = "kassem" | "fruehe" | "landi" | "roth" | "dong" | "voith" | "cao";

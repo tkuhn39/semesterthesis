@@ -89,6 +89,46 @@ export function CapacityPanel() {
             <Stat label="K_Hα" value={fm.num(res.factors.transverse_factor, 3)} />
             <Stat label="K_Hβ" value={fm.num(res.factors.face_load_factor, 3)} />
           </div>
+          <Section title={t("cap.factorsTitle")} defaultOpen={false}>
+            <table className="attr-table">
+              <tbody>
+                <AttrRow label={t("cap.kFa")} symbol="K_Fα" unit="–">
+                  <td className="wb-num">{fm.num(res.factors.transverse_factor_root, 3)}</td>
+                </AttrRow>
+                <AttrRow label={t("cap.kFb")} symbol="K_Fβ" unit="–">
+                  <td className="wb-num">{fm.num(res.factors.face_load_factor_root, 3)}</td>
+                </AttrRow>
+                <AttrRow label={t("cap.zE")} symbol="Z_E" unit="√(N/mm²)">
+                  <td className="wb-num">{fm.num(res.factors.elasticity_factor, 2)}</td>
+                </AttrRow>
+                <AttrRow label={t("cap.zH")} symbol="Z_H" unit="–">
+                  <td className="wb-num">{fm.num(res.factors.zone_factor, 3)}</td>
+                </AttrRow>
+                <AttrRow label={t("cap.zEps")} symbol="Z_ε" unit="–">
+                  <td className="wb-num">{fm.num(res.factors.contact_ratio_factor, 3)}</td>
+                </AttrRow>
+                <AttrRow label={t("cap.zB")} symbol="Z_B / Z_D" unit="–">
+                  <td className="wb-num">
+                    {fm.num(res.factors.single_contact_b, 3)} / {fm.num(res.factors.single_contact_d, 3)}
+                  </td>
+                </AttrRow>
+                <AttrRow label={t("cap.ft")} symbol="F_t" unit="N">
+                  <td className="wb-num">{fm.num(res.factors.tangential_force_n, 1)}</td>
+                </AttrRow>
+                <AttrRow label={t("cap.vt")} symbol="v" unit="m/s">
+                  <td className="wb-num">{fm.num(res.factors.pitch_velocity_ms, 3)}</td>
+                </AttrRow>
+                <AttrRow label={t("cap.lineLoad")} symbol="w_t" unit="N/mm">
+                  <td className="wb-num">{fm.num(res.factors.line_load_n_mm, 2)}</td>
+                </AttrRow>
+                <AttrRow label={t("cap.zn")} symbol="z_n" unit="–">
+                  <td className="wb-num">
+                    {fm.num(res.factors.virtual_teeth[0], 1)} / {fm.num(res.factors.virtual_teeth[1], 1)}
+                  </td>
+                </AttrRow>
+              </tbody>
+            </table>
+          </Section>
           <div className="grid grid-cols-2 gap-3">
             <GearCard title={t("common.pinion")} g={res.pinion} minRoot={req.root_minimum_safety} minFlank={req.flank_minimum_safety} />
             <GearCard title={t("common.wheel")} g={res.wheel} minRoot={req.root_minimum_safety} minFlank={req.flank_minimum_safety} />
@@ -125,6 +165,67 @@ function GearCard(props: { title: string; g: GearCapacity; minRoot: number; minF
               {fm.num(g.flank_safety, 2)}
             </td>
           </AttrRow>
+          {g.nominal_root_stress_mpa != null && (
+            <AttrRow label={t("cap.sigmaF0")} symbol="σ_F0" unit="N/mm²">
+              <td className="wb-num">{fm.num(g.nominal_root_stress_mpa, 1)}</td>
+            </AttrRow>
+          )}
+          {g.root_permissible_mpa != null && (
+            <AttrRow label={t("cap.sigmaFP")} symbol="σ_FP" unit="N/mm²">
+              <td className="wb-num">{fm.num(g.root_permissible_mpa, 1)}</td>
+            </AttrRow>
+          )}
+          {g.nominal_flank_stress_mpa != null && (
+            <AttrRow label={t("cap.sigmaH0")} symbol="σ_H0" unit="N/mm²">
+              <td className="wb-num">{fm.num(g.nominal_flank_stress_mpa, 1)}</td>
+            </AttrRow>
+          )}
+          {g.flank_permissible_mpa != null && (
+            <AttrRow label={t("cap.sigmaHP")} symbol="σ_HP" unit="N/mm²">
+              <td className="wb-num">{fm.num(g.flank_permissible_mpa, 1)}</td>
+            </AttrRow>
+          )}
+          <AttrRow label={t("cap.yF")} symbol="Y_F" unit="–">
+            <td className="wb-num">{fm.num(g.form_factor, 3)}</td>
+          </AttrRow>
+          <AttrRow label={t("cap.yS")} symbol="Y_S" unit="–">
+            <td className="wb-num">{fm.num(g.stress_correction, 3)}</td>
+          </AttrRow>
+          {g.root_chord_mn != null && (
+            <AttrRow label={t("cap.sFn")} symbol="s_Fn*" unit="·m_n">
+              <td className="wb-num">{fm.num(g.root_chord_mn, 3)}</td>
+            </AttrRow>
+          )}
+          {g.fillet_radius_mn != null && (
+            <AttrRow label={t("cap.rhoF")} symbol="ρ_F*" unit="·m_n">
+              <td className="wb-num">{fm.num(g.fillet_radius_mn, 3)}</td>
+            </AttrRow>
+          )}
+          {g.notch_parameter != null && (
+            <AttrRow label={t("cap.qs")} symbol="q_s" unit="–">
+              <td className="wb-num">{fm.num(g.notch_parameter, 2)}</td>
+            </AttrRow>
+          )}
+          {g.bending_lever_mn != null && (
+            <AttrRow label={t("cap.hFe")} symbol="h_Fe*" unit="·m_n">
+              <td className="wb-num">{fm.num(g.bending_lever_mn, 3)}</td>
+            </AttrRow>
+          )}
+          {g.load_angle_deg != null && (
+            <AttrRow label={t("cap.alphaFen")} symbol="α_Fen" unit="°">
+              <td className="wb-num">{fm.num(g.load_angle_deg, 2)}</td>
+            </AttrRow>
+          )}
+          {g.loss_factor != null && (
+            <AttrRow label={t("cap.hv")} symbol="H_V" unit="–">
+              <td className="wb-num">{fm.num(g.loss_factor, 4)}</td>
+            </AttrRow>
+          )}
+          {g.flank_temperature_c != null && (
+            <AttrRow label={t("cap.flankTemp")} symbol="ϑ_Fla" unit="°C">
+              <td className="wb-num">{fm.num(g.flank_temperature_c, 1)}</td>
+            </AttrRow>
+          )}
           {g.peak_stress_mpa != null && (
             <AttrRow label={t("cap.staticPeak")} symbol="σ_F,P" unit="N/mm²">
               <td className="wb-num">{fm.num(g.peak_stress_mpa, 1)}</td>

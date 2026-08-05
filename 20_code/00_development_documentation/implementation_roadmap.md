@@ -143,6 +143,14 @@ tilted ellipse, −20.9 % on kst-E)/landi, bezier roth/dong (true hobbing envelo
 `rack_tip_envelope`), bionic voith/cao (Kassem 2023 growth loop on the quick-FE solver);
 per-approach sweeps incl. the previously missing γ axis, Stufenvariation carries the full
 FilletSpec, contour reports the effective root diameter.
+**Done (2026-08-05, ADR-024):** full geometry output on CURRENT norms — the SSOT service
+`compute_geometry_report` (DIN ISO 21771 + NB, DIN 21773 §5–§14 inspection measures with
+auto span tooth count and exact ball-measure allowances, DIN 3967/3964 backlash chain),
+`POST /api/geometry/report`, grouped result sections in the Geometrie tab (fillet-aware
+effective root), extended capacity response (K_Fα/K_Fβ/Z_ε/Z_B/Z_D/F_t/v/z_n + σ_H0/σ_F0 +
+30°-tangent section values) with the native-K_Hβ bugfix, HTML report carries the same rows;
+kst-E parity pinned (27 .sta literals). **Open:** scuffing per ISO/TS 6336-20/-21 (sources
+in repo), explicit Z_L/Z_v/Z_R/Z_W/Z_X + Y_relT sub-factor exposure, DIN 3967 series tables.
 User-reviewed at checkpoints 1+2. **Done since (v0.2.0, checkpoints 3):** deck rewired onto the
 transplant mesher (mapped_mesher retired from the deck path), rigid-shell material rule for mixed
 pairings, Part_Rad_Vz_1 = plastic wheel convention, /api/mesh router (preview/3d/convergence/

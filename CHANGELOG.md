@@ -9,6 +9,35 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (full geometry output on current norms — backend SSOT, 2026-08-05, ADR-024)
+- **`compute_geometry_report` (services/geometry/report.py)** — ONE service computes every
+  macro-geometry, tooth-thickness, inspection, sliding and backlash quantity per
+  **DIN ISO 21771:2014** (incl. national Annex NB corrections), **DIN 21773:2014** (§5–§14:
+  chordal measures, span W_k with AUTO measuring tooth count k_min/k/k_max, single/two-ball
+  and roller measures with exact allowance differences, allowance conversion §14) and the
+  still-valid **DIN 3967/3964** (E_sn = A_W/cos α_n; j_bn/j_t/j_n; Δj from the centre
+  allowance A_a). Fillet-aware: the selected root-fillet strategy's effective root diameter
+  is reported next to the tool d_f. **kst-E parity test-pinned** (27 checks transcribed from
+  .sta Blatt 6–8: W_k 17.090/17.180 with k=6, M_dK 53.846/55.064, allowance factor
+  2.489/2.415, contact circles 50.788/50.779, ζ_a/ζ_f, K_ga, j_t/j_n 0.521/0.485 …).
+  Documented norm-over-tool deviations (ADR-011): chordal thickness on the DIN 21773 §5
+  cylinder d_a − 2·m_n; tip thickness as cut at d_Na.
+- `POST /api/geometry/report` + the Geometrie tab now renders the FULL report as grouped
+  sections (Teilungen/Eingriff, Durchmesser, Zahnhöhen & Gleiten, Zahndicken & Abmaße,
+  Prüfmaße, Flankenspiele, Werkzeug) — fillet-reactive via the shared store; the HTML
+  report's geometry section carries the same rows.
+- `POST /api/capacity` exposes the previously computed-but-dropped values: K_Fα, K_Fβ,
+  Z_ε, Z_B/Z_D, F_t, v, line load, z_n (factors) and σ_H0/σ_F0, s_Fn*, ρ_F*, q_s, h_Fe*,
+  α_Fen per gear (+ VDI: H_V, ϑ_Fla); the Tragfähigkeit tab renders σ_HP/σ_FP/Y_F/Y_S and
+  the new factor/critical-section rows.
+
+### Fixed (capacity)
+- **K_Hβ/K_Fβ were computed natively (ISO 6336-1 Method C) and silently discarded** —
+  `/api/capacity` always used the request default 1.0. `face_load_factor: null` now means
+  "use the native value" (kst-E: ≈1.19/1.16 like the reference); an explicit number stays
+  an override, so legacy payloads are unchanged. The frontend sends null for the untouched
+  default.
+
 ### Added (all seven literature root-fillet approaches, 2026-08-05, ADR-023)
 - **`FilletSpec(kind, approach)` two-level schema** (backward compatible: payloads without
   `approach` normalize to the family default and stay bit-identical, pinned by test):
