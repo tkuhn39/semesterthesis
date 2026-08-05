@@ -14,27 +14,32 @@ from __future__ import annotations
 
 import math
 from collections import defaultdict
-from typing import Annotated, Literal
+from typing import Annotated, ClassVar, Literal
 
 import numpy as np
 from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import PlainTextResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.api.stage_params import StageParams
 from app.services.geometry.gear import GearStage
 from app.services.geometry.root_fillet import (
     BezierFillet,
     BionicFillet,
+    DongToolBezierFillet,
     EllipticFillet,
     FilletStrategy,
+    FruheEllipticFillet,
+    LandiEllipticFillet,
     TrochoidFillet,
     fillet_boundary,
+    junction_radius_mm,
     mating_tip_clearance,
     with_root_land,
 )
 from app.services.geometry.tooth_form import ToothProfile
 from app.services.materials import catalog_material
+from app.services.model.cao_fillet import CaoFillet
 from app.services.model.implicit_deck import (
     assemble_centered_pair,
     build_implicit_pair_from_stage,
@@ -52,28 +57,91 @@ router = APIRouter(prefix="/api/mesh", tags=["mesh"])
 # ----------------------------------------------------------------------------------------------
 # request models
 # ----------------------------------------------------------------------------------------------
+FilletApproach = Literal["kassem", "fruehe", "landi", "roth", "dong", "voith", "cao"]
+AnyFillet = FilletStrategy | CaoFillet  # CaoFillet lives in the model layer (FE loop)
+
+
 class FilletSpec(BaseModel):
     """Root-fillet strategy selection (see geometry/root_fillet.py).
 
-    ``standard`` = the ρ_F arc; ``trochoid`` = the exact DIN 3960 tool trochoid; the optimized
-    shapes (molded/WEDM gears only) carry their literature parameters.
+    ``kind`` picks the geometry family, ``approach`` the literature method within it
+    (elliptic: kassem | fruehe | landi; bezier: roth | dong; bionic: voith | cao).
+    ``approach = None`` normalizes to the family default (kassem / roth / voith), so legacy
+    payloads keep their exact behaviour. ``standard`` = the ρ_F arc; ``trochoid`` = the exact
+    tool trochoid; the optimized shapes (molded/WEDM gears only, except Dong's hob-tip form)
+    carry their literature parameters.
     """
 
+    _APPROACHES: ClassVar[dict[str, tuple[FilletApproach, ...]]] = {
+        "elliptic": ("kassem", "fruehe", "landi"),
+        "bezier": ("roth", "dong"),
+        "bionic": ("voith", "cao"),
+    }
+    _PENDING: ClassVar[frozenset[str]] = frozenset()  # all seven approaches implemented
+
     kind: Literal["standard", "trochoid", "elliptic", "bezier", "bionic"] = "standard"
-    e_f: Annotated[float, Field(ge=-0.5, le=0.2)] = 0.0  # elliptic root-diameter factor
+    approach: FilletApproach | None = None
+    e_f: Annotated[float, Field(ge=-0.5, le=0.2)] = 0.0  # elliptic/kassem root-diameter factor
+    tilt_deg: Annotated[float, Field(gt=0.0, le=45.0)] = 30.0  # fruehe tilt γ (optimum 30°)
+    aspect: Annotated[float, Field(ge=1.0, le=6.0)] = 3.0  # fruehe axis ratio a/b (optimum 3.0)
+    ra_f: Annotated[float, Field(ge=0.0, le=1.5)] = 0.0  # landi D1 offset above d_Ff (·m_n)
+    d2_frac: Annotated[float, Field(ge=0.5, le=1.0)] = 1.0  # landi D2 angle fraction to gap centre
     be: Annotated[float, Field(ge=0.3, le=0.95)] = 0.57  # Bézier factor (Roth/Voith)
+    # dong hob-tip Bézier variables V = [v0…v4] (dv2–dv4 = paper GA optimum, Fig. 15j;
+    # dv1 = 1.0 ends on the gap centreline — see DongToolBezierFillet docstring)
+    dv0: Annotated[float, Field(ge=0.05, le=0.9)] = 0.35  # P0 depth below tip (·h_kW)
+    dv1: Annotated[float, Field(ge=0.05, le=1.0)] = 1.0  # P4 along tip land (1 = gap centre)
+    dv2: Annotated[float, Field(ge=0.02, le=0.6)] = 0.15  # tangent lengths at P0/P4 (·m_n)
+    dv3: Annotated[float, Field(ge=0.0, le=1.0)] = 0.499  # P2 x-interpolation P0→P4
+    dv4: Annotated[float, Field(ge=0.0, le=1.2)] = 0.991  # P2 y-interpolation P0→P4
     gamma_deg: Annotated[float, Field(gt=5.0, lt=65.0)] | None = None  # bionic wedge angle
     b_f: Annotated[float, Field(ge=0.1, le=0.6)] = 0.35  # bionic arc factor
+    cao_step: Annotated[float, Field(ge=0.1, le=3.0)] = 1.0  # cao: growth scale (·0.025·m_n)
+    cao_iterations: Annotated[int, Field(ge=1, le=30)] = 12  # cao: FE↔growth budget
+    cao_tol: Annotated[float, Field(ge=0.001, le=0.2)] = 0.02  # cao: uniformity target
+    junction_offset_mm: Annotated[float, Field(ge=0.0, le=0.2)] = 0.0  # interference fallback
 
-    def strategy(self) -> FilletStrategy | None:
+    @model_validator(mode="after")
+    def _normalize_approach(self) -> FilletSpec:
+        allowed = self._APPROACHES.get(self.kind)
+        if allowed is None:
+            if self.approach is not None:
+                raise ValueError(f"kind '{self.kind}' takes no approach")
+            return self
+        if self.approach is None:
+            self.approach = allowed[0]  # family default = pre-approach behaviour
+        elif self.approach not in allowed:
+            raise ValueError(f"approach '{self.approach}' is not valid for kind '{self.kind}'")
+        if self.approach in self._PENDING:
+            raise ValueError(f"approach '{self.approach}' is not implemented yet")
+        return self
+
+    def strategy(self) -> AnyFillet | None:
+        off = self.junction_offset_mm
         if self.kind == "trochoid":
             return TrochoidFillet()
         if self.kind == "elliptic":
-            return EllipticFillet(e_f=self.e_f)
+            if self.approach == "fruehe":
+                return FruheEllipticFillet(
+                    tilt_deg=self.tilt_deg, aspect=self.aspect, junction_offset_mm=off
+                )
+            if self.approach == "landi":
+                return LandiEllipticFillet(ra_f=self.ra_f, d2_frac=self.d2_frac)
+            return EllipticFillet(e_f=self.e_f, junction_offset_mm=off)
         if self.kind == "bezier":
-            return BezierFillet(be=self.be)
+            if self.approach == "dong":
+                return DongToolBezierFillet(
+                    dv0=self.dv0, dv1=self.dv1, dv2=self.dv2, dv3=self.dv3, dv4=self.dv4
+                )
+            return BezierFillet(be=self.be, junction_offset_mm=off)
         if self.kind == "bionic":
-            return BionicFillet(gamma_deg=self.gamma_deg, b_f=self.b_f)
+            if self.approach == "cao":
+                return CaoFillet(
+                    cao_step=self.cao_step,
+                    cao_iterations=self.cao_iterations,
+                    cao_tol=self.cao_tol,
+                )
+            return BionicFillet(gamma_deg=self.gamma_deg, b_f=self.b_f, junction_offset_mm=off)
         return None
 
 
@@ -182,7 +250,7 @@ def _profiles(stage_params: StageParams, gear: int) -> tuple[GearStage, ToothPro
 
 
 def _clearance(
-    stage: GearStage, profile: ToothProfile, mating: ToothProfile, strategy: FilletStrategy
+    stage: GearStage, profile: ToothProfile, mating: ToothProfile, strategy: AnyFillet
 ) -> float:
     """Mating-tip clearance of an optimized fillet (mandatory check; negative = interference)."""
     fillet_pts = np.array([(p[0], p[1]) for p in strategy.right_half(profile)])
@@ -201,7 +269,7 @@ def _clearance(
 
 def _checked_strategy(
     stage: GearStage, profile: ToothProfile, mating: ToothProfile, spec: FilletSpec
-) -> tuple[FilletStrategy | None, float | None]:
+) -> tuple[AnyFillet | None, float | None]:
     """Resolve the fillet strategy and enforce the interference check (422 on interference)."""
     strategy = spec.strategy()
     if strategy is None or isinstance(strategy, TrochoidFillet):
@@ -382,6 +450,7 @@ def mesh_convergence(req: ConvergenceRequest) -> ConvergenceResponse:
 class FilletCompareRequest(BaseModel):
     stage: StageParams = Field(default_factory=StageParams)
     gear: Literal[1, 2] = 2
+    include_cao: bool = False  # the CAO row costs a full FE growth loop (~10 s uncached)
 
 
 class FilletCompareResponse(BaseModel):
@@ -396,15 +465,21 @@ class FilletCompareResponse(BaseModel):
 
 @router.post("/fillet-compare", response_model=FilletCompareResponse)
 def fillet_compare(req: FilletCompareRequest) -> FilletCompareResponse:
-    """Rank standard / trochoid / elliptic / Bézier / bionic fillets by quick-FE root stress."""
+    """Rank the fillet approaches (kind-approach rows) by quick-FE root stress."""
     stage, profile, mating = _profiles(req.stage, req.gear)
-    strategies: list[tuple[str, FilletStrategy | None]] = [
+    strategies: list[tuple[str, AnyFillet | None]] = [
         ("standard", None),
         ("trochoid", TrochoidFillet()),
-        ("elliptic", EllipticFillet(e_f=-0.2)),
-        ("bezier", BezierFillet(be=0.57)),
-        ("bionic", BionicFillet()),
+        ("elliptic-kassem", EllipticFillet(e_f=-0.2)),
+        ("elliptic-fruehe", FruheEllipticFillet()),
+        # Landi's benefit needs the raised D1 (paper default: limit contact diameter)
+        ("elliptic-landi", LandiEllipticFillet(ra_f=0.3)),
+        ("bezier-roth", BezierFillet(be=0.57)),
+        ("bezier-dong", DongToolBezierFillet()),
+        ("bionic-voith", BionicFillet()),
     ]
+    if req.include_cao:
+        strategies.append(("bionic-cao", CaoFillet()))
     names: list[str] = []
     sigmas: list[float] = []
     clearances: list[float] = []
@@ -413,7 +488,10 @@ def fillet_compare(req: FilletCompareRequest) -> FilletCompareResponse:
             mesh = generate_sector_2d(profile, fillet=strategy)
         except ValueError:
             continue  # a strategy that fails on this geometry is simply omitted
-        sigmas.append(root_tensile_stress(mesh, profile).sigma_max_mpa)
+        limit = None if strategy is None else junction_radius_mm(strategy, profile)
+        sigmas.append(
+            root_tensile_stress(mesh, profile, fillet_limit_radius_mm=limit).sigma_max_mpa
+        )
         if strategy is None:
             boundary = np.array([(p[0], p[1]) for p in profile.transverse_right_boundary()])
             fillet_pts = boundary[
@@ -446,17 +524,20 @@ def fillet_compare(req: FilletCompareRequest) -> FilletCompareResponse:
 
 
 class FilletSweepRequest(BaseModel):
-    """Sweep ONE strategy's shape parameter with the quick-FE objective (Variation axis)."""
+    """Sweep ONE approach's shape parameter with the quick-FE objective (Variation axis)."""
 
     stage: StageParams = Field(default_factory=StageParams)
     gear: Literal[1, 2] = 2
     kind: Literal["elliptic", "bezier", "bionic"] = "bezier"
+    approach: FilletApproach | None = None  # None = family default (kassem/roth/voith)
+    parameter: str | None = None  # None = the approach's primary parameter
     points: int = Field(6, ge=3, le=12)
 
 
 class FilletSweepResponse(BaseModel):
     gear: int
     kind: str
+    approach: str
     parameter: str
     values: list[float]
     sigma_mpa: list[float]
@@ -467,28 +548,43 @@ class FilletSweepResponse(BaseModel):
     standard_sigma_mpa: float
 
 
+# (kind, approach) → ordered {parameter: (lo, hi)}; first entry = primary sweep parameter
+_SWEEP_RANGES: dict[tuple[str, str], dict[str, tuple[float, float]]] = {
+    ("elliptic", "kassem"): {"e_f": (-0.4, 0.0)},
+    ("elliptic", "fruehe"): {"tilt_deg": (10.0, 45.0), "aspect": (1.5, 4.5)},
+    ("elliptic", "landi"): {"ra_f": (0.0, 0.8), "d2_frac": (0.6, 1.0)},
+    ("bezier", "roth"): {"be": (0.42, 0.9)},
+    ("bezier", "dong"): {
+        "dv1": (0.35, 1.0),
+        "dv4": (0.6, 1.15),
+        "dv2": (0.05, 0.4),
+        "dv3": (0.2, 0.9),
+    },
+    ("bionic", "voith"): {"b_f": (0.15, 0.55), "gamma_deg": (15.0, 55.0)},
+}
+
+
 @router.post("/fillet-sweep", response_model=FilletSweepResponse)
 def fillet_sweep(req: FilletSweepRequest) -> FilletSweepResponse:
-    """σ_F quick-FE over the strategy's parameter range; recommends the feasible optimum."""
+    """σ_F quick-FE over the approach's parameter range; recommends the feasible optimum."""
     stage, profile, mating = _profiles(req.stage, req.gear)
     standard = root_tensile_stress(generate_sector_2d(profile), profile).sigma_max_mpa
-    ranges: dict[str, tuple[str, np.ndarray]] = {
-        "elliptic": ("e_f", np.linspace(-0.4, 0.0, req.points)),
-        "bezier": ("be", np.linspace(0.42, 0.9, req.points)),
-        "bionic": ("b_f", np.linspace(0.15, 0.55, req.points)),
-    }
-    param, values = ranges[req.kind]
+    approach = req.approach or FilletSpec(kind=req.kind).approach or ""
+    ranges = _SWEEP_RANGES.get((req.kind, approach))
+    if ranges is None:
+        raise HTTPException(422, f"no sweep ranges for {req.kind}/{approach} (self-optimizing?)")
+    param = req.parameter or next(iter(ranges))
+    if param not in ranges:
+        raise HTTPException(422, f"parameter '{param}' not sweepable for {req.kind}/{approach}")
+    lo, hi = ranges[param]
+    values = np.linspace(lo, hi, req.points)
     sigmas: list[float] = []
     clearances: list[float] = []
     feasible: list[bool] = []
     for v in values:
-        strategy: FilletStrategy = (
-            EllipticFillet(e_f=float(v))
-            if req.kind == "elliptic"
-            else BezierFillet(be=float(v))
-            if req.kind == "bezier"
-            else BionicFillet(b_f=float(v))
-        )
+        spec = FilletSpec(kind=req.kind, approach=approach, **{param: float(v)})  # type: ignore[arg-type]
+        strategy = spec.strategy()
+        assert strategy is not None
         try:
             clearance = _clearance(stage, profile, mating, strategy)
             mesh = generate_sector_2d(
@@ -496,7 +592,9 @@ def fillet_sweep(req: FilletSweepRequest) -> FilletSweepResponse:
             )
             sj = scaled_jacobians(mesh.coords, mesh.quads)
             ok = clearance > 0.0 and float(sj.min()) >= 0.35
-            sigma = root_tensile_stress(mesh, profile).sigma_max_mpa
+            sigma = root_tensile_stress(
+                mesh, profile, fillet_limit_radius_mm=junction_radius_mm(strategy, profile)
+            ).sigma_max_mpa
         except (ValueError, HTTPException):
             clearance, sigma, ok = math.nan, math.nan, False
         sigmas.append(round(sigma, 2) if not math.isnan(sigma) else math.nan)
@@ -510,6 +608,7 @@ def fillet_sweep(req: FilletSweepRequest) -> FilletSweepResponse:
     return FilletSweepResponse(
         gear=req.gear,
         kind=req.kind,
+        approach=approach,
         parameter=param,
         values=[round(float(v), 4) for v in values],
         sigma_mpa=[s if not math.isnan(s) else -1.0 for s in sigmas],
@@ -518,6 +617,52 @@ def fillet_sweep(req: FilletSweepRequest) -> FilletSweepResponse:
         best_value=round(float(values[best_i]), 4) if best_i is not None else None,
         best_sigma_mpa=sigmas[best_i] if best_i is not None else None,
         standard_sigma_mpa=round(standard, 2),
+    )
+
+
+class FilletCaoRequest(BaseModel):
+    """Run the CAO growth loop (Kassem 2023) and report its convergence history."""
+
+    stage: StageParams = Field(default_factory=StageParams)
+    gear: Literal[1, 2] = 2
+    cao_step: Annotated[float, Field(ge=0.1, le=3.0)] = 1.0
+    cao_iterations: Annotated[int, Field(ge=1, le=30)] = 12
+    cao_tol: Annotated[float, Field(ge=0.001, le=0.2)] = 0.02
+
+
+class FilletCaoResponse(BaseModel):
+    gear: int
+    iterations_run: int
+    converged: bool
+    sigma_history_mpa: list[float]  # max fillet σ1 per iteration
+    uniformity_history: list[float]  # (σ_max − σ_ref)/σ_ref per iteration
+    boundary_xy: list[float]  # optimized fillet polyline (tooth frame, gap → junction)
+    effective_root_diameter_mm: float
+    clearance_mm: float
+
+
+@router.post("/fillet-cao", response_model=FilletCaoResponse)
+def fillet_cao(req: FilletCaoRequest) -> FilletCaoResponse:
+    """CAO growth diagnostics; also warms the in-process cache for subsequent deck builds."""
+    stage, profile, mating = _profiles(req.stage, req.gear)
+    strategy = CaoFillet(
+        cao_step=req.cao_step, cao_iterations=req.cao_iterations, cao_tol=req.cao_tol
+    )
+    try:
+        result = strategy.result(profile)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    clearance = _clearance(stage, profile, mating, strategy)
+    r_min = min(math.hypot(x, y) for x, y in result.points)
+    return FilletCaoResponse(
+        gear=req.gear,
+        iterations_run=result.iterations_run,
+        converged=result.converged,
+        sigma_history_mpa=[round(s, 2) for s in result.sigma_history_mpa],
+        uniformity_history=[round(u, 4) for u in result.uniformity_history],
+        boundary_xy=[round(float(v), 5) for p in result.points for v in p],
+        effective_root_diameter_mm=round(2.0 * r_min, 4),
+        clearance_mm=round(clearance, 4),
     )
 
 
@@ -542,6 +687,8 @@ class ContourResponse(BaseModel):
     tip_diameter_mm: float | None
     boundary_xy: list[float]  # x0, y0, x1, y1, … right boundary, root side → tip circle
     fillet_kind: str
+    fillet_approach: str | None  # literature approach (None for standard/trochoid)
+    effective_root_diameter_mm: float  # 2·min|boundary| — Frühe digs below d_f by design
     clearance_mm: float | None  # mating-tip clearance for optimized fillets (None = standard)
 
 
@@ -566,6 +713,7 @@ def tooth_contour(req: ContourRequest) -> ContourResponse:
     # complete the drawn envelope across the root land on d_f (fillet end → gap centreline),
     # so the standard/trochoid contour is continuous like the Bézier one (user report)
     pts = with_root_land(profile, pts)
+    r_min = min(math.hypot(p[0], p[1]) for p in pts)
     return ContourResponse(
         gear=req.gear,
         teeth=profile.z,
@@ -576,6 +724,8 @@ def tooth_contour(req: ContourRequest) -> ContourResponse:
         tip_diameter_mm=round(profile.d_a, 4) if profile.d_a is not None else None,
         boundary_xy=[round(float(v), 5) for p in pts for v in (p[0], p[1])],
         fillet_kind=req.fillet.kind,
+        fillet_approach=req.fillet.approach if strategy is not None else None,
+        effective_root_diameter_mm=round(2.0 * r_min, 4),
         clearance_mm=round(clearance, 4) if clearance is not None else None,
     )
 

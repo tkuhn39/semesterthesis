@@ -235,7 +235,7 @@ export function PairPanel() {
             onChange={(f) => wb.setFem({ fillet_gear1: f })}
           />
           <div className="px-2.5 pb-2">
-            <ManufacturabilityNote kind={fem.fillet_gear1.kind} />
+            <ManufacturabilityNote kind={fem.fillet_gear1.kind} approach={fem.fillet_gear1.approach} />
           </div>
         </Section>
         <Section title={`${t("mesh.fillet")} · ${t("pair.gear2")}`} defaultOpen={false}>
@@ -244,7 +244,7 @@ export function PairPanel() {
             onChange={(f) => wb.setFem({ fillet_gear2: f })}
           />
           <div className="px-2.5 pb-2">
-            <ManufacturabilityNote kind={fem.fillet_gear2.kind} />
+            <ManufacturabilityNote kind={fem.fillet_gear2.kind} approach={fem.fillet_gear2.approach} />
           </div>
         </Section>
 

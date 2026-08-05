@@ -267,7 +267,7 @@ export interface VariationUiState {
   rows: VariationPoint[]; // sorted working set of the result steps
   compare: number[];
   filters: Record<string, VariationFilter>;
-  fillet_kind: "standard" | "trochoid" | "elliptic" | "bezier" | "bionic"; // Fußform
+  fillet: FilletSpec; // Fußform — full spec (kind + approach + parameters)
 }
 
 const VARIATION_UI_DEFAULTS: VariationUiState = {
@@ -277,7 +277,7 @@ const VARIATION_UI_DEFAULTS: VariationUiState = {
   rows: [],
   compare: [],
   filters: {},
-  fillet_kind: "standard",
+  fillet: { kind: "standard" },
 };
 
 // reference-parity defaults (measured deck: bore + cut planes, 30 roll positions, 2 pitches)

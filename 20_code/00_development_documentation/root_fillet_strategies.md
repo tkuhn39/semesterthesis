@@ -1,15 +1,26 @@
 # Root-fillet strategy design basis (literature synthesis)
 
-> **Implemented 2026-07-03** in `app/services/geometry/root_fillet.py` (EllipticFillet,
-> BezierFillet, BionicFillet + `mating_tip_clearance`), meshed through the topology-transplant
-> pipeline (`template_mesher.generate_sector_2d(fillet=…)`). First quick-FE results (kst-E wheel,
-> native 2D plane-strain solver, 100 N tip load, same mesh topology/gates for all):
-> standard ρ_F arc 274.9 MPa → elliptic e_f=−0.2: 247.7 (−9.9 %) → Bézier Be=0.57: 214.3
-> (−22.1 %) → bionic defaults: 266.5 (−3.1 %, parameters not yet tuned). All min scaled
-> Jacobian ≥ 0.45, 0 cells < 0.35, mating-tip clearance ≥ 0.49 mm (kst-E pair, a = 52 mm).
-> Matches the literature ranges (elliptic 10–24 %, Bézier ≈ +24 % safety). Note: the bionic
-> form attaches with the tension-triangle wedge angle (deliberate small kink below the active
-> flank, per Voith); elliptic/Bézier attach G1.
+> **Status 2026-08-05 — ALL SEVEN literature approaches implemented** (ADR-023), selected via
+> `FilletSpec(kind, approach)`: elliptic → kassem | fruehe | landi, bezier → roth | dong,
+> bionic → voith | cao. Each was verified against its primary source before coding
+> (pdftotext/pdftoppm — the Read tool falsely reports the Nautos PDFs as password-protected).
+> Quick-FE ranking on the kst-E wheel (native 2D plane-strain, 100 N tip load, identical mesh
+> topology/gates, standard ρ_F arc = 274.9 MPa = 100 %):
+>
+> | approach | class | result | note |
+> |---|---|---|---|
+> | elliptic-kassem (e_f=−0.2) | `EllipticFillet` | 90.1 % | AGMA 22FTM13 axis-aligned |
+> | elliptic-fruehe (γ=30°, a/b=3) | `FruheEllipticFillet` | **79.1 %** | closed form Eqs. 89–100; root diameter is a RESULT (kst-E: −0.35·m_n) |
+> | elliptic-landi (ra_f=0.3) | `LandiEllipticFillet` | 79.5 % | benefit needs the raised D1 (paper default = limit contact diameter); D1=d_Ff gives only 98.6 % |
+> | bezier-roth (Be=0.57) | `BezierFillet` | **77.9 %** | |
+> | bezier-dong (dv1=1.0) | `DongToolBezierFillet` | 81.0 % | true hobbing envelope (`rack_tip_envelope`); paper's v1=0.35 endpoint constraint is wrong for the kst-E ρ*=0.2 tool (112 %!) → our default ends on the gap centreline |
+> | bionic-voith (auto γ, b_f=0.35) | `BionicFillet` | 96.9 % | tuning swept γ×b_f (15–55° × 0.15–0.55): best 97.0 % — the closed tension-triangle form is inherently limited on this geometry/objective, defaults kept |
+> | bionic-cao (12 it., tol 0.02) | `CaoFillet` | ≈ 85.9 % | Kassem 2023 growth loop, converges in 5 iterations (σ 274.9→236.2), junction node fixed, in-process cache |
+>
+> Junction plumbing: strategies may leave the involute above d_Ff (Landi ra_f, Dong) — the
+> flank continues from `junction_radius_mm(strategy, profile)`; `junction_offset_mm` implements
+> the literature's 0.03–0.05 mm interference fallback. Frühe/Landi(d2_frac=1)/Kassem/Roth reach
+> the gap centreline; Dong/CAO keep a root land (with_root_land completes the plot).
 
 Working document for the `RootFilletStrategy` implementation (plan v2, workstream C).
 Sources: papers in `00_literatur/03_paper/` (Kassem 2023 + AGMA 22FTM13, OSU elliptical/asymmetric

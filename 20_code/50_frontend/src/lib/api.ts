@@ -377,12 +377,38 @@ export const designApi = {
 };
 
 // ---- Mesh (FE sector, ADR-019 transplant mesher) ----
+export type FilletApproach = "kassem" | "fruehe" | "landi" | "roth" | "dong" | "voith" | "cao";
 export interface FilletSpec {
   kind: "standard" | "trochoid" | "elliptic" | "bezier" | "bionic";
+  approach?: FilletApproach; // literature method within the kind; backend defaults per family
   e_f?: number;
+  tilt_deg?: number; // fruehe: tilt γ of the ellipse major axis (study optimum 30°)
+  aspect?: number; // fruehe: axis ratio a/b (study optimum 3.0)
+  ra_f?: number; // landi: D1 offset above d_Ff in ·m_n (paper default: limit contact diam.)
+  d2_frac?: number; // landi: D2 position on d_f as fraction of the angle to the gap centre
   be?: number;
+  dv0?: number; // dong: P0 depth below the hob tip (·h_kW)
+  dv1?: number; // dong: P4 along the tip land (1 = gap centreline)
+  dv2?: number; // dong: tangent lengths at P0/P4 (·m_n)
+  dv3?: number; // dong: P2 x-interpolation P0→P4
+  dv4?: number; // dong: P2 y-interpolation P0→P4
   gamma_deg?: number | null;
   b_f?: number;
+  cao_step?: number; // cao: growth scale (·0.025·m_n per iteration)
+  cao_iterations?: number; // cao: FE↔growth budget
+  cao_tol?: number; // cao: surface-stress uniformity target
+  junction_offset_mm?: number; // interference fallback: nudge the d_Ff junction inward
+}
+/** Literature approaches per fillet family (order = backend default first). */
+export const FILLET_APPROACHES: Record<string, FilletApproach[]> = {
+  elliptic: ["kassem", "fruehe", "landi"],
+  bezier: ["roth", "dong"],
+  bionic: ["voith", "cao"],
+};
+/** Approaches accepted by the backend but not implemented yet (rendered disabled). */
+export const FILLET_APPROACHES_PENDING: ReadonlySet<FilletApproach> = new Set();
+export function defaultApproach(kind: FilletSpec["kind"]): FilletApproach | undefined {
+  return FILLET_APPROACHES[kind]?.[0];
 }
 export interface MeshRequest {
   stage: StageParams;
@@ -436,6 +462,7 @@ export interface FilletCompareResponse {
 export interface FilletSweepResponse {
   gear: number;
   kind: string;
+  approach: string;
   parameter: string;
   values: number[];
   sigma_mpa: number[];
@@ -523,6 +550,16 @@ export interface ContourRequest {
   fillet?: FilletSpec;
   points?: number;
 }
+export interface FilletCaoResponse {
+  gear: number;
+  iterations_run: number;
+  converged: boolean;
+  sigma_history_mpa: number[];
+  uniformity_history: number[];
+  boundary_xy: number[];
+  effective_root_diameter_mm: number;
+  clearance_mm: number;
+}
 export interface ContourResponse {
   gear: number;
   teeth: number;
@@ -533,6 +570,8 @@ export interface ContourResponse {
   tip_diameter_mm: number | null;
   boundary_xy: number[];
   fillet_kind: string;
+  fillet_approach: string | null;
+  effective_root_diameter_mm: number; // 2·min|boundary| — Frühe digs below d_f by design
   clearance_mm: number | null;
 }
 
@@ -554,8 +593,29 @@ export const meshApi = {
     post<ConvergenceResponse>("/api/mesh/convergence", { stage, gear, target, levels: [1, 2, 3] }),
   filletCompare: (stage: StageParams, gear: 1 | 2) =>
     post<FilletCompareResponse>("/api/mesh/fillet-compare", { stage, gear }),
-  filletSweep: (stage: StageParams, gear: 1 | 2, kind: "elliptic" | "bezier" | "bionic") =>
-    post<FilletSweepResponse>("/api/mesh/fillet-sweep", { stage, gear, kind, points: 6 }),
+  filletSweep: (
+    stage: StageParams,
+    gear: 1 | 2,
+    kind: "elliptic" | "bezier" | "bionic",
+    approach?: FilletApproach,
+    parameter?: string,
+  ) =>
+    post<FilletSweepResponse>("/api/mesh/fillet-sweep", {
+      stage,
+      gear,
+      kind,
+      approach,
+      parameter,
+      points: 6,
+    }),
+  filletCao: (stage: StageParams, gear: 1 | 2, spec: FilletSpec) =>
+    post<FilletCaoResponse>("/api/mesh/fillet-cao", {
+      stage,
+      gear,
+      cao_step: spec.cao_step ?? 1.0,
+      cao_iterations: spec.cao_iterations ?? 12,
+      cao_tol: spec.cao_tol ?? 0.02,
+    }),
   // preview assembly: same request shape as the deck, torque not needed (geometry only)
   pair: (req: Omit<DeckRequest, "torque_gear2_nmm">) =>
     post<PairAssemblyResponse>("/api/mesh/pair", req),

@@ -8,6 +8,7 @@ import { useState } from "react";
 import {
   meshApi,
   type ConvergenceResponse,
+  type FilletApproach,
   type FilletCompareResponse,
   type FilletSpec,
   type FilletSweepResponse,
@@ -27,6 +28,22 @@ const DENSITY_PRESETS: { id: string; root: number; flank: number }[] = [
   { id: "convRoot", root: 2, flank: 1 },
   { id: "convFlank", root: 1, flank: 2 },
   { id: "fine", root: 2, flank: 2 },
+];
+
+// sweepable (kind, approach, parameter) combos — mirrors the backend's _SWEEP_RANGES
+const SWEEPABLE: {
+  kind: "elliptic" | "bezier" | "bionic";
+  approach: FilletApproach;
+  parameter: string;
+}[] = [
+  { kind: "elliptic", approach: "kassem", parameter: "e_f" },
+  { kind: "elliptic", approach: "fruehe", parameter: "tilt_deg" },
+  { kind: "elliptic", approach: "fruehe", parameter: "aspect" },
+  { kind: "elliptic", approach: "landi", parameter: "ra_f" },
+  { kind: "elliptic", approach: "landi", parameter: "d2_frac" },
+  { kind: "bezier", approach: "roth", parameter: "be" },
+  { kind: "bionic", approach: "voith", parameter: "b_f" },
+  { kind: "bionic", approach: "voith", parameter: "gamma_deg" },
 ];
 
 export function MeshPanel(props: { gear: 1 | 2 }) {
@@ -192,7 +209,7 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
         <Section title={t("mesh.fillet")} defaultOpen={false}>
           <FilletEditor value={fillet} onChange={setFillet} />
           <div className="p-2">
-            <ManufacturabilityNote kind={fillet.kind} />
+            <ManufacturabilityNote kind={fillet.kind} approach={fillet.approach} />
           </div>
         </Section>
 
@@ -287,21 +304,32 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
         </Section>
 
         <Section title={t("mesh.sweep")} defaultOpen={false}>
-          <div className="p-2 flex items-center gap-2">
-            {(["elliptic", "bezier", "bionic"] as const).map((k) => (
-              <Btn
-                key={k}
-                variant="ghost"
-                busy={busy === `sweep-${k}`}
-                onClick={() =>
-                  guard(`sweep-${k}`, async () =>
-                    setSweep(await meshApi.filletSweep(stage, props.gear, k)),
-                  )
-                }
-              >
-                {t(`mesh.fillet.${k}`)}
-              </Btn>
-            ))}
+          <div className="p-2 flex items-center gap-2 flex-wrap">
+            {SWEEPABLE.map((s) => {
+              const id = `sweep-${s.kind}-${s.approach}-${s.parameter}`;
+              return (
+                <Btn
+                  key={id}
+                  variant="ghost"
+                  busy={busy === id}
+                  onClick={() =>
+                    guard(id, async () =>
+                      setSweep(
+                        await meshApi.filletSweep(
+                          stage,
+                          props.gear,
+                          s.kind,
+                          s.approach,
+                          s.parameter,
+                        ),
+                      ),
+                    )
+                  }
+                >
+                  {t(`mesh.fillet.${s.kind}-${s.approach}`)} · {s.parameter}
+                </Btn>
+              );
+            })}
           </div>
           {sweep && (
             <div className="px-3 pb-2">

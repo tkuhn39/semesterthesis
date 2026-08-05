@@ -944,3 +944,56 @@ can be re-viewed against a corrected stage without re-solving. The measurement-f
 auto-detection means the viewer works for BOTH deck modes without a cadence constant. The
 extended ξ range shows the deformation-driven pre-/post-engagement the compliant plastic pair
 exhibits beyond the theoretical A/E. See [[commit-doc-chain]].
+
+## ADR-023: All seven literature root-fillet approaches native; `FilletSpec(kind, approach)`; CAO as a cached lazy strategy
+
+**Date:** 2026-08-05 · **Status:** Accepted
+
+**Context:** Only the first approach per fillet family was implemented (elliptic = Kassem,
+bezier = Roth/Opferkuch, bionic = Voith tension triangle), all hard-anchored at d_Ff. The
+supervisor's priority is Frühe's tilted ellipse; the thesis task names all three families.
+Every approach had to be implemented from its PRIMARY source (user rule: primary sources or
+repo contents only — the Nautos PDFs read fine via pdftotext/pdftoppm although the built-in
+reader mislabels them as password-protected).
+
+**Decision:**
+1. **Two-level schema** `FilletSpec(kind, approach)` — kind stays the geometry family
+   (`standard | trochoid | elliptic | bezier | bionic`), `approach` picks the literature
+   method (elliptic: kassem|fruehe|landi, bezier: roth|dong, bionic: voith|cao);
+   `approach=None` normalizes to the family default, so every legacy payload keeps its exact
+   behaviour (pinned by test). Flat per-approach parameter fields, validated ranges.
+2. **Frühe** (`FruheEllipticFillet`): closed-form Eqs. 89–100 of the dissertation (no
+   fsolve); G1 at d_Ff AND at the gap centreline; the root diameter is a RESULT of the fit
+   (kst-E: 0.35·m_n below d_f). Anchored on the numeric flank tangent, so G1 holds exactly
+   for modified flanks. Superellipse exponent not exposed (Frühe: no benefit).
+3. **Landi** (`LandiEllipticFillet`): the paper's own 4-unknown fsolve (axis-aligned ellipse,
+   pass+tangency at D1 on the involute and at D2 on the root circle) with the normals'
+   intersection as start value and multi-start; D1 raisable towards the limit contact
+   diameter (`ra_f`), D2 positionable up to the gap centreline (`d2_frac`).
+4. **Dong** (`DongToolBezierFillet`) via a NEW generic `rack_tip_envelope(profile, pts,
+   tangents)` — closed-form meshing condition per tool-tip sample, the same rolling map as
+   `root_fillet_points` (cross-checked: arc input reproduces the trochoid to < 5 µm). The
+   degree-4 hob-tip Bézier follows the paper's Eqs. 2–9; default dv1 = 1.0 (gap-centre end)
+   instead of the paper example's v1 = 0.35, which is an endpoint-pinning constraint for
+   THEIR ρ* = 0.35 hob and yields +12 % σ on the kst-E ρ* = 0.2 tool. The only optimized
+   fillet that stays hob-manufacturable (neutral UI note instead of the molded-only warning).
+5. **CAO** (`CaoFillet` in `services/model/cao_fillet.py`): direct-method growth
+   d_i = s·(σ_i − σ_ref)·n_i, s = d_per/max|d_i|, d_per = 0.025·m_n, σ_ref = stress at the
+   junction node which never moves (paper Fig. 6); quick-FE surface stress via the new
+   `fillet_surface_stress` (tensile-gap nodes mirrored onto the right-half polyline frame);
+   converges on kst-E in 5 iterations (274.9 → 236.2 MPa). Lazy strategy with an in-process
+   memo cache (multi-node safe: pure recompute, no storage; project_rules §18);
+   `/api/mesh/fillet-cao` exposes the convergence history.
+6. **Junction plumbing:** strategies may own their junction (`junction_radius_mm`) — the
+   flank continues from there (`ToothProfile.flank_points(r_start_mm=…)`), the quick-FE
+   evaluation band follows (`fillet_limit_radius_mm`), and `junction_offset_mm` implements
+   the literature's 0.03–0.05 mm interference fallback. Voith tuning was run (γ×b_f grid on
+   kst-E): best −3.0 % vs default −3.1 % — defaults kept, the closed tension-triangle form is
+   inherently limited here; CAO is the recommended bionic approach.
+
+**Consequences:** `/api/mesh/fillet-compare` ranks eight named rows (`kind-approach`),
+`/api/mesh/fillet-sweep` sweeps per (kind, approach, parameter) incl. the previously missing
+bionic γ axis, the Stufenvariation carries the FULL FilletSpec (the kind-only forwarding that
+silently dropped parameters is fixed), and the contour reports `fillet_approach` +
+`effective_root_diameter_mm` (Frühe's deeper root is visible in the UI incl. d_f/d_Ff
+reference circles). The measured kst-E ranking lives in `root_fillet_strategies.md`.

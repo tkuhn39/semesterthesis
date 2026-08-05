@@ -19,6 +19,7 @@ import {
 } from "@/lib/api";
 import { ParallelCoordinates, type PCDim } from "@/components/ParallelCoordinates";
 import { ContourPlot, OVERLAY_COLORS } from "@/components/ContourPlot";
+import { FilletEditor } from "@/panels/ToothFormPanel";
 import { Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { useFmt, useT } from "@/lib/i18n";
 import { useStage } from "@/lib/stage";
@@ -238,7 +239,7 @@ export function VariationPanel() {
             tool_tip_radius_factor_gear2: p.rho_fp2 ?? r.tool_tip_radius_factor,
           },
           gear: 2,
-          fillet: { kind: v.fillet_kind }, // Fußform (our extension)
+          fillet: v.fillet, // full Fußform spec incl. approach + parameters (our extension)
         });
         entries.push({ label: `z=${p.z1}/${p.z2} · x₂=${p.x2.toFixed(2)} · m=${p.m_n}`, data: c });
       } catch {
@@ -430,20 +431,11 @@ export function VariationPanel() {
                   <option value="plastic">{`${t("common.gear")} ${k === "pinion_material" ? 1 : 2}: ${t("mat.plastic")}`}</option>
                 </select>
               ))}
-              <label className="inline-flex items-center gap-1.5" title={t("var.fussformNote")}>
-                {t("var.fussform")}:
-                <select
-                  className="border border-zinc-300 rounded-md px-1.5 py-0.5 text-[12px]"
-                  value={v.fillet_kind}
-                  onChange={(e) => setVar({ fillet_kind: e.target.value as typeof v.fillet_kind })}
-                >
-                  <option value="standard">{t("mesh.fillet.standard")}</option>
-                  <option value="trochoid">{t("mesh.fillet.trochoid")}</option>
-                  <option value="elliptic">{t("mesh.fillet.elliptic")}</option>
-                  <option value="bezier">{t("mesh.fillet.bezier")}</option>
-                  <option value="bionic">{t("mesh.fillet.bionic")}</option>
-                </select>
-              </label>
+            </div>
+            <div className="border-b border-zinc-100" title={t("var.fussformNote")}>
+              {/* full FilletSpec (kind + approach + parameters) — carried into every
+                  variant contour/deck; a bare kind would silently drop the parameters */}
+              <FilletEditor value={v.fillet} onChange={(f) => setVar({ fillet: f })} />
             </div>
             <table className="attr-table">
               <tbody>
@@ -666,7 +658,8 @@ export function VariationPanel() {
               title={t("var.plotTitle")}
               right={
                 <span className="text-[11px] text-zinc-400">
-                  max. 4 · {t("var.fussform")}: {v.fillet_kind}
+                  max. 4 · {t("var.fussform")}:{" "}
+                  {v.fillet.kind + (v.fillet.approach ? `/${v.fillet.approach}` : "")}
                 </span>
               }
             >

@@ -144,11 +144,18 @@ class ToothProfile:
                 theta -= delta / (radius * max(math.cos(alpha_y), 1e-6))
         return theta
 
-    def flank_points(self, count: int = 60) -> list[Pair[float]]:
-        """Involute right-flank points from d_Ff to d_Na (root form → usable tip)."""
+    def flank_points(
+        self, count: int = 60, *, r_start_mm: float | None = None
+    ) -> list[Pair[float]]:
+        """Involute right-flank points from d_Ff (or ``r_start_mm``) to d_Na.
+
+        ``r_start_mm`` lets a fillet strategy that leaves the involute above d_Ff (e.g. the
+        Landi ellipse with its raised D1 point) continue the flank from its own junction.
+        """
+        r0 = self.d_Ff / 2.0 if r_start_mm is None else r_start_mm
         points: list[Pair[float]] = []
         for i in range(count):
-            radius = (self.d_Ff + (self.d_Na - self.d_Ff) * i / (count - 1)) / 2.0
+            radius = r0 + (self.d_Na / 2.0 - r0) * i / (count - 1)
             theta = self._involute_half_angle(radius)  # half angle from tooth centre line
             points.append(Pair(radius * math.sin(theta), radius * math.cos(theta)))
         return points

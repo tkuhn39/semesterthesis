@@ -137,6 +137,12 @@ topology-identical to ANSA (one fan node per gap, 3024 quads/sector), min scaled
 `is_flank_symmetric`. Parametric density (root/flank chord splits) + native 2D quick solver for
 convergence checks (reference density already converged, Δ < 0.1 %). Optimized root fillets
 (elliptic/Bézier/bionic, supervisor topic) mesh through the same pipeline with interference check.
+**Done (2026-08-05, ADR-023):** ALL SEVEN literature fillet approaches native
+(`FilletSpec(kind, approach)`): elliptic kassem/**fruehe** (supervisor priority, closed-form
+tilted ellipse, −20.9 % on kst-E)/landi, bezier roth/dong (true hobbing envelope
+`rack_tip_envelope`), bionic voith/cao (Kassem 2023 growth loop on the quick-FE solver);
+per-approach sweeps incl. the previously missing γ axis, Stufenvariation carries the full
+FilletSpec, contour reports the effective root diameter.
 User-reviewed at checkpoints 1+2. **Done since (v0.2.0, checkpoints 3):** deck rewired onto the
 transplant mesher (mapped_mesher retired from the deck path), rigid-shell material rule for mixed
 pairings, Part_Rad_Vz_1 = plastic wheel convention, /api/mesh router (preview/3d/convergence/

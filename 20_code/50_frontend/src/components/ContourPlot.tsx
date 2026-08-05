@@ -46,6 +46,7 @@ export function ContourPlot(props: {
   contours: { data: ContourResponse; label: string }[];
   teethEachSide?: number;
   height?: number;
+  showRootCircles?: boolean; // dashed d_f / d_Ff reference circles of the FIRST contour
 }) {
   const teethEachSide = props.teethEachSide ?? 1;
   const height = props.height ?? 340;
@@ -63,9 +64,29 @@ export function ContourPlot(props: {
   const pad = 0.05 * Math.max(maxX - minX, maxY - minY);
   const vb = `${minX - pad} ${-(maxY + pad)} ${maxX - minX + 2 * pad} ${maxY - minY + 2 * pad}`;
 
+  const ref = props.contours[0].data;
+  const dash = (maxX - minX) / 120;
   return (
     <div>
       <svg viewBox={vb} style={{ width: "100%", height }} preserveAspectRatio="xMidYMid meet">
+        {props.showRootCircles &&
+          (
+            [
+              [ref.root_diameter_mm, "#a1a1aa"],
+              [ref.root_form_diameter_mm, "#d4d4d8"],
+            ] as const
+          ).map(([d, color]) => (
+            <circle
+              key={d}
+              cx={0}
+              cy={0}
+              r={d / 2}
+              fill="none"
+              stroke={color}
+              strokeWidth={(maxX - minX) / 700}
+              strokeDasharray={`${dash} ${dash}`}
+            />
+          ))}
         {polys.map((teeth, ci) =>
           teeth.map((tooth, ti) => (
             <polyline

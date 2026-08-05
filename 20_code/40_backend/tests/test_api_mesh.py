@@ -106,6 +106,51 @@ def test_tooth_contour_example_and_variant() -> None:
     assert res.json()["fillet_kind"] == "trochoid"
 
 
+def test_fillet_spec_kind_approach_schema() -> None:
+    """kind+approach schema: legacy payloads keep working (family default), the Frühe tilted
+    ellipse is selectable and digs below the standard root circle, invalid combos and
+    not-yet-implemented approaches are rejected with 422."""
+    res = client.post(
+        "/api/mesh/contour",
+        json={
+            "stage": _FREE_STAGE,
+            "gear": 2,
+            "fillet": {"kind": "elliptic", "approach": "fruehe", "tilt_deg": 30.0, "aspect": 3.0},
+        },
+    )
+    assert res.status_code == 200
+    body = res.json()
+    pts = body["boundary_xy"]
+    r_min = min(math.hypot(pts[i], pts[i + 1]) for i in range(0, len(pts), 2))
+    assert r_min < body["root_diameter_mm"] / 2.0  # root diameter is a RESULT of the fit
+    res = client.post(
+        "/api/mesh/contour",
+        json={"stage": _FREE_STAGE, "gear": 2, "fillet": {"kind": "elliptic", "approach": "landi"}},
+    )
+    assert res.status_code == 200  # Landi default: D1 = d_Ff, D2 = gap centreline on d_f
+    res = client.post(
+        "/api/mesh/contour",
+        json={"stage": _FREE_STAGE, "gear": 2, "fillet": {"kind": "bezier", "approach": "dong"}},
+    )
+    assert res.status_code == 200
+    assert res.json()["fillet_approach"] == "dong"
+    res = client.post(
+        "/api/mesh/fillet-cao",
+        json={"stage": _FREE_STAGE, "gear": 2, "cao_iterations": 2},
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["iterations_run"] <= 2 and len(body["sigma_history_mpa"]) >= 1
+    assert body["clearance_mm"] > 0.0
+    for bad in (
+        {"kind": "bezier", "approach": "kassem"},  # wrong family
+        {"kind": "trochoid", "approach": "kassem"},  # trochoid takes no approach
+        {"kind": "standard", "approach": "kassem"},  # standard takes no approach
+    ):
+        res = client.post("/api/mesh/contour", json={"gear": 2, "fillet": bad})
+        assert res.status_code == 422, bad
+
+
 def test_deck_download_with_steel_shell() -> None:
     """ADR-021 slot semantics: gear 1 = steel pinion (z51, at the origin/left, rigid under
     the shell rule), gear 2 = plastic wheel (z52, at the centre distance/right, deformable,

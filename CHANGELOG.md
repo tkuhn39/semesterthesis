@@ -9,6 +9,48 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (all seven literature root-fillet approaches, 2026-08-05, ADR-023)
+- **`FilletSpec(kind, approach)` two-level schema** (backward compatible: payloads without
+  `approach` normalize to the family default and stay bit-identical, pinned by test):
+  elliptic → `kassem | fruehe | landi`, bezier → `roth | dong`, bionic → `voith | cao`.
+  Every new approach implemented from its PRIMARY source (pdftotext/pdftoppm — the built-in
+  PDF reader mislabels the Nautos norm/paper PDFs as password-protected).
+- **`FruheEllipticFillet`** (supervisor priority): Frühe's tilted ellipse in closed form
+  (Diss. Eqs. 89–100, no solver) — G1 at d_Ff AND at the gap centreline, the root diameter
+  is a RESULT of the fit (kst-E: −0.35·m_n). Quick-FE: **−20.9 %** σ vs the ρ_F arc.
+- **`LandiEllipticFillet`**: the paper's double-tangent axis-aligned ellipse (4-unknown
+  fsolve with normals'-intersection start + multi-start); parameters `ra_f` (D1 towards the
+  limit contact diameter — the paper default; −20.5 % at 0.3) and `d2_frac` (D2 on d_f up to
+  the gap centreline).
+- **`DongToolBezierFillet`** + generic **`rack_tip_envelope`** hobbing-envelope generator
+  (arc input reproduces the trochoid < 5 µm, test-pinned): degree-4 hob-tip Bézier per Dong
+  Eqs. 2–9, dv0–dv4; default dv1 = 1.0 documented against the paper example (−19.0 % vs
+  +12 % with the paper's endpoint constraint on the kst-E ρ* = 0.2 tool). Hob-manufacturable
+  → neutral manufacturing note in the UI.
+- **`CaoFillet`** (Kassem 2023 biological growth, `services/model/cao_fillet.py`): direct
+  growth rule d_i = s·(σ_i−σ_ref)·n_i (σ_ref = fixed junction node, d_per = 0.025·m_n) on
+  the quick-2D-FE surface stress (`fillet_surface_stress`); converges on kst-E in 5
+  iterations (274.9 → 236.2 MPa, −14.1 %); in-process memo cache; `POST /api/mesh/fillet-cao`
+  returns the convergence history (also shown in the Zahnform panel).
+- **Junction plumbing**: strategies own their junction radius (Landi/Dong above d_Ff — the
+  involute flank continues from `junction_radius_mm`), `junction_offset_mm` = literature
+  interference fallback, quick-FE band follows the junction (`fillet_limit_radius_mm`).
+- `/api/mesh/fillet-compare` ranks eight named `kind-approach` rows (`include_cao` opt-in);
+  `/api/mesh/fillet-sweep` sweeps per (kind, approach, parameter) — including the previously
+  missing bionic `gamma_deg` axis; contour responses report `fillet_approach` and
+  `effective_root_diameter_mm`; ContourPlot draws d_f/d_Ff reference circles.
+
+### Fixed
+- **Stufenvariation dropped the fillet parameters** (`VariationPanel` forwarded only the
+  kind): the store now carries the full `FilletSpec` and the step-1 flow mounts the shared
+  `FilletEditor`.
+
+### Changed
+- Voith `BionicFillet` defaults confirmed by a γ×b_f grid sweep on kst-E (best −3.0 % vs
+  default −3.1 % → kept); the tension-triangle closed form is inherently limited on this
+  geometry — CAO is the recommended bionic approach (documented in
+  `root_fillet_strategies.md`).
+
 ## [0.8.0] - 2026-07-07
 
 User-feedback round v0.8 — the rolling INP made physically correct end-to-end plus the

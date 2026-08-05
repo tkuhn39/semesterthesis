@@ -159,15 +159,15 @@ class RootStressResult:
     n_quads: int
 
 
-def root_tensile_stress(
+def _tip_load_stress(
     mesh: SectorMesh2D,
     profile: ToothProfile,
     *,
-    load_n: float = 100.0,
-    e_mpa: float = 3200.0,
-    nu: float = 0.35,
-) -> RootStressResult:
-    """Unit tip load on the +0.5-pitch tooth; max principal stress along its root fillet."""
+    load_n: float,
+    e_mpa: float,
+    nu: float,
+) -> np.ndarray:
+    """Solve the unit tip load on the +0.5-pitch tooth; return nodal σ1 for the whole mesh."""
     pts = mesh.points
     pitch = 2.0 * math.pi / profile.z
     phi = (np.arctan2(pts[:, 1], pts[:, 0]) - math.pi / 2.0) / pitch
@@ -194,11 +194,31 @@ def root_tensile_stress(
     u = solve_plane_strain(
         pts, mesh.quads, e_mpa=e_mpa, nu=nu, fixed=bore_nodes, loads={load_node: force}
     )
-    s1 = nodal_principal_stress(pts, mesh.quads, u, e_mpa=e_mpa, nu=nu)
+    return nodal_principal_stress(pts, mesh.quads, u, e_mpa=e_mpa, nu=nu)
 
-    fillet_mask = (
-        (kinds == "surface") & (np.abs(phi - 0.5) < 0.5) & (radii < profile.d_Ff / 2.0 + 1e-6)
-    )
+
+def root_tensile_stress(
+    mesh: SectorMesh2D,
+    profile: ToothProfile,
+    *,
+    load_n: float = 100.0,
+    e_mpa: float = 3200.0,
+    nu: float = 0.35,
+    fillet_limit_radius_mm: float | None = None,
+) -> RootStressResult:
+    """Unit tip load on the +0.5-pitch tooth; max principal stress along its root fillet.
+
+    ``fillet_limit_radius_mm`` bounds the evaluated fillet band (default d_Ff/2); pass the
+    strategy's junction radius for fillets that leave the involute above d_Ff (Landi).
+    """
+    pts = mesh.points
+    pitch = 2.0 * math.pi / profile.z
+    phi = (np.arctan2(pts[:, 1], pts[:, 0]) - math.pi / 2.0) / pitch
+    radii = np.hypot(pts[:, 0], pts[:, 1])
+    kinds = np.asarray(mesh.kind)
+    s1 = _tip_load_stress(mesh, profile, load_n=load_n, e_mpa=e_mpa, nu=nu)
+    r_limit = profile.d_Ff / 2.0 if fillet_limit_radius_mm is None else fillet_limit_radius_mm
+    fillet_mask = (kinds == "surface") & (np.abs(phi - 0.5) < 0.5) & (radii < r_limit + 1e-6)
     fillet_nodes = np.where(fillet_mask)[0]
     best = int(fillet_nodes[np.argmax(s1[fillet_nodes])])
     return RootStressResult(
@@ -206,6 +226,53 @@ def root_tensile_stress(
         node=best,
         n_nodes=len(pts),
         n_quads=len(mesh.quads),
+    )
+
+
+@dataclass(frozen=True)
+class FilletSurfaceStress:
+    """Tensile-side fillet surface stress of the loaded tooth, in ITS tooth frame."""
+
+    xy_tooth: np.ndarray  # (N, 2) node positions rotated so the loaded tooth centre is +y
+    sigma1_mpa: np.ndarray  # (N,) nodal max principal stress
+    sigma_junction_mpa: float  # σ at the node closest to the junction radius (CAO σ_ref)
+
+
+def fillet_surface_stress(
+    mesh: SectorMesh2D,
+    profile: ToothProfile,
+    *,
+    load_n: float = 100.0,
+    e_mpa: float = 3200.0,
+    nu: float = 0.35,
+    fillet_limit_radius_mm: float | None = None,
+) -> FilletSurfaceStress:
+    """Surface σ1 along the LOADED (tensile) side root fillet — the CAO growth input.
+
+    Returns the fillet-band surface nodes of the +0.5-pitch tooth's loaded-flank gap
+    (phi ∈ (0.5, 1)), rotated into the tooth frame (+y = loaded tooth centre) and MIRRORED
+    onto the right half (the loaded gap lies CCW of the tooth, x < 0 after rotation; the
+    tooth is mirror-symmetric) so they overlay the strategies' right-half fillet polyline.
+    """
+    pts = mesh.points
+    pitch = 2.0 * math.pi / profile.z
+    phi = (np.arctan2(pts[:, 1], pts[:, 0]) - math.pi / 2.0) / pitch
+    radii = np.hypot(pts[:, 0], pts[:, 1])
+    kinds = np.asarray(mesh.kind)
+    s1 = _tip_load_stress(mesh, profile, load_n=load_n, e_mpa=e_mpa, nu=nu)
+    r_limit = profile.d_Ff / 2.0 if fillet_limit_radius_mm is None else fillet_limit_radius_mm
+    mask = (kinds == "surface") & (phi > 0.5) & (phi < 1.0) & (radii < r_limit + 1e-6)
+    idx = np.where(mask)[0]
+    if len(idx) < 4:
+        raise ValueError("fillet surface stress: too few tensile-side fillet nodes")
+    # rotate the loaded tooth (centre at +0.5 pitch) onto +y — the strategies' tooth frame
+    c, s = math.cos(-0.5 * pitch), math.sin(-0.5 * pitch)
+    xy = np.stack([-(c * pts[idx, 0] - s * pts[idx, 1]), s * pts[idx, 0] + c * pts[idx, 1]], axis=1)
+    junction = int(np.argmin(np.abs(np.hypot(xy[:, 0], xy[:, 1]) - r_limit)))
+    return FilletSurfaceStress(
+        xy_tooth=xy,
+        sigma1_mpa=s1[idx],
+        sigma_junction_mpa=float(s1[idx][junction]),
     )
 
 
