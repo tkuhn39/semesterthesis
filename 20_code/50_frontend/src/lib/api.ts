@@ -157,6 +157,8 @@ export interface CapacityRequest {
   steel_poisson: number;
   steel_sigma_hlim_mpa: number;
   steel_sigma_flim_mpa: number;
+  steel_density_kg_dm3?: number; // ρ — m_red of the native dynamics (audit MAT-10)
+  plastic_density_kg_dm3?: number;
   power_w: number;
   ambient_temperature_c: number;
   duty_cycle: number;
@@ -193,10 +195,12 @@ export interface DynamicsRequest {
   steel_poisson?: number;
   steel_sigma_hlim_mpa?: number;
   steel_sigma_flim_mpa?: number;
+  steel_density_kg_dm3?: number;
   plastic_modulus_mpa?: number;
   plastic_poisson?: number;
   plastic_sigma_hlim_mpa?: number;
   plastic_sigma_flim_mpa?: number;
+  plastic_density_kg_dm3?: number;
   plastic_yield_strength_mpa?: number | null;
 }
 export interface DynamicsResponse {

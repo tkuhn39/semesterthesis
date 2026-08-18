@@ -9,6 +9,58 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Fixed (material dispatch separation + glossary maintenance, 2026-08-18, ADR-026)
+User directive: the steel and plastic calculation branches must NEVER mix, the material
+kind must be an explicit input, and the glossary must carry every symbol with current
+norm references and cross-links. A 3-agent trace (backend dispatch / frontend mask /
+glossary inventory) found and this round fixed:
+- **Stufenvariation per-gear norm dispatch** (MAT-01/02, HIGH): the sweep evaluated
+  BOTH gears with one hybrid VDI-form chain. Now each gear's stress follows ITS norm —
+  plastic → VDI 2736-2 tip-load form (Y_Fa·Y_Sa·Y_ε, Y_β Eq. 12, Z_β = √cos β), steel →
+  ISO 6336-3:2019 Method B (new vectorized Y_F/Y_S at d_en in the kernel, no Y_ε, Y_β
+  Eq. 66/67, Z_β = √(1/cos β)); σ_H/S_H are per gear under its convention. Y_F/Y_S
+  parity vs the scalar tooth-root model is test-pinned; a permanent honesty warning
+  states which strength sub-factors the pre-design sweep still omits (MAT-04).
+- **Stufenvariation reads the Werkstoff mask** (VAR-01/02, HIGH): the panel sent NO
+  material kinds (backend fell back to role defaults) and hardcoded σ-limits; now every
+  sweep request merges the live materials/operating store (kinds, E, σ_Hlim/σ_Flim,
+  densities, S_min) at call time, the panel's kind dropdowns WRITE THROUGH to the one
+  Werkstoffart toggle, and the backend defaults were aligned with the catalog
+  (206000/2800 → 210000/4156, MAT-03).
+- **Werkstoffname ↔ Werkstoffart coupling** (frontend store): picking a catalog material
+  snaps the kind, switching the kind snaps a mismatching name to the kind's default,
+  catalog-foreign names are rejected — name and norm branch can no longer contradict.
+  The Radkörper tab's material select became a locked mirror (it could flip gear 2's
+  dispatch as a side channel), and the schema rule referencing a non-existent store path
+  was repaired.
+- **VDI 2736 Eq. 7/9 uses the PLASTIC gear's tooth count** (MAT-15): the temperature
+  model fed z₁ for both gears — per the norm's symbol list ("Zähnezahl des
+  Kunststoffrads"); invisible on kst-E (z 51/52), ~u-fold wrong for the norm example's
+  22/73.
+- **Density inputs live** (MAT-10/11): steel/plastic density are MaterialParams fields
+  piped into m_red (the Werkstoff-tab rows were dead); the no-data fallback is
+  kind-aware (plastic 1400 kg/m³, not steel's 7800). Also repaired: an agent edit had
+  broken the NRM-08 per-material fill via a stale sentinel comparison.
+- **Catalog-first kind branching** (MAT-09): property overrides branch on the resolved
+  material's kind, not the request string — safe once catalog names join the API.
+- Deck roles for same-kind pairs (foreign-agent fix, reviewed & kept): a steel/steel
+  pair with gear 2 as rigid shell was wrongly 422'd as "the plastic side".
+- Report labels the VDI branch's form factors Y_Fa/Y_Sa (MAT-13).
+- **Glossary maintenance** (user request): now ~200 entries — all existing entries
+  refreshed to current-norm references with edition years (DIN 3960 → DIN ISO
+  21771:2014 etc.), renames to the printed symbols (K_v, f_ptT/F_pT/F_αT/F_βT,
+  E_sns/E_sni, chamfer k → h_K), the c collision split (Kopfspiel vs Freigang c_F), a
+  new "inspection" category, and 70+110 new entries covering the full computed set:
+  geometry report (pitches, paths, heights, chords, x_E, ζ_a/ζ_f, d_f,eff …),
+  inspection/allowances (W_k, M_dK/M_dR, E_sns/T_sn, DIN 3967 series, A_a, backlash),
+  the complete ISO K/Z/Y factor chains, VDI thermal/wear set, native dynamics
+  (F_βx/F_βy/χ_β/c′/c_γα/m_red/n_E1/N), and the seven fillet approaches with their
+  parameters — each with DE/EN description and related-symbol links.
+Known remaining (P2): the variation panel still re-seeds its sweep matrix on unrelated
+store edits (VAR-03); same-kind pairs share one property set per kind (MAT-05, blocks
+free pairing); the FE deck uses catalog material cards, ignoring property overrides
+(MAT-06); sweep permissible sides stay sub-factor-free by design (warned).
+
 ### Fixed (audit round P1 — analytical correctness, 2026-08-18, ADR-025)
 All P1 findings of `20_code/00_development_documentation/consistency_audit_2026-08-18.md`,
 every formula re-verified against the repo's norm PDFs (primary sources):

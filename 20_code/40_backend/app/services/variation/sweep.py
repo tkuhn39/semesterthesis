@@ -3,15 +3,19 @@
 @context: Domain layer — the orchestration of the plastic-capable Stufenvariation
        on top of the vectorized kernel (ADR-013).
 @role: Turn a parameter space (a cartesian **grid** or a quasi-random **Sobol/LHS**
-       sample) into a batch, evaluate it through ``kernel`` with **per-gear material
-       dispatch** (steel → ISO 6336 limits, plastic → VDI 2736 limits) over the shared
-       mesh, **prune** invalid variants early, and return the safety factors plus a
+       sample) into a batch, evaluate it through ``kernel`` over the shared mesh,
+       **prune** invalid variants early, and return the safety factors plus a
        **Pareto** front of the good macro-geometries. Missing non-essential data
        degrades to a *warning*, never a block (graceful, ADR-013).
 
-The heavy lifting (geometry, tip-load form factors, stresses) is vectorized in
-``kernel`` and validated against the scalar models; this layer only assembles the
-inputs, dispatches the permissible stresses and selects the non-dominated set.
+PER-GEAR NORM DISPATCH (2026-08-18, audit MAT-01/02 — user requirement: the steel and
+plastic branches must never be mixed): each gear's STRESS FORM follows its material —
+plastic → VDI 2736-2 (tip-load Y_Fa·Y_Sa·Y_ε, Y_β Eq. 12, Z_β = √cos β), steel →
+ISO 6336-3:2019 Method B (Y_F·Y_S at d_en, no Y_ε, Y_β Eq. 66/67, Z_β = √(1/cos β)).
+HONESTY NOTE: the sweep remains a PRE-DESIGN screen — the permissible sides use the
+plain limits (2·σ_Flim via Y_ST/Y_St, σ_Hlim) WITHOUT the strength sub-factors
+(Z_L…Z_X, Y_δrelT/Y_RrelT/Y_X, Z_NT/Y_NT, Z_B/Z_D, native K-factors, VDI temperature
+derating) — ``evaluate`` says so in a warning; the Tragfähigkeit tab is norm-exact.
 """
 
 from __future__ import annotations
@@ -83,8 +87,8 @@ class VariationResult:
     transverse_contact_ratio: Array
     overlap_ratio: Array
     total_contact_ratio: Array
-    flank_stress_mpa: Array  # σ_H (shared mesh)
-    root_stress_mpa: tuple[Array, Array]  # σ_F per gear
+    flank_stress_mpa: tuple[Array, Array]  # σ_H per gear (its norm's Z_β convention)
+    root_stress_mpa: tuple[Array, Array]  # σ_F per gear (its norm's stress form)
     flank_safety: tuple[Array, Array]  # S_H per gear (NaN where the limit is missing)
     root_safety: tuple[Array, Array]  # S_F per gear
     valid: BoolArray  # boolean pruning mask
@@ -129,8 +133,13 @@ def _a(value: float) -> Array:
 
 
 def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
-    """Evaluate a batch (grid or sample) through the kernel with material dispatch."""
-    warnings: list[str] = []
+    """Evaluate a batch through the kernel with PER-GEAR norm dispatch by material kind."""
+    warnings: list[str] = [
+        # honesty (audit MAT-04): pre-design limits without the strength sub-factors
+        "pre-design safeties: strength sub-factors (Z_L..Z_X, Y_deltarelT/Y_RrelT/Y_X, "
+        "Z_NT/Y_NT, Z_B/Z_D, native K-factors, VDI temperature derating) are not applied "
+        "in the sweep - the Tragfaehigkeit tab carries the norm-exact chain"
+    ]
 
     def p(name: str) -> Array:
         return spec._value(name, grid)
@@ -197,6 +206,8 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
             tool_addendum_factor=h_fp[i],
             tool_tip_radius_factor=rho_fp[i],
             tip_diameter_mm=geometry.tip_diameter[i],
+            # ε_α enables the ISO Method-B factors Y_F/Y_S at d_en (steel branch)
+            transverse_contact_ratio=geometry.transverse_contact_ratio,
         )
         for i in range(2)
     )
@@ -221,14 +232,13 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
     z_eps = kernel.flank_contact_ratio_factor(
         geometry.transverse_contact_ratio, geometry.overlap_ratio
     )
-    # Z_β = √cos β (DIN 3990-2:1987 Eq. 6.01 — the VDI 2736 chain's convention, "Z_β ≤ 1";
-    # fixed 2026-08-18, audit NRM-04: was the ISO 6336-2:2019 form 1/√cos β)
-    z_beta = np.sqrt(np.cos(beta))
-    sigma_h = kernel.flank_stress(
+    # base flank stress WITHOUT the helix factor — Z_β is applied per gear below,
+    # because the two norm branches define it with opposite conventions
+    sigma_h_base = kernel.flank_stress(
         elasticity=z_e,
         zone=z_h,
         contact_ratio_factor=z_eps,
-        helix_factor=z_beta,
+        helix_factor=_a(1.0),
         tangential_force_n=f_t,
         pinion_reference_diameter_mm=geometry.reference_diameter[0],
         face_width_mm=b_eff,
@@ -236,38 +246,63 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
         load_factor_kh=k_h,
     )
 
-    # Y_β = 1 − min(ε_β,1)·min(β,30°)/120° (VDI 2736-2 Eq. 12 with BOTH norm caps;
-    # fixed 2026-08-18, audit NRM-04: the old line fed the *pressure angle in radians*
-    # instead of the helix angle in degrees)
-    y_beta = (
-        1.0
-        - np.minimum(geometry.overlap_ratio, 1.0)
-        * np.minimum(np.abs(np.degrees(beta)), 30.0)
-        / 120.0
-    )
+    # ---- PER-GEAR NORM DISPATCH (user requirement 2026-08-18: the steel and plastic
+    # branches must NEVER be mixed — fixed audit MAT-01/MAT-02, which found one shared
+    # VDI-form chain for both gears). Each gear's stress uses ITS norm's form:
+    #   plastic → VDI 2736-2: σ_F with Y_Fa·Y_Sa·Y_ε (tip load, Eq. 10), Y_β per Eq. 12,
+    #             Z_β = √cos β (DIN 3990-2 Eq. 6.01 — VDI's own convention);
+    #   steel   → ISO 6336-3:2019 Method B: σ_F with Y_F·Y_S at d_en (NO Y_ε),
+    #             Y_β per Eq. 66/67 (1/cos³β term), Z_β = √(1/cos β) (6336-2 Eq. 41).
+    beta_deg_capped = np.minimum(np.abs(np.degrees(beta)), 30.0)
+    eps_capped = np.minimum(geometry.overlap_ratio, 1.0)
+    y_beta_vdi = 1.0 - eps_capped * beta_deg_capped / 120.0
+    y_beta_iso = y_beta_vdi / np.cos(np.radians(beta_deg_capped)) ** 3
+    z_beta_vdi = np.sqrt(np.cos(beta))
+    z_beta_iso = np.sqrt(1.0 / np.cos(beta))
+
     sigma_f: list[Array] = []
+    sigma_h: list[Array] = []
     s_f: list[Array] = []
     s_h: list[Array] = []
     widths = (b, b2)
     for i in range(2):
-        stress = kernel.root_stress(
-            tangential_force_n=f_t,
-            face_width_mm=widths[i],
-            normal_module_mm=m_n,
-            form_factor_tip=roots[i].form_factor_tip,
-            stress_correction_tip=roots[i].stress_correction_tip,
-            transverse_contact_ratio=geometry.transverse_contact_ratio,
-            helix_factor=y_beta,
-            load_factor_kf=k_h,
-        )
+        if spec.materials[i].is_plastic:
+            stress = kernel.root_stress(
+                tangential_force_n=f_t,
+                face_width_mm=widths[i],
+                normal_module_mm=m_n,
+                form_factor_tip=roots[i].form_factor_tip,
+                stress_correction_tip=roots[i].stress_correction_tip,
+                transverse_contact_ratio=geometry.transverse_contact_ratio,
+                helix_factor=y_beta_vdi,
+                load_factor_kf=k_h,
+            )
+            gear_sigma_h = sigma_h_base * z_beta_vdi
+        else:
+            y_f_single = roots[i].form_factor_single
+            y_s_single = roots[i].stress_correction_single
+            assert y_f_single is not None and y_s_single is not None  # ε_α was passed
+            stress = kernel.root_stress_single_contact(
+                tangential_force_n=f_t,
+                face_width_mm=widths[i],
+                normal_module_mm=m_n,
+                form_factor=y_f_single,
+                stress_correction=y_s_single,
+                helix_factor=y_beta_iso,
+                load_factor_kf=k_h,
+            )
+            gear_sigma_h = sigma_h_base * z_beta_iso
         sigma_f.append(stress)
+        sigma_h.append(gear_sigma_h)
         # TRUE safeties S = σ_lim/σ (fixed 2026-08-18, audit NRM-06: the old values were
         # (σ_lim/S_min)/σ and were then compared against S_min AGAIN downstream)
         root_limit = _root_limit(spec.materials[i], warnings, i)
         flank_limit = _flank_limit(spec.materials[i], warnings, i)
         s_f.append(root_limit / stress if root_limit is not None else np.full_like(stress, np.nan))
         s_h.append(
-            flank_limit / sigma_h if flank_limit is not None else np.full_like(sigma_h, np.nan)
+            flank_limit / gear_sigma_h
+            if flank_limit is not None
+            else np.full_like(gear_sigma_h, np.nan)
         )
 
     valid = kernel.validity_mask(geometry, roots)
@@ -293,7 +328,7 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
         transverse_contact_ratio=bx(geometry.transverse_contact_ratio),
         overlap_ratio=bx(geometry.overlap_ratio),
         total_contact_ratio=bx(geometry.total_contact_ratio),
-        flank_stress_mpa=bx(sigma_h),
+        flank_stress_mpa=(bx(sigma_h[0]), bx(sigma_h[1])),
         root_stress_mpa=(bx(sigma_f[0]), bx(sigma_f[1])),
         flank_safety=(bx(s_h[0]), bx(s_h[1])),
         root_safety=(bx(s_f[0]), bx(s_f[1])),

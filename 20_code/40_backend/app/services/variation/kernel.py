@@ -3,10 +3,11 @@
 @context: Domain layer — the vectorized macro-geometry + capacity kernel of the
        plastic-capable Stufenvariation (ADR-013).
 @role: Evaluate **many** gear-pair variants at once as numpy arrays — the geometry
-       (working pressure angle, contact ratios), the tooth-root tip-load form
-       factors Y_Fa/Y_Sa (ISO 6336-3, the ϑ fixed-point iterated in lockstep) and
-       the capacity (σ_F/σ_H, S_F/S_H) — with per-gear material dispatch
-       (steel → ISO 6336, plastic → VDI 2736) over the shared mesh.
+       (working pressure angle, contact ratios), the tooth-root bending factors
+       (tip-load Y_Fa/Y_Sa for the VDI branch AND single-contact Y_F/Y_S at d_en
+       for the ISO branch; the ϑ fixed-point iterated in lockstep) and both norm
+       branches' stress forms (``root_stress`` VDI Eq. 10, ``root_stress_single_
+       contact`` ISO Method B) so ``sweep`` can dispatch per gear by material kind.
 
 This is the performance core: the two iterative steps (inv α_wt, the root angle ϑ)
 become **fixed-iteration vectorized Newton / fixed-point** so a whole batch of
@@ -63,13 +64,23 @@ def working_pressure_angle(
 
 @dataclass(frozen=True)
 class ToothRootFormFactors:
-    """Vectorized tooth-root geometry and tip-load bending factors per gear."""
+    """Vectorized tooth-root geometry and bending factors per gear.
+
+    The tip-load factors Y_Fa/Y_Sa (VDI 2736 / DIN 3990 Method C form) are always
+    computed; the single-contact-point factors Y_F/Y_S (ISO 6336-3:2019 Method B,
+    load at d_en) are filled when the pair's transverse contact ratio is passed —
+    they need the mesh, not just the single gear. Added 2026-08-18 so the sweep can
+    dispatch the ROOT STRESS FORM per material kind (user requirement: steel and
+    plastic branches must never be mixed).
+    """
 
     critical_root_chord_mn: Array  # s_Fn / m_n
     root_fillet_radius_mn: Array  # ρ_F / m_n
     notch_parameter: Array  # q_s
     form_factor_tip: Array  # Y_Fa
     stress_correction_tip: Array  # Y_Sa
+    form_factor_single: Array | None = None  # Y_F (ISO Method B, load at d_en)
+    stress_correction_single: Array | None = None  # Y_S
 
 
 def tip_form_factors(
@@ -82,12 +93,15 @@ def tip_form_factors(
     tool_addendum_factor: Array,  # h_aP0*
     tool_tip_radius_factor: Array,  # ρ_aP0*
     tip_diameter_mm: Array,  # d_Na (usable tip; with chamfer if any)
+    transverse_contact_ratio: Array | None = None,  # ε_α of the PAIR → enables Y_F/Y_S
     theta_iterations: int = 80,
 ) -> ToothRootFormFactors:
-    """Tip-load tooth-root factors Y_Fa/Y_Sa (ISO 6336-3 / VDI 2736), vectorized.
+    """Tooth-root bending factors, vectorized: Y_Fa/Y_Sa always, Y_F/Y_S with ε_α.
 
     Mirrors ``geometry.tooth_root`` through the virtual spur gear z_n; the 30°-tangent
-    angle ϑ is solved by the same fixed-point iteration across the whole batch.
+    angle ϑ is solved by the same fixed-point iteration across the whole batch. The
+    ISO Method-B load point d_en sits one double-contact length (ε_αn − 1)·p_en inside
+    the virtual tip on the line of action (``tooth_root.outer_single_contact_diameter``).
     """
     alpha_n = normal_pressure_angle
     base_helix = np.arcsin(np.sin(helix_angle) * np.cos(alpha_n))
@@ -109,28 +123,45 @@ def tip_form_factors(
     rho_f = tool_tip_radius_factor + 2.0 * g_aux**2 / (
         np.cos(theta) * (zn * np.cos(theta) ** 2 - 2.0 * g_aux)
     )
+    q_s = s_fn / (2.0 * rho_f)
 
     reference_n = normal_module_mm * zn
     base_n = reference_n * np.cos(alpha_n)
     transverse_reference = normal_module_mm / np.cos(helix_angle) * teeth
     tip_n = reference_n + (tip_diameter_mm - transverse_reference)
-
-    load_angle = np.arccos(base_n / tip_n)
-    gamma = (
-        (np.pi / 2.0 + 2.0 * generation_profile_shift * np.tan(alpha_n)) / zn
-        + involute(alpha_n)
-        - involute(load_angle)
-    )
-    alpha_fa = load_angle - gamma
-    load_term = (np.cos(gamma) - np.sin(gamma) * np.tan(alpha_fa)) * (tip_n / normal_module_mm)
     root_term = zn * np.cos(np.pi / 3.0 - theta) + (g_aux / np.cos(theta) - tool_tip_radius_factor)
-    h_fa = 0.5 * (load_term - root_term)
 
-    y_fa = 6.0 * h_fa * np.cos(alpha_fa) / (s_fn**2 * np.cos(alpha_n))
-    lever_ratio = s_fn / h_fa
-    q_s = s_fn / (2.0 * rho_f)
-    y_sa = (1.2 + 0.13 * lever_ratio) * q_s ** (1.0 / (1.21 + 2.3 / lever_ratio))
-    return ToothRootFormFactors(s_fn, rho_f, q_s, y_fa, y_sa)
+    def bending_factors(load_diameter_n: Array) -> tuple[Array, Array]:
+        """(Y_F, Y_S) for a load applied at ``load_diameter_n`` in the virtual gear."""
+        load_angle = np.arccos(np.clip(base_n / load_diameter_n, -1.0, 1.0))
+        gamma = (
+            (np.pi / 2.0 + 2.0 * generation_profile_shift * np.tan(alpha_n)) / zn
+            + involute(alpha_n)
+            - involute(load_angle)
+        )
+        alpha_fe = load_angle - gamma
+        load_term = (np.cos(gamma) - np.sin(gamma) * np.tan(alpha_fe)) * (
+            load_diameter_n / normal_module_mm
+        )
+        h_fe = 0.5 * (load_term - root_term)
+        y_f = 6.0 * h_fe * np.cos(alpha_fe) / (s_fn**2 * np.cos(alpha_n))
+        lever_ratio = s_fn / h_fe
+        y_s = (1.2 + 0.13 * lever_ratio) * q_s ** (1.0 / (1.21 + 2.3 / lever_ratio))
+        return y_f, y_s
+
+    y_fa, y_sa = bending_factors(tip_n)
+
+    y_f = y_s = None
+    if transverse_contact_ratio is not None:
+        # d_en in the virtual gear: one double-contact length inside the virtual tip
+        eps_n = transverse_contact_ratio / np.cos(base_helix) ** 2  # ε_αn (eq. 17)
+        p_en = np.pi * normal_module_mm * np.cos(alpha_n)
+        tip_tangent = np.sqrt(np.clip((tip_n / 2.0) ** 2 - (base_n / 2.0) ** 2, 0.0, None))
+        single = tip_tangent - (eps_n - 1.0) * p_en
+        d_en = 2.0 * np.hypot(base_n / 2.0, single)
+        y_f, y_s = bending_factors(d_en)
+
+    return ToothRootFormFactors(s_fn, rho_f, q_s, y_fa, y_sa, y_f, y_s)
 
 
 def transverse_contact_ratio(
@@ -310,13 +341,36 @@ def root_stress(
     helix_factor: Array = _ONE,
     load_factor_kf: Array = _ONE,
 ) -> Array:
-    """Tooth-root stress σ_F (vectorized; tip-load form, Y_ε = 0.25 + 0.75/ε_α)."""
+    """Tooth-root stress σ_F (vectorized; VDI 2736-2 Eq. 10 tip-load form with Y_ε)."""
     y_eps = 0.25 + 0.75 / transverse_contact_ratio
     return (
         load_factor_kf
         * form_factor_tip
         * stress_correction_tip
         * y_eps
+        * helix_factor
+        * tangential_force_n
+        / (face_width_mm * normal_module_mm)
+    )
+
+
+def root_stress_single_contact(
+    *,
+    tangential_force_n: Array,
+    face_width_mm: Array,
+    normal_module_mm: Array,
+    form_factor: Array,  # Y_F (load at d_en)
+    stress_correction: Array,  # Y_S
+    helix_factor: Array = _ONE,  # Y_β (ISO 6336-3:2019 eq. 66/67)
+    load_factor_kf: Array = _ONE,
+) -> Array:
+    """Tooth-root stress σ_F (vectorized; ISO 6336-3:2019 Method B form — Y_F·Y_S at
+    the outer point of single contact, NO Y_ε). The steel branch of the sweep's
+    per-gear norm dispatch (2026-08-18, audit MAT-01)."""
+    return (
+        load_factor_kf
+        * form_factor
+        * stress_correction
         * helix_factor
         * tangential_force_n
         / (face_width_mm * normal_module_mm)

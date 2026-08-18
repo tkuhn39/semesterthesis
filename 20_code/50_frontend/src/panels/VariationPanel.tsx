@@ -21,6 +21,7 @@ import { ParallelCoordinates, type PCDim } from "@/components/ParallelCoordinate
 import { ContourPlot, OVERLAY_COLORS } from "@/components/ContourPlot";
 import { FilletEditor } from "@/panels/ToothFormPanel";
 import { Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
+import { type Wb } from "@/lib/capacityRequest";
 import { useFmt, useT } from "@/lib/i18n";
 import { useStage } from "@/lib/stage";
 import { useWorkbench, type VariationFilter } from "@/lib/store";
@@ -132,6 +133,9 @@ function defaultsFromStage(s: StageParams, torqueT1: number | undefined): Variat
     tool_tip_radius_factor: s.tool_tip_radius_factor,
     // T₁ from THE Leistungsfluss (SSOT) — never a panel-local torque copy
     torque_nm: torqueT1 ?? 0.0,
+    // material + safety fields are PLACEHOLDERS ONLY: run() overrides them with the
+    // live Werkstoff/operating store values (audit F6/STR-04 — the panel used to send
+    // hardcoded materials, silently ignoring the Werkstoffart toggle)
     steel_density_kg_m3: 7850,
     plastic_density_kg_m3: 1410,
     steel_sigma_hlim_mpa: 1500,
@@ -139,9 +143,31 @@ function defaultsFromStage(s: StageParams, torqueT1: number | undefined): Variat
     plastic_sigma_hlim_mpa: 60,
     plastic_sigma_flim_mpa: 35,
     root_minimum_safety: 2.0,
-    flank_minimum_safety: 1.0,
+    flank_minimum_safety: 1.4,
     method: "grid",
     sample_count: 256,
+  };
+}
+
+// The live material/operating context merged into EVERY sweep request at run time —
+// the Stufenvariation computes with exactly what the Werkstoff tab shows (one kind
+// toggle in the system; the norm dispatch follows it, never a panel-local copy).
+function storeContext(wb: Wb): Partial<VariationRequest> {
+  const m = wb.materials;
+  const op = wb.operating;
+  return {
+    pinion_material: m.gear1_kind,
+    wheel_material: m.gear2_kind,
+    steel_modulus_mpa: m.steel_modulus_mpa,
+    plastic_modulus_mpa: m.plastic_modulus_mpa,
+    steel_sigma_hlim_mpa: m.steel_sigma_hlim_mpa,
+    steel_sigma_flim_mpa: m.steel_sigma_flim_mpa,
+    plastic_sigma_hlim_mpa: m.plastic_sigma_hlim_mpa,
+    plastic_sigma_flim_mpa: m.plastic_sigma_flim_mpa,
+    steel_density_kg_m3: m.steel_density_kg_dm3 * 1000,
+    plastic_density_kg_m3: m.plastic_density_kg_dm3 * 1000,
+    root_minimum_safety: op.root_minimum_safety,
+    flank_minimum_safety: op.flank_minimum_safety,
   };
 }
 
@@ -197,12 +223,14 @@ export function VariationPanel() {
     setVar({ step: 2, compare: [] });
     setOverlays([]);
     try {
-      const out = await api.variation(r);
+      // merge the LIVE Werkstoff/operating store values at call time (audit F6)
+      const req = { ...r, ...storeContext(wb) };
+      const out = await api.variation(req);
       const rows = [...out.points].sort(
         (a, b) => (b.root_safety_wheel ?? -1) - (a.root_safety_wheel ?? -1),
       );
       // persist the REQUEST too (report generation reuses the exact sweep settings)
-      setVar({ res: out, rows, req: r, step: 3 });
+      setVar({ res: out, rows, req, step: 3 });
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
       setVar({ step: 1 });
@@ -419,12 +447,19 @@ export function VariationPanel() {
 
           <Section title={t("var.extTitle")} defaultOpen={false}>
             <div className="p-2 flex items-center gap-2 text-[12px] text-zinc-600 flex-wrap">
+              {/* mirrors of THE Werkstoffart toggle (materials store) — editing here
+                  writes through, so exactly ONE kind state drives the norm dispatch */}
               {(["pinion_material", "wheel_material"] as const).map((k) => (
                 <select
                   key={k}
                   className="border border-zinc-300 rounded-md px-1.5 py-0.5 text-[12px]"
-                  value={r[k] ?? (k === "pinion_material" ? "steel" : "plastic")}
-                  onChange={(e) => setR({ ...r, [k]: e.target.value as "steel" | "plastic" })}
+                  value={k === "pinion_material" ? wb.materials.gear1_kind : wb.materials.gear2_kind}
+                  onChange={(e) =>
+                    wb.set(
+                      k === "pinion_material" ? "materials.gear1_kind" : "materials.gear2_kind",
+                      e.target.value,
+                    )
+                  }
                   title={t("var.normNote")}
                 >
                   <option value="steel">{`${t("common.gear")} ${k === "pinion_material" ? 1 : 2}: ${t("mat.steel")}`}</option>
@@ -448,7 +483,14 @@ export function VariationPanel() {
                 <tr>
                   <td>{t("var.sfMin")}</td>
                   <td className="wb-num text-zinc-400">S_Fmin</td>
-                  <td><Num value={r.root_minimum_safety} onChange={set("root_minimum_safety")} /></td>
+                  <td>
+                    {/* shared operating value (write-through) — the same S_Fmin the
+                        Tragfähigkeit tab uses, so verdicts agree across tabs */}
+                    <Num
+                      value={wb.operating.root_minimum_safety}
+                      onChange={(val) => wb.set("operating.root_minimum_safety", val)}
+                    />
+                  </td>
                   <td></td>
                 </tr>
               </tbody>
@@ -593,7 +635,7 @@ export function VariationPanel() {
                 dims={PC_DIMS}
                 selected={v.compare[v.compare.length - 1] ?? null}
                 onSelect={toggleCompare}
-                rootMin={r.root_minimum_safety}
+                rootMin={wb.operating.root_minimum_safety}
               />
             </div>
           </Section>

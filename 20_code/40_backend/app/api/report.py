@@ -231,10 +231,16 @@ def _norm_rows(g: GearCapacity, locale: str) -> list[tuple[str, str, str, str]]:
             "N/mm²",
         ),
         (_de(locale, "Flankensicherheit", "Flank safety"), "S_H", n(g.flank_safety), "–"),
-        (_de(locale, "Formfaktor", "Form factor"), "Y_F", n(g.form_factor, 3), "–"),
+        # VDI branch reports the TIP-LOAD factors — label them Y_Fa/Y_Sa (audit MAT-13)
+        (
+            _de(locale, "Formfaktor", "Form factor"),
+            "Y_Fa" if g.method.startswith("VDI") else "Y_F",
+            n(g.form_factor, 3),
+            "–",
+        ),
         (
             _de(locale, "Spannungskorrekturfaktor", "Stress correction factor"),
-            "Y_S",
+            "Y_Sa" if g.method.startswith("VDI") else "Y_S",
             n(g.stress_correction, 3),
             "–",
         ),

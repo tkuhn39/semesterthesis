@@ -220,19 +220,23 @@ def native_dynamic_factors(
         gen[0].tool.dedendum_factor or gen[0].tool.addendum_factor,
         gen[1].tool.dedendum_factor or gen[1].tool.addendum_factor,
     )
+
     # per-gear material data (audit NRM-08: densities and σ_Hlim follow the materials —
-    # a plastic wheel is ~5.6× lighter than the former steel default)
-    if dynamics.density_kg_m3 == Pair(7800.0, 7800.0):
-        dynamics = dynamics.model_copy(
-            update={
-                "density_kg_m3": Pair(
-                    materials[0].density_kg_m3 or 7800.0, materials[1].density_kg_m3 or 7800.0
-                ),
-                "sigma_hlim_mpa": Pair(
-                    materials[0].sigma_hlim_mpa or 1500.0, materials[1].sigma_hlim_mpa or 1500.0
-                ),
-            }
-        )
+    # a plastic wheel is ~5.6× lighter than the former steel default). None on the
+    # conditions means "fill from the materials"; an explicit Pair is a caller override.
+    # Density fallback is KIND-aware (audit MAT-11: a plastic gear without density data
+    # must not silently get steel density).
+    def _density(mat: Material) -> float:
+        return mat.density_kg_m3 or (1400.0 if mat.is_plastic else 7800.0)
+
+    dynamics = dynamics.model_copy(
+        update={
+            "density_kg_m3": dynamics.density_kg_m3
+            or Pair(_density(materials[0]), _density(materials[1])),
+            "sigma_hlim_mpa": dynamics.sigma_hlim_mpa
+            or Pair(materials[0].sigma_hlim_mpa or 1500.0, materials[1].sigma_hlim_mpa or 1500.0),
+        }
+    )
     return compute_dynamic_factors(
         dynamics,
         pinion_teeth=stage.teeth[0],

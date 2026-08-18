@@ -88,6 +88,66 @@ def test_kernel_form_factors_match_scalar() -> None:
         )
 
 
+@pytest.mark.skipif(not _REF_STE.exists(), reason="kst-E reference .ste not present")
+def test_kernel_single_contact_factors_match_scalar() -> None:
+    """Y_F/Y_S at d_en (ISO Method B, steel branch of the per-kind dispatch) reproduce
+    the scalar tooth-root model (kst-E) when ε_α is passed."""
+    stage = GearStage.from_ste(gear_stage_from_ste(load_ste(_REF_STE)))
+    roots_scalar = [ToothRootGeometry.from_stage(stage, i) for i in range(2)]
+    gen = stage.generation
+    assert gen is not None
+    ff = kernel.tip_form_factors(
+        normal_module_mm=np.array([stage.normal_module_mm, stage.normal_module_mm]),
+        teeth=np.array([float(stage.teeth[0]), float(stage.teeth[1])]),
+        normal_pressure_angle=np.radians(np.array([20.0, 20.0])),
+        helix_angle=np.array([0.0, 0.0]),
+        generation_profile_shift=np.array(
+            [gen[0].generation_profile_shift, gen[1].generation_profile_shift]
+        ),
+        tool_addendum_factor=np.array([gen[0].tool.addendum_factor, gen[1].tool.addendum_factor]),
+        tool_tip_radius_factor=np.array(
+            [gen[0].tool.tip_radius_factor, gen[1].tool.tip_radius_factor]
+        ),
+        tip_diameter_mm=np.array([gen[0].tip_form_diameter_mm, gen[1].tip_form_diameter_mm]),
+        transverse_contact_ratio=np.array(
+            [stage.transverse_contact_ratio, stage.transverse_contact_ratio]
+        ),
+    )
+    assert ff.form_factor_single is not None and ff.stress_correction_single is not None
+    for i in range(2):
+        assert ff.form_factor_single[i] == pytest.approx(roots_scalar[i].form_factor, abs=1e-4)
+        assert ff.stress_correction_single[i] == pytest.approx(
+            roots_scalar[i].stress_correction_factor, abs=1e-4
+        )
+
+
+def test_per_gear_norm_dispatch_branches() -> None:
+    """The sweep NEVER mixes the norm branches (user requirement 2026-08-18): the
+    steel slot's σ_F uses the ISO Method-B form (Y_F·Y_S, no Y_ε), the plastic slot's
+    the VDI tip-load form (Y_Fa·Y_Sa·Y_ε) — swapping the kinds swaps the numbers."""
+    fixed = {"m_n": 2.0, "z1": 24.0, "z2": 60.0, "x1": 0.1, "x2": 0.0, "b": 20.0}
+    mixed = VariationSpec(materials=(_STEEL, _PLASTIC), torque_nm=10.0, fixed=dict(fixed))
+    swapped = VariationSpec(materials=(_PLASTIC, _STEEL), torque_nm=10.0, fixed=dict(fixed))
+    res_m = evaluate(mixed, build_grid(mixed))
+    res_s = evaluate(swapped, build_grid(swapped))
+    # same geometry, same widths → gear 1's stress form follows ITS kind: the steel
+    # form (Y_F·Y_S at d_en, no Y_ε) differs from the plastic form (Y_Fa·Y_Sa·Y_ε)
+    assert float(res_m.root_stress_mpa[0]) != pytest.approx(
+        float(res_s.root_stress_mpa[0]), rel=1e-3
+    )
+    # dispatch consistency across orientations: gear 1 steel ≡ gear... the same slot
+    # evaluated as steel must give the same σ_F form regardless of the mate's kind
+    both_steel = VariationSpec(materials=(_STEEL, _STEEL), torque_nm=10.0, fixed=dict(fixed))
+    res_ss = evaluate(both_steel, build_grid(both_steel))
+    assert float(res_ss.root_stress_mpa[0]) == pytest.approx(
+        float(res_m.root_stress_mpa[0]), rel=1e-12
+    )
+    # spur case: both Z_β conventions are 1 → per-gear flank stresses coincide
+    assert float(res_m.flank_stress_mpa[0]) == pytest.approx(
+        float(res_m.flank_stress_mpa[1]), rel=1e-12
+    )
+
+
 def test_grid_sweep_shapes_and_monotonicity() -> None:
     """A grid is the cartesian product; more teeth lower the root stress (more contact)."""
     spec = VariationSpec(
@@ -100,7 +160,8 @@ def test_grid_sweep_shapes_and_monotonicity() -> None:
     assert grid["z1"].size == 6  # 3 × 2
     res = evaluate(spec, grid)
     assert res.total_contact_ratio.shape == (6,)
-    assert np.all(res.warnings == ()) or res.warnings == ()
+    # only the permanent pre-design honesty note — no data warnings for this spec
+    assert all("pre-design" in w for w in res.warnings)
     # at fixed x1, raising z1 lowers σ_F of the pinion (longer lever shrinks, more teeth)
     z1 = res.parameters["z1"]
     x1 = res.parameters["x1"]
@@ -234,6 +295,7 @@ def test_b2_drives_wheel_root_and_common_flank_width() -> None:
     sigma1 = res.root_stress_mpa[0]
     assert sigma1[0] == sigma1[1] == sigma1[2]  # gear 1 root keeps its own b
     # flank: min(b, b2) → 10/20/20 → first variant is more stressed, last two equal
-    sh = res.flank_stress_mpa
+    # (σ_H is per gear since the per-kind norm dispatch — check the wheel's)
+    sh = res.flank_stress_mpa[1]
     assert sh[0] > sh[1]
     assert np.isclose(sh[1], sh[2])

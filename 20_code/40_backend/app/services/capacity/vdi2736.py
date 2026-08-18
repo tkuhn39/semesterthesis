@@ -99,20 +99,22 @@ def tooth_temperature(
     loss_factor_hv: float,
     heat_transfer_coefficient: float,  # k_ϑ  [K·(m/s)^0.75·mm^1.75/W]
     face_width_mm: float,
-    pinion_teeth: int,
+    plastic_teeth: int,  # z of Eq. 7/9 = "Zähnezahl des Kunststoffrads" (symbol list)
     pitch_velocity_ms: float,
     normal_module_mm: float,
     housing_resistance_k_m2_w: float,  # R_λ,G
     housing_surface_m2: float,  # A_G
     duty_cycle: float = 1.0,  # relative ED (1.0 = continuous)
 ) -> float:
-    """Local tooth (flank or root) temperature ϑ in °C (VDI 2736 eq. 9).
+    """Local tooth (flank or root) temperature ϑ in °C (VDI 2736 eq. 7/9).
 
-    ϑ = ϑ_0 + P·μ·H_V·( k_ϑ/(b·z_1·(v_t·m_n)^0.75) + R_λG/A_G )·ED^0.64.
-    Use the flank or root ``heat_transfer_coefficient`` for ϑ_Fla or ϑ_Fuß.
+    ϑ = ϑ_0 + P·μ·H_V·( k_ϑ/(b·z·(v_t·m_n)^0.75) + R_λG/A_G )·ED^0.64, where z is
+    the PLASTIC gear's tooth count (norm symbol list; fixed 2026-08-18, audit MAT-15 —
+    z₁ was fed before, invisible on kst-E's z 51/52). Use the flank or root
+    ``heat_transfer_coefficient`` for ϑ_Fla or ϑ_Fuß.
     """
     conduction = heat_transfer_coefficient / (
-        face_width_mm * pinion_teeth * (pitch_velocity_ms * normal_module_mm) ** 0.75
+        face_width_mm * plastic_teeth * (pitch_velocity_ms * normal_module_mm) ** 0.75
     )
     convection = housing_resistance_k_m2_w / housing_surface_m2
     rise = (
@@ -368,10 +370,17 @@ def evaluate_vdi2736(
         elastic_modulus=Pair(materials[0].elastic_modulus_mpa, materials[1].elastic_modulus_mpa),
     )
 
+    # z of the temperature model (Eq. 7/9) is the PLASTIC gear's tooth count ("Zähnezahl
+    # des Kunststoffrads", symbol list — fixed 2026-08-18, audit MAT-15: z₁ was fed for
+    # both gears; invisible on kst-E's z 51/52, ~u-fold wrong for the norm example's
+    # 22/73). Mixed pair → the one plastic gear; plastic/plastic → the gear at hand.
+    plastic_indices = [i for i in range(2) if materials[i].is_plastic]
+
     results: list[Vdi2736GearResult] = []
     for index in range(2):
         material = materials[index]
         root = roots[index]
+        z_plastic = stage.teeth[plastic_indices[0] if len(plastic_indices) == 1 else index]
         theta_root = tooth_temperature(
             ambient_temperature_c=conditions.ambient_temperature_c,
             power_w=conditions.power_w,
@@ -379,7 +388,7 @@ def evaluate_vdi2736(
             loss_factor_hv=h_v,
             heat_transfer_coefficient=conditions.root_heat_coefficient,
             face_width_mm=common_face_width_mm,
-            pinion_teeth=stage.teeth[0],
+            plastic_teeth=z_plastic,
             pitch_velocity_ms=conditions.pitch_velocity_ms,
             normal_module_mm=stage.normal_module_mm,
             housing_resistance_k_m2_w=conditions.housing_resistance_k_m2_w,
@@ -393,7 +402,7 @@ def evaluate_vdi2736(
             loss_factor_hv=h_v,
             heat_transfer_coefficient=conditions.flank_heat_coefficient,
             face_width_mm=common_face_width_mm,
-            pinion_teeth=stage.teeth[0],
+            plastic_teeth=z_plastic,
             pitch_velocity_ms=conditions.pitch_velocity_ms,
             normal_module_mm=stage.normal_module_mm,
             housing_resistance_k_m2_w=conditions.housing_resistance_k_m2_w,

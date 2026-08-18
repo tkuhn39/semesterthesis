@@ -843,7 +843,6 @@ def _deck_roles(req: DeckRequest) -> dict:
         return card_from_catalog(catalog_material(kind))
 
     kinds = (req.gear1_material, req.gear2_material)
-    plastic_side = 1 if kinds == ("plastic", "steel") else 2
     rigid: set[int] = set()
     if req.rigid_shell_gear1:
         rigid.add(1)
@@ -852,18 +851,26 @@ def _deck_roles(req: DeckRequest) -> dict:
     # legacy shortcut: "Stahlseite ideal steif" of a mixed pairing
     if req.steel_shell and "plastic" in kinds and "steel" in kinds:
         rigid.add(1 + kinds.index("steel"))
-    if plastic_side in rigid:
+    # driven/slave role: THE plastic side of a mixed pairing (must stay deformable);
+    # same-kind pairs have no plastic side — gear 2 by convention, but the role moves
+    # to gear 1 when the user makes gear 2 the stiff shell (audit F5: the old code
+    # labelled gear 2 of a steel/steel pair "the plastic side" and 422'd a legal setup)
+    if kinds.count("plastic") == 1:
+        slave_gear = kinds.index("plastic") + 1
+    else:
+        slave_gear = 1 if rigid == {2} else 2
+    if slave_gear in rigid:
         raise HTTPException(
             422,
-            "the contact slave (plastic side) must stay deformable — "
+            f"gear {slave_gear} is the contact slave and must stay deformable — "
             "only the mating gear can be an ideally stiff Außenhülle",
         )
     return {
         "gear1_material": deck_material(req.gear1_material),
         "gear2_material": deck_material(req.gear2_material),
         "rigid_gears": frozenset(rigid),
-        "driven_gear": plastic_side,
-        "slave_gear": plastic_side,
+        "driven_gear": slave_gear,
+        "slave_gear": slave_gear,
     }
 
 

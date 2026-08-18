@@ -359,11 +359,13 @@ class MaterialParams(BaseModel):
     steel_poisson: float = 0.30
     steel_sigma_hlim_mpa: float = 1500.0
     steel_sigma_flim_mpa: float = 430.0
+    steel_density_kg_dm3: float = 7.85  # ρ (m_red of the native dynamics; audit MAT-10)
     # --- plastic material ---
     plastic_modulus_mpa: float = 4156.0
     plastic_poisson: float = 0.34
     plastic_sigma_hlim_mpa: float = 60.0
     plastic_sigma_flim_mpa: float = 35.0
+    plastic_density_kg_dm3: float = 1.41  # ρ
     plastic_yield_strength_mpa: float | None = None  # σ_S / R_p0.2 of the plastic
 
 
@@ -486,14 +488,17 @@ def _materials(req: MaterialParams) -> Pair[Material]:
     """Per-slot materials from the catalog, with the request's property overrides."""
 
     def build(kind: MaterialKindName) -> Material:
+        # branch on the RESOLVED material's kind, not the request string (audit MAT-09:
+        # stays correct once catalog NAMES are accepted alongside the kind literals)
         base = catalog_material(kind)
-        if kind == "steel":
+        if base.kind is MaterialKind.STEEL:
             return base.model_copy(
                 update={
                     "elastic_modulus_mpa": req.steel_modulus_mpa,
                     "poisson_ratio": req.steel_poisson,
                     "sigma_hlim_mpa": req.steel_sigma_hlim_mpa,
                     "sigma_flim_mpa": req.steel_sigma_flim_mpa,
+                    "density_kg_m3": req.steel_density_kg_dm3 * 1000.0,
                 }
             )
         return base.model_copy(
@@ -502,6 +507,7 @@ def _materials(req: MaterialParams) -> Pair[Material]:
                 "poisson_ratio": req.plastic_poisson,
                 "sigma_hlim_mpa": req.plastic_sigma_hlim_mpa,
                 "sigma_flim_mpa": req.plastic_sigma_flim_mpa,
+                "density_kg_m3": req.plastic_density_kg_dm3 * 1000.0,
                 "yield_strength_mpa": req.plastic_yield_strength_mpa,
             }
         )
@@ -894,12 +900,14 @@ class VariationRequest(BaseModel):
     method: str = Field("grid", pattern="^(grid|sobol|lhs)$")
     sample_count: int = Field(256, ge=8, le=65536)
     # material matrix (user decision/plan v2): each side steel or plastic — steel/steel,
-    # plastic/plastic, or mixed in either orientation. The kernel dispatches per gear
-    # (steel → ISO 6336 limits, plastic → VDI 2736 limits, ADR-013).
+    # plastic/plastic, or mixed in either orientation. The sweep dispatches the STRESS
+    # FORM per gear kind (steel → ISO Method B, plastic → VDI tip-load; audit MAT-01).
     pinion_material: str = Field("steel", pattern="^(steel|plastic)$")
     wheel_material: str = Field("plastic", pattern="^(steel|plastic)$")
-    steel_modulus_mpa: float = 206000.0
-    plastic_modulus_mpa: float = 2800.0
+    # defaults aligned with MaterialParams/catalog (audit MAT-03: they were 206000/2800,
+    # so the same slot meant a different material in the two tabs when unsent)
+    steel_modulus_mpa: float = 210000.0
+    plastic_modulus_mpa: float = 4156.0
 
 
 class VariationPoint(BaseModel):
@@ -966,9 +974,11 @@ def variation(req: VariationRequest) -> VariationResponse:
     from app.services.variation import kernel
 
     def _material(kind: str) -> Material:
-        # catalog defaults + the request's overrides (single material source)
+        # catalog defaults + the request's overrides (single material source); branch on
+        # the RESOLVED material's kind, not the request string (audit MAT-09: stays
+        # correct once names are accepted alongside kinds)
         base = catalog_material(kind)
-        if kind == "steel":
+        if base.kind is MaterialKind.STEEL:
             return base.model_copy(
                 update={
                     "elastic_modulus_mpa": req.steel_modulus_mpa,

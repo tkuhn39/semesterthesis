@@ -1461,7 +1461,10 @@ ATTRIBUTES: list[AttributeDef] = [
         options=[
             _opt("Stanyl_TW200F6_cond_80", "Stanyl_TW200F6_cond_80", "Stanyl_TW200F6_cond_80")
         ],
-        binding="materials.gear2_name",  # SSOT: same material as the plastic wheel
+        binding="materials.gear2_name",  # SSOT: mirrors the Werkstoff tab's gear-2 name
+        # locked mirror (audit MAT-04): a WRITABLE single-option select here was a side
+        # channel that could flip gear 2's norm dispatch outside the Werkstoff tab
+        computed=True,
     ),
     AttributeDef(
         id="wb_design_mode",
@@ -2859,7 +2862,9 @@ RULES: list[DependencyRule] = [
     ),
     DependencyRule(
         id="material_dispatches_norm",
-        when="materials.gear_kind",
+        # real store path (audit MAT-02: 'materials.gear_kind' existed nowhere; the
+        # rule applies per gear — gear2 via materials.gear2_kind analogously)
+        when="materials.gear1_kind",
         effect="compute",
         targets=["capacity.method_gear1", "capacity.method_gear2"],
         description_de=(

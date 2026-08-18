@@ -374,7 +374,10 @@ class DynamicConditions(BaseModel):
     """
 
     pinion_speed_min1: float  # n₁
-    density_kg_m3: Pair[float] = Pair(7800.0, 7800.0)
+    # None → filled per gear from the materials (native_dynamic_factors) or the steel
+    # defaults 7800/1500 (audit F11: an == sentinel on the old defaults was brittle —
+    # explicitly setting one field silently kept the other's default)
+    density_kg_m3: Pair[float] | None = None
     base_pitch_deviation_um: Pair[float]  # f_pb (per gear; larger one governs)
     profile_form_deviation_um: Pair[float]  # f_fα (per gear; larger one governs)
     helix_slope_deviation_um: Pair[float] = Pair(0.0, 0.0)  # f_Hβ tolerance (ISO 1328-1)
@@ -383,7 +386,7 @@ class DynamicConditions(BaseModel):
     running_in_group: Pair[RunningInGroup] = Pair(
         RunningInGroup.THROUGH_HARDENED, RunningInGroup.THROUGH_HARDENED
     )
-    sigma_hlim_mpa: Pair[float] = Pair(1500.0, 1500.0)  # for the running-in allowances
+    sigma_hlim_mpa: Pair[float] | None = None  # for the running-in allowances
     initial_mesh_misalignment_um: float = 0.0  # F_βx override (0 → native estimate)
     bore_diameter_mm: Pair[float] = Pair(0.0, 0.0)  # d_i (0 → solid disc)
     # optional shaft data for the full f_sh formula (ISO 6336-1 Eq. 59); None → Eq. 61
@@ -475,10 +478,14 @@ def compute_dynamic_factors(
         0.5 * (tip_diameter_mm[1] + root_diameter_mm[1]),
     )
     gear_ratio = virtual_teeth[1] / virtual_teeth[0]
+    # None → steel defaults (direct callers without material data keep the old behaviour;
+    # native_dynamic_factors fills the per-gear material values before calling)
+    density = conditions.density_kg_m3 or Pair(7800.0, 7800.0)
+    sigma_hlim = conditions.sigma_hlim_mpa or Pair(1500.0, 1500.0)
     m_red = reduced_mass(
         mean_diameter,
         base_diameter_mm,
-        conditions.density_kg_m3,
+        density,
         gear_ratio,
         bore_diameter_mm=conditions.bore_diameter_mm,
     )
@@ -497,7 +504,7 @@ def compute_dynamic_factors(
     def mean_allowance(deviation_um: float) -> float:
         return 0.5 * sum(
             running_in_allowance_alpha(
-                conditions.running_in_group[i], deviation_um, conditions.sigma_hlim_mpa[i], velocity
+                conditions.running_in_group[i], deviation_um, sigma_hlim[i], velocity
             )
             for i in range(2)
         )
@@ -505,7 +512,7 @@ def compute_dynamic_factors(
     y_p = mean_allowance(f_pb)
     y_f = mean_allowance(f_fa)
     tip = tuple(
-        c if c > 0.0 else running_in_tip_relief(conditions.sigma_hlim_mpa[i])
+        c if c > 0.0 else running_in_tip_relief(sigma_hlim[i])
         for i, c in enumerate(conditions.tip_relief_um)
     )
     relief = min(tip[0] + conditions.root_relief_um[1], tip[1] + conditions.root_relief_um[0])
@@ -524,8 +531,7 @@ def compute_dynamic_factors(
 
     # --- face load factor (Method C) ---
     chi_beta = 0.5 * sum(  # per-gear χ_β, averaged (Eq. 53)
-        running_in_factor_beta(conditions.running_in_group[i], conditions.sigma_hlim_mpa[i])
-        for i in range(2)
+        running_in_factor_beta(conditions.running_in_group[i], sigma_hlim[i]) for i in range(2)
     )
     mean_load = specific_load * k_v
     f_bx = conditions.initial_mesh_misalignment_um  # explicit value (shaft analysis/RIKOR)

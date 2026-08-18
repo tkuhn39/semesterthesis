@@ -1093,3 +1093,42 @@ new helical ValueError guards needed 422 mapping on every profile-consuming rout
 (tooth-profile, mesh preview/3d, decks, FEM postprocessing). The verify pass also
 confirmed the rest of the diff against the rendered norm pages (Z_β radical, Y_β 1/cos³
 term and caps, Eq. 54/58/59/61/66 transcriptions, B1 = B2 = 1 per Table 12, F_m = K_A·K_v·F_t).
+
+## ADR-026: Material kind is THE dispatch — coupled name/kind input, per-gear norm branches in the sweep, glossary as the vocabulary SSOT
+
+**Date:** 2026-08-18 · **Status:** Accepted
+
+**Context:** User directive (high priority): the steel and plastic calculation methods
+differ fundamentally — the branches must be computed separately and never mixed when a
+material is changed in the input mask, the material definition must carry an explicit
+metal/plastic selector, and conflicts had to be found and cleaned up. A 3-agent trace
+found the Stufenvariation evaluating BOTH gears with one hybrid VDI-form chain
+(MAT-01/02), the variation panel ignoring the Werkstoff mask entirely (VAR-01/02),
+uncoupled name/kind fields, diverging backend defaults, dead density inputs and a
+temperature model feeding the wrong gear's tooth count (MAT-15, primary-source-checked).
+
+**Decision:**
+1. **The kind is the single dispatch** and is enforced end-to-end: the store couples
+   Werkstoffname ↔ Werkstoffart bidirectionally (catalog-foreign names rejected), every
+   consumer (capacity, dynamics, variation, deck, report) reads the ONE materials store,
+   side channels are locked (Radkörper mirror computed), and backend property overrides
+   branch on the resolved material's kind.
+2. **The sweep dispatches the stress FORM per gear**: plastic → VDI 2736-2 tip-load
+   chain, steel → ISO 6336-3:2019 Method B (vectorized Y_F/Y_S at d_en, scalar-parity
+   test-pinned), each with its norm's helix conventions; σ_H/S_H per gear. The
+   permissible sides remain pre-design (no strength sub-factors) — declared via a
+   permanent warning, not silently.
+3. **The glossary is the vocabulary SSOT** (~200 entries, new "inspection" category):
+   every displayed symbol exists with current-norm references incl. edition years and
+   related-symbol links; project-internal references are prefixed "Projekt:". Symbol
+   collisions were split (h_K vs span k, Kopfspiel c vs Freigang c_F).
+
+**Consequences:** /api/variation results now change when the Werkstoff tab changes —
+that is the point. VariationResult.flank_stress_mpa became per-gear. kst-E spur values
+are unchanged (both Z_β/Y_β conventions = 1 at β = 0; z 51/52 makes the MAT-15 z-fix
+invisible there). Open follow-ups (P2): per-gear material objects for same-kind pairs
+(free-pairing vision), deck material cards from the live overrides, variation-panel
+re-seed scope, serving the material catalog (name→kind+properties) so the frontend
+mirror map disappears. NOTE: during this round a subagent violated its read-only/file
+scope twice (overwrote a parallel kernel edit; fixed and re-reviewed) — future
+multi-agent rounds must partition files per agent explicitly.

@@ -111,6 +111,14 @@ performance strategy: **ADR-013**; current-standards rule: **ADR-011**.
 | C7 | **Free geometry → capacity** `GearStage.from_parameters` + `/api/evaluate` — build any pair from raw inputs + tool reference profile (no `.ste`), then geometry + ISO 6336 (steel) / VDI 2736 (plastic) capacity | ISO 21771 generation | reproduces kst-E exactly (ε_α, d_Fa incl. chamfer, Y_F, s_Fn) | ✅ |
 | C8 | **Static peak load** `vdi2736.permissible_peak_stress` + wiring — σ_F,P = σ_F0·K_A,stat ≤ 2·σ_S/S_Smin (yield σ_S at operating temp, S_Smin≈1.5); opt-in via `static_overload_factor` + plastic yield; `peak_root_stress_mpa`/`peak_root_safety` | VDI 2736 Blatt 2 §3.3 (eq. 23/24) | formula hand-checked; unit + kst-E test | ✅ |
 
+**Material-dispatch round (2026-08-18, ADR-026):** kind is THE dispatch end-to-end —
+name↔kind coupled in the mask, Stufenvariation reads the live Werkstoff store and
+dispatches the stress FORM per gear (steel → ISO Method B vectorized Y_F/Y_S at d_en;
+plastic → VDI tip-load), VDI ϑ-model uses the plastic gear's z (norm symbol list),
+density inputs live, glossary grown to ~200 current-norm entries (new "inspection"
+category). Open P2: per-gear material objects for same-kind pairs, deck cards from live
+overrides, variation re-seed scope, served material catalog.
+
 **Audit round P1 (2026-08-18, ADR-025):** all analytical-correctness findings of the
 consistency audit fixed — helical factors live per norm branch (ISO 2019 vs VDI/DIN 3990
 conventions), Y_X Table 5 un-scrambled, VDI safeties TRUE (σ_lim/σ, σ_P explicit),

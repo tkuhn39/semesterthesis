@@ -40,6 +40,8 @@ export function buildCapacityRequest(wb: Wb): CapacityRequest {
     steel_poisson: m.steel_poisson,
     steel_sigma_hlim_mpa: m.steel_sigma_hlim_mpa,
     steel_sigma_flim_mpa: m.steel_sigma_flim_mpa,
+    steel_density_kg_dm3: m.steel_density_kg_dm3,
+    plastic_density_kg_dm3: m.plastic_density_kg_dm3,
     power_w: wb.get("operating.power_w") as number,
     ambient_temperature_c: wb.get("operating.ambient_temperature_c") as number,
     duty_cycle: op.duty_cycle,

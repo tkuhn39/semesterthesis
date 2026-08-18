@@ -332,6 +332,19 @@ const FEM_DEFAULTS: FemState = {
   rigid_shell_gear2: false,
 };
 
+// Mirror of the backend material catalog (app/services/materials.py CATALOG +
+// DEFAULT_BY_KIND): name → kind and the per-kind default name. MAINTENANCE: extend this
+// together with the backend CATALOG and the Werkstoff-tab mat_name options (a served
+// catalog endpoint becomes the SSOT once the material library grows).
+export const CATALOG_MATERIAL_KIND: Record<string, "steel" | "plastic"> = {
+  "20MnCr5": "steel",
+  Stanyl_TW200F6_cond_80: "plastic",
+};
+const CATALOG_DEFAULT_NAME: Record<"steel" | "plastic", string> = {
+  steel: "20MnCr5",
+  plastic: "Stanyl_TW200F6_cond_80",
+};
+
 // kst-E defaults (materials catalog names; property values = the FVA Werkstoff sheet)
 const MATERIALS_DEFAULTS: MaterialsState = {
   gear1_kind: "steel",
@@ -834,6 +847,44 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
                 ...prev.powerflow,
                 torque_nm: num,
                 torque_shaft: num == null ? prev.powerflow.torque_shaft : (shaft as 1 | 2),
+              },
+            };
+          }
+        }
+        // Werkstoffname ↔ Werkstoffart coupling (user requirement 2026-08-18): the KIND
+        // is THE norm dispatch (steel → ISO 6336, plastic → VDI 2736) and must never
+        // contradict the selected catalog material. Picking a name snaps the kind to the
+        // material's kind; switching the kind snaps a mismatching name to the kind's
+        // catalog default.
+        if (ns === "materials") {
+          if (field === "gear1_name" || field === "gear2_name") {
+            const kindField = field === "gear1_name" ? "gear1_kind" : "gear2_kind";
+            const kind = CATALOG_MATERIAL_KIND[value as string];
+            // REJECT names outside the catalog mirror (audit F2): accepting one would
+            // leave the kind toggle dangling next to a name of the other kind — the
+            // one representable state where Werkstoff and Norm-Zweig could disagree
+            if (!kind) return prev;
+            return {
+              ...prev,
+              materials: {
+                ...prev.materials,
+                [field]: value,
+                [kindField]: kind,
+              },
+            };
+          }
+          if (field === "gear1_kind" || field === "gear2_kind") {
+            const nameField = field === "gear1_kind" ? "gear1_name" : "gear2_name";
+            const name = prev.materials[nameField];
+            const matches = CATALOG_MATERIAL_KIND[name] === value;
+            return {
+              ...prev,
+              materials: {
+                ...prev.materials,
+                [field]: value,
+                ...(matches
+                  ? {}
+                  : { [nameField]: CATALOG_DEFAULT_NAME[value as "steel" | "plastic"] }),
               },
             };
           }

@@ -37,6 +37,8 @@ export function DynamicsPanel() {
       steel_poisson: wb.materials.steel_poisson,
       steel_sigma_hlim_mpa: wb.materials.steel_sigma_hlim_mpa,
       steel_sigma_flim_mpa: wb.materials.steel_sigma_flim_mpa,
+      steel_density_kg_dm3: wb.materials.steel_density_kg_dm3,
+      plastic_density_kg_dm3: wb.materials.plastic_density_kg_dm3,
       plastic_modulus_mpa: wb.materials.plastic_modulus_mpa,
       plastic_poisson: wb.materials.plastic_poisson,
       plastic_sigma_hlim_mpa: wb.materials.plastic_sigma_hlim_mpa,
