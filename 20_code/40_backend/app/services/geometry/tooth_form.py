@@ -90,6 +90,14 @@ class ToothProfile:
         """
         if stage.generation is None or stage.usable_tip_diameter_mm is None:
             raise ValueError("tooth profile needs the generation/tip data (tool + KOPFKREISDM)")
+        # Guard (audit NRM-02): the 2-D profile is the TRANSVERSE section of a spur gear;
+        # for β ≠ 0 the involute/trochoid construction below would silently use normal-
+        # section quantities and return a wrong contour — refuse instead.
+        if abs(stage.helix_angle_deg) > 1e-9:
+            raise ValueError(
+                "2-D tooth profile supports spur gears only for now "
+                f"(helix angle β = {stage.helix_angle_deg:g}°)"
+            )
         gen = stage.generation[index]
         root = ToothRootGeometry.from_stage(stage, index)  # validated DIN 3990 / ISO 6336-3 ρ_F
         return cls(

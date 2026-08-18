@@ -19,13 +19,29 @@ export function DynamicsPanel() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  // GAP-01: send the SAME accuracy + material context as /api/capacity so both tabs
+  // report identical K-factors (they used to disagree via panel-local defaults)
   const req: DynamicsRequest = useMemo(
     () => ({
       pinion_speed_min1: wb.get("operating.pinion_speed_min1") as number,
       pinion_torque_nm: wb.get("operating.pinion_torque_nm") as number,
       application_factor: wb.operating.application_factor,
+      accuracy_grade: wb.operating.accuracy_grade,
       base_pitch_deviation_um: wb.operating.base_pitch_deviation_um,
       profile_form_deviation_um: wb.operating.profile_form_deviation_um,
+      helix_slope_deviation_um: wb.operating.helix_slope_deviation_um,
+      mesh_misalignment_um: wb.operating.mesh_misalignment_um,
+      pinion_material: wb.materials.gear1_kind,
+      wheel_material: wb.materials.gear2_kind,
+      steel_modulus_mpa: wb.materials.steel_modulus_mpa,
+      steel_poisson: wb.materials.steel_poisson,
+      steel_sigma_hlim_mpa: wb.materials.steel_sigma_hlim_mpa,
+      steel_sigma_flim_mpa: wb.materials.steel_sigma_flim_mpa,
+      plastic_modulus_mpa: wb.materials.plastic_modulus_mpa,
+      plastic_poisson: wb.materials.plastic_poisson,
+      plastic_sigma_hlim_mpa: wb.materials.plastic_sigma_hlim_mpa,
+      plastic_sigma_flim_mpa: wb.materials.plastic_sigma_flim_mpa,
+      plastic_yield_strength_mpa: wb.materials.plastic_yield_strength_mpa,
     }),
     [wb],
   );
@@ -78,10 +94,29 @@ export function DynamicsPanel() {
               <AttrRow label={t("tol.ffa")} symbol="f_fα" unit="µm">
                 <td><Num value={req.profile_form_deviation_um} onChange={setOp("profile_form_deviation_um")} /></td>
               </AttrRow>
+              <AttrRow label={t("dyn.grade")} symbol="Q" unit="–">
+                <td className="wb-num text-zinc-500">{wb.operating.accuracy_grade ?? "–"}</td>
+              </AttrRow>
+              <AttrRow label={t("dyn.fhb")} symbol="f_Hβ" unit="µm">
+                <td>
+                  <Num
+                    value={wb.operating.helix_slope_deviation_um ?? 0}
+                    onChange={(v) => wb.set("operating.helix_slope_deviation_um", v > 0 ? v : null)}
+                  />
+                </td>
+              </AttrRow>
+              <AttrRow label={t("dyn.fbx")} symbol="F_βx" unit="µm">
+                <td>
+                  <Num
+                    value={wb.operating.mesh_misalignment_um ?? 0}
+                    onChange={(v) => wb.set("operating.mesh_misalignment_um", v > 0 ? v : null)}
+                  />
+                </td>
+              </AttrRow>
             </tbody>
           </table>
           <div className="px-3 py-1.5 text-[11.5px] text-zinc-500 border-t border-zinc-100">
-            {t("cap.inputsNote")}
+            {wb.operating.accuracy_grade != null ? t("dyn.gradeNote") : t("cap.inputsNote")}
           </div>
           <div className="p-2 border-t border-zinc-100">
             <Btn onClick={() => void run()} busy={busy}>
@@ -94,10 +129,11 @@ export function DynamicsPanel() {
 
       {res && (
         <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             <Stat label={t("dyn.kv")} value={fm.num(res.dynamic_factor, 3)} />
             <Stat label={t("dyn.kha")} value={fm.num(res.transverse_factor_flank, 3)} />
             <Stat label={t("dyn.khb")} value={fm.num(res.face_load_factor_flank, 3)} />
+            <Stat label={t("dyn.kfb")} value={fm.num(res.face_load_factor_root, 3)} />
           </div>
           <Section title={t("dyn.resonance")}>
             <table className="attr-table">

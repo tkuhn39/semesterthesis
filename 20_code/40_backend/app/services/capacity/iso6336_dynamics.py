@@ -192,13 +192,19 @@ def _velocity_cap_um(
 def running_in_allowance_alpha(
     group: RunningInGroup, base_pitch_deviation_um: float, sigma_hlim_mpa: float, velocity_ms: float
 ) -> float:
-    """Running-in allowance y_α in µm (eq. 77–79) for the transverse load factor."""
+    """Running-in allowance y_α in µm (eq. 77–79) for the transverse load factor.
+
+    Velocity caps per §8.3.6.2: groups a/b are capped in the 5–10 m/s and > 10 m/s bands
+    (f_pb = 80/40 µm equivalents); group c (Eh, IF, NT, NV) is capped at 3 µm for ALL
+    velocities (fixed 2026-08-18, adversarial verify pass — the band logic applied 6 µm
+    for 5–10 m/s and nothing below 5 m/s).
+    """
     if group is RunningInGroup.THROUGH_HARDENED:
         coeff = 160.0 / sigma_hlim_mpa
     elif group is RunningInGroup.CAST_IRON:
         coeff = 0.275
     else:
-        coeff = 0.075
+        return min(0.075 * base_pitch_deviation_um, 3.0)  # eq. 79 cap, all velocities
     return _velocity_cap_um(
         coeff * base_pitch_deviation_um, base_pitch_deviation_um, velocity_ms, coeff
     )
@@ -356,24 +362,72 @@ class DynamicFactors(BaseModel):
 class DynamicConditions(BaseModel):
     """Operating + accuracy data needed to compute the native dynamic/load factors.
 
-    The gear-accuracy deviations (f_pb base pitch, f_fα profile form) come from the
-    tolerance grade (ISO 1328); the tip/root relief from the micro-geometry. The
-    initial mesh misalignment F_βx (for K_Hβ Method C) is a shaft/mounting quantity —
-    it comes from the shaft analysis (RIKOR) and defaults to a well-aligned 0 here.
+    The gear-accuracy deviations (f_pb base pitch, f_fα profile form, f_Hβ helix slope)
+    come from the tolerance grade (ISO 1328); the tip/root relief from the micro-geometry.
+    The initial mesh misalignment F_βx (K_Hβ Method C) is either given explicitly
+    (``initial_mesh_misalignment_um`` > 0, e.g. from a shaft analysis/RIKOR) or estimated
+    natively per ISO 6336-1:2019 §7.5 (audit V-02 fix, 2026-08-18): F_βx = |1.33·f_sh +
+    f_ma| with f_sh = f_Hβ1 (Eq. 61, quality-based; or Eq. 59 when shaft data is given)
+    and f_ma = √(f_Hβ1² + f_Hβ2²) (Eq. 66, average quality control), floored by
+    F_βx,min = max(0.005·F_m/b, 0.5·f_Hβ) (Eq. 58). With f_Hβ = 0 and no explicit value
+    the legacy well-aligned behaviour (F_βx = 0, K_Hβ = 1) is preserved.
     """
 
     pinion_speed_min1: float  # n₁
     density_kg_m3: Pair[float] = Pair(7800.0, 7800.0)
     base_pitch_deviation_um: Pair[float]  # f_pb (per gear; larger one governs)
     profile_form_deviation_um: Pair[float]  # f_fα (per gear; larger one governs)
+    helix_slope_deviation_um: Pair[float] = Pair(0.0, 0.0)  # f_Hβ tolerance (ISO 1328-1)
     tip_relief_um: Pair[float] = Pair(0.0, 0.0)  # C_a (0 → running-in C_ay)
     root_relief_um: Pair[float] = Pair(0.0, 0.0)  # C_f
     running_in_group: Pair[RunningInGroup] = Pair(
         RunningInGroup.THROUGH_HARDENED, RunningInGroup.THROUGH_HARDENED
     )
     sigma_hlim_mpa: Pair[float] = Pair(1500.0, 1500.0)  # for the running-in allowances
-    initial_mesh_misalignment_um: float = 0.0  # F_βx (from shaft / RIKOR)
+    initial_mesh_misalignment_um: float = 0.0  # F_βx override (0 → native estimate)
     bore_diameter_mm: Pair[float] = Pair(0.0, 0.0)  # d_i (0 → solid disc)
+    # optional shaft data for the full f_sh formula (ISO 6336-1 Eq. 59); None → Eq. 61
+    shaft_diameter_mm: float | None = None  # d_sh (constant, solid or d_i/d_sh < 0.5)
+    bearing_span_mm: float | None = None  # l
+    pinion_offset_mm: float | None = None  # s (pinion centre offset from mid-span)
+    shaft_arrangement_constant: float = 0.8  # K′ (Figure 13; 0.8 = case a, no stiffening)
+
+
+def initial_mesh_misalignment_estimate_um(
+    conditions: DynamicConditions,
+    *,
+    mean_load_n_mm: float,
+    pinion_reference_diameter_mm: float,
+    face_width_mm: float,
+) -> float:
+    """F_βx per ISO 6336-1:2019 §7.5.3.4 Eq. (54) with the no-modification constants
+    B1 = B2 = 1 (no crowning/helix correction in the data model), floored by Eq. (58)."""
+    f_hb1, f_hb2 = conditions.helix_slope_deviation_um
+    if f_hb1 <= 0.0 and f_hb2 <= 0.0:
+        return 0.0  # no tolerance data — keep the legacy well-aligned behaviour
+    if (
+        conditions.shaft_diameter_mm is not None
+        and conditions.bearing_span_mm is not None
+        and conditions.pinion_offset_mm is not None
+    ):
+        # Eq. (59): f_sh = (F_m/b)·0.023·[|B* + K′·(l·s/d1²)·(d1/d_sh)⁴ − 0.3| + 0.3]·(b/d1)²
+        d1, d_sh = pinion_reference_diameter_mm, conditions.shaft_diameter_mm
+        span, offset = conditions.bearing_span_mm, conditions.pinion_offset_mm
+        gamma = (
+            abs(
+                1.0
+                + conditions.shaft_arrangement_constant * (span * offset / d1**2) * (d1 / d_sh) ** 4
+                - 0.3
+            )
+            + 0.3
+        )
+        f_sh = mean_load_n_mm * 0.023 * gamma * (face_width_mm / d1) ** 2
+    else:
+        f_sh = f_hb1  # Eq. (61): quality-based estimate without shaft data
+    f_ma = math.sqrt(f_hb1**2 + f_hb2**2)  # Eq. (66), average quality control
+    f_bx = abs(1.33 * f_sh + f_ma)  # Eq. (54), B1 = B2 = 1
+    f_bx_min = max(0.005 * mean_load_n_mm, 0.5 * max(f_hb1, f_hb2))  # Eq. (58)
+    return max(f_bx, f_bx_min)
 
 
 def compute_dynamic_factors(
@@ -396,6 +450,7 @@ def compute_dynamic_factors(
     application_factor: float,
     flank_contact_ratio_factor: float,  # Z_ε
     width_to_height_ratio: float,  # b/h for K_Fβ
+    pinion_reference_diameter_mm: float | None = None,  # d₁ for the f_sh shaft formula
 ) -> DynamicFactors:
     """Assemble K_v, K_Hα/K_Fα and K_Hβ/K_Fβ natively (ISO 6336-1, Methods B/C)."""
     total_contact_ratio = transverse_contact_ratio + overlap_ratio
@@ -434,10 +489,21 @@ def compute_dynamic_factors(
     f_pb = max(conditions.base_pitch_deviation_um)
     f_fa = max(conditions.profile_form_deviation_um)
     velocity = math.pi * mean_diameter[0] * conditions.pinion_speed_min1 / 60000.0
-    group = conditions.running_in_group[0]
-    sigma_hlim = min(conditions.sigma_hlim_mpa)
-    y_p = running_in_allowance_alpha(group, f_pb, sigma_hlim, velocity)
-    y_f = running_in_allowance_alpha(group, f_fa, sigma_hlim, velocity)
+
+    # running-in allowances per gear, then AVERAGED (ISO 6336-1 §6.4/§7.5.3.2: when the
+    # pinion material differs from the wheel's, determine y (and χ) separately and use
+    # the mean, Eq. 52/53 — fixed 2026-08-18 with V-02; min(σ_Hlim) killed χ_β for a
+    # steel–plastic pair and overstated y_α)
+    def mean_allowance(deviation_um: float) -> float:
+        return 0.5 * sum(
+            running_in_allowance_alpha(
+                conditions.running_in_group[i], deviation_um, conditions.sigma_hlim_mpa[i], velocity
+            )
+            for i in range(2)
+        )
+
+    y_p = mean_allowance(f_pb)
+    y_f = mean_allowance(f_fa)
     tip = tuple(
         c if c > 0.0 else running_in_tip_relief(conditions.sigma_hlim_mpa[i])
         for i, c in enumerate(conditions.tip_relief_um)
@@ -457,9 +523,20 @@ def compute_dynamic_factors(
     )
 
     # --- face load factor (Method C) ---
-    chi_beta = running_in_factor_beta(group, sigma_hlim)
-    f_by = chi_beta * conditions.initial_mesh_misalignment_um
+    chi_beta = 0.5 * sum(  # per-gear χ_β, averaged (Eq. 53)
+        running_in_factor_beta(conditions.running_in_group[i], conditions.sigma_hlim_mpa[i])
+        for i in range(2)
+    )
     mean_load = specific_load * k_v
+    f_bx = conditions.initial_mesh_misalignment_um  # explicit value (shaft analysis/RIKOR)
+    if f_bx <= 0.0:
+        f_bx = initial_mesh_misalignment_estimate_um(  # native ISO 6336-1 §7.5 estimate
+            conditions,
+            mean_load_n_mm=mean_load,
+            pinion_reference_diameter_mm=pinion_reference_diameter_mm or mean_diameter[0],
+            face_width_mm=face_width_mm,
+        )
+    f_by = chi_beta * f_bx  # F_βy = χ_β·F_βx (Eq. 45)
     k_hb = face_load_factor_flank(c_gb, f_by, mean_load)
     k_fb = face_load_factor_root(k_hb, width_to_height_ratio)
 

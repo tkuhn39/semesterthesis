@@ -15,7 +15,7 @@ import math
 from typing import Literal
 
 import numpy as np
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.api.stage_params import StageParams, _example_ste_path, kst_e_stage
@@ -288,14 +288,17 @@ def geometry_report(req: GeometryReportRequest) -> GeometryReport:
         balls = Pair(
             req.ball_diameter_gear1_mm or 1.75 * mn, req.ball_diameter_gear2_mm or 1.75 * mn
         )
-    return compute_geometry_report(
-        stage,
-        ball_diameter_mm=balls,
-        span_allowance_upper_mm=up,
-        span_allowance_lower_mm=low,
-        center_distance_allowance_mm=req.center_distance_allowance_mm,
-        fillet_contour_min_radius_mm=_fillet_min_radii(req, stage),
-    )
+    try:
+        return compute_geometry_report(
+            stage,
+            ball_diameter_mm=balls,
+            span_allowance_upper_mm=up,
+            span_allowance_lower_mm=low,
+            center_distance_allowance_mm=req.center_distance_allowance_mm,
+            fillet_contour_min_radius_mm=_fillet_min_radii(req, stage),
+        )
+    except ValueError as exc:  # e.g. helical stage (spur-only report, audit NRM-01)
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 # --------------------------------------------------------------------------- #
@@ -345,12 +348,28 @@ def tolerances(req: ToleranceRequest) -> ToleranceResponse:
 # Capacity — norm dispatch per gear by MATERIAL (steel → ISO 6336,             #
 # plastic → VDI 2736; user decision 2026-07-04, never mixed by role)           #
 # --------------------------------------------------------------------------- #
-class CapacityRequest(BaseModel):
-    # --- THE shared stage (single source of truth for the geometry) ---
-    stage: StageParams = Field(default_factory=StageParams)
-    # --- material kind per input slot (drives the norm dispatch) ---
+class MaterialParams(BaseModel):
+    """Material slots + catalog overrides — SHARED by /capacity and /dynamics (GAP-01:
+    both endpoints must evaluate the same materials or their K-factors disagree)."""
+
     pinion_material: MaterialKindName = "steel"
     wheel_material: MaterialKindName = "plastic"
+    # --- steel material ---
+    steel_modulus_mpa: float = 210000.0
+    steel_poisson: float = 0.30
+    steel_sigma_hlim_mpa: float = 1500.0
+    steel_sigma_flim_mpa: float = 430.0
+    # --- plastic material ---
+    plastic_modulus_mpa: float = 4156.0
+    plastic_poisson: float = 0.34
+    plastic_sigma_hlim_mpa: float = 60.0
+    plastic_sigma_flim_mpa: float = 35.0
+    plastic_yield_strength_mpa: float | None = None  # σ_S / R_p0.2 of the plastic
+
+
+class CapacityRequest(MaterialParams):
+    # --- THE shared stage (single source of truth for the geometry) ---
+    stage: StageParams = Field(default_factory=StageParams)
     # --- load & application (Welle / Getriebeeinheit) ---
     pinion_torque_nm: float = 7.85  # T_1
     pinion_speed_min1: float = 1000.0  # n_1
@@ -362,20 +381,25 @@ class CapacityRequest(BaseModel):
     # (bugfix 2026-08-05: the computed value was silently discarded before); a number
     # overrides it (legacy payloads with an explicit value keep their behaviour)
     face_load_factor: float | None = None
-    accuracy_grade: int | None = None  # ISO 1328-1 class; if set, derives f_pb/f_fα
+    accuracy_grade: int | None = None  # ISO 1328-1 class; if set, derives f_pb/f_fα/f_Hβ
     base_pitch_deviation_um: float = 6.0  # f_pb (ISO 1328) — used when no grade given
     profile_form_deviation_um: float = 5.0  # f_fα
+    # f_Hβ (helix slope) — used when no grade given; feeds the native F_βx estimate for
+    # K_Hβ (audit V-02: without it Method C degenerates to K_Hβ = 1). None → 0 (legacy).
+    helix_slope_deviation_um: float | None = None
+    # F_βx override in µm (shaft analysis / RIKOR); None → native ISO 6336-1 §7.5 estimate
+    mesh_misalignment_um: float | None = None
     # --- ISO 6336 conditions (steel) ---
     lubricant_viscosity_40_mm2s: float = 100.0  # ν_40
     flank_roughness_rz_um: float = 5.0  # R_zH
     root_roughness_rz_um: float = 20.0  # R_zF
     flank_life_factor: float = 1.0  # Z_NT
     root_life_factor: float = 1.0  # Y_NT
-    # --- steel material ---
-    steel_modulus_mpa: float = 210000.0
-    steel_poisson: float = 0.30
-    steel_sigma_hlim_mpa: float = 1500.0
-    steel_sigma_flim_mpa: float = 430.0
+    # ISO 6336-3 material group per gear (ρ′, Y_RrelT, Y_X curves; audit NRM-07: this was
+    # hardcoded to case-hardened for both gears) + the softer gear's hardness for Z_W
+    pinion_material_group: RootMaterialGroup = RootMaterialGroup.CASE_HARDENED
+    wheel_material_group: RootMaterialGroup = RootMaterialGroup.CASE_HARDENED
+    softer_gear_hardness_hb: float | None = None  # HB of the softer mating gear (Z_W)
     # --- VDI 2736 (plastic) conditions ---
     power_w: float = 1848.7  # P
     ambient_temperature_c: float = 80.0  # ϑ_0
@@ -389,12 +413,6 @@ class CapacityRequest(BaseModel):
     # --- static peak load (VDI 2736 §3.3) ---
     static_overload_factor: float | None = None  # K_A,stat (F_zmax/F_t); None → skip
     static_minimum_safety: float = 1.5  # S_Smin
-    plastic_yield_strength_mpa: float | None = None  # σ_S / R_p0.2 of the plastic
-    # --- plastic material ---
-    plastic_modulus_mpa: float = 4156.0
-    plastic_poisson: float = 0.34
-    plastic_sigma_hlim_mpa: float = 60.0
-    plastic_sigma_flim_mpa: float = 35.0
 
 
 class CapacityFactors(BaseModel):
@@ -464,7 +482,7 @@ class CapacityResponse(BaseModel):
     wheel: GearCapacity
 
 
-def _materials(req: CapacityRequest) -> Pair[Material]:
+def _materials(req: MaterialParams) -> Pair[Material]:
     """Per-slot materials from the catalog, with the request's property overrides."""
 
     def build(kind: MaterialKindName) -> Material:
@@ -532,13 +550,15 @@ def _run_capacity(
 
     # accuracy deviations: from the quality grade (ISO 1328-1) or the raw µm inputs
     if req.accuracy_grade is not None:
-        f_pb, f_fa = dynamics_deviations(
+        f_pb, f_fa, f_hb = dynamics_deviations(
             accuracy_grade=req.accuracy_grade,
             normal_module_mm=stage.normal_module_mm,
             reference_diameter_mm=stage.reference_diameter_mm[0],
+            face_width_mm=min(width),
         )
     else:
         f_pb, f_fa = req.base_pitch_deviation_um, req.profile_form_deviation_um
+        f_hb = req.helix_slope_deviation_um or 0.0
 
     # --- dynamics: native K_v / K_Hα, or override ---
     if req.compute_dynamics:
@@ -551,6 +571,10 @@ def _run_capacity(
                 pinion_speed_min1=req.pinion_speed_min1,
                 base_pitch_deviation_um=Pair(f_pb, f_pb),
                 profile_form_deviation_um=Pair(f_fa, f_fa),
+                # f_Hβ feeds the native F_βx estimate for K_Hβ (audit V-02); an explicit
+                # mesh-misalignment override (shaft analysis / RIKOR) wins
+                helix_slope_deviation_um=Pair(f_hb, f_hb),
+                initial_mesh_misalignment_um=req.mesh_misalignment_um or 0.0,
             ),
         )
         k_v, k_ha = dyn.dynamic_factor, dyn.transverse_factor_flank
@@ -584,9 +608,10 @@ def _run_capacity(
         lubricant_viscosity_40_mm2s=req.lubricant_viscosity_40_mm2s,
         flank_roughness_rz_um=req.flank_roughness_rz_um,
         root_roughness_rz_um=Pair(req.root_roughness_rz_um, req.root_roughness_rz_um),
-        material_group=Pair(RootMaterialGroup.CASE_HARDENED, RootMaterialGroup.CASE_HARDENED),
+        material_group=Pair(req.pinion_material_group, req.wheel_material_group),
         flank_life_factor=Pair(req.flank_life_factor, req.flank_life_factor),
         root_life_factor=Pair(req.root_life_factor, req.root_life_factor),
+        softer_gear_hardness_hb=req.softer_gear_hardness_hb,
     )
     kinds = (materials[0].kind, materials[1].kind)
     iso = (
@@ -646,8 +671,10 @@ def _run_capacity(
                 flank_safety=_round(r.flank_safety),
                 root_stress_mpa=round(r.root_stress_mpa, 3),
                 root_safety=_round(r.root_safety),
-                flank_permissible_mpa=_round(_safe_mul(r.flank_safety, r.flank_stress_mpa)),
-                root_permissible_mpa=_round(_safe_mul(r.root_safety, r.root_stress_mpa)),
+                # σ_P directly from the norm (Eq. 13/17) — no longer safety·stress, which
+                # broke once the safeties became TRUE S = σ_lim/σ (audit NRM-06)
+                flank_permissible_mpa=_round(r.permissible_flank_stress_mpa),
+                root_permissible_mpa=_round(r.permissible_root_stress_mpa),
                 form_factor=round(roots[i].form_factor_tip, 4),
                 stress_correction=round(roots[i].stress_correction_factor_tip, 4),
                 **section,
@@ -712,10 +739,6 @@ def _run_capacity(
     return CapacityResponse(factors=factors, pinion=gear_result(0), wheel=gear_result(1))
 
 
-def _safe_mul(safety: float | None, stress: float) -> float | None:
-    return safety * stress if safety is not None else None
-
-
 # NOTE: the former /api/evaluate route (its own copy of the geometry fields) is gone —
 # /api/capacity now carries THE shared StageParams, so one endpoint serves both cases
 # (single-source-of-truth decision 2026-07-04).
@@ -724,15 +747,17 @@ def _safe_mul(safety: float | None, stress: float) -> float | None:
 # --------------------------------------------------------------------------- #
 # Dynamics (native ISO 6336-1)                                                 #
 # --------------------------------------------------------------------------- #
-class DynamicsRequest(BaseModel):
+class DynamicsRequest(MaterialParams):
     stage: StageParams = Field(default_factory=StageParams)  # THE shared stage
-    pinion_material: MaterialKindName = "steel"
-    wheel_material: MaterialKindName = "plastic"
     pinion_speed_min1: float = 1000.0
     pinion_torque_nm: float = 7.85
     application_factor: float = 1.0
+    # same accuracy inputs as /capacity (GAP-01: both tabs must agree on the deviations)
+    accuracy_grade: int | None = None  # ISO 1328-1 class; if set, derives f_pb/f_fα/f_Hβ
     base_pitch_deviation_um: float = 6.0
     profile_form_deviation_um: float = 5.0
+    helix_slope_deviation_um: float | None = None  # f_Hβ — used when no grade given
+    mesh_misalignment_um: float | None = None  # F_βx override; None → native estimate
 
 
 class DynamicsResponse(BaseModel):
@@ -740,6 +765,7 @@ class DynamicsResponse(BaseModel):
     transverse_factor_flank: float
     transverse_factor_root: float
     face_load_factor_flank: float
+    face_load_factor_root: float
     mesh_stiffness: float
     reduced_mass: float
     resonance_speed_min1: float
@@ -762,17 +788,27 @@ def dynamics(req: DynamicsRequest) -> DynamicsResponse:
         pinion_reference_diameter_mm=stage.reference_diameter_mm[0],
         application_factor=req.application_factor,
     )
+    if req.accuracy_grade is not None:
+        f_pb, f_fa, f_hb = dynamics_deviations(
+            accuracy_grade=req.accuracy_grade,
+            normal_module_mm=stage.normal_module_mm,
+            reference_diameter_mm=stage.reference_diameter_mm[0],
+            face_width_mm=min(width),
+        )
+    else:
+        f_pb, f_fa = req.base_pitch_deviation_um, req.profile_form_deviation_um
+        f_hb = req.helix_slope_deviation_um or 0.0
     conditions = DynamicConditions(
         pinion_speed_min1=req.pinion_speed_min1,
-        base_pitch_deviation_um=Pair(req.base_pitch_deviation_um, req.base_pitch_deviation_um),
-        profile_form_deviation_um=Pair(
-            req.profile_form_deviation_um, req.profile_form_deviation_um
-        ),
+        base_pitch_deviation_um=Pair(f_pb, f_pb),
+        profile_form_deviation_um=Pair(f_fa, f_fa),
+        helix_slope_deviation_um=Pair(f_hb, f_hb),
+        initial_mesh_misalignment_um=req.mesh_misalignment_um or 0.0,
     )
     f = native_dynamic_factors(
         stage,
         roots,
-        Pair(catalog_material(req.pinion_material), catalog_material(req.wheel_material)),
+        _materials(req),
         load,
         conditions,
     )
@@ -786,6 +822,7 @@ def dynamics(req: DynamicsRequest) -> DynamicsResponse:
         transverse_factor_flank=round(f.transverse_factor_flank, 4),
         transverse_factor_root=round(f.transverse_factor_root, 4),
         face_load_factor_flank=round(f.face_load_factor_flank, 4),
+        face_load_factor_root=round(f.face_load_factor_root, 4),
         mesh_stiffness=round(f.mesh_stiffness_alpha, 3),
         reduced_mass=round(f.reduced_mass, 6),
         resonance_speed_min1=round(f.resonance_speed, 1),
@@ -1018,8 +1055,6 @@ def variation(req: VariationRequest) -> VariationResponse:
         addendum_factor=req.h_ap1.value,
         tool_addendum_factor=req.h_fp1.value,
         tool_tip_radius_factor=req.rho_fp1.value,
-        root_minimum_safety=req.root_minimum_safety,
-        flank_minimum_safety=req.flank_minimum_safety,
     )
     # Sobol needs a power-of-two count for balance (scipy warns otherwise) — round UP
     # and say so (honesty: never silently change the user's request)
@@ -1219,10 +1254,12 @@ def tooth_profile(req: StageParams) -> ToothProfileResponse:
     """Both gears' real tooth flanks for the mesh plot (Zahneingriff), from THE shared stage."""
     stage = req.stage()
     a = stage.working_center_distance_mm
-    pinion = _tooth_gear_from_profile(stage, 0, req.tip_relief(0))
-    wheel = _tooth_gear_from_profile(stage, 1, req.tip_relief(1)).model_copy(
-        update={"center_x_mm": round(a, 4)}
-    )
+    try:
+        pinion = _tooth_gear_from_profile(stage, 0, req.tip_relief(0))
+        wheel_gear = _tooth_gear_from_profile(stage, 1, req.tip_relief(1))
+    except ValueError as exc:  # e.g. helical stage (2-D profile is spur-only, NRM-02)
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    wheel = wheel_gear.model_copy(update={"center_x_mm": round(a, 4)})
     loa = line_of_action_points(stage)
     line = (
         LineOfAction(

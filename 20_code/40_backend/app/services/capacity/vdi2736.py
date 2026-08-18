@@ -229,9 +229,43 @@ def flank_stress(
     )
 
 
+def helix_factor(eps_beta: float, helix_angle_deg: float) -> float:
+    """Helix angle factor Y_β = 1 − ε_β·β/120° (VDI 2736-2 Eq. 12).
+
+    β is the helix angle at the reference cylinder in degrees. The norm caps BOTH inputs:
+    "Wenn ε_β > 1, setzt man ε_β = 1; wenn β > 30°, setzt man β = 30°". NOTE: VDI 2736
+    keeps the classic DIN form — deliberately different from ISO 6336-3:2019 Eq. 66
+    (per-norm fidelity; each branch uses its own norm's definition).
+    """
+    return 1.0 - min(eps_beta, 1.0) * min(abs(helix_angle_deg), 30.0) / 120.0
+
+
+def flank_helix_factor(helix_angle_deg: float) -> float:
+    """Flank helix (spiral angle) factor Z_β = √cos β for the VDI 2736 branch.
+
+    VDI 2736-2 gives no formula, only "Z_β ≤ 1" and that its flank factors come from
+    DIN 3990; DIN 3990-2:1987 Eq. (6.01) defines Z_β = √cos β (β at the reference
+    cylinder) — the opposite convention of ISO 6336-2:2019 Eq. 41 (√(1/cos β)),
+    which the ISO branch uses (per-norm fidelity).
+    """
+    return math.sqrt(math.cos(math.radians(helix_angle_deg)))
+
+
+# Stress correction factor Y_St ≈ 2.0 (VDI 2736-2 Eq. 13): the root strength limit is
+# σ_FG = Y_St·σ_Flim,N — σ_Flim,N (Bild 3/Tabelle 5) is a NOMINAL-stress fatigue value.
+# The FVA reference report prints "Spannungskorrekturfaktor YSt 2.000". Analogous to the
+# ISO branch's Y_ST = 2 in σ_FE = 2·σ_Flim (iso6336._basic_root_strength).
+STRESS_CORRECTION_YST = 2.0
+
+
 def permissible_root_stress(fatigue_strength_mpa: float, *, minimum_safety: float = 2.0) -> float:
-    """Permissible root stress σ_FP = σ_Flim,N(ϑ, N_L)/S_Fmin (VDI 2736)."""
-    return fatigue_strength_mpa / minimum_safety
+    """Permissible root stress σ_FP = σ_FG/S_Fmin with σ_FG = Y_St·σ_Flim,N (Eq. 13).
+
+    ``fatigue_strength_mpa`` is σ_Flim,N(ϑ, N_L) — the nominal-stress value the norm's
+    figures/tables give; Y_St ≈ 2.0 is applied here (added 2026-08-18: the adversarial
+    verify pass caught the missing Y_St — worked example A1 pins σ_FlimN 30 → σ_FP 30).
+    """
+    return STRESS_CORRECTION_YST * fatigue_strength_mpa / minimum_safety
 
 
 def permissible_flank_stress(
@@ -284,10 +318,16 @@ class Vdi2736GearResult(BaseModel):
     linear_wear_um: float  # W_m
     allowable_wear_um: float  # W_zul = 0.1·m_n
     deformation_mm: float  # λ
-    root_safety: float | None = None  # S_F
-    flank_safety: float | None = None  # S_H
+    # TRUE safeties per the norm check σ ≤ σ_P ⇔ S = σ_lim/σ ≥ S_min (fixed 2026-08-18,
+    # audit NRM-06: the old values were σ_P/σ = S/S_min — a utilization reserve mislabeled
+    # as S_F/S_H and then compared against S_min AGAIN in the UI/variation)
+    root_safety: float | None = None  # S_F = σ_FG/σ_F = Y_St·σ_Flim,N/σ_F
+    flank_safety: float | None = None  # S_H = σ_Hlim,N·Z_R/σ_H
+    permissible_root_stress_mpa: float | None = None  # σ_FP = Y_St·σ_Flim,N/S_Fmin (Eq. 13)
+    permissible_flank_stress_mpa: float | None = None  # σ_HP = σ_Hlim,N·Z_R/S_Hmin (Eq. 17)
     peak_root_stress_mpa: float | None = None  # σ_F,P at the static overload (eq. 23)
-    peak_root_safety: float | None = None  # S_static = (2·σ_S/S_Smin)/σ_F,P (eq. 24)
+    peak_root_safety: float | None = None  # S_stat = 2·σ_S/σ_F,P ≥ S_Smin (eq. 24)
+    permissible_peak_stress_mpa: float | None = None  # 2·σ_S/S_Smin
 
 
 def evaluate_vdi2736(
@@ -308,6 +348,8 @@ def evaluate_vdi2736(
     h_v = loss_factor(stage)
     u = stage.teeth[1] / stage.teeth[0]
     f_t = 2000.0 * conditions.torque_nm[0] / stage.reference_diameter_mm[0]
+    z_beta = flank_helix_factor(stage.helix_angle_deg)
+    y_beta = helix_factor(stage.overlap_ratio, stage.helix_angle_deg)
     sigma_h = flank_stress(
         stage,
         materials,
@@ -315,6 +357,7 @@ def evaluate_vdi2736(
         face_width_mm=common_face_width_mm,
         pinion_reference_diameter_mm=stage.reference_diameter_mm[0],
         gear_ratio=u,
+        helix_factor=z_beta,
         load_factor_kh=conditions.load_factor_flank,
     )
     y_eps = root_contact_ratio_factor(stage.transverse_contact_ratio)
@@ -364,6 +407,7 @@ def evaluate_vdi2736(
             form_factor_tip=root.form_factor_tip,
             stress_correction_tip=root.stress_correction_factor_tip,
             contact_ratio_factor=y_eps,
+            helix_factor=y_beta,
             load_factor_kf=conditions.load_factor_root,
         )
         wear = linear_wear_um(
@@ -395,18 +439,18 @@ def evaluate_vdi2736(
         # static peak load (VDI 2736 §3.3): σ_F,P = σ_F0·K_A,stat ≤ 2·σ_S/S_Smin
         peak_stress: float | None = None
         peak_safety: float | None = None
+        peak_permissible: float | None = None
         if conditions.static_overload_factor is not None:
             nominal = (
                 sigma_f / conditions.load_factor_root if conditions.load_factor_root else sigma_f
             )
             peak_stress = nominal * conditions.static_overload_factor
-            if material.yield_strength_mpa is not None and peak_stress > 0.0:
-                peak_safety = (
-                    permissible_peak_stress(
-                        material.yield_strength_mpa, minimum_safety=conditions.static_minimum_safety
-                    )
-                    / peak_stress
+            if material.yield_strength_mpa is not None:
+                peak_permissible = permissible_peak_stress(
+                    material.yield_strength_mpa, minimum_safety=conditions.static_minimum_safety
                 )
+                if peak_stress > 0.0:
+                    peak_safety = 2.0 * material.yield_strength_mpa / peak_stress
 
         results.append(
             Vdi2736GearResult(
@@ -418,10 +462,17 @@ def evaluate_vdi2736(
                 linear_wear_um=wear,
                 allowable_wear_um=0.1 * stage.normal_module_mm * 1000.0,
                 deformation_mm=deformation,
-                root_safety=sigma_fp / sigma_f if sigma_fp is not None else None,
-                flank_safety=sigma_hp / sigma_h if sigma_hp is not None else None,
+                root_safety=STRESS_CORRECTION_YST * root_strength / sigma_f
+                if root_strength is not None and sigma_f > 0.0
+                else None,
+                flank_safety=flank_strength * conditions.flank_roughness_factor / sigma_h
+                if flank_strength is not None and sigma_h > 0.0
+                else None,
+                permissible_root_stress_mpa=sigma_fp,
+                permissible_flank_stress_mpa=sigma_hp,
                 peak_root_stress_mpa=peak_stress,
                 peak_root_safety=peak_safety,
+                permissible_peak_stress_mpa=peak_permissible,
             )
         )
     return Pair(results[0], results[1])

@@ -135,3 +135,46 @@ def test_single_contact_factors_helical_overlap() -> None:
     )
     assert helical.overlap_ratio >= 1.0
     assert single_contact_factors(helical) == pytest.approx((1.0, 1.0))
+
+
+def test_helix_angle_factors_2019() -> None:
+    """Z_β = √(1/cos β) (ISO 6336-2:2019 eq. 41); Y_β caps ε_β ≤ 1, β ≤ 30° (6336-3 eq. 66/67)."""
+    import math
+
+    from app.services.capacity.iso6336 import helix_angle_factor_flank, helix_angle_factor_root
+
+    assert helix_angle_factor_flank(0.0) == pytest.approx(1.0)
+    assert helix_angle_factor_flank(20.0) == pytest.approx(
+        math.sqrt(1.0 / math.cos(math.radians(20.0)))
+    )
+    assert helix_angle_factor_flank(20.0) > 1.0  # 2019 convention (DIN 3990-2 had √cos β)
+    assert helix_angle_factor_root(0.0, 0.0) == pytest.approx(1.0)
+    # ε_β = 1.4153 caps at 1.0
+    assert helix_angle_factor_root(1.4153, 20.0) == pytest.approx(
+        (1.0 - 20.0 / 120.0) / math.cos(math.radians(20.0)) ** 3
+    )
+    # β = 35° caps at 30°
+    assert helix_angle_factor_root(0.5, 35.0) == pytest.approx(
+        (1.0 - 0.5 * 30.0 / 120.0) / math.cos(math.radians(30.0)) ** 3
+    )
+
+
+def test_zone_factor_uses_base_helix() -> None:
+    """Z_H uses β_b = asin(sin β·cos α_n), not β (audit NRM-03; spur is unaffected)."""
+    import math
+
+    helical = GearStage(
+        normal_module_mm=2.0,
+        teeth=Pair(25, 40),
+        normal_pressure_angle_deg=20.0,
+        helix_angle_deg=20.0,
+        face_width_mm=Pair(26.0, 26.0),
+        center_distance_mm=69.172,
+    )
+    beta_b = math.asin(math.sin(math.radians(20.0)) * math.cos(math.radians(20.0)))
+    alpha_t = math.radians(helical.transverse_pressure_angle_deg)
+    alpha_wt = math.radians(helical.working_pressure_angle_deg)
+    expected = math.sqrt(
+        2.0 * math.cos(beta_b) * math.cos(alpha_wt) / (math.cos(alpha_t) ** 2 * math.sin(alpha_wt))
+    )
+    assert zone_factor(helical) == pytest.approx(expected, rel=1e-9)

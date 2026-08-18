@@ -1,5 +1,17 @@
 # Consistency audit: analytical chain + display (2026-08-18)
 
+> **STATUS UPDATE (2026-08-18, ADR-025): the entire P1 block is FIXED** — NRM-01…NRM-09,
+> V-02 (native K_Hβ incl. the eq. 52/53 running-in averaging that had frozen χ_β = 0 for
+> mixed pairs), GAP-01 (shared `MaterialParams` request base + tab parity) and FEM-01
+> (deck interference check). Details: CHANGELOG "Fixed (audit round P1)" + ADR-025. One
+> deliberate deviation from a recommendation: NRM-04 uses VDI 2736-2 eq. 12 / DIN 3990-2
+> eq. 6.01 in the sweep (per-norm fidelity — the sweep's stress chain is the VDI tip-load
+> form), not the shared ISO helper. An adversarial verify pass over the fix diff caught
+> four additional defects (missing Y_St ≈ 2 in the VDI root check incl. the sweep limit,
+> the β ≤ 30° cap of VDI eq. 12, the all-velocity 3 µm y_α cap of eq. 79, and 500-instead-
+> of-422 on the helical guards' remaining routes) — all fixed in the same round (ADR-025
+> amendment). P2–P4 remain open. The findings below are kept as written (audit snapshot).
+
 > **Read-only audit — no code was changed.** Deliverable requested by the user: full report
 > first, decisions before fixes. Scope: the ANALYTICAL chain (geometry / norms / seven
 > root-fillet approaches / capacity), its frontend display and the HTML report; the FEM/deck

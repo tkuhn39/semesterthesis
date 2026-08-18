@@ -14,6 +14,7 @@ from app.services.capacity.iso6336_root_strength import (
     permissible_root_stress,
     relative_notch_sensitivity_factor,
     relative_surface_factor,
+    size_factor,
 )
 
 _EH = RootMaterialGroup.CASE_HARDENED  # both reference gears are case-hardened
@@ -51,3 +52,18 @@ def test_permissible_root_stress_de_circularises_safety() -> None:
     )
     assert helical == pytest.approx(714.1, abs=2.0)
     assert helical / 313.9 == pytest.approx(2.275, abs=0.02)
+
+
+def test_size_factor_table5_groups() -> None:
+    """Y_X per ISO 6336-3:2019 Table 5 (audit NRM-05): slopes and floors per group."""
+    for group in RootMaterialGroup:
+        assert size_factor(5.0, group) == 1.0  # m_n ≤ 5 → 1.0 for every group
+    # St, V (through-hardened/normalized): 1.03 − 0.006·m_n, floor 0.85
+    assert size_factor(10.0, RootMaterialGroup.THROUGH_HARDENED) == pytest.approx(0.97)
+    assert size_factor(45.0, RootMaterialGroup.NORMALIZED) == pytest.approx(0.85)
+    # Eh, IF, NT, NV: 1.05 − 0.01·m_n, floor 0.80
+    assert size_factor(10.0, RootMaterialGroup.CASE_HARDENED) == pytest.approx(0.95)
+    assert size_factor(30.0, RootMaterialGroup.NITRIDED) == pytest.approx(0.80)
+    # GG, GGG (ferr.): 1.075 − 0.015·m_n, floor 0.70
+    assert size_factor(10.0, RootMaterialGroup.CAST_IRON) == pytest.approx(0.925)
+    assert size_factor(30.0, RootMaterialGroup.CAST_IRON) == pytest.approx(0.70)

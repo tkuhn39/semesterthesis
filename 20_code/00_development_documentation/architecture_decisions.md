@@ -1033,3 +1033,63 @@ ISO/TS 6336-20/-21 (primary sources now in the repo, pdftotext-readable), the in
 Z_L/Z_v/Z_R/Z_W/Z_X and Y_δrelT/Y_RrelT/Y_X sub-factors as explicit response fields (they
 are currently folded into σ_HP/σ_FP inside the strength modules), and the DIN 3967
 allowance-series tables as an input alternative to direct A_W values.
+
+## ADR-025: Audit round P1 — per-norm helix fidelity, TRUE VDI safeties, native F_βx, guarded spur-only paths
+
+**Date:** 2026-08-18 · **Status:** Accepted
+
+**Context:** The 11-agent consistency audit (`consistency_audit_2026-08-18.md`) confirmed
+that the validated kst-E path is correct but flagged P1 defects that produce
+plausible-looking wrong numbers off that path: helical capacity factors silently dropped
+(NRM-03/04), the Y_X group map scrambled (NRM-05), VDI "safeties" that already contained
+S_min and were compared against S_min again (NRM-06), an inert K_Hβ Method C (V-02, the
+kst-E reference prints 1.19), diverging Dynamikfaktoren/Tragfähigkeit results (GAP-01),
+hardcoded material group/density (NRM-07/08), unguarded spur-only geometry paths
+(NRM-01/02), a missing 0.001·d term (NRM-09) and deck endpoints skipping the fillet
+interference check (FEM-01). User direction: fix ALL of P1, nothing forgotten.
+
+**Decision:**
+1. **Per-norm helix fidelity, no shared Y_β/Z_β.** Each branch implements its own norm's
+   definition: ISO branch Z_β = √(1/cos β) (6336-2:2019 eq. 41) and Y_β with the 2019
+   1/cos³β term and ε_β ≤ 1 / β ≤ 30° caps (6336-3:2019 eq. 66/67), computed NATIVELY in
+   `evaluate_iso6336` (the never-set load-case field was removed — a caller cannot forget
+   it again); VDI branch Y_β = 1 − min(ε_β,1)·β/120° (2736-2 eq. 12) and Z_β = √cos β
+   (VDI gives no formula, states Z_β ≤ 1 and sources its flank factors from DIN 3990 →
+   DIN 3990-2:1987 eq. 6.01, verified from the repo PDF). The Stufenvariation kernel uses
+   the VDI pair (its stress chain is the VDI tip-load form). This knowingly deviates from
+   the audit's "shared helper" recommendation — norm fidelity beats DRY here.
+2. **TRUE safeties everywhere** (NRM-06): S = σ_lim/σ; the norm's σ_P (which carries
+   S_min per VDI eq. 13/17/24) is a separate explicit field. Downstream S ≥ S_min
+   comparisons (GearCard tones, variation Pareto/report threshold) are thereby correct.
+3. **F_βx estimation is native** (V-02): ISO 6336-1:2019 §7.5 eq. 54/58/61/66 with the
+   optional eq. 59 pinion-shaft route (d_sh, l, s, K′ inputs); f_Hβ comes from the
+   accuracy grade (`dynamics_deviations` returns a triple now) or a direct input; an
+   explicit F_βx override wins. Running-in per eq. 52/53: per-gear y/χ averaged for mixed
+   materials — min(σ_Hlim) had frozen χ_β to 0 for steel–plastic pairs.
+4. **One request base for materials** (GAP-01): `MaterialParams` is shared by
+   `/api/capacity` and `/api/dynamics`; the Dynamikfaktoren tab and the report send the
+   same store values (parity is API-test-pinned).
+5. **Refuse instead of degrade** (NRM-01/02): the spur-only SSOT report and the 2-D
+   ToothProfile raise for β ≠ 0 (422) until helical support exists.
+6. **Deck safety** (FEM-01): all deck/pair endpoints run both gears' fillets through the
+   mating-tip interference check; standard/trochoid stay uncheckable by design.
+
+**Consequences:** 256 backend tests (new pins: Y_X per group incl. m_n > 5, ISO/VDI helix
+factors, F_βx hand-checks for both routes, TRUE-safety identities, capacity↔dynamics API
+parity, helical-422 guards); kst-E spur values unchanged except K_Hβ/K_Fβ, which now come
+out ≈ 1.12/1.10 natively at Q7 (reference 1.19 under the 1987 estimation model — the 2019
+§7.5 estimate differs by design, ADR-011). VDI safeties change value semantics: S_F is now
+S_min times larger than before (the UI thresholds compare correctly); consumers of the old
+`root_safety` must re-read it as a TRUE safety. `VariationSpec` lost its unused
+`*_minimum_safety` fields (the API request keeps them for the report threshold).
+
+**Amendment (same day, adversarial verify pass):** a 5-agent refutation round over the P1
+diff (each fix area re-derived from the norm PDFs) found four defects that were fixed
+before commit: the VDI root check omitted **Y_St ≈ 2.0** (Eq. 13, σ_FG = Y_St·σ_FlimN —
+worked example A1 and the FVA reference's printed Y_St 2.000 pin it; the sweep's root
+limit is 2·σ_Flim for the same reason on both norm branches), VDI Eq. 12 also caps β at
+30°, the y_α running-in cap for Eh/IF/NT/NV is 3 µm at all velocities (eq. 79), and the
+new helical ValueError guards needed 422 mapping on every profile-consuming route
+(tooth-profile, mesh preview/3d, decks, FEM postprocessing). The verify pass also
+confirmed the rest of the diff against the rendered norm pages (Z_β radical, Y_β 1/cos³
+term and caps, Eq. 54/58/59/61/66 transcriptions, B1 = B2 = 1 per Table 12, F_m = K_A·K_v·F_t).

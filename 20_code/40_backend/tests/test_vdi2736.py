@@ -127,7 +127,7 @@ def test_permissible_peak_stress() -> None:
 
 @pytest.mark.skipif(not _REF_STE.exists(), reason="kst-E reference .ste not present")
 def test_static_peak_load() -> None:
-    """σ_F,P = σ_F0·K_A,stat and S_static = (2·σ_S/S_Smin)/σ_F,P for the plastic wheel."""
+    """σ_F,P = σ_F0·K_A,stat; S_stat = 2·σ_S/σ_F,P is a TRUE safety (audit NRM-06)."""
     stage, roots, _materials, base = _case()
     materials = Pair(
         _materials[0],
@@ -149,7 +149,55 @@ def test_static_peak_load() -> None:
     assert wheel.peak_root_stress_mpa is not None
     assert wheel.peak_root_stress_mpa == pytest.approx(wheel.root_stress_mpa * k_stat, rel=1e-6)
     assert wheel.peak_root_safety == pytest.approx(
-        (2.0 * 70.0 / 1.5) / wheel.peak_root_stress_mpa, rel=1e-6
+        (2.0 * 70.0) / wheel.peak_root_stress_mpa, rel=1e-6
+    )
+    # the permissible peak stress carries S_Smin explicitly (check stays σ_F,P ≤ σ_P)
+    assert wheel.permissible_peak_stress_mpa == pytest.approx(2.0 * 70.0 / 1.5, rel=1e-6)
+
+
+def test_helix_factors_vdi() -> None:
+    """Y_β = 1 − min(ε_β,1)·β/120° (VDI 2736-2 Eq. 12); Z_β = √cos β (DIN 3990-2 Eq. 6.01)."""
+    import math
+
+    from app.services.capacity.vdi2736 import flank_helix_factor, helix_factor
+
+    assert helix_factor(0.0, 0.0) == pytest.approx(1.0)
+    assert helix_factor(0.5, 20.0) == pytest.approx(1.0 - 0.5 * 20.0 / 120.0)
+    assert helix_factor(1.8, 30.0) == pytest.approx(0.75)  # ε_β capped at 1
+    assert helix_factor(1.0, 40.0) == pytest.approx(0.75)  # β capped at 30° (norm text)
+    assert flank_helix_factor(0.0) == pytest.approx(1.0)
+    assert flank_helix_factor(20.0) == pytest.approx(math.sqrt(math.cos(math.radians(20.0))))
+    assert flank_helix_factor(20.0) < 1.0  # VDI states Z_β ≤ 1 (unlike ISO 6336-2:2019)
+
+
+@pytest.mark.skipif(not _REF_STE.exists(), reason="kst-E reference .ste not present")
+def test_true_safeties_and_permissibles() -> None:
+    """TRUE safeties (audit NRM-06): S_F = Y_St·σ_FlimN/σ_F (Eq. 13, Y_St = 2 — the
+    adversarial verify pass caught the missing Y_St), S_H = σ_HlimN·Z_R/σ_H (Eq. 17);
+    σ_P carries S_min separately."""
+    stage, roots, base_materials, conditions = _case()
+    materials = Pair(
+        base_materials[0],
+        base_materials[1].model_copy(update={"sigma_flim_mpa": 30.0, "sigma_hlim_mpa": 25.0}),
+    )
+    _pin, wheel = evaluate_vdi2736(
+        stage,
+        roots,
+        materials,
+        conditions,
+        root_face_width_mm=Pair(17.0, 15.0),
+        common_face_width_mm=15.0,
+    )
+    assert wheel.root_safety == pytest.approx(2.0 * 30.0 / wheel.root_stress_mpa, rel=1e-9)
+    assert wheel.flank_safety == pytest.approx(25.0 / wheel.flank_stress_mpa, rel=1e-9)
+    # σ_FP = Y_St·σ_Flim,N/S_Fmin = 2·30/2 = 30 (matches the norm's worked example A1:
+    # σ_FlimN = 30 N/mm² → σ_FP = 30 N/mm²); σ_HP = σ_Hlim,N·Z_R/S_Hmin
+    assert wheel.permissible_root_stress_mpa == pytest.approx(30.0, rel=1e-9)
+    assert wheel.permissible_flank_stress_mpa == pytest.approx(25.0 / 1.4, rel=1e-9)
+    # consistency: S ≥ S_min ⇔ σ ≤ σ_P (same verdict from both forms)
+    assert wheel.root_safety is not None and wheel.permissible_root_stress_mpa is not None
+    assert (wheel.root_safety >= 2.0) == (
+        wheel.root_stress_mpa <= wheel.permissible_root_stress_mpa
     )
 
 

@@ -42,9 +42,9 @@ def test_flank_tolerances_grade5_reference() -> None:
     )
     assert t.single_pitch == 6.0  # f_ptT (0.1+0.8+5)=5.9 → 6.0
     assert t.total_pitch == 19.0  # F_pT (0.2+5.5+1.4+12)=19.1 → 19
-    assert t.profile_slope == 4.8  # f_HαT 4.8
+    assert t.profile_slope == 4.9  # f_HαT (0.8+0.1+4)=4.9 (eq. 7 incl. 0.001·d, NRM-09)
     assert t.profile_form == 6.0  # f_fαT 6.1 → 6.0
-    assert t.profile_total == 8.0  # F_αT √(4.8²+6.1²)=7.76 → 8.0 (unrounded components)
+    assert t.profile_total == 8.0  # F_αT √(4.9²+6.1²)=7.82 → 8.0 (unrounded components)
     assert t.helix_slope == 6.0  # f_HβT 6.065 → 6.0
     assert t.helix_form == 6.5  # f_fβT 6.713 → 6.5
     assert t.helix_total == 9.0  # F_βT √(6.065²+6.713²)=9.05 → 9.0
@@ -60,15 +60,16 @@ def test_grade6_is_grade5_times_sqrt2() -> None:
 
 
 def test_dynamics_deviations_from_grade() -> None:
-    """The dynamics helper returns (f_pb=f_ptT, f_fα=f_fαT)."""
-    f_pb, f_fa = dynamics_deviations(
-        accuracy_grade=6, normal_module_mm=2.0, reference_diameter_mm=100.0
+    """The dynamics helper returns (f_pb=f_ptT, f_fα=f_fαT, f_Hβ=f_HβT)."""
+    f_pb, f_fa, f_hb = dynamics_deviations(
+        accuracy_grade=6, normal_module_mm=2.0, reference_diameter_mm=100.0, face_width_mm=10.0
     )
     full = flank_tolerances(
         accuracy_grade=6, normal_module_mm=2.0, reference_diameter_mm=100.0, face_width_mm=10.0
     )
     assert f_pb == full.single_pitch
     assert f_fa == full.profile_form
+    assert f_hb == full.helix_slope
 
 
 def test_validity_ranges() -> None:

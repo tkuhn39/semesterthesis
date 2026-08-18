@@ -19,8 +19,9 @@ Standards basis & validation rule: ADR-011/013.
   mesh), the reduced mass `m_red` (§6.5.9), the resonance ratio `N`, **`K_v` Method B**
   (eq. 13–22), **`K_Hα`/`K_Fα`** (§7.6) and **`K_Hβ`/`K_Fβ` Method C** (eq. 41–44).
   `compute_dynamic_factors` / `native_dynamic_factors` return a `DynamicFactors`. The
-  accuracy deviations (`f_pb`, `f_fα`) and the mesh misalignment `F_βx` are inputs
-  (the latter is RIKOR's job; `K_Hβ` Method B is deferred). ADR-014.
+  accuracy deviations (`f_pb`, `f_fα`, `f_Hβ`) are inputs; the mesh misalignment `F_βx`
+  is either an explicit override (shaft analysis / RIKOR) or estimated natively per
+  §7.5 (eq. 54/58/59/61/66, audit V-02; `K_Hβ` Method B is deferred). ADR-014.
 - **`iso6336_root_strength.py`** — ISO 6336-3 root factors `Y_RrelT`, `Y_δrelT`, `Y_X`.
 - **`iso6336_flank_strength.py`** — ISO 6336-2 flank factors `Z_L`, `Z_v`, `Z_R`, `Z_W`, `Z_X`.
 - **`vdi2736.py`** — plastic gears (VDI 2736 Blatt 2): `evaluate_vdi2736` returns root
@@ -28,10 +29,15 @@ Standards basis & validation rule: ADR-011/013.
   `Z_E`/`Z_H`/`Z_ε`), the **tooth temperature** ϑ (frictional heat, eq. 9), the **wear**
   `W_m` (eq. 19) and the **deformation** λ (eq. 22); the loss factor `H_V` (Wimmer) and
   the active-flank length `l_Fl` are native. Strength limits σ_Flim/σ_Hlim are read
-  temperature- and cycle-dependent from the material (Table 5). The **static peak
-  load** (§3.3) is optional: σ_F,P = σ_F0·K_A,stat ≤ 2·σ_S/S_Smin (yield-based,
-  `permissible_peak_stress`), reported as `peak_root_stress_mpa`/`peak_root_safety`
-  when a static overload factor and the material yield σ_S are given. ADR-015.
+  temperature- and cycle-dependent from the material (Table 5). All safeties are
+  **TRUE** safeties (audit NRM-06): S_F = σ_FG/σ_F with σ_FG = **Y_St·σ_FlimN**
+  (eq. 13, Y_St ≈ 2 — σ_FlimN is a nominal-stress value), S_H = σ_HlimN·Z_R/σ_H; the
+  permissible stresses σ_FP/σ_HP (carrying S_min) are separate result fields. Helix
+  factors: Y_β per eq. 12 (ε_β ≤ 1, β ≤ 30°), Z_β = √cos β (DIN 3990-2 — VDI's own
+  convention, not ISO 2019). The
+  **static peak load** (§3.3) is optional: σ_F,P = σ_F0·K_A,stat ≤ 2·σ_S/S_Smin
+  (yield-based), reported as `peak_root_stress_mpa`/`peak_root_safety` when a static
+  overload factor and the material yield σ_S are given. ADR-015.
 
 ## Validated against two complete references
 

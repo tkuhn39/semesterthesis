@@ -55,13 +55,35 @@ def elasticity_factor(pinion: Material, wheel: Material) -> float:
 
 
 def zone_factor(stage: GearStage) -> float:
-    """Zone factor Z_H = √(2 cos β_b cos α_wt / (cos²α_t sin α_wt)) (DIN 3990-2; β_b=0 spur)."""
+    """Zone factor Z_H = √(2 cos β_b cos α_wt / (cos²α_t sin α_wt)) (ISO 6336-2:2019 §6).
+
+    β_b = asin(sin β · cos α_n) is the base helix angle (ISO 21771); it reduces to 0 for
+    spur gears. Fixed 2026-08-18 (audit NRM-03): β_b was hardcoded 0 before.
+    """
     alpha_t = math.radians(stage.transverse_pressure_angle_deg)
     alpha_wt = math.radians(stage.working_pressure_angle_deg)
-    beta_b = 0.0  # spur; helical base helix angle added with the helical validation
+    alpha_n = math.radians(stage.normal_pressure_angle_deg)
+    beta = math.radians(stage.helix_angle_deg)
+    beta_b = math.asin(math.sin(beta) * math.cos(alpha_n))
     return math.sqrt(
         2.0 * math.cos(beta_b) * math.cos(alpha_wt) / (math.cos(alpha_t) ** 2 * math.sin(alpha_wt))
     )
+
+
+def helix_angle_factor_flank(helix_angle_deg: float) -> float:
+    """Helix angle factor Z_β = √(1/cos β) (ISO 6336-2:2019 Eq. 41, β = reference helix)."""
+    return math.sqrt(1.0 / math.cos(math.radians(helix_angle_deg)))
+
+
+def helix_angle_factor_root(eps_beta: float, helix_angle_deg: float) -> float:
+    """Helix angle factor Y_β = (1 − ε_β·β/120°)·1/cos³β (ISO 6336-3:2019 Eq. 66/67).
+
+    β is the REFERENCE helix angle in degrees; ε_β is substituted by 1.0 when ε_β > 1 and
+    β by 30° when β > 30° (the 2019 edition's 1/cos³β term lets Y_β exceed 1, Figure 8).
+    """
+    eps = min(eps_beta, 1.0)
+    beta = min(abs(helix_angle_deg), 30.0)
+    return (1.0 - eps * beta / 120.0) / math.cos(math.radians(beta)) ** 3
 
 
 def flank_contact_ratio_factor(eps_alpha: float, eps_beta: float) -> float:
@@ -113,7 +135,6 @@ class Iso6336LoadCase(BaseModel):
     face_load_factor_root: float = 1.0  # K_Fβ
     transverse_factor_flank: float = 1.0  # K_Hα
     transverse_factor_root: float = 1.0  # K_Fα
-    helix_factor_root: float = 1.0  # Y_β
 
 
 class Iso6336Conditions(BaseModel):
@@ -199,6 +220,19 @@ def native_dynamic_factors(
         gen[0].tool.dedendum_factor or gen[0].tool.addendum_factor,
         gen[1].tool.dedendum_factor or gen[1].tool.addendum_factor,
     )
+    # per-gear material data (audit NRM-08: densities and σ_Hlim follow the materials —
+    # a plastic wheel is ~5.6× lighter than the former steel default)
+    if dynamics.density_kg_m3 == Pair(7800.0, 7800.0):
+        dynamics = dynamics.model_copy(
+            update={
+                "density_kg_m3": Pair(
+                    materials[0].density_kg_m3 or 7800.0, materials[1].density_kg_m3 or 7800.0
+                ),
+                "sigma_hlim_mpa": Pair(
+                    materials[0].sigma_hlim_mpa or 1500.0, materials[1].sigma_hlim_mpa or 1500.0
+                ),
+            }
+        )
     return compute_dynamic_factors(
         dynamics,
         pinion_teeth=stage.teeth[0],
@@ -218,6 +252,7 @@ def native_dynamic_factors(
         application_factor=load.application_factor,
         flank_contact_ratio_factor=z_eps,
         width_to_height_ratio=load.common_face_width_mm / tooth_height,
+        pinion_reference_diameter_mm=stage.reference_diameter_mm[0],
     )
 
 
@@ -251,10 +286,15 @@ def evaluate_iso6336(
     z_e = elasticity_factor(materials[0], materials[1])
     z_h = zone_factor(stage)
     z_eps = flank_contact_ratio_factor(stage.transverse_contact_ratio, stage.overlap_ratio)
+    z_beta = helix_angle_factor_flank(stage.helix_angle_deg)  # 1.0 for spur
+    # Y_β natively from the stage (fixed 2026-08-18, audit NRM-03: the former load-case
+    # field defaulted to 1.0 and no caller ever set it — helical root stress was too high)
+    y_beta = helix_angle_factor_root(stage.overlap_ratio, stage.helix_angle_deg)
     sigma_h0 = (
         z_h
         * z_e
         * z_eps
+        * z_beta
         * math.sqrt(
             load.tangential_force_n
             / (load.pinion_reference_diameter_mm * load.common_face_width_mm)
@@ -289,7 +329,7 @@ def evaluate_iso6336(
             / (load.root_face_width_mm[index] * stage.normal_module_mm)
             * root.form_factor
             * root.stress_correction_factor
-            * load.helix_factor_root
+            * y_beta
         )
         sigma_f = sigma_f0 * k_root
 

@@ -66,8 +66,6 @@ class VariationSpec:
     dynamic_factor: float = 1.0  # K_v (scalar for the sweep; native kernel later)
     face_load_factor: float = 1.0  # K_Hβ / K_Fβ
     transverse_factor: float = 1.0  # K_Hα / K_Fα
-    root_minimum_safety: float = 1.4
-    flank_minimum_safety: float = 1.0
 
     def _value(self, name: str, grid: dict[str, Array]) -> Array:
         if name in grid:
@@ -223,7 +221,9 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
     z_eps = kernel.flank_contact_ratio_factor(
         geometry.transverse_contact_ratio, geometry.overlap_ratio
     )
-    z_beta = 1.0 / np.sqrt(np.cos(beta))
+    # Z_β = √cos β (DIN 3990-2:1987 Eq. 6.01 — the VDI 2736 chain's convention, "Z_β ≤ 1";
+    # fixed 2026-08-18, audit NRM-04: was the ISO 6336-2:2019 form 1/√cos β)
+    z_beta = np.sqrt(np.cos(beta))
     sigma_h = kernel.flank_stress(
         elasticity=z_e,
         zone=z_h,
@@ -236,7 +236,15 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
         load_factor_kh=k_h,
     )
 
-    y_beta = 1.0 - geometry.overlap_ratio * np.radians(spec.normal_pressure_angle_deg) / 120.0
+    # Y_β = 1 − min(ε_β,1)·min(β,30°)/120° (VDI 2736-2 Eq. 12 with BOTH norm caps;
+    # fixed 2026-08-18, audit NRM-04: the old line fed the *pressure angle in radians*
+    # instead of the helix angle in degrees)
+    y_beta = (
+        1.0
+        - np.minimum(geometry.overlap_ratio, 1.0)
+        * np.minimum(np.abs(np.degrees(beta)), 30.0)
+        / 120.0
+    )
     sigma_f: list[Array] = []
     s_f: list[Array] = []
     s_h: list[Array] = []
@@ -249,14 +257,18 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
             form_factor_tip=roots[i].form_factor_tip,
             stress_correction_tip=roots[i].stress_correction_tip,
             transverse_contact_ratio=geometry.transverse_contact_ratio,
-            helix_factor=np.clip(y_beta, 0.75, 1.0),
+            helix_factor=y_beta,
             load_factor_kf=k_h,
         )
         sigma_f.append(stress)
-        sigma_fp = _permissible_root(spec.materials[i], spec.root_minimum_safety, warnings, i)
-        sigma_hp = _permissible_flank(spec.materials[i], spec.flank_minimum_safety, warnings, i)
-        s_f.append(sigma_fp / stress if sigma_fp is not None else np.full_like(stress, np.nan))
-        s_h.append(sigma_hp / sigma_h if sigma_hp is not None else np.full_like(sigma_h, np.nan))
+        # TRUE safeties S = σ_lim/σ (fixed 2026-08-18, audit NRM-06: the old values were
+        # (σ_lim/S_min)/σ and were then compared against S_min AGAIN downstream)
+        root_limit = _root_limit(spec.materials[i], warnings, i)
+        flank_limit = _flank_limit(spec.materials[i], warnings, i)
+        s_f.append(root_limit / stress if root_limit is not None else np.full_like(stress, np.nan))
+        s_h.append(
+            flank_limit / sigma_h if flank_limit is not None else np.full_like(sigma_h, np.nan)
+        )
 
     valid = kernel.validity_mask(geometry, roots)
     # the batch shape comes from the swept arrays — geometry may stay scalar when the
@@ -290,25 +302,24 @@ def evaluate(spec: VariationSpec, grid: dict[str, Array]) -> VariationResult:
     )
 
 
-def _permissible_root(
-    material: Material, minimum_safety: float, warnings: list[str], index: int
-) -> Array | None:
+def _root_limit(material: Material, warnings: list[str], index: int) -> Array | None:
     limit = material.sigma_flim_mpa
     if limit is None:
         warnings.append(f"gear {index + 1}: no sigma_Flim - root safety skipped")
         return None
-    # sigma_Flim is already the gear root limit (DIN 3990 / VDI 2736).
-    return _a(limit / minimum_safety)
+    # Root strength limit = 2·σ_Flim: the σ_Flim inputs are NOMINAL-stress fatigue values,
+    # so the stress correction factor doubles them in both norms — Y_St ≈ 2 for plastics
+    # (VDI 2736-2 Eq. 13, σ_FG = Y_St·σ_FlimN) and Y_ST = 2 for steel (ISO 6336-3,
+    # σ_FE = 2·σ_Flim). Added 2026-08-18 (adversarial verify pass on the NRM-06 fix).
+    return _a(2.0 * limit)
 
 
-def _permissible_flank(
-    material: Material, minimum_safety: float, warnings: list[str], index: int
-) -> Array | None:
+def _flank_limit(material: Material, warnings: list[str], index: int) -> Array | None:
     limit = material.sigma_hlim_mpa
     if limit is None:
         warnings.append(f"gear {index + 1}: no sigma_Hlim - flank safety skipped")
         return None
-    return _a(limit / minimum_safety)
+    return _a(limit)
 
 
 def pareto_front(objectives: list[Array], *, maximize: list[bool]) -> BoolArray:

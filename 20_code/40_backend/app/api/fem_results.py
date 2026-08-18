@@ -118,7 +118,10 @@ def fem_results(req: FemResultsRequest) -> FemResultsResponse:
     p_et = stage.transverse_base_pitch_mm
     # extended range d_Nf … d_Na: the root form circles come from the validated
     # tooth-profile chain (same d_Ff the mesher and the contour preview use)
-    d_ff = (ToothProfile.from_stage(stage, 0).d_Ff, ToothProfile.from_stage(stage, 1).d_Ff)
+    try:
+        d_ff = (ToothProfile.from_stage(stage, 0).d_Ff, ToothProfile.from_stage(stage, 1).d_Ff)
+    except ValueError as exc:  # e.g. helical stage (2-D profile is spur-only, NRM-02)
+        raise HTTPException(422, str(exc)) from exc
     xi_min = min(xi_a, _unwrap(rb[0], rw_sin[0], 1.0, d_ff[0] / 2.0))
     xi_max = max(xi_e, _unwrap(rb[1], rw_sin[1], -1.0, d_ff[1] / 2.0))
     markers = LineOfActionMarkers(

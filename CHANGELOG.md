@@ -9,6 +9,71 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Fixed (audit round P1 — analytical correctness, 2026-08-18, ADR-025)
+All P1 findings of `20_code/00_development_documentation/consistency_audit_2026-08-18.md`,
+every formula re-verified against the repo's norm PDFs (primary sources):
+- **NRM-03 — helical capacity factors live**: Z_H now uses the real base helix angle
+  β_b = asin(sin β·cos α_n); σ_H0 carries Z_β = √(1/cos β) (ISO 6336-2:2019 eq. 41);
+  σ_F0 carries Y_β = (1 − min(ε_β,1)·min(β,30°)/120°)/cos³β (ISO 6336-3:2019 eq. 66/67),
+  computed natively inside `evaluate_iso6336` (the never-set load-case field is gone).
+- **NRM-04 — Stufenvariation helix factors**: the sweep's Y_β fed the *pressure angle in
+  radians* instead of the helix angle in degrees (plus a non-norm clip) — now VDI 2736-2
+  eq. 12; the sweep's Z_β switched from the ISO-2019 form to DIN 3990-2 eq. 6.01
+  (√cos β), consistent with its VDI-form tip-load stress chain.
+- **NRM-05 — Y_X Table 5 un-scrambled** (ISO 6336-3:2019): St/V → 1.03 − 0.006·m_n
+  (floor 0.85), Eh/IF/NT/NV → 1.05 − 0.01·m_n (floor 0.80), GG/GGG ferr. → 1.075 −
+  0.015·m_n (floor 0.70); m_n ≤ 5 → 1.0. Test-pinned per group.
+- **NRM-06 — VDI 2736 TRUE safeties**: S_F = σ_Flim,N/σ_F, S_H = σ_Hlim,N·Z_R/σ_H and
+  S_stat = 2·σ_S/σ_F,P (the old values were σ_P/σ = S/S_min and were compared against
+  S_min AGAIN downstream); the norm's permissible stresses σ_FP/σ_HP/2σ_S/S_Smin
+  (eq. 13/17/24, carrying S_min) are now explicit result fields, and the API maps them
+  directly instead of reconstructing safety×stress. The Stufenvariation safeties are
+  true safeties too, so the S ≥ S_min verdicts in the UI/report are now correct. VDI
+  helix factors wired: Y_β per eq. 12, Z_β = √cos β (DIN 3990-2 — VDI's convention).
+- **V-02 — native K_Hβ activated**: F_βx is estimated per ISO 6336-1:2019 §7.5
+  (eq. 54/58/59/61/66: f_sh from f_Hβ1 or the full pinion-shaft formula with K′, f_ma =
+  √(f_Hβ1²+f_Hβ2²), floor max(0.005·F_m/b, 0.5·f_Hβ)) whenever f_Hβ is known — from the
+  accuracy grade (`dynamics_deviations` now returns f_Hβ too) or a direct µm input; an
+  explicit `mesh_misalignment_um` override (shaft analysis/RIKOR) wins. Running-in now
+  follows eq. 52/53: per-gear y_α/χ_β averaged for mixed materials (min(σ_Hlim) had
+  frozen χ_β = 0 for steel–plastic, keeping K_Hβ inert). kst-E @ Q7 now yields
+  K_Hβ ≈ 1.12 natively (reference 1.19 with the 1987 estimation model).
+- **GAP-01 — Dynamikfaktoren ≡ Tragfähigkeit**: `/api/dynamics` accepts the same
+  accuracy grade + material overrides as `/api/capacity` (shared `MaterialParams`
+  request base), the tab sends the shared store values, and the HTML report's dynamics
+  block uses the capacity context; K_Fβ is now in the response. API-parity test-pinned.
+- **NRM-07 — material group + Z_W inputs**: ISO 6336-3 material group per gear and the
+  softer gear's HB (Z_W) are request fields (store + Werkstoff tab rows) instead of a
+  hardcoded CASE_HARDENED pair.
+- **NRM-08 — per-material dynamics data**: m_red/running-in use each gear's density and
+  σ_Hlim from the material slots (a plastic wheel is ~5.6× lighter than the former
+  steel default).
+- **NRM-01/NRM-02 — helical guards**: `compute_geometry_report` and
+  `ToothProfile.from_stage` now REFUSE β ≠ 0 (422 on the endpoints) instead of silently
+  returning spur-formula numbers for helical input.
+- **NRM-09 — ISO 1328-1 eq. 7**: f_HαT gained the missing 0.001·d term (grade-5
+  reference values re-pinned).
+- **FEM-01 — deck interference check**: `/api/mesh/deck`, `/deck-series` and `/pair`
+  route both gears' fillets through the mating-tip interference check (422 on
+  interference) instead of instantiating the strategies unchecked.
+- Pre-existing E501 long lines in `api/report.py` (from the sub-factor round) cleaned up.
+- **Adversarial verify pass over the P1 diff** (5 independent agents against the norm
+  PDFs) caught and fixed four more defects before commit:
+  - **Missing Y_St ≈ 2.0** in the VDI root check (Eq. 13: σ_FG = Y_St·σ_FlimN — the
+    norm's worked example A1 pins σ_FlimN 30 → σ_FP 30 N/mm², and the FVA reference
+    prints Y_St 2.000): `root_safety`/`permissible_root_stress_mpa` were a factor 2 too
+    small (systematically conservative, opposite pass/fail verdict vs the norm). Same
+    in the Stufenvariation `_root_limit` (now 2·σ_Flim — Y_St for plastics, Y_ST for
+    steel).
+  - VDI Eq. 12 caps **β at 30°** too (only ε_β was capped); same in the sweep.
+  - `y_α` running-in cap for surface-hardened groups (Eh/IF/NT/NV) is **3 µm at ALL
+    velocities** (ISO 6336-1 eq. 79), not only in the >5 m/s bands.
+  - The new helical guards could 500 instead of 422 on `/api/tooth-profile`, the mesh
+    preview/deck endpoints and the FEM postprocessing route — all profile-consuming
+    routes now return 422 for β ≠ 0.
+  - The NRM-07 Werkstoff rows (`mat_root_group`, `mat_softer_hb`) were declared but
+    referenced by no section — now rendered in the Werkstoff tab (HB field nullable).
+
 ### Added (explicit strength sub-factors + DIN 3967 series, 2026-08-18)
 - **ISO 6336-2/-3 strength sub-factors are explicit** end to end:
   `Iso6336GearResult` now carries Z_L, Z_v, Z_R, Z_W, Z_X, Z_NT and Y_δrelT, Y_RrelT, Y_X,

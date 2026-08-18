@@ -232,6 +232,17 @@ class DeckRequest(BaseModel):
 # ----------------------------------------------------------------------------------------------
 # helpers
 # ----------------------------------------------------------------------------------------------
+def _require_spur(stage: GearStage) -> None:
+    """The whole FE tooth-model chain (2-D profile → mesh → extruded deck) is spur-only;
+    refuse helical stages with 422 instead of a raw 500 (audit NRM-02 follow-up)."""
+    if abs(stage.helix_angle_deg) > 1e-9:
+        raise HTTPException(
+            422,
+            "FE tooth model supports spur gears only for now "
+            f"(helix angle β = {stage.helix_angle_deg:g}°)",
+        )
+
+
 def _profiles(stage_params: StageParams, gear: int) -> tuple[GearStage, ToothProfile, ToothProfile]:
     """(stage, this gear's profile, mating profile) for a 1-based gear index.
 
@@ -239,6 +250,7 @@ def _profiles(stage_params: StageParams, gear: int) -> tuple[GearStage, ToothPro
     mesh and deck all show the SAME as-meshed contour (user decision 2026-07-06).
     """
     stage = stage_params.stage()
+    _require_spur(stage)
 
     def prof(index: int) -> ToothProfile:
         c_aa, d_ca = stage_params.tip_relief(index)
@@ -282,6 +294,39 @@ def _checked_strategy(
             f"(clearance {clearance:.3f} mm) — reduce the fillet parameter",
         )
     return strategy, clearance
+
+
+def _checked_deck_fillets(
+    stage_params: StageParams, stage: GearStage, spec_gear1: FilletSpec, spec_gear2: FilletSpec
+) -> tuple[AnyFillet | None, AnyFillet | None]:
+    """Interference-checked fillet strategies for BOTH gears of a deck/assembly.
+
+    Audit FEM-01: the deck endpoints called ``spec.strategy()`` directly and skipped the
+    mating-tip interference check the preview/mesh endpoints enforce — an interfering
+    fillet went straight into the .inp. Standard/trochoid fillets stay uncheckable
+    (norm contour, no free parameters), same bypass as :func:`_checked_strategy`.
+    """
+    strategies = (spec_gear1.strategy(), spec_gear2.strategy())
+    if any(s is not None and not isinstance(s, TrochoidFillet) for s in strategies):
+
+        def prof(index: int) -> ToothProfile:
+            c_aa, d_ca = stage_params.tip_relief(index)
+            return ToothProfile.from_stage(
+                stage, index, tip_relief_um=c_aa, tip_relief_start_diameter_mm=d_ca
+            )
+
+        profiles = (prof(0), prof(1))
+        for gear, strategy in enumerate(strategies):
+            if strategy is None or isinstance(strategy, TrochoidFillet):
+                continue
+            clearance = _clearance(stage, profiles[gear], profiles[1 - gear], strategy)
+            if clearance < 0.0:
+                raise HTTPException(
+                    422,
+                    f"gear {gear + 1}: optimized fillet interferes with the mating tooth "
+                    f"tip (clearance {clearance:.3f} mm) — reduce the fillet parameter",
+                )
+    return strategies
 
 
 def _sector(req: MeshRequest) -> tuple[ToothProfile, SectorMesh2D]:
@@ -734,7 +779,9 @@ def tooth_contour(req: ContourRequest) -> ContourResponse:
 def build_deck(req: DeckRequest) -> PlainTextResponse:
     """The full implicit rolling deck (.inp) for the stage with the requested options."""
     stage = req.stage.stage()
+    _require_spur(stage)
     roles = _deck_roles(req)
+    fillet1, fillet2 = _checked_deck_fillets(req.stage, stage, req.fillet_gear1, req.fillet_gear2)
     deck = build_implicit_pair_from_stage(
         stage,
         torque_gear2_nmm=req.torque_gear2_nmm,
@@ -752,8 +799,8 @@ def build_deck(req: DeckRequest) -> PlainTextResponse:
         rotation_sense=req.rotation_sense,
         tip_relief=(req.stage.tip_relief(0), req.stage.tip_relief(1)),
         **_deck_refine(req),
-        fillet_gear1=req.fillet_gear1.strategy(),
-        fillet_gear2=req.fillet_gear2.strategy(),
+        fillet_gear1=fillet1,
+        fillet_gear2=fillet2,
         align_contact=req.align_contact,
         fasten_bore=req.fasten_bore,
         fasten_cuts=req.fasten_cuts,
@@ -831,7 +878,9 @@ def build_deck_series(req: DeckRequest) -> Response:
     import zipfile
 
     stage = req.stage.stage()
+    _require_spur(stage)
     roles = _deck_roles(req)
+    fillet1, fillet2 = _checked_deck_fillets(req.stage, stage, req.fillet_gear1, req.fillet_gear2)
     files = build_position_series(
         stage,
         torque_gear2_nmm=req.torque_gear2_nmm,
@@ -845,8 +894,8 @@ def build_deck_series(req: DeckRequest) -> Response:
         rotation_sense=req.rotation_sense,
         tip_relief=(req.stage.tip_relief(0), req.stage.tip_relief(1)),
         **_deck_refine(req),
-        fillet_gear1=req.fillet_gear1.strategy(),
-        fillet_gear2=req.fillet_gear2.strategy(),
+        fillet_gear1=fillet1,
+        fillet_gear2=fillet2,
         align_contact=req.align_contact,
         fasten_bore=req.fasten_bore,
         fasten_cuts=req.fasten_cuts,
@@ -907,7 +956,9 @@ def pair_assembly(req: DeckRequest) -> PairAssemblyResponse:
     the per-gear angle schedule of the roll (edge start + kinematic coupling).
     """
     stage = req.stage.stage()
+    _require_spur(stage)
     roles = _deck_roles(req)
+    fillet1, fillet2 = _checked_deck_fillets(req.stage, stage, req.fillet_gear1, req.fillet_gear2)
     roll_sign = 1.0 if req.rotation_sense != "ccw" else -1.0
     driven = int(roles["driven_gear"])
     z = (stage.teeth[0], stage.teeth[1])
@@ -931,8 +982,8 @@ def pair_assembly(req: DeckRequest) -> PairAssemblyResponse:
             rigid_gears=roles["rigid_gears"],
             tip_relief=(req.stage.tip_relief(0), req.stage.tip_relief(1)),
             **_deck_refine(req),
-            fillet_gear1=req.fillet_gear1.strategy(),
-            fillet_gear2=req.fillet_gear2.strategy(),
+            fillet_gear1=fillet1,
+            fillet_gear2=fillet2,
             fasten_bore=req.fasten_bore,
             fasten_cuts=req.fasten_cuts,
             fasten_bottom=req.fasten_bottom,

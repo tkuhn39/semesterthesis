@@ -111,6 +111,14 @@ performance strategy: **ADR-013**; current-standards rule: **ADR-011**.
 | C7 | **Free geometry → capacity** `GearStage.from_parameters` + `/api/evaluate` — build any pair from raw inputs + tool reference profile (no `.ste`), then geometry + ISO 6336 (steel) / VDI 2736 (plastic) capacity | ISO 21771 generation | reproduces kst-E exactly (ε_α, d_Fa incl. chamfer, Y_F, s_Fn) | ✅ |
 | C8 | **Static peak load** `vdi2736.permissible_peak_stress` + wiring — σ_F,P = σ_F0·K_A,stat ≤ 2·σ_S/S_Smin (yield σ_S at operating temp, S_Smin≈1.5); opt-in via `static_overload_factor` + plastic yield; `peak_root_stress_mpa`/`peak_root_safety` | VDI 2736 Blatt 2 §3.3 (eq. 23/24) | formula hand-checked; unit + kst-E test | ✅ |
 
+**Audit round P1 (2026-08-18, ADR-025):** all analytical-correctness findings of the
+consistency audit fixed — helical factors live per norm branch (ISO 2019 vs VDI/DIN 3990
+conventions), Y_X Table 5 un-scrambled, VDI safeties TRUE (σ_lim/σ, σ_P explicit),
+**K_Hβ Method C native** (F_βx per ISO 6336-1 §7.5 from the quality grade or shaft data;
+kst-E @ Q7 → K_Hβ ≈ 1.12), Dynamikfaktoren ≡ Tragfähigkeit (shared request base),
+material group/HB/density per gear, spur-only paths guarded (422), f_HαT + 0.001·d,
+deck fillet interference check. 256 backend tests.
+
 Validation philosophy (ADR-011): implement **strictly per ISO 6336:2019** (the current
 standard; DIN 3990:1987 is the equivalent cross-check, what STplus uses). Two complete
 references: **kst-E** (spur, DIN 3990 via STplus) and the **helical ISO-6336 case**

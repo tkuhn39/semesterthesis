@@ -210,6 +210,14 @@ def compute_geometry_report(
     ``fillet_contour_min_radius_mm``: deepest contour radius per gear with the selected
     root-fillet strategy (from the contour pipeline) — reported as the effective root.
     """
+    # Guard (audit NRM-01): several report blocks (spans, chordal thicknesses, ball
+    # measurements, contact circles) are implemented for spur gears only — a helical
+    # stage would get plausible-looking WRONG numbers, so refuse instead.
+    if abs(stage.helix_angle_deg) > 1e-9:
+        raise ValueError(
+            "geometry report supports spur gears only for now "
+            f"(helix angle β = {stage.helix_angle_deg:g}°)"
+        )
     notes = stage.check_validity()
     mn = stage.normal_module_mm
     alpha_n = math.radians(stage.normal_pressure_angle_deg)

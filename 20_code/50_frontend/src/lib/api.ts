@@ -121,6 +121,14 @@ export interface CapacityResponse {
   pinion: GearCapacity;
   wheel: GearCapacity;
 }
+// ISO 6336-3 material group (ρ′, Y_RrelT, Y_X curves) per gear — audit NRM-07
+export type RootMaterialGroup =
+  | "case_hardened"
+  | "through_hardened"
+  | "normalized"
+  | "nitrided"
+  | "cast_iron";
+
 export interface CapacityRequest {
   // THE shared stage (single source of truth) + per-slot material kind — the norm
   // dispatch follows the MATERIAL (steel → ISO 6336, plastic → VDI 2736), never the role.
@@ -135,11 +143,16 @@ export interface CapacityRequest {
   face_load_factor: number | null; // null = native ISO 6336-1 Method C K_Hβ/K_Fβ
   base_pitch_deviation_um: number;
   profile_form_deviation_um: number;
+  helix_slope_deviation_um?: number | null; // f_Hβ — used when no accuracy grade (V-02)
+  mesh_misalignment_um?: number | null; // F_βx override; null → native estimate
   lubricant_viscosity_40_mm2s: number;
   flank_roughness_rz_um: number;
   root_roughness_rz_um: number;
   flank_life_factor: number;
   root_life_factor: number;
+  pinion_material_group?: RootMaterialGroup; // ISO 6336-3 group (NRM-07)
+  wheel_material_group?: RootMaterialGroup;
+  softer_gear_hardness_hb?: number | null; // HB of the softer mating gear (Z_W)
   steel_modulus_mpa: number;
   steel_poisson: number;
   steel_sigma_hlim_mpa: number;
@@ -170,14 +183,28 @@ export interface DynamicsRequest {
   pinion_speed_min1: number;
   pinion_torque_nm: number;
   application_factor: number;
+  // same accuracy + material inputs as /api/capacity (GAP-01: the tabs must agree)
+  accuracy_grade?: number | null;
   base_pitch_deviation_um: number;
   profile_form_deviation_um: number;
+  helix_slope_deviation_um?: number | null;
+  mesh_misalignment_um?: number | null;
+  steel_modulus_mpa?: number;
+  steel_poisson?: number;
+  steel_sigma_hlim_mpa?: number;
+  steel_sigma_flim_mpa?: number;
+  plastic_modulus_mpa?: number;
+  plastic_poisson?: number;
+  plastic_sigma_hlim_mpa?: number;
+  plastic_sigma_flim_mpa?: number;
+  plastic_yield_strength_mpa?: number | null;
 }
 export interface DynamicsResponse {
   dynamic_factor: number;
   transverse_factor_flank: number;
   transverse_factor_root: number;
   face_load_factor_flank: number;
+  face_load_factor_root: number;
   mesh_stiffness: number;
   reduced_mass: number;
   resonance_speed_min1: number;

@@ -61,18 +61,20 @@ def relative_notch_sensitivity_factor(notch_parameter_qs: float, group: RootMate
 
 
 def size_factor(normal_module_mm: float, group: RootMaterialGroup) -> float:
-    """Size factor Y_X for the tooth root (ISO 6336-3 §15); 1.0 for m_n ≤ 5 mm."""
+    """Size factor Y_X for the tooth root (ISO 6336-3:2019 Table 5); 1.0 for m_n ≤ 5 mm.
+
+    Table 5 mapping (fixed 2026-08-18, audit NRM-05 — the groups were scrambled before):
+    St, V, GGG(perl./bai.), GTS(perl.) → 1.03 − 0.006·m_n, floor 0.85 (m_n ≥ 30);
+    Eh, IF(root), NT, NV → 1.05 − 0.01·m_n, floor 0.80 (m_n ≥ 25);
+    GG, GGG(ferr.) → 1.075 − 0.015·m_n, floor 0.70 (m_n ≥ 25).
+    """
     if normal_module_mm <= 5.0:
         return 1.0
-    if group in (
-        RootMaterialGroup.CASE_HARDENED,
-        RootMaterialGroup.THROUGH_HARDENED,
-        RootMaterialGroup.NITRIDED,
-    ):
+    if group in (RootMaterialGroup.THROUGH_HARDENED, RootMaterialGroup.NORMALIZED):
         return max(0.85, 1.03 - 0.006 * normal_module_mm)
-    if group is RootMaterialGroup.NORMALIZED:
-        return max(0.85, 1.05 - 0.010 * normal_module_mm)
-    return max(0.85, 1.075 - 0.015 * normal_module_mm)
+    if group in (RootMaterialGroup.CASE_HARDENED, RootMaterialGroup.NITRIDED):
+        return max(0.80, 1.05 - 0.010 * normal_module_mm)
+    return max(0.70, 1.075 - 0.015 * normal_module_mm)
 
 
 def permissible_root_stress(

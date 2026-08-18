@@ -969,6 +969,39 @@ ATTRIBUTES: list[AttributeDef] = [
         info_en="THE system dispatch: sets the norm, deck material card, rigid-shell and "
         "contact-slave role per gear.",
     ),
+    AttributeDef(
+        id="mat_root_group",
+        label_de="Werkstoffgruppe (ISO 6336-3)",
+        label_en="Material group (ISO 6336-3)",
+        kind="enum",
+        per_gear=True,
+        options=[
+            _opt("case_hardened", "Einsatzgehärtet (Eh, IF)", "Case hardened (Eh, IF)"),
+            _opt("through_hardened", "Vergütet (V, GTS, GGG perl.)", "Through hardened (V)"),
+            _opt("normalized", "Normalisiert (St)", "Normalized (St)"),
+            _opt("nitrided", "Nitriert (NT, NV)", "Nitrided (NT, NV)"),
+            _opt("cast_iron", "Gusseisen (GG, GGG ferr.)", "Cast iron (GG)"),
+        ],
+        bindings=("materials.gear1_root_group", "materials.gear2_root_group"),
+        norm_ref="ISO 6336-3:2019 Tab. 4/5 (ρ′, Y_RrelT, Y_X)",
+        info_de="Bestimmt Gleitschichtdicke ρ′ (Y_δrelT), Y_RrelT-Kurve und Y_X-Gruppe "
+        "des ISO-6336-Zweigs (nur Stahlräder; Audit NRM-07).",
+        info_en="Sets the slip-layer ρ′ (Y_δrelT), the Y_RrelT curve and the Y_X group "
+        "of the ISO 6336 branch (steel gears only; audit NRM-07).",
+    ),
+    AttributeDef(
+        id="mat_softer_hb",
+        label_de="Härte des weicheren Rades",
+        label_en="Hardness of the softer gear",
+        symbol="HB",
+        unit="HB",
+        precision=0,
+        nullable=True,  # empty field → null → Z_W = 1 (matches the info text)
+        binding="materials.softer_gear_hardness_hb",
+        norm_ref="ISO 6336-2:2019 §9 (Z_W)",
+        info_de="Für den Werkstoffpaarungsfaktor Z_W (130 ≤ HB ≤ 470); leer → Z_W = 1.",
+        info_en="For the work-hardening factor Z_W (130 ≤ HB ≤ 470); empty → Z_W = 1.",
+    ),
     *[
         AttributeDef(
             id=f"mat_steel_{key}",
@@ -2076,7 +2109,13 @@ def _material_tab() -> TabDef:
                 id="steel",
                 title_de="Kennwerte Stahl (ISO 6336)",
                 title_en="Steel properties (ISO 6336)",
-                rows=[RowRef(attr=f"mat_steel_{k}") for k in steel_keys],
+                rows=[
+                    *[RowRef(attr=f"mat_steel_{k}") for k in steel_keys],
+                    # ISO 6336-3 group + Z_W hardness (audit NRM-07 — rows added
+                    # 2026-08-18; the attributes alone were unreachable in the UI)
+                    RowRef(attr="mat_root_group"),
+                    RowRef(attr="mat_softer_hb"),
+                ],
             ),
             SectionDef(
                 id="plastic",

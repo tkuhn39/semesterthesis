@@ -71,7 +71,7 @@ def flank_tolerances(
     mn, d, b = normal_module_mm, reference_diameter_mm, face_width_mm
     f_pt = (0.001 * d + 0.4 * mn + 5.0) * g
     f_p = (0.002 * d + 0.55 * math.sqrt(d) + 0.7 * mn + 12.0) * g
-    f_halpha = (0.4 * mn + 4.0) * g
+    f_halpha = (0.4 * mn + 0.001 * d + 4.0) * g  # eq. 7 (audit NRM-09: 0.001·d was missing)
     f_falpha = (0.55 * mn + 5.0) * g
     f_hbeta = (0.05 * math.sqrt(d) + 0.35 * math.sqrt(b) + 4.0) * g
     f_fbeta = (0.07 * math.sqrt(d) + 0.45 * math.sqrt(b) + 4.0) * g
@@ -92,20 +92,25 @@ def flank_tolerances(
 
 
 def dynamics_deviations(
-    *, accuracy_grade: int, normal_module_mm: float, reference_diameter_mm: float
-) -> tuple[float, float]:
-    """(f_pb, f_fα) in µm for the ISO 6336-1 dynamics from the accuracy grade.
+    *,
+    accuracy_grade: int,
+    normal_module_mm: float,
+    reference_diameter_mm: float,
+    face_width_mm: float,
+) -> tuple[float, float, float]:
+    """(f_pb, f_fα, f_Hβ) in µm for the ISO 6336-1 dynamics from the accuracy grade.
 
-    f_pb (base pitch deviation) is taken as the single pitch deviation f_ptT and
-    f_fα as the profile form deviation f_fαT (face width not needed for these two).
+    f_pb (base pitch deviation) is taken as the single pitch deviation f_ptT, f_fα as
+    the profile form deviation f_fαT, and f_Hβ as the helix slope deviation f_HβT
+    (feeds the native F_βx mesh-misalignment estimate, audit V-02).
     """
     t = flank_tolerances(
         accuracy_grade=accuracy_grade,
         normal_module_mm=normal_module_mm,
         reference_diameter_mm=reference_diameter_mm,
-        face_width_mm=10.0,  # unused by f_ptT / f_fαT
+        face_width_mm=face_width_mm,
     )
-    return t.single_pitch, t.profile_form
+    return t.single_pitch, t.profile_form, t.helix_slope
 
 
 def validity_warnings(

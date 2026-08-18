@@ -78,6 +78,10 @@ def test_running_in_allowance_velocity_cap() -> None:
     assert running_in_allowance_alpha(RunningInGroup.SURFACE_HARDENED, 10.0, 1500.0, 3.0) == (
         pytest.approx(0.75)
     )
+    # group c (eq. 79) caps y_α at 3 µm (f_pb = 40 µm) at ALL velocities
+    assert running_in_allowance_alpha(RunningInGroup.SURFACE_HARDENED, 60.0, 1500.0, 3.0) == (
+        pytest.approx(3.0)
+    )
 
 
 def test_dynamic_factor_branch_selection() -> None:
@@ -175,3 +179,99 @@ def test_helical_dynamics_components_and_reference_band() -> None:
     # well-aligned (F_βx = 0) → no face concentration
     assert f.face_load_factor_flank == pytest.approx(1.0)
     assert f.face_load_factor_root == pytest.approx(1.0)
+
+
+def _misalignment_conditions(f_hb1: float, f_hb2: float, **extra: object) -> DynamicConditions:
+    return DynamicConditions(
+        pinion_speed_min1=1000.0,
+        base_pitch_deviation_um=Pair(6.0, 6.0),
+        profile_form_deviation_um=Pair(5.0, 5.0),
+        helix_slope_deviation_um=Pair(f_hb1, f_hb2),
+        **extra,  # type: ignore[arg-type]
+    )
+
+
+def test_initial_mesh_misalignment_quality_route() -> None:
+    """F_βx = |1.33·f_Hβ1 + √(f_Hβ1²+f_Hβ2²)| (eq. 54/61/66), floored by eq. 58."""
+    from app.services.capacity.iso6336_dynamics import initial_mesh_misalignment_estimate_um
+
+    f_bx = initial_mesh_misalignment_estimate_um(
+        _misalignment_conditions(6.0, 6.0),
+        mean_load_n_mm=200.0,
+        pinion_reference_diameter_mm=51.0,
+        face_width_mm=15.0,
+    )
+    assert f_bx == pytest.approx(1.33 * 6.0 + math.sqrt(6.0**2 + 6.0**2), rel=1e-9)
+    # eq. 58 floor: huge load + tiny tolerance → 0.005·F_m/b governs
+    floored = initial_mesh_misalignment_estimate_um(
+        _misalignment_conditions(0.1, 0.1),
+        mean_load_n_mm=1.0e5,
+        pinion_reference_diameter_mm=51.0,
+        face_width_mm=15.0,
+    )
+    assert floored == pytest.approx(500.0)
+    # no tolerance data → 0 (legacy well-aligned behaviour preserved)
+    zero = initial_mesh_misalignment_estimate_um(
+        _misalignment_conditions(0.0, 0.0),
+        mean_load_n_mm=200.0,
+        pinion_reference_diameter_mm=51.0,
+        face_width_mm=15.0,
+    )
+    assert zero == 0.0
+
+
+def test_initial_mesh_misalignment_shaft_route() -> None:
+    """Eq. 59: f_sh from the pinion-shaft bending data (hand-computed check)."""
+    from app.services.capacity.iso6336_dynamics import initial_mesh_misalignment_estimate_um
+
+    cond = _misalignment_conditions(
+        6.0,
+        6.0,
+        shaft_diameter_mm=30.0,
+        bearing_span_mm=100.0,
+        pinion_offset_mm=10.0,
+        shaft_arrangement_constant=0.8,
+    )
+    d1, b, load = 51.0, 15.0, 200.0
+    gamma = abs(1.0 + 0.8 * (100.0 * 10.0 / d1**2) * (d1 / 30.0) ** 4 - 0.3) + 0.3
+    f_sh = load * 0.023 * gamma * (b / d1) ** 2
+    expected = 1.33 * f_sh + math.sqrt(6.0**2 + 6.0**2)
+    f_bx = initial_mesh_misalignment_estimate_um(
+        cond, mean_load_n_mm=load, pinion_reference_diameter_mm=d1, face_width_mm=b
+    )
+    assert f_bx == pytest.approx(expected, rel=1e-9)
+
+
+def test_face_load_factor_active_with_helix_tolerance() -> None:
+    """With f_Hβ set, K_Hβ > 1 falls out natively (audit V-02: it was inert 1.000)."""
+    cond = DynamicConditions(
+        pinion_speed_min1=3000.0,
+        base_pitch_deviation_um=Pair(7.7, 7.7),
+        profile_form_deviation_um=Pair(6.0, 6.0),
+        helix_slope_deviation_um=Pair(6.9, 6.9),
+        tip_relief_um=Pair(12.6, 17.7),
+        sigma_hlim_mpa=Pair(1500.0, 1500.0),
+    )
+    f = compute_dynamic_factors(
+        cond,
+        pinion_teeth=25,
+        virtual_teeth=_ZN,
+        profile_shift=Pair(0.0, 0.0),
+        helix_angle_deg=20.0,
+        normal_pressure_angle_deg=20.0,
+        transverse_contact_ratio=1.527,
+        overlap_ratio=1.4153,
+        tip_diameter_mm=Pair(57.209, 89.134),
+        root_diameter_mm=Pair(50.047, 81.420),
+        base_diameter_mm=Pair(49.617, 79.387),
+        basic_rack_dedendum_factor=Pair(1.3, 1.3),
+        elastic_modulus=Pair(206000.0, 206000.0),
+        tangential_force_n=5638.0,
+        face_width_mm=26.0,
+        application_factor=1.0,
+        flank_contact_ratio_factor=0.809,
+        width_to_height_ratio=26.0 / ((57.209 - 50.047) / 2.0),
+        pinion_reference_diameter_mm=53.2,
+    )
+    assert f.face_load_factor_flank > 1.0
+    assert 1.0 < f.face_load_factor_root < f.face_load_factor_flank

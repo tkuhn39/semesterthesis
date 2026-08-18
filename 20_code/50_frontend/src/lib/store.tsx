@@ -11,6 +11,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from "re
 import {
   KST_E_STAGE,
   type FilletSpec,
+  type RootMaterialGroup,
   type StageParams,
   type VariationPoint,
   type VariationRequest,
@@ -82,6 +83,11 @@ export interface MaterialsState {
   plastic_density_kg_dm3: number;
   plastic_yield_strength_mpa: number;
   plastic_allowable_temperature_c: number;
+  // ISO 6336-3 material group per gear (ρ′/Y_RrelT/Y_X curves; audit NRM-07 — was
+  // hardcoded case-hardened in the backend) + softer-gear hardness for Z_W
+  gear1_root_group: RootMaterialGroup;
+  gear2_root_group: RootMaterialGroup;
+  softer_gear_hardness_hb: number | null;
 }
 
 // Operating conditions of the capacity methods (ISO 6336 + VDI 2736) — shared by the
@@ -95,6 +101,8 @@ export interface OperatingState {
   accuracy_grade: number | null; // ISO 1328 / DIN 3962 grade (from the Toleranzen tab)
   base_pitch_deviation_um: number;
   profile_form_deviation_um: number;
+  helix_slope_deviation_um: number | null; // f_Hβ (K_Hβ estimate); null → from grade / 0
+  mesh_misalignment_um: number | null; // F_βx override (shaft analysis); null → native
   lubricant_viscosity_40_mm2s: number; // ν_40
   lubricant_viscosity_100_mm2s: number; // ν_100 (display; Schmierstoff tab)
   lubricant_density_15c_kg_dm3: number; // ρ bei 15 °C (display)
@@ -342,6 +350,9 @@ const MATERIALS_DEFAULTS: MaterialsState = {
   plastic_density_kg_dm3: 1.41,
   plastic_yield_strength_mpa: 65,
   plastic_allowable_temperature_c: 100,
+  gear1_root_group: "case_hardened", // 20MnCr5 → Eh
+  gear2_root_group: "case_hardened", // ISO group of the plastic slot is unused (VDI branch)
+  softer_gear_hardness_hb: null, // Z_W = 1 unless the softer mating gear's HB is known
 };
 
 // kst-E operating defaults (FVA screenshots: Tragfähigkeit/VDI 2736/Schmierstoff tabs)
@@ -353,6 +364,8 @@ const OPERATING_DEFAULTS: OperatingState = {
   accuracy_grade: 7, // DIN 3962 Qualität 7 (Toleranzen screenshot)
   base_pitch_deviation_um: 6.0,
   profile_form_deviation_um: 5.0,
+  helix_slope_deviation_um: null, // derived from the accuracy grade by default
+  mesh_misalignment_um: null, // native ISO 6336-1 §7.5 estimate by default
   lubricant_viscosity_40_mm2s: 100.0,
   lubricant_viscosity_100_mm2s: 11.0,
   lubricant_density_15c_kg_dm3: 0.88,

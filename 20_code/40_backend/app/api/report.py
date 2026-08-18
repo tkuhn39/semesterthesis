@@ -23,6 +23,7 @@ from app.api.analysis import (
     DynamicsRequest,
     GearCapacity,
     GeometryReportRequest,
+    MaterialParams,
     ToleranceRequest,
     ToothGear,
     ToothProfileResponse,
@@ -243,9 +244,12 @@ def _norm_rows(g: GearCapacity, locale: str) -> list[tuple[str, str, str, str]]:
     if g.lubricant_factor is not None:
         rows.append(
             (
-                _de(locale, "Schmierstoff-/Geschw.-/Rauheitsfaktor", "Lubricant/velocity/roughness"),
+                _de(
+                    locale, "Schmierstoff-/Geschw.-/Rauheitsfaktor", "Lubricant/velocity/roughness"
+                ),
                 "Z_L · Z_v · Z_R",
-                f"{n(g.lubricant_factor, 3)} · {n(g.velocity_factor, 3)} · {n(g.roughness_factor, 3)}",
+                f"{n(g.lubricant_factor, 3)} · {n(g.velocity_factor, 3)} · "
+                f"{n(g.roughness_factor, 3)}",
                 "–",
             )
         )
@@ -260,12 +264,21 @@ def _norm_rows(g: GearCapacity, locale: str) -> list[tuple[str, str, str, str]]:
         )
     if g.life_factor_flank is not None:
         rows.append(
-            (_de(locale, "Lebensdauerfaktor Flanke", "Flank life factor"), "Z_NT", n(g.life_factor_flank, 3), "–")
+            (
+                _de(locale, "Lebensdauerfaktor Flanke", "Flank life factor"),
+                "Z_NT",
+                n(g.life_factor_flank, 3),
+                "–",
+            )
         )
     if g.notch_sensitivity_factor is not None:
         rows.append(
             (
-                _de(locale, "Rel. Stützziffer / Oberflächenfaktor", "Rel. notch sensitivity / surface"),
+                _de(
+                    locale,
+                    "Rel. Stützziffer / Oberflächenfaktor",
+                    "Rel. notch sensitivity / surface",
+                ),
                 "Y_δrelT · Y_RrelT",
                 f"{n(g.notch_sensitivity_factor, 3)} · {n(g.surface_factor, 3)}",
                 "–",
@@ -273,11 +286,21 @@ def _norm_rows(g: GearCapacity, locale: str) -> list[tuple[str, str, str, str]]:
         )
     if g.size_factor_root is not None:
         rows.append(
-            (_de(locale, "Größenfaktor Fuß", "Root size factor"), "Y_X", n(g.size_factor_root, 3), "–")
+            (
+                _de(locale, "Größenfaktor Fuß", "Root size factor"),
+                "Y_X",
+                n(g.size_factor_root, 3),
+                "–",
+            )
         )
     if g.life_factor_root is not None:
         rows.append(
-            (_de(locale, "Zahnfuß-Zeitfaktor", "Root life factor"), "Y_NT", n(g.life_factor_root, 3), "–")
+            (
+                _de(locale, "Zahnfuß-Zeitfaktor", "Root life factor"),
+                "Y_NT",
+                n(g.life_factor_root, 3),
+                "–",
+            )
         )
     # plastic-only quantities exist only where VDI 2736 computed them
     if g.tooth_temperature_c is not None:
@@ -394,14 +417,21 @@ def report(req: ReportRequest) -> HTMLResponse:
             t2, t1 = t_raw, t_raw * z1 / z2
         power_kw = abs(2.0 * math.pi * n1 / 60.0 * t1) / 1000.0
 
+    # same materials + accuracy inputs as the capacity section (GAP-01: the K-factors of
+    # the dynamics block must match the ones the capacity chain used)
+    cap_req = req.capacity
     dyn = dynamics(
         DynamicsRequest(
             stage=stage_params,
-            pinion_speed_min1=req.capacity.pinion_speed_min1,
-            pinion_torque_nm=req.capacity.pinion_torque_nm,
-            application_factor=req.capacity.application_factor,
-            base_pitch_deviation_um=req.capacity.base_pitch_deviation_um,
-            profile_form_deviation_um=req.capacity.profile_form_deviation_um,
+            pinion_speed_min1=cap_req.pinion_speed_min1,
+            pinion_torque_nm=cap_req.pinion_torque_nm,
+            application_factor=cap_req.application_factor,
+            accuracy_grade=cap_req.accuracy_grade,
+            base_pitch_deviation_um=cap_req.base_pitch_deviation_um,
+            profile_form_deviation_um=cap_req.profile_form_deviation_um,
+            helix_slope_deviation_um=cap_req.helix_slope_deviation_um,
+            mesh_misalignment_um=cap_req.mesh_misalignment_um,
+            **{f: getattr(cap_req, f) for f in MaterialParams.model_fields},
         )
     )
 
