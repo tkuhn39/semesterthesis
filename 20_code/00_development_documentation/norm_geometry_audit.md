@@ -45,3 +45,31 @@ UI, the `tool_trochoid` fillet strategy, and validation warnings. Citations = (n
 - Undercut: §3.6.6 eq 3.6.06 (S.14); practical limits §3.7.1–3.7.3 (S.17–19)
 - Basic rack: DIN 867 §§3–4 eqs (1)–(9) (S.1–3); symmetry §4.2/§4.5
 - Tool profiles: DIN 3972 table (S.1) + Erläuterungen (S.2); protuberance → DIN 3960 Anhang A
+
+---
+
+## Known deviations from STplus (deliberate, ADR-011 "the norm wins") — status 2026-08-18
+
+These two output quantities are IMPLEMENTED DIFFERENTLY from the STplus reference on
+purpose; pinned by `tests/test_geometry_report.py::test_chordal_thickness_is_norm_conform`:
+
+1. **Chordal tooth thickness s̄_cn / height h̄_c** — computed on the measurement cylinder
+   **d_y = d_a − 2·m_n** as DIN 21773:2014 §5 suggests ("häufig wird d_a − 2·m_n als
+   Durchmesser des Y-Zylinders verwendet"). STplus prints 1.723/1.808 mm (kst-E) on its own
+   caliper-contact cylinder (≈ Ø50.988/51.973 — the tool's convention, not the norm's).
+   Our values: 1.753/1.792 mm at d_y = 50.894/52.022.
+2. **Tip tooth thickness** — reported as the AS-CUT value at d_Na (x_E-based, chamfer-aware
+   `half_thickness_angle`); STplus's "Zahndicke am Kopfkreis für A_We" (0.672/0.777) uses an
+   unreproduced tool convention for the wheel. The edge-break rest thickness (0.672/0.634)
+   matches STplus exactly.
+
+## Deferred: scuffing (Fresstragfähigkeit) — decision 2026-08-18
+
+Scuffing is NOT implemented yet — deliberately deferred, not forgotten. The CURRENT primary
+sources are in the repo and text-readable (ISO/TS 6336-20:2022 flash temperature,
+ISO/TS 6336-21:2022 integral temperature; the legacy DIN 3990-4 remains only a cross-check).
+It will be implemented as its own focused work package with the same primary-source fidelity
+as the geometry/capacity chain (read both TS in full, native module
+`services/capacity/scuffing.py`, qualitative comparison against kst-E .sta Blatt 14–15 with
+documented 1987→2022 method deltas). Until then the .sta scuffing block (and CCS 1996, which
+is permanently out of scope) has no counterpart in the output.

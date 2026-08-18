@@ -216,6 +216,43 @@ function GearCard(props: { title: string; g: GearCapacity; minRoot: number; minF
               <td className="wb-num">{fm.num(g.load_angle_deg, 2)}</td>
             </AttrRow>
           )}
+          {g.lubricant_factor != null && (
+            <AttrRow label={t("cap.zLvR")} symbol="Z_L·Z_v·Z_R" unit="–">
+              <td className="wb-num">
+                {fm.num(g.lubricant_factor, 3)} · {fm.num(g.velocity_factor, 3)} ·{" "}
+                {fm.num(g.roughness_factor, 3)}
+              </td>
+            </AttrRow>
+          )}
+          {g.work_hardening_factor != null && (
+            <AttrRow label={t("cap.zWX")} symbol="Z_W·Z_X" unit="–">
+              <td className="wb-num">
+                {fm.num(g.work_hardening_factor, 3)} · {fm.num(g.size_factor_flank, 3)}
+              </td>
+            </AttrRow>
+          )}
+          {g.life_factor_flank != null && (
+            <AttrRow label={t("cap.zNT")} symbol="Z_NT" unit="–">
+              <td className="wb-num">{fm.num(g.life_factor_flank, 3)}</td>
+            </AttrRow>
+          )}
+          {g.notch_sensitivity_factor != null && (
+            <AttrRow label={t("cap.yRelT")} symbol="Y_δrelT·Y_RrelT" unit="–">
+              <td className="wb-num">
+                {fm.num(g.notch_sensitivity_factor, 3)} · {fm.num(g.surface_factor, 3)}
+              </td>
+            </AttrRow>
+          )}
+          {g.size_factor_root != null && (
+            <AttrRow label={t("cap.yX")} symbol="Y_X" unit="–">
+              <td className="wb-num">{fm.num(g.size_factor_root, 3)}</td>
+            </AttrRow>
+          )}
+          {g.life_factor_root != null && (
+            <AttrRow label={t("cap.yNT")} symbol="Y_NT" unit="–">
+              <td className="wb-num">{fm.num(g.life_factor_root, 3)}</td>
+            </AttrRow>
+          )}
           {g.loss_factor != null && (
             <AttrRow label={t("cap.hv")} symbol="H_V" unit="–">
               <td className="wb-num">{fm.num(g.loss_factor, 4)}</td>

@@ -81,6 +81,38 @@ def test_din3990_matches_stplus() -> None:
     assert pinion.flank_safety is not None
     assert pinion.flank_safety == pytest.approx(15.1, abs=0.5)
 
+    # Explicit sub-factors (user requirement 2026-08-18): the individual ISO 6336-2/-3
+    # strength factors are carried in the result, and their products reproduce the
+    # permissible stresses exactly (self-consistency of the exposed chain).
+    assert pinion.surface_factor == pytest.approx(0.957, abs=2e-3)  # Y_RrelT (kst-E)
+    assert pinion.notch_sensitivity_factor == pytest.approx(1.001, abs=2e-3)  # Y_δrelT
+    assert pinion.size_factor_root == pytest.approx(1.0, abs=1e-9)  # Y_X (m_n ≤ 5)
+    assert pinion.permissible_root_stress_mpa is not None
+    assert pinion.permissible_root_stress_mpa == pytest.approx(
+        860.0
+        * 1.0
+        * pinion.notch_sensitivity_factor
+        * pinion.surface_factor
+        * pinion.size_factor_root,
+        rel=1e-9,
+    )
+    assert pinion.permissible_flank_stress_mpa is not None
+    assert pinion.permissible_flank_stress_mpa == pytest.approx(
+        1460.0
+        * 1.172
+        * pinion.lubricant_factor
+        * pinion.velocity_factor
+        * pinion.roughness_factor
+        * pinion.work_hardening_factor
+        * pinion.size_factor_flank,
+        rel=1e-9,
+    )
+    assert pinion.root_safety == pytest.approx(
+        pinion.permissible_root_stress_mpa / pinion.root_stress_mpa, rel=1e-9
+    )
+    # the plastic wheel has no steel limits in this ISO pass → factors stay None
+    assert wheel.life_factor_flank is None or wheel.life_factor_flank == 1.0
+
 
 @pytest.mark.skipif(not _REF_STE.exists(), reason="STplus reference .ste not present")
 def test_single_contact_factors_spur() -> None:

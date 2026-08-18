@@ -30,6 +30,7 @@ from app.services.capacity import (
     evaluate_vdi2736,
     native_dynamic_factors,
 )
+from app.services.geometry.din3967 import allowances_um as din3967_allowances_um
 from app.services.geometry.gear import GearStage, line_of_action_points
 from app.services.geometry.report import GeometryReport, compute_geometry_report
 from app.services.geometry.root_fillet import with_root_land
@@ -197,18 +198,46 @@ class GeometryReportRequest(BaseModel):
     center_distance_allowance_mm: float | None = Field(None, ge=0.0)  # DIN 3964 js field
     span_allowance_upper_um: tuple[float, float] | None = None  # A_We per gear
     span_allowance_lower_um: tuple[float, float] | None = None  # A_Wi per gear
+    # DIN 3967 designation per gear (e.g. drawing "27cd" = allowance "cd" + tolerance 27);
+    # used when no direct span allowances are given
+    allowance_series_gear1: (
+        Literal["a", "ab", "b", "bc", "c", "cd", "d", "e", "f", "g", "h"] | None
+    ) = None
+    allowance_series_gear2: (
+        Literal["a", "ab", "b", "bc", "c", "cd", "d", "e", "f", "g", "h"] | None
+    ) = None
+    tolerance_series_gear1: int | None = Field(None, ge=21, le=30)
+    tolerance_series_gear2: int | None = Field(None, ge=21, le=30)
 
 
 def _report_allowances(
-    req: GeometryReportRequest,
+    req: GeometryReportRequest, stage: GearStage | None = None
 ) -> tuple[Pair[float] | None, Pair[float] | None]:
-    """A_We/A_Wi per gear: explicit request > example STE sidecar > StageParams mean."""
+    """A_We/A_Wi per gear: explicit µm > DIN 3967 series > example STE > StageParams mean."""
     if req.span_allowance_upper_um is not None and req.span_allowance_lower_um is not None:
         up, low = req.span_allowance_upper_um, req.span_allowance_lower_um
         return (
             Pair(up[0] / 1000.0, up[1] / 1000.0),
             Pair(low[0] / 1000.0, low[1] / 1000.0),
         )
+    series = (
+        (req.allowance_series_gear1, req.tolerance_series_gear1),
+        (req.allowance_series_gear2, req.tolerance_series_gear2),
+    )
+    if stage is not None and all(a is not None and t is not None for a, t in series):
+        # DIN 3967 tables give E_sn; the report pipeline takes span allowances
+        # A_W = E_sn·cos α_n (DIN 21773 §14.4) — the service converts back exactly
+        cos_an = math.cos(math.radians(stage.normal_pressure_angle_deg))
+        ups: list[float] = []
+        lows: list[float] = []
+        for i, (a_series, t_series) in enumerate(series):
+            assert a_series is not None and t_series is not None
+            e_sns_um, e_sni_um = din3967_allowances_um(
+                stage.reference_diameter_mm[i], a_series, t_series
+            )
+            ups.append(e_sns_um / 1000.0 * cos_an)
+            lows.append(e_sni_um / 1000.0 * cos_an)
+        return Pair(ups[0], ups[1]), Pair(lows[0], lows[1])
     if req.stage.use_example:
         path = _example_ste_path()
         if path is not None:
@@ -252,7 +281,7 @@ def _fillet_min_radii(req: GeometryReportRequest, stage: GearStage) -> Pair[floa
 def geometry_report(req: GeometryReportRequest) -> GeometryReport:
     """The FULL geometry report (SSOT): every DIN ISO 21771 / DIN 21773 quantity at once."""
     stage = req.stage.stage()
-    up, low = _report_allowances(req)
+    up, low = _report_allowances(req, stage)
     balls = None
     if req.ball_diameter_gear1_mm is not None or req.ball_diameter_gear2_mm is not None:
         mn = stage.normal_module_mm
@@ -401,6 +430,18 @@ class GearCapacity(BaseModel):
     # ISO branch: nominal stresses + the critical-section geometry behind Y_F/Y_S
     nominal_flank_stress_mpa: float | None = None  # σ_H0
     nominal_root_stress_mpa: float | None = None  # σ_F0
+    # ISO 6336-2 flank strength sub-factors (σ_HP = σ_Hlim·Z_NT·Z_L·Z_v·Z_R·Z_W·Z_X)
+    lubricant_factor: float | None = None  # Z_L
+    velocity_factor: float | None = None  # Z_v
+    roughness_factor: float | None = None  # Z_R
+    work_hardening_factor: float | None = None  # Z_W
+    size_factor_flank: float | None = None  # Z_X
+    life_factor_flank: float | None = None  # Z_NT
+    # ISO 6336-3 root strength sub-factors (σ_FP = σ_FE·Y_NT·Y_δrelT·Y_RrelT·Y_X)
+    notch_sensitivity_factor: float | None = None  # Y_δrelT
+    surface_factor: float | None = None  # Y_RrelT
+    size_factor_root: float | None = None  # Y_X
+    life_factor_root: float | None = None  # Y_NT
     root_chord_mn: float | None = None  # s_Fn* (30°-tangent, ·m_n)
     fillet_radius_mn: float | None = None  # ρ_F* (·m_n)
     notch_parameter: float | None = None  # q_s
@@ -629,12 +670,22 @@ def _run_capacity(
             flank_safety=_round(s.flank_safety),
             root_stress_mpa=round(s.root_stress_mpa, 3),
             root_safety=_round(s.root_safety),
-            flank_permissible_mpa=_round(_safe_mul(s.flank_safety, s.flank_stress_mpa)),
-            root_permissible_mpa=_round(_safe_mul(s.root_safety, s.root_stress_mpa)),
+            flank_permissible_mpa=_round(s.permissible_flank_stress_mpa),
+            root_permissible_mpa=_round(s.permissible_root_stress_mpa),
             form_factor=round(roots[i].form_factor, 4),
             stress_correction=round(roots[i].stress_correction_factor, 4),
             nominal_flank_stress_mpa=round(s.nominal_flank_stress_mpa, 3),
             nominal_root_stress_mpa=round(s.nominal_root_stress_mpa, 3),
+            lubricant_factor=_round(s.lubricant_factor, 4),
+            velocity_factor=_round(s.velocity_factor, 4),
+            roughness_factor=_round(s.roughness_factor, 4),
+            work_hardening_factor=_round(s.work_hardening_factor, 4),
+            size_factor_flank=_round(s.size_factor_flank, 4),
+            life_factor_flank=_round(s.life_factor_flank, 4),
+            notch_sensitivity_factor=_round(s.notch_sensitivity_factor, 4),
+            surface_factor=_round(s.surface_factor, 4),
+            size_factor_root=_round(s.size_factor_root, 4),
+            life_factor_root=_round(s.life_factor_root, 4),
             **section,
         )
 

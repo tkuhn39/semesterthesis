@@ -37,7 +37,10 @@ from app.services.capacity.iso6336_flank_strength import (
 from app.services.capacity.iso6336_root_strength import (
     RootMaterialGroup,
     permissible_root_stress,
+    relative_notch_sensitivity_factor,
+    relative_surface_factor,
 )
+from app.services.capacity.iso6336_root_strength import size_factor as root_size_factor
 from app.services.geometry.gear import GearStage
 from app.services.geometry.tooth_root import ToothRootGeometry
 from app.services.materials import Material
@@ -132,7 +135,12 @@ class Iso6336Conditions(BaseModel):
 
 
 class Iso6336GearResult(BaseModel):
-    """Per-gear DIN 3990 result: flank and root stress and (when limits known) safety."""
+    """Per-gear DIN 3990 result: flank and root stress and (when limits known) safety.
+
+    The permissible stresses AND their individual sub-factors are carried explicitly so
+    the API/report can print the full ISO 6336-2/-3 factor chain (user requirement
+    2026-08-18) instead of only the folded σ_HP/σ_FP products.
+    """
 
     flank_stress_mpa: float  # σ_H
     nominal_flank_stress_mpa: float  # σ_H0
@@ -140,6 +148,20 @@ class Iso6336GearResult(BaseModel):
     nominal_root_stress_mpa: float  # σ_F0
     flank_safety: float | None = None  # S_H
     root_safety: float | None = None  # S_F
+    permissible_flank_stress_mpa: float | None = None  # σ_HP (native product below)
+    permissible_root_stress_mpa: float | None = None  # σ_FP
+    # flank sub-factors (ISO 6336-2): σ_HP = σ_Hlim·Z_NT·Z_L·Z_v·Z_R·Z_W·Z_X
+    lubricant_factor: float | None = None  # Z_L
+    velocity_factor: float | None = None  # Z_v
+    roughness_factor: float | None = None  # Z_R
+    work_hardening_factor: float | None = None  # Z_W
+    size_factor_flank: float | None = None  # Z_X
+    life_factor_flank: float | None = None  # Z_NT (echoed input)
+    # root sub-factors (ISO 6336-3): σ_FP = σ_FE·Y_NT·Y_δrelT·Y_RrelT·Y_X
+    notch_sensitivity_factor: float | None = None  # Y_δrelT
+    surface_factor: float | None = None  # Y_RrelT
+    size_factor_root: float | None = None  # Y_X
+    life_factor_root: float | None = None  # Y_NT (echoed input)
 
 
 def _safety(strength_mpa: float | None, stress_mpa: float) -> float | None:
@@ -272,32 +294,40 @@ def evaluate_iso6336(
         sigma_f = sigma_f0 * k_root
 
         sigma_hp: float | None = None
+        z_l = z_v = z_r = None
+        z_w = z_x = None
         if material.sigma_hlim_mpa is not None:
+            z_l = lubricant_factor(conditions.lubricant_viscosity_40_mm2s, material.sigma_hlim_mpa)
+            z_v = velocity_factor(conditions.pitch_line_velocity_ms, material.sigma_hlim_mpa)
+            z_r = roughness_factor(
+                conditions.flank_roughness_rz_um, rho_red, material.sigma_hlim_mpa
+            )
+            z_w = work_hardening_factor(conditions.softer_gear_hardness_hb)
+            z_x = size_factor()
             sigma_hp = permissible_flank_stress(
                 material.sigma_hlim_mpa,
                 life_factor=conditions.flank_life_factor[index],
-                lubricant=lubricant_factor(
-                    conditions.lubricant_viscosity_40_mm2s, material.sigma_hlim_mpa
-                ),
-                velocity=velocity_factor(
-                    conditions.pitch_line_velocity_ms, material.sigma_hlim_mpa
-                ),
-                roughness=roughness_factor(
-                    conditions.flank_roughness_rz_um, rho_red, material.sigma_hlim_mpa
-                ),
-                work_hardening=work_hardening_factor(conditions.softer_gear_hardness_hb),
-                size=size_factor(),
+                lubricant=z_l,
+                velocity=z_v,
+                roughness=z_r,
+                work_hardening=z_w,
+                size=z_x,
             )
 
         sigma_fp: float | None = None
+        y_drel = y_rrel = y_x = None
         basic_root = _basic_root_strength(material)
         if basic_root is not None:
+            group = conditions.material_group[index]
+            y_drel = relative_notch_sensitivity_factor(root.notch_parameter, group)
+            y_rrel = relative_surface_factor(conditions.root_roughness_rz_um[index], group)
+            y_x = root_size_factor(stage.normal_module_mm, group)
             sigma_fp = permissible_root_stress(
                 basic_root,
                 notch_parameter_qs=root.notch_parameter,
                 roughness_rz_um=conditions.root_roughness_rz_um[index],
                 normal_module_mm=stage.normal_module_mm,
-                group=conditions.material_group[index],
+                group=group,
                 life_factor=conditions.root_life_factor[index],
             )
 
@@ -309,6 +339,22 @@ def evaluate_iso6336(
                 nominal_root_stress_mpa=sigma_f0,
                 flank_safety=_safety(sigma_hp, sigma_h),
                 root_safety=_safety(sigma_fp, sigma_f),
+                permissible_flank_stress_mpa=sigma_hp,
+                permissible_root_stress_mpa=sigma_fp,
+                lubricant_factor=z_l,
+                velocity_factor=z_v,
+                roughness_factor=z_r,
+                work_hardening_factor=z_w,
+                size_factor_flank=z_x,
+                life_factor_flank=(
+                    conditions.flank_life_factor[index] if sigma_hp is not None else None
+                ),
+                notch_sensitivity_factor=y_drel,
+                surface_factor=y_rrel,
+                size_factor_root=y_x,
+                life_factor_root=(
+                    conditions.root_life_factor[index] if sigma_fp is not None else None
+                ),
             )
         )
     return Pair(results[0], results[1])

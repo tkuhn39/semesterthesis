@@ -238,6 +238,47 @@ def _norm_rows(g: GearCapacity, locale: str) -> list[tuple[str, str, str, str]]:
             "–",
         ),
     ]
+    # ISO 6336-2/-3 strength sub-factors (steel branch; the folded products σ_HP/σ_FP
+    # stay above — user requirement 2026-08-18: print the full factor chain)
+    if g.lubricant_factor is not None:
+        rows.append(
+            (
+                _de(locale, "Schmierstoff-/Geschw.-/Rauheitsfaktor", "Lubricant/velocity/roughness"),
+                "Z_L · Z_v · Z_R",
+                f"{n(g.lubricant_factor, 3)} · {n(g.velocity_factor, 3)} · {n(g.roughness_factor, 3)}",
+                "–",
+            )
+        )
+    if g.work_hardening_factor is not None:
+        rows.append(
+            (
+                _de(locale, "Werkstoffpaarungs-/Größenfaktor", "Work-hardening/size factor"),
+                "Z_W · Z_X",
+                f"{n(g.work_hardening_factor, 3)} · {n(g.size_factor_flank, 3)}",
+                "–",
+            )
+        )
+    if g.life_factor_flank is not None:
+        rows.append(
+            (_de(locale, "Lebensdauerfaktor Flanke", "Flank life factor"), "Z_NT", n(g.life_factor_flank, 3), "–")
+        )
+    if g.notch_sensitivity_factor is not None:
+        rows.append(
+            (
+                _de(locale, "Rel. Stützziffer / Oberflächenfaktor", "Rel. notch sensitivity / surface"),
+                "Y_δrelT · Y_RrelT",
+                f"{n(g.notch_sensitivity_factor, 3)} · {n(g.surface_factor, 3)}",
+                "–",
+            )
+        )
+    if g.size_factor_root is not None:
+        rows.append(
+            (_de(locale, "Größenfaktor Fuß", "Root size factor"), "Y_X", n(g.size_factor_root, 3), "–")
+        )
+    if g.life_factor_root is not None:
+        rows.append(
+            (_de(locale, "Zahnfuß-Zeitfaktor", "Root life factor"), "Y_NT", n(g.life_factor_root, 3), "–")
+        )
     # plastic-only quantities exist only where VDI 2736 computed them
     if g.tooth_temperature_c is not None:
         rows.append(
@@ -465,8 +506,12 @@ def report(req: ReportRequest) -> HTMLResponse:
         center_distance_allowance_mm=None,
         span_allowance_upper_um=None,
         span_allowance_lower_um=None,
+        allowance_series_gear1=None,
+        allowance_series_gear2=None,
+        tolerance_series_gear1=None,
+        tolerance_series_gear2=None,
     )
-    up_al, low_al = _report_allowances(grq)
+    up_al, low_al = _report_allowances(grq, stage)
     rep = compute_geometry_report(
         stage, span_allowance_upper_mm=up_al, span_allowance_lower_mm=low_al
     )

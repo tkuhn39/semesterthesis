@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import {
   api,
+  type Din3967AllowanceSeries,
   type GearReport,
   type GeometryReportResponse,
   type GeometryResponse,
@@ -165,6 +166,118 @@ function PairRows(props: { rows: PairRow[]; p: PairReport }) {
   );
 }
 
+const DIN3967_ALLOWANCE_SERIES = ["a", "ab", "b", "bc", "c", "cd", "d", "e", "f", "g", "h"] as const;
+const DIN3967_TOLERANCE_SERIES = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30] as const;
+
+// DIN 3967 series picker: resolves a designation (e.g. "27cd") via the backend tables and
+// fills the SSOT span-allowance inputs (tol.awe/awi in µm) — the whole chain (x_E, deck,
+// report, backlash) then follows from the ONE store source. Direct input stays possible.
+function Din3967Section() {
+  const t = useT();
+  const { stage } = useStage();
+  const wb = useWorkbench();
+  const [series, setSeries] = useState<{ a1: string; t1: number; a2: string; t2: number }>({
+    a1: "",
+    t1: 0,
+    a2: "",
+    t2: 0,
+  });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const complete = series.a1 !== "" && series.t1 > 0 && series.a2 !== "" && series.t2 > 0;
+
+  const apply = async () => {
+    setBusy(true);
+    setErr(null);
+    try {
+      const rep = await api.geometryReport({
+        stage,
+        allowance_series_gear1: series.a1 as Din3967AllowanceSeries,
+        tolerance_series_gear1: series.t1,
+        allowance_series_gear2: series.a2 as Din3967AllowanceSeries,
+        tolerance_series_gear2: series.t2,
+      });
+      wb.set("tol.awe1_um", Math.round((rep.gear1.span_allowance_upper_mm ?? 0) * 1e4) / 10);
+      wb.set("tol.awi1_um", Math.round((rep.gear1.span_allowance_lower_mm ?? 0) * 1e4) / 10);
+      wb.set("tol.awe2_um", Math.round((rep.gear2.span_allowance_upper_mm ?? 0) * 1e4) / 10);
+      wb.set("tol.awi2_um", Math.round((rep.gear2.span_allowance_lower_mm ?? 0) * 1e4) / 10);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const seriesSelect = (gear: 1 | 2) => {
+    const aKey = gear === 1 ? "a1" : "a2";
+    const tKey = gear === 1 ? "t1" : "t2";
+    return (
+      <tr>
+        <td>{`${t("common.gear")} ${gear}`}</td>
+        <td className="wb-num text-zinc-400">{gear === 1 ? "R1" : "R2"}</td>
+        <td>
+          <select
+            value={series[aKey as "a1"]}
+            onChange={(e) => setSeries({ ...series, [aKey]: e.target.value })}
+          >
+            <option value="">{t("geo.din3967.none")}</option>
+            {DIN3967_ALLOWANCE_SERIES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </td>
+        <td>
+          <select
+            value={series[tKey as "t1"]}
+            onChange={(e) => setSeries({ ...series, [tKey]: Number(e.target.value) })}
+          >
+            <option value={0}>{t("geo.din3967.none")}</option>
+            {DIN3967_TOLERANCE_SERIES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </td>
+        <td className="wb-num text-zinc-400">
+          {series[aKey as "a1"] && series[tKey as "t1"] > 0
+            ? `${series[tKey as "t1"]}${series[aKey as "a1"]}`
+            : "–"}
+        </td>
+      </tr>
+    );
+  };
+
+  return (
+    <Section title={t("geo.din3967")} defaultOpen={false}>
+      <table className="attr-table">
+        <thead>
+          <tr>
+            <th>{t("common.attribute")}</th>
+            <th></th>
+            <th>{t("geo.din3967.series")}</th>
+            <th>{t("geo.din3967.tolerance")}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {seriesSelect(1)}
+          {seriesSelect(2)}
+        </tbody>
+      </table>
+      <div className="p-2 flex items-center gap-2 border-t border-zinc-100">
+        <Btn onClick={() => void apply()} busy={busy} disabled={!complete}>
+          {t("geo.din3967.apply")}
+        </Btn>
+      </div>
+      <div className="text-[11.5px] text-zinc-500 px-2 pb-2">{t("geo.din3967.note")}</div>
+      {err && <ErrNote>{err}</ErrNote>}
+    </Section>
+  );
+}
+
 export function GeometryPanel() {
   const t = useT();
   const fm = useFmt();
@@ -299,6 +412,7 @@ export function GeometryPanel() {
             </Btn>
           </div>
         </Section>
+        <Din3967Section />
         {err && <ErrNote>{err}</ErrNote>}
       </div>
 

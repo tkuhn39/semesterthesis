@@ -74,6 +74,17 @@ export interface GearCapacity {
   stress_correction: number;
   nominal_flank_stress_mpa?: number | null; // σ_H0 (ISO branch)
   nominal_root_stress_mpa?: number | null; // σ_F0
+  // ISO 6336-2/-3 strength sub-factors (σ_HP/σ_FP chains, explicit)
+  lubricant_factor?: number | null; // Z_L
+  velocity_factor?: number | null; // Z_v
+  roughness_factor?: number | null; // Z_R
+  work_hardening_factor?: number | null; // Z_W
+  size_factor_flank?: number | null; // Z_X
+  life_factor_flank?: number | null; // Z_NT
+  notch_sensitivity_factor?: number | null; // Y_δrelT
+  surface_factor?: number | null; // Y_RrelT
+  size_factor_root?: number | null; // Y_X
+  life_factor_root?: number | null; // Y_NT
   root_chord_mn?: number | null; // s_Fn* (30°-tangent)
   fillet_radius_mn?: number | null; // ρ_F*
   notch_parameter?: number | null; // q_s
@@ -487,6 +498,18 @@ export interface GeometryReportResponse {
   pair: PairReport;
   notes: string[];
 }
+export type Din3967AllowanceSeries =
+  | "a"
+  | "ab"
+  | "b"
+  | "bc"
+  | "c"
+  | "cd"
+  | "d"
+  | "e"
+  | "f"
+  | "g"
+  | "h";
 export interface GeometryReportRequest {
   stage: StageParams;
   fillet_gear1?: FilletSpec | null;
@@ -494,6 +517,13 @@ export interface GeometryReportRequest {
   ball_diameter_gear1_mm?: number | null;
   ball_diameter_gear2_mm?: number | null;
   center_distance_allowance_mm?: number | null;
+  span_allowance_upper_um?: [number, number] | null;
+  span_allowance_lower_um?: [number, number] | null;
+  // DIN 3967 designation per gear (drawing "27cd" = tolerance 27 + allowance cd)
+  allowance_series_gear1?: Din3967AllowanceSeries | null;
+  allowance_series_gear2?: Din3967AllowanceSeries | null;
+  tolerance_series_gear1?: number | null;
+  tolerance_series_gear2?: number | null;
 }
 
 // ---- Mesh (FE sector, ADR-019 transplant mesher) ----

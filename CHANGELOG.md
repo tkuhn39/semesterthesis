@@ -9,6 +9,27 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (explicit strength sub-factors + DIN 3967 series, 2026-08-18)
+- **ISO 6336-2/-3 strength sub-factors are explicit** end to end:
+  `Iso6336GearResult` now carries Z_L, Z_v, Z_R, Z_W, Z_X, Z_NT and Y_δrelT, Y_RrelT, Y_X,
+  Y_NT plus the native σ_HP/σ_FP (the API no longer back-computes them from safety×stress);
+  self-consistency of the exposed chains is test-pinned (σ_FP ≡ σ_FE·Y_NT·Y_δrelT·Y_RrelT·Y_X,
+  σ_HP ≡ σ_Hlim·Z_NT·Z_L·Z_v·Z_R·Z_W·Z_X; kst-E: Y_RrelT 0.957, Y_δrelT 1.001). Rendered in
+  the Tragfähigkeit gear cards and the HTML report's per-gear norm sections.
+- **DIN 3967:1978 allowance tables complete** (`services/geometry/din3967.py`): Tables 1
+  (upper allowances E_sns, series a…h) and 2 (tolerances T_sn, series 21…30) over all eleven
+  diameter ranges, pinned against the norm's own example (27cd @ d=100 → −70/−170 µm).
+  Selectable per gear on `/api/geometry/report` (priority: direct µm input > DIN 3967
+  series > example STE > StageParams mean) and via a Geometrie-tab picker that FILLS the
+  existing SSOT span-allowance inputs (tol.awe/awi) so x_E, deck, backlash and report all
+  follow one source.
+
+### Documented (2026-08-18)
+- The two deliberate norm-over-STplus deviations (chordal-measure cylinder d_a − 2·m_n per
+  DIN 21773 §5; as-cut tip thickness at d_Na) and the DEFERRED scuffing implementation
+  (ISO/TS 6336-20/-21, sources in repo) now have their own sections in
+  `norm_geometry_audit.md`.
+
 ### Added (full geometry output on current norms — backend SSOT, 2026-08-05, ADR-024)
 - **`compute_geometry_report` (services/geometry/report.py)** — ONE service computes every
   macro-geometry, tooth-thickness, inspection, sliding and backlash quantity per
