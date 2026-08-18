@@ -99,3 +99,34 @@ def test_material_holds_nonlinear_curves() -> None:
     )
     assert mat.curve("stress_strain") is not None
     assert mat.curve("missing") is None
+
+
+def test_catalog_is_single_source_across_ui_and_frontend_mirror() -> None:
+    """Audit F2/P2: the catalog exists in three places (backend CATALOG, Werkstoff-tab
+    mat_name options, frontend name→kind mirror) — this guard fails on drift until a
+    served catalog replaces the copies entirely."""
+    from pathlib import Path
+
+    from app.services.materials import CATALOG, DEFAULT_BY_KIND, MaterialKind
+    from app.services.uimodel.components import ATTRIBUTES
+
+    # every kind has a default and every default exists
+    assert set(DEFAULT_BY_KIND) == set(MaterialKind)
+    assert all(name in CATALOG for name in DEFAULT_BY_KIND.values())
+
+    # Werkstoff-tab name options == catalog names
+    mat_name = next(a for a in ATTRIBUTES if a.id == "mat_name")
+    assert mat_name.options is not None
+    assert {o.value for o in mat_name.options} == set(CATALOG)
+
+    # frontend mirror (store.tsx CATALOG_MATERIAL_KIND) carries every catalog name
+    # with the right kind — parsed textually (no TS test runner in the gates)
+    store = (
+        Path(__file__).resolve().parents[2] / "50_frontend" / "src" / "lib" / "store.tsx"
+    ).read_text(encoding="utf-8")
+    for name, mat in CATALOG.items():
+        needle_quoted = f'"{name}": "{mat.kind.value}"'
+        needle_bare = f'{name}: "{mat.kind.value}"'
+        assert needle_quoted in store or needle_bare in store, (
+            f"frontend CATALOG_MATERIAL_KIND misses {name} -> {mat.kind.value}"
+        )

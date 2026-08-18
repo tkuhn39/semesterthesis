@@ -708,6 +708,10 @@ interface WorkbenchStore extends WorkbenchState {
   setLabel: (l: string) => void;
   setCalc: (id: string, on: boolean) => void;
   setFem: (patch: Partial<FemState>) => void;
+  // the UNCOUPLED stage as stored — editors seed their drafts from this, never from the
+  // effective stage, so tab-owned merges (tol allowances, correction-derived pinion
+  // micro-geometry) don't get baked back in as raw values (audit STR-01)
+  rawStage: StageParams;
   // generic binding access for schema-rendered rows (path = "<namespace>.<field>")
   get: (path: string) => unknown;
   set: (path: string, value: unknown) => void;
@@ -892,6 +896,25 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         const next = { ...bucket, [field]: value };
         // editing a stage value leaves the kst-E example mode (free parameters from then on)
         if (ns === "stage" && field !== "use_example") next.use_example = false;
+        if (ns === "tol") {
+          const tolNext: TolerancesState = { ...prev.tol, [field]: value } as TolerancesState;
+          const patch: Partial<WorkbenchState> = { tol: tolNext };
+          // Abmaß edits must reach every consumer — the frozen kst-E example ignores the
+          // transmitted allowances (audit FEM-05/COV-01), so leave example mode (the free
+          // parameters reproduce kst-E exactly, validated C7)
+          if (["awe1_um", "awi1_um", "awe2_um", "awi2_um"].includes(field)) {
+            patch.stage = { ...prev.stage, use_example: false };
+          }
+          // ONE accuracy-grade state (audit STR-02): the Toleranzen grades drive the
+          // capacity/dynamics grade — the worse (higher) grade of the pair governs
+          if (field === "grade1" || field === "grade2") {
+            patch.operating = {
+              ...prev.operating,
+              accuracy_grade: Math.max(tolNext.grade1, tolNext.grade2),
+            };
+          }
+          return { ...prev, ...patch };
+        }
         return { ...prev, [ns]: next };
       });
     };
@@ -900,6 +923,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       // every consumer sees the EFFECTIVE stage (raw stage + tab-owned merges like the
       // Toleranzen allowances) — API calls therefore always carry the coupled values
       stage: effectiveStage(state),
+      rawStage: state.stage,
       setStage: (s) => setState((p) => ({ ...p, stage: s })),
       setLabel: (l) => setState((p) => ({ ...p, label: l })),
       setCalc: (id, on) => setState((p) => ({ ...p, calc: { ...p.calc, [id]: on } })),

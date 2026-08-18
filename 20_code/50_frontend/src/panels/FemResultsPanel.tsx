@@ -14,6 +14,7 @@ import { FemResultsViewport } from "@/components/FemResultsViewport";
 import { SplitPair } from "@/components/SplitPane";
 import { AttrRow, ErrNote, Section, Stat } from "@/components/ui";
 import { useFmt, useT } from "@/lib/i18n";
+import { useWorkbench } from "@/lib/store";
 
 const FIELDS: { id: FemField; unit: string }[] = [
   { id: "s_mises", unit: "MPa" },
@@ -29,6 +30,7 @@ export function FemResultsPanel() {
   const t = useT();
   const fm = useFmt();
   const { stage } = useStage();
+  const wb = useWorkbench();
   const [res, setRes] = useState<FemResultsResponse | null>(null);
   const [tag, setTag] = useState<string | null>(null);
   const [field, setField] = useState<FemField>("s_mises");
@@ -42,7 +44,12 @@ export function FemResultsPanel() {
     setErr(null);
     try {
       const parsed = JSON.parse(await file.text());
-      const out = await femApi.results(stage, parsed);
+      // pass the ACTIVE fillets — the extended-range markers follow their junction
+      // radii (audit FEM-04), same specs the deck was built with
+      const out = await femApi.results(stage, parsed, {
+        fillet_gear1: wb.fem.fillet_gear1,
+        fillet_gear2: wb.fem.fillet_gear2,
+      });
       setRes(out);
       setTag(out.flank_tags[0] ?? null);
       setPos(0);

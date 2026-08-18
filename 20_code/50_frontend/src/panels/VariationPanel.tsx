@@ -314,6 +314,9 @@ export function VariationPanel() {
       tool_tip_radius_factor_gear2: p.rho_fp2 ?? p.rho_fp1,
       center_distance_mm: null,
     });
+    // the compared Fußform becomes the DECK fillet of the plastic wheel (audit FIL-02:
+    // the tooltip promised deck effect, but varUi.fillet only drove the contour overlay)
+    wb.setFem({ fillet_gear2: v.fillet });
     setLabel(`Variante z=${Math.round(p.z1)}/${Math.round(p.z2)} x₁=${p.x1.toFixed(2)}`);
   };
 
@@ -468,8 +471,9 @@ export function VariationPanel() {
               ))}
             </div>
             <div className="border-b border-zinc-100" title={t("var.fussformNote")}>
-              {/* full FilletSpec (kind + approach + parameters) — carried into every
-                  variant contour/deck; a bare kind would silently drop the parameters */}
+              {/* full FilletSpec (kind + approach + parameters) — drives the step-4
+                  contour overlays and, on Übernehmen, becomes fem.fillet_gear2 (the
+                  deck fillet); a bare kind would silently drop the parameters */}
               <FilletEditor value={v.fillet} onChange={(f) => setVar({ fillet: f })} />
             </div>
             <table className="attr-table">

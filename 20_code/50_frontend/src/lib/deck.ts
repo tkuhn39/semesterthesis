@@ -5,11 +5,12 @@
 // Werkstoff tab (both via derived store paths); everything else lives in fem.*.
 
 import type { DeckRequest, StageParams } from "@/lib/api";
-import type { FemState } from "@/lib/store";
+import type { FemState, MaterialsState } from "@/lib/store";
 
 export interface DeckSource {
   stage: StageParams;
   fem: FemState;
+  materials: MaterialsState;
   get: (path: string) => unknown;
 }
 
@@ -29,6 +30,13 @@ export function deckPayload(wb: DeckSource): Omit<DeckRequest, "torque_gear2_nmm
     refine_thickness_gear2: wb.fem.refine_thickness_gear2,
     gear1_material: wb.get("fem.gear1_material") as "steel" | "plastic",
     gear2_material: wb.get("fem.gear2_material") as "steel" | "plastic",
+    // deck material cards follow the EDITED Werkstoff-tab values (audit F4 — FE and
+    // analytics must never compute with different materials)
+    steel_modulus_mpa: wb.materials.steel_modulus_mpa,
+    steel_poisson: wb.materials.steel_poisson,
+    steel_density_kg_dm3: wb.materials.steel_density_kg_dm3,
+    plastic_poisson: wb.materials.plastic_poisson,
+    plastic_density_kg_dm3: wb.materials.plastic_density_kg_dm3,
     axial_offset_gear1_mm: wb.fem.axial_offset_gear1_mm,
     axial_offset_gear2_mm: wb.fem.axial_offset_gear2_mm,
     steel_shell: wb.fem.steel_shell,

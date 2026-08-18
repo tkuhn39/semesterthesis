@@ -127,6 +127,16 @@ kst-E @ Q7 → K_Hβ ≈ 1.12), Dynamikfaktoren ≡ Tragfähigkeit (shared reque
 material group/HB/density per gear, spur-only paths guarded (422), f_HαT + 0.001·d,
 deck fillet interference check. 256 backend tests.
 
+**Audit rounds ADR-026/P2 (2026-08-18, ADR-026/ADR-027):** material kind is THE dispatch
+end-to-end (per-gear norm branches in the sweep with vectorized ISO Y_F/Y_S at d_en,
+coupled Werkstoffname↔art, glossary as vocabulary SSOT ~200 entries) and every
+tab-visible input has ONE store home: deck material cards follow the Werkstoff tab
+(Marlow curves stay catalog data), served catalog + three-way drift guard, ONE
+fillet/density state (Zahnform/Netz/Deck/Report identical), ONE accuracy grade
+(Toleranzen → capacity), one micro-geometry source (correction tab; Auslegung mirrors),
+allowance BAND effective incl. example mode, FE sets/refine bands/ξ-markers
+junction-aware (Landi). 260 backend tests. Open: P3 (visibility), P4 (polish), COV-02.
+
 Validation philosophy (ADR-011): implement **strictly per ISO 6336:2019** (the current
 standard; DIN 3990:1987 is the equivalent cross-check, what STplus uses). Two complete
 references: **kst-E** (spur, DIN 3990 via STplus) and the **helical ISO-6336 case**

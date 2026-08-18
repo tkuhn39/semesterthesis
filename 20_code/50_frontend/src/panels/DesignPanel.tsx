@@ -16,15 +16,22 @@ import {
 import { useStage } from "@/lib/stage";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { useFmt, useT } from "@/lib/i18n";
+import { useWorkbench } from "@/lib/store";
 
 export function DesignPanel() {
   const t = useT();
   const fm = useFmt();
   const { stage, setStage, setLabel } = useStage();
-  const [draft, setDraft] = useState<StageParams>(stage);
+  const wb = useWorkbench();
+  // seed the draft from the RAW stage (audit STR-01: seeding from the effective stage
+  // baked the tol allowances + correction-derived pinion mods back in as raw values)
+  const [draft, setDraft] = useState<StageParams>(wb.rawStage);
   const [presets, setPresets] = useState<PresetsResponse | null>(null);
   const [tol, setTol] = useState<ToleranceResponse | null>(null);
-  const [grade, setGrade] = useState(8);
+  // ONE accuracy-grade state (audit STR-02): the ISO 1328 display follows the
+  // Toleranzen tab's grade — editing here writes back to the same source
+  const grade = wb.tol.grade1;
+  const setGrade = (v: number) => wb.set("tol.grade1", Math.round(v));
   const [notes, setNotes] = useState<string[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -38,8 +45,8 @@ export function DesignPanel() {
     // the draft follows external stage changes (Geometrie tab edits, Variation-Übernehmen)
     // so this panel never shows a stale copy of the single source of truth
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDraft(stage);
-  }, [stage]);
+    setDraft(wb.rawStage);
+  }, [wb.rawStage]);
 
   const set = (k: keyof StageParams) => (v: number) =>
     setDraft({ ...draft, use_example: false, [k]: v });
@@ -259,6 +266,7 @@ export function DesignPanel() {
           <MicroEditor
             value={draft}
             onChange={(d) => setDraft({ ...d, use_example: false })}
+            pinionMods={stage.modifications_pinion}
           />
           <div className="px-3 pb-2 text-[11px] text-zinc-400">
             {t("design.microNote")}
@@ -354,7 +362,13 @@ export function DesignPanel() {
   );
 }
 
-function MicroEditor(props: { value: StageParams; onChange: (s: StageParams) => void }) {
+function MicroEditor(props: {
+  value: StageParams;
+  onChange: (s: StageParams) => void;
+  // effective pinion mods (correction tab) — shown read-only (audit STR-01: two
+  // competing pinion editors; effectiveStage always won, so edits here were dead)
+  pinionMods?: StageParams["modifications_pinion"];
+}) {
   const t = useT();
   const gears: ("modifications_pinion" | "modifications_wheel")[] = [
     "modifications_pinion",
@@ -366,46 +380,56 @@ function MicroEditor(props: { value: StageParams; onChange: (s: StageParams) => 
     { key: "end_relief_um", label: t("micro.endRelief"), symbol: "C_βe" },
   ];
   return (
-    <table className="attr-table">
-      <thead>
-        <tr>
-          <th>{t("common.attribute")}</th>
-          <th></th>
-          <th>{t("micro.left")}</th>
-          <th>{t("micro.right")}</th>
-          <th>{t("common.unit")}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {gears.map((g) =>
-          fields.map((f) => {
-            const mods = props.value[g] ?? {};
-            return (
-              <tr key={`${g}-${f.key}`}>
-                <td>
-                  {g === "modifications_pinion" ? t("common.pinion") : t("common.wheel")} · {f.label}
-                </td>
-                <td className="wb-num text-zinc-400">{f.symbol}</td>
-                {(["left", "right"] as const).map((side) => (
-                  <td key={side}>
-                    <Num
-                      width={70}
-                      value={mods[side]?.[f.key] ?? 0}
-                      onChange={(v) =>
-                        props.onChange({
-                          ...props.value,
-                          [g]: { ...mods, [side]: { ...(mods[side] ?? {}), [f.key]: v } },
-                        })
-                      }
-                    />
+    <>
+      {props.pinionMods !== undefined && (
+        <div className="px-2 py-1 text-[11.5px] text-zinc-500">{t("micro.pinionSource")}</div>
+      )}
+      <table className="attr-table">
+        <thead>
+          <tr>
+            <th>{t("common.attribute")}</th>
+            <th></th>
+            <th>{t("micro.left")}</th>
+            <th>{t("micro.right")}</th>
+            <th>{t("common.unit")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {gears.map((g) =>
+            fields.map((f) => {
+              const pinionLocked = g === "modifications_pinion" && props.pinionMods !== undefined;
+              const mods = pinionLocked ? (props.pinionMods ?? {}) : (props.value[g] ?? {});
+              return (
+                <tr key={`${g}-${f.key}`}>
+                  <td>
+                    {g === "modifications_pinion" ? t("common.pinion") : t("common.wheel")} · {f.label}
                   </td>
-                ))}
-                <td className="text-zinc-400">µm</td>
-              </tr>
-            );
-          }),
-        )}
-      </tbody>
-    </table>
+                  <td className="wb-num text-zinc-400">{f.symbol}</td>
+                  {(["left", "right"] as const).map((side) => (
+                    <td key={side}>
+                      {pinionLocked ? (
+                        <span className="wb-num text-zinc-500">{mods[side]?.[f.key] ?? 0}</span>
+                      ) : (
+                        <Num
+                          width={70}
+                          value={mods[side]?.[f.key] ?? 0}
+                          onChange={(v) =>
+                            props.onChange({
+                              ...props.value,
+                              [g]: { ...mods, [side]: { ...(mods[side] ?? {}), [f.key]: v } },
+                            })
+                          }
+                        />
+                      )}
+                    </td>
+                  ))}
+                  <td className="text-zinc-400">µm</td>
+                </tr>
+              );
+            }),
+          )}
+        </tbody>
+      </table>
+    </>
   );
 }

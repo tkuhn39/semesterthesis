@@ -19,6 +19,7 @@ import { ContourPlot } from "@/components/ContourPlot";
 import { AttrRow, Btn, ErrNote, Section, Stat } from "@/components/ui";
 import { useFmt, useT } from "@/lib/i18n";
 import { useStage } from "@/lib/stage";
+import { useWorkbench } from "@/lib/store";
 
 export function FilletEditor(props: { value: FilletSpec; onChange: (f: FilletSpec) => void }) {
   const t = useT();
@@ -272,7 +273,12 @@ export function ToothFormPanel(props: { gear: 1 | 2 }) {
   const t = useT();
   const fm = useFmt();
   const { stage } = useStage();
-  const [fillet, setFillet] = useState<FilletSpec>({ kind: "standard" });
+  const wb = useWorkbench();
+  // THE fillet spec lives in fem.fillet_gear{n} (audit STR-03/FEM-02: a panel-local
+  // useState meant the Zahnform choice never reached deck, pair view or geometry report)
+  const fillet = props.gear === 1 ? wb.fem.fillet_gear1 : wb.fem.fillet_gear2;
+  const setFillet = (f: FilletSpec) =>
+    wb.setFem(props.gear === 1 ? { fillet_gear1: f } : { fillet_gear2: f });
   const [standard, setStandard] = useState<ContourResponse | null>(null);
   const [current, setCurrent] = useState<ContourResponse | null>(null);
   const [cao, setCao] = useState<FilletCaoResponse | null>(null);
@@ -280,13 +286,13 @@ export function ToothFormPanel(props: { gear: 1 | 2 }) {
   const [err, setErr] = useState<string | null>(null);
 
   const load = useCallback(
-    async (f: FilletSpec) => {
+    async (f: FilletSpec, freshStandard = false) => {
       setBusy(true);
       setErr(null);
       try {
         const cur = await contourApi.contour({ stage, gear: props.gear, fillet: f });
         setCurrent(cur);
-        if (f.kind !== "standard" && !standard) {
+        if (f.kind !== "standard" && (freshStandard || !standard)) {
           setStandard(
             await contourApi.contour({ stage, gear: props.gear, fillet: { kind: "standard" } }),
           );
@@ -307,9 +313,13 @@ export function ToothFormPanel(props: { gear: 1 | 2 }) {
   );
 
   useEffect(() => {
-    // initial contour fetch on mount / gear switch; async, so state updates land post-render
+    // gear switch / stage edit: INVALIDATE every cached contour before refetching —
+    // the old standard overlay belonged to the previous gear/geometry (audit FIL-01)
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load(fillet);
+    setStandard(null);
+    setCurrent(null);
+    setCao(null);
+    void load(fillet, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.gear, stage]);
 

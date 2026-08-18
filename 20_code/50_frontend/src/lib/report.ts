@@ -14,6 +14,15 @@ export function collectReportRequest(wb: Wb, locale: string): Record<string, unk
     label: wb.label,
     locale,
     capacity: buildCapacityRequest(wb),
+    // geometry context for the report's SSOT block: active fillets + the full allowance
+    // band (audit COV-01 — the report used to rebuild with None everywhere)
+    geometry: {
+      fillet_gear1: wb.fem.fillet_gear1,
+      fillet_gear2: wb.fem.fillet_gear2,
+      span_allowance_upper_um: [wb.tol.awe1_um, wb.tol.awe2_um],
+      span_allowance_lower_um: [wb.tol.awi1_um, wb.tol.awi2_um],
+      center_distance_allowance_mm: (wb.tol.a_upper_um - wb.tol.a_lower_um) / 2 / 1000,
+    },
     powerflow: {
       speed_shaft1_min1: pf.speed_shaft1_min1,
       torque_nm: pf.torque_nm,

@@ -203,6 +203,15 @@ class DeckRequest(BaseModel):
     refine_thickness_gear2: int | None = Field(None, ge=1, le=3)
     gear1_material: Literal["steel", "plastic"] = "steel"
     gear2_material: Literal["steel", "plastic"] = "plastic"
+    # Werkstoff-tab property overrides for the deck material cards (audit F4 / P2: the
+    # deck used the raw catalog, so an edited E/ν/ρ silently diverged between analytics
+    # and FE). None → catalog value. The plastic card's Marlow CURVE stays catalog data —
+    # a scalar E edit cannot regenerate a measured stress–strain curve (documented).
+    steel_modulus_mpa: float | None = Field(None, gt=0.0)
+    steel_poisson: float | None = Field(None, gt=0.0, lt=0.5)
+    steel_density_kg_dm3: float | None = Field(None, gt=0.0)
+    plastic_poisson: float | None = Field(None, gt=0.0, lt=0.5)
+    plastic_density_kg_dm3: float | None = Field(None, gt=0.0)
     axial_offset_gear1_mm: float = Field(0.0, ge=-50.0, le=50.0)
     axial_offset_gear2_mm: float = Field(0.0, ge=-50.0, le=50.0)
     steel_shell: bool = Field(
@@ -839,8 +848,26 @@ def _deck_roles(req: DeckRequest) -> dict:
     """
 
     def deck_material(kind: str) -> LinearElastic | MarlowUniaxial:
-        # properties from THE material catalog (single source, user decision 2026-07-04)
-        return card_from_catalog(catalog_material(kind))
+        # catalog material + the Werkstoff-tab property overrides (audit F4: the deck
+        # ignored edited E/ν/ρ, so FE and analytics silently used different materials)
+        base = catalog_material(kind)
+        if base.is_plastic:
+            updates = {
+                "poisson_ratio": req.plastic_poisson,
+                "density_kg_m3": (
+                    req.plastic_density_kg_dm3 * 1000.0 if req.plastic_density_kg_dm3 else None
+                ),
+            }
+        else:
+            updates = {
+                "elastic_modulus_mpa": req.steel_modulus_mpa,
+                "poisson_ratio": req.steel_poisson,
+                "density_kg_m3": (
+                    req.steel_density_kg_dm3 * 1000.0 if req.steel_density_kg_dm3 else None
+                ),
+            }
+        material = base.model_copy(update={k: v for k, v in updates.items() if v is not None})
+        return card_from_catalog(material)
 
     kinds = (req.gear1_material, req.gear2_material)
     rigid: set[int] = set()

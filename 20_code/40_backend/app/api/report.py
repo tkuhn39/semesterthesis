@@ -71,6 +71,10 @@ class ReportRequest(BaseModel):
     powerflow: ReportPowerflow = Field(default_factory=lambda: ReportPowerflow())
     accuracy_grade: int = 8
     variation: ReportVariation | None = None
+    # geometry context (active fillets, allowance band, series) for the SSOT block —
+    # audit COV-01: the report used to rebuild with None everywhere, collapsing the
+    # E_sns/E_sni band and dropping the selected fillet from the geometry section
+    geometry: GeometryReportRequest | None = None
 
 
 def _de(locale: str, de: str, en: str) -> str:
@@ -533,8 +537,10 @@ def report(req: ReportRequest) -> HTMLResponse:
         ),
     ]
     # --- full SSOT geometry block (DIN ISO 21771 / DIN 21773 / DIN 3967) ---
-    grq = GeometryReportRequest(
-        stage=req.capacity.stage or StageParams(),
+    # the client's geometry context (fillets, allowance band, series) with THE one stage
+    # forced on top — never a second stage source (audit COV-01)
+    default_grq = GeometryReportRequest(
+        stage=StageParams(),
         fillet_gear1=None,
         fillet_gear2=None,
         ball_diameter_gear1_mm=None,
@@ -547,9 +553,15 @@ def report(req: ReportRequest) -> HTMLResponse:
         tolerance_series_gear1=None,
         tolerance_series_gear2=None,
     )
+    grq = (req.geometry or default_grq).model_copy(
+        update={"stage": req.capacity.stage or StageParams()}
+    )
     up_al, low_al = _report_allowances(grq, stage)
     rep = compute_geometry_report(
-        stage, span_allowance_upper_mm=up_al, span_allowance_lower_mm=low_al
+        stage,
+        span_allowance_upper_mm=up_al,
+        span_allowance_lower_mm=low_al,
+        center_distance_allowance_mm=grq.center_distance_allowance_mm,
     )
     g1, g2, pr = rep.gear1, rep.gear2, rep.pair
     stage_rows += [

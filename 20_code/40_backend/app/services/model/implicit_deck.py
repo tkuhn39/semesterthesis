@@ -240,6 +240,12 @@ def build_gear_part(
             "the reference-topology sector is fixed at 4 teeth + 2 shoulder pitches "
             f"(got n_teeth={n_teeth}, n_segments={n_segments}) — per the FVA reference deck"
         )
+    # flank/contact classification follows the ACTIVE fillet's junction radius, not the
+    # standard d_Ff (audit FEM-04: a raised Landi junction put fillet arc into the
+    # contact/measurement sets and the flank refine band)
+    from app.services.geometry.root_fillet import junction_radius_mm as _junction_r
+
+    flank_lower_r = _junction_r(fillet, profile) if fillet is not None else None  # type: ignore[arg-type]
     sector = generate_sector_2d(
         profile,
         bore_radius_mm=bore_radius_mm,
@@ -263,6 +269,7 @@ def build_gear_part(
             layers=face_layers,
             width_mm=face_width_mm,
             z0_mm=z0,
+            flank_lower_radius_mm=flank_lower_r,
         )
         mesh = Mesh3D(
             _transform(shell_nodes, rot_rad=rot_rad, dx=dx, dy=dy),
@@ -294,6 +301,7 @@ def build_gear_part(
             fasten_cuts=fasten_cuts,
             fasten_bottom=fasten_bottom,
             fasten_top=fasten_top,
+            flank_lower_radius_mm=flank_lower_r,
         )
     segments = np.array(
         [

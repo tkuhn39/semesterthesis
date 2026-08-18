@@ -13,12 +13,15 @@ warning and skipped, the rest still runs. So most fields are optional; the
 consuming method decides what it strictly needs.
 """
 
+import logging
 import math
 from enum import StrEnum
 
 from pydantic import BaseModel, Field, field_validator
 
 from app.io.ste import SteFile, SteSection
+
+logger = logging.getLogger(__name__)
 
 
 class MaterialKind(StrEnum):
@@ -302,6 +305,12 @@ def material_from_ste(ste: SteFile, name: str) -> Material:
 
     Raises ``KeyError`` if the section or the elastic data is missing (those are
     essential); all strength limits are optional.
+
+    NOTE (audit F12): the kind is INFERRED from the modulus — the only inference in
+    the system (everywhere else the explicit Werkstoffart toggle is THE dispatch,
+    ADR-026). A magnesium or highly filled composite near the 20 GPa line would land
+    on the wrong side, so imported materials must be confirmed via the toggle before
+    they drive a norm branch; callers get a ``logger.warning`` per inference.
     """
     section = ste.section(name)
     if section is None:
@@ -312,6 +321,13 @@ def material_from_ste(ste: SteFile, name: str) -> Material:
         raise KeyError(f"material {name!r} lacks elastic data (modulus/poisson)")
     label = section.get("WERKSTOFFBEZEICHNUNG")
     kind = MaterialKind.PLASTIC if modulus < _PLASTIC_MODULUS_CEILING_MPA else MaterialKind.STEEL
+    logger.warning(
+        "material %r: kind %s INFERRED from E = %.0f MPa (20 GPa heuristic) - confirm "
+        "the Werkstoffart toggle before dispatching a norm branch (ADR-026)",
+        name,
+        kind.value,
+        modulus,
+    )
     return Material(
         name=label.values[0] if label and label.values else name,
         kind=kind,

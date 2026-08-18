@@ -9,6 +9,47 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Fixed (audit round P2 — state consistency + material SSOT completion, 2026-08-18)
+Verification first (user question: "is the material really defined in ONE place and read
+by every consumer?"): all frontend reads/writes go through the one `materials` store
+slice (Werkstoff tab bindings + coupled mirrors) — with ONE residual violation, fixed
+here. Then the audit's P2 block:
+- **F4/FEM-03 — deck material parity**: the FE deck endpoints built their material cards
+  from the raw catalog, silently diverging from the analytics the moment E/ν/ρ was
+  edited. `DeckRequest` now carries the Werkstoff-tab overrides and `deckPayload` sends
+  them; the plastic Marlow CURVE stays catalog data (a scalar E edit cannot regenerate a
+  measured stress–strain curve — documented).
+- **Catalog served + drift guard (F2 root)**: `GET /api/materials/catalog` serves THE
+  catalog (names, kinds, core properties); a test pins backend CATALOG ↔ Werkstoff-tab
+  `mat_name` options ↔ frontend name→kind mirror in sync.
+- **F12 — .ste kind heuristic guarded**: `material_from_ste` logs an explicit warning
+  whenever it INFERS the kind from the 20 GPa modulus line (the only inference in the
+  system; the toggle must confirm imported materials before a norm branch runs).
+- **COV-01/FEM-05 — allowance band lives**: the Geometrie tab and the HTML report now
+  send the FULL A_We/A_Wi band per gear (plus the DIN 3964 A_a half-band), so
+  E_sns/E_sni display distinct values and backlash uses the band, not a mean; editing
+  Abmaße leaves the frozen kst-E example mode (free parameters reproduce kst-E exactly),
+  so series/edits are never silently inert. `ReportRequest` gained the `geometry`
+  context (fillets + band) instead of rebuilding with None.
+- **STR-02 — ONE accuracy grade**: the Toleranzen grades drive `operating.accuracy_grade`
+  (worse grade governs) and the Auslegung tab's ISO 1328 display reads/writes the same
+  source — the triple state (7/7/8) is gone.
+- **STR-03/FEM-02/FIL-01 — ONE fillet + density state**: Zahnform and Netz tabs bind to
+  `fem.fillet_gear{n}` and `fem.refine_*` (per gear) instead of panel-local copies, so
+  what those tabs show is EXACTLY what deck, pair view and geometry report use; the
+  cached standard-contour overlay resets on gear/stage switch (no stale comparisons).
+- **FIL-02 — variation fillet reaches the deck**: Übernehmen writes the compared Fußform
+  into `fem.fillet_gear2`; the tooltip now says exactly that.
+- **STR-01 — one micro-geometry source**: the DesignPanel draft seeds from the RAW stage
+  (tab-owned merges are no longer baked back in), and its pinion micro rows are a locked
+  read-only mirror of the Flankenmodifikation [34] tab (they were dead controls the
+  effective stage always overrode); wheel rows stay editable.
+- **FEM-04 — junction-aware FE classification**: set/surface tagging, rigid-shell flank
+  sets, the root/flank refine-band split and the FEM-results ξ-range markers follow the
+  ACTIVE fillet's junction radius instead of the standard d_Ff (a raised Landi junction
+  had put fillet arc into the contact/measurement sets and the wrong density band);
+  `/api/fem/results` accepts the active FilletSpecs.
+
 ### Fixed (material dispatch separation + glossary maintenance, 2026-08-18, ADR-026)
 User directive: the steel and plastic calculation branches must NEVER mix, the material
 kind must be an explicit input, and the glossary must carry every symbol with current

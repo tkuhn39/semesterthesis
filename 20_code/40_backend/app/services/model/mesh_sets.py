@@ -57,6 +57,7 @@ def tag_sector_surfaces(
     n_segments: int,
     layers: int,
     tol_mm: float | None = None,
+    flank_lower_radius_mm: float | None = None,  # fillet junction (audit FEM-04); None → d_Ff/2
 ) -> SectorSurfaces:
     """Classify the section boundary into bore / cut / tip / per-tooth flank surfaces.
 
@@ -71,7 +72,10 @@ def tag_sector_surfaces(
     total = n_teeth + 2 * n_segments
     centres = [(n_segments + i - (total - 1) / 2.0) * pitch for i in range(n_teeth)]
     half_sector = total * pitch / 2.0
-    r_na, r_ff = profile.d_Na / 2.0, profile.d_Ff / 2.0
+    # flank band lower bound: the ACTIVE fillet's junction radius (audit FEM-04 — a Landi
+    # junction above d_Ff must keep its elliptic portion out of the FLANK contact sets)
+    r_na = profile.d_Na / 2.0
+    r_ff = flank_lower_radius_mm if flank_lower_radius_mm is not None else profile.d_Ff / 2.0
     used = np.unique(section.quads)  # skip orphan geometry nodes (e.g. the arc-centre at r=0)
     r_bore = float(np.hypot(section.nodes[used, 0], section.nodes[used, 1]).min())  # inner radius
     n_quads = section.n_quads
@@ -145,6 +149,7 @@ def build_rigid_shell(
     width_mm: float,
     z0_mm: float,
     tol_mm: float | None = None,
+    flank_lower_radius_mm: float | None = None,  # fillet junction (audit FEM-04); None → d_Ff/2
 ) -> tuple[Array, IntArray, GearReferenceSets]:
     """The ideally stiff Außenhülle of a gear sector: the LATERAL boundary surface only.
 
@@ -168,7 +173,8 @@ def build_rigid_shell(
     pitch = 2.0 * math.pi / profile.z
     total = n_teeth + 2 * n_segments
     centres = [(n_segments + i - (total - 1) / 2.0) * pitch for i in range(n_teeth)]
-    r_na, r_ff = profile.d_Na / 2.0, profile.d_Ff / 2.0
+    r_na = profile.d_Na / 2.0
+    r_ff = flank_lower_radius_mm if flank_lower_radius_mm is not None else profile.d_Ff / 2.0
 
     boundary = _boundary_edges(section)
     edges = [(int(section.quads[qi][p]), int(section.quads[qi][(p + 1) % 4])) for qi, p in boundary]
@@ -238,6 +244,7 @@ def tag_gear_reference(
     fasten_cuts: bool = True,
     fasten_bottom: bool = False,
     fasten_top: bool = False,
+    flank_lower_radius_mm: float | None = None,  # fillet junction (audit FEM-04); None → d_Ff/2
 ) -> GearReferenceSets:
     """Classify a swept gear sector into the reference per-tooth/flank sets + Fesselung.
 
@@ -258,7 +265,8 @@ def tag_gear_reference(
     total = n_teeth + 2 * n_segments
     centres = [(n_segments + i - (total - 1) / 2.0) * pitch for i in range(n_teeth)]
     half_sector = total * pitch / 2.0
-    r_na, r_ff = profile.d_Na / 2.0, profile.d_Ff / 2.0
+    r_na = profile.d_Na / 2.0
+    r_ff = flank_lower_radius_mm if flank_lower_radius_mm is not None else profile.d_Ff / 2.0
     used = np.unique(section.quads)
     r_used = np.hypot(section.nodes[used, 0], section.nodes[used, 1])
     r_bore = float(r_used.min())

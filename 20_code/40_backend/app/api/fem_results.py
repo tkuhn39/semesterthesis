@@ -21,7 +21,9 @@ import re
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
+from app.api.mesh import FilletSpec
 from app.api.stage_params import StageParams
+from app.services.geometry.root_fillet import junction_radius_mm
 from app.services.geometry.tooth_form import ToothProfile
 
 router = APIRouter(prefix="/api/fem", tags=["fem-results"])
@@ -34,6 +36,10 @@ class FemResultsRequest(BaseModel):
 
     stage: StageParams = Field(default_factory=StageParams)
     results: dict
+    # active root-fillet strategy per gear — the extended-range markers ξ_min/ξ_max follow
+    # the ACTIVE junction radius, not the standard d_Ff (audit FEM-04)
+    fillet_gear1: FilletSpec = Field(default_factory=FilletSpec)
+    fillet_gear2: FilletSpec = Field(default_factory=FilletSpec)
 
 
 class FlankFrameData(BaseModel):
@@ -119,9 +125,15 @@ def fem_results(req: FemResultsRequest) -> FemResultsResponse:
     # extended range d_Nf … d_Na: the root form circles come from the validated
     # tooth-profile chain (same d_Ff the mesher and the contour preview use)
     try:
-        d_ff = (ToothProfile.from_stage(stage, 0).d_Ff, ToothProfile.from_stage(stage, 1).d_Ff)
+        profiles = (ToothProfile.from_stage(stage, 0), ToothProfile.from_stage(stage, 1))
     except ValueError as exc:  # e.g. helical stage (2-D profile is spur-only, NRM-02)
         raise HTTPException(422, str(exc)) from exc
+    # lower usable-flank bound per gear: the ACTIVE fillet's junction (audit FEM-04)
+    strategies = (req.fillet_gear1.strategy(), req.fillet_gear2.strategy())
+    d_ff = tuple(
+        2.0 * junction_radius_mm(s, profiles[i]) if s is not None else profiles[i].d_Ff
+        for i, s in enumerate(strategies)
+    )
     xi_min = min(xi_a, _unwrap(rb[0], rw_sin[0], 1.0, d_ff[0] / 2.0))
     xi_max = max(xi_e, _unwrap(rb[1], rw_sin[1], -1.0, d_ff[1] / 2.0))
     markers = LineOfActionMarkers(

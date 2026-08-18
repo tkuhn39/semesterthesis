@@ -1146,3 +1146,37 @@ ruff, mypy, tsc, eslint, production build — all green). Process lesson recorde
 agents still hold shell write access; future audit agents get an explicit no-write guard
 in their prompt, and their sessions are watched for tree mutations before their reports
 are trusted.
+
+## ADR-027: State consistency round (audit P2) — every tab-visible input has exactly one store home
+
+**Date:** 2026-08-18 · **Status:** Accepted
+
+**Context:** After the dispatch round (ADR-026) the user asked for a guarantee that the
+materials are defined in ONE frontend place with every consumer reading it, and approved
+the audit's P2 block. Verification showed the material store was already the single
+read/write source except the FE deck cards (raw catalog only, FEM-03/F4); beyond
+materials, four state fragmentations remained: fillet specs and mesh densities in
+panel-local useState (STR-03/FEM-02/FIL-01), a triple accuracy-grade state (STR-02),
+two competing micro-geometry editors (STR-01), and the allowance band collapsing to a
+mean while the frozen kst-E example silently ignored edits (COV-01/FEM-05).
+
+**Decision:** one store home per input, consumers derive: (1) deck material cards take
+the Werkstoff-tab overrides (Marlow curves stay catalog data); the catalog itself is
+served (`GET /api/materials/catalog`) with a three-way drift-guard test until the copies
+are removed entirely. (2) `fem.fillet_gear{n}` + `fem.refine_*` are THE fillet/density
+state — Zahnform/Netz tabs bind to them; the variation's compared Fußform lands there on
+Übernehmen. (3) `tol.grade1/grade2` drive `operating.accuracy_grade` (worse grade
+governs). (4) The Flankenmodifikation tab is THE pinion micro-geometry source; the
+Auslegung editor mirrors it read-only and seeds its draft from the new `rawStage` (the
+effective stage is for consumers, never for editors). (5) Allowance edits leave example
+mode, and the full A_We/A_Wi band travels in the geometry-report/report requests.
+(6) FE set classification, refine bands and FEM-result markers follow the active
+fillet's junction radius (FEM-04) — the deck's geometry semantics now match the
+stress-evaluation chain for raised junctions (Landi).
+
+**Consequences:** what any tab displays is what every endpoint computes with; the
+Toleranzen band is finally visible (E_sns ≠ E_sni) and effective in example sessions.
+Backend gates: full suite + ruff + mypy; frontend tsc/eslint/build. Open (P3/P4 +
+follow-ups): per-gear material NAMES driving properties (two different steels), serving
+the uimodel options from the catalog endpoint, COV-02 backlash-delta row, remaining
+visibility items.

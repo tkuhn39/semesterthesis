@@ -10,7 +10,15 @@
 > four additional defects (missing Y_St ≈ 2 in the VDI root check incl. the sweep limit,
 > the β ≤ 30° cap of VDI eq. 12, the all-velocity 3 µm y_α cap of eq. 79, and 500-instead-
 > of-422 on the helical guards' remaining routes) — all fixed in the same round (ADR-025
-> amendment). P2–P4 remain open. The findings below are kept as written (audit snapshot).
+> amendment).
+>
+> **STATUS UPDATE 2 (same day, ADR-026/ADR-027): P2 is FIXED as well** — the material
+> dispatch round (ADR-026: per-gear norm branches in the sweep incl. STR-04, coupled
+> name/kind, glossary SSOT) plus the state-consistency round (ADR-027: COV-01, FEM-05,
+> STR-01, STR-02, STR-03/FEM-02/FIL-01, FIL-02, FEM-03/F4 deck material parity, FEM-04
+> junction-aware FE classification, served catalog + drift guard, .ste kind-heuristic
+> warning). Open now: **P3 (visibility) and P4 (polish)** plus COV-02 and the noted
+> follow-ups. The findings below are kept as written (audit snapshot).
 
 > **Read-only audit — no code was changed.** Deliverable requested by the user: full report
 > first, decisions before fixes. Scope: the ANALYTICAL chain (geometry / norms / seven

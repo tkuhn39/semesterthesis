@@ -673,6 +673,13 @@ export interface DeckRequest {
   refine_thickness_gear2?: number | null;
   gear1_material?: "steel" | "plastic";
   gear2_material?: "steel" | "plastic";
+  // Werkstoff-tab property overrides for the deck material cards (audit F4 — the deck
+  // used raw catalog values; the plastic Marlow curve stays catalog data)
+  steel_modulus_mpa?: number | null;
+  steel_poisson?: number | null;
+  steel_density_kg_dm3?: number | null;
+  plastic_poisson?: number | null;
+  plastic_density_kg_dm3?: number | null;
   axial_offset_gear1_mm?: number;
   axial_offset_gear2_mm?: number;
   steel_shell: boolean;
@@ -856,8 +863,12 @@ export interface FemResultsResponse {
   frames: FemFrame[];
 }
 export const femApi = {
-  results: (stage: StageParams, results: unknown) =>
-    post<FemResultsResponse>("/api/fem/results", { stage, results }),
+  // fillets: the ξ_min/ξ_max markers follow the ACTIVE junction radius (audit FEM-04)
+  results: (
+    stage: StageParams,
+    results: unknown,
+    fillets?: { fillet_gear1: FilletSpec; fillet_gear2: FilletSpec },
+  ) => post<FemResultsResponse>("/api/fem/results", { stage, results, ...(fillets ?? {}) }),
 };
 
 // ---- Tolerances (ISO 1328-1) + free evaluate ----

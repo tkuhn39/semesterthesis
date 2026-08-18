@@ -272,8 +272,12 @@ const DICT: Record<string, { de: string; en: string }> = {
   },
   "var.fussform": { de: "Fußform", en: "Root fillet form" },
   "var.fussformNote": {
-    de: "Fußform wirkt auf den Kontur-Vergleich (Schritt 4) und das FE-Deck",
-    en: "The fillet form drives the contour comparison (step 4) and the FE deck",
+    de: "Fußform wirkt auf den Kontur-Vergleich (Schritt 4); bei Übernehmen wird sie die FE-Deck-Fußform von Rad 2",
+    en: "The fillet form drives the contour comparison (step 4); on apply it becomes gear 2's FE-deck fillet",
+  },
+  "micro.pinionSource": {
+    de: "Ritzel-Mikrogeometrie wird im Tab Flankenmodifikation [34] gepflegt (eine Quelle) — hier nur Anzeige der wirksamen Werte.",
+    en: "Pinion micro-geometry is maintained in the Flankenmodifikation [34] tab (one source) — shown read-only here.",
   },
   "var.normNote": {
     de: "Norm-Dispatch je Rad: Stahl → ISO 6336, Kunststoff → VDI 2736",

@@ -304,7 +304,13 @@ def generate_sector_2d(
     # are exactly canonical and the bands are rotation/mirror-equivariant, so the inserted
     # nodes inherit exact tooth congruence; new surface nodes are re-projected on the contour.
     kinds_out = list(tpl.kind)
-    r_split = profile.d_Ff / 2.0 + 0.02
+    # root/flank band split at the ACTIVE fillet's junction (audit FEM-04: a Landi
+    # junction above d_Ff belongs to the ROOT band, so refine_root — not refine_flank —
+    # must drive its density and the "effektive Werte" element counts)
+    from app.services.geometry.root_fillet import junction_radius_mm as _junction_r
+
+    r_junction = _junction_r(fillet, profile) if fillet is not None else profile.d_Ff / 2.0  # type: ignore[arg-type]
+    r_split = r_junction + 0.02
     r_flank_hi = profile.d_Na / 2.0 - 0.02
 
     def tooth_zone_nodes(p: Array) -> set[int]:

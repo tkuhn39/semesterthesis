@@ -22,6 +22,7 @@ import { SplitPair } from "@/components/SplitPane";
 import { FilletEditor, ManufacturabilityNote } from "@/panels/ToothFormPanel";
 import { AttrRow, Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { useFmt, useT } from "@/lib/i18n";
+import { useWorkbench } from "@/lib/store";
 
 const DENSITY_PRESETS: { id: string; root: number; flank: number }[] = [
   { id: "reference", root: 1, flank: 1 },
@@ -50,11 +51,24 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
   const t = useT();
   const fm = useFmt();
   const { stage } = useStage();
-  const [refineRoot, setRefineRoot] = useState(1);
-  const [refineFlank, setRefineFlank] = useState(1);
-  const [refineThickness, setRefineThickness] = useState(1);
-  const [layers, setLayers] = useState(6);
-  const [fillet, setFillet] = useState<FilletSpec>({ kind: "standard" });
+  const wb = useWorkbench();
+  // fillet + densities live in fem.* (audit STR-03/FEM-02: panel-local state meant the
+  // Netz tab could validate a mesh the deck would never build)
+  const g2 = props.gear === 2;
+  const refineRoot = g2 ? wb.fem.refine_root_gear2 : wb.fem.refine_root;
+  const refineFlank = g2 ? wb.fem.refine_flank_gear2 : wb.fem.refine_flank;
+  const refineThickness = g2 ? wb.fem.refine_thickness_gear2 : wb.fem.refine_thickness;
+  const layers = wb.fem.face_layers;
+  const fillet = g2 ? wb.fem.fillet_gear2 : wb.fem.fillet_gear1;
+  const setRefineRoot = (v: number) =>
+    wb.setFem(g2 ? { refine_root_gear2: v } : { refine_root: v });
+  const setRefineFlank = (v: number) =>
+    wb.setFem(g2 ? { refine_flank_gear2: v } : { refine_flank: v });
+  const setRefineThickness = (v: number) =>
+    wb.setFem(g2 ? { refine_thickness_gear2: v } : { refine_thickness: v });
+  const setLayers = (v: number) => wb.setFem({ face_layers: v });
+  const setFillet = (f: FilletSpec) =>
+    wb.setFem(g2 ? { fillet_gear2: f } : { fillet_gear1: f });
   const [heatmap, setHeatmap] = useState(true);
   const [view, setView] = useState<"3d" | "2d">("3d");
   const [data, setData] = useState<Mesh3DResponse | null>(null);

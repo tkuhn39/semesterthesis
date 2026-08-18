@@ -300,6 +300,11 @@ export function GeometryPanel() {
           stage: s,
           fillet_gear1: wb.fem.fillet_gear1,
           fillet_gear2: wb.fem.fillet_gear2,
+          // full allowance BAND per gear (audit COV-01: without these the backend fell
+          // back to the stage's mean, so E_sns/E_sni always showed the same number)
+          span_allowance_upper_um: [wb.tol.awe1_um, wb.tol.awe2_um],
+          span_allowance_lower_um: [wb.tol.awi1_um, wb.tol.awi2_um],
+          center_distance_allowance_mm: (wb.tol.a_upper_um - wb.tol.a_lower_um) / 2 / 1000,
         }),
       ]);
       setRes(geo);

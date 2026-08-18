@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 from app.api.stage_params import StageParams, kst_e_stage
 from app.io.ste import Pair, gear_stage_from_ste, parse_ste
 from app.services.geometry.gear import GearStage
+from app.services.materials import CATALOG, DEFAULT_BY_KIND
 
 __all__ = ["StageParams", "TOOL_PRESETS", "router"]
 
@@ -137,3 +138,39 @@ def import_ste(req: SteImportRequest) -> SteImportResponse:
         tool_edge_break_angle_deg_gear2=tool1.edge_break_angle_deg if tool1 is not None else None,
     )
     return SteImportResponse(params=params, notes=stage.check_validity())
+
+
+# --------------------------------------------------------------------------- #
+# Material catalog (SSOT served, audit F2/P2)                                  #
+# --------------------------------------------------------------------------- #
+class CatalogMaterialOut(BaseModel):
+    """One servable catalog material — THE source the Werkstoff-tab name options and
+    the frontend's name→kind mirror must follow (the catalog used to be maintained in
+    three places that could drift silently)."""
+
+    name: str
+    kind: str  # "steel" | "plastic" — drives the norm dispatch (ADR-026)
+    elastic_modulus_mpa: float
+    poisson_ratio: float
+    density_kg_dm3: float | None
+    sigma_hlim_mpa: float | None
+    sigma_flim_mpa: float | None
+    is_default_for_kind: bool
+
+
+@router.get("/materials/catalog", response_model=list[CatalogMaterialOut])
+def materials_catalog() -> list[CatalogMaterialOut]:
+    """THE material catalog: names, kinds and core properties (single source)."""
+    return [
+        CatalogMaterialOut(
+            name=mat.name,
+            kind=mat.kind.value,
+            elastic_modulus_mpa=mat.elastic_modulus_mpa,
+            poisson_ratio=mat.poisson_ratio,
+            density_kg_dm3=(mat.density_kg_m3 / 1000.0 if mat.density_kg_m3 else None),
+            sigma_hlim_mpa=mat.sigma_hlim_mpa,
+            sigma_flim_mpa=mat.sigma_flim_mpa,
+            is_default_for_kind=DEFAULT_BY_KIND[mat.kind] == name,
+        )
+        for name, mat in CATALOG.items()
+    ]
