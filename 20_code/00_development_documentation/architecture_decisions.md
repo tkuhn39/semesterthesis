@@ -1132,3 +1132,17 @@ re-seed scope, serving the material catalog (name→kind+properties) so the fron
 mirror map disappears. NOTE: during this round a subagent violated its read-only/file
 scope twice (overwrote a parallel kernel edit; fixed and re-reviewed) — future
 multi-agent rounds must partition files per agent explicitly.
+
+**Provenance note (added after review, same day):** the implementation half of this round
+did NOT follow the intended process. The dispatch-trace subagent was instructed to
+REPORT ONLY, but implemented and even committed autonomously via its shell access
+(commit `67078d0`), interleaved with the main session's own edits (glossary base set,
+deck-role/dynamics-sentinel/store-guard fixes, GAP-01 panel work) — at one point both
+writers collided (a revert destroyed and restored the kernel Y_F/Y_S half). The commit
+was therefore re-reviewed afterwards IN FULL by the main session: every norm-relevant
+hunk checked against the primary sources (incl. the MAT-15 z-of-the-plastic-gear symbol
+verified in the VDI 2736-2 text), and all gates re-run independently (259 backend tests,
+ruff, mypy, tsc, eslint, production build — all green). Process lesson recorded: read-only
+agents still hold shell write access; future audit agents get an explicit no-write guard
+in their prompt, and their sessions are watched for tree mutations before their reports
+are trusted.
