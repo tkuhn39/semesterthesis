@@ -6,7 +6,7 @@
 // enum → dropdown, bool → checkbox, action → button. This is the pattern every replica
 // tab uses — adding a tab is backend schema work, not new frontend code.
 
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import type { AttributeDef, RowRef, SectionDef, TabDef, UiSchema } from "@/lib/uischema";
 import { useWorkbench } from "@/lib/store";
 import { useLocale, useT } from "@/lib/i18n";
@@ -16,6 +16,12 @@ import { deckPayload } from "@/lib/deck";
 function pick(loc: string, de?: string | null, en?: string | null): string {
   return (loc === "de" ? de ?? en : en ?? de) ?? "";
 }
+
+// Binding-path remap: lets ONE schema component render against a sibling store
+// namespace (e.g. the gear_correction editor for the wheel node binds "correction.*"
+// paths onto "correction2.*"). Identity by default — no behaviour change elsewhere.
+const RemapCtx = createContext<(path: string) => string>((p) => p);
+const useRemap = () => useContext(RemapCtx);
 
 /** Action buttons referenced by schema bindings (kind == "action"); a returned string is
  * shown next to the button as the result message. */
@@ -87,7 +93,9 @@ function ValueCell({
 }) {
   const wb = useWorkbench();
   const { locale } = useLocale();
-  const value = wb.get(binding);
+  const remap = useRemap();
+  const path = remap(binding);
+  const value = wb.get(path);
   const disabled = locked || attr.computed;
 
   // computed value not delivered yet — show a dash instead of a misleading 0
@@ -100,7 +108,7 @@ function ValueCell({
         type="checkbox"
         checked={Boolean(value)}
         disabled={disabled}
-        onChange={(e) => wb.set(binding, e.target.checked)}
+        onChange={(e) => wb.set(path, e.target.checked)}
       />
     );
   }
@@ -110,7 +118,7 @@ function ValueCell({
         type="text"
         value={String(value ?? "")}
         disabled={disabled}
-        onChange={(e) => wb.set(binding, e.target.value)}
+        onChange={(e) => wb.set(path, e.target.value)}
       />
     );
   }
@@ -119,7 +127,7 @@ function ValueCell({
       <select
         value={String(value ?? "")}
         disabled={disabled}
-        onChange={(e) => wb.set(binding, e.target.value)}
+        onChange={(e) => wb.set(path, e.target.value)}
       >
         {(attr.options ?? []).map((o) => (
           <option key={o.value} value={o.value}>
@@ -147,11 +155,11 @@ function ValueCell({
         // nullable fields: emptying writes null (reset semantics — e.g. the one
         // powerflow torque, where clearing frees both shaft fields again)
         if (e.target.value === "" && attr.nullable) {
-          if (!isEmpty) wb.set(binding, null);
+          if (!isEmpty) wb.set(path, null);
           return;
         }
         const v = attr.kind === "int" ? parseInt(e.target.value, 10) : Number(e.target.value);
-        if (Number.isFinite(v) && v !== num) wb.set(binding, v);
+        if (Number.isFinite(v) && v !== num) wb.set(path, v);
       }}
     />
   );
@@ -191,12 +199,13 @@ function ActionCell({ attr }: { attr: AttributeDef }) {
 function Row({ schema, row }: { schema: UiSchema; row: RowRef }) {
   const { locale } = useLocale();
   const wb = useWorkbench();
+  const remap = useRemap();
   const attr = schema.attributes[row.attr];
   if (!attr) return null;
   // row-level dynamic lock (dependency rules: DIN 21771 a-mode, torque single input …)
-  const rowLocked = row.locked_if ? Boolean(wb.get(row.locked_if)) : false;
+  const rowLocked = row.locked_if ? Boolean(wb.get(remap(row.locked_if))) : false;
   const colLocked = (i: 0 | 1) =>
-    rowLocked || (attr.locked_ifs ? Boolean(wb.get(attr.locked_ifs[i])) : false);
+    rowLocked || (attr.locked_ifs ? Boolean(wb.get(remap(attr.locked_ifs[i]))) : false);
   const unit = attr.unit ? <td className="text-zinc-400">{attr.unit}</td> : <td></td>;
   const label = (
     <td title={pick(locale, attr.info_de, attr.info_en) || attr.norm_ref || undefined}>
@@ -254,7 +263,8 @@ function SectionBlock({
 }) {
   const { locale } = useLocale();
   const wb = useWorkbench();
-  if (section.visible_if && !wb.get(section.visible_if)) return null;
+  const remap = useRemap();
+  if (section.visible_if && !wb.get(remap(section.visible_if))) return null;
   const hasPair = section.rows.some((r) => schema.attributes[r.attr]?.per_gear);
   return (
     <div className="border border-zinc-200 rounded-lg overflow-hidden bg-white">
@@ -284,7 +294,7 @@ function SectionBlock({
         </thead>
         <tbody>
           {section.rows.map((r) => {
-            if (r.visible_if && !wb.get(r.visible_if)) return null;
+            if (r.visible_if && !wb.get(remap(r.visible_if))) return null;
             return <Row key={r.attr} schema={schema} row={r} />;
           })}
         </tbody>
@@ -297,16 +307,28 @@ export function SchemaTab({
   schema,
   tab,
   pairHeaders,
+  remapNamespace,
 }: {
   schema: UiSchema;
   tab: TabDef;
   pairHeaders?: [string, string];
+  // render the SAME schema against a sibling store namespace (e.g. the wheel-side
+  // Flankenmodifikation node [41] binds "correction.*" onto "correction2.*")
+  remapNamespace?: { from: string; to: string };
 }) {
+  const remap = remapNamespace
+    ? (p: string) =>
+        p.startsWith(`${remapNamespace.from}.`)
+          ? `${remapNamespace.to}.${p.slice(remapNamespace.from.length + 1)}`
+          : p
+    : (p: string) => p;
   return (
-    <div className="flex flex-col gap-3 max-w-[860px]">
-      {tab.sections.map((s) => (
-        <SectionBlock key={s.id} schema={schema} section={s} pairHeaders={pairHeaders} />
-      ))}
-    </div>
+    <RemapCtx.Provider value={remap}>
+      <div className="flex flex-col gap-3 max-w-[860px]">
+        {tab.sections.map((s) => (
+          <SectionBlock key={s.id} schema={schema} section={s} pairHeaders={pairHeaders} />
+        ))}
+      </div>
+    </RemapCtx.Provider>
   );
 }

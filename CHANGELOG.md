@@ -9,6 +9,34 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added/Fixed (per-gear Flankenmodifikation + audit round P3 visibility, 2026-08-18, ADR-028)
+- **Wheel-side Flankenmodifikation node [41]** (user requirement: each gear edits its
+  micro-geometry independently in the FULL editor): its own `correction2` store state,
+  rendered by the SAME backend gear_correction schema via a new SchemaTab binding-remap
+  (`correction.*` → `correction2.*`); `effectiveStage` derives `modifications_wheel`
+  from it. The Auslegung micro table is now a pure read-only mirror of BOTH nodes.
+- **C_a reaches K_v** (GAP-05): per-gear tip relief from THE stage micro-geometry feeds
+  `DynamicConditions.tip_relief_um` in /capacity and /dynamics (it never arrived before
+  — K_v always used the running-in C_ay); the Tragfähigkeit tab's disconnected
+  `tip_relief_ca_um` second state is gone, replaced by a computed per-gear mirror row.
+- **Ra→Rz coupling live** (GAP-05): with "automatisch umrechnen" on, editing R_a sets
+  R_z = 6·R_a (ISO 6336-2:2019: Ra ≈ Rz/6, verified in the norm text).
+- **ϑ₀ user mode live** (GAP-03): ambient "Nutzereingabe" reads the Betriebsdaten field
+  (was hardcoded 20 °C); **K_A,stat input row** added (GAP-04: "Nutzereingabe" silently
+  used 2.0 with no field).
+- **Übersicht follows the active stage** (GAP-07): live /api/geometry + materials store
+  instead of the frozen kst-E example; example/free mode labelled.
+- **FEM-results provenance** (GAP-06): the dump's solver mode is shown plus an explicit
+  "unwrapped with the CURRENT stage/fillet" note.
+- **Visibility round (COV-03…09/12)**: Geometrie tab + HTML report gained the pair rows
+  m_t/α_t/β_b/u/a_d/Σx/b_gem, k_min/k_max, has_undercut (✓/✗ + report verdict), h_fP0*
+  and d_f,eff (report, now fillet-aware); DesignPanel + report show the full ISO 1328-1
+  set incl. f_HαT/f_HβT/f_fβT; GearCard shows W_zul (pass/fail tone on W_m) and λ; the
+  report's factor table carries K_Fα/K_Fβ/Z_ε/Z_B/Z_D/F_t/v/w_t/z_n and the per-gear
+  sections σ_H0/σ_F0, s_Fn*/ρ_F*, q_s/h_Fe*, α_Fen, H_V, ϑ_Fla (tab↔report symmetric);
+  the Stufenvariation summary names the ACTUALLY varied parameters + kernel time.
+  W_k has ONE implementation (`gear.span_over_k_mm`, COV-12).
+
 ### Fixed (audit round P2 — state consistency + material SSOT completion, 2026-08-18)
 Verification first (user question: "is the material really defined in ONE place and read
 by every consumer?"): all frontend reads/writes go through the one `materials` store

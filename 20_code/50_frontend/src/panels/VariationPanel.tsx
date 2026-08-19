@@ -601,6 +601,15 @@ export function VariationPanel() {
               .replace("{m}", fm.int(v.res.valid))
               .replace("{k}", fm.int(v.res.count - v.res.valid))}
             <br />
+            {/* which parameters actually swept + kernel timing (audit COV-09 — relevant
+                after fix_center_distance silently locks z1/z2/x2) */}
+            {v.res.varied.length > 0 && (
+              <>
+                {t("var.variedLine").replace("{list}", v.res.varied.join(", "))}
+                {` · ${fm.num(v.res.eval_ms, 0)} ms`}
+                <br />
+              </>
+            )}
             <span className="font-semibold">
               {t("var.countShown").replace("{n}", fm.int(filtered.length))}
             </span>

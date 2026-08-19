@@ -110,7 +110,8 @@ export interface OperatingState {
   root_roughness_rz_um: number; // R_zF
   flank_roughness_ra_um: number; // R_aH (display, FVA row)
   root_roughness_ra_um: number; // R_aF (display)
-  tip_relief_ca_um: number; // C_a Kopfrücknahme (Tragfähigkeit tab)
+  // (the former tip_relief_ca_um second state is gone, audit GAP-05: C_a comes from
+  // the per-gear Flankenmodifikation nodes and reaches K_v via the stage micro-geometry)
   flank_life_factor: number; // Z_NT
   root_life_factor: number; // Y_NT
   duty_cycle: number; // ED
@@ -386,7 +387,6 @@ const OPERATING_DEFAULTS: OperatingState = {
   root_roughness_rz_um: 20.0,
   flank_roughness_ra_um: 0.8,
   root_roughness_ra_um: 3.3,
-  tip_relief_ca_um: 8.0,
   flank_life_factor: 1.0,
   root_life_factor: 1.0,
   duty_cycle: 1.0,
@@ -541,6 +541,9 @@ const MODEL_DEFAULTS: ModelInstances = {
   load1: { id: 16, type: "force", name_de: "Belastung", name_en: "Load" },
   load2: { id: 17, type: "force", name_de: "Belastung", name_en: "Load" },
   correction: { id: 34, type: "gear_correction", name_de: "Flankenmodifikation", name_en: "Flank modification" },
+  // wheel-side modification node — extension beyond the kst-E tree (which only had [34]
+  // at the pinion); id 41 = next free instance id after the Radkörper [40]
+  correction2: { id: 41, type: "gear_correction", name_de: "Flankenmodifikation", name_en: "Flank modification" },
   wheel_body: { id: 40, type: "wheel_body_cylindrical_gear", name_de: "Radkörper Stirnrad", name_en: "Wheel body" },
 };
 
@@ -595,6 +598,10 @@ interface WorkbenchState {
   tol: TolerancesState;
   loaddist: LoaddistState;
   correction: CorrectionState;
+  // wheel-side Flankenmodifikation — its OWN full state, independent of the pinion's
+  // (user requirement 2026-08-18: each gear edits micro-geometry independently in the
+  // same full-featured editor; the kst-E tree only carried the pinion node [34])
+  correction2: CorrectionState;
   wheelBody: WheelBodyState;
   varUi: VariationUiState;
   powerflow: PowerflowState;
@@ -662,9 +669,19 @@ const DERIVED: Record<string, (s: WorkbenchState) => unknown> = {
     if (t1 == null) return undefined;
     return Math.abs(((2 * Math.PI * s.powerflow.speed_shaft1_min1) / 60) * t1);
   },
-  // VDI 2736 ambient ϑ₀ "entspricht Öltemperatur" (FVA default mode)
+  // effective per-gear tip relief C_αa (display mirror of the Flankenmodifikation
+  // nodes — audit GAP-05: the Tragfähigkeit tab used to carry a disconnected copy)
+  "operating.tip_relief_ca1_um": (s) =>
+    s.correction.tip_relief_on ? s.correction.tip_relief_um : 0,
+  "operating.tip_relief_ca2_um": (s) =>
+    s.correction2.tip_relief_on ? s.correction2.tip_relief_um : 0,
+  // VDI 2736 ambient ϑ₀ "entspricht Öltemperatur" (FVA default mode); user mode reads
+  // the Betriebsdaten ambient field (audit GAP-03: it was hardcoded 20 °C — the field
+  // existed but was inert)
   "operating.ambient_temperature_c": (s) =>
-    s.operating.ambient_mode === "equals_oil" ? s.operatingUi.oil_temperature_c : 20.0,
+    s.operating.ambient_mode === "equals_oil"
+      ? s.operatingUi.oil_temperature_c
+      : s.operatingUi.ambient_temperature_c,
   // dropdown-dependent row visibility (µ value only when "Nutzereingabe" is selected)
   "operating.friction_is_user": (s) => s.operating.friction_mode === "value",
   // Radkörper: the FEM tie-in section exists only for the CAD variant
@@ -675,9 +692,8 @@ const DERIVED: Record<string, (s: WorkbenchState) => unknown> = {
  * other tabs own — the Toleranzen tab's mean tooth-width allowance A_We (drives x_E and
  * the deck backlash / contact-closing rotation) and the Flankenmodifikation amounts that
  * map onto the ISO 21771 §6 micro-geometry model. One stage, no divergent copies. */
-function effectiveStage(s: WorkbenchState): StageParams {
-  const c = s.correction;
-  const flank = {
+function flankFromCorrection(c: CorrectionState) {
+  return {
     tip_relief_um: c.tip_relief_on ? c.tip_relief_um : 0,
     // d_Ca "Beginn der Kopfrücknahme" — null lets the backend default to d_Na − m_n
     tip_relief_start_diameter_mm:
@@ -690,6 +706,14 @@ function effectiveStage(s: WorkbenchState): StageParams {
       : 0,
     helix_slope_um: c.helix_slope_on ? c.helix_slope_um : 0,
   };
+}
+
+function effectiveStage(s: WorkbenchState): StageParams {
+  // ONE Flankenmodifikation source PER GEAR (audit STR-01 + user requirement
+  // 2026-08-18): the pinion node [34] and the wheel node [41] each own their gear's
+  // micro-geometry; "beide Flanken gleich"
+  const flank = flankFromCorrection(s.correction);
+  const flank2 = flankFromCorrection(s.correction2);
   return {
     ...s.stage,
     // Achsabstand-Modus (DIN 21771): "aus den Profilverschiebungen berechnen" sends
@@ -698,8 +722,8 @@ function effectiveStage(s: WorkbenchState): StageParams {
       s.geometryUi.center_distance_mode === "from_x" ? null : s.stage.center_distance_mm,
     tooth_width_allowance_pinion_mm: (s.tol.awe1_um + s.tol.awi1_um) / 2 / 1000,
     tooth_width_allowance_wheel_mm: (s.tol.awe2_um + s.tol.awi2_um) / 2 / 1000,
-    // Flankenmodifikation [34] sits at the pinion (kst-E tree); "beide Flanken gleich"
     modifications_pinion: { left: flank, right: flank },
+    modifications_wheel: { left: flank2, right: flank2 },
   };
 }
 
@@ -748,6 +772,7 @@ const DEFAULT_STATE: WorkbenchState = {
   tol: TOLERANCES_DEFAULTS,
   loaddist: LOADDIST_DEFAULTS,
   correction: CORRECTION_DEFAULTS,
+  correction2: CORRECTION_DEFAULTS,
   wheelBody: WHEEL_BODY_DEFAULTS,
   varUi: VARIATION_UI_DEFAULTS,
   powerflow: {
@@ -809,6 +834,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       "tol",
       "loaddist",
       "correction",
+      "correction2",
       "wheelBody",
       "varUi",
       "powerflow",
@@ -914,6 +940,20 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
             };
           }
           return { ...prev, ...patch };
+        }
+        if (ns === "operating") {
+          const opNext = { ...prev.operating, [field]: value } as OperatingState;
+          // Ra → Rz coupling (ISO 6336-2:2019: Ra ≈ Rz/6 — audit GAP-05: the
+          // "automatisch umrechnen" checkbox promised this but never converted)
+          if (opNext.roughness_auto) {
+            if (field === "flank_roughness_ra_um" || field === "roughness_auto") {
+              opNext.flank_roughness_rz_um = 6.0 * opNext.flank_roughness_ra_um;
+            }
+            if (field === "root_roughness_ra_um" || field === "roughness_auto") {
+              opNext.root_roughness_rz_um = 6.0 * opNext.root_roughness_ra_um;
+            }
+          }
+          return { ...prev, operating: opNext };
         }
         return { ...prev, [ns]: next };
       });

@@ -135,7 +135,16 @@ tab-visible input has ONE store home: deck material cards follow the Werkstoff t
 fillet/density state (Zahnform/Netz/Deck/Report identical), ONE accuracy grade
 (Toleranzen → capacity), one micro-geometry source (correction tab; Auslegung mirrors),
 allowance BAND effective incl. example mode, FE sets/refine bands/ξ-markers
-junction-aware (Landi). 260 backend tests. Open: P3 (visibility), P4 (polish), COV-02.
+junction-aware (Landi). 260 backend tests.
+
+**Audit round P3 + per-gear Flankenmodifikation (2026-08-18, ADR-028):** wheel-side
+modification node [41] (full editor per gear via schema binding-remap), C_a live in the
+K_v chain, Ra→Rz/ϑ₀/K_A,stat switches functional, Übersicht follows the active stage,
+tab ↔ HTML report field parity (factors, norm rows, ISO 1328-1 components, pair rows,
+W_zul/λ, undercut verdict), variation names its swept parameters, W_k single-sourced.
+NOTE (audit COV-10/11): `services/loaddist` + `io/rexs`/`services/ingest` are
+INTENTIONALLY unrouted — Step-2 (RIKOR) groundwork, not dead code. Open: P4 (polish/
+clipping LOWs), COV-02 edge cases, catalog-served uimodel options.
 
 Validation philosophy (ADR-011): implement **strictly per ISO 6336:2019** (the current
 standard; DIN 3990:1987 is the equivalent cross-check, what STplus uses). Two complete

@@ -99,6 +99,13 @@ export function FemResultsPanel() {
           </label>
           {err && <ErrNote>{err}</ErrNote>}
         </div>
+        {/* provenance (audit GAP-06): the dump is unwrapped with the CURRENT stage —
+            say so, and surface the dump's solver mode instead of hiding it */}
+        {res && (
+          <div className="px-3 py-1.5 text-[11.5px] text-zinc-500 border-t border-zinc-100">
+            {t("fem.provenance").replace("{mode}", res.mode)}
+          </div>
+        )}
       </Section>
 
       {res && (

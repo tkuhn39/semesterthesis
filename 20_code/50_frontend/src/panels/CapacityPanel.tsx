@@ -280,7 +280,29 @@ function GearCard(props: { title: string; g: GearCapacity; minRoot: number; minF
           )}
           {g.wear_um != null && (
             <AttrRow label={t("cap.wear")} symbol="W_m" unit="µm">
-              <td className="wb-num">{fm.num(g.wear_um, 1)}</td>
+              <td
+                className={`wb-num ${
+                  g.allowable_wear_um == null
+                    ? ""
+                    : g.wear_um <= g.allowable_wear_um
+                      ? "text-emerald-600"
+                      : "text-red-600"
+                }`}
+              >
+                {fm.num(g.wear_um, 1)}
+              </td>
+            </AttrRow>
+          )}
+          {/* audit COV-06: the wear check is pass/fail against W_zul = 0.1·m_n — showing
+              W_m without its limit made the row uninterpretable; λ was invisible */}
+          {g.allowable_wear_um != null && (
+            <AttrRow label={t("cap.allowableWear")} symbol="W_zul" unit="µm">
+              <td className="wb-num">{fm.num(g.allowable_wear_um, 1)}</td>
+            </AttrRow>
+          )}
+          {g.deformation_mm != null && (
+            <AttrRow label={t("cap.deformation")} symbol="λ" unit="mm">
+              <td className="wb-num">{fm.num(g.deformation_mm, 4)}</td>
             </AttrRow>
           )}
         </tbody>

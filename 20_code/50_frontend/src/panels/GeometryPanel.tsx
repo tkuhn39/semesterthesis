@@ -26,6 +26,14 @@ type GearRow = { k: keyof GearReport; sym: string; unit?: string; d?: number };
 type PairRow = { k: keyof PairReport; sym: string; unit?: string; d?: number };
 
 const SEC_PITCHES: PairRow[] = [
+  // pair quantities the .sta reference prints (audit COV-04: computed but invisible)
+  { k: "transverse_module_mm", sym: "m_t", unit: "mm" },
+  { k: "transverse_pressure_angle_deg", sym: "α_t", unit: "°" },
+  { k: "base_helix_angle_deg", sym: "β_b", unit: "°" },
+  { k: "gear_ratio", sym: "u" },
+  { k: "reference_center_distance_mm", sym: "a_d", unit: "mm" },
+  { k: "profile_shift_sum", sym: "Σx", d: 4 },
+  { k: "common_face_width_mm", sym: "b_gem", unit: "mm" },
   { k: "transverse_pitch_mm", sym: "p_t", unit: "mm" },
   { k: "normal_pitch_mm", sym: "p_n", unit: "mm" },
   { k: "transverse_base_pitch_mm", sym: "p_et", unit: "mm" },
@@ -68,11 +76,16 @@ const SEC_THICKNESS: GearRow[] = [
   { k: "thickness_allowance_lower_mm", sym: "E_sni", unit: "mm" },
   { k: "generation_profile_shift", sym: "x_E", d: 4 },
   { k: "undercut_min_shift", sym: "x_E,min", d: 4 },
+  // boolean verdict next to the limit (audit COV-03; fmtCell renders ✓/✗)
+  { k: "has_undercut", sym: "Unterschnitt" },
 ];
 const SEC_INSPECTION: GearRow[] = [
   { k: "chordal_thickness_mm", sym: "s̄_cn", unit: "mm" },
   { k: "chordal_height_mm", sym: "h̄_c", unit: "mm" },
   { k: "span_teeth", sym: "k", d: 0 },
+  // valid k-range (DIN 21773 eq. 12/13 — audit COV-03: computed but invisible)
+  { k: "span_teeth_min", sym: "k_min", d: 0 },
+  { k: "span_teeth_max", sym: "k_max", d: 0 },
   { k: "span_measurement_mm", sym: "W_k", unit: "mm" },
   { k: "span_allowance_upper_mm", sym: "A_We", unit: "mm" },
   { k: "span_allowance_lower_mm", sym: "A_Wi", unit: "mm" },
@@ -89,6 +102,8 @@ const SEC_TOOL: GearRow[] = [
   { k: "tool_module_mm", sym: "m_n0", unit: "mm" },
   { k: "tool_pressure_angle_deg", sym: "α_n0", unit: "°" },
   { k: "tool_addendum_factor", sym: "h_aP0*" },
+  // per-gear tool dedendum (audit COV-03: kst-E's 1.1/1.25 difference was half-hidden)
+  { k: "tool_dedendum_factor", sym: "h_fP0*" },
   { k: "tool_tip_radius_factor", sym: "ρ_aP0*" },
 ];
 

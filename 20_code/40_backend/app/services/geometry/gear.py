@@ -272,8 +272,9 @@ class GearStage(BaseModel):
     def span_measurement_mm(self) -> Pair[float] | None:
         """Base tangent length (span) W_k over k teeth per gear (DIN 21773 eq. 14).
 
-        ``W_k = m_n cos(alpha_n) [pi (k - 0.5) + z inv(alpha_t)] + 2 x m_n sin(alpha_n)``.
-        ``None`` when the span teeth count k is unknown.
+        ``None`` when the span teeth count k is unknown. The formula lives in ONE place
+        (:func:`span_over_k_mm`, audit COV-12 — the geometry report used to carry an
+        inline duplicate).
         """
         if self.span_teeth is None:
             return None
@@ -281,8 +282,9 @@ class GearStage(BaseModel):
         alpha_t = math.radians(self.transverse_pressure_angle_deg)
         mn = self.normal_module_mm
         spans = [
-            mn * math.cos(alpha_n) * (math.pi * (k - 0.5) + z * involute(alpha_t))
-            + 2.0 * x * mn * math.sin(alpha_n)
+            span_over_k_mm(
+                k, teeth=z, profile_shift=x, normal_module_mm=mn, alpha_n=alpha_n, alpha_t=alpha_t
+            )
             for z, x, k in zip(self.teeth, self.profile_shift, self.span_teeth, strict=True)
         ]
         return Pair(spans[0], spans[1])
@@ -357,6 +359,25 @@ class LineOfActionPoints(BaseModel):
     transverse_base_pitch_mm: float
     working_pitch_radius_mm: tuple[float, float]
     base_radius_mm: tuple[float, float]
+
+
+def span_over_k_mm(
+    span_teeth: int,
+    *,
+    teeth: int,
+    profile_shift: float,
+    normal_module_mm: float,
+    alpha_n: float,
+    alpha_t: float,
+) -> float:
+    """W_k = m_n·cos α_n·[π(k − 0.5) + z·inv α_t] + 2·x·m_n·sin α_n (DIN 21773 eq. 14).
+
+    THE single implementation (audit COV-12) — used by ``GearStage.span_measurement_mm``
+    and the geometry report's auto-k route. Angles in radians.
+    """
+    return normal_module_mm * math.cos(alpha_n) * (
+        math.pi * (span_teeth - 0.5) + teeth * involute(alpha_t)
+    ) + 2.0 * profile_shift * normal_module_mm * math.sin(alpha_n)
 
 
 def line_of_action_points(stage: GearStage) -> LineOfActionPoints | None:

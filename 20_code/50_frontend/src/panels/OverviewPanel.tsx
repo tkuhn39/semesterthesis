@@ -1,37 +1,81 @@
 "use client";
 
-// Overview: the preloaded kst-E pair at a glance + jump-off points into the tree panels.
+// Overview of THE ACTIVE stage (audit GAP-07: this panel used to show the static kst-E
+// example forever, contradicting the tree after any edit). Geometry comes from
+// /api/geometry on the shared stage; materials/labels from the one materials store.
 
-import { useEffect, useState } from "react";
-import { api, type ExampleResponse } from "@/lib/api";
+import { useEffect, useMemo, useState } from "react";
+import { api, type GeometryResponse } from "@/lib/api";
 import { ErrNote, Section, Stat } from "@/components/ui";
 import { useFmt, useT } from "@/lib/i18n";
+import { useWorkbench } from "@/lib/store";
 
 export function OverviewPanel(props: { onNavigate: (key: string) => void }) {
   const t = useT();
   const fm = useFmt();
-  const [ex, setEx] = useState<ExampleResponse | null>(null);
+  const wb = useWorkbench();
+  const stage = wb.stage;
+  const [geo, setGeo] = useState<GeometryResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const stageKey = useMemo(() => JSON.stringify(stage), [stage]);
 
   useEffect(() => {
     api
-      .example()
-      .then(setEx)
+      .geometry(stage)
+      .then((g) => {
+        setGeo(g);
+        setErr(null);
+      })
       .catch((e) => setErr(e instanceof Error ? e.message : String(e)));
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stageKey]);
 
   if (err) return <ErrNote>{err}</ErrNote>;
-  if (!ex) return <div className="text-zinc-400 text-[12.5px]">{t("ov.loading")}</div>;
+  if (!geo) return <div className="text-zinc-400 text-[12.5px]">{t("ov.loading")}</div>;
+
+  const m = wb.materials;
+  const kindLabel = (k: "steel" | "plastic") =>
+    k === "steel" ? t("mat.steel") : t("mat.plastic");
+  const gears = [
+    {
+      role: `${t("common.pinion")} (${kindLabel(m.gear1_kind)})`,
+      material: m.gear1_name,
+      teeth: stage.teeth_pinion,
+      x: stage.profile_shift_pinion,
+      d: geo.reference_diameter_mm[0],
+      da: geo.tip_diameter_mm[0],
+      b: stage.face_width_pinion_mm,
+    },
+    {
+      role: `${t("common.wheel")} (${kindLabel(m.gear2_kind)})`,
+      material: m.gear2_name,
+      teeth: stage.teeth_wheel,
+      x: stage.profile_shift_wheel,
+      d: geo.reference_diameter_mm[1],
+      da: geo.tip_diameter_mm[1],
+      b: stage.face_width_wheel_mm,
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-3 max-w-[980px]">
       <div className="grid grid-cols-4 gap-2">
-        <Stat label={`${t("attr.a")} a`} value={fm.num(ex.center_distance_mm, 1)} unit="mm" />
-        <Stat label={`${t("attr.mn")} m_n`} value={fm.num(ex.normal_module_mm, 2)} unit="mm" />
-        <Stat label={`${t("attr.epsAlpha")} ε_α`} value={fm.num(ex.transverse_contact_ratio, 3)} />
-        <Stat label={`${t("attr.epsGamma")} ε_γ`} value={fm.num(ex.total_contact_ratio, 3)} />
+        <Stat
+          label={`${t("attr.a")} a_w`}
+          value={fm.num(geo.working_center_distance_mm, 2)}
+          unit="mm"
+        />
+        <Stat label={`${t("attr.mn")} m_n`} value={fm.num(stage.normal_module_mm, 2)} unit="mm" />
+        <Stat label={`${t("attr.epsAlpha")} ε_α`} value={fm.num(geo.transverse_contact_ratio, 3)} />
+        <Stat label={`${t("attr.epsGamma")} ε_γ`} value={fm.num(geo.total_contact_ratio, 3)} />
       </div>
-      <Section title={`${ex.name} — ${ex.description}`}>
+      <Section
+        title={
+          stage.use_example
+            ? `${wb.label} — ${t("ov.exampleNote")}`
+            : `${wb.label} — ${t("ov.freeNote")}`
+        }
+      >
         <table className="attr-table">
           <thead>
             <tr>
@@ -45,15 +89,15 @@ export function OverviewPanel(props: { onNavigate: (key: string) => void }) {
             </tr>
           </thead>
           <tbody>
-            {ex.gears.map((g, i) => (
+            {gears.map((g, i) => (
               <tr key={i}>
                 <td>{g.role}</td>
                 <td>{g.material}</td>
                 <td className="wb-num">{g.teeth}</td>
-                <td className="wb-num">{fm.num(g.profile_shift, 4)}</td>
-                <td className="wb-num">{fm.num(g.reference_diameter_mm, 3)}</td>
-                <td className="wb-num">{fm.num(g.tip_diameter_mm, 3)}</td>
-                <td className="wb-num">{fm.num(g.face_width_mm, 1)}</td>
+                <td className="wb-num">{fm.num(g.x, 4)}</td>
+                <td className="wb-num">{fm.num(g.d, 3)}</td>
+                <td className="wb-num">{fm.num(g.da, 3)}</td>
+                <td className="wb-num">{fm.num(g.b, 1)}</td>
               </tr>
             ))}
           </tbody>
@@ -76,7 +120,7 @@ export function OverviewPanel(props: { onNavigate: (key: string) => void }) {
           </button>
         ))}
       </div>
-      {ex.notes.map((n, i) => (
+      {geo.notes.map((n, i) => (
         <div key={i} className="text-[12px] text-zinc-500">
           · {n}
         </div>

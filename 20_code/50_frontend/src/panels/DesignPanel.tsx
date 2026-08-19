@@ -263,11 +263,7 @@ export function DesignPanel() {
         </Section>
 
         <Section title={t("design.micro")} defaultOpen={false}>
-          <MicroEditor
-            value={draft}
-            onChange={(d) => setDraft({ ...d, use_example: false })}
-            pinionMods={stage.modifications_pinion}
-          />
+          <MicroEditor effective={stage} />
           <div className="px-3 pb-2 text-[11px] text-zinc-400">
             {t("design.microNote")}
           </div>
@@ -336,11 +332,22 @@ export function DesignPanel() {
                 <AttrRow label={t("tol.Fp")} symbol="F_pT" unit="µm">
                   <td className="wb-num">{fm.num(tol.tolerances.total_pitch, 1)}</td>
                 </AttrRow>
+                {/* full ISO 1328-1 component set (audit COV-05: the slope/helix-form
+                    components were computed but invisible everywhere) */}
+                <AttrRow label={t("tol.fha")} symbol="f_HαT" unit="µm">
+                  <td className="wb-num">{fm.num(tol.tolerances.profile_slope, 1)}</td>
+                </AttrRow>
                 <AttrRow label={t("tol.ffa")} symbol="f_fαT" unit="µm">
                   <td className="wb-num">{fm.num(tol.tolerances.profile_form, 1)}</td>
                 </AttrRow>
                 <AttrRow label={t("tol.Fa")} symbol="F_αT" unit="µm">
                   <td className="wb-num">{fm.num(tol.tolerances.profile_total, 1)}</td>
+                </AttrRow>
+                <AttrRow label={t("tol.fhbT")} symbol="f_HβT" unit="µm">
+                  <td className="wb-num">{fm.num(tol.tolerances.helix_slope, 1)}</td>
+                </AttrRow>
+                <AttrRow label={t("tol.ffb")} symbol="f_fβT" unit="µm">
+                  <td className="wb-num">{fm.num(tol.tolerances.helix_form, 1)}</td>
                 </AttrRow>
                 <AttrRow label={t("tol.Fb")} symbol="F_βT" unit="µm">
                   <td className="wb-num">{fm.num(tol.tolerances.helix_total, 1)}</td>
@@ -362,13 +369,10 @@ export function DesignPanel() {
   );
 }
 
-function MicroEditor(props: {
-  value: StageParams;
-  onChange: (s: StageParams) => void;
-  // effective pinion mods (correction tab) — shown read-only (audit STR-01: two
-  // competing pinion editors; effectiveStage always won, so edits here were dead)
-  pinionMods?: StageParams["modifications_pinion"];
-}) {
+// Read-only mirror of the EFFECTIVE per-gear micro-geometry (audit STR-01 + user
+// requirement 2026-08-18): each gear's Flankenmodifikation node ([34] pinion, [41]
+// wheel) is THE source — this table only shows what the stage actually carries.
+function MicroEditor(props: { effective: StageParams }) {
   const t = useT();
   const gears: ("modifications_pinion" | "modifications_wheel")[] = [
     "modifications_pinion",
@@ -381,9 +385,7 @@ function MicroEditor(props: {
   ];
   return (
     <>
-      {props.pinionMods !== undefined && (
-        <div className="px-2 py-1 text-[11.5px] text-zinc-500">{t("micro.pinionSource")}</div>
-      )}
+      <div className="px-2 py-1 text-[11.5px] text-zinc-500">{t("micro.pinionSource")}</div>
       <table className="attr-table">
         <thead>
           <tr>
@@ -397,8 +399,7 @@ function MicroEditor(props: {
         <tbody>
           {gears.map((g) =>
             fields.map((f) => {
-              const pinionLocked = g === "modifications_pinion" && props.pinionMods !== undefined;
-              const mods = pinionLocked ? (props.pinionMods ?? {}) : (props.value[g] ?? {});
+              const mods = props.effective[g] ?? {};
               return (
                 <tr key={`${g}-${f.key}`}>
                   <td>
@@ -407,20 +408,7 @@ function MicroEditor(props: {
                   <td className="wb-num text-zinc-400">{f.symbol}</td>
                   {(["left", "right"] as const).map((side) => (
                     <td key={side}>
-                      {pinionLocked ? (
-                        <span className="wb-num text-zinc-500">{mods[side]?.[f.key] ?? 0}</span>
-                      ) : (
-                        <Num
-                          width={70}
-                          value={mods[side]?.[f.key] ?? 0}
-                          onChange={(v) =>
-                            props.onChange({
-                              ...props.value,
-                              [g]: { ...mods, [side]: { ...(mods[side] ?? {}), [f.key]: v } },
-                            })
-                          }
-                        />
-                      )}
+                      <span className="wb-num text-zinc-500">{mods[side]?.[f.key] ?? 0}</span>
                     </td>
                   ))}
                   <td className="text-zinc-400">µm</td>

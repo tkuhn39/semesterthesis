@@ -581,6 +581,10 @@ def _run_capacity(
                 # mesh-misalignment override (shaft analysis / RIKOR) wins
                 helix_slope_deviation_um=Pair(f_hb, f_hb),
                 initial_mesh_misalignment_um=req.mesh_misalignment_um or 0.0,
+                # per-gear tip relief C_a from THE stage micro-geometry (audit GAP-05:
+                # a disconnected operating field existed while K_v always fell back to
+                # the running-in C_ay); 0 keeps that legacy fallback
+                tip_relief_um=Pair(req.stage.tip_relief(0)[0], req.stage.tip_relief(1)[0]),
             ),
         )
         k_v, k_ha = dyn.dynamic_factor, dyn.transverse_factor_flank
@@ -810,6 +814,7 @@ def dynamics(req: DynamicsRequest) -> DynamicsResponse:
         profile_form_deviation_um=Pair(f_fa, f_fa),
         helix_slope_deviation_um=Pair(f_hb, f_hb),
         initial_mesh_misalignment_um=req.mesh_misalignment_um or 0.0,
+        tip_relief_um=Pair(req.stage.tip_relief(0)[0], req.stage.tip_relief(1)[0]),
     )
     f = native_dynamic_factors(
         stage,

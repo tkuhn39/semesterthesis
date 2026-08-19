@@ -814,13 +814,19 @@ ATTRIBUTES: list[AttributeDef] = [
     ),
     AttributeDef(
         id="cap_tip_relief",
-        label_de="Kopfrücknahme",
-        label_en="Tip relief",
+        label_de="Kopfrücknahme (wirksam)",
+        label_en="Tip relief (effective)",
         symbol="C_a",
         unit="µm",
         precision=1,
-        binding="operating.tip_relief_ca_um",
+        per_gear=True,
+        computed=True,
+        bindings=("operating.tip_relief_ca1_um", "operating.tip_relief_ca2_um"),
         norm_ref="ISO 6336-1 (K_v, Anregung)",
+        info_de="Spiegel der Flankenmodifikations-Knoten (eine Quelle je Rad, Audit "
+        "GAP-05); 0 → Einlauf-Kopfrücknahme C_ay der Norm.",
+        info_en="Mirror of the flank-modification nodes (one source per gear, audit "
+        "GAP-05); 0 → the norm's running-in tip relief C_ay.",
     ),
     AttributeDef(
         id="cap_mesh_stiffness_mode",
@@ -1226,9 +1232,8 @@ ATTRIBUTES: list[AttributeDef] = [
     ),
     AttributeDef(
         id="vdi_static_overload",
-        label_de="Statischer Überlastfaktor",
-        label_en="Static overload factor",
-        symbol="K_A,stat",
+        label_de="Statische Spitzenlast",
+        label_en="Static peak load",
         kind="enum",
         options=[
             _opt("none", "Keine statische Berechnung", "No static analysis"),
@@ -1236,6 +1241,20 @@ ATTRIBUTES: list[AttributeDef] = [
         ],
         binding="operating.static_mode",
         norm_ref="VDI 2736-2 §5.3 (Spitzenlasten)",
+    ),
+    AttributeDef(
+        id="vdi_static_overload_value",
+        label_de="Statischer Überlastfaktor",
+        label_en="Static overload factor",
+        symbol="K_A,stat",
+        precision=2,
+        nullable=True,
+        binding="operating.static_overload_factor",
+        norm_ref="VDI 2736-2 §5.3 (F_zmax/F_t)",
+        info_de="Wirkt nur bei 'Nutzereingabe'; leer → 2,0 (Vorgabe). Audit GAP-04: der "
+        "Wert war zuvor unsichtbar hart auf 2,0 gesetzt.",
+        info_en="Effective only in 'User input' mode; empty → 2.0 (default). Audit "
+        "GAP-04: the value was silently hardcoded to 2.0 before.",
     ),
     # --- Stirnradstufe → Lastverteilung (FEM, FVA 377) ----------------------------------
     AttributeDef(
@@ -2215,7 +2234,10 @@ def _vdi2736_tab() -> TabDef:
                 id="peak_loads",
                 title_de="VDI 2736 - Spitzenlasten",
                 title_en="VDI 2736 - peak loads",
-                rows=[RowRef(attr="vdi_static_overload")],
+                rows=[
+                    RowRef(attr="vdi_static_overload"),
+                    RowRef(attr="vdi_static_overload_value"),
+                ],
             ),
         ],
     )

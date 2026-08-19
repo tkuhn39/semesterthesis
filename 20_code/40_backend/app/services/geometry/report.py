@@ -22,7 +22,7 @@ import math
 from dataclasses import dataclass
 
 from app.io.ste import Pair
-from app.services.geometry.gear import GearStage, line_of_action_points
+from app.services.geometry.gear import GearStage, line_of_action_points, span_over_k_mm
 from app.services.geometry.generation import involute
 from app.services.geometry.tooth_form import ToothProfile
 
@@ -287,8 +287,9 @@ def compute_geometry_report(
         w_k = None
         d_m_span = None
         if k is not None:
-            w_k = mn * math.cos(alpha_n) * (math.pi * (k - 0.5) + z * involute(alpha_t)) + (
-                2.0 * x * mn * math.sin(alpha_n)
+            # ONE W_k implementation (audit COV-12): the shared gear.span_over_k_mm helper
+            w_k = span_over_k_mm(
+                k, teeth=z, profile_shift=x, normal_module_mm=mn, alpha_n=alpha_n, alpha_t=alpha_t
             )
             # contact circle of the ACTUAL measurement (mean allowance), like the reference
             d_m_span = math.sqrt(d_b**2 + (w_k + allow_mean) ** 2)

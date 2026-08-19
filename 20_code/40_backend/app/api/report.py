@@ -249,6 +249,58 @@ def _norm_rows(g: GearCapacity, locale: str) -> list[tuple[str, str, str, str]]:
             "–",
         ),
     ]
+    # nominal stresses + critical-section geometry (audit COV-07: the tab showed these,
+    # the report did not — both surfaces now carry the same field set)
+    if g.nominal_root_stress_mpa is not None:
+        rows.insert(
+            0,
+            (
+                _de(locale, "Nennspannungen", "Nominal stresses"),
+                "σ_H0 / σ_F0",
+                f"{n(g.nominal_flank_stress_mpa, 1)} / {n(g.nominal_root_stress_mpa, 1)}",
+                "N/mm²",
+            ),
+        )
+    if g.root_chord_mn is not None:
+        rows.append(
+            (
+                _de(locale, "Fußdicke / Fußrundung (30°)", "Root chord / fillet (30°)"),
+                "s_Fn* / ρ_F*",
+                f"{n(g.root_chord_mn, 3)} / {n(g.fillet_radius_mn, 3)}",
+                "·m_n",
+            )
+        )
+    if g.notch_parameter is not None:
+        rows.append(
+            (
+                _de(locale, "Kerbparameter / Biegehebelarm", "Notch parameter / bending lever"),
+                "q_s / h_Fe*",
+                f"{n(g.notch_parameter, 3)} / {n(g.bending_lever_mn, 3)}",
+                "–",
+            )
+        )
+    if g.load_angle_deg is not None:
+        rows.append(
+            (
+                _de(locale, "Kraftangriffswinkel", "Load application angle"),
+                "α_Fen",
+                n(g.load_angle_deg, 2),
+                "°",
+            )
+        )
+    if g.loss_factor is not None:
+        rows.append(
+            (_de(locale, "Verlustgrad", "Gear loss factor"), "H_V", n(g.loss_factor, 4), "–")
+        )
+    if g.flank_temperature_c is not None:
+        rows.append(
+            (
+                _de(locale, "Flankentemperatur", "Flank temperature"),
+                "ϑ_Fla",
+                n(g.flank_temperature_c, 1),
+                "°C",
+            )
+        )
     # ISO 6336-2/-3 strength sub-factors (steel branch; the folded products σ_HP/σ_FP
     # stay above — user requirement 2026-08-18: print the full factor chain)
     if g.lubricant_factor is not None:
@@ -565,6 +617,44 @@ def report(req: ReportRequest) -> HTMLResponse:
     )
     g1, g2, pr = rep.gear1, rep.gear2, rep.pair
     stage_rows += [
+        # pair quantities of the .sta reference block (audit COV-04)
+        (d(loc, "Stirnmodul", "Transverse module"), "m_t", n(pr.transverse_module_mm), None, "mm"),
+        (
+            d(loc, "Stirneingriffswinkel", "Transverse pressure angle"),
+            "α_t",
+            n(pr.transverse_pressure_angle_deg),
+            None,
+            "°",
+        ),
+        (
+            d(loc, "Grundschrägungswinkel", "Base helix angle"),
+            "β_b",
+            n(pr.base_helix_angle_deg),
+            None,
+            "°",
+        ),
+        (d(loc, "Zähnezahlverhältnis", "Gear ratio"), "u", n(pr.gear_ratio, 4), None, ""),
+        (
+            d(loc, "Null-Achsabstand", "Reference centre distance"),
+            "a_d",
+            n(pr.reference_center_distance_mm),
+            None,
+            "mm",
+        ),
+        (
+            d(loc, "Profilverschiebungssumme", "Profile shift sum"),
+            "Σx",
+            n(pr.profile_shift_sum, 4),
+            None,
+            "",
+        ),
+        (
+            d(loc, "Gemeinsame Zahnbreite", "Common face width"),
+            "b_gem",
+            n(pr.common_face_width_mm),
+            None,
+            "mm",
+        ),
         (d(loc, "Stirnteilung", "Transverse pitch"), "p_t", n(pr.transverse_pitch_mm), None, "mm"),
         (
             d(loc, "Eingriffsteilung", "Base pitch"),
@@ -642,6 +732,26 @@ def report(req: ReportRequest) -> HTMLResponse:
             n(g1.root_diameter_mm),
             n(g2.root_diameter_mm),
             "mm",
+        ),
+        # fillet-aware effective root (audit COV-08: with an optimized fillet active the
+        # report now carries the geometry context, so d_f,eff is filled)
+        (
+            d(loc, "Effektiver Fußkreis (Kontur)", "Effective root diameter (contour)"),
+            "d_f,eff",
+            n(g1.effective_root_diameter_mm),
+            n(g2.effective_root_diameter_mm),
+            "mm",
+        ),
+        (
+            d(loc, "Unterschnitt", "Undercut"),
+            "x_E,min",
+            f"{n(g1.undercut_min_shift, 4)} ({'ja' if g1.has_undercut else 'nein'})"
+            if loc == "de"
+            else f"{n(g1.undercut_min_shift, 4)} ({'yes' if g1.has_undercut else 'no'})",
+            f"{n(g2.undercut_min_shift, 4)} ({'ja' if g2.has_undercut else 'nein'})"
+            if loc == "de"
+            else f"{n(g2.undercut_min_shift, 4)} ({'yes' if g2.has_undercut else 'no'})",
+            "",
         ),
         (
             d(loc, "Zahnhöhe", "Tooth height"),
@@ -764,6 +874,14 @@ def report(req: ReportRequest) -> HTMLResponse:
             n(tols[1].tolerances.total_pitch, 1),
             "µm",
         ),
+        # full ISO 1328-1 component set (audit COV-05: slope/helix-form were invisible)
+        (
+            d(loc, "Profil-Winkelabweichung", "Profile slope deviation"),
+            "f_HαT",
+            n(tols[0].tolerances.profile_slope, 1),
+            n(tols[1].tolerances.profile_slope, 1),
+            "µm",
+        ),
         (
             d(loc, "Profil-Formabweichung", "Profile form deviation"),
             "f_fαT",
@@ -779,6 +897,20 @@ def report(req: ReportRequest) -> HTMLResponse:
             "µm",
         ),
         (
+            d(loc, "Flankenlinien-Winkelabweichung", "Helix slope deviation"),
+            "f_HβT",
+            n(tols[0].tolerances.helix_slope, 1),
+            n(tols[1].tolerances.helix_slope, 1),
+            "µm",
+        ),
+        (
+            d(loc, "Flankenlinien-Formabweichung", "Helix form deviation"),
+            "f_fβT",
+            n(tols[0].tolerances.helix_form, 1),
+            n(tols[1].tolerances.helix_form, 1),
+            "µm",
+        ),
+        (
             d(loc, "Flankenlinien-Gesamtabweichung", "Total helix deviation"),
             "F_βT",
             n(tols[0].tolerances.helix_total, 1),
@@ -788,13 +920,50 @@ def report(req: ReportRequest) -> HTMLResponse:
     ]
 
     f = cap.factors
+    # full factor set (audit COV-07: the report used to omit half of what the tab shows)
     factor_rows = [
         (d(loc, "Anwendungsfaktor", "Application factor"), "K_A", n(f.application_factor)),
         (d(loc, "Dynamikfaktor", "Dynamic factor"), "K_v", n(f.dynamic_factor)),
-        (d(loc, "Stirnfaktor", "Transverse factor"), "K_Hα", n(f.transverse_factor)),
-        (d(loc, "Breitenfaktor", "Face load factor"), "K_Hβ", n(f.face_load_factor)),
+        (
+            d(loc, "Stirnfaktor (Flanke)", "Transverse factor (flank)"),
+            "K_Hα",
+            n(f.transverse_factor),
+        ),
+        (
+            d(loc, "Stirnfaktor (Fuß)", "Transverse factor (root)"),
+            "K_Fα",
+            n(f.transverse_factor_root),
+        ),
+        (
+            d(loc, "Breitenfaktor (Flanke)", "Face load factor (flank)"),
+            "K_Hβ",
+            n(f.face_load_factor),
+        ),
+        (
+            d(loc, "Breitenfaktor (Fuß)", "Face load factor (root)"),
+            "K_Fβ",
+            n(f.face_load_factor_root),
+        ),
         (d(loc, "Elastizitätsfaktor", "Elasticity factor"), "Z_E", n(f.elasticity_factor, 1)),
         (d(loc, "Zonenfaktor", "Zone factor"), "Z_H", n(f.zone_factor)),
+        (d(loc, "Überdeckungsfaktor", "Contact ratio factor"), "Z_ε", n(f.contact_ratio_factor)),
+        (
+            d(loc, "Einzeleingriffsfaktoren", "Single-contact factors"),
+            "Z_B / Z_D",
+            f"{n(f.single_contact_b)} / {n(f.single_contact_d)}",
+        ),
+        (d(loc, "Umfangskraft", "Tangential force"), "F_t [N]", n(f.tangential_force_n, 1)),
+        (
+            d(loc, "Umfangsgeschwindigkeit", "Pitch-line velocity"),
+            "v [m/s]",
+            n(f.pitch_velocity_ms),
+        ),
+        (d(loc, "Linienlast", "Line load"), "w_t [N/mm]", n(f.line_load_n_mm, 2)),
+        (
+            d(loc, "Ersatzzähnezahlen", "Virtual tooth numbers"),
+            "z_n",
+            f"{n(f.virtual_teeth[0], 1)} / {n(f.virtual_teeth[1], 1)}",
+        ),
     ]
 
     dynamics_rows = [

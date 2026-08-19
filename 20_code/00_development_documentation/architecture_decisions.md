@@ -1180,3 +1180,32 @@ Backend gates: full suite + ruff + mypy; frontend tsc/eslint/build. Open (P3/P4 
 follow-ups): per-gear material NAMES driving properties (two different steels), serving
 the uimodel options from the catalog endpoint, COV-02 backlash-delta row, remaining
 visibility items.
+
+## ADR-028: Per-gear Flankenmodifikation nodes + schema binding-remap; visibility round P3
+
+**Date:** 2026-08-18 · **Status:** Accepted
+
+**Context:** The user challenged the micro-geometry asymmetry left by ADR-027: the wheel
+could only edit simplified micro rows while the pinion had the full Flankenmodifikation
+editor (the kst-E tree carries the node [34] at the pinion only). Additionally the
+audit's P3 block (computed-but-invisible values, inert mode switches) was approved.
+
+**Decision:** (1) The tree gains a wheel-side Flankenmodifikation node [41] — an
+extension beyond the kst-E instance list, id chosen after the Radkörper [40]. It renders
+the IDENTICAL backend gear_correction schema through a new, generic SchemaTab
+binding-remap (`remapNamespace: correction → correction2`); the store holds a second
+CorrectionState and `effectiveStage` derives `modifications_wheel` from it. One full
+editor per gear, zero schema duplication; the Auslegung micro table is a read-only
+mirror of both. (2) The per-gear C_αa now actually reaches the K_v excitation chain
+(`DynamicConditions.tip_relief_um` from the stage micro-geometry) — the former
+Tragfähigkeit-tab copy is deleted in favour of a computed mirror row. (3) Visibility:
+tab and HTML report carry the same field sets (factors, per-gear norm rows, ISO 1328-1
+components, pair quantities, undercut verdict, W_zul/λ), inert switches became live
+(ϑ₀ user mode, Ra→Rz per ISO 6336-2's Ra ≈ Rz/6, K_A,stat input), the Übersicht follows
+the active stage, and W_k has a single implementation.
+
+**Consequences:** helical-relevant pair rows (m_t, α_t, β_b) are display-ready for the
+upcoming helical geometry package; the loaddist package and io/rexs remain intentionally
+unrouted (Step-2 groundwork — recorded in the roadmap, audit COV-10/11). Open: P4
+(clipping/polish LOWs), COV-02 delta-row edge cases, serving uimodel material options
+from the catalog endpoint.

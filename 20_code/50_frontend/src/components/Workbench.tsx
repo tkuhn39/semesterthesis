@@ -37,6 +37,7 @@ type NodeId =
   | "stage"
   | "pinion"
   | "correction"
+  | "correction2"
   | "wheel"
   | "wheel_body"
   | "variation"
@@ -89,7 +90,10 @@ function buildTree(
                     id: "wheel",
                     label: lab("wheel"),
                     badge: badges.gear2,
-                    children: [{ id: "wheel_body", label: lab("wheel_body") }],
+                    children: [
+                      { id: "correction2", label: lab("correction2") },
+                      { id: "wheel_body", label: lab("wheel_body") },
+                    ],
                   },
                 ],
               },
@@ -290,6 +294,23 @@ function Shell() {
             render: () => <SchemaTab schema={s} tab={tab} />,
           }))
         : [],
+      // wheel-side Flankenmodifikation [41]: the SAME gear_correction schema rendered
+      // against the correction2 store namespace — each gear edits its micro-geometry
+      // independently in the full editor (user requirement 2026-08-18)
+      correction2: s
+        ? (s.components.find((c) => c.id === "gear_correction")?.tabs ?? []).map((tab) => ({
+            id: tab.id,
+            title: locale === "de" ? tab.title_de : tab.title_en,
+            visibleIfMethod: tab.visible_if_method,
+            render: () => (
+              <SchemaTab
+                schema={s}
+                tab={tab}
+                remapNamespace={{ from: "correction", to: "correction2" }}
+              />
+            ),
+          }))
+        : [],
       wheel: [
         { id: "toothform", title: locale === "de" ? "Zahnform" : "Tooth form", render: () => <ToothFormPanel gear={2} /> },
         { id: "mesh", title: "FE-Mesh", render: () => <MeshPanel gear={2} /> },
@@ -328,6 +349,7 @@ function Shell() {
     stage: instanceLabel(wb.model.stage, locale),
     pinion: instanceLabel(wb.model.pinion, locale),
     correction: instanceLabel(wb.model.correction, locale),
+    correction2: instanceLabel(wb.model.correction2, locale),
     wheel: instanceLabel(wb.model.wheel, locale),
     wheel_body: instanceLabel(wb.model.wheel_body, locale),
     variation: locale === "de" ? "Stufenvariation" : "Stage variation",
@@ -424,7 +446,7 @@ function Shell() {
 
         {/* Ergebnis-Schnellansicht (FVA right panel) — ISO 21771 tables of the ONE stage;
             resizable with a min-width lock, tables scroll instead of clipping */}
-        {["unit", "stage", "pinion", "wheel", "correction", "wheel_body"].includes(active) && (
+        {["unit", "stage", "pinion", "wheel", "correction", "correction2", "wheel_body"].includes(active) && (
           <>
             <div className="hidden xl:flex self-stretch">
               <Resizer onDrag={(dx) => setQuickW((w) => clampWidth(w - dx, 330, 640))} />

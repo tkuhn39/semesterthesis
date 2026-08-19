@@ -17,8 +17,16 @@
 > name/kind, glossary SSOT) plus the state-consistency round (ADR-027: COV-01, FEM-05,
 > STR-01, STR-02, STR-03/FEM-02/FIL-01, FIL-02, FEM-03/F4 deck material parity, FEM-04
 > junction-aware FE classification, served catalog + drift guard, .ste kind-heuristic
-> warning). Open now: **P3 (visibility) and P4 (polish)** plus COV-02 and the noted
-> follow-ups. The findings below are kept as written (audit snapshot).
+> warning).
+>
+> **STATUS UPDATE 3 (same day, ADR-028): P3 is FIXED** — visibility round COV-03…09/12
+> (tab ↔ report field parity, pair rows, tolerance components, W_zul/λ, undercut
+> verdict, varied-parameters line, W_k single-sourced) and the GAP mediums 03–07 (ϑ₀
+> user mode, K_A,stat input, Ra→Rz per ISO 6336-2, C_a live in K_v, dump provenance,
+> live Übersicht); plus the wheel-side Flankenmodifikation node [41] (full per-gear
+> micro-geometry editing). COV-10/11 are declared intentional (Step-2 groundwork,
+> roadmap). Open now: **P4 (polish/clipping LOWs)** and the noted follow-ups. The
+> findings below are kept as written (audit snapshot).
 
 > **Read-only audit — no code was changed.** Deliverable requested by the user: full report
 > first, decisions before fixes. Scope: the ANALYTICAL chain (geometry / norms / seven

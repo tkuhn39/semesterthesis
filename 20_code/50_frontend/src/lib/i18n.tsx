@@ -276,8 +276,15 @@ const DICT: Record<string, { de: string; en: string }> = {
     en: "The fillet form drives the contour comparison (step 4); on apply it becomes gear 2's FE-deck fillet",
   },
   "micro.pinionSource": {
-    de: "Ritzel-Mikrogeometrie wird im Tab Flankenmodifikation [34] gepflegt (eine Quelle) — hier nur Anzeige der wirksamen Werte.",
-    en: "Pinion micro-geometry is maintained in the Flankenmodifikation [34] tab (one source) — shown read-only here.",
+    de: "Mikrogeometrie wird je Rad im eigenen Flankenmodifikations-Knoten gepflegt (Ritzel [34], Rad [41]) — hier nur Anzeige der wirksamen Werte.",
+    en: "Micro-geometry is maintained per gear in its own flank-modification node (pinion [34], wheel [41]) — shown read-only here.",
+  },
+  "var.variedLine": { de: "Variiert: {list}", en: "Varied: {list}" },
+  "ov.exampleNote": { de: "kst-E-Referenz (Beispielmodus)", en: "kst-E reference (example mode)" },
+  "ov.freeNote": { de: "aktive Stufe (freie Parameter)", en: "active stage (free parameters)" },
+  "fem.provenance": {
+    de: "Dump-Modus: {mode} — Abwicklung mit der AKTUELLEN Stufe/Fußform; bei Geometrieänderung seit dem Solve neu hochladen.",
+    en: "Dump mode: {mode} — unwrapped with the CURRENT stage/fillet; re-upload after geometry changes since the solve.",
   },
   "var.normNote": {
     de: "Norm-Dispatch je Rad: Stahl → ISO 6336, Kunststoff → VDI 2736",
@@ -384,6 +391,8 @@ const DICT: Record<string, { de: string; en: string }> = {
   "cap.staticSafety": { de: "Statische Sicherheit", en: "Static safety" },
   "cap.toothTemp": { de: "Zahntemperatur", en: "Tooth temperature" },
   "cap.wear": { de: "Verschleiß", en: "Wear" },
+  "cap.allowableWear": { de: "Zulässiger Verschleiß", en: "Allowable wear" },
+  "cap.deformation": { de: "Zahnverformung", en: "Tooth deflection" },
   "cap.inputsNote": {
     de: "Alle Eingaben liegen in ihren FVA-Reitern (Leistungsfluss, Tragfähigkeit, VDI 2736, Werkstoff, Schmierstoff, Toleranzen) — hier nur der wirksame Lastfall.",
     en: "All inputs live in their FVA tabs (power flow, load capacity, VDI 2736, material, lubricant, tolerances) — this card only shows the effective load case.",
@@ -404,6 +413,9 @@ const DICT: Record<string, { de: string; en: string }> = {
   "tol.fpt": { de: "Einzelteilungsabweichung", en: "Single pitch deviation" },
   "tol.Fp": { de: "Gesamtteilungsabweichung", en: "Total cumulative pitch deviation" },
   "tol.ffa": { de: "Profil-Formabweichung", en: "Profile form deviation" },
+  "tol.fha": { de: "Profil-Winkelabweichung", en: "Profile slope deviation" },
+  "tol.fhbT": { de: "Flankenlinien-Winkelabweichung", en: "Helix slope deviation" },
+  "tol.ffb": { de: "Flankenlinien-Formabweichung", en: "Helix form deviation" },
   "tol.Fa": { de: "Profil-Gesamtabweichung", en: "Total profile deviation" },
   "tol.Fb": { de: "Flankenlinien-Gesamtabweichung", en: "Total helix deviation" },
   "tol.fpb": { de: "Eingriffsteilungsabweichung", en: "Transverse base pitch deviation" },
