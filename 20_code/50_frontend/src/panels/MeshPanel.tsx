@@ -4,7 +4,7 @@
 // viewport (quality heatmap toggle), native convergence quick check, fillet ranking, and
 // the implicit rolling deck (.inp) download with the mixed-pairing rigid-shell rule.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   meshApi,
   type ConvergenceResponse,
@@ -43,6 +43,12 @@ const SWEEPABLE: {
   { kind: "elliptic", approach: "landi", parameter: "ra_f" },
   { kind: "elliptic", approach: "landi", parameter: "d2_frac" },
   { kind: "bezier", approach: "roth", parameter: "be" },
+  // Dong hob-tip Bézier variables (audit FIL-03: the backend _SWEEP_RANGES carries
+  // them, the mirror here did not)
+  { kind: "bezier", approach: "dong", parameter: "dv1" },
+  { kind: "bezier", approach: "dong", parameter: "dv2" },
+  { kind: "bezier", approach: "dong", parameter: "dv3" },
+  { kind: "bezier", approach: "dong", parameter: "dv4" },
   { kind: "bionic", approach: "voith", parameter: "b_f" },
   { kind: "bionic", approach: "voith", parameter: "gamma_deg" },
 ];
@@ -78,7 +84,18 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
   const [sweep, setSweep] = useState<FilletSweepResponse | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [includeCao, setIncludeCao] = useState(false);
 
+  useEffect(() => {
+    // gear/stage switch: the cached results belong to the previous gear/geometry
+    // (audit FIL-05: a pinion mesh kept being presented as the wheel's after a switch)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setData(null);
+    setPreview(null);
+    setConv({});
+    setRanking(null);
+    setSweep(null);
+  }, [props.gear, stage]);
 
   const guard = async (name: string, fn: () => Promise<void>) => {
     setBusy(name);
@@ -116,7 +133,8 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
 
   const runRanking = () =>
     guard("rank", async () => {
-      setRanking(await meshApi.filletCompare(stage, props.gear));
+      // include_cao runs the full FE growth loop (~10 s uncached) — opt-in (audit FIL-04)
+      setRanking(await meshApi.filletCompare(stage, props.gear, includeCao));
     });
 
   const leftPane = (
@@ -285,10 +303,19 @@ export function MeshPanel(props: { gear: 1 | 2 }) {
         </Section>
 
         <Section title={t("mesh.filletCompare")} defaultOpen={false}>
-          <div className="p-2">
+          <div className="p-2 flex items-center gap-3">
             <Btn variant="ghost" onClick={runRanking} busy={busy === "rank"}>
               {t("mesh.filletCompare.run")}
             </Btn>
+            {/* opt-in CAO row (audit FIL-04: include_cao was unreachable) */}
+            <label className="inline-flex items-center gap-1.5 text-[12px] text-zinc-600">
+              <input
+                type="checkbox"
+                checked={includeCao}
+                onChange={(e) => setIncludeCao(e.target.checked)}
+              />
+              {t("mesh.filletCompare.cao")}
+            </label>
           </div>
           {ranking && (
             <table className="attr-table">

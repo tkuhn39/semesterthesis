@@ -320,12 +320,19 @@ export function GeometryPanel() {
           span_allowance_upper_um: [wb.tol.awe1_um, wb.tol.awe2_um],
           span_allowance_lower_um: [wb.tol.awi1_um, wb.tol.awi2_um],
           center_distance_allowance_mm: (wb.tol.a_upper_um - wb.tol.a_lower_um) / 2 / 1000,
+          // drawing pin size (audit GAP-11); 0/empty → backend default 1.75·m_n
+          ball_diameter_gear1_mm: wb.tol.dm1_mm > 0 ? wb.tol.dm1_mm : null,
+          ball_diameter_gear2_mm: wb.tol.dm2_mm > 0 ? wb.tol.dm2_mm : null,
         }),
       ]);
       setRes(geo);
       setRep(full);
+      // geometry validity notes reach the Meldungen strip (audit GAP-12)
+      wb.setMessages(geo.notes);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      setErr(msg);
+      wb.setMessages([msg]);
     } finally {
       setBusy(false);
     }
@@ -502,7 +509,7 @@ export function GeometryPanel() {
               ⚠ {n}
             </div>
           ))}
-          <MeshEngagement height={340} />
+          <MeshEngagement height={340} epsAlpha={res?.transverse_contact_ratio ?? null} />
         </div>
       )}
     </div>

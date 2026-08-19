@@ -19,7 +19,7 @@ import {
 } from "@/lib/api";
 import { ParallelCoordinates, type PCDim } from "@/components/ParallelCoordinates";
 import { ContourPlot, OVERLAY_COLORS } from "@/components/ContourPlot";
-import { FilletEditor } from "@/panels/ToothFormPanel";
+import { FilletEditor, ManufacturabilityNote } from "@/panels/ToothFormPanel";
 import { Btn, ErrNote, Num, Section, Stat } from "@/components/ui";
 import { type Wb } from "@/lib/capacityRequest";
 import { useFmt, useT } from "@/lib/i18n";
@@ -475,6 +475,15 @@ export function VariationPanel() {
                   contour overlays and, on Übernehmen, becomes fem.fillet_gear2 (the
                   deck fillet); a bare kind would silently drop the parameters */}
               <FilletEditor value={v.fillet} onChange={(f) => setVar({ fillet: f })} />
+              {/* the molded/WEDM warning belongs HERE too — this is where the plastic
+                  pairing gets decided (audit FIL-09); CAO overlays additionally run a
+                  full FE growth loop per variant */}
+              <div className="p-2">
+                <ManufacturabilityNote kind={v.fillet.kind} approach={v.fillet.approach ?? undefined} />
+                {v.fillet.kind === "bionic" && (v.fillet.approach ?? "voith") === "cao" && (
+                  <div className="mt-1 text-[11.5px] text-zinc-500">{t("var.caoCost")}</div>
+                )}
+              </div>
             </div>
             <table className="attr-table">
               <tbody>

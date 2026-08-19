@@ -27,7 +27,7 @@ export function DesignPanel() {
   // baked the tol allowances + correction-derived pinion mods back in as raw values)
   const [draft, setDraft] = useState<StageParams>(wb.rawStage);
   const [presets, setPresets] = useState<PresetsResponse | null>(null);
-  const [tol, setTol] = useState<ToleranceResponse | null>(null);
+  const [tol, setTol] = useState<[ToleranceResponse, ToleranceResponse] | null>(null);
   // ONE accuracy-grade state (audit STR-02): the ISO 1328 display follows the
   // Toleranzen tab's grade — editing here writes back to the same source
   const grade = wb.tol.grade1;
@@ -92,15 +92,23 @@ export function DesignPanel() {
     setBusy(true);
     setErr(null);
     try {
-      setTol(
-        await toleranceApi.tolerances({
+      // BOTH gears at the true reference diameter d = m_n·z/cos β (audit GAP-09: the
+      // check was wheel-only at the spur m_n·z, underestimating the d-dependent terms)
+      const cosB = Math.cos((draft.helix_angle_deg * Math.PI) / 180.0);
+      const gearReq = (z: number, b: number) =>
+        toleranceApi.tolerances({
           accuracy_grade: grade,
           normal_module_mm: draft.normal_module_mm,
-          teeth: draft.teeth_wheel,
-          reference_diameter_mm: draft.normal_module_mm * draft.teeth_wheel,
-          face_width_mm: draft.face_width_wheel_mm,
+          teeth: z,
+          reference_diameter_mm: (draft.normal_module_mm * z) / cosB,
+          face_width_mm: b,
           helix_angle_deg: draft.helix_angle_deg,
-        }),
+        });
+      setTol(
+        await Promise.all([
+          gearReq(draft.teeth_pinion, draft.face_width_pinion_mm),
+          gearReq(draft.teeth_wheel, draft.face_width_wheel_mm),
+        ]),
       );
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
@@ -321,48 +329,42 @@ export function DesignPanel() {
                 <tr>
                   <th>{t("common.attribute")}</th>
                   <th></th>
-                  <th>{t("common.value")}</th>
+                  {/* per-gear columns (audit GAP-09: the table was wheel-only and
+                      unlabeled) */}
+                  <th>{t("common.pinion")}</th>
+                  <th>{t("common.wheel")}</th>
                   <th>{t("common.unit")}</th>
                 </tr>
               </thead>
               <tbody>
-                <AttrRow label={t("tol.fpt")} symbol="f_ptT" unit="µm">
-                  <td className="wb-num">{fm.num(tol.tolerances.single_pitch, 1)}</td>
-                </AttrRow>
-                <AttrRow label={t("tol.Fp")} symbol="F_pT" unit="µm">
-                  <td className="wb-num">{fm.num(tol.tolerances.total_pitch, 1)}</td>
-                </AttrRow>
-                {/* full ISO 1328-1 component set (audit COV-05: the slope/helix-form
-                    components were computed but invisible everywhere) */}
-                <AttrRow label={t("tol.fha")} symbol="f_HαT" unit="µm">
-                  <td className="wb-num">{fm.num(tol.tolerances.profile_slope, 1)}</td>
-                </AttrRow>
-                <AttrRow label={t("tol.ffa")} symbol="f_fαT" unit="µm">
-                  <td className="wb-num">{fm.num(tol.tolerances.profile_form, 1)}</td>
-                </AttrRow>
-                <AttrRow label={t("tol.Fa")} symbol="F_αT" unit="µm">
-                  <td className="wb-num">{fm.num(tol.tolerances.profile_total, 1)}</td>
-                </AttrRow>
-                <AttrRow label={t("tol.fhbT")} symbol="f_HβT" unit="µm">
-                  <td className="wb-num">{fm.num(tol.tolerances.helix_slope, 1)}</td>
-                </AttrRow>
-                <AttrRow label={t("tol.ffb")} symbol="f_fβT" unit="µm">
-                  <td className="wb-num">{fm.num(tol.tolerances.helix_form, 1)}</td>
-                </AttrRow>
-                <AttrRow label={t("tol.Fb")} symbol="F_βT" unit="µm">
-                  <td className="wb-num">{fm.num(tol.tolerances.helix_total, 1)}</td>
-                </AttrRow>
-                <AttrRow label={t("tol.fpb")} symbol="f_pb" unit="µm">
-                  <td className="wb-num">{fm.num(tol.base_pitch_deviation_um, 1)}</td>
-                </AttrRow>
+                {(
+                  [
+                    ["tol.fpt", "f_ptT", (x: ToleranceResponse) => x.tolerances.single_pitch],
+                    ["tol.Fp", "F_pT", (x: ToleranceResponse) => x.tolerances.total_pitch],
+                    // full ISO 1328-1 component set (audit COV-05)
+                    ["tol.fha", "f_HαT", (x: ToleranceResponse) => x.tolerances.profile_slope],
+                    ["tol.ffa", "f_fαT", (x: ToleranceResponse) => x.tolerances.profile_form],
+                    ["tol.Fa", "F_αT", (x: ToleranceResponse) => x.tolerances.profile_total],
+                    ["tol.fhbT", "f_HβT", (x: ToleranceResponse) => x.tolerances.helix_slope],
+                    ["tol.ffb", "f_fβT", (x: ToleranceResponse) => x.tolerances.helix_form],
+                    ["tol.Fb", "F_βT", (x: ToleranceResponse) => x.tolerances.helix_total],
+                    ["tol.fpb", "f_pb", (x: ToleranceResponse) => x.base_pitch_deviation_um],
+                  ] as const
+                ).map(([key, sym, pick]) => (
+                  <AttrRow key={sym} label={t(key)} symbol={sym} unit="µm">
+                    <td className="wb-num">{fm.num(pick(tol[0]), 1)}</td>
+                    <td className="wb-num">{fm.num(pick(tol[1]), 1)}</td>
+                  </AttrRow>
+                ))}
               </tbody>
             </table>
           )}
-          {tol?.warnings.map((w, i) => (
-            <div key={i} className="px-3 py-1 text-[11.5px] text-amber-600">
-              ⚠ {w}
-            </div>
-          ))}
+          {tol &&
+            [...new Set([...tol[0].warnings, ...tol[1].warnings])].map((w, i) => (
+              <div key={i} className="px-3 py-1 text-[11.5px] text-amber-600">
+                ⚠ {w}
+              </div>
+            ))}
         </Section>
       </div>
     </div>

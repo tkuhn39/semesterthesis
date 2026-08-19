@@ -129,7 +129,10 @@ export function CapacityPanel() {
               </tbody>
             </table>
           </Section>
-          <div className="grid grid-cols-2 gap-3">
+          {/* the extended cards no longer fit two fixed columns at 1720 px — stack them
+              until the viewport is truly wide (audit V-01: the ISO card's value column
+              was entirely invisible, the VDI card truncated right) */}
+          <div className="grid grid-cols-1 min-[1900px]:grid-cols-2 gap-3">
             <GearCard title={t("common.pinion")} g={res.pinion} minRoot={req.root_minimum_safety} minFlank={req.flank_minimum_safety} />
             <GearCard title={t("common.wheel")} g={res.wheel} minRoot={req.root_minimum_safety} minFlank={req.flank_minimum_safety} />
           </div>

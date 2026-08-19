@@ -231,7 +231,17 @@ function Shell() {
     const loadHeads: [string, string] =
       locale === "de" ? ["Welle 1", "Welle 2"] : ["Shaft 1", "Shaft 2"];
     return {
-      overview: [{ id: "overview", title: locale === "de" ? "Übersicht" : "Overview", render: () => <OverviewPanel onNavigate={() => setActive("stage")} /> }],
+      overview: [{ id: "overview", title: locale === "de" ? "Übersicht" : "Overview", render: () => (
+        <OverviewPanel
+          onNavigate={(key) => {
+            // route the card's target (audit STR-14: every card used to land on the
+            // stage node) — "node.tab" selects node AND tab, a bare key the node
+            const [node, tab] = key.split(".");
+            setActive(node as NodeId);
+            if (tab) setTabByNode((m) => ({ ...m, [node]: tab }));
+          }}
+        />
+      ) }],
       unit: [
         ...(s
           ? [
@@ -449,11 +459,12 @@ function Shell() {
         {["unit", "stage", "pinion", "wheel", "correction", "correction2", "wheel_body"].includes(active) && (
           <>
             <div className="hidden xl:flex self-stretch">
-              <Resizer onDrag={(dx) => setQuickW((w) => clampWidth(w - dx, 330, 640))} />
+              {/* min 390: at 330 the wheel column clipped at 1720 px (audit V-05) */}
+              <Resizer onDrag={(dx) => setQuickW((w) => clampWidth(w - dx, 390, 640))} />
             </div>
             <aside
               className="shrink-0 border-l border-zinc-200 bg-zinc-50 overflow-y-auto p-2 hidden xl:block"
-              style={{ width: quickW, minWidth: 330 }}
+              style={{ width: quickW, minWidth: 390 }}
             >
               <div className="text-[10.5px] uppercase tracking-wider text-zinc-400 px-2 pb-1">
                 {locale === "de" ? "Ergebnis-Schnellansicht" : "Result quick view"}
@@ -465,9 +476,17 @@ function Shell() {
       </div>
 
       {/* messages strip */}
-      <footer className="h-7 shrink-0 border-t border-zinc-200 bg-white flex items-center px-4 gap-2">
+      <footer className="h-7 shrink-0 border-t border-zinc-200 bg-white flex items-center px-4 gap-2 overflow-hidden">
         <span className="text-[10.5px] uppercase tracking-wider text-zinc-400">{t("msg.title")}</span>
-        <span className="text-[11.5px] text-zinc-500">{t("msg.ready")}</span>
+        {/* live messages (audit GAP-12: the strip was static decoration) — panels push
+            geometry notes / request errors via wb.setMessages */}
+        {wb.messages.length === 0 ? (
+          <span className="text-[11.5px] text-zinc-500">{t("msg.ready")}</span>
+        ) : (
+          <span className="text-[11.5px] text-amber-700 truncate" title={wb.messages.join(" · ")}>
+            ⚠ {wb.messages.join(" · ")}
+          </span>
+        )}
       </footer>
     </div>
   );

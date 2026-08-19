@@ -37,7 +37,15 @@ function gearOutline(g: ToothGear): string {
 // above for A/C/D — in SVG plot coordinates (y flipped) "below" is +y
 const LABEL_DOWN = new Set(["T1", "T2", "B", "E"]);
 
-function LineOfActionOverlay({ loa, a }: { loa: LineOfAction; a: number }) {
+function LineOfActionOverlay({
+  loa,
+  a,
+  rootRadii,
+}: {
+  loa: LineOfAction;
+  a: number;
+  rootRadii?: [number, number]; // r_f per gear (audit COV-14: served but never drawn)
+}) {
   // plot coordinates: y flipped (like the gear outlines)
   const P = (p: [number, number]): [number, number] => [p[0], -p[1]];
   const [t1, t2, pa, pb, pc, pd, pe] = [loa.t1, loa.t2, loa.a, loa.b, loa.c, loa.d, loa.e].map(P);
@@ -61,6 +69,13 @@ function LineOfActionOverlay({ loa, a }: { loa: LineOfAction; a: number }) {
       <circle cx={a} cy={0} r={rb2} fill="none" stroke={navy} strokeWidth={0.05} strokeDasharray={dash} />
       <circle cx={0} cy={0} r={rw1} fill="none" stroke={navy} strokeWidth={0.05} strokeDasharray={dash} />
       <circle cx={a} cy={0} r={rw2} fill="none" stroke={navy} strokeWidth={0.05} strokeDasharray={dash} />
+      {/* root circles (audit COV-14 — visually useful next to the tip engagement) */}
+      {rootRadii && (
+        <>
+          <circle cx={0} cy={0} r={rootRadii[0]} fill="none" stroke={navy} strokeWidth={0.04} strokeDasharray="0.3 0.3" />
+          <circle cx={a} cy={0} r={rootRadii[1]} fill="none" stroke={navy} strokeWidth={0.04} strokeDasharray="0.3 0.3" />
+        </>
+      )}
       {/* grey crosshair through the pitch point C */}
       <line x1={pc[0] - 1000} y1={pc[1]} x2={pc[0] + 1000} y2={pc[1]} stroke="#9ca3af" strokeWidth={0.035} />
       <line x1={pc[0]} y1={pc[1] - 1000} x2={pc[0]} y2={pc[1] + 1000} stroke="#9ca3af" strokeWidth={0.035} />
@@ -92,7 +107,7 @@ function LineOfActionOverlay({ loa, a }: { loa: LineOfAction; a: number }) {
   );
 }
 
-export function MeshEngagement(props: { height?: number }) {
+export function MeshEngagement(props: { height?: number; epsAlpha?: number | null }) {
   const wb = useWorkbench();
   const t = useT();
   const fm = useFmt();
@@ -173,7 +188,10 @@ export function MeshEngagement(props: { height?: number }) {
     minY = -Math.max(r1, r2) * 1.02;
     height = 2 * Math.max(r1, r2) * 1.02;
   }
-  const epsAlpha = loa ? loa.path_of_contact_mm / loa.transverse_base_pitch_mm : null;
+  // SSOT ε_α from the embedding panel's GeometryResponse when provided (audit STR-08:
+  // the local g_α/p_et recomputation could diverge from the served contact ratio)
+  const epsAlpha =
+    props.epsAlpha ?? (loa ? loa.path_of_contact_mm / loa.transverse_base_pitch_mm : null);
 
   return (
     <div className="border border-zinc-200 rounded-lg overflow-hidden bg-white">
@@ -214,7 +232,13 @@ export function MeshEngagement(props: { height?: number }) {
           <polygon points={gearOutline(g2)} fill="#e8eef4" stroke="#64748b" strokeWidth={0.1} />
         </g>
         {/* static overlay: line of action with T1/A/B/C/D/E (never rotates) */}
-        {loa && <LineOfActionOverlay loa={loa} a={a} />}
+        {loa && (
+          <LineOfActionOverlay
+            loa={loa}
+            a={a}
+            rootRadii={[g1.root_radius_mm, g2.root_radius_mm]}
+          />
+        )}
         {!zoomed && (
           <>
             <circle cx={0} cy={0} r={0.8} fill="#3070b3" />

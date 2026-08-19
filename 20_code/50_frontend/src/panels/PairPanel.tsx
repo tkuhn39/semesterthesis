@@ -39,7 +39,13 @@ export function PairPanel() {
   const fem = wb.fem;
   const m2 = wb.get("fem.torque_gear2_nmm");
 
-  const centerDistance = stage.center_distance_mm ?? (stage.normal_module_mm * (stage.teeth_pinion + stage.teeth_wheel)) / 2;
+  // WORKING centre distance from the assembled pair (audit GAP-14: in "from x" mode the
+  // raw stage field is null and the old fallback showed the REFERENCE a for shifted
+  // pairs); before the first assembly the reference value is an honest placeholder
+  const centerDistance =
+    pair?.center_distance_mm ??
+    stage.center_distance_mm ??
+    (stage.normal_module_mm * (stage.teeth_pinion + stage.teeth_wheel)) / 2;
 
   const guard = async (name: string, fn: () => Promise<void>) => {
     setBusy(name);

@@ -68,6 +68,11 @@ export function OverviewPanel(props: { onNavigate: (key: string) => void }) {
         <Stat label={`${t("attr.mn")} m_n`} value={fm.num(stage.normal_module_mm, 2)} unit="mm" />
         <Stat label={`${t("attr.epsAlpha")} ε_α`} value={fm.num(geo.transverse_contact_ratio, 3)} />
         <Stat label={`${t("attr.epsGamma")} ε_γ`} value={fm.num(geo.total_contact_ratio, 3)} />
+        {/* angles (audit COV-16: they were absent from the overview) */}
+        <Stat label="α_n" value={fm.num(stage.normal_pressure_angle_deg, 2)} unit="°" />
+        <Stat label="β" value={fm.num(stage.helix_angle_deg, 2)} unit="°" />
+        <Stat label="α_wt" value={fm.num(geo.working_pressure_angle_deg, 3)} unit="°" />
+        <Stat label={`${t("attr.epsBeta")} ε_β`} value={fm.num(geo.overlap_ratio, 3)} />
       </div>
       <Section
         title={

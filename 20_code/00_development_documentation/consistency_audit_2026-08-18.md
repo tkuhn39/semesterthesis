@@ -25,8 +25,17 @@
 > user mode, K_A,stat input, Ra→Rz per ISO 6336-2, C_a live in K_v, dump provenance,
 > live Übersicht); plus the wheel-side Flankenmodifikation node [41] (full per-gear
 > micro-geometry editing). COV-10/11 are declared intentional (Step-2 groundwork,
-> roadmap). Open now: **P4 (polish/clipping LOWs)** and the noted follow-ups. The
-> findings below are kept as written (audit snapshot).
+> roadmap).
+>
+> **STATUS UPDATE 4 (same day): P4 is FIXED — the audit is fully worked off.** Display
+> fixes V-01/03/05/06/07/08, fillet UX FIL-03…09 (+V-04), wiring LOWs GAP-09…14 +
+> STR-14, contract/consistency COV-14/15/16 + STR-08/09 + FEM-06/07. **Deferred with
+> rationale** (architecture cleanup, not polish — candidates for a later refactor
+> round): STR-05 (unreachable schema geometry tab + its orphaned store fields), STR-06
+> (served-but-unconsumed rules engine; glossary generation from schema.attributes),
+> STR-07 (quick-view fetch cache/recompute), STR-15 (dead i18n keys), FEM-09 (sweep-UI
+> 2D-FE marker), GAP-10 rest (unconsumed diagnostic response fields). The findings
+> below are kept as written (audit snapshot).
 
 > **Read-only audit — no code was changed.** Deliverable requested by the user: full report
 > first, decisions before fixes. Scope: the ANALYTICAL chain (geometry / norms / seven

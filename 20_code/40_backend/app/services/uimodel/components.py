@@ -916,6 +916,21 @@ ATTRIBUTES: list[AttributeDef] = [
         norm_ref="DIN 3964",
     ),
     AttributeDef(
+        id="tol_ball_diameter",
+        label_de="Messkugel-/Rollendurchmesser",
+        label_en="Measuring ball/pin diameter",
+        symbol="D_M",
+        unit="mm",
+        precision=3,
+        per_gear=True,
+        bindings=("tol.dm1_mm", "tol.dm2_mm"),
+        norm_ref="DIN 21773 §8–§11",
+        info_de="0 = automatisch 1,75·m_n (Audit GAP-11: der Zeichnungswert war zuvor "
+        "nicht eingebbar — M_dK/M_dR nutzten immer den Automatikwert).",
+        info_en="0 = automatic 1.75·m_n (audit GAP-11: a drawing's pin size could not "
+        "be entered before — M_dK/M_dR always used the automatic value).",
+    ),
+    AttributeDef(
         id="tol_quality_standard",
         label_de="Verzahnungsqualität",
         label_en="Gear quality standard",
@@ -2049,7 +2064,11 @@ def _tolerances_tab() -> TabDef:
                 id="centre_distance_allowances",
                 title_de="Achsabstandsabmaße",
                 title_en="Centre-distance allowances",
-                rows=[RowRef(attr="tol_a_upper"), RowRef(attr="tol_a_lower")],
+                rows=[
+                    RowRef(attr="tol_a_upper"),
+                    RowRef(attr="tol_a_lower"),
+                    RowRef(attr="tol_ball_diameter"),
+                ],
             ),
             SectionDef(
                 id="quality",

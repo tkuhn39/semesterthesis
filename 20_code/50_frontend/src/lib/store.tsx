@@ -564,6 +564,9 @@ export interface TolerancesState {
   aw_selection: string; // "Mit mittlerem Zahnweitenabmaß"
   a_upper_um: number; // oberes Achsabstandsabmaß A_Ae
   a_lower_um: number; // unteres A_Ai
+  // measuring ball/pin Ø per gear for M_dK/M_dR (audit GAP-11); 0 → auto 1.75·m_n
+  dm1_mm: number;
+  dm2_mm: number;
   quality_standard: string; // DIN 3962 (1978)
   grade1: number;
   grade2: number;
@@ -580,6 +583,8 @@ const TOLERANCES_DEFAULTS: TolerancesState = {
   aw_selection: "mean",
   a_upper_um: 15.0,
   a_lower_um: -15.0,
+  dm1_mm: 0.0,
+  dm2_mm: 0.0,
   quality_standard: "din_3962_1978",
   grade1: 7,
   grade2: 7,
@@ -610,6 +615,9 @@ interface WorkbenchState {
   shaft: ShaftUiState;
   model: ModelInstances; // tree instances with their [n] IDs (data, not hardcoded)
   label: string;
+  // Meldungen strip content (audit GAP-12: the footer was static "Bereit." even while
+  // the active stage carried warnings) — panels push their notes/errors here
+  messages: string[];
 }
 
 // Derived (computed) paths — the norm-active couplings the schema rows read as grey
@@ -736,6 +744,7 @@ interface WorkbenchStore extends WorkbenchState {
   // effective stage, so tab-owned merges (tol allowances, correction-derived pinion
   // micro-geometry) don't get baked back in as raw values (audit STR-01)
   rawStage: StageParams;
+  setMessages: (msgs: string[]) => void;
   // generic binding access for schema-rendered rows (path = "<namespace>.<field>")
   get: (path: string) => unknown;
   set: (path: string, value: unknown) => void;
@@ -815,12 +824,31 @@ const DEFAULT_STATE: WorkbenchState = {
   shaft: { u_coordinate_gear1_mm: 23.5, u_coordinate_gear2_mm: 24.5, rotation_negative_u_deg: 0 },
   model: MODEL_DEFAULTS,
   label: "kst-E",
+  messages: [],
 };
 
 const WbCtx = createContext<WorkbenchStore | null>(null);
 
 export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<WorkbenchState>(DEFAULT_STATE);
+
+  // stable effective-stage identity (audit STR-09): rebuild ONLY when an input it
+  // actually reads changes — an fem toggle or varUi step must not hand every
+  // stage-keyed effect a fresh object (spurious refetches, Variation step-1 reseeds)
+  const effStage = useMemo(
+    () => effectiveStage(state),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      state.stage,
+      state.tol.awe1_um,
+      state.tol.awi1_um,
+      state.tol.awe2_um,
+      state.tol.awi2_um,
+      state.correction,
+      state.correction2,
+      state.geometryUi.center_distance_mode,
+    ],
+  );
 
   const store = useMemo<WorkbenchStore>(() => {
     const namespaces = [
@@ -962,16 +990,23 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       ...state,
       // every consumer sees the EFFECTIVE stage (raw stage + tab-owned merges like the
       // Toleranzen allowances) — API calls therefore always carry the coupled values
-      stage: effectiveStage(state),
+      stage: effStage,
       rawStage: state.stage,
       setStage: (s) => setState((p) => ({ ...p, stage: s })),
       setLabel: (l) => setState((p) => ({ ...p, label: l })),
+      setMessages: (msgs) =>
+        setState((p) =>
+          // identity-stable when unchanged so effects keyed on the store don't loop
+          p.messages.length === msgs.length && p.messages.every((m, i) => m === msgs[i])
+            ? p
+            : { ...p, messages: msgs },
+        ),
       setCalc: (id, on) => setState((p) => ({ ...p, calc: { ...p.calc, [id]: on } })),
       setFem: (patch) => setState((p) => ({ ...p, fem: { ...p.fem, ...patch } })),
       get,
       set,
     };
-  }, [state]);
+  }, [state, effStage]);
 
   return <WbCtx.Provider value={store}>{children}</WbCtx.Provider>;
 }

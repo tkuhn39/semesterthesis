@@ -280,6 +280,11 @@ const DICT: Record<string, { de: string; en: string }> = {
     en: "Micro-geometry is maintained per gear in its own flank-modification node (pinion [34], wheel [41]) — shown read-only here.",
   },
   "var.variedLine": { de: "Variiert: {list}", en: "Varied: {list}" },
+  "var.caoCost": {
+    de: "Hinweis: CAO-Overlays rechnen je Variante eine volle FE-Wachstumsschleife (~10 s ungecacht).",
+    en: "Note: CAO overlays run a full FE growth loop per variant (~10 s uncached).",
+  },
+  "mesh.filletCompare.cao": { de: "inkl. CAO (langsam)", en: "incl. CAO (slow)" },
   "ov.exampleNote": { de: "kst-E-Referenz (Beispielmodus)", en: "kst-E reference (example mode)" },
   "ov.freeNote": { de: "aktive Stufe (freie Parameter)", en: "active stage (free parameters)" },
   "fem.provenance": {
@@ -473,7 +478,7 @@ const DICT: Record<string, { de: string; en: string }> = {
   "gr.tooth_thickness_transverse_mm": { de: "Zahndicke (Stirnschnitt)", en: "Tooth thickness (transverse)" },
   "gr.tooth_thickness_normal_mm": { de: "Zahndicke (Normalschnitt)", en: "Tooth thickness (normal)" },
   "gr.space_width_normal_mm": { de: "Zahnlückenweite", en: "Space width" },
-  "gr.tip_tooth_thickness_mm": { de: "Zahndicke am Nutzkreis (as cut)", en: "Tooth thickness at d_Na (as cut)" },
+  "gr.tip_tooth_thickness_mm": { de: "Zahndicke am Nutzkreis (wie gefertigt)", en: "Tooth thickness at d_Na (as cut)" },
   "gr.rest_tip_thickness_mm": { de: "Restdicke bei Kantenbruch", en: "Rest thickness at edge break" },
   "gr.thickness_allowance_upper_mm": { de: "Oberes Zahndickenabmaß", en: "Upper thickness allowance" },
   "gr.thickness_allowance_lower_mm": { de: "Unteres Zahndickenabmaß", en: "Lower thickness allowance" },
@@ -573,6 +578,9 @@ const DICT: Record<string, { de: string; en: string }> = {
   "dyn.nE1": { de: "Resonanzdrehzahl", en: "Resonance speed" },
   "dyn.refN": { de: "Bezugsdrehzahl", en: "Reference speed ratio" },
   "dyn.range": { de: "Bereich", en: "Range" },
+  "dyn.regime.sub_critical": { de: "unterkritisch", en: "sub-critical" },
+  "dyn.regime.main_resonance": { de: "Hauptresonanz", en: "main resonance" },
+  "dyn.regime.super_critical": { de: "überkritisch", en: "super-critical" },
   // ---- Berechnungsauswahl banner + schema actions ----
   "calc.banner": {
     de: "Für jede Stufe werden immer die Geometrie (ISO 21771) und die analytischen Tragfähigkeiten (ISO 6336, VDI 2736) berechnet — die Stufenvariation benötigt beide vollständig. Zusätzlich können die folgenden Berechnungen aktiviert werden; ihre Reiter erscheinen nach der Aktivierung.",

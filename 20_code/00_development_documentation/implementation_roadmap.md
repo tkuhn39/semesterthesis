@@ -143,8 +143,16 @@ K_v chain, Ra→Rz/ϑ₀/K_A,stat switches functional, Übersicht follows the ac
 tab ↔ HTML report field parity (factors, norm rows, ISO 1328-1 components, pair rows,
 W_zul/λ, undercut verdict), variation names its swept parameters, W_k single-sourced.
 NOTE (audit COV-10/11): `services/loaddist` + `io/rexs`/`services/ingest` are
-INTENTIONALLY unrouted — Step-2 (RIKOR) groundwork, not dead code. Open: P4 (polish/
-clipping LOWs), COV-02 edge cases, catalog-served uimodel options.
+INTENTIONALLY unrouted — Step-2 (RIKOR) groundwork, not dead code.
+
+**Audit round P4 (2026-08-18): the audit is fully worked off** — display clipping,
+fillet UX, wiring LOWs (two-gear ISO 1328 check, D_M inputs, live Meldungen, regime
+i18n, working-a header, routed overview cards) and contract hygiene (diagnostics-only
+CAO response, memoized effectiveStage, chamfer-aware CAO cache, per-gear flank symmetry
+into the deck). Deferred to a later architecture-cleanup round: STR-05/06/07, STR-15,
+FEM-09, GAP-10 rest (see the audit banner). Next packages: **helical geometry report**
+(pair rows already display-ready), scuffing (ISO/TS 6336-20/-21), catalog-served
+uimodel options; twisted extrusion after the FE reference reproduction.
 
 Validation philosophy (ADR-011): implement **strictly per ISO 6336:2019** (the current
 standard; DIN 3990:1987 is the equivalent cross-check, what STplus uses). Two complete

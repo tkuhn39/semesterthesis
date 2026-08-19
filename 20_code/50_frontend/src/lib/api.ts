@@ -61,7 +61,8 @@ export interface GeometryResponse {
 }
 
 export interface GearCapacity {
-  label: string;
+  // (former redundant `label` echo removed, audit COV-15 — headings come from
+  // material + method)
   material: string;
   method: string;
   flank_stress_mpa: number;
@@ -213,7 +214,8 @@ export interface DynamicsResponse {
   reduced_mass: number;
   resonance_speed_min1: number;
   resonance_ratio: number;
-  regime: string;
+  // locale-neutral token (audit GAP-13); translate via i18n `dyn.regime.<token>`
+  regime: "sub_critical" | "main_resonance" | "super_critical";
 }
 
 export interface VarSpec {
@@ -738,15 +740,12 @@ export interface ContourRequest {
   fillet?: FilletSpec;
   points?: number;
 }
+// convergence DIAGNOSTICS only (audit COV-15: the contour echo duplicated /contour)
 export interface FilletCaoResponse {
   gear: number;
-  iterations_run: number;
   converged: boolean;
   sigma_history_mpa: number[];
   uniformity_history: number[];
-  boundary_xy: number[];
-  effective_root_diameter_mm: number;
-  clearance_mm: number;
 }
 export interface ContourResponse {
   gear: number;
@@ -779,8 +778,12 @@ export const meshApi = {
     post<Mesh3DResponse>(`/api/mesh/3d?layers=${layers}`, req),
   convergence: (stage: StageParams, gear: 1 | 2, target: "root" | "flank") =>
     post<ConvergenceResponse>("/api/mesh/convergence", { stage, gear, target, levels: [1, 2, 3] }),
-  filletCompare: (stage: StageParams, gear: 1 | 2) =>
-    post<FilletCompareResponse>("/api/mesh/fillet-compare", { stage, gear }),
+  filletCompare: (stage: StageParams, gear: 1 | 2, includeCao = false) =>
+    post<FilletCompareResponse>("/api/mesh/fillet-compare", {
+      stage,
+      gear,
+      include_cao: includeCao,
+    }),
   filletSweep: (
     stage: StageParams,
     gear: 1 | 2,

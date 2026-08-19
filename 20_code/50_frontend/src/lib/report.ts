@@ -22,6 +22,8 @@ export function collectReportRequest(wb: Wb, locale: string): Record<string, unk
       span_allowance_upper_um: [wb.tol.awe1_um, wb.tol.awe2_um],
       span_allowance_lower_um: [wb.tol.awi1_um, wb.tol.awi2_um],
       center_distance_allowance_mm: (wb.tol.a_upper_um - wb.tol.a_lower_um) / 2 / 1000,
+      ball_diameter_gear1_mm: wb.tol.dm1_mm > 0 ? wb.tol.dm1_mm : null,
+      ball_diameter_gear2_mm: wb.tol.dm2_mm > 0 ? wb.tol.dm2_mm : null,
     },
     powerflow: {
       speed_shaft1_min1: pf.speed_shaft1_min1,

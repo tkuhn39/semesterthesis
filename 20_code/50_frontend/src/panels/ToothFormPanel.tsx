@@ -176,7 +176,9 @@ export function FilletEditor(props: { value: FilletSpec; onChange: (f: FilletSpe
               </td>
             </AttrRow>
           ))}
-        {f.kind === "bionic" && (
+        {/* γ_b/b_f belong to Voith ONLY — CaoFillet ignores them, so showing them for
+            approach=cao was misleading dead input (audit FIL-07 / V-04) */}
+        {f.kind === "bionic" && approach === "voith" && (
           <>
             <AttrRow label={t("tf.gamma")} symbol="γ_b" unit="°">
               <td>
@@ -328,9 +330,11 @@ export function ToothFormPanel(props: { gear: 1 | 2 }) {
     if (fillet.kind !== "standard" && standard) {
       contours.push({ data: standard, label: t("mesh.fillet.standard") });
     }
+    // legend entirely from the RESPONSE (audit FIL-06: mixing the local editor kind
+    // with the fetched approach rendered raw i18n keys between dropdown change and Run)
     const key = current.fillet_approach
-      ? `mesh.fillet.${fillet.kind}-${current.fillet_approach}`
-      : `mesh.fillet.${fillet.kind}`;
+      ? `mesh.fillet.${current.fillet_kind}-${current.fillet_approach}`
+      : `mesh.fillet.${current.fillet_kind}`;
     contours.push({ data: current, label: t(key) });
   }
   // the fillet digs below d_f for some approaches (Frühe by design) — surface it
@@ -339,7 +343,8 @@ export function ToothFormPanel(props: { gear: 1 | 2 }) {
     current != null && effRoot != null && Math.abs(effRoot - current.root_diameter_mm) > 5e-3;
 
   return (
-    <div className="grid grid-cols-[340px_1fr] gap-3 items-start">
+    // 340 px clipped the approach select + unit column (audit V-03)
+    <div className="grid grid-cols-[400px_1fr] gap-3 items-start">
       <div className="flex flex-col gap-3">
         <Section title={t("mesh.fillet")}>
           <FilletEditor value={fillet} onChange={setFillet} />

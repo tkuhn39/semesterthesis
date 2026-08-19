@@ -223,6 +223,7 @@ def build_gear_part(
     fasten_bottom: bool = False,
     fasten_top: bool = False,
     rigid_shell: bool = False,
+    mirror_symmetric: bool = True,  # flank-symmetry flag (audit FEM-07: preview passes it)
 ) -> GearPart:
     """Mesh one gear sector, tag its reference sets, and position it in the assembly.
 
@@ -253,6 +254,10 @@ def build_gear_part(
         refine_flank=refine_flank,
         refine_thickness=refine_thickness,
         fillet=fillet,
+        # same flank-symmetry policy as the preview (audit FEM-07: the deck used to fall
+        # back to the profile's hardcoded True — a latent preview↔deck divergence the
+        # moment per-flank asymmetric micro-geometry lands)
+        mirror_symmetric=mirror_symmetric,
     )
     section = Mesh2D(sector.points, np.asarray(sector.quads, dtype=np.int64))
     z0 = -face_width_mm / 2.0 + axial_offset_mm
@@ -846,6 +851,7 @@ def assemble_centered_pair(
     fasten_cuts: bool,
     fasten_bottom: bool,
     fasten_top: bool,
+    mirror_symmetric: tuple[bool, bool] = (True, True),  # per-gear flank symmetry (FEM-07)
 ) -> AssembledPair:
     """Mesh, position (centered), close the backlash and pair the contact flanks.
 
@@ -884,6 +890,7 @@ def assemble_centered_pair(
         refine_thickness=refine_gear1[2],
         fillet=fillet_gear1,
         rigid_shell=1 in rigid_gears,
+        mirror_symmetric=mirror_symmetric[0],
         **fasten,
     )
     part2 = build_gear_part(
@@ -900,6 +907,7 @@ def assemble_centered_pair(
         refine_thickness=refine_gear2[2],
         fillet=fillet_gear2,
         rigid_shell=2 in rigid_gears,
+        mirror_symmetric=mirror_symmetric[1],
         **fasten,
     )
     closing_rad = 0.0
@@ -977,6 +985,7 @@ def build_implicit_pair_from_stage(
     fasten_cuts: bool = True,
     fasten_bottom: bool = False,
     fasten_top: bool = False,
+    mirror_symmetric: tuple[bool, bool] = (True, True),  # per-gear flank symmetry (FEM-07)
     heading: str = "FE rolling model (implicit, ohne Radkoerper) - generated from GearStage",
 ) -> str:
     """One-call build: a ``GearStage`` → meshed, positioned pair → reference-faithful implicit deck.
@@ -1051,6 +1060,7 @@ def build_implicit_pair_from_stage(
         fasten_cuts=fasten_cuts,
         fasten_bottom=fasten_bottom,
         fasten_top=fasten_top,
+        mirror_symmetric=mirror_symmetric,
     )
     part1, part2 = pair.part1, pair.part2
     a, z, closing_rad, gap, pairs = pair.a, pair.z, pair.closing_rad, pair.gap, pair.pairs
@@ -1143,6 +1153,7 @@ def build_position_series(
     fasten_cuts: bool = True,
     fasten_bottom: bool = False,
     fasten_top: bool = False,
+    mirror_symmetric: tuple[bool, bool] = (True, True),  # per-gear flank symmetry (FEM-07)
 ) -> list[tuple[str, str]]:
     """One independent static INP per Wälzstellung + shared mesh include + manifest + runners.
 
@@ -1190,6 +1201,7 @@ def build_position_series(
         fasten_cuts=fasten_cuts,
         fasten_bottom=fasten_bottom,
         fasten_top=fasten_top,
+        mirror_symmetric=mirror_symmetric,
     )
     if slave_gear in rigid_gears:
         raise ValueError("the contact slave must stay deformable (rigid side is the master)")

@@ -436,7 +436,8 @@ class CapacityFactors(BaseModel):
 
 
 class GearCapacity(BaseModel):
-    label: str
+    # (the former redundant ``label`` echo is gone, audit COV-15 — both consumers build
+    # their headings from ``material`` + ``method`` themselves)
     material: str
     method: str
     flank_stress_mpa: float
@@ -662,7 +663,6 @@ def _run_capacity(
     def gear_result(i: int) -> GearCapacity:
         """Norm dispatch by MATERIAL: steel → ISO 6336, plastic → VDI 2736 (never by role)."""
         mat = materials[i]
-        slot = "Ritzel" if i == 0 else "Rad"
         section = {
             "root_chord_mn": round(roots[i].critical_root_chord_mn, 4),
             "fillet_radius_mn": round(roots[i].root_fillet_radius_mn, 4),
@@ -674,7 +674,6 @@ def _run_capacity(
             assert vdi is not None
             r = vdi[i]
             return GearCapacity(
-                label=f"{slot} (Kunststoff)",
                 material=mat.name,
                 method="VDI 2736:2014",
                 flank_stress_mpa=round(r.flank_stress_mpa, 3),
@@ -700,7 +699,6 @@ def _run_capacity(
         assert iso is not None
         s = iso[i]
         return GearCapacity(
-            label=f"{slot} (Stahl)",
             material=mat.name,
             method="ISO 6336:2019",
             flank_stress_mpa=round(s.flank_stress_mpa, 3),
@@ -823,10 +821,12 @@ def dynamics(req: DynamicsRequest) -> DynamicsResponse:
         load,
         conditions,
     )
+    # locale-neutral token (audit GAP-13: the raw English phrase leaked into the German
+    # UI and report); the frontend/report translate it
     regime = (
-        "sub-critical"
+        "sub_critical"
         if f.resonance_ratio <= 0.85
-        else ("main resonance" if f.resonance_ratio <= 1.15 else "super-critical")
+        else ("main_resonance" if f.resonance_ratio <= 1.15 else "super_critical")
     )
     return DynamicsResponse(
         dynamic_factor=round(f.dynamic_factor, 4),

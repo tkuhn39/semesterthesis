@@ -1209,3 +1209,15 @@ upcoming helical geometry package; the loaddist package and io/rexs remain inten
 unrouted (Step-2 groundwork — recorded in the roadmap, audit COV-10/11). Open: P4
 (clipping/polish LOWs), COV-02 delta-row edge cases, serving uimodel material options
 from the catalog endpoint.
+
+**Amendment (same day, round P4):** the audit's final polish block is done — display
+clipping (card stacking below ~1900 px, wider panes, centred pair values in the report),
+fillet UX (CAO-only parameter gating, response-derived legend, per-gear result resets,
+opt-in CAO ranking, Dong sweep mirror, deck-faithful meshing check), wiring LOWs
+(two-gear ISO 1328 check at d/cos β, D_M inputs, live Meldungen strip, regime i18n
+token, working-a pair header, routed overview cards) and contract hygiene (CAO response
+diagnostics-only, label echo removed, memoized effectiveStage, chamfer-aware CAO cache,
+per-gear flank-symmetry into the deck mesher, root circles + SSOT ε_α in the engagement
+plot). With this, all P1–P4 audit findings are fixed, intentional, or deferred with
+rationale (see the audit banner) — the deferred set is an architecture-cleanup round
+(STR-05/06/07, STR-15, FEM-09, GAP-10 rest), not open defects.

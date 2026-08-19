@@ -980,7 +980,16 @@ def report(req: ReportRequest) -> HTMLResponse:
             "1/min",
         ),
         (d(loc, "Bezugsdrehzahl", "Reference speed ratio"), "N", n(dyn.resonance_ratio), "–"),
-        (d(loc, "Bereich", "Regime"), "", dyn.regime, ""),
+        (
+            d(loc, "Bereich", "Regime"),
+            "",
+            {
+                "sub_critical": d(loc, "unterkritisch", "sub-critical"),
+                "main_resonance": d(loc, "Hauptresonanz", "main resonance"),
+                "super_critical": d(loc, "überkritisch", "super-critical"),
+            }.get(dyn.regime, dyn.regime),
+            "",
+        ),
     ]
 
     gear_heads = (

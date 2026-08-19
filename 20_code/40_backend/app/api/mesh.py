@@ -685,14 +685,13 @@ class FilletCaoRequest(BaseModel):
 
 
 class FilletCaoResponse(BaseModel):
+    """CAO convergence DIAGNOSTICS only (audit COV-15: the former boundary/contour echo
+    duplicated /api/mesh/contour for the same spec and was never consumed)."""
+
     gear: int
-    iterations_run: int
     converged: bool
     sigma_history_mpa: list[float]  # max fillet σ1 per iteration
     uniformity_history: list[float]  # (σ_max − σ_ref)/σ_ref per iteration
-    boundary_xy: list[float]  # optimized fillet polyline (tooth frame, gap → junction)
-    effective_root_diameter_mm: float
-    clearance_mm: float
 
 
 @router.post("/fillet-cao", response_model=FilletCaoResponse)
@@ -706,17 +705,19 @@ def fillet_cao(req: FilletCaoRequest) -> FilletCaoResponse:
         result = strategy.result(profile)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
+    # interference stays enforced even though the contour itself is served by /contour
     clearance = _clearance(stage, profile, mating, strategy)
-    r_min = min(math.hypot(x, y) for x, y in result.points)
+    if clearance < 0.0:
+        raise HTTPException(
+            422,
+            f"optimized fillet interferes with the mating tooth tip "
+            f"(clearance {clearance:.3f} mm) — reduce the fillet parameter",
+        )
     return FilletCaoResponse(
         gear=req.gear,
-        iterations_run=result.iterations_run,
         converged=result.converged,
         sigma_history_mpa=[round(s, 2) for s in result.sigma_history_mpa],
         uniformity_history=[round(u, 4) for u in result.uniformity_history],
-        boundary_xy=[round(float(v), 5) for p in result.points for v in p],
-        effective_root_diameter_mm=round(2.0 * r_min, 4),
-        clearance_mm=round(clearance, 4),
     )
 
 
@@ -807,6 +808,7 @@ def build_deck(req: DeckRequest) -> PlainTextResponse:
         start_at_edge=req.start_at_edge,
         rotation_sense=req.rotation_sense,
         tip_relief=(req.stage.tip_relief(0), req.stage.tip_relief(1)),
+        mirror_symmetric=(req.stage.mirror_symmetric(1), req.stage.mirror_symmetric(2)),
         **_deck_refine(req),
         fillet_gear1=fillet1,
         fillet_gear2=fillet2,
@@ -927,6 +929,7 @@ def build_deck_series(req: DeckRequest) -> Response:
         start_at_edge=req.start_at_edge,
         rotation_sense=req.rotation_sense,
         tip_relief=(req.stage.tip_relief(0), req.stage.tip_relief(1)),
+        mirror_symmetric=(req.stage.mirror_symmetric(1), req.stage.mirror_symmetric(2)),
         **_deck_refine(req),
         fillet_gear1=fillet1,
         fillet_gear2=fillet2,
@@ -1015,6 +1018,7 @@ def pair_assembly(req: DeckRequest) -> PairAssemblyResponse:
             roll_sign=roll_sign,
             rigid_gears=roles["rigid_gears"],
             tip_relief=(req.stage.tip_relief(0), req.stage.tip_relief(1)),
+            mirror_symmetric=(req.stage.mirror_symmetric(1), req.stage.mirror_symmetric(2)),
             **_deck_refine(req),
             fillet_gear1=fillet1,
             fillet_gear2=fillet2,

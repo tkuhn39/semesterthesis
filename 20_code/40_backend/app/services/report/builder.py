@@ -173,6 +173,9 @@ table.attr th{background:#eef2f6;color:var(--navy);text-align:left;font-size:11.
  text-transform:uppercase;letter-spacing:.03em}
 table.attr th,table.attr td{border:1px solid var(--line);padding:3.5px 8px}
 table.attr td.num{font-variant-numeric:tabular-nums;text-align:right}
+/* single PAIR values span both gear columns - centre them so they read as pair
+   values, not as gear-2 values (audit V-08) */
+table.attr td.num[colspan]{text-align:center}
 table.attr td.sym{color:var(--muted);font-family:ui-monospace,monospace;font-size:12px}
 table.attr td.unit{color:var(--muted)}
 .note{background:#fefce8;border:1px solid #fde68a;border-radius:6px;

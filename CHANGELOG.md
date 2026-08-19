@@ -9,6 +9,42 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Fixed (audit round P4 — polish, display + LOW cleanups, 2026-08-18)
+The audit's final block; with it every P1–P4 finding is fixed, declared intentional, or
+explicitly deferred with rationale (banner in the audit file).
+- **Display (V-01/03/05/06/07/08)**: the Tragfähigkeit gear cards stack below ~1900 px
+  (the value columns were clipped/invisible at 1720 px); the Zahnform left pane widened
+  340→400 px (approach select/units clipped); the quick-view min width is 390 px (wheel
+  column was cut); pair values in the HTML report centre across both gear columns
+  (they read as gear-2 values); DE label "(as cut)" → "(wie gefertigt)".
+- **Fillet UX (FIL-03…09, V-04)**: Voith's γ_b/b_f no longer show for CAO (dead inputs);
+  the contour legend derives entirely from the response (raw i18n keys could leak);
+  MeshPanel results reset on gear/stage switch (a pinion mesh was presented as the
+  wheel's); the ranking gained the opt-in "incl. CAO" checkbox; the Dong sweep combos
+  now mirror the backend; the Vernetzung quick check uses the ACTIVE fillets + per-gear
+  densities (it hardcoded standard); the Variation fillet editor shows the
+  manufacturability note + a CAO cost hint.
+- **Wiring LOWs (GAP-09…14)**: the ISO 1328 quick check computes BOTH gears at
+  d = m_n·z/cos β with labelled columns (was wheel-only at the spur d); measuring-ball
+  Ø D_M per gear is a Toleranzen input reaching M_dK/M_dR (was locked to 1.75·m_n);
+  the Meldungen strip is live (geometry notes + request errors via the store); the
+  dynamics regime is a locale token translated in UI and report (raw English leaked
+  into German); the FE pair header shows the WORKING centre distance (reference a was
+  shown in "from x" mode); the Übersicht cards actually navigate to their targets
+  (STR-14 — all three landed on the stage node).
+- **Contract/consistency (COV-14/15/16, STR-08/09, FEM-06/07)**: the engagement plot
+  draws the root circles and takes ε_α from the served contact ratio; the CAO response
+  is diagnostics-only (the contour echo duplicated /contour) and GearCapacity lost its
+  redundant label echo; the overview shows α_n/β/α_wt/ε_β; `effectiveStage` is memoized
+  on its actual inputs (any store change used to hand every stage-keyed effect a fresh
+  object — spurious refetches and Variation step-1 reseeds); the CAO cache fingerprint
+  includes the tip-chamfer parameters; the deck mesher receives the per-gear
+  flank-symmetry flag the preview already used (latent preview↔deck divergence).
+- **Deferred with rationale** (audit banner): STR-05/06 (unreachable schema geometry
+  tab + unconsumed rules engine — architecture cleanup, not polish), STR-07 quick-view
+  fetch cache, STR-15 dead i18n keys, FEM-09 sweep-UI 2D-FE marker, GAP-10 remaining
+  unconsumed diagnostic fields.
+
 ### Added/Fixed (per-gear Flankenmodifikation + audit round P3 visibility, 2026-08-18, ADR-028)
 - **Wheel-side Flankenmodifikation node [41]** (user requirement: each gear edits its
   micro-geometry independently in the FULL editor): its own `correction2` store state,

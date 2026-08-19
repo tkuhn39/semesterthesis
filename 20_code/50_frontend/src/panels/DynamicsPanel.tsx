@@ -153,7 +153,8 @@ export function DynamicsPanel() {
                   <td className="wb-num">{fm.num(res.resonance_ratio, 3)}</td>
                 </AttrRow>
                 <AttrRow label={t("dyn.range")} symbol="" unit="">
-                  <td className="wb-num">{res.regime}</td>
+                  {/* token → localized label (audit GAP-13: raw English leaked into DE) */}
+                  <td className="wb-num">{t(`dyn.regime.${res.regime}`)}</td>
                 </AttrRow>
               </tbody>
             </table>

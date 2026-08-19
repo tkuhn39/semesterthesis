@@ -58,6 +58,10 @@ def _fingerprint(profile: ToothProfile) -> tuple[float, ...]:
         profile.d_a if profile.d_a is not None else -1.0,
         profile.c_aa,
         profile.d_Ca if profile.d_Ca is not None else -1.0,
+        # tip-chamfer edge break (audit FEM-06: it shapes the meshed tip boundary, so
+        # two profiles differing only here must not share a cached CAO result)
+        profile.edge_break[0] if profile.edge_break is not None else -1.0,
+        profile.edge_break[1] if profile.edge_break is not None else -1.0,
     )
 
 

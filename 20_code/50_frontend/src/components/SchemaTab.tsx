@@ -57,21 +57,24 @@ function useActions(): Record<string, { label: string; run: () => Promise<string
     "loaddist.run_meshing": {
       label: t("loaddist.runMeshing"),
       run: async () => {
-        // quick native meshing check (full 2D rendering lands with the mesh viewport)
-        const level = { coarse: 1, medium: 1, fine: 2 }[wb.loaddist.meshing_accuracy] ?? 1;
+        // quick native meshing check — with the ACTIVE fillets and per-gear densities,
+        // so the quoted quad counts/Jacobians describe the mesh the deck will contain
+        // (audit FIL-08/FEM-08: it used to hardcode the standard fillet)
         const g1 = await meshApi.preview({
           stage: wb.stage,
           gear: 1,
-          refine_root: level,
-          refine_flank: level,
-          fillet: { kind: "standard" },
+          refine_root: wb.fem.refine_root,
+          refine_flank: wb.fem.refine_flank,
+          refine_thickness: wb.fem.refine_thickness,
+          fillet: wb.fem.fillet_gear1,
         });
         const g2 = await meshApi.preview({
           stage: wb.stage,
           gear: 2,
-          refine_root: level,
-          refine_flank: level,
-          fillet: { kind: "standard" },
+          refine_root: wb.fem.refine_root_gear2,
+          refine_flank: wb.fem.refine_flank_gear2,
+          refine_thickness: wb.fem.refine_thickness_gear2,
+          fillet: wb.fem.fillet_gear2,
         });
         return (
           `✓ ${t("common.gear")} 1: ${g1.n_quads} Quads (min J = ${g1.min_scaled_jacobian.toFixed(2)}), ` +

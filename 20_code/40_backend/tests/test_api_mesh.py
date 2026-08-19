@@ -140,8 +140,10 @@ def test_fillet_spec_kind_approach_schema() -> None:
     )
     assert res.status_code == 200
     body = res.json()
-    assert body["iterations_run"] <= 2 and len(body["sigma_history_mpa"]) >= 1
-    assert body["clearance_mm"] > 0.0
+    # diagnostics only since 2026-08-18 (audit COV-15): histories + converged; the
+    # contour/clearance echo lives in /api/mesh/contour (interference still 422s here)
+    assert set(body) == {"gear", "converged", "sigma_history_mpa", "uniformity_history"}
+    assert 1 <= len(body["sigma_history_mpa"]) <= 2
     for bad in (
         {"kind": "bezier", "approach": "kassem"},  # wrong family
         {"kind": "trochoid", "approach": "kassem"},  # trochoid takes no approach
