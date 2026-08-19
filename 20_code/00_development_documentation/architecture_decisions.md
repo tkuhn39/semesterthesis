@@ -1261,3 +1261,38 @@ explicitly. Capacity/dynamics were already per-norm helical (ADR-025). Still spu
 by design: tooth-form/contour endpoints, fillet strategies, mesh/deck/FE (future
 package: twisted extrusion after the FE reference reproduction), and the scuffing
 chain (not yet implemented).
+
+## ADR-030: User material library — storage-backed records, session-local working copies
+
+**Date:** 2026-08-19 · **Status:** Accepted
+
+**Context:** The user asked for a definable material DATABASE: pick a material per gear,
+have it applied everywhere, and tune values in the frontend WITHOUT the changes flowing
+back into the database. The built-in catalog (ADR-027: served SSOT + drift guard) had
+exactly two immutable entries, mirrored statically in the frontend; project_rules §17
+routes data persistence through app.database — whose backends are still the documented
+"none" extension point — while app.storage is fully implemented (local + S3-compatible).
+
+**Decision:** (1) Persist user materials via **app.storage**, one JSON object per record
+(`materials/user/<slug>.json`, true name inside the JSON): per-record objects avoid
+read-modify-write races across nodes (§18); the app.database route stays open for a
+future relational model. (2) Built-ins remain immutable references — a user record can
+neither shadow nor delete them (server-side guard, 422). (3) The SERVED catalog is the
+one SSOT: `GET /api/materials/catalog` merges built-ins + library, `/api/ui-schema`
+refreshes the `mat_name` options per request, and the frontend's static mirror shrinks
+to an offline SEED that the provider replaces after mount (drift-guard test re-anchored
+to the seed). (4) Selection semantics: picking a name snaps the Werkstoffart (ADR-026)
+AND copies the library properties into the per-kind editable fields — the session's
+working copy. Nothing ever writes back implicitly; the explicit save path is the
+Werkstoffdatenbank form (which can seed itself from the current session values).
+(5) The capacity/deck request chain is untouched: it already receives explicit property
+values + the kind toggle, so user materials flow through without new norm-dispatch
+paths.
+
+**Consequences:** Materials are definable/reusable across sessions and nodes; selecting
+loads, editing stays local — exactly the requested lifecycle. Recorded limitations:
+the working property fields are per KIND (a steel/steel pair shares one property set —
+per-gear property objects are the known follow-up from ADR-026), and the FE deck's
+Marlow hyperelastic curve remains built-in catalog data (a user plastic runs
+linear-elastic in the deck until measured curves can be attached to library records —
+the `Material.nonlinear_curves` field already models them).

@@ -166,6 +166,14 @@ order): **material database** (definable materials, per-gear selection, session-
 edits), **session save/load** (export/import + sidebar recall); then scuffing /
 architecture cleanup / FE helical as separate packages.
 
+**User material database (2026-08-19, ADR-030):** persistent user-definable materials
+via app.storage (one JSON per record, built-ins immutable), CRUD API + served catalog
+as the one SSOT, per-request `mat_name` schema options, frontend Werkstoffdatenbank
+section (create/edit/delete/apply per gear); selecting a material loads its values into
+the session-local Werkstoff fields — edits never write back. Known follow-ups: per-gear
+property objects for same-kind pairs; measured curves on library records for the FE
+deck. 272 backend tests. Next: **session save/load** (export/import + sidebar recall).
+
 Validation philosophy (ADR-011): implement **strictly per ISO 6336:2019** (the current
 standard; DIN 3990:1987 is the equivalent cross-check, what STplus uses). Two complete
 references: **kst-E** (spur, DIN 3990 via STplus) and the **helical ISO-6336 case**

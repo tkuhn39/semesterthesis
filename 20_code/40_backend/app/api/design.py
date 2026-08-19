@@ -11,13 +11,16 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.api.stage_params import StageParams, kst_e_stage
 from app.io.ste import Pair, gear_stage_from_ste, parse_ste
 from app.services.geometry.gear import GearStage
-from app.services.materials import CATALOG, DEFAULT_BY_KIND
+from app.services.material_store import all_materials, delete_user_material, save_user_material
+from app.services.materials import CATALOG, DEFAULT_BY_KIND, Material, MaterialKind
 
 __all__ = ["StageParams", "TOOL_PRESETS", "router"]
 
@@ -141,12 +144,15 @@ def import_ste(req: SteImportRequest) -> SteImportResponse:
 
 
 # --------------------------------------------------------------------------- #
-# Material catalog (SSOT served, audit F2/P2)                                  #
+# Material catalog (SSOT served, audit F2/P2) + user material library (CRUD)   #
 # --------------------------------------------------------------------------- #
 class CatalogMaterialOut(BaseModel):
     """One servable catalog material — THE source the Werkstoff-tab name options and
     the frontend's name→kind mirror must follow (the catalog used to be maintained in
-    three places that could drift silently)."""
+    three places that could drift silently). Since the user material library exists,
+    ``builtin`` separates the immutable built-ins from user records; the property set
+    is complete enough for the frontend to LOAD a selection into its editable
+    Werkstoff fields (session-local working copy, never written back)."""
 
     name: str
     kind: str  # "steel" | "plastic" — drives the norm dispatch (ADR-026)
@@ -155,22 +161,83 @@ class CatalogMaterialOut(BaseModel):
     density_kg_dm3: float | None
     sigma_hlim_mpa: float | None
     sigma_flim_mpa: float | None
+    yield_strength_mpa: float | None
+    allowable_temperature_c: float | None
     is_default_for_kind: bool
+    builtin: bool
+
+
+def _material_out(mat: Material, *, builtin: bool) -> CatalogMaterialOut:
+    return CatalogMaterialOut(
+        name=mat.name,
+        kind=mat.kind.value,
+        elastic_modulus_mpa=mat.elastic_modulus_mpa,
+        poisson_ratio=mat.poisson_ratio,
+        density_kg_dm3=(mat.density_kg_m3 / 1000.0 if mat.density_kg_m3 else None),
+        sigma_hlim_mpa=mat.sigma_hlim_mpa,
+        sigma_flim_mpa=mat.sigma_flim_mpa,
+        yield_strength_mpa=mat.yield_strength_mpa,
+        allowable_temperature_c=mat.allowable_temperature_c,
+        is_default_for_kind=builtin and DEFAULT_BY_KIND[mat.kind] == mat.name,
+        builtin=builtin,
+    )
 
 
 @router.get("/materials/catalog", response_model=list[CatalogMaterialOut])
 def materials_catalog() -> list[CatalogMaterialOut]:
-    """THE material catalog: names, kinds and core properties (single source)."""
-    return [
-        CatalogMaterialOut(
-            name=mat.name,
-            kind=mat.kind.value,
-            elastic_modulus_mpa=mat.elastic_modulus_mpa,
-            poisson_ratio=mat.poisson_ratio,
-            density_kg_dm3=(mat.density_kg_m3 / 1000.0 if mat.density_kg_m3 else None),
-            sigma_hlim_mpa=mat.sigma_hlim_mpa,
-            sigma_flim_mpa=mat.sigma_flim_mpa,
-            is_default_for_kind=DEFAULT_BY_KIND[mat.kind] == name,
+    """THE material catalog: built-ins first, then the user library (single source)."""
+    return [_material_out(mat, builtin=mat.name in CATALOG) for mat in all_materials().values()]
+
+
+class UserMaterialIn(BaseModel):
+    """A user-defined material record (the library's reference values).
+
+    The flat shape mirrors the Werkstoff-tab fields; strength values are optional
+    (ADR-013 graceful degradation: absent limits only block the sub-results that
+    need them). Density in kg/dm³ like the tab.
+    """
+
+    name: str = Field(min_length=1, max_length=80)
+    kind: Literal["steel", "plastic"]
+    elastic_modulus_mpa: float = Field(gt=0.0)
+    poisson_ratio: float = Field(gt=0.0, lt=0.5)
+    density_kg_dm3: float | None = Field(None, gt=0.0)
+    sigma_hlim_mpa: float | None = Field(None, ge=0.0)
+    sigma_flim_mpa: float | None = Field(None, ge=0.0)
+    yield_strength_mpa: float | None = Field(None, ge=0.0)
+    allowable_temperature_c: float | None = None
+
+    def to_material(self) -> Material:
+        return Material(
+            name=self.name.strip(),
+            kind=MaterialKind(self.kind),
+            elastic_modulus_mpa=self.elastic_modulus_mpa,
+            poisson_ratio=self.poisson_ratio,
+            density_kg_m3=(self.density_kg_dm3 * 1000.0 if self.density_kg_dm3 else None),
+            sigma_hlim_mpa=self.sigma_hlim_mpa,
+            sigma_flim_mpa=self.sigma_flim_mpa,
+            yield_strength_mpa=self.yield_strength_mpa,
+            allowable_temperature_c=self.allowable_temperature_c,
+            source="user",
         )
-        for name, mat in CATALOG.items()
-    ]
+
+
+@router.put("/materials/user", response_model=CatalogMaterialOut)
+def save_material(req: UserMaterialIn) -> CatalogMaterialOut:
+    """Create or update a user material (upsert by name; built-ins are immutable)."""
+    try:
+        saved = save_user_material(req.to_material())
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return _material_out(saved, builtin=False)
+
+
+@router.delete("/materials/user/{name}", status_code=204)
+def delete_material(name: str) -> None:
+    """Delete a user material; 404 if unknown, 422 for a built-in name."""
+    try:
+        deleted = delete_user_material(name)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"user material not found: {name}")

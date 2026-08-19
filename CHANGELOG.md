@@ -9,6 +9,32 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (user material database, 2026-08-19, ADR-030)
+User requirement: "eine verwendbare Datenbank an Materialien … für das jeweilige
+Zahnrad wählen … im Frontend Anpassungen machen, ohne dass diese zurück in die
+Materialdatenbank geschrieben werden".
+- **User material library** (`app/services/material_store.py`): persistent, definable
+  materials next to the built-in catalog — one JSON object per record under
+  `materials/user/<slug>.json` via app.storage (works on local AND S3-compatible
+  backends; per-record objects keep concurrent nodes race-free). Built-in names are
+  immutable (neither overwritable nor deletable); slug collisions are rejected.
+- **API**: `GET /api/materials/catalog` now serves built-ins + user records (with
+  `builtin` flag and the full property set incl. R_p0.2/ϑ_zul);
+  `PUT /api/materials/user` upserts, `DELETE /api/materials/user/{name}` removes
+  (404 unknown, 422 built-in). `/api/ui-schema` refreshes the `mat_name` options per
+  request from the live library.
+- **Frontend**: the served catalog replaces the static name→kind mirror
+  (`CATALOG_SEED` remains as the offline seed, drift-guard test re-anchored);
+  selecting a material for a gear snaps the kind (ADR-026 coupling) AND **loads the
+  library values into the editable Werkstoff fields** — edits there stay
+  session-local, never written back. New Werkstoffdatenbank section in the Werkstoff
+  tab: record list with kind badges and per-gear apply buttons, create/edit form
+  (prefillable from the current session values), delete with automatic re-selection
+  of the kind default; saving reloads the schema so the dropdown follows the library.
+- Known limitation (recorded): the property fields are per KIND, so a same-kind pair
+  (steel/steel) shares one working property set; and the FE deck's Marlow curve stays
+  the built-in catalog data (user plastics run linear-elastic in the deck).
+
 ### Added (helical geometry report — analytics only, 2026-08-19, ADR-029)
 User-approved package: the Workbench Geometrie tab and the HTML report now compute
 helical stages ("nur die richtige Geometrieanzeige … noch nicht in Richtung FEM").

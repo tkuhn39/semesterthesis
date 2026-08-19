@@ -30,6 +30,7 @@ import { MeshPanel } from "@/panels/MeshPanel";
 import { PairPanel } from "@/panels/PairPanel";
 import { FemResultsPanel } from "@/panels/FemResultsPanel";
 import { GlossaryPanel } from "@/panels/GlossaryPanel";
+import { MaterialDbPanel } from "@/panels/MaterialDbPanel";
 
 type NodeId =
   | "overview"
@@ -283,7 +284,34 @@ function Shell() {
             ]
           : [{ id: "capacity", title: locale === "de" ? "Tragfähigkeit" : "Load capacity", render: () => <CapacityPanel /> }]),
         ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "vdi2736", locale, gearHeads)) : []),
-        ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "material", locale, gearHeads)) : []),
+        // Werkstoff = schema fields + the material LIBRARY below (user requirement
+        // 2026-08-19); saving/deleting a record reloads the schema so the mat_name
+        // dropdown follows the library
+        ...(() => {
+          const matTab = s?.components
+            .find((c) => c.id === "cylindrical_mesh")
+            ?.tabs.find((x) => x.id === "material");
+          if (!s || !matTab) return [];
+          return [
+            {
+              id: "material",
+              title: locale === "de" ? matTab.title_de : matTab.title_en,
+              visibleIfMethod: matTab.visible_if_method,
+              render: () => (
+                <div className="flex flex-col gap-3">
+                  <SchemaTab schema={s} tab={matTab} pairHeaders={gearHeads} />
+                  <MaterialDbPanel
+                    onLibraryChange={() =>
+                      void fetchUiSchema()
+                        .then(setSchema)
+                        .catch(() => undefined)
+                    }
+                  />
+                </div>
+              ),
+            } satisfies TabSpec,
+          ];
+        })(),
         ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "lubricant", locale, gearHeads)) : []),
         ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "loaddist_fem", locale, gearHeads)) : []),
         ...(s ? maybe(schemaTab(s, "cylindrical_mesh", "transient_fem", locale, gearHeads)) : []),

@@ -7,9 +7,11 @@
 // path ("stage.normal_module_mm", "calc.fva_892_transient_fem", "fem.fasten_bore", …), so
 // backend schema and frontend state can never drift apart silently.
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
+  api,
   KST_E_STAGE,
+  type CatalogMaterial,
   type FilletSpec,
   type RootMaterialGroup,
   type StageParams,
@@ -333,18 +335,77 @@ const FEM_DEFAULTS: FemState = {
   rigid_shell_gear2: false,
 };
 
-// Mirror of the backend material catalog (app/services/materials.py CATALOG +
-// DEFAULT_BY_KIND): name → kind and the per-kind default name. MAINTENANCE: extend this
-// together with the backend CATALOG and the Werkstoff-tab mat_name options (a served
-// catalog endpoint becomes the SSOT once the material library grows).
-export const CATALOG_MATERIAL_KIND: Record<string, "steel" | "plastic"> = {
-  "20MnCr5": "steel",
-  Stanyl_TW200F6_cond_80: "plastic",
-};
-const CATALOG_DEFAULT_NAME: Record<"steel" | "plastic", string> = {
-  steel: "20MnCr5",
-  plastic: "Stanyl_TW200F6_cond_80",
-};
+// Seed of the served material catalog (GET /api/materials/catalog is the SSOT — the
+// provider replaces this list right after mount and after material-library edits).
+// The seed mirrors the backend built-ins so the name↔kind coupling works offline;
+// the drift-guard test (backend tests/test_materials.py) pins this parity.
+export const CATALOG_SEED: CatalogMaterial[] = [
+  {
+    name: "20MnCr5",
+    kind: "steel",
+    elastic_modulus_mpa: 210000,
+    poisson_ratio: 0.3,
+    density_kg_dm3: 7.85,
+    sigma_hlim_mpa: 1500,
+    sigma_flim_mpa: 430,
+    yield_strength_mpa: null,
+    allowable_temperature_c: null,
+    is_default_for_kind: true,
+    builtin: true,
+  },
+  {
+    name: "Stanyl_TW200F6_cond_80",
+    kind: "plastic",
+    elastic_modulus_mpa: 4156,
+    poisson_ratio: 0.34,
+    density_kg_dm3: 1.41,
+    sigma_hlim_mpa: 60,
+    sigma_flim_mpa: 35,
+    yield_strength_mpa: 65,
+    allowable_temperature_c: 100,
+    is_default_for_kind: true,
+    builtin: true,
+  },
+];
+
+// Selecting a catalog material LOADS its properties into the kind's editable fields —
+// the session-local working copy the user may tune without writing back (user
+// requirement 2026-08-19: library values stay reference values). Null properties keep
+// the current field (graceful for partly specified user materials).
+function materialFieldPatch(
+  entry: CatalogMaterial,
+  current: MaterialsState,
+): Partial<MaterialsState> {
+  if (entry.kind === "steel") {
+    return {
+      steel_modulus_mpa: entry.elastic_modulus_mpa,
+      steel_poisson: entry.poisson_ratio,
+      steel_sigma_hlim_mpa: entry.sigma_hlim_mpa ?? current.steel_sigma_hlim_mpa,
+      steel_sigma_flim_mpa: entry.sigma_flim_mpa ?? current.steel_sigma_flim_mpa,
+      steel_density_kg_dm3: entry.density_kg_dm3 ?? current.steel_density_kg_dm3,
+    };
+  }
+  return {
+    plastic_modulus_mpa: entry.elastic_modulus_mpa,
+    plastic_poisson: entry.poisson_ratio,
+    plastic_sigma_hlim_mpa: entry.sigma_hlim_mpa ?? current.plastic_sigma_hlim_mpa,
+    plastic_sigma_flim_mpa: entry.sigma_flim_mpa ?? current.plastic_sigma_flim_mpa,
+    plastic_density_kg_dm3: entry.density_kg_dm3 ?? current.plastic_density_kg_dm3,
+    plastic_yield_strength_mpa: entry.yield_strength_mpa ?? current.plastic_yield_strength_mpa,
+    plastic_allowable_temperature_c:
+      entry.allowable_temperature_c ?? current.plastic_allowable_temperature_c,
+  };
+}
+
+function catalogDefaultFor(
+  catalog: CatalogMaterial[],
+  kind: "steel" | "plastic",
+): CatalogMaterial | undefined {
+  return (
+    catalog.find((m) => m.kind === kind && m.is_default_for_kind) ??
+    catalog.find((m) => m.kind === kind)
+  );
+}
 
 // kst-E defaults (materials catalog names; property values = the FVA Werkstoff sheet)
 const MATERIALS_DEFAULTS: MaterialsState = {
@@ -618,6 +679,9 @@ interface WorkbenchState {
   // Meldungen strip content (audit GAP-12: the footer was static "Bereit." even while
   // the active stage carried warnings) — panels push their notes/errors here
   messages: string[];
+  // the served material catalog (built-ins + user library) — seeded with the built-in
+  // mirror, replaced from GET /api/materials/catalog on mount and after library edits
+  materialCatalog: CatalogMaterial[];
 }
 
 // Derived (computed) paths — the norm-active couplings the schema rows read as grey
@@ -745,6 +809,8 @@ interface WorkbenchStore extends WorkbenchState {
   // micro-geometry) don't get baked back in as raw values (audit STR-01)
   rawStage: StageParams;
   setMessages: (msgs: string[]) => void;
+  // refresh the served material catalog (after library edits in the Werkstoff tab)
+  refreshMaterialCatalog: () => Promise<void>;
   // generic binding access for schema-rendered rows (path = "<namespace>.<field>")
   get: (path: string) => unknown;
   set: (path: string, value: unknown) => void;
@@ -825,6 +891,7 @@ const DEFAULT_STATE: WorkbenchState = {
   model: MODEL_DEFAULTS,
   label: "kst-E",
   messages: [],
+  materialCatalog: CATALOG_SEED,
 };
 
 const WbCtx = createContext<WorkbenchStore | null>(null);
@@ -912,37 +979,44 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         // Werkstoffname ↔ Werkstoffart coupling (user requirement 2026-08-18): the KIND
         // is THE norm dispatch (steel → ISO 6336, plastic → VDI 2736) and must never
         // contradict the selected catalog material. Picking a name snaps the kind to the
-        // material's kind; switching the kind snaps a mismatching name to the kind's
-        // catalog default.
+        // material's kind AND loads the library properties into the kind's editable
+        // fields (session-local working copy, never written back — user requirement
+        // 2026-08-19); switching the kind snaps a mismatching name to the kind's
+        // catalog default. The lookup runs against the SERVED catalog (built-ins +
+        // user library).
         if (ns === "materials") {
           if (field === "gear1_name" || field === "gear2_name") {
             const kindField = field === "gear1_name" ? "gear1_kind" : "gear2_kind";
-            const kind = CATALOG_MATERIAL_KIND[value as string];
-            // REJECT names outside the catalog mirror (audit F2): accepting one would
+            const entry = prev.materialCatalog.find((m) => m.name === value);
+            // REJECT names outside the served catalog (audit F2): accepting one would
             // leave the kind toggle dangling next to a name of the other kind — the
             // one representable state where Werkstoff and Norm-Zweig could disagree
-            if (!kind) return prev;
+            if (!entry) return prev;
             return {
               ...prev,
               materials: {
                 ...prev.materials,
+                ...materialFieldPatch(entry, prev.materials),
                 [field]: value,
-                [kindField]: kind,
+                [kindField]: entry.kind,
               },
             };
           }
           if (field === "gear1_kind" || field === "gear2_kind") {
             const nameField = field === "gear1_kind" ? "gear1_name" : "gear2_name";
             const name = prev.materials[nameField];
-            const matches = CATALOG_MATERIAL_KIND[name] === value;
+            const current = prev.materialCatalog.find((m) => m.name === name);
+            if (current && current.kind === value) {
+              return { ...prev, materials: { ...prev.materials, [field]: value } };
+            }
+            const fallback = catalogDefaultFor(prev.materialCatalog, value as "steel" | "plastic");
             return {
               ...prev,
               materials: {
                 ...prev.materials,
+                ...(fallback ? materialFieldPatch(fallback, prev.materials) : {}),
                 [field]: value,
-                ...(matches
-                  ? {}
-                  : { [nameField]: CATALOG_DEFAULT_NAME[value as "steel" | "plastic"] }),
+                ...(fallback ? { [nameField]: fallback.name } : {}),
               },
             };
           }
@@ -1003,10 +1077,23 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         ),
       setCalc: (id, on) => setState((p) => ({ ...p, calc: { ...p.calc, [id]: on } })),
       setFem: (patch) => setState((p) => ({ ...p, fem: { ...p.fem, ...patch } })),
+      refreshMaterialCatalog: async () => {
+        const list = await api.materialsCatalog();
+        setState((p) => ({ ...p, materialCatalog: list }));
+      },
       get,
       set,
     };
   }, [state, effStage]);
+
+  // the served catalog replaces the built-in seed once the backend answers (SSOT;
+  // library edits refresh via refreshMaterialCatalog)
+  useEffect(() => {
+    api
+      .materialsCatalog()
+      .then((list) => setState((p) => ({ ...p, materialCatalog: list })))
+      .catch(() => undefined); // offline: the seed keeps the coupling working
+  }, []);
 
   return <WbCtx.Provider value={store}>{children}</WbCtx.Provider>;
 }

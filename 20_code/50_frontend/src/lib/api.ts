@@ -342,6 +342,47 @@ export interface ToothProfileResponse {
   line_of_action: LineOfAction | null;
 }
 
+// ---- Material catalog + user library (design.py, SSOT served) ----
+export interface CatalogMaterial {
+  name: string;
+  kind: "steel" | "plastic";
+  elastic_modulus_mpa: number;
+  poisson_ratio: number;
+  density_kg_dm3: number | null;
+  sigma_hlim_mpa: number | null;
+  sigma_flim_mpa: number | null;
+  yield_strength_mpa: number | null;
+  allowable_temperature_c: number | null;
+  is_default_for_kind: boolean;
+  builtin: boolean;
+}
+export interface UserMaterialIn {
+  name: string;
+  kind: "steel" | "plastic";
+  elastic_modulus_mpa: number;
+  poisson_ratio: number;
+  density_kg_dm3?: number | null;
+  sigma_hlim_mpa?: number | null;
+  sigma_flim_mpa?: number | null;
+  yield_strength_mpa?: number | null;
+  allowable_temperature_c?: number | null;
+}
+
+async function del(path: string): Promise<void> {
+  const res = await fetch(`${BASE}${path}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}: ${await res.text()}`);
+}
+
+async function put<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}: ${await res.text()}`);
+  return res.json() as Promise<T>;
+}
+
 export const api = {
   health: () => get<{ status: string; version: string }>("/api/health"),
   example: () => get<ExampleResponse>("/api/example/kst-e"),
@@ -352,6 +393,10 @@ export const api = {
   dynamics: (req: DynamicsRequest) => post<DynamicsResponse>("/api/dynamics", req),
   variation: (req: VariationRequest) => post<VariationResponse>("/api/variation", req),
   toothProfile: (stage: StageParams) => post<ToothProfileResponse>("/api/tooth-profile", stage),
+  materialsCatalog: () => get<CatalogMaterial[]>("/api/materials/catalog"),
+  saveMaterial: (mat: UserMaterialIn) => put<CatalogMaterial>("/api/materials/user", mat),
+  deleteMaterial: (name: string) =>
+    del(`/api/materials/user/${encodeURIComponent(name)}`),
 };
 
 // ---- Stage definition (design.py — kst-E example or free parameters, M6) ----
