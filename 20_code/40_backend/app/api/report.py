@@ -462,7 +462,9 @@ def report(req: ReportRequest) -> HTMLResponse:
     stage = stage_params.stage()
     geo = geometry(stage_params)
     cap = capacity(req.capacity)
-    profile = tooth_profile(stage_params)
+    # the 2-D transverse mesh view is spur-only (NRM-02) — a helical report renders
+    # every table (the SSOT geometry service is helical-capable) but skips the SVG
+    profile = None if abs(stage.helix_angle_deg) > 1e-9 else tooth_profile(stage_params)
 
     # kinematics from the ONE powerflow torque (same chain as the store DERIVED paths)
     z1, z2 = stage.teeth
@@ -1001,7 +1003,15 @@ def report(req: ReportRequest) -> HTMLResponse:
         (gear_heads[1], cap.wheel.material, cap.wheel.method, _norm_rows(cap.wheel, loc)),
     ]
 
-    mesh_svg, mesh_script, loa_footer = _mesh_svg(profile, loc)
+    if profile is not None:
+        mesh_svg, mesh_script, loa_footer = _mesh_svg(profile, loc)
+    else:
+        mesh_svg, mesh_script = "", ""
+        loa_footer = d(
+            loc,
+            "2-D-Eingriffsansicht nur für Geradverzahnung (β = 0) verfügbar.",
+            "2-D mesh view is available for spur gears (β = 0) only.",
+        )
 
     variation_summary = variation_head = variation_rows = variation_warnings = pc_svg = None
     if req.variation is not None and req.variation.points:

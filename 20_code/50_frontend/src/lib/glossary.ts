@@ -116,8 +116,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     norms: ["DIN ISO 21771:2014"],
     related: ["m_t", "ε_β", "b"],
     description: {
-      de: "Neigung der Flankenlinie am Teilzylinder; 0° = Geradverzahnung (aktueller Scope). Schrägverzahnung erhöht die Gesamtüberdeckung (leiserer Lauf), erzeugt aber Axialkräfte.",
-      en: "Inclination of the tooth trace on the reference cylinder; 0° = spur gearing (current scope). Helical teeth raise the total contact ratio (quieter) but create axial forces.",
+      de: "Neigung der Flankenlinie am Teilzylinder; 0° = Geradverzahnung. Schrägverzahnung erhöht die Gesamtüberdeckung (leiserer Lauf), erzeugt aber Axialkräfte. Geometrie/Prüfmaße/Bericht rechnen schräg (DIN 21773); die 2-D-Kontur- und FE-Kette bleibt geradverzahnt.",
+      en: "Inclination of the tooth trace on the reference cylinder; 0° = spur gearing. Helical teeth raise the total contact ratio (quieter) but create axial forces. Geometry/inspection/report support helical (DIN 21773); the 2-D contour and FE chain stays spur-only.",
     },
   },
   {

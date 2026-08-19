@@ -327,8 +327,9 @@ export function GeometryPanel() {
       ]);
       setRes(geo);
       setRep(full);
-      // geometry validity notes reach the Meldungen strip (audit GAP-12)
-      wb.setMessages(geo.notes);
+      // geometry validity notes reach the Meldungen strip (audit GAP-12); the SSOT
+      // report adds its own (e.g. the DIN 21773 b_Fmin span-measurability warning)
+      wb.setMessages([...geo.notes, ...full.notes.filter((n) => !geo.notes.includes(n))]);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setErr(msg);

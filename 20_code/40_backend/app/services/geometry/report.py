@@ -12,8 +12,14 @@
        (deepest contour radius; Frühe's root diameter is a RESULT of its fit) — reported
        next to the nominal tool values so tabs/report can mark norm- vs contour-based.
 
-Spur-plane scope: the inspection block (§5–§14) is implemented for spur gears (β = 0, the
-project scope); helical extensions carry β_b terms per the cited clauses when needed.
+Spur AND helical: every block carries its DIN 21773 helical form — chordal thicknesses
+per Eqs. (1)–(8) (normal-section chord with β_y), span count per Eqs. (10)/(12)/(13)
+(base-tangent lengths ÷ cos β_b), W_k per Eq. (14) (transverse inv α_t — shared
+:func:`span_over_k_mm`), ball measures per Eqs. (30)–(36) (z·m_n·cos α_n = d_b·cos β_b),
+roller measures per §11 (helical odd z: 2·M_rK), backlash per ISO 21771 Eqs. (102)/(103)
+and the W_k measurability limit b_Fmin per Eqs. (15)/(16). The 2-D contour chain
+(ToothProfile, fillet strategies, FE) stays spur-only — the report replaces its
+contributions with the closed transverse-plane forms, so no profile is constructed here.
 """
 
 from __future__ import annotations
@@ -24,7 +30,6 @@ from dataclasses import dataclass
 from app.io.ste import Pair
 from app.services.geometry.gear import GearStage, line_of_action_points, span_over_k_mm
 from app.services.geometry.generation import involute
-from app.services.geometry.tooth_form import ToothProfile
 
 __all__ = ["GearReport", "PairReport", "GeometryReport", "compute_geometry_report"]
 
@@ -67,20 +72,20 @@ class GearReport:
     tip_clearance_mm: float | None  # c (Istwert, vs the MATING root circle)
     tip_path_of_contact_mm: float | None  # g_a (Kopfeingriffsstrecke, own tip → C)
     tooth_thickness_transverse_mm: float  # s_t (nominal, x-based)
-    tooth_thickness_normal_mm: float  # s_n
+    tooth_thickness_normal_mm: float  # s_n = s_t·cos β
     space_width_normal_mm: float  # e_n = p_n − s_n
-    tip_tooth_thickness_mm: float | None  # s_a at d_Na (as cut, x_E-based)
+    tip_tooth_thickness_mm: float | None  # s_a at d_Na (as cut, x_E-based; transverse arc)
     rest_tip_thickness_mm: float | None  # after the edge break (generation)
-    chordal_thickness_mm: float  # s̄_cn at d_y = d_a − 2 m_n (DIN 21773 §5)
+    chordal_thickness_mm: float  # s̄_cn at d_y = d_a − 2 m_n (DIN 21773 §5, normal section)
     chordal_height_mm: float  # h̄_c over the chord to d_a (DIN 21773 Eq. 5)
-    span_teeth: int | None  # measuring tooth count k (auto per DIN 21773 §7.2)
+    span_teeth: int | None  # measuring tooth count k (auto per DIN 21773 §7.2, Eq. 10)
     span_teeth_min: int | None
     span_teeth_max: int | None
     span_measurement_mm: float | None  # W_k nominal (DIN 21773 Eq. 14)
-    span_contact_diameter_mm: float | None  # d_M (DIN 21773 Eq. 17)
+    span_contact_diameter_mm: float | None  # d_M (DIN 21773 Eq. 17; helical: ·cos β_b)
     ball_diameter_mm: float | None  # D_M used
     two_ball_measure_mm: float | None  # M_dK (DIN 21773 Eq. 35/36)
-    two_roller_measure_mm: float | None  # M_dR (Eq. 37; spur: = M_dK)
+    two_roller_measure_mm: float | None  # M_dR (§11; helical odd z: 2·M_rK, else = M_dK)
     ball_contact_diameter_mm: float | None  # d_M of ball contact (Eq. 33/34)
     thickness_allowance_upper_mm: float | None  # E_sns (from A_We / DIN 3967)
     thickness_allowance_lower_mm: float | None  # E_sni
@@ -92,7 +97,7 @@ class GearReport:
     sliding_factor_tip: float | None  # K_ga (ISO 21771 Eq. 113)
     specific_sliding_tip: float | None  # ζ_a (ISO 21771 §5.6.3, at own tip)
     specific_sliding_root: float | None  # ζ_f (at own root = mating tip point)
-    undercut_min_shift: float | None  # x_E,min (ISO 21771 §7.7)
+    undercut_min_shift: float | None  # x_E,min (ISO 21771 §7.7 / DIN 3960 eq. 3.6.06)
     has_undercut: bool | None
     # tool reference profile (as used for generation)
     tool_module_mm: float
@@ -128,10 +133,10 @@ class PairReport:
     common_face_width_mm: float | None
     common_tooth_height_mm: float | None  # h_w (gemeinsame Zahnhöhe)
     common_height_factor: float | None  # h_* = h_w/m_n
-    backlash_circumferential_mm: float | None  # j_t at the working circle (ISO 21771 §5.5.2)
+    backlash_circumferential_mm: float | None  # j_wt at the working circle (ISO 21771 Eq. 102)
     backlash_normal_mm: float | None  # j_bn (Eingriffsflankenspiel)
-    backlash_delta_upper_mm: tuple[float, float] | None  # (Δj_t, Δj_n) for +A_a
-    backlash_delta_lower_mm: tuple[float, float] | None  # (Δj_t, Δj_n) for −A_a
+    backlash_delta_upper_mm: tuple[float, float] | None  # (Δj_wt, Δj_bn) for +A_a
+    backlash_delta_lower_mm: tuple[float, float] | None  # (Δj_wt, Δj_bn) for −A_a
     center_distance_allowance_mm: float | None  # A_a (DIN 3964, symmetric js field)
 
 
@@ -149,47 +154,65 @@ def _auto_span_teeth(
     mn: float,
     alpha_n: float,
     alpha_t: float,
+    d: float,
     d_b: float,
     d_ff: float,
     d_fa: float,
+    cos_bb: float,
 ) -> tuple[int | None, int | None, int | None]:
-    """k_min/k_max per DIN 21773 Eqs. (12)/(13) + auto k with contact nearest the V-circle."""
+    """k_min/k_max per DIN 21773 Eqs. (12)/(13) + auto k per Eq. (10).
+
+    All base-tangent-plane lengths are the transverse tangent length ÷ cos β_b; the
+    auto choice puts the contact at the V-circle d_v = d + 2x·m_n. Eq. (10) — not
+    Eq. (9) — reproduces the kst-E reference choice (Eq. (9)'s "+1" rounds half a
+    pitch higher than Eq. (10)'s equivalent bracket by construction).
+    """
     p_bn = math.pi * mn * math.cos(alpha_n)
     s_bn = mn * math.cos(alpha_n) * (math.pi / 2.0 + z * involute(alpha_t)) + 2.0 * x * mn * (
         math.sin(alpha_n)
     )
     if d_ff <= d_b or d_fa <= d_b:
         return None, None, None
-    k_min = math.floor((math.sqrt(d_ff**2 - d_b**2) - s_bn) / p_bn + 1.5)
-    k_max = math.floor((math.sqrt(d_fa**2 - d_b**2) - s_bn) / p_bn + 0.5)
+    k_min = math.floor((math.sqrt(d_ff**2 - d_b**2) / cos_bb - s_bn) / p_bn + 1.5)
+    k_max = math.floor((math.sqrt(d_fa**2 - d_b**2) / cos_bb - s_bn) / p_bn + 0.5)
     if k_max < k_min:
         return None, k_min, k_max
-    # auto k per the classic rule (DIN 21773 Eq. 9/11 approximation): contact near the
-    # V-circle, k = INT(z·α_v/π + 0.5) with α_v the profile angle at d_v = d + 2x·m_n
-    d_v = z * mn + 2.0 * x * mn  # V-circle (spur)
-    alpha_v = math.acos(min(1.0, d_b / d_v))
-    k = int(z * alpha_v / math.pi + 0.5)
+    d_v = d + 2.0 * x * mn
+    t_v = math.sqrt(max(d_v**2 - d_b**2, 0.0))
+    k = math.floor((t_v / cos_bb - s_bn) / p_bn + 1.0)
     return min(max(k, k_min, 1), k_max), k_min, k_max
 
 
 def _ball_measure(
-    z: int, x: float, mn: float, alpha_n: float, alpha_t: float, d_b: float, d_m_ball: float
-) -> tuple[float, float]:
-    """(M_dK, ball contact diameter) per DIN 21773 §8/§10 (spur external).
+    z: int,
+    x: float,
+    mn: float,
+    alpha_n: float,
+    alpha_t: float,
+    d_b: float,
+    d_m_ball: float,
+    cos_bb: float,
+) -> tuple[float, float, float]:
+    """(M_dK, ball contact diameter, ball-centre circle d_K) per DIN 21773 §8/§10.
 
-    inv α_Kt = D_M/d_b − π/(2z) + 2x·tan α_n/z + inv α_t (Eq. 30 with the gap half-angle
-    of the x-shifted tooth; verified against kst-E M_dK 53.846/55.064).
+    inv α_Kt = D_M/(d_b·cos β_b) − π/(2z) + 2x·tan α_n/z + inv α_t — Eq. (30) with
+    z·m_n·cos α_n = d_b·cos β_b; the transverse gap half-angle of the x-shifted tooth
+    keeps the spur form π/(2z) − 2x·tan α_n/z unchanged for helical gears (ψ_t uses
+    tan α_t·cos β = tan α_n). Verified against kst-E M_dK 53.846/55.064.
     """
     inv_akt = (
-        d_m_ball / d_b - math.pi / (2.0 * z) + 2.0 * x * math.tan(alpha_n) / z + involute(alpha_t)
+        d_m_ball / (d_b * cos_bb)
+        - math.pi / (2.0 * z)
+        + 2.0 * x * math.tan(alpha_n) / z
+        + involute(alpha_t)
     )
     alpha_kt = _inv_inverse(inv_akt)
     d_k = d_b / math.cos(alpha_kt)  # Eq. (31)
     # even z: Eq. (35); odd z: the two gaps are half a pitch out of line, Eq. (36)
     m_dk = d_k + d_m_ball if z % 2 == 0 else d_k * math.cos(math.pi / (2.0 * z)) + d_m_ball
-    tan_amt = math.tan(alpha_kt) - d_m_ball / d_b  # Eq. (34), β_b = 0
+    tan_amt = math.tan(alpha_kt) - d_m_ball / d_b * cos_bb  # Eq. (34)
     d_contact = d_b / math.cos(math.atan(tan_amt))  # Eq. (33)
-    return m_dk, d_contact
+    return m_dk, d_contact, d_k
 
 
 def compute_geometry_report(
@@ -201,7 +224,7 @@ def compute_geometry_report(
     center_distance_allowance_mm: float | None = None,
     fillet_contour_min_radius_mm: Pair[float] | None = None,
 ) -> GeometryReport:
-    """The SSOT geometry report for one stage.
+    """The SSOT geometry report for one stage (spur or helical).
 
     ``ball_diameter_mm``: measuring ball/roller D_M per gear (default 1.75·m_n).
     ``span_allowance_upper/lower_mm``: A_We/A_Wi per gear (kst-E input route; DIN 3967
@@ -209,28 +232,32 @@ def compute_geometry_report(
     ``center_distance_allowance_mm``: symmetric A_a (DIN 3964 js field, e.g. 0.015).
     ``fillet_contour_min_radius_mm``: deepest contour radius per gear with the selected
     root-fillet strategy (from the contour pipeline) — reported as the effective root.
+    The contour pipeline is spur-only, so helical stages report the tool values only.
     """
-    # Guard (audit NRM-01): several report blocks (spans, chordal thicknesses, ball
-    # measurements, contact circles) are implemented for spur gears only — a helical
-    # stage would get plausible-looking WRONG numbers, so refuse instead.
-    if abs(stage.helix_angle_deg) > 1e-9:
-        raise ValueError(
-            "geometry report supports spur gears only for now "
-            f"(helix angle β = {stage.helix_angle_deg:g}°)"
-        )
     notes = stage.check_validity()
     mn = stage.normal_module_mm
+    m_t = stage.transverse_module_mm
+    beta = math.radians(stage.helix_angle_deg)
+    helical = abs(stage.helix_angle_deg) > 1e-9
     alpha_n = math.radians(stage.normal_pressure_angle_deg)
     alpha_t = math.radians(stage.transverse_pressure_angle_deg)
     alpha_wt = math.radians(stage.working_pressure_angle_deg)
+    # base helix angle: tan β_b = tan β · cos α_t (ISO 21771); spur → exactly 0
+    beta_b = math.atan(math.tan(beta) * math.cos(alpha_t))
+    cos_bb = math.cos(beta_b)
     a_w = stage.working_center_distance_mm
     if stage.generation is None or stage.usable_tip_diameter_mm is None:
         raise ValueError("geometry report needs the generation data (tool profiles + tips)")
-    profiles = (ToothProfile.from_stage(stage, 0), ToothProfile.from_stage(stage, 1))
     loa = line_of_action_points(stage)
     if loa is None:
         raise ValueError("geometry report needs the line of action (usable tip diameters)")
     balls = ball_diameter_mm or Pair(1.75 * mn, 1.75 * mn)
+    # tool root circles d_f = d − 2·(h_aP0* − x_E)·m_n (needed cross-gear for the clearance)
+    root_diameters = [
+        stage.reference_diameter_mm[i]
+        - 2.0 * (stage.generation[i].tool.addendum_factor - gen_i.generation_profile_shift) * mn
+        for i, gen_i in enumerate(stage.generation)
+    ]
 
     # line-of-action geometry: curvature radii ρ = distance from T_i along the pressure line
     def _dist(p: tuple[float, float], q: tuple[float, float]) -> float:
@@ -247,33 +274,43 @@ def compute_geometry_report(
     gears: list[GearReport] = []
     for i in (0, 1):
         gen = stage.generation[i]
-        prof = profiles[i]
         z = stage.teeth[i]
         x = stage.profile_shift[i]
+        x_e = gen.generation_profile_shift
         d = stage.reference_diameter_mm[i]
         d_b = stage.base_diameter_mm[i]
         d_a = gen.tip_diameter_mm
         d_na = stage.usable_tip_diameter_mm[i]
-        d_f = prof.root_diameter_mm
+        d_ff = gen.root_form_diameter_mm
+        d_f = root_diameters[i]
         # d_Nf from the mating contact point (ISO 21771 §5.4.1): the LOWEST contact on
         # gear i is at A (i=0) / E (i=1)
         rho_low = rho_a1 if i == 0 else rho_e2
         d_nf = 2.0 * math.hypot(d_b / 2.0, rho_low)
-        c_n = (d_nf - prof.d_Ff) / 2.0
-        # nominal tooth thickness (x-based)
-        s_t = mn * (math.pi / 2.0 + 2.0 * x * math.tan(alpha_n))  # spur: m_t = m_n
-        s_n = s_t
+        c_n = (d_nf - d_ff) / 2.0
+        # nominal tooth thickness (x-based): transverse s_t, normal s_n = s_t·cos β
+        s_t = m_t * math.pi / 2.0 + 2.0 * x * mn * math.tan(alpha_t)
+        s_n = s_t * math.cos(beta)
         e_n = math.pi * mn - s_n
-        # chordal at d_y = d_a − 2 m_n (DIN 21773 §5, spur: ψ_y = s_yn/d_y)
+        # chordal at d_y = d_a − 2 m_n (DIN 21773 §5): normal-section chord, Eqs. (2)/(5)
         d_y = d_a - 2.0 * mn
         alpha_y = math.acos(min(1.0, d_b / d_y))
-        s_y = d_y * (s_t / d + involute(alpha_t) - involute(alpha_y))
-        psi_y = s_y / d_y
-        s_c = d_y * math.sin(psi_y)  # Eq. (3) spur
-        h_c = (d_a - d_y * math.cos(psi_y)) / 2.0  # Eq. (5) spur
-        # tip thickness (as cut, x_E) at d_Na
-        theta_na = prof.half_thickness_angle(d_na / 2.0)
-        s_a = d_na * theta_na
+        s_yt = d_y * (s_t / d + involute(alpha_t) - involute(alpha_y))
+        if helical:
+            beta_y = math.atan(math.tan(beta) * d_y / d)  # tan β_y = tan β·d_y/d
+            s_yn = s_yt * math.cos(beta_y)
+            arg = s_yn * math.cos(beta_y) / d_y
+            s_c = math.hypot(s_yn * math.sin(beta_y), d_y * math.sin(arg))  # Eq. (2)
+            h_c = abs(d_a - d_y * math.cos(arg)) / 2.0  # Eq. (5)
+        else:
+            psi_y = s_yt / d_y
+            s_c = d_y * math.sin(psi_y)  # Eq. (3) spur
+            h_c = (d_a - d_y * math.cos(psi_y)) / 2.0  # Eq. (5) spur
+        # tip thickness (as cut, x_E) at d_Na — transverse arc s_y = d_y(ψ_bE − inv α_y)
+        s_te = m_t * math.pi / 2.0 + 2.0 * x_e * mn * math.tan(alpha_t)
+        psi_be = s_te / d + involute(alpha_t)
+        alpha_na = math.acos(min(1.0, d_b / d_na))
+        s_a = d_na * max(0.0, psi_be - involute(alpha_na))
         # allowances: A_W (span) is the primary input (kst-E); E_sn = A_W / cos α_n (§14.4)
         allow_up = span_allowance_upper_mm[i] if span_allowance_upper_mm is not None else None
         allow_low = span_allowance_lower_mm[i] if span_allowance_lower_mm is not None else None
@@ -283,7 +320,7 @@ def compute_geometry_report(
             0.5 * (allow_up + allow_low) if allow_up is not None and allow_low is not None else 0.0
         )
         # span
-        k, k_min, k_max = _auto_span_teeth(z, x, mn, alpha_n, alpha_t, d_b, prof.d_Ff, d_na)
+        k, k_min, k_max = _auto_span_teeth(z, x, mn, alpha_n, alpha_t, d, d_b, d_ff, d_na, cos_bb)
         w_k = None
         d_m_span = None
         if k is not None:
@@ -291,27 +328,47 @@ def compute_geometry_report(
             w_k = span_over_k_mm(
                 k, teeth=z, profile_shift=x, normal_module_mm=mn, alpha_n=alpha_n, alpha_t=alpha_t
             )
-            # contact circle of the ACTUAL measurement (mean allowance), like the reference
-            d_m_span = math.sqrt(d_b**2 + (w_k + allow_mean) ** 2)
-        # balls / rollers (spur: M_dR = M_dK); allowances as EXACT measure differences at
-        # the allowance-equivalent shift x + E_sn/(2 m_n tan α_n) — DIN 21773 §14.1 route
-        m_dk, _ = _ball_measure(z, x, mn, alpha_n, alpha_t, d_b, balls[i])
+            # contact circle of the ACTUAL measurement (mean allowance), like the reference;
+            # Eq. (17) — helical via the transverse projection W·cos β_b of the base
+            # tangent plane (the same identity as Eqs. (10)/(12)/(13))
+            d_m_span = math.sqrt(d_b**2 + ((w_k + allow_mean) * cos_bb) ** 2)
+            # helical W_k measurability (Eqs. (15)/(16)): the measuring planes need
+            # b_F ≥ b_Fmin = W_k·sin β_b + b_M·cos β_b with b_M = 1.2 + 0.018·W_k
+            if helical and stage.face_width_mm is not None:
+                b_fmin = w_k * math.sin(abs(beta_b)) + (1.2 + 0.018 * w_k) * cos_bb
+                if stage.face_width_mm[i] < b_fmin:
+                    notes.append(
+                        f"gear {i + 1}: face width {stage.face_width_mm[i]:g} mm < "
+                        f"b_Fmin {b_fmin:.1f} mm — span W_k not measurable "
+                        "(DIN 21773 eq. 15/16); use the two-ball measure"
+                    )
+        # balls / rollers; allowances as EXACT measure differences at the allowance-
+        # equivalent shift x + E_sn/(2 m_n tan α_n) — DIN 21773 §14.1 route
+        m_dk, _, d_k_ball = _ball_measure(z, x, mn, alpha_n, alpha_t, d_b, balls[i], cos_bb)
+        # rollers (§11): spur and even-z helical measure like balls; on a helical gear
+        # with odd z the rollers screw into diametrically OPPOSITE gaps → M_dR = 2·M_rK
+        # (Eqs. (26)–(35) without the odd-z cos(π/2z) reduction)
+        m_dr = m_dk if (z % 2 == 0 or not helical) else d_k_ball + balls[i]
 
         def _x_of(e_sn: float, x_nom: float = x) -> float:
             return x_nom + e_sn / (2.0 * mn * math.tan(alpha_n))
 
         ball_up = ball_low = e_factor_ball = None
         if e_sns is not None and e_sni is not None:
-            m_up, _ = _ball_measure(z, _x_of(e_sns), mn, alpha_n, alpha_t, d_b, balls[i])
-            m_low, _ = _ball_measure(z, _x_of(e_sni), mn, alpha_n, alpha_t, d_b, balls[i])
+            m_up, _, _ = _ball_measure(z, _x_of(e_sns), mn, alpha_n, alpha_t, d_b, balls[i], cos_bb)
+            m_low, _, _ = _ball_measure(
+                z, _x_of(e_sni), mn, alpha_n, alpha_t, d_b, balls[i], cos_bb
+            )
             ball_up, ball_low = m_up - m_dk, m_low - m_dk
             if abs(e_sns) > 1e-12:
                 e_factor_ball = abs(ball_up / e_sns)
         # contact circle at the mean allowance (matches the reference output)
         e_mean = allow_mean / math.cos(alpha_n)
-        _, d_contact_ball = _ball_measure(z, _x_of(e_mean), mn, alpha_n, alpha_t, d_b, balls[i])
-        # sliding (ISO 21771 §5.6): own tip = E for gear 1 / A for gear 2; the pitch-line
-        # velocity v_t = ω1·d_w1/2 is common, so K_g normalizes on d_w1 for BOTH gears
+        _, d_contact_ball, _ = _ball_measure(
+            z, _x_of(e_mean), mn, alpha_n, alpha_t, d_b, balls[i], cos_bb
+        )
+        # sliding (ISO 21771 §5.6, transverse plane): own tip = E for gear 1 / A for
+        # gear 2; the pitch-line velocity is common, so K_g normalizes on d_w1 for BOTH
         if i == 0:
             g_own_tip = g_a1
             zeta_a = 1.0 - rho_e2 / (u * rho_e1)  # Eq. (114) at E
@@ -321,13 +378,15 @@ def compute_geometry_report(
             zeta_a = 1.0 - u * rho_a1 / rho_a2  # Eq. (115) at A
             zeta_f = 1.0 - u * rho_e1 / rho_e2  # Eq. (115) at E (negative)
         k_ga = 2.0 * g_own_tip / d_w[0] * (1.0 + 1.0 / u)  # Eq. (112)/(113)
-        mate_prof = profiles[1 - i]
-        tip_clearance = a_w - d_a / 2.0 - mate_prof.root_diameter_mm / 2.0
+        tip_clearance = a_w - d_a / 2.0 - root_diameters[1 - i] / 2.0
+        # undercut-free minimum shift (DIN 3960 eq. 3.6.06, helical via α_t and cos β)
+        h_fap0 = gen.tool.addendum_factor - gen.tool.tip_radius_factor * (1.0 - math.sin(alpha_n))
+        x_e_min = h_fap0 - z * math.sin(alpha_t) ** 2 / (2.0 * math.cos(beta))
         gears.append(
             GearReport(
                 teeth=z,
                 profile_shift=x,
-                generation_profile_shift=gen.generation_profile_shift,
+                generation_profile_shift=x_e,
                 reference_diameter_mm=d,
                 base_diameter_mm=d_b,
                 tip_diameter_mm=d_a,
@@ -335,7 +394,7 @@ def compute_geometry_report(
                 tip_chamfer_radial_mm=gen.tip_chamfer_radial_mm,
                 usable_tip_diameter_mm=d_na,
                 usable_root_diameter_mm=d_nf,
-                root_form_diameter_mm=prof.d_Ff,
+                root_form_diameter_mm=d_ff,
                 root_diameter_mm=d_f,
                 effective_root_diameter_mm=(
                     2.0 * fillet_contour_min_radius_mm[i]
@@ -363,7 +422,7 @@ def compute_geometry_report(
                 span_contact_diameter_mm=d_m_span,
                 ball_diameter_mm=balls[i],
                 two_ball_measure_mm=m_dk,
-                two_roller_measure_mm=m_dk,  # spur (DIN 21773 §11)
+                two_roller_measure_mm=m_dr,
                 ball_contact_diameter_mm=d_contact_ball,
                 thickness_allowance_upper_mm=e_sns,
                 thickness_allowance_lower_mm=e_sni,
@@ -375,8 +434,8 @@ def compute_geometry_report(
                 sliding_factor_tip=k_ga,
                 specific_sliding_tip=zeta_a,
                 specific_sliding_root=zeta_f,
-                undercut_min_shift=prof.undercut_min_generation_shift,
-                has_undercut=prof.has_undercut,
+                undercut_min_shift=x_e_min,
+                has_undercut=x_e < x_e_min,
                 tool_module_mm=mn,
                 tool_pressure_angle_deg=stage.normal_pressure_angle_deg,
                 tool_addendum_factor=gen.tool.addendum_factor,
@@ -391,36 +450,35 @@ def compute_geometry_report(
     # common tooth height (working depth) from the USABLE tips: h_w = (d_Na1 + d_Na2)/2 − a_w
     h_w = (stage.usable_tip_diameter_mm[0] + stage.usable_tip_diameter_mm[1]) / 2.0 - a_w
     # backlash from the tooth-thickness allowances of BOTH gears (ISO 21771 §5.5, verified
-    # against kst-E: j_bn = −(E_sn1 + E_sn2)·cos α_n, j_t = j_bn/cos α_wt at the working circle)
+    # against kst-E): j_bn = −(E_sn1 + E_sn2)·cos α_n — exact for helical too, because the
+    # allowances act along the plane of action with E*_W = cos α_n (DIN 21773 Eq. 54);
+    # j_wt = j_bn/(cos α_wt·cos β_b) at the working circle (ISO 21771 Eq. 102)
     e1u = gears[0].thickness_allowance_upper_mm
     e2u = gears[1].thickness_allowance_upper_mm
     j_bn = None
     j_t = None
     if e1u is not None and e2u is not None:
         j_bn = -(e1u + e2u) * math.cos(alpha_n)
-        j_t = j_bn / math.cos(alpha_wt)
+        j_t = j_bn / (math.cos(alpha_wt) * cos_bb)
     delta_up = delta_low = None
     if center_distance_allowance_mm is not None:
+        # ±A_a: Δj_wt = 2·A_a·tan α_wt (transverse); Δj_bn = Δj_wt·cos α_wt·cos β_b
         d_jt = 2.0 * center_distance_allowance_mm * math.tan(alpha_wt)
-        delta_up = (d_jt, d_jt * math.cos(alpha_wt))
-        delta_low = (-d_jt, -d_jt * math.cos(alpha_wt))
+        delta_up = (d_jt, d_jt * math.cos(alpha_wt) * cos_bb)
+        delta_low = (-d_jt, -d_jt * math.cos(alpha_wt) * cos_bb)
     pair = PairReport(
         normal_module_mm=mn,
-        transverse_module_mm=stage.transverse_module_mm,
+        transverse_module_mm=m_t,
         normal_pressure_angle_deg=stage.normal_pressure_angle_deg,
         transverse_pressure_angle_deg=stage.transverse_pressure_angle_deg,
         working_pressure_angle_deg=stage.working_pressure_angle_deg,
         helix_angle_deg=stage.helix_angle_deg,
-        base_helix_angle_deg=0.0
-        if abs(stage.helix_angle_deg) < 1e-12
-        else math.degrees(
-            math.atan(math.tan(math.radians(stage.helix_angle_deg)) * math.cos(alpha_t))
-        ),
+        base_helix_angle_deg=math.degrees(beta_b),
         gear_ratio=u,
         center_distance_mm=a_w,
         reference_center_distance_mm=stage.reference_center_distance_mm,
         profile_shift_sum=stage.profile_shift[0] + stage.profile_shift[1],
-        transverse_pitch_mm=math.pi * stage.transverse_module_mm,
+        transverse_pitch_mm=math.pi * m_t,
         normal_pitch_mm=math.pi * mn,
         transverse_base_pitch_mm=stage.transverse_base_pitch_mm,
         normal_base_pitch_mm=math.pi * mn * math.cos(alpha_n),

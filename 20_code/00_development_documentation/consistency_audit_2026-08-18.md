@@ -36,6 +36,12 @@
 > STR-07 (quick-view fetch cache/recompute), STR-15 (dead i18n keys), FEM-09 (sweep-UI
 > 2D-FE marker), GAP-10 rest (unconsumed diagnostic response fields). The findings
 > below are kept as written (audit snapshot).
+>
+> **STATUS UPDATE 5 (2026-08-19, ADR-029): NRM-01 fully closed** — the P1 fix had
+> GUARDED the spur-only SSOT report (422 for helical); the helical geometry package now
+> implements the DIN 21773 helical forms natively (chordal/span/ball/roller/backlash/
+> b_Fmin), so `/api/geometry/report` and the HTML report compute helical stages. The
+> NRM-02 spur guards on the 2-D contour/FE chain remain by design (separate package).
 
 > **Read-only audit — no code was changed.** Deliverable requested by the user: full report
 > first, decisions before fixes. Scope: the ANALYTICAL chain (geometry / norms / seven

@@ -154,6 +154,18 @@ FEM-09, GAP-10 rest (see the audit banner). Next packages: **helical geometry re
 (pair rows already display-ready), scuffing (ISO/TS 6336-20/-21), catalog-served
 uimodel options; twisted extrusion after the FE reference reproduction.
 
+**Helical geometry report (2026-08-19, ADR-029):** the SSOT geometry service computes
+helical stages natively — DIN 21773 helical forms in every inspection block (chordal
+Eqs. 1–8, span count Eqs. 10/12/13, W_k Eq. 14, ball/roller measures Eqs. 30–36 + §11,
+allowance factors §14, b_Fmin measurability note), backlash per ISO 21771 Eqs. 102/103;
+ToothProfile removed from the report path (closed transverse-plane forms, kst-E spur
+literals bit-compatible); NRM-01 closed (`/api/geometry/report` + HTML report render
+helical; the 2-D mesh SVG degrades to a note). FE/contour chain stays spur-only per the
+user's scope cut ("noch nicht in Richtung FEM"). 268 backend tests. Next (user-approved
+order): **material database** (definable materials, per-gear selection, session-local
+edits), **session save/load** (export/import + sidebar recall); then scuffing /
+architecture cleanup / FE helical as separate packages.
+
 Validation philosophy (ADR-011): implement **strictly per ISO 6336:2019** (the current
 standard; DIN 3990:1987 is the equivalent cross-check, what STplus uses). Two complete
 references: **kst-E** (spur, DIN 3990 via STplus) and the **helical ISO-6336 case**

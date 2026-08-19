@@ -1221,3 +1221,43 @@ per-gear flank-symmetry into the deck mesher, root circles + SSOT ε_α in the e
 plot). With this, all P1–P4 audit findings are fixed, intentional, or deferred with
 rationale (see the audit banner) — the deferred set is an architecture-cleanup round
 (STR-05/06/07, STR-15, FEM-09, GAP-10 rest), not open defects.
+
+## ADR-029: Helical geometry report — DIN 21773 helical forms in the SSOT service, FE chain stays spur
+
+**Date:** 2026-08-19 · **Status:** Accepted
+
+**Context:** The user approved the helical geometry package with an explicit scope cut:
+"nur die richtige Geometrieanzeige in der Workbench und dem html Bericht … noch nicht in
+Richtung FEM gehen" — pure analytics; the quasi-static FE/contour chain is a separate
+future package. The SSOT geometry service (`compute_geometry_report`, ADR-024) carried
+the audit guard NRM-01: helical stages were refused with 422 because several inspection
+blocks were implemented in spur form only. All helical formulas were captured from the
+rendered DIN 21773:2014 pages (pdftoppm route, memory `nautos-pdf-reading`) before
+implementation — primary-source rule.
+
+**Decision:** (1) `compute_geometry_report` computes helical stages natively; every
+block cites its clause: chordal thicknesses Eqs. (1)–(8) (normal-section chord via β_y),
+measuring tooth count Eqs. (10)/(12)/(13), W_k Eq. (14) (the shared `span_over_k_mm`
+was already transverse-correct), ball measures Eqs. (30)–(36) via the identity
+z·m_n·cos α_n = d_b·cos β_b (the transverse gap half-angle keeps the spur bracket
+π/(2z) − 2x·tan α_n/z unchanged), roller measures §11, allowance factors §14
+(E*_W = cos α_n is exact for helical, so j_bn = −ΣA_We carries over), backlash
+ISO 21771 Eqs. (102)/(103), span measurability b_Fmin Eqs. (15)/(16) as a user-visible
+note. (2) The auto measuring tooth count uses Eq. (10), not Eq. (9): the two norm
+variants differ by half a pitch in their INT bracket, and only Eq. (10) reproduces the
+kst-E reference k = 6 (Eq. (9) yields 7 — verified numerically before deciding).
+(3) ToothProfile is REMOVED from the report path: d_f, d_Ff, s_a(d_Na) and x_E,min are
+computed by their closed transverse-plane forms — helical-exact, spur-bit-compatible
+(all 27 kst-E literals green). The 2-D contour/fillet/FE chain keeps its NRM-02 spur
+guards; `_fillet_min_radii` returns None for helical (tool root values only), and the
+HTML report replaces the 2-D mesh SVG with a locale note instead of failing.
+
+**Consequences:** The Geometrie tab, Toleranzen inspection block and the HTML report
+work for helical stages end-to-end (verified: z=25/40, m_n=2, β=20° reference pair).
+One normative discontinuity is documented and pinned: the two-roller measure of an
+odd-tooth gear jumps at β=0⁺ (§11 — rollers screw into diametrically opposite gaps,
+M_dR = 2·M_rK ≠ M_dK), so it is excluded from the β→0 continuity test and asserted
+explicitly. Capacity/dynamics were already per-norm helical (ADR-025). Still spur-only
+by design: tooth-form/contour endpoints, fillet strategies, mesh/deck/FE (future
+package: twisted extrusion after the FE reference reproduction), and the scuffing
+chain (not yet implemented).

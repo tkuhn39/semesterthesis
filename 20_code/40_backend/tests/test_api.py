@@ -58,16 +58,28 @@ def test_capacity_native_khb_active_and_dynamics_parity() -> None:
     assert override.json()["face_load_factor_flank"] > d["face_load_factor_flank"]
 
 
-def test_geometry_report_rejects_helical() -> None:
-    """NRM-01: the spur-only SSOT report refuses a helical stage with 422 (no silent
-    wrong numbers)."""
+def test_geometry_report_supports_helical() -> None:
+    """The SSOT report computes helical stages (DIN 21773 helical forms, NRM-01 closed):
+    transverse quantities, W_k, ball measures and ε_β all come back — only the
+    contour-based effective root stays None (the 2-D contour chain is spur-only)."""
     client = TestClient(create_app())
     res = client.post(
         "/api/geometry/report",
-        json={"stage": {"use_example": False, "helix_angle_deg": 15.0}},
+        json={
+            "stage": {"use_example": False, "helix_angle_deg": 15.0},
+            "fillet_gear1": {"kind": "elliptic"},
+        },
     )
-    assert res.status_code == 422
-    assert "spur" in str(res.json()["detail"]).lower()
+    assert res.status_code == 200
+    body = res.json()
+    assert body["pair"]["helix_angle_deg"] == 15.0
+    assert 0.0 < body["pair"]["base_helix_angle_deg"] < 15.0
+    assert body["pair"]["overlap_ratio"] > 0.0
+    assert body["pair"]["transverse_module_mm"] > body["pair"]["normal_module_mm"]
+    assert body["gear1"]["span_measurement_mm"] is not None
+    assert body["gear1"]["two_ball_measure_mm"] is not None
+    # spur-only contour chain: no effective root for helical stages, even with a fillet
+    assert body["gear1"]["effective_root_diameter_mm"] is None
 
 
 def test_profile_routes_reject_helical_with_422() -> None:

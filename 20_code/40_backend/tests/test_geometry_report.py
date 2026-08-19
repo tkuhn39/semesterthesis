@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 from app.io.ste import Pair, gear_stage_from_ste, load_ste
-from app.services.geometry.gear import GearStage
+from app.services.geometry.gear import GearStage, ToolReferenceProfile
 from app.services.geometry.report import compute_geometry_report
 
 _REF_STE = (
@@ -122,6 +122,177 @@ def test_effective_root_diameter_passthrough() -> None:
     assert rep.gear2.effective_root_diameter_mm == pytest.approx(48.952, abs=1e-6)
     # Frühe digs below the tool root circle — the report carries both values side by side
     assert rep.gear1.effective_root_diameter_mm < rep.gear1.root_diameter_mm
+
+
+# --------------------------------------------------------------------------- #
+# Helical stage (DIN 21773 helical forms; z = 25/40, m_n = 2, α_n = 20°, β = 20°,
+# b = 26/26, a = 69.172 — the helical reference pair of the ISO 6336 tests)      #
+# --------------------------------------------------------------------------- #
+def _helical_stage(helix_angle_deg: float = 20.0) -> GearStage:
+    tool = ToolReferenceProfile(addendum_factor=1.25, tip_radius_factor=0.38)
+    return GearStage.from_parameters(
+        normal_module_mm=2.0,
+        teeth=Pair(25, 40),
+        profile_shift=Pair(0.0, 0.0),
+        face_width_mm=Pair(26.0, 26.0),
+        tool=Pair(tool, tool),
+        normal_pressure_angle_deg=20.0,
+        helix_angle_deg=helix_angle_deg,
+        center_distance_mm=69.172,
+    )
+
+
+@pytest.fixture(scope="module")
+def helical_report():
+    return compute_geometry_report(
+        _helical_stage(),
+        ball_diameter_mm=Pair(3.5, 3.5),
+        span_allowance_upper_mm=Pair(-0.05, -0.06),
+        span_allowance_lower_mm=Pair(-0.09, -0.10),
+        center_distance_allowance_mm=0.02,
+    )
+
+
+def test_helical_pair_values(helical_report) -> None:
+    """Transverse plane + overlap: closed-form hand values (ISO 21771)."""
+    p = helical_report.pair
+    assert p.transverse_module_mm == pytest.approx(2.0 / math.cos(math.radians(20.0)), abs=1e-9)
+    # tan α_t = tan α_n / cos β; tan β_b = tan β · cos α_t
+    alpha_t = math.atan(math.tan(math.radians(20.0)) / math.cos(math.radians(20.0)))
+    assert p.transverse_pressure_angle_deg == pytest.approx(math.degrees(alpha_t), abs=1e-9)
+    beta_b = math.atan(math.tan(math.radians(20.0)) * math.cos(alpha_t))
+    assert p.base_helix_angle_deg == pytest.approx(math.degrees(beta_b), abs=1e-9)
+    # ε_β = b·sin β/(π·m_n) (ISO 21771 eq. 93), hand value
+    assert p.overlap_ratio == pytest.approx(26.0 * math.sin(math.radians(20.0)) / (2.0 * math.pi))
+    assert p.transverse_contact_ratio == pytest.approx(1.5266, abs=1e-4)
+    # p_bt·cos β_b = p_bn (base-plane identity)
+    assert p.transverse_base_pitch_mm * math.cos(beta_b) == pytest.approx(
+        p.normal_base_pitch_mm, abs=1e-9
+    )
+
+
+def test_helical_backlash_chain(helical_report) -> None:
+    """ISO 21771 Eq. 102: j_bn = j_wt·cos α_wt·cos β_b; j_bn = −ΣA_We exactly."""
+    p = helical_report.pair
+    assert p.backlash_normal_mm == pytest.approx(0.11, abs=1e-12)  # −(−0.05 − 0.06)
+    awt = math.radians(p.working_pressure_angle_deg)
+    bb = math.radians(p.base_helix_angle_deg)
+    assert p.backlash_circumferential_mm * math.cos(awt) * math.cos(bb) == pytest.approx(
+        p.backlash_normal_mm, abs=1e-12
+    )
+    # ±A_a: Δj_wt = 2·A_a·tan α_wt and Δj_bn = Δj_wt·cos α_wt·cos β_b
+    d_jwt, d_jbn = p.backlash_delta_upper_mm
+    assert d_jwt == pytest.approx(2.0 * 0.02 * math.tan(awt), abs=1e-12)
+    assert d_jbn == pytest.approx(d_jwt * math.cos(awt) * math.cos(bb), abs=1e-12)
+
+
+def test_helical_thicknesses(helical_report) -> None:
+    """s_n = m_n(π/2 + 2x·tan α_n) stays the normal-plane value; s_t = s_n/cos β."""
+    for g in (helical_report.gear1, helical_report.gear2):
+        assert g.tooth_thickness_normal_mm == pytest.approx(math.pi, abs=1e-9)  # x = 0, m_n = 2
+        assert g.tooth_thickness_transverse_mm == pytest.approx(
+            math.pi / math.cos(math.radians(20.0)), abs=1e-9
+        )
+        # normal-section chord (DIN 21773 eq. 2) is slightly below the arc, height ≈ m_n
+        assert g.chordal_thickness_mm < g.tooth_thickness_normal_mm
+        assert g.chordal_thickness_mm == pytest.approx(g.tooth_thickness_normal_mm, abs=0.01)
+        assert 0.95 * 2.0 < g.chordal_height_mm < 1.1 * 2.0
+
+
+def test_helical_span_measurement(helical_report) -> None:
+    """W_k per DIN 21773 eq. 14 (regression literals) + eq. 17 transverse projection."""
+    g1, g2 = helical_report.gear1, helical_report.gear2
+    assert (g1.span_teeth, g2.span_teeth) == (3, 5)  # eq. 10 auto choice
+    assert (g1.span_teeth_min, g1.span_teeth_max) == (2, 4)  # eqs. 12/13
+    assert g1.span_measurement_mm == pytest.approx(15.5967, abs=5e-4)
+    assert g2.span_measurement_mm == pytest.approx(27.9068, abs=5e-4)
+    # d_M = sqrt(d_b² + (W·cos β_b)²) at the mean allowance, inside the usable flank
+    bb = math.radians(helical_report.pair.base_helix_angle_deg)
+    w_mean = g1.span_measurement_mm + 0.5 * (-0.05 + -0.09)
+    assert g1.span_contact_diameter_mm == pytest.approx(
+        math.sqrt(g1.base_diameter_mm**2 + (w_mean * math.cos(bb)) ** 2), abs=1e-9
+    )
+    assert g1.root_form_diameter_mm < g1.span_contact_diameter_mm < g1.usable_tip_diameter_mm
+
+
+def test_helical_ball_and_roller_measures(helical_report) -> None:
+    """M_dK regression literals; §11: rollers on ODD-z helical gears sit diametrically
+    opposite (M_dR = 2·M_rK > M_dK), on even z they equal the ball measure."""
+    g1, g2 = helical_report.gear1, helical_report.gear2
+    assert g1.two_ball_measure_mm == pytest.approx(58.0771, abs=5e-4)
+    assert g2.two_ball_measure_mm == pytest.approx(90.1508, abs=5e-4)
+    assert g1.two_roller_measure_mm > g1.two_ball_measure_mm  # z = 25 (odd)
+    assert g1.two_roller_measure_mm == pytest.approx(58.1850, abs=5e-4)
+    assert g2.two_roller_measure_mm == g2.two_ball_measure_mm  # z = 40 (even)
+    # Eq. 36 consistency: M_dK = d_K·cos(π/2z) + D_M with d_K = M_dR − D_M
+    d_k = g1.two_roller_measure_mm - 3.5
+    assert g1.two_ball_measure_mm == pytest.approx(
+        d_k * math.cos(math.pi / (2.0 * 25)) + 3.5, abs=1e-9
+    )
+    for g in (g1, g2):
+        assert g.root_form_diameter_mm < g.ball_contact_diameter_mm < g.usable_tip_diameter_mm
+
+
+def test_helical_root_and_undercut(helical_report) -> None:
+    """Tool root circle and the DIN 3960 eq. 3.6.06 minimum shift with cos β."""
+    g1 = helical_report.gear1
+    # d_f = d − 2·(h_aP0* − x_E)·m_n, x_E = 0 here
+    assert g1.root_diameter_mm == pytest.approx(g1.reference_diameter_mm - 2.0 * 1.25 * 2.0)
+    alpha_t = math.atan(math.tan(math.radians(20.0)) / math.cos(math.radians(20.0)))
+    h_fap0 = 1.25 - 0.38 * (1.0 - math.sin(math.radians(20.0)))
+    x_min = h_fap0 - 25 * math.sin(alpha_t) ** 2 / (2.0 * math.cos(math.radians(20.0)))
+    assert g1.undercut_min_shift == pytest.approx(x_min, abs=1e-9)
+    assert g1.has_undercut is False
+    # standard clearance: c = 0.25·m_n for h_aP0* = 1.25, x = 0, a = a_d
+    assert g1.tip_clearance_mm == pytest.approx(0.5, abs=1e-3)
+
+
+def test_helical_reduces_to_spur_continuously() -> None:
+    """β → 0 limit: the helical branches converge to the spur values (no formula split).
+
+    Exception BY THE NORM: the two-roller measure of an odd-z gear is discontinuous in β
+    (DIN 21773 §11 — on any helical gear the rollers screw into diametrically opposite
+    gaps, so M_dR jumps from M_dK to 2·M_rK), checked explicitly below.
+    """
+    rep0 = compute_geometry_report(_helical_stage(0.0), ball_diameter_mm=Pair(3.5, 3.5))
+    rep1 = compute_geometry_report(_helical_stage(1e-6), ball_diameter_mm=Pair(3.5, 3.5))
+    for attr in (
+        "tooth_thickness_transverse_mm",
+        "chordal_thickness_mm",
+        "chordal_height_mm",
+        "span_measurement_mm",
+        "two_ball_measure_mm",
+        "ball_contact_diameter_mm",
+        "root_diameter_mm",
+        "tip_tooth_thickness_mm",
+        "undercut_min_shift",
+    ):
+        assert getattr(rep1.gear1, attr) == pytest.approx(getattr(rep0.gear1, attr), abs=1e-6), attr
+    assert rep1.pair.overlap_ratio == pytest.approx(0.0, abs=1e-6)
+    # the normative §11 discontinuity: spur rollers = ball measure; helical odd z = 2·M_rK
+    assert rep0.gear1.two_roller_measure_mm == rep0.gear1.two_ball_measure_mm
+    d_k = rep1.gear1.two_roller_measure_mm - 3.5
+    assert rep1.gear1.two_ball_measure_mm == pytest.approx(
+        d_k * math.cos(math.pi / (2.0 * 25)) + 3.5, abs=1e-9
+    )
+
+
+def test_helical_narrow_face_width_flags_span(helical_report) -> None:
+    """DIN 21773 eqs. 15/16: a face width below b_Fmin makes W_k unmeasurable — noted."""
+    tool = ToolReferenceProfile(addendum_factor=1.25, tip_radius_factor=0.38)
+    narrow = GearStage.from_parameters(
+        normal_module_mm=2.0,
+        teeth=Pair(25, 40),
+        profile_shift=Pair(0.0, 0.0),
+        face_width_mm=Pair(6.0, 6.0),
+        tool=Pair(tool, tool),
+        normal_pressure_angle_deg=20.0,
+        helix_angle_deg=20.0,
+        center_distance_mm=69.172,
+    )
+    rep = compute_geometry_report(narrow)
+    assert any("b_Fmin" in n for n in rep.notes)
+    assert not any("b_Fmin" in n for n in helical_report.notes)  # b = 26 is wide enough
 
 
 def test_report_without_allowances_has_no_backlash() -> None:

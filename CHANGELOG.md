@@ -9,6 +9,34 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (helical geometry report — analytics only, 2026-08-19, ADR-029)
+User-approved package: the Workbench Geometrie tab and the HTML report now compute
+helical stages ("nur die richtige Geometrieanzeige … noch nicht in Richtung FEM").
+- **SSOT geometry service is helical** (`compute_geometry_report`): every inspection
+  block carries its DIN 21773:2014 helical form, verified page-by-page against the
+  norm PDF — chordal thicknesses per Eqs. (1)–(8) (normal-section chord with β_y),
+  measuring tooth count per Eqs. (10)/(12)/(13) (base-tangent lengths ÷ cos β_b),
+  W_k per Eq. (14) (unchanged shared helper — already transverse), ball measures per
+  Eqs. (30)–(36) using z·m_n·cos α_n = d_b·cos β_b, roller measures per §11 (on a
+  helical gear with ODD teeth the rollers sit diametrically opposite: M_dR = 2·M_rK,
+  a normative discontinuity pinned in the tests), allowance factors per §14 (E*_W =
+  cos α_n holds exactly for helical), backlash per ISO 21771 Eqs. (102)/(103)
+  (j_wt = j_bn/(cos α_wt·cos β_b)) and the span measurability limit b_Fmin per
+  Eqs. (15)/(16) — too-narrow face widths surface as a note in the Meldungen strip.
+- **Auto measuring tooth count now norm-native**: Eq. (10) replaces the previous
+  roll-angle approximation (identical k = 6 for the kst-E reference; Eq. (9) was
+  rejected — its "+1" bracket rounds half a pitch higher and would flip kst-E to 7).
+- **ToothProfile removed from the report path**: its four contributions (d_f, d_Ff,
+  s_a at d_Na, undercut x_E,min) are computed by their closed transverse-plane forms
+  (helical-exact; spur values bit-compatible — all 27 kst-E literals unchanged). The
+  2-D contour/fillet/FE chain stays spur-only (NRM-02 guards untouched, user decision);
+  helical stages report tool root values without contour-effective overrides.
+- **NRM-01 closed**: `/api/geometry/report` no longer 422s helical stages; the HTML
+  report renders every table for helical and replaces the 2-D mesh SVG with a note.
+- Tests: +8 helical (transverse/overlap hand values, backlash chain, W_k/M_dK
+  regression literals for the z=25/40 β=20° reference pair, §11 roller jump,
+  β→0 continuity, b_Fmin note); spur kst-E parity block untouched and green.
+
 ### Fixed (audit round P4 — polish, display + LOW cleanups, 2026-08-18)
 The audit's final block; with it every P1–P4 finding is fixed, declared intentional, or
 explicitly deferred with rationale (banner in the audit file).

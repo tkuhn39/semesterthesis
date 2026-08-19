@@ -259,9 +259,15 @@ def _report_allowances(
 
 
 def _fillet_min_radii(req: GeometryReportRequest, stage: GearStage) -> Pair[float] | None:
-    """Deepest contour radius per gear for the selected root-fillet strategies."""
+    """Deepest contour radius per gear for the selected root-fillet strategies.
+
+    The 2-D contour chain (ToothProfile + fillet strategies) is spur-only (NRM-02),
+    so a helical stage reports the tool root values only — no effective contour root.
+    """
     from app.api.mesh import FilletSpec  # runtime import: routers stay independent
 
+    if abs(stage.helix_angle_deg) > 1e-9:
+        return None
     specs = (req.fillet_gear1, req.fillet_gear2)
     if all(s is None or s.get("kind", "standard") == "standard" for s in specs):
         return None
@@ -297,7 +303,7 @@ def geometry_report(req: GeometryReportRequest) -> GeometryReport:
             center_distance_allowance_mm=req.center_distance_allowance_mm,
             fillet_contour_min_radius_mm=_fillet_min_radii(req, stage),
         )
-    except ValueError as exc:  # e.g. helical stage (spur-only report, audit NRM-01)
+    except ValueError as exc:  # e.g. missing generation data or ε_β without face width
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
