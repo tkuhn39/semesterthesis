@@ -1296,3 +1296,33 @@ per-gear property objects are the known follow-up from ADR-026), and the FE deck
 Marlow hyperelastic curve remains built-in catalog data (a user plastic runs
 linear-elastic in the deck until measured curves can be attached to library records —
 the `Material.nonlinear_curves` field already models them).
+
+## ADR-031: Saved sessions — opaque versioned state documents, optional stored report
+
+**Date:** 2026-08-19 · **Status:** Accepted
+
+**Context:** The user wants sessions saved "als File" and recallable from the sidebar,
+including "eventuelle Berichte". The workbench store (ADR-021/027) is already the ONE
+input SSOT, so a session is exactly its persisted namespaces; every result is
+recomputable from them — except that reopening a REPORT should not require recomputing.
+
+**Decision:** (1) A session is an OPAQUE, frontend-versioned JSON document
+(`schema_version` + all editable namespaces + label); the backend persists it via
+app.storage (`sessions/<slug>.json`, mirroring ADR-030's per-record layout) and never
+interprets it — no server-side model of the client state to keep in sync. (2) Recall
+merges each saved namespace over its `DEFAULT_STATE` bucket, so ADDING fields never
+breaks old files (incompatible changes bump `SESSION_SCHEMA_VERSION`). (3) The save
+call optionally renders the HTML system report through the EXISTING /api/report chain
+and stores it alongside (`sessions/<slug>.report.html`) — best-effort: a rendering
+error is surfaced in the response but never blocks the state save. (4) File
+export/import uses the same document shape ({schema_version, saved_at, state}), and
+the importer also accepts a bare state object. (5) Excluded from persistence:
+Meldungen (transient) and the served material catalog (SSOT of the running backend,
+ADR-030); a session referencing a deleted user material still loads — the property
+VALUES are part of the session, the name is display metadata.
+
+**Consequences:** Sessions survive nodes and browsers (storage-backed), the sidebar
+recalls parameters instantly and stored reports open without recomputation; the
+persisted Stufenvariation results (varUi) come back with the session. Follow-up
+candidates: autosave of the active session, storing FE artefacts per session once the
+FE package lands.

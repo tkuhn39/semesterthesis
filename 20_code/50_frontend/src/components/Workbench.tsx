@@ -17,6 +17,7 @@ import { instanceLabel, useWorkbench, type ModelInstances } from "@/lib/store";
 import { downloadReport } from "@/lib/report";
 import { SchemaTab } from "@/components/SchemaTab";
 import { QuickView } from "@/components/QuickView";
+import { SessionsPanel } from "@/components/SessionsPanel";
 import { clampWidth, Resizer } from "@/components/SplitPane";
 import { CalcSelectionPanel } from "@/panels/CalcSelectionPanel";
 import { OverviewPanel } from "@/panels/OverviewPanel";
@@ -449,6 +450,8 @@ function Shell() {
             {locale === "de" ? "Modellbaum" : "Model tree"}
           </div>
           <TreeItem node={tree} depth={0} active={active} onSelect={setActive} />
+          {/* saved sessions live in the sidebar (user requirement 2026-08-19) */}
+          <SessionsPanel />
         </aside>
         <Resizer onDrag={(dx) => setTreeW((w) => clampWidth(w + dx, 190, 480))} />
 

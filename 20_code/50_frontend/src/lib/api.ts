@@ -373,6 +373,21 @@ async function del(path: string): Promise<void> {
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}: ${await res.text()}`);
 }
 
+// ---- Saved sessions (sessions.py — sidebar recall, 2026-08-19) ----
+export interface SessionMeta {
+  name: string;
+  saved_at: string; // ISO 8601 UTC
+  schema_version: number;
+  has_report: boolean;
+}
+export interface SessionRecord extends Omit<SessionMeta, "has_report"> {
+  state: Record<string, unknown>;
+}
+export interface SessionSaveResponse {
+  meta: SessionMeta;
+  report_error: string | null;
+}
+
 async function put<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method: "PUT",
@@ -397,6 +412,17 @@ export const api = {
   saveMaterial: (mat: UserMaterialIn) => put<CatalogMaterial>("/api/materials/user", mat),
   deleteMaterial: (name: string) =>
     del(`/api/materials/user/${encodeURIComponent(name)}`),
+  sessions: () => get<SessionMeta[]>("/api/sessions"),
+  saveSession: (req: {
+    name: string;
+    schema_version: number;
+    state: Record<string, unknown>;
+    report?: Record<string, unknown> | null;
+  }) => post<SessionSaveResponse>("/api/sessions", req),
+  loadSession: (name: string) => get<SessionRecord>(`/api/sessions/${encodeURIComponent(name)}`),
+  deleteSession: (name: string) => del(`/api/sessions/${encodeURIComponent(name)}`),
+  // the stored report opens as a page of its own (self-contained HTML)
+  sessionReportUrl: (name: string) => `${BASE}/api/sessions/${encodeURIComponent(name)}/report`,
 };
 
 // ---- Stage definition (design.py — kst-E example or free parameters, M6) ----

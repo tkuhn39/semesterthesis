@@ -811,10 +811,41 @@ interface WorkbenchStore extends WorkbenchState {
   setMessages: (msgs: string[]) => void;
   // refresh the served material catalog (after library edits in the Werkstoff tab)
   refreshMaterialCatalog: () => Promise<void>;
+  // session persistence (user requirement 2026-08-19): the full input state as a
+  // plain document, and its recall merging over the defaults (old files stay loadable)
+  exportState: () => Record<string, unknown>;
+  hydrate: (data: unknown) => void;
   // generic binding access for schema-rendered rows (path = "<namespace>.<field>")
   get: (path: string) => unknown;
   set: (path: string, value: unknown) => void;
 }
+
+// namespaces persisted in a session file — everything the user can set; NOT persisted:
+// messages (transient) and materialCatalog (served SSOT, refreshed from the backend)
+const PERSISTED_NAMESPACES = [
+  "stage",
+  "calc",
+  "fem",
+  "geometryUi",
+  "operatingUi",
+  "operating",
+  "materials",
+  "tol",
+  "loaddist",
+  "correction",
+  "correction2",
+  "wheelBody",
+  "varUi",
+  "powerflow",
+  "forces",
+  "control",
+  "shaft",
+  "model",
+] as const;
+
+// bump when a persisted namespace changes incompatibly; hydrate() merges each saved
+// namespace over its DEFAULT_STATE bucket, so ADDED fields never break old files
+export const SESSION_SCHEMA_VERSION = 1;
 
 const DEFAULT_STATE: WorkbenchState = {
   stage: KST_E_STAGE,
@@ -1080,6 +1111,37 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       refreshMaterialCatalog: async () => {
         const list = await api.materialsCatalog();
         setState((p) => ({ ...p, materialCatalog: list }));
+      },
+      exportState: () => {
+        const out: Record<string, unknown> = { label: state.label };
+        for (const ns of PERSISTED_NAMESPACES) out[ns] = state[ns];
+        return out;
+      },
+      hydrate: (data) => {
+        if (typeof data !== "object" || data === null) {
+          throw new Error("invalid session data (not an object)");
+        }
+        const doc = data as Record<string, unknown>;
+        setState((prev) => {
+          // fresh start from the defaults; the served catalog and transient messages
+          // belong to the RUNNING app, not to the recalled session
+          const next: WorkbenchState = {
+            ...DEFAULT_STATE,
+            materialCatalog: prev.materialCatalog,
+            messages: [],
+          };
+          for (const ns of PERSISTED_NAMESPACES) {
+            const saved = doc[ns];
+            if (saved && typeof saved === "object" && !Array.isArray(saved)) {
+              (next as unknown as Record<string, unknown>)[ns] = {
+                ...(DEFAULT_STATE[ns] as unknown as Record<string, unknown>),
+                ...(saved as Record<string, unknown>),
+              };
+            }
+          }
+          if (typeof doc.label === "string") next.label = doc.label;
+          return next;
+        });
       },
       get,
       set,

@@ -9,6 +9,25 @@ Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
 
+### Added (session save/load + sidebar recall, 2026-08-19, ADR-031)
+User requirement: "Sitzung als File speichern … alle eingestellten Parameter und
+eventuelle Berichte … in der Seitenleiste erneut abrufen".
+- **Saved sessions** (`app/services/session_store.py` + `app/api/sessions.py`): a
+  session is the frontend's FULL input state (all editable namespaces + label) as a
+  versioned, opaque JSON document — one object per session under
+  `sessions/<slug>.json` via app.storage. `POST /api/sessions` upserts and can render
+  + store the HTML system report in the same call (`sessions/<slug>.report.html`,
+  best-effort: a report error never blocks the save); `GET /api/sessions` lists
+  newest-first with a has_report flag; `GET /api/sessions/{name}` recalls the state;
+  `GET /api/sessions/{name}/report` reopens the stored report WITHOUT recomputation;
+  DELETE removes both.
+- **Sidebar "Sitzungen"**: save row (name + "mit Bericht" toggle), session list with
+  Laden / Bericht (new tab) / delete, and **export/import as a plain JSON file**.
+- **Store hydrate**: recalling merges each saved namespace over its defaults
+  (`SESSION_SCHEMA_VERSION`), so files from older app versions keep loading after
+  fields are added; transient state (Meldungen, served material catalog) is excluded
+  from persistence. The persisted Stufenvariation results recall with the session.
+
 ### Added (user material database, 2026-08-19, ADR-030)
 User requirement: "eine verwendbare Datenbank an Materialien … für das jeweilige
 Zahnrad wählen … im Frontend Anpassungen machen, ohne dass diese zurück in die

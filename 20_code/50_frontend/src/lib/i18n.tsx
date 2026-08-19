@@ -212,6 +212,17 @@ const DICT: Record<string, { de: string; en: string }> = {
   "common.max": { de: "Maximum", en: "Maximum" },
   "mat.steel": { de: "Stahl", en: "Steel" },
   "mat.plastic": { de: "Kunststoff", en: "Plastic" },
+  // ---- Sitzungen (session save/load, 2026-08-19) ----
+  "sess.title": { de: "Sitzungen", en: "Sessions" },
+  "sess.name": { de: "Name", en: "Name" },
+  "sess.save": { de: "Speichern", en: "Save" },
+  "sess.withReport": { de: "mit Bericht", en: "with report" },
+  "sess.load": { de: "Laden", en: "Load" },
+  "sess.report": { de: "Bericht", en: "Report" },
+  "sess.export": { de: "Als Datei exportieren", en: "Export as file" },
+  "sess.import": { de: "Datei laden", en: "Load file" },
+  "sess.none": { de: "Keine gespeicherten Sitzungen.", en: "No saved sessions." },
+  "sess.loaded": { de: "Sitzung geladen", en: "Session loaded" },
   // ---- Werkstoffdatenbank (user material library, 2026-08-19) ----
   "matdb.title": { de: "Werkstoffdatenbank", en: "Material database" },
   "matdb.builtin": { de: "Standard", en: "Built-in" },

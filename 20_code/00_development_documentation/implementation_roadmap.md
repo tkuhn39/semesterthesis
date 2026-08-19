@@ -174,6 +174,14 @@ the session-local Werkstoff fields — edits never write back. Known follow-ups:
 property objects for same-kind pairs; measured curves on library records for the FE
 deck. 272 backend tests. Next: **session save/load** (export/import + sidebar recall).
 
+**Session save/load (2026-08-19, ADR-031):** named sessions persisted via app.storage
+(opaque versioned state documents; optional stored HTML report rendered server-side),
+sidebar "Sitzungen" (save + list + Laden/Bericht/Löschen), JSON file export/import,
+default-merging hydrate. 275 backend tests. Open next packages (user to prioritize):
+scuffing (ISO/TS 6336-20/-21), architecture-cleanup round (STR-05/06/07, STR-15,
+FEM-09, GAP-10 rest), FE helical (twisted extrusion after the FE reference
+reproduction), per-gear material property objects.
+
 Validation philosophy (ADR-011): implement **strictly per ISO 6336:2019** (the current
 standard; DIN 3990:1987 is the equivalent cross-check, what STplus uses). Two complete
 references: **kst-E** (spur, DIN 3990 via STplus) and the **helical ISO-6336 case**
