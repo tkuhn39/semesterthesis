@@ -1,0 +1,1111 @@
+{
+  "GEOMETRIEDATEN/ABMASSREIHE": {
+    "numbers": [],
+    "values": [
+      "C",
+      "C"
+    ]
+  },
+  "GEOMETRIEDATEN/ACHSABSTAND": {
+    "numbers": [
+      15.32368
+    ],
+    "values": [
+      "15.32368"
+    ]
+  },
+  "GEOMETRIEDATEN/AXIALTEILUNG": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/BEARBEITUNGSZUGABE": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/BERUEHRKREISDM_ZAHNW": {
+    "numbers": [
+      10.14344,
+      20.45725
+    ],
+    "values": [
+      "10.14344",
+      "20.45725"
+    ]
+  },
+  "GEOMETRIEDATEN/BERUEHRKREISDM_ZWEIK": {
+    "numbers": [
+      10.32116,
+      20.69466
+    ],
+    "values": [
+      "10.32116",
+      "20.69466"
+    ]
+  },
+  "GEOMETRIEDATEN/BERUEHRKREISDURCHM": {
+    "numbers": [
+      10.24858,
+      20.55267
+    ],
+    "values": [
+      "10.24858",
+      "20.55267"
+    ]
+  },
+  "GEOMETRIEDATEN/BETRIEBSEINGRIFFSWINKEL": {
+    "numbers": [
+      20.74365
+    ],
+    "values": [
+      "20.74365"
+    ]
+  },
+  "GEOMETRIEDATEN/BEZOGENES_KOPFSPIEL": {
+    "numbers": [
+      0.42594,
+      0.37923
+    ],
+    "values": [
+      "0.42594",
+      "0.37923"
+    ]
+  },
+  "GEOMETRIEDATEN/BEZPR_KOPFHOEHENFAKTOR": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.00000",
+      "1.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/BLOCKBEZEICHNUNG_WKZ": {
+    "numbers": [],
+    "values": [
+      "WKZ_1",
+      "WKZ_2"
+    ]
+  },
+  "GEOMETRIEDATEN/DIAMETRAL_PITCH": {
+    "numbers": [
+      50.8
+    ],
+    "values": [
+      "50.80000"
+    ]
+  },
+  "GEOMETRIEDATEN/DIAMETR_ABMASSFAKTOR": {
+    "numbers": [
+      1.87079,
+      2.27244
+    ],
+    "values": [
+      "1.87079",
+      "2.27244"
+    ]
+  },
+  "GEOMETRIEDATEN/DIAMETR_ZWEIKUGELMASS": {
+    "numbers": [
+      12.01237,
+      22.21285
+    ],
+    "values": [
+      "12.01237",
+      "22.21285"
+    ]
+  },
+  "GEOMETRIEDATEN/DIAMETR_ZWEIKUGELMASS_V": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/DIAMETR_ZWEIROLLENMASS": {
+    "numbers": [
+      12.01237,
+      22.21285
+    ],
+    "values": [
+      "12.01237",
+      "22.21285"
+    ]
+  },
+  "GEOMETRIEDATEN/DIAMETR_ZWEIROLLENMAS_V": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/DURCHM_FUSSFREISCHNITT": {
+    "numbers": [
+      9.39716,
+      19.55533
+    ],
+    "values": [
+      "9.39716",
+      "19.55533"
+    ]
+  },
+  "GEOMETRIEDATEN/EINGRIFFSSTRECKE": {
+    "numbers": [
+      2.3566
+    ],
+    "values": [
+      "2.35660"
+    ]
+  },
+  "GEOMETRIEDATEN/ERZ_PROFILVERSCHFAKTOR": {
+    "numbers": [
+      -0.03188,
+      -0.12859
+    ],
+    "values": [
+      "-0.03188",
+      "-0.12859"
+    ]
+  },
+  "GEOMETRIEDATEN/FASE_JE_ZAHNENDE": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/FORMUEBERMASS": {
+    "numbers": [
+      0.03773,
+      0.16667
+    ],
+    "values": [
+      "0.03773",
+      "0.16667"
+    ]
+  },
+  "GEOMETRIEDATEN/FUSSFORMKREISDURCHM": {
+    "numbers": [
+      9.39716,
+      19.55533
+    ],
+    "values": [
+      "9.39716",
+      "19.55533"
+    ]
+  },
+  "GEOMETRIEDATEN/FUSSFREISCHNITT": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/FUSSKREISDURCHM": {
+    "numbers": [
+      8.71812,
+      19.12141
+    ],
+    "values": [
+      "8.71812",
+      "19.12141"
+    ]
+  },
+  "GEOMETRIEDATEN/GEMEINSAME_BREITE": {
+    "numbers": [
+      6.0
+    ],
+    "values": [
+      "6.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/GEMEINSAME_ZAHNHOEHE": {
+    "numbers": [
+      1.00132
+    ],
+    "values": [
+      "1.00132"
+    ]
+  },
+  "GEOMETRIEDATEN/GEMEINS_ZAHNHOEHENF": {
+    "numbers": [
+      2.00265
+    ],
+    "values": [
+      "2.00265"
+    ]
+  },
+  "GEOMETRIEDATEN/GESAMTUEBERDECKUNG": {
+    "numbers": [
+      1.59654
+    ],
+    "values": [
+      "1.59654"
+    ]
+  },
+  "GEOMETRIEDATEN/GLEITFAKTOR_KOPF": {
+    "numbers": [
+      0.34785,
+      0.35001
+    ],
+    "values": [
+      "0.34785",
+      "0.35001"
+    ]
+  },
+  "GEOMETRIEDATEN/GRUNDKREISDURCHM": {
+    "numbers": [
+      9.39693,
+      19.2637
+    ],
+    "values": [
+      "9.39693",
+      "19.26370"
+    ]
+  },
+  "GEOMETRIEDATEN/HOEHE_UEBER_ZAHNSEHNE": {
+    "numbers": [
+      0.43912,
+      0.50619
+    ],
+    "values": [
+      "0.43912",
+      "0.50619"
+    ]
+  },
+  "GEOMETRIEDATEN/KOPFEINGRSTRECKE": {
+    "numbers": [
+      1.17465,
+      1.18196
+    ],
+    "values": [
+      "1.17465",
+      "1.18196"
+    ]
+  },
+  "GEOMETRIEDATEN/KOPFFORMKREISDURCHM": {
+    "numbers": [
+      11.1,
+      21.55
+    ],
+    "values": [
+      "11.10000",
+      "21.55000"
+    ]
+  },
+  "GEOMETRIEDATEN/KOPFHOEHE": {
+    "numbers": [
+      0.55,
+      0.525
+    ],
+    "values": [
+      "0.55000",
+      "0.52500"
+    ]
+  },
+  "GEOMETRIEDATEN/KOPFKANTENBRUCH": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/KOPFKREISDURCHM": {
+    "numbers": [
+      11.1,
+      21.55
+    ],
+    "values": [
+      "11.10000",
+      "21.55000"
+    ]
+  },
+  "GEOMETRIEDATEN/KOPFSPIEL": {
+    "numbers": [
+      0.21297,
+      0.18962
+    ],
+    "values": [
+      "0.21297",
+      "0.18962"
+    ]
+  },
+  "GEOMETRIEDATEN/MESSSTUECKDURCHM": {
+    "numbers": [
+      1.1,
+      1.0
+    ],
+    "values": [
+      "1.10000",
+      "1.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/MESSSTUECKDURCHM_V": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/MESSZAEHNEZAHL": {
+    "numbers": [
+      3.0,
+      5.0
+    ],
+    "values": [
+      "3",
+      "5"
+    ]
+  },
+  "GEOMETRIEDATEN/MESSZAEHNEZAHL_V": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0",
+      "0"
+    ]
+  },
+  "GEOMETRIEDATEN/MITTENVERSATZ": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALEINGRIFFSWINKEL": {
+    "numbers": [
+      20.0
+    ],
+    "values": [
+      "20.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALEINGRTEILUNG": {
+    "numbers": [
+      1.47607
+    ],
+    "values": [
+      "1.47607"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALFLSPIEL_OB_ZABM": {
+    "numbers": [
+      0.10619
+    ],
+    "values": [
+      "0.10619"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALFLSPIEL_UNT_ZABM": {
+    "numbers": [
+      0.15317
+    ],
+    "values": [
+      "0.15317"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALFLSP_AEND_A_AE": {
+    "numbers": [
+      0.00638
+    ],
+    "values": [
+      "0.00638"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALFLSP_AEND_A_AI": {
+    "numbers": [
+      -0.00638
+    ],
+    "values": [
+      "-0.00638"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALMODUL": {
+    "numbers": [
+      0.5
+    ],
+    "values": [
+      "0.50000"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALTEILUNG": {
+    "numbers": [
+      1.5708
+    ],
+    "values": [
+      "1.57080"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMAL_DIAMETRAL_PITCH": {
+    "numbers": [
+      50.8
+    ],
+    "values": [
+      "50.80000"
+    ]
+  },
+  "GEOMETRIEDATEN/NUTZKREISDURCHM_FUSS": {
+    "numbers": [
+      9.47261,
+      19.88867
+    ],
+    "values": [
+      "9.47261",
+      "19.88867"
+    ]
+  },
+  "GEOMETRIEDATEN/NUTZKREISDURCHM_KOPF": {
+    "numbers": [
+      11.1,
+      21.55
+    ],
+    "values": [
+      "11.10000",
+      "21.55000"
+    ]
+  },
+  "GEOMETRIEDATEN/OBERES_ABM_ZAHNSEHNE": {
+    "numbers": [
+      -0.048,
+      -0.065
+    ],
+    "values": [
+      "-0.04800",
+      "-0.06500"
+    ]
+  },
+  "GEOMETRIEDATEN/OBERES_ACHSABSTANDSABM": {
+    "numbers": [
+      0.009
+    ],
+    "values": [
+      "0.00900"
+    ]
+  },
+  "GEOMETRIEDATEN/OBERES_DIAMETR_ABMASS": {
+    "numbers": [
+      -0.0898,
+      -0.14771
+    ],
+    "values": [
+      "-0.08980",
+      "-0.14771"
+    ]
+  },
+  "GEOMETRIEDATEN/OBERES_ZAHNDICKENABM": {
+    "numbers": [
+      -0.048,
+      -0.065
+    ],
+    "values": [
+      "-0.04800",
+      "-0.06500"
+    ]
+  },
+  "GEOMETRIEDATEN/OBERES_ZAHNWEITENABM": {
+    "numbers": [
+      -0.04511,
+      -0.06108
+    ],
+    "values": [
+      "-0.04511",
+      "-0.06108"
+    ]
+  },
+  "GEOMETRIEDATEN/PROFILUEBERDECKUNG": {
+    "numbers": [
+      1.59654
+    ],
+    "values": [
+      "1.59654"
+    ]
+  },
+  "GEOMETRIEDATEN/PROFILVERSCHIEBFAKTOR": {
+    "numbers": [
+      0.1,
+      0.05
+    ],
+    "values": [
+      "0.10000",
+      "0.05000"
+    ]
+  },
+  "GEOMETRIEDATEN/PROFILVERSCHIEBUNG": {
+    "numbers": [
+      0.05,
+      0.025
+    ],
+    "values": [
+      "0.05000",
+      "0.02500"
+    ]
+  },
+  "GEOMETRIEDATEN/PROTUBERANZBETRAG": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/PROTUBERANZHOEHENF": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/PROTUBERANZWINKEL": {
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "values": [
+      "20.00000",
+      "20.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/RESTDICKE": {
+    "numbers": [
+      0.27557,
+      0.30795
+    ],
+    "values": [
+      "0.27557",
+      "0.30795"
+    ]
+  },
+  "GEOMETRIEDATEN/SCHRAEGUNGSWINKEL_GRUND": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SCHRAEGUNGSWINKEL_TEILK": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SPEZ_GLEITEN_FUSS": {
+    "numbers": [
+      -2.94295,
+      -1.44853
+    ],
+    "values": [
+      "-2.94295",
+      "-1.44853"
+    ]
+  },
+  "GEOMETRIEDATEN/SPEZ_GLEITEN_KOPF": {
+    "numbers": [
+      0.59159,
+      0.74638
+    ],
+    "values": [
+      "0.59159",
+      "0.74638"
+    ]
+  },
+  "GEOMETRIEDATEN/SPRUNGUEBERDECKUNG": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SR_FUSSFORMKREISDM": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SR_KOPFKREISDURCHM": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SR_PROFILVERSCHFAKTOR": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SR_PROTUBERANZHOEHENF": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SR_RADIALBETRAG": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SR_ZAEHNEZAHL": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0",
+      "0"
+    ]
+  },
+  "GEOMETRIEDATEN/STANDUEBERSETZUNG_OH": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/STANDUEBERSETZUNG_OZ": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/STIRNEINGRIFFSWINKEL": {
+    "numbers": [
+      20.0
+    ],
+    "values": [
+      "20.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/STIRNEINGRTEILUNG": {
+    "numbers": [
+      1.47607
+    ],
+    "values": [
+      "1.47607"
+    ]
+  },
+  "GEOMETRIEDATEN/STIRNMODUL": {
+    "numbers": [
+      0.5,
+      0.5
+    ],
+    "values": [
+      "0.50000",
+      "0.50000"
+    ]
+  },
+  "GEOMETRIEDATEN/STIRNTEILUNG": {
+    "numbers": [
+      1.5708
+    ],
+    "values": [
+      "1.57080"
+    ]
+  },
+  "GEOMETRIEDATEN/SUMME_X": {
+    "numbers": [
+      0.15
+    ],
+    "values": [
+      "0.15000"
+    ]
+  },
+  "GEOMETRIEDATEN/TEILKREISDURCHM": {
+    "numbers": [
+      10.0,
+      20.5
+    ],
+    "values": [
+      "10.00000",
+      "20.50000"
+    ]
+  },
+  "GEOMETRIEDATEN/TOLERANZFELD_JS": {
+    "numbers": [
+      7.0
+    ],
+    "values": [
+      "7"
+    ]
+  },
+  "GEOMETRIEDATEN/TOLERANZREIHE": {
+    "numbers": [
+      25.0,
+      25.0
+    ],
+    "values": [
+      "25",
+      "25"
+    ]
+  },
+  "GEOMETRIEDATEN/UEBERSETZUNG_SONNE_STEG": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/UMLAUFUEBERSETZUNG": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/UNTERES_ABM_ZAHNSEHNE": {
+    "numbers": [
+      -0.068,
+      -0.095
+    ],
+    "values": [
+      "-0.06800",
+      "-0.09500"
+    ]
+  },
+  "GEOMETRIEDATEN/UNTERES_ACHSABSTANDSABM": {
+    "numbers": [
+      -0.009
+    ],
+    "values": [
+      "-0.00900"
+    ]
+  },
+  "GEOMETRIEDATEN/UNTERES_DIAMETR_ABMASS": {
+    "numbers": [
+      -0.12789,
+      -0.21766
+    ],
+    "values": [
+      "-0.12789",
+      "-0.21766"
+    ]
+  },
+  "GEOMETRIEDATEN/UNTERES_ZAHNDICKENABM": {
+    "numbers": [
+      -0.068,
+      -0.095
+    ],
+    "values": [
+      "-0.06800",
+      "-0.09500"
+    ]
+  },
+  "GEOMETRIEDATEN/UNTERES_ZAHNWEITENABM": {
+    "numbers": [
+      -0.0639,
+      -0.08927
+    ],
+    "values": [
+      "-0.06390",
+      "-0.08927"
+    ]
+  },
+  "GEOMETRIEDATEN/VERDREHFLSPIEL_OB_ZABM": {
+    "numbers": [
+      0.11355
+    ],
+    "values": [
+      "0.11355"
+    ]
+  },
+  "GEOMETRIEDATEN/VERDREHFLSPIEL_UNT_ZABM": {
+    "numbers": [
+      0.16379
+    ],
+    "values": [
+      "0.16379"
+    ]
+  },
+  "GEOMETRIEDATEN/VERDREHFLSP_AEND_A_AE": {
+    "numbers": [
+      0.00682
+    ],
+    "values": [
+      "0.00682"
+    ]
+  },
+  "GEOMETRIEDATEN/VERDREHFLSP_AEND_A_AI": {
+    "numbers": [
+      -0.00682
+    ],
+    "values": [
+      "-0.00682"
+    ]
+  },
+  "GEOMETRIEDATEN/VERZAHNUNGSQUALITAET": {
+    "numbers": [],
+    "values": [
+      "N7",
+      "N7"
+    ]
+  },
+  "GEOMETRIEDATEN/VIRTUELLE_ZAEHNEZAHL": {
+    "numbers": [
+      20.0,
+      41.0
+    ],
+    "values": [
+      "20.00000",
+      "41.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/WAELZKREISDURCHM": {
+    "numbers": [
+      10.04831,
+      20.59904
+    ],
+    "values": [
+      "10.04831",
+      "20.59904"
+    ]
+  },
+  "GEOMETRIEDATEN/WKZ_FUSSFORMHOEHENF": {
+    "numbers": [
+      1.3,
+      1.3
+    ],
+    "values": [
+      "1.30000",
+      "1.30000"
+    ]
+  },
+  "GEOMETRIEDATEN/WKZ_FUSSHOEHENF": {
+    "numbers": [
+      1.3,
+      1.3
+    ],
+    "values": [
+      "1.30000",
+      "1.30000"
+    ]
+  },
+  "GEOMETRIEDATEN/WKZ_KOPFABRUNDUNGSF": {
+    "numbers": [
+      0.2,
+      0.2
+    ],
+    "values": [
+      "0.20000",
+      "0.20000"
+    ]
+  },
+  "GEOMETRIEDATEN/WKZ_KOPFHOEHENFAKTOR": {
+    "numbers": [
+      1.25,
+      1.25
+    ],
+    "values": [
+      "1.25000",
+      "1.25000"
+    ]
+  },
+  "GEOMETRIEDATEN/WKZ_NORMALEINGRWINKEL": {
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "values": [
+      "20.00000",
+      "20.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/WKZ_NORMALMODUL": {
+    "numbers": [
+      0.5,
+      0.5
+    ],
+    "values": [
+      "0.50000",
+      "0.50000"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAEHNEZAHL": {
+    "numbers": [
+      20.0,
+      41.0
+    ],
+    "values": [
+      "20",
+      "41"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAEHNEZAHLVERHAELTNIS": {
+    "numbers": [
+      2.05
+    ],
+    "values": [
+      "2.05000"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNBREITE": {
+    "numbers": [
+      6.0,
+      6.0
+    ],
+    "values": [
+      "6.00000",
+      "6.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNDICKENSEHNE": {
+    "numbers": [
+      0.74082,
+      0.78607
+    ],
+    "values": [
+      "0.74082",
+      "0.78607"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNDICKE_KOPF": {
+    "numbers": [
+      0.27557,
+      0.30795
+    ],
+    "values": [
+      "0.27557",
+      "0.30795"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNDICKE_NORMAL": {
+    "numbers": [
+      0.8218,
+      0.8036
+    ],
+    "values": [
+      "0.82180",
+      "0.80360"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNDICKE_STIRNSCHNITT": {
+    "numbers": [
+      0.8218,
+      0.8036
+    ],
+    "values": [
+      "0.82180",
+      "0.80360"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNHOEHE": {
+    "numbers": [
+      1.19094,
+      1.21429
+    ],
+    "values": [
+      "1.19094",
+      "1.21429"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNLUECKE_NORMAL": {
+    "numbers": [
+      0.749,
+      0.7672
+    ],
+    "values": [
+      "0.74900",
+      "0.76720"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNWEITE": {
+    "numbers": [
+      3.86442,
+      6.94651
+    ],
+    "values": [
+      "3.86442",
+      "6.94651"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNWEITENABMASSFAKTOR": {
+    "numbers": [
+      0.93969,
+      0.93969
+    ],
+    "values": [
+      "0.93969",
+      "0.93969"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNWEITE_V": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  }
+}

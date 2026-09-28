@@ -1,0 +1,28 @@
+{
+  "additionalProperties": false,
+  "description": "Base tangent length W_k over k teeth (DIN 21773:2014 §7) as an alternative to x.",
+  "properties": {
+    "span_mm": {
+      "description": "ZAHNWEITE",
+      "exclusiveMinimum": 0.0,
+      "symbol": "W_k",
+      "title": "Span Mm",
+      "type": "number",
+      "unit": "mm"
+    },
+    "teeth": {
+      "description": "MESSZAEHNEZAHL",
+      "minimum": 2,
+      "symbol": "k",
+      "title": "Teeth",
+      "type": "integer",
+      "unit": "-"
+    }
+  },
+  "required": [
+    "span_mm",
+    "teeth"
+  ],
+  "title": "SpanMeasurement",
+  "type": "object"
+}

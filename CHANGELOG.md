@@ -1,13 +1,53 @@
 # Changelog
 
-All notable changes to this project's FE / analysis toolchain (under
-[`20_code/`](20_code/)) are documented in this file.
+All notable changes to this project's code (under [`20_code/`](20_code/)) are
+documented in this file. Entries before 2026-09-28 refer to the legacy workbench,
+now archived read-only under `30_references_and_examples/38_legacy_workbench/`
+(git tag `legacy-workbench-final`).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
 ## [Unreleased]
+
+### Changed (restart of the workbench, 2026-09-28, ADR-101)
+User decision: the legacy FastAPI/Next.js workbench (22k LOC backend, 65 open
+adversarial findings) is retired; the toolchain is rebuilt from the ground up in
+small, adversarially gated increments.
+- **Legacy code archived**: `20_code/` moved to
+  `30_references_and_examples/38_legacy_workbench/` (git-ignored, read-only, never
+  imported); history preserved under tag `legacy-workbench-final` (= 4af1d2b).
+- **New code tree** `20_code/`: `10_gearcore/` — pydantic domain package `gearcore`
+  (src layout, one norm equation = one traced function), `00_development_documentation/`
+  (new ADR series 101+, norm map, adversarial-gate protocol, extension points).
+- **Notebooks** in `40_jupyter-notebooks/` are executable norm documentation that
+  import `gearcore` and run in CI (nbmake); they never implement formulas.
+- CI rebuilt for the new package; Docker job removed until the API/UI stage.
+
+### Added (increment 0 - foundation of the geometry chain, 2026-09-28, ADR-102...105)
+- `gearcore` package skeleton: typed errors, domain-checked math (`_safe`), `@eq` traceability
+  registry + verified `sources.yaml` (ADR-103), frozen pydantic contracts (`ToolProfile`,
+  `GearInput`, `PairInput`, `MaterialRecord` with steel/plastic layers), STplus parsers
+  (`.ste` incl. multi-pair lines and interface-file keys, `.sta` report grammar with explicit
+  symbol registry, contour export).
+- STplus oracle (`scripts/stplus_oracle.py`, ADR-102): batch runs of the local 11.1F
+  installation with contour export and interface file, import of supplied listings with trust
+  levels. 15 packaged fixture cases (kst-A/B/C/E supplied + 11.1F re-runs, FZG-C, six adversarial
+  variants incl. undercut, helix 20/30 deg, m_n 0.5, x = -0.8).
+- Test harness: hypothesis profiles, fixture-parametrised parser tests, traceability guards
+  (unknown source keys, missing `@eq`, ISBN checksums). mypy --strict clean.
+- Notebook template and index (`40_jupyter-notebooks/`), executed in CI via nbmake; scripts for
+  the traceability table, source verification (Crossref/ISBN) and JSON schema export.
+- **Adversarial gate 0 passed** (read-only reviewer, 37 findings, 0 P0): tool pressure angle /
+  module now inherit the gear values (`None`), `AUFTEILUNG_X1X2 != 0` and `PR.VERSCH.SUMME` raise
+  `NotSupportedError`, STplus number grammar enforced (no silent `int()` truncation, malformed
+  tokens are `ParseError`), per-gear single-value semantics per manual §3.2, `MESSZAEHNEZAHL_K` no
+  longer stands in for the span tooth count, DIN/ISO quality systems kept apart (`QualitySystem`),
+  duplicate keys/blocks rejected, `.sta` series letters vs single-letter symbols disambiguated,
+  `p_x` and two-token units (`Grad C`) parsed, bare `Pair` rejects NaN, fixture hashes and case
+  counts tested, pre-commit no longer rewrites fixtures, property-based tests for contracts and
+  the `.ste` parser, oracle never adopts foreign contour files from `bin/`.
 
 ### Added (session save/load + sidebar recall, 2026-08-19, ADR-031)
 User requirement: "Sitzung als File speichern … alle eingestellten Parameter und

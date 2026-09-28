@@ -1,0 +1,177 @@
+{
+  "$defs": {
+    "ToolKind": {
+      "enum": [
+        "rack",
+        "shaper",
+        "profile"
+      ],
+      "title": "ToolKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Tool reference profile of a rack-type tool (DIN ISO 21771:2014 §7.1; DIN 3972; DIN 867).\n\nHeight factors refer to the tool normal module ``m_n0``. ``normal_module_mm`` and\n``pressure_angle_deg`` default to ``None`` = \"same as the gear\" (STplus manual §4.16.2: tool\nmodule and pressure angle are entered only when they deviate from the gear). Other optional\nfields stay ``None`` when the tool does not define them; the generation module then applies the\nnorm default and reports it in ``warnings`` — never a silent fallback inside the model.",
+  "properties": {
+    "kind": {
+      "$ref": "#/$defs/ToolKind",
+      "default": "rack"
+    },
+    "name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "STplus section name ($ WKZ_...)",
+      "title": "Name"
+    },
+    "normal_module_mm": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "WKZ_NORMALMODUL; None = gear normal module",
+      "symbol": "m_n0",
+      "title": "Normal Module Mm",
+      "unit": "mm"
+    },
+    "pressure_angle_deg": {
+      "anyOf": [
+        {
+          "maximum": 30.0,
+          "minimum": 10.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "WKZ_EINGRIFFSWINKEL; None = gear pressure angle",
+      "symbol": "alpha_P0",
+      "title": "Pressure Angle Deg",
+      "unit": "deg"
+    },
+    "addendum_factor": {
+      "description": "KOPFHOEHENFAKTOR — tool addendum = gear dedendum factor",
+      "exclusiveMinimum": 0.0,
+      "maximum": 2.5,
+      "symbol": "h_aP0*",
+      "title": "Addendum Factor",
+      "type": "number",
+      "unit": "-"
+    },
+    "tip_radius_factor": {
+      "description": "KOPFABRUNDUNGSFAKTOR — tool tip rounding",
+      "maximum": 0.6,
+      "minimum": 0.0,
+      "symbol": "rho_aP0*",
+      "title": "Tip Radius Factor",
+      "type": "number",
+      "unit": "-"
+    },
+    "dedendum_factor": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0.0,
+          "maximum": 2.5,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "FUSSHOEHENFAKTOR — tool dedendum",
+      "symbol": "h_fP0*",
+      "title": "Dedendum Factor",
+      "unit": "-"
+    },
+    "root_form_height_factor": {
+      "anyOf": [
+        {
+          "maximum": 2.5,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "FUSSFORMHOEHENFAKTOR — start of the tool's edge-break flank",
+      "symbol": "h_FfP0*",
+      "title": "Root Form Height Factor",
+      "unit": "-"
+    },
+    "edge_break_angle_deg": {
+      "anyOf": [
+        {
+          "exclusiveMaximum": 90.0,
+          "exclusiveMinimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "KANTENBRECHWINKEL — tool-cut tip chamfer flank angle",
+      "symbol": "alpha_K0",
+      "title": "Edge Break Angle Deg",
+      "unit": "deg"
+    },
+    "protuberance_mm": {
+      "default": 0.0,
+      "description": "PROTUBERANZBETRAG (extension point)",
+      "minimum": 0.0,
+      "symbol": "pr_P0",
+      "title": "Protuberance Mm",
+      "type": "number",
+      "unit": "mm"
+    },
+    "protuberance_angle_deg": {
+      "anyOf": [
+        {
+          "exclusiveMaximum": 90.0,
+          "exclusiveMinimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "PROTUBERANZWINKEL (extension point)",
+      "symbol": "alpha_prP0",
+      "title": "Protuberance Angle Deg",
+      "unit": "deg"
+    },
+    "machining_allowance_mm": {
+      "default": 0.0,
+      "description": "BEARBEITUNGSZUGABE per flank (extension point)",
+      "minimum": 0.0,
+      "symbol": "q",
+      "title": "Machining Allowance Mm",
+      "type": "number",
+      "unit": "mm"
+    }
+  },
+  "required": [
+    "addendum_factor",
+    "tip_radius_factor"
+  ],
+  "title": "ToolProfile",
+  "type": "object"
+}

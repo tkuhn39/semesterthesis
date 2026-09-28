@@ -1,0 +1,81 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gearcore"
+version = "2.0.0a0"
+description = "Norm-traceable involute cylindrical gear geometry (DIN ISO 21771, DIN 21773, DIN 3967/3964, DIN ISO 1328) with pydantic data contracts"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Tim Kuhn" }]
+dependencies = [
+  "pydantic>=2.13,<3",
+  "numpy>=2.4",
+  "scipy>=1.17",
+  "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9",
+  "pytest-cov",
+  "hypothesis>=6.130",
+  "ruff>=0.15",
+  "mypy>=1.19",
+  "types-PyYAML",
+  "nbmake>=1.5",
+  "nbstripout>=0.8",
+  "nbformat",
+  "ipykernel",
+  "jupyterlab",
+  "matplotlib>=3.11",
+  "pandas>=3",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gearcore"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["build"]
+
+[tool.ruff.lint]
+# pycodestyle/pyflakes (E,F), imports (I), bugbear (B), pyupgrade (UP), comprehensions (C4),
+# naming (N), simplify (SIM), tidy-imports (TID) for the legacy import ban
+select = ["E", "F", "I", "B", "UP", "C4", "N", "SIM", "TID"]
+# Norm symbols are mixed case on purpose (alpha_wt, d_Ff, W_k, M_dK ...)
+ignore = ["N802", "N803", "N806", "N815", "N816"]
+
+[tool.ruff.lint.pycodestyle]
+# the formatter wraps code at 100; docstrings, comments and messages may run to 120
+max-line-length = 120
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"app".msg = "The legacy workbench (30_references_and_examples/38_legacy_workbench) is read-only reference; never import it."
+
+[tool.ruff.lint.isort]
+known-first-party = ["gearcore"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["scipy.*", "hypothesis.*", "nbformat.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+  "eq(source, eq): links a test to a norm equation (source key from sources.yaml, equation label)",
+  "oracle: compares against STplus oracle fixtures",
+]

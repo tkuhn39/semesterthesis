@@ -1,0 +1,27 @@
+{
+  "case": "kst_a",
+  "contour_format": null,
+  "contours": [],
+  "import_date": "2026-09-28T18:52:25+02:00",
+  "interface_file": null,
+  "material_kinds": {},
+  "notes": "z 72/108, m_n 1, a 91.5; geometry only; user: not confirmed",
+  "origin": "supplied",
+  "sections": [
+    "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "Besonderheiten der Radpaarung:"
+  ],
+  "source_sta": "30_references_and_examples/33_STplus/weitere_Konfigurationen/kst-A_ausgabe.sta",
+  "source_ste": "30_references_and_examples/33_STplus/weitere_Konfigurationen/kst-A_eingabe.ste",
+  "ste_sha256": "14bd6999160deaea96b31ef112d6439425f8cf6ea100f3ebc120cb456bac1843",
+  "stplus_version": "6.0.9",
+  "trust": "unverified",
+  "typed_import": {
+    "notes": [],
+    "ok": true,
+    "unmapped_keys": [
+      "BR.MITTENVERSATZ",
+      "FASE"
+    ]
+  }
+}

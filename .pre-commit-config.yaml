@@ -5,9 +5,9 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
-        exclude: ^(10_report/|00_literatur/)
+        exclude: ^(10_report/|00_literatur/|20_code/10_gearcore/src/gearcore/data/stplus/)
       - id: end-of-file-fixer
-        exclude: ^(10_report/|00_literatur/)
+        exclude: ^(10_report/|00_literatur/|20_code/10_gearcore/src/gearcore/data/stplus/)
       - id: check-yaml
       - id: check-toml
       - id: check-merge-conflict
@@ -15,10 +15,16 @@ repos:
         args: ["--maxkb=2048"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.0
+    rev: v0.15.0
     hooks:
       - id: ruff
         args: ["--fix"]
-        files: ^20_code/
+        files: ^(20_code|40_jupyter-notebooks)/
       - id: ruff-format
-        files: ^20_code/
+        files: ^(20_code|40_jupyter-notebooks)/
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
+        files: ^40_jupyter-notebooks/.*\.ipynb$

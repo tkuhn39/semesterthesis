@@ -1,0 +1,549 @@
+{
+  "$defs": {
+    "GearStrength": {
+      "additionalProperties": false,
+      "description": "Gear-specific strength values. Steel: ISO 6336-5 / DIN 3990-5. Plastic: VDI 2736-2 tables.",
+      "properties": {
+        "sigma_Hlim_MPa": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "allowable contact stress number",
+          "symbol": "sigma_Hlim",
+          "title": "Sigma Hlim Mpa",
+          "unit": "MPa"
+        },
+        "sigma_FE_MPa": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "allowable bending stress number (notched, steel)",
+          "symbol": "sigma_FE",
+          "title": "Sigma Fe Mpa",
+          "unit": "MPa"
+        },
+        "sigma_Flim_MPa": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "nominal bending stress number",
+          "symbol": "sigma_Flim",
+          "title": "Sigma Flim Mpa",
+          "unit": "MPa"
+        },
+        "n_ref_H": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "reference cycles (DIN3990/87_NL_REF_H)",
+          "symbol": "N_L,ref,H",
+          "title": "N Ref H",
+          "unit": "-"
+        },
+        "n_ref_F": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "reference cycles (DIN3990/87_NL_REF_F)",
+          "symbol": "N_L,ref,F",
+          "title": "N Ref F",
+          "unit": "-"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "provenance"
+      ],
+      "title": "GearStrength",
+      "type": "object"
+    },
+    "MaterialKind": {
+      "description": "Steel and plastic branches are never mixed; every material-dependent function dispatches on this.",
+      "enum": [
+        "steel",
+        "plastic"
+      ],
+      "title": "MaterialKind",
+      "type": "string"
+    },
+    "PolymerData": {
+      "additionalProperties": false,
+      "description": "ISO 10350 single-point values as printed on CAMPUS datasheets (dry / conditioned).",
+      "properties": {
+        "tensile_modulus_dry_MPa": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Zug-Modul trocken (ISO 527)",
+          "symbol": "E_t,dry",
+          "title": "Tensile Modulus Dry Mpa",
+          "unit": "MPa"
+        },
+        "tensile_modulus_cond_MPa": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Zug-Modul konditioniert (ISO 527)",
+          "symbol": "E_t,cond",
+          "title": "Tensile Modulus Cond Mpa",
+          "unit": "MPa"
+        },
+        "poisson_ratio": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 0.5,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "",
+          "symbol": "nu",
+          "title": "Poisson Ratio",
+          "unit": "-"
+        },
+        "yield_stress_dry_MPa": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Streckspannung trocken",
+          "symbol": "sigma_y,dry",
+          "title": "Yield Stress Dry Mpa",
+          "unit": "MPa"
+        },
+        "break_stress_dry_MPa": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Bruchspannung trocken",
+          "symbol": "sigma_b,dry",
+          "title": "Break Stress Dry Mpa",
+          "unit": "MPa"
+        },
+        "density_kg_m3": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Dichte (ISO 1183)",
+          "symbol": "rho",
+          "title": "Density Kg M3",
+          "unit": "kg/m3"
+        },
+        "melting_temperature_C": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Schmelztemperatur (ISO 11357)",
+          "symbol": "T_m",
+          "title": "Melting Temperature C",
+          "unit": "degC"
+        },
+        "glass_transition_C": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Glasuebergangstemperatur (ISO 11357)",
+          "symbol": "T_g",
+          "title": "Glass Transition C",
+          "unit": "degC"
+        },
+        "hdt_1_8MPa_C": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Formbestaendigkeitstemperatur 1,80 MPa (ISO 75)",
+          "symbol": "HDT_A",
+          "title": "Hdt 1 8Mpa C",
+          "unit": "degC"
+        },
+        "clte_parallel_1e6_per_K": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Laengenausdehnungskoeffizient laengs",
+          "symbol": "alpha_L",
+          "title": "Clte Parallel 1E6 Per K",
+          "unit": "1e-6/K"
+        },
+        "moisture_absorption_pct": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Feuchtigkeitsaufnahme (ISO 62)",
+          "symbol": "-",
+          "title": "Moisture Absorption Pct",
+          "unit": "%"
+        },
+        "filler": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "e.g. 'GF30'",
+          "symbol": "-",
+          "title": "Filler",
+          "unit": "-"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "provenance"
+      ],
+      "title": "PolymerData",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Where a set of values comes from.",
+      "properties": {
+        "source": {
+          "description": "source key (sources.yaml) or file name, e.g. 'STplus:kst-E_eingabe.ste'",
+          "symbol": "-",
+          "title": "Source",
+          "type": "string",
+          "unit": "-"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "table / page / block within the source",
+          "symbol": "-",
+          "title": "Location",
+          "unit": "-"
+        },
+        "retrieved": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO date of retrieval or transcription",
+          "symbol": "-",
+          "title": "Retrieved",
+          "unit": "-"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "SteelData": {
+      "additionalProperties": false,
+      "properties": {
+        "youngs_modulus_MPa": {
+          "description": "ELASTIZITAETSMODUL",
+          "exclusiveMinimum": 0.0,
+          "symbol": "E",
+          "title": "Youngs Modulus Mpa",
+          "type": "number",
+          "unit": "MPa"
+        },
+        "poisson_ratio": {
+          "description": "QUERKONTRAKTIONSZAHL",
+          "exclusiveMaximum": 0.5,
+          "exclusiveMinimum": 0.0,
+          "symbol": "nu",
+          "title": "Poisson Ratio",
+          "type": "number",
+          "unit": "-"
+        },
+        "density_kg_m3": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "DICHTE_RADKRANZMATERIAL",
+          "symbol": "rho",
+          "title": "Density Kg M3",
+          "unit": "kg/m3"
+        },
+        "heat_treatment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "WAERMEBEHANDLUNG",
+          "symbol": "-",
+          "title": "Heat Treatment",
+          "unit": "-"
+        },
+        "surface_hardness_HV": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "OBERFLAECHENHAERTE",
+          "symbol": "HV_surface",
+          "title": "Surface Hardness Hv",
+          "unit": "HV"
+        },
+        "core_hardness_HV": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "KERNHAERTE_ZAHN",
+          "symbol": "HV_core",
+          "title": "Core Hardness Hv",
+          "unit": "HV"
+        },
+        "yield_strength_MPa": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "STRECKGRENZE_SIGMA02",
+          "symbol": "R_p0.2",
+          "title": "Yield Strength Mpa",
+          "unit": "MPa"
+        },
+        "tensile_strength_MPa": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "BRUCHGRENZE",
+          "symbol": "R_m",
+          "title": "Tensile Strength Mpa",
+          "unit": "MPa"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "youngs_modulus_MPa",
+        "poisson_ratio",
+        "provenance"
+      ],
+      "title": "SteelData",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "$ref": "#/$defs/MaterialKind"
+    },
+    "name": {
+      "description": "record name",
+      "minLength": 1,
+      "symbol": "-",
+      "title": "Name",
+      "type": "string",
+      "unit": "-"
+    },
+    "steel": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SteelData"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "polymer": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PolymerData"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "strength": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GearStrength"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "kind",
+    "name"
+  ],
+  "title": "MaterialRecord",
+  "type": "object"
+}

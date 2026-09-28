@@ -1,0 +1,52 @@
+{
+  "case": "kst_e_rerun",
+  "cfg": "Firmenname = FZG\nSachbearbeiter = gearcore oracle\nEingabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_e_rerun\\eingabe.ste\nAusgabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_e_rerun\\ausgabe.sta\nGraphikdatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_e_rerun\\grafik1.stz\nGraphikdatei_2 = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_e_rerun\\grafik2.stz\nZuordnungsdatei = qelesed.stq\nWerkzeugdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wkz\\wkz.dat\nWerkzeugdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wkz_glob.dat\nWerkzeugdatei_3 = %\nWerkzeugdatei_4 = %\nWerkzeugdatei_5 = %\nWerkzeugdatei_6 = %\nWerkzeugdatei_7 = %\nWerkzeugdatei_8 = %\nWerkzeugdatei_9 = %\nWerkzeugdatei_10 = %\nWerkstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wst\\WST.dat\nWerkstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wst_glob.dat\nSchmierstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\oel\\Oel.dat\nSchmierstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\oel_glob.dat\nPfad_Maskendateien = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\zubeh\\\nSchnittstellendatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_e_rerun\\ausgabe.sts\nSTEP_Konfiguration = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_e_rerun\\config.dat\nPfad_Meldungsausgabe = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_e_rerun\\\n",
+  "contour_format": "zahnkonXwzY.txt: one point per line, `x ; y` in mm (transverse section, scientific notation); one tooth centred on +y from root circle (left flank) over the tip to root circle (right flank)",
+  "contours": [
+    {
+      "columns": 3,
+      "file": "contour_wz1.json",
+      "points": 104,
+      "source": "zahnkon1wz1.txt"
+    },
+    {
+      "columns": 3,
+      "file": "contour_wz2.json",
+      "points": 104,
+      "source": "zahnkon1wz2.txt"
+    }
+  ],
+  "exe": "30_references_and_examples/33_STplus/STplus11-1F/bin/STplus.exe",
+  "exit_code": 0,
+  "interface_file": "interface.sts.txt",
+  "material_kinds": {
+    "16MnCr5": "steel",
+    "WST_PA66": "plastic"
+  },
+  "notes": "kst-E input re-run with 11.1F incl. contour export",
+  "origin": "run",
+  "plot_accuracy": 0.005,
+  "run_date": "2026-09-28T18:52:25+02:00",
+  "scratch": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_e_rerun",
+  "sections": [
+    "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "Besonderheiten der Radpaarung:",
+    "Allgemeine Daten zur Tragfaehigkeit",
+    "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "CCS 1996"
+  ],
+  "source_ste": "30_references_and_examples/33_STplus/weitere_Konfigurationen/kst-E_eingabe.ste",
+  "stdout": " Config file path C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_e_rerun\\\n stplus.cfg passed as CLI parameter. Found file.\n ... Eingabedatenverarbeitung wird durchgefuehrt ...\n ... Geometrieberechnung wird durchgefuehrt ...\n ... Geometrieplots werden gezeichnet ...\n ... Tragfaehigkeitsberechnung wird durchgefuehrt ...\nRuntime:  0.414s\n",
+  "ste_sha256": "6f50cb421eae62c9cf0964932a7c82545b2329dfa51d314bc893c7242529bfdc",
+  "stplus_version": "11.1F",
+  "trust": "generated",
+  "typed_import": {
+    "notes": [
+      "gear 1: ZAHNWEITE 17.09 ignored for x (PROFILVERSCHIEBUNG_N given); it is compared as an inspection dimension instead",
+      "gear 2: ZAHNWEITE 17.18 ignored for x (PROFILVERSCHIEBUNG_N given); it is compared as an inspection dimension instead"
+    ],
+    "ok": true,
+    "unmapped_keys": []
+  }
+}

@@ -1,0 +1,565 @@
+{
+  "$defs": {
+    "GearInput": {
+      "additionalProperties": false,
+      "description": "One gear of a pair. Either ``profile_shift`` or ``span`` (or a and the mate's x) fixes x.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/GearKind",
+          "default": "external"
+        },
+        "teeth": {
+          "description": "ZAEHNEZAHL (>0; negative STplus values map to INTERNAL)",
+          "maximum": 1000,
+          "minimum": 5,
+          "symbol": "z",
+          "title": "Teeth",
+          "type": "integer",
+          "unit": "-"
+        },
+        "profile_shift": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": -2.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "PROFILVERSCHIEBUNG_N — nominal profile shift coefficient",
+          "symbol": "x",
+          "title": "Profile Shift",
+          "unit": "-"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SpanMeasurement"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "face_width_mm": {
+          "description": "ZAHNBREITE",
+          "exclusiveMinimum": 0.0,
+          "maximum": 2000.0,
+          "symbol": "b",
+          "title": "Face Width Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "tip_diameter_mm": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "KOPFKREISDM — given tip diameter; None = from the basic rack",
+          "symbol": "d_a",
+          "title": "Tip Diameter Mm",
+          "unit": "mm"
+        },
+        "tip_chamfer_radial_mm": {
+          "default": 0.0,
+          "description": "KOPFKANTENBRUCH — separately machined tip chamfer (radial amount)",
+          "minimum": 0.0,
+          "symbol": "h_K",
+          "title": "Tip Chamfer Radial Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "tool": {
+          "$ref": "#/$defs/ToolProfile"
+        },
+        "finishing_tool": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ToolProfile"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "material": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MaterialRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "span_teeth": {
+          "anyOf": [
+            {
+              "minimum": 2,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "MESSZAEHNEZAHL_K — teeth for the span check dimension (None = auto per DIN 21773)",
+          "symbol": "k",
+          "title": "Span Teeth",
+          "unit": "-"
+        },
+        "tooth_thickness_allowance_um": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "upper/lower tooth-thickness allowance (DIN 3967 A_sne/A_sni)",
+          "symbol": "E_sns/E_sni",
+          "title": "Tooth Thickness Allowance Um",
+          "unit": "um"
+        },
+        "span_allowance_um": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "OBERES/UNTERES_ZAHNW_ABMASS — upper/lower span allowance",
+          "symbol": "A_We/A_Wi",
+          "title": "Span Allowance Um",
+          "unit": "um"
+        },
+        "allowance_series": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ABMASS_TOL_REIHE — DIN 3967 designation such as 'C25' or 'cd25'",
+          "title": "Allowance Series"
+        },
+        "quality_grade": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "DIN_QUALITAET / ISO_QUALITAET flank tolerance class",
+          "symbol": "Q",
+          "title": "Quality Grade",
+          "unit": "-"
+        },
+        "quality_system": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/QualitySystem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "teeth",
+        "face_width_mm",
+        "tool"
+      ],
+      "title": "GearInput",
+      "type": "object"
+    },
+    "GearKind": {
+      "enum": [
+        "external",
+        "internal"
+      ],
+      "title": "GearKind",
+      "type": "string"
+    },
+    "MaterialKind": {
+      "description": "Steel and plastic branches are never mixed; every material-dependent function dispatches on this.",
+      "enum": [
+        "steel",
+        "plastic"
+      ],
+      "title": "MaterialKind",
+      "type": "string"
+    },
+    "MaterialRef": {
+      "additionalProperties": false,
+      "description": "Reference to a material record (name in the database or in the ``.ste`` file) with its kind.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/MaterialKind"
+        },
+        "name": {
+          "description": "record name, e.g. '16MnCr5' or 'WST_PA66'",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ],
+      "title": "MaterialRef",
+      "type": "object"
+    },
+    "Pair_GearInput_": {
+      "additionalProperties": false,
+      "properties": {
+        "pinion": {
+          "$ref": "#/$defs/GearInput"
+        },
+        "wheel": {
+          "$ref": "#/$defs/GearInput"
+        }
+      },
+      "required": [
+        "pinion",
+        "wheel"
+      ],
+      "title": "Pair[GearInput]",
+      "type": "object"
+    },
+    "QualitySystem": {
+      "description": "Tolerance system a quality grade refers to; DIN 3962 Q7 and ISO 1328 Q7 are not the same.",
+      "enum": [
+        "DIN3962",
+        "ISO1328"
+      ],
+      "title": "QualitySystem",
+      "type": "string"
+    },
+    "SpanMeasurement": {
+      "additionalProperties": false,
+      "description": "Base tangent length W_k over k teeth (DIN 21773:2014 §7) as an alternative to x.",
+      "properties": {
+        "span_mm": {
+          "description": "ZAHNWEITE",
+          "exclusiveMinimum": 0.0,
+          "symbol": "W_k",
+          "title": "Span Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "teeth": {
+          "description": "MESSZAEHNEZAHL",
+          "minimum": 2,
+          "symbol": "k",
+          "title": "Teeth",
+          "type": "integer",
+          "unit": "-"
+        }
+      },
+      "required": [
+        "span_mm",
+        "teeth"
+      ],
+      "title": "SpanMeasurement",
+      "type": "object"
+    },
+    "ToolKind": {
+      "enum": [
+        "rack",
+        "shaper",
+        "profile"
+      ],
+      "title": "ToolKind",
+      "type": "string"
+    },
+    "ToolProfile": {
+      "additionalProperties": false,
+      "description": "Tool reference profile of a rack-type tool (DIN ISO 21771:2014 §7.1; DIN 3972; DIN 867).\n\nHeight factors refer to the tool normal module ``m_n0``. ``normal_module_mm`` and\n``pressure_angle_deg`` default to ``None`` = \"same as the gear\" (STplus manual §4.16.2: tool\nmodule and pressure angle are entered only when they deviate from the gear). Other optional\nfields stay ``None`` when the tool does not define them; the generation module then applies the\nnorm default and reports it in ``warnings`` — never a silent fallback inside the model.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/ToolKind",
+          "default": "rack"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "STplus section name ($ WKZ_...)",
+          "title": "Name"
+        },
+        "normal_module_mm": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "WKZ_NORMALMODUL; None = gear normal module",
+          "symbol": "m_n0",
+          "title": "Normal Module Mm",
+          "unit": "mm"
+        },
+        "pressure_angle_deg": {
+          "anyOf": [
+            {
+              "maximum": 30.0,
+              "minimum": 10.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "WKZ_EINGRIFFSWINKEL; None = gear pressure angle",
+          "symbol": "alpha_P0",
+          "title": "Pressure Angle Deg",
+          "unit": "deg"
+        },
+        "addendum_factor": {
+          "description": "KOPFHOEHENFAKTOR — tool addendum = gear dedendum factor",
+          "exclusiveMinimum": 0.0,
+          "maximum": 2.5,
+          "symbol": "h_aP0*",
+          "title": "Addendum Factor",
+          "type": "number",
+          "unit": "-"
+        },
+        "tip_radius_factor": {
+          "description": "KOPFABRUNDUNGSFAKTOR — tool tip rounding",
+          "maximum": 0.6,
+          "minimum": 0.0,
+          "symbol": "rho_aP0*",
+          "title": "Tip Radius Factor",
+          "type": "number",
+          "unit": "-"
+        },
+        "dedendum_factor": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 2.5,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "FUSSHOEHENFAKTOR — tool dedendum",
+          "symbol": "h_fP0*",
+          "title": "Dedendum Factor",
+          "unit": "-"
+        },
+        "root_form_height_factor": {
+          "anyOf": [
+            {
+              "maximum": 2.5,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "FUSSFORMHOEHENFAKTOR — start of the tool's edge-break flank",
+          "symbol": "h_FfP0*",
+          "title": "Root Form Height Factor",
+          "unit": "-"
+        },
+        "edge_break_angle_deg": {
+          "anyOf": [
+            {
+              "exclusiveMaximum": 90.0,
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "KANTENBRECHWINKEL — tool-cut tip chamfer flank angle",
+          "symbol": "alpha_K0",
+          "title": "Edge Break Angle Deg",
+          "unit": "deg"
+        },
+        "protuberance_mm": {
+          "default": 0.0,
+          "description": "PROTUBERANZBETRAG (extension point)",
+          "minimum": 0.0,
+          "symbol": "pr_P0",
+          "title": "Protuberance Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "protuberance_angle_deg": {
+          "anyOf": [
+            {
+              "exclusiveMaximum": 90.0,
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "PROTUBERANZWINKEL (extension point)",
+          "symbol": "alpha_prP0",
+          "title": "Protuberance Angle Deg",
+          "unit": "deg"
+        },
+        "machining_allowance_mm": {
+          "default": 0.0,
+          "description": "BEARBEITUNGSZUGABE per flank (extension point)",
+          "minimum": 0.0,
+          "symbol": "q",
+          "title": "Machining Allowance Mm",
+          "type": "number",
+          "unit": "mm"
+        }
+      },
+      "required": [
+        "addendum_factor",
+        "tip_radius_factor"
+      ],
+      "title": "ToolProfile",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A cylindrical gear pair: common module, angles, optional centre distance, two gears.",
+  "properties": {
+    "normal_module_mm": {
+      "description": "NORMALMODUL",
+      "maximum": 100.0,
+      "minimum": 0.05,
+      "symbol": "m_n",
+      "title": "Normal Module Mm",
+      "type": "number",
+      "unit": "mm"
+    },
+    "pressure_angle_deg": {
+      "default": 20.0,
+      "description": "EINGRIFFSWINKEL",
+      "maximum": 30.0,
+      "minimum": 10.0,
+      "symbol": "alpha_n",
+      "title": "Pressure Angle Deg",
+      "type": "number",
+      "unit": "deg"
+    },
+    "helix_angle_deg": {
+      "default": 0.0,
+      "description": "SCHRAEGUNGSWINKEL (STplus sign: + = pinion right-hand)",
+      "maximum": 45.0,
+      "minimum": -45.0,
+      "symbol": "beta",
+      "title": "Helix Angle Deg",
+      "type": "number",
+      "unit": "deg"
+    },
+    "center_distance_mm": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "ACHSABSTAND; None = from the profile-shift sum",
+      "symbol": "a",
+      "title": "Center Distance Mm",
+      "unit": "mm"
+    },
+    "gears": {
+      "$ref": "#/$defs/Pair_GearInput_"
+    },
+    "min_tip_clearance_factor": {
+      "anyOf": [
+        {
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "MINDESTKOPFSPIEL — minimum tip clearance factor for a tip-diameter check",
+      "symbol": "c_min*",
+      "title": "Min Tip Clearance Factor",
+      "unit": "-"
+    }
+  },
+  "required": [
+    "normal_module_mm",
+    "gears"
+  ],
+  "title": "PairInput",
+  "type": "object"
+}

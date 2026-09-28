@@ -1,0 +1,7158 @@
+{
+  "GEOMETRIEDATEN/ABMASSREIHE": {
+    "numbers": [],
+    "values": [
+      "C",
+      "C"
+    ]
+  },
+  "GEOMETRIEDATEN/ACHSABSTAND": {
+    "numbers": [
+      91.5
+    ],
+    "values": [
+      "91.50000"
+    ]
+  },
+  "GEOMETRIEDATEN/AXIALTEILUNG": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/BEARBEITUNGSZUGABE": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/BERUEHRKREISDM_ZAHNW": {
+    "numbers": [
+      73.15688,
+      111.51204
+    ],
+    "values": [
+      "73.15688",
+      "111.51204"
+    ]
+  },
+  "GEOMETRIEDATEN/BERUEHRKREISDM_ZWEIK": {
+    "numbers": [
+      72.75817,
+      109.25423
+    ],
+    "values": [
+      "72.75817",
+      "109.25423"
+    ]
+  },
+  "GEOMETRIEDATEN/BERUEHRKREISDURCHM": {
+    "numbers": [
+      72.78168,
+      108.94865
+    ],
+    "values": [
+      "72.78168",
+      "108.94865"
+    ]
+  },
+  "GEOMETRIEDATEN/BETRIEBSEINGRIFFSWINKEL": {
+    "numbers": [
+      22.43879
+    ],
+    "values": [
+      "22.43879"
+    ]
+  },
+  "GEOMETRIEDATEN/BEZOGENES_KOPFSPIEL": {
+    "numbers": [
+      0.58134,
+      0.58019
+    ],
+    "values": [
+      "0.58134",
+      "0.58019"
+    ]
+  },
+  "GEOMETRIEDATEN/BEZPR_KOPFHOEHENFAKTOR": {
+    "numbers": [
+      0.8743,
+      0.68354
+    ],
+    "values": [
+      "0.87430",
+      "0.68354"
+    ]
+  },
+  "GEOMETRIEDATEN/BLOCKBEZEICHNUNG_WKZ": {
+    "numbers": [],
+    "values": [
+      "WKZ_PROFIL_B_RITZEL",
+      "WKZ_PROFIL_B_RAD"
+    ]
+  },
+  "GEOMETRIEDATEN/DIAMETRAL_PITCH": {
+    "numbers": [
+      12.7
+    ],
+    "values": [
+      "12.70000"
+    ]
+  },
+  "GEOMETRIEDATEN/DIAMETR_ABMASSFAKTOR": {
+    "numbers": [
+      2.28657,
+      2.318
+    ],
+    "values": [
+      "2.28657",
+      "2.31800"
+    ]
+  },
+  "GEOMETRIEDATEN/DIAMETR_ZWEIKUGELMASS": {
+    "numbers": [
+      77.81136,
+      114.94283
+    ],
+    "values": [
+      "77.81136",
+      "114.94283"
+    ]
+  },
+  "GEOMETRIEDATEN/DIAMETR_ZWEIKUGELMASS_V": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/DIAMETR_ZWEIROLLENMASS": {
+    "numbers": [
+      77.81136,
+      114.94283
+    ],
+    "values": [
+      "77.81136",
+      "114.94283"
+    ]
+  },
+  "GEOMETRIEDATEN/DIAMETR_ZWEIROLLENMAS_V": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/DURCHM_FUSSFREISCHNITT": {
+    "numbers": [
+      69.10337,
+      105.52135
+    ],
+    "values": [
+      "69.10337",
+      "105.52135"
+    ]
+  },
+  "GEOMETRIEDATEN/EINGRIFFSSTRECKE": {
+    "numbers": [
+      7.01185
+    ],
+    "values": [
+      "7.01185"
+    ]
+  },
+  "GEOMETRIEDATEN/ERZ_PROFILVERSCHFAKTOR": {
+    "numbers": [
+      0.18231,
+      0.30366
+    ],
+    "values": [
+      "0.18231",
+      "0.30366"
+    ]
+  },
+  "GEOMETRIEDATEN/FASE_JE_ZAHNENDE": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/FORMUEBERMASS": {
+    "numbers": [
+      0.95832,
+      0.79192
+    ],
+    "values": [
+      "0.95832",
+      "0.79192"
+    ]
+  },
+  "GEOMETRIEDATEN/FUSSFORMKREISDURCHM": {
+    "numbers": [
+      69.10337,
+      105.52135
+    ],
+    "values": [
+      "69.10337",
+      "105.52135"
+    ]
+  },
+  "GEOMETRIEDATEN/FUSSFREISCHNITT": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/FUSSKREISDURCHM": {
+    "numbers": [
+      67.72925,
+      104.21465
+    ],
+    "values": [
+      "67.72925",
+      "104.21465"
+    ]
+  },
+  "GEOMETRIEDATEN/GEMEINSAME_BREITE": {
+    "numbers": [
+      20.0
+    ],
+    "values": [
+      "20.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/GEMEINSAME_ZAHNHOEHE": {
+    "numbers": [
+      2.91798
+    ],
+    "values": [
+      "2.91798"
+    ]
+  },
+  "GEOMETRIEDATEN/GEMEINS_ZAHNHOEHENF": {
+    "numbers": [
+      1.45899
+    ],
+    "values": [
+      "1.45899"
+    ]
+  },
+  "GEOMETRIEDATEN/GESAMTUEBERDECKUNG": {
+    "numbers": [
+      1.18759
+    ],
+    "values": [
+      "1.18759"
+    ]
+  },
+  "GEOMETRIEDATEN/GLEITFAKTOR_KOPF": {
+    "numbers": [
+      0.17478,
+      0.14452
+    ],
+    "values": [
+      "0.17478",
+      "0.14452"
+    ]
+  },
+  "GEOMETRIEDATEN/GRUNDKREISDURCHM": {
+    "numbers": [
+      67.65787,
+      101.4868
+    ],
+    "values": [
+      "67.65787",
+      "101.48680"
+    ]
+  },
+  "GEOMETRIEDATEN/HOEHE_UEBER_ZAHNSEHNE": {
+    "numbers": [
+      1.87501,
+      2.03079
+    ],
+    "values": [
+      "1.87501",
+      "2.03079"
+    ]
+  },
+  "GEOMETRIEDATEN/KOPFEINGRSTRECKE": {
+    "numbers": [
+      3.83824,
+      3.17362
+    ],
+    "values": [
+      "3.83824",
+      "3.17362"
+    ]
+  },
+  "GEOMETRIEDATEN/KOPFFORMKREISDURCHM": {
+    "numbers": [
+      76.46,
+      112.37595
+    ],
+    "values": [
+      "76.46000",
+      "112.37595"
+    ]
+  },
+  "GEOMETRIEDATEN/KOPFHOEHE": {
+    "numbers": [
+      2.23,
+      2.475
+    ],
+    "values": [
+      "2.23000",
+      "2.47500"
+    ]
+  },
+  "GEOMETRIEDATEN/KOPFKANTENBRUCH": {
+    "numbers": [
+      0.0,
+      0.28702
+    ],
+    "values": [
+      "0.00000",
+      "0.28702"
+    ]
+  },
+  "GEOMETRIEDATEN/KOPFKREISDURCHM": {
+    "numbers": [
+      76.46,
+      112.95
+    ],
+    "values": [
+      "76.46000",
+      "112.95000"
+    ]
+  },
+  "GEOMETRIEDATEN/KOPFSPIEL": {
+    "numbers": [
+      1.16268,
+      1.16038
+    ],
+    "values": [
+      "1.16268",
+      "1.16038"
+    ]
+  },
+  "GEOMETRIEDATEN/MESSSTUECKDURCHM": {
+    "numbers": [
+      3.5,
+      3.5
+    ],
+    "values": [
+      "3.50000",
+      "3.50000"
+    ]
+  },
+  "GEOMETRIEDATEN/MESSSTUECKDURCHM_V": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/MESSZAEHNEZAHL": {
+    "numbers": [
+      5.0,
+      8.0
+    ],
+    "values": [
+      "5",
+      "8"
+    ]
+  },
+  "GEOMETRIEDATEN/MESSZAEHNEZAHL_V": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0",
+      "0"
+    ]
+  },
+  "GEOMETRIEDATEN/MITTENVERSATZ": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALEINGRIFFSWINKEL": {
+    "numbers": [
+      20.0
+    ],
+    "values": [
+      "20.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALEINGRTEILUNG": {
+    "numbers": [
+      5.90426
+    ],
+    "values": [
+      "5.90426"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALFLSPIEL_OB_ZABM": {
+    "numbers": [
+      0.4223
+    ],
+    "values": [
+      "0.42230"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALFLSPIEL_UNT_ZABM": {
+    "numbers": [
+      0.49748
+    ],
+    "values": [
+      "0.49748"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALFLSP_AEND_A_AE": {
+    "numbers": [
+      0.01336
+    ],
+    "values": [
+      "0.01336"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALFLSP_AEND_A_AI": {
+    "numbers": [
+      -0.01336
+    ],
+    "values": [
+      "-0.01336"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALMODUL": {
+    "numbers": [
+      2.0
+    ],
+    "values": [
+      "2.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMALTEILUNG": {
+    "numbers": [
+      6.28319
+    ],
+    "values": [
+      "6.28319"
+    ]
+  },
+  "GEOMETRIEDATEN/NORMAL_DIAMETRAL_PITCH": {
+    "numbers": [
+      12.7
+    ],
+    "values": [
+      "12.70000"
+    ]
+  },
+  "GEOMETRIEDATEN/NUTZKREISDURCHM_FUSS": {
+    "numbers": [
+      71.02,
+      107.10519
+    ],
+    "values": [
+      "71.02000",
+      "107.10519"
+    ]
+  },
+  "GEOMETRIEDATEN/NUTZKREISDURCHM_KOPF": {
+    "numbers": [
+      76.46,
+      112.37595
+    ],
+    "values": [
+      "76.46000",
+      "112.37595"
+    ]
+  },
+  "GEOMETRIEDATEN/OBERES_ABM_ZAHNSEHNE": {
+    "numbers": [
+      -0.085,
+      -0.3644
+    ],
+    "values": [
+      "-0.08500",
+      "-0.36440"
+    ]
+  },
+  "GEOMETRIEDATEN/OBERES_ACHSABSTANDSABM": {
+    "numbers": [
+      0.0175
+    ],
+    "values": [
+      "0.01750"
+    ]
+  },
+  "GEOMETRIEDATEN/OBERES_DIAMETR_ABMASS": {
+    "numbers": [
+      -0.19436,
+      -0.84469
+    ],
+    "values": [
+      "-0.19436",
+      "-0.84469"
+    ]
+  },
+  "GEOMETRIEDATEN/OBERES_ZAHNDICKENABM": {
+    "numbers": [
+      -0.085,
+      -0.3644
+    ],
+    "values": [
+      "-0.08500",
+      "-0.36440"
+    ]
+  },
+  "GEOMETRIEDATEN/OBERES_ZAHNWEITENABM": {
+    "numbers": [
+      -0.07987,
+      -0.34243
+    ],
+    "values": [
+      "-0.07987",
+      "-0.34243"
+    ]
+  },
+  "GEOMETRIEDATEN/PROFILUEBERDECKUNG": {
+    "numbers": [
+      1.18759
+    ],
+    "values": [
+      "1.18759"
+    ]
+  },
+  "GEOMETRIEDATEN/PROFILVERSCHIEBFAKTOR": {
+    "numbers": [
+      0.2407,
+      0.55396
+    ],
+    "values": [
+      "0.24070",
+      "0.55396"
+    ]
+  },
+  "GEOMETRIEDATEN/PROFILVERSCHIEBUNG": {
+    "numbers": [
+      0.48139,
+      1.10792
+    ],
+    "values": [
+      "0.48139",
+      "1.10792"
+    ]
+  },
+  "GEOMETRIEDATEN/PROTUBERANZBETRAG": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/PROTUBERANZHOEHENF": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/PROTUBERANZWINKEL": {
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "values": [
+      "20.00000",
+      "20.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/RESTDICKE": {
+    "numbers": [
+      1.55696,
+      1.23291
+    ],
+    "values": [
+      "1.55696",
+      "1.23291"
+    ]
+  },
+  "GEOMETRIEDATEN/SCHRAEGUNGSWINKEL_GRUND": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SCHRAEGUNGSWINKEL_TEILK": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SPEZ_GLEITEN_FUSS": {
+    "numbers": [
+      -0.48992,
+      -0.56059
+    ],
+    "values": [
+      "-0.48992",
+      "-0.56059"
+    ]
+  },
+  "GEOMETRIEDATEN/SPEZ_GLEITEN_KOPF": {
+    "numbers": [
+      0.35922,
+      0.32882
+    ],
+    "values": [
+      "0.35922",
+      "0.32882"
+    ]
+  },
+  "GEOMETRIEDATEN/SPRUNGUEBERDECKUNG": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SR_FUSSFORMKREISDM": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SR_KOPFKREISDURCHM": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SR_PROFILVERSCHFAKTOR": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SR_PROTUBERANZHOEHENF": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SR_RADIALBETRAG": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/SR_ZAEHNEZAHL": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0",
+      "0"
+    ]
+  },
+  "GEOMETRIEDATEN/STANDUEBERSETZUNG_OH": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/STANDUEBERSETZUNG_OZ": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/STIRNEINGRIFFSWINKEL": {
+    "numbers": [
+      20.0
+    ],
+    "values": [
+      "20.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/STIRNEINGRTEILUNG": {
+    "numbers": [
+      5.90426
+    ],
+    "values": [
+      "5.90426"
+    ]
+  },
+  "GEOMETRIEDATEN/STIRNMODUL": {
+    "numbers": [
+      2.0,
+      2.0
+    ],
+    "values": [
+      "2.00000",
+      "2.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/STIRNTEILUNG": {
+    "numbers": [
+      6.28319
+    ],
+    "values": [
+      "6.28319"
+    ]
+  },
+  "GEOMETRIEDATEN/SUMME_X": {
+    "numbers": [
+      0.79465
+    ],
+    "values": [
+      "0.79465"
+    ]
+  },
+  "GEOMETRIEDATEN/TEILKREISDURCHM": {
+    "numbers": [
+      72.0,
+      108.0
+    ],
+    "values": [
+      "72.00000",
+      "108.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/TOLERANZFELD_JS": {
+    "numbers": [
+      7.0
+    ],
+    "values": [
+      "7"
+    ]
+  },
+  "GEOMETRIEDATEN/TOLERANZREIHE": {
+    "numbers": [
+      25.0,
+      25.0
+    ],
+    "values": [
+      "25",
+      "25"
+    ]
+  },
+  "GEOMETRIEDATEN/UEBERSETZUNG_SONNE_STEG": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/UMLAUFUEBERSETZUNG": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/UNTERES_ABM_ZAHNSEHNE": {
+    "numbers": [
+      -0.125,
+      -0.4044
+    ],
+    "values": [
+      "-0.12500",
+      "-0.40440"
+    ]
+  },
+  "GEOMETRIEDATEN/UNTERES_ACHSABSTANDSABM": {
+    "numbers": [
+      -0.0175
+    ],
+    "values": [
+      "-0.01750"
+    ]
+  },
+  "GEOMETRIEDATEN/UNTERES_DIAMETR_ABMASS": {
+    "numbers": [
+      -0.28671,
+      -0.93946
+    ],
+    "values": [
+      "-0.28671",
+      "-0.93946"
+    ]
+  },
+  "GEOMETRIEDATEN/UNTERES_ZAHNDICKENABM": {
+    "numbers": [
+      -0.125,
+      -0.4044
+    ],
+    "values": [
+      "-0.12500",
+      "-0.40440"
+    ]
+  },
+  "GEOMETRIEDATEN/UNTERES_ZAHNWEITENABM": {
+    "numbers": [
+      -0.11746,
+      -0.38001
+    ],
+    "values": [
+      "-0.11746",
+      "-0.38001"
+    ]
+  },
+  "GEOMETRIEDATEN/VERDREHFLSPIEL_OB_ZABM": {
+    "numbers": [
+      0.45689
+    ],
+    "values": [
+      "0.45689"
+    ]
+  },
+  "GEOMETRIEDATEN/VERDREHFLSPIEL_UNT_ZABM": {
+    "numbers": [
+      0.53823
+    ],
+    "values": [
+      "0.53823"
+    ]
+  },
+  "GEOMETRIEDATEN/VERDREHFLSP_AEND_A_AE": {
+    "numbers": [
+      0.01445
+    ],
+    "values": [
+      "0.01445"
+    ]
+  },
+  "GEOMETRIEDATEN/VERDREHFLSP_AEND_A_AI": {
+    "numbers": [
+      -0.01445
+    ],
+    "values": [
+      "-0.01445"
+    ]
+  },
+  "GEOMETRIEDATEN/VERZAHNUNGSQUALITAET": {
+    "numbers": [],
+    "values": [
+      "N7",
+      "N7"
+    ]
+  },
+  "GEOMETRIEDATEN/VIRTUELLE_ZAEHNEZAHL": {
+    "numbers": [
+      36.0,
+      54.0
+    ],
+    "values": [
+      "36.00000",
+      "54.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/WAELZKREISDURCHM": {
+    "numbers": [
+      73.2,
+      109.8
+    ],
+    "values": [
+      "73.20000",
+      "109.80000"
+    ]
+  },
+  "GEOMETRIEDATEN/WKZ_FUSSFORMHOEHENF": {
+    "numbers": [
+      1.75,
+      0.7388
+    ],
+    "values": [
+      "1.75000",
+      "0.73880"
+    ]
+  },
+  "GEOMETRIEDATEN/WKZ_FUSSHOEHENF": {
+    "numbers": [
+      1.75,
+      1.24438
+    ],
+    "values": [
+      "1.75000",
+      "1.24438"
+    ]
+  },
+  "GEOMETRIEDATEN/WKZ_KOPFABRUNDUNGSF": {
+    "numbers": [
+      0.25,
+      0.394
+    ],
+    "values": [
+      "0.25000",
+      "0.39400"
+    ]
+  },
+  "GEOMETRIEDATEN/WKZ_KOPFHOEHENFAKTOR": {
+    "numbers": [
+      1.25,
+      1.25
+    ],
+    "values": [
+      "1.25000",
+      "1.25000"
+    ]
+  },
+  "GEOMETRIEDATEN/WKZ_NORMALEINGRWINKEL": {
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "values": [
+      "20.00000",
+      "20.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/WKZ_NORMALMODUL": {
+    "numbers": [
+      2.0,
+      2.0
+    ],
+    "values": [
+      "2.00000",
+      "2.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAEHNEZAHL": {
+    "numbers": [
+      36.0,
+      54.0
+    ],
+    "values": [
+      "36",
+      "54"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAEHNEZAHLVERHAELTNIS": {
+    "numbers": [
+      1.5
+    ],
+    "values": [
+      "1.50000"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNBREITE": {
+    "numbers": [
+      22.0,
+      20.0
+    ],
+    "values": [
+      "22.00000",
+      "20.00000"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNDICKENSEHNE": {
+    "numbers": [
+      3.22991,
+      3.62258
+    ],
+    "values": [
+      "3.22991",
+      "3.62258"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNDICKE_KOPF": {
+    "numbers": [
+      1.55696,
+      1.5797
+    ],
+    "values": [
+      "1.55696",
+      "1.57970"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNDICKE_NORMAL": {
+    "numbers": [
+      3.49202,
+      3.94809
+    ],
+    "values": [
+      "3.49202",
+      "3.94809"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNDICKE_STIRNSCHNITT": {
+    "numbers": [
+      3.49202,
+      3.94809
+    ],
+    "values": [
+      "3.49202",
+      "3.94809"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNHOEHE": {
+    "numbers": [
+      4.36538,
+      4.36768
+    ],
+    "values": [
+      "4.36538",
+      "4.36768"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNLUECKE_NORMAL": {
+    "numbers": [
+      2.79117,
+      2.33509
+    ],
+    "values": [
+      "2.79117",
+      "2.33509"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNWEITE": {
+    "numbers": [
+      27.90687,
+      46.55243
+    ],
+    "values": [
+      "27.90687",
+      "46.55243"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNWEITENABMASSFAKTOR": {
+    "numbers": [
+      0.93969,
+      0.93969
+    ],
+    "values": [
+      "0.93969",
+      "0.93969"
+    ]
+  },
+  "GEOMETRIEDATEN/ZAHNWEITE_V": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.00000",
+      "0.00000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/ANZAHL_GEGENRAEDER": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1",
+      "1"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/AXIALKRAFT": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/AXIALKRAFT_PFH": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/BLOCKBEZEICHNUNG_OEL": {
+    "numbers": [],
+    "values": [
+      "ISO-VG-100"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/BLOCKBEZEICHNUNG_WST": {
+    "numbers": [],
+    "values": [
+      "16MNCR5",
+      "16MNCR5"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/DIN_QUALITAET": {
+    "numbers": [
+      7.0,
+      7.0
+    ],
+    "values": [
+      "7",
+      "7"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/DURCHMESSER_30GRAD": {
+    "numbers": [
+      68.2986450195,
+      104.9839172363
+    ],
+    "values": [
+      "68.2986450195",
+      "104.9839172363"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/EINGR.TEIL.ABWEICH.": {
+    "numbers": [
+      10.6788520813
+    ],
+    "values": [
+      "10.6788520813"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/EINGR.TEIL.ABWEICH.ZST": {
+    "numbers": [
+      10.6788520813
+    ],
+    "values": [
+      "10.6788520813"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/EINSATZHAERTUNGSTIEFE": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/ELASTIZITAETSMODUL": {
+    "numbers": [
+      210000.0,
+      210000.0
+    ],
+    "values": [
+      "210000.0000000000",
+      "210000.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/ERSATZZAEHNEZAHL": {
+    "numbers": [
+      36.0,
+      54.0
+    ],
+    "values": [
+      "36.0000000000",
+      "54.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/FZG_KRAFTSTUFE": {
+    "numbers": [
+      12.0
+    ],
+    "values": [
+      "12.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/FZG_TESTDREHMOMENT": {
+    "numbers": [
+      534.5
+    ],
+    "values": [
+      "534.5000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/HEBELARM_30GRAD_AEP_*": {
+    "numbers": [
+      1.5810642242,
+      1.3901348114
+    ],
+    "values": [
+      "1.5810642242",
+      "1.3901348114"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/HEBELARM_30GRAD_KOPF_*": {
+    "numbers": [
+      1.8762836456,
+      1.6580619812
+    ],
+    "values": [
+      "1.8762836456",
+      "1.6580619812"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/HEBELARM_LEWIS_AEP_*": {
+    "numbers": [
+      1.504278183,
+      1.3343143463
+    ],
+    "values": [
+      "1.5042781830",
+      "1.3343143463"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/HEBELARM_LEWIS_KOPF_*": {
+    "numbers": [
+      1.7724552155,
+      1.5745792389
+    ],
+    "values": [
+      "1.7724552155",
+      "1.5745792389"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/HV_FLANKE": {
+    "numbers": [
+      750.0,
+      750.0
+    ],
+    "values": [
+      "750.0000000000",
+      "750.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/HV_KERN": {
+    "numbers": [
+      380.0,
+      380.0
+    ],
+    "values": [
+      "380.0000000000",
+      "380.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/ISO_QUALITAET": {
+    "numbers": [
+      7.0,
+      7.0
+    ],
+    "values": [
+      "7",
+      "7"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/KIN_VISKOSITAET_100GRAD": {
+    "numbers": [
+      11.0
+    ],
+    "values": [
+      "11.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/KIN_VISKOSITAET_40GRAD": {
+    "numbers": [
+      100.0
+    ],
+    "values": [
+      "100.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/KIN_VISKOSITAET_50GRAD": {
+    "numbers": [
+      60.5484580994
+    ],
+    "values": [
+      "60.5484580994"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/KIN_VISKOSITAET_BETRIEB": {
+    "numbers": [
+      39.3414649963
+    ],
+    "values": [
+      "39.3414649963"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/KRAFTANGR.WINKEL_AEP": {
+    "numbers": [
+      24.7207012177,
+      23.2386569977
+    ],
+    "values": [
+      "24.7207012177",
+      "23.2386569977"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/KRAFTANGR.WINKEL_KOPF": {
+    "numbers": [
+      26.5966205597,
+      24.4892654419
+    ],
+    "values": [
+      "26.5966205597",
+      "24.4892654419"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/KUPPLUNGSLEISTUNG": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/KUPPLUNGSLEISTUNG_PFH": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/K_FAKTOR": {
+    "numbers": [
+      122.8047332764
+    ],
+    "values": [
+      "122.8047332764"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/LASTSPIEL": {
+    "numbers": [
+      600000000.0,
+      400000000.0
+    ],
+    "values": [
+      "600.0000000000E6",
+      "400.0000000000E6"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/LEBENSDAUER": {
+    "numbers": [
+      10000.0
+    ],
+    "values": [
+      "10000.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/MITTL_ZAHNREIBUNGSZAHL": {
+    "numbers": [
+      0.1141929999
+    ],
+    "values": [
+      "0.1141929999"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/NACHBEHANDLUNG": {
+    "numbers": [],
+    "values": [
+      "keine_Angabe",
+      "keine_Angabe"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/NENNDREHMOMENT": {
+    "numbers": [
+      3819.7182617188,
+      5729.5771484375
+    ],
+    "values": [
+      "3819.7182617188",
+      "5729.5771484375"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/NENNDREHMOMENT_PFH": {
+    "numbers": [
+      3819.7182617188
+    ],
+    "values": [
+      "3819.7182617188"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/NENNDREHMOMENT_ZST": {
+    "numbers": [
+      3819.7182617188
+    ],
+    "values": [
+      "3819.7182617188"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/NENNDREHZAHL": {
+    "numbers": [
+      1000.0,
+      666.6666870117
+    ],
+    "values": [
+      "1000.0000000000",
+      "666.6666870117"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/NENNLEISTUNG": {
+    "numbers": [
+      400.0,
+      400.0
+    ],
+    "values": [
+      "400.0000000000",
+      "400.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/NENNLEISTUNG_PFH": {
+    "numbers": [
+      400.0,
+      400.0
+    ],
+    "values": [
+      "400.0000000000",
+      "400.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/NENNWAELZDREHZAHL": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/OELDICHTE": {
+    "numbers": [
+      0.8799999952
+    ],
+    "values": [
+      "0.8799999952"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/OELTEMPERATUR": {
+    "numbers": [
+      60.0
+    ],
+    "values": [
+      "60.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/PLANETENANZAHL": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/QUERKONTRAKTIONSZAHL": {
+    "numbers": [
+      0.3000000119,
+      0.3000000119
+    ],
+    "values": [
+      "0.3000000119",
+      "0.3000000119"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/RADIUS_30GRAD_*": {
+    "numbers": [
+      0.3934164643,
+      0.4508134425
+    ],
+    "values": [
+      "0.3934164643",
+      "0.4508134425"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/RADIUS_LEWIS_*": {
+    "numbers": [
+      0.2855311334,
+      0.4050726593
+    ],
+    "values": [
+      "0.2855311334",
+      "0.4050726593"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/RAUHTIEFE_FLANKE": {
+    "numbers": [
+      5.0,
+      5.0
+    ],
+    "values": [
+      "5.0000000000",
+      "5.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/RAUHTIEFE_FUSS": {
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "values": [
+      "20.0000000000",
+      "20.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/SCHMIERSTOFF": {
+    "numbers": [],
+    "values": [
+      "ISO-VG-100"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/SCHMIERSTOFFAKTOR": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/SEHNE_30GRAD_*": {
+    "numbers": [
+      2.1786477566,
+      2.2558538914
+    ],
+    "values": [
+      "2.1786477566",
+      "2.2558538914"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/SEHNE_LEWIS_AEP_*": {
+    "numbers": [
+      2.109026432,
+      2.2010598183
+    ],
+    "values": [
+      "2.1090264320",
+      "2.2010598183"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/SEHNE_LEWIS_KOPF_*": {
+    "numbers": [
+      2.0916187763,
+      2.1801147461
+    ],
+    "values": [
+      "2.0916187763",
+      "2.1801147461"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/SPALTBREITE_DSV": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/STAT_DREHMOMENT": {
+    "numbers": [
+      8000.0,
+      12000.0
+    ],
+    "values": [
+      "8000.0000000000",
+      "12000.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/STEGDREHMOMENT": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/STEGDREHZAHL": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/UMFANGSGESCHW_WAELZKR": {
+    "numbers": [
+      3.8326613903
+    ],
+    "values": [
+      "3.8326613903"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/UMFANGSKRAFT_GRUNDKR": {
+    "numbers": [
+      112912.765625
+    ],
+    "values": [
+      "112912.7656250000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/UMFANGSKRAFT_TEILKR": {
+    "numbers": [
+      106103.2890625
+    ],
+    "values": [
+      "106103.2890625000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/UMFANGSKRAFT_WAELZKR": {
+    "numbers": [
+      104363.8984375
+    ],
+    "values": [
+      "104363.8984375000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/UMFANGSKR_GRUNDKR_PFH": {
+    "numbers": [
+      112912.765625
+    ],
+    "values": [
+      "112912.7656250000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/UMFANGSKR_TEILKR_PFH": {
+    "numbers": [
+      106103.2890625
+    ],
+    "values": [
+      "106103.2890625000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/UMFANGSKR_WAELZKR_PFH": {
+    "numbers": [
+      104363.8984375
+    ],
+    "values": [
+      "104363.8984375000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/U_FAKTOR": {
+    "numbers": [
+      2652.5822753906
+    ],
+    "values": [
+      "2652.5822753906"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/VERZ.VERLUSTLEISTUNG": {
+    "numbers": [
+      3480.7236328125
+    ],
+    "values": [
+      "3480.7236328125"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/VERZ.WIRKUNGSGRAD": {
+    "numbers": [
+      0.9912981987
+    ],
+    "values": [
+      "0.9912981987"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/VT_STEIGUNG": {
+    "numbers": [
+      3.56641078
+    ],
+    "values": [
+      "3.5664107800"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/WAELZGESCHWINDIGKEIT": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/WAELZLEISTUNG": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/WAELZLEISTUNG_PFH": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/WAERMEBEHANDLUNG": {
+    "numbers": [],
+    "values": [
+      "einsatzgehaertet",
+      "einsatzgehaertet"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/WERKSTOFF": {
+    "numbers": [],
+    "values": [
+      "16MNCR5",
+      "16MNCR5"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/WERKSTOFFART": {
+    "numbers": [],
+    "values": [
+      "Stahl",
+      "Stahl"
+    ]
+  },
+  "TRAGFAEHIGKEIT_ALLGEM/ZAHNVERLUSTFAKTOR": {
+    "numbers": [
+      0.0762026459
+    ],
+    "values": [
+      "0.0762026459"
+    ]
+  },
+  "TR_ABS_1997/ANWENDUNGSFAKTOR_K_A": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_ABS_1997/AUFTEILUNGSFAKTOR_K_GAM": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_ABS_1997/BREITE": {
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "values": [
+      "20.0000000000",
+      "20.0000000000"
+    ]
+  },
+  "TR_ABS_1997/BREITENFAKTOR_K_FBETA": {
+    "numbers": [
+      1.0300847292
+    ],
+    "values": [
+      "1.0300847292"
+    ]
+  },
+  "TR_ABS_1997/BREITENFAKTOR_K_HBETA": {
+    "numbers": [
+      1.0382409096
+    ],
+    "values": [
+      "1.0382409096"
+    ]
+  },
+  "TR_ABS_1997/DESIGNFAKTOR_Y_D": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_ABS_1997/DYNAMIKFAKTOR_K_V": {
+    "numbers": [
+      1.1162860394
+    ],
+    "values": [
+      "1.1162860394"
+    ]
+  },
+  "TR_ABS_1997/EINLAUFFAKTOR_Y_ALFA": {
+    "numbers": [
+      0.000800914
+    ],
+    "values": [
+      "0.0008009140"
+    ]
+  },
+  "TR_ABS_1997/EINZELEINGRIFFSF_Z_B": {
+    "numbers": [
+      1.0335550308
+    ],
+    "values": [
+      "1.0335550308"
+    ]
+  },
+  "TR_ABS_1997/EINZELEINGRIFFSF_Z_D": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_ABS_1997/ELASTIZITAETSFAKTOR_Z_E": {
+    "numbers": [
+      191.6456756592
+    ],
+    "values": [
+      "191.6456756592"
+    ]
+  },
+  "TR_ABS_1997/FLANKENLINIENABW.F_BETA": {
+    "numbers": [
+      14.0
+    ],
+    "values": [
+      "14.0000000000"
+    ]
+  },
+  "TR_ABS_1997/FLANKENLINIENABW.F_BETAY": {
+    "numbers": [
+      27.9721221924
+    ],
+    "values": [
+      "27.9721221924"
+    ]
+  },
+  "TR_ABS_1997/FLANKENLINIENABW.F_MA": {
+    "numbers": [
+      14.0
+    ],
+    "values": [
+      "14.0000000000"
+    ]
+  },
+  "TR_ABS_1997/FORMFAKTOR_Y_F": {
+    "numbers": [
+      1.9319573641,
+      1.6027071476
+    ],
+    "values": [
+      "1.9319573641",
+      "1.6027071476"
+    ]
+  },
+  "TR_ABS_1997/GESCHWINDIGKEITSF_Z_H": {
+    "numbers": [
+      0.9762843847
+    ],
+    "values": [
+      "0.9762843847"
+    ]
+  },
+  "TR_ABS_1997/GROESSENFAKTOR_Y_X": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_ABS_1997/GROESSENFAKTOR_Z_X": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_ABS_1997/HERTZSCHE_PRESSUNG": {
+    "numbers": [
+      5358.3305664062,
+      5184.3686523438
+    ],
+    "values": [
+      "5358.3305664062",
+      "5184.3686523438"
+    ]
+  },
+  "TR_ABS_1997/LEBENSDAUERFAKTOR_Y_N": {
+    "numbers": [
+      0.8992878795,
+      0.9066230059
+    ],
+    "values": [
+      "0.8992878795",
+      "0.9066230059"
+    ]
+  },
+  "TR_ABS_1997/LEBENSDAUERFAKTOR_Z_N": {
+    "numbers": [
+      0.9266111851,
+      0.9382075071
+    ],
+    "values": [
+      "0.9266111851",
+      "0.9382075071"
+    ]
+  },
+  "TR_ABS_1997/OBERFLAECHENFAKTOR_Z_R": {
+    "numbers": [
+      0.9554507732
+    ],
+    "values": [
+      "0.9554507732"
+    ]
+  },
+  "TR_ABS_1997/REL.O_FLAECHENF_Y_RRELT": {
+    "numbers": [
+      0.9563824534,
+      0.9563824534
+    ],
+    "values": [
+      "0.9563824534",
+      "0.9563824534"
+    ]
+  },
+  "TR_ABS_1997/REL.STUETZZIF._Y_DELRELT": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_ABS_1997/SCHMIERSTOFFAKTOR_Z_L": {
+    "numbers": [
+      0.9658001065
+    ],
+    "values": [
+      "0.9658001065"
+    ]
+  },
+  "TR_ABS_1997/SCHRAEGENFAKTOR_Y_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_ABS_1997/SCHRAEGENFAKTOR_Z_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_ABS_1997/SICHERHEIT_SH": {
+    "numbers": [
+      0.2336852103,
+      0.2445491701
+    ],
+    "values": [
+      "0.2336852103",
+      "0.2445491701"
+    ]
+  },
+  "TR_ABS_1997/SICHERHEIT_S_F": {
+    "numbers": [
+      0.0686524883,
+      0.074483417
+    ],
+    "values": [
+      "0.0686524883",
+      "0.0744834170"
+    ]
+  },
+  "TR_ABS_1997/SICHERHEIT_S_FMIN": {
+    "numbers": [
+      1.7999999523
+    ],
+    "values": [
+      "1.7999999523"
+    ]
+  },
+  "TR_ABS_1997/SICHERHEIT_S_HMIN": {
+    "numbers": [
+      1.3999999762
+    ],
+    "values": [
+      "1.3999999762"
+    ]
+  },
+  "TR_ABS_1997/SIGMA_FE": {
+    "numbers": [
+      840.0,
+      840.0
+    ],
+    "values": [
+      "840.0000000000",
+      "840.0000000000"
+    ]
+  },
+  "TR_ABS_1997/SIGMA_FP": {
+    "numbers": [
+      401.3628234863,
+      404.6365661621
+    ],
+    "values": [
+      "401.3628234863",
+      "404.6365661621"
+    ]
+  },
+  "TR_ABS_1997/SIGMA_HLIM": {
+    "numbers": [
+      1500.0,
+      1500.0
+    ],
+    "values": [
+      "1500.0000000000",
+      "1500.0000000000"
+    ]
+  },
+  "TR_ABS_1997/SIGMA_HP": {
+    "numbers": [
+      894.4018554688,
+      905.5950317383
+    ],
+    "values": [
+      "894.4018554688",
+      "905.5950317383"
+    ]
+  },
+  "TR_ABS_1997/SPANNUNGSKORREKTURF_Y_S": {
+    "numbers": [
+      1.9644056559,
+      2.0003523827
+    ],
+    "values": [
+      "1.9644056559",
+      "2.0003523827"
+    ]
+  },
+  "TR_ABS_1997/STIRNFAKTOR_K_FALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_ABS_1997/STIRNFAKTOR_K_HALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_ABS_1997/UEBERDECKUNGSF_Z_EPS": {
+    "numbers": [
+      0.9682300687
+    ],
+    "values": [
+      "0.9682300687"
+    ]
+  },
+  "TR_ABS_1997/WERKSTOFFPAARUNGSF_Z_W": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_ABS_1997/ZAHNFUSSPANNUNG": {
+    "numbers": [
+      10523.333984375,
+      9778.6298828125
+    ],
+    "values": [
+      "10523.3339843750",
+      "9778.6298828125"
+    ]
+  },
+  "TR_ABS_1997/ZONENFAKTOR_Z_H": {
+    "numbers": [
+      2.341930151
+    ],
+    "values": [
+      "2.3419301510"
+    ]
+  },
+  "TR_AGMA_2001_C95/AGMA_NENNLEISTUNG": {
+    "numbers": [
+      536.4088134766
+    ],
+    "values": [
+      "536.4088134766"
+    ]
+  },
+  "TR_AGMA_2001_C95/AGMA_RAUHEIT_RITZEL": {
+    "numbers": [
+      0.1968504
+    ],
+    "values": [
+      "0.1968504"
+    ]
+  },
+  "TR_AGMA_2001_C95/AGMA_RITZELDREHZAHL": {
+    "numbers": [
+      1000.0
+    ],
+    "values": [
+      "1000.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/BETRIEBSSTUNDEN": {
+    "numbers": [
+      10000.0
+    ],
+    "values": [
+      "10000.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/BREITEN_KORREKTURF_C_MC": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/BRINELLHAERTE": {
+    "numbers": [
+      712.5,
+      712.5
+    ],
+    "values": [
+      "712.5000",
+      "712.5000"
+    ]
+  },
+  "TR_AGMA_2001_C95/DYNAMIKFAKTOR_K_V": {
+    "numbers": [
+      1.1735409498
+    ],
+    "values": [
+      "1.1735409498"
+    ]
+  },
+  "TR_AGMA_2001_C95/EINGRIFFSABW.F_C_MA": {
+    "numbers": [
+      0.1393723935
+    ],
+    "values": [
+      "0.1393723935"
+    ]
+  },
+  "TR_AGMA_2001_C95/EINGRIFFSKORR.F_C_E": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/EINHEITSLAST_U_AT": {
+    "numbers": [
+      17707.66015625,
+      21226.513671875
+    ],
+    "values": [
+      "17707.6601562500",
+      "21226.5136718750"
+    ]
+  },
+  "TR_AGMA_2001_C95/EINHEITSLAST_U_L": {
+    "numbers": [
+      378417.40625
+    ],
+    "values": [
+      "378417.4062500000"
+    ]
+  },
+  "TR_AGMA_2001_C95/ELASTIZITAETSKOEFF_C_P": {
+    "numbers": [
+      191.6456756592
+    ],
+    "values": [
+      "191.6456756592"
+    ]
+  },
+  "TR_AGMA_2001_C95/GEOMETRIEFAKTOR_I": {
+    "numbers": [
+      0.0990784019
+    ],
+    "values": [
+      "0.0990784019"
+    ]
+  },
+  "TR_AGMA_2001_C95/GEOMETRIEFAKTOR_J": {
+    "numbers": [
+      0.3208225071,
+      0.384576112
+    ],
+    "values": [
+      "0.3208225071",
+      "0.3845761120"
+    ]
+  },
+  "TR_AGMA_2001_C95/GROESSENFAKTOR_K_S": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/GRUEBCHENSICHERHEIT_S_H": {
+    "numbers": [
+      0.2892911434,
+      0.292001605
+    ],
+    "values": [
+      "0.2892911434",
+      "0.2920016050"
+    ]
+  },
+  "TR_AGMA_2001_C95/HAERTEPROZESSFAKTOR_U_H": {
+    "numbers": [
+      6381657.5,
+      6381657.5
+    ],
+    "values": [
+      "6381657.5000000000",
+      "6381657.5000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/HAERTEVERHAELTNISF_C_H": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/KERNHAERTEFAKTOR_U_C": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/KONTAKTLASTFAKTOR_K": {
+    "numbers": [
+      17232.123046875
+    ],
+    "values": [
+      "17232.1230468750"
+    ]
+  },
+  "TR_AGMA_2001_C95/KONTAKTLASTFAKTOR_K_AC": {
+    "numbers": [
+      1740.9537353516,
+      1740.9537353516
+    ],
+    "values": [
+      "1740.9537353516",
+      "1740.9537353516"
+    ]
+  },
+  "TR_AGMA_2001_C95/KONTAKTPRESSUNG_S_AC": {
+    "numbers": [
+      277022.0,
+      277022.0
+    ],
+    "values": [
+      "277022.0000000000",
+      "277022.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/KONTAKTPRESSUNG_S_C": {
+    "numbers": [
+      871545.5
+    ],
+    "values": [
+      "871545.5000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/KRANZDICKENFAKTOR_K_B": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/KRANZDICKENVERH_M_B": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/KURVENNUMMER_ZU_C_MA": {
+    "numbers": [
+      2.0
+    ],
+    "values": [
+      "2"
+    ]
+  },
+  "TR_AGMA_2001_C95/KURVE_ZU_UC": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/LASTVERTEILUNGSF_K_M": {
+    "numbers": [
+      1.1643724442
+    ],
+    "values": [
+      "1.1643724442"
+    ]
+  },
+  "TR_AGMA_2001_C95/LASTWECHSEL": {
+    "numbers": [
+      600000000.0,
+      400000000.0
+    ],
+    "values": [
+      "600000000.0000000000",
+      "400000000.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/LASTWECHSELFAKTOR_Y_N": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/LASTWECHSELFAKTOR_Z_N": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/LASTWFAKT_Y_N_LEBENSD": {
+    "numbers": [
+      0.9461163282,
+      0.9529694319
+    ],
+    "values": [
+      "0.9461163282",
+      "0.9529694319"
+    ]
+  },
+  "TR_AGMA_2001_C95/LASTWFAKT_Z_N_LEBENSD": {
+    "numbers": [
+      0.9101457,
+      0.9186732173
+    ],
+    "values": [
+      "0.9101457000",
+      "0.9186732173"
+    ]
+  },
+  "TR_AGMA_2001_C95/LEISTUNGSVERH_P_AC/P": {
+    "numbers": [
+      0.1010221094,
+      0.1010221094
+    ],
+    "values": [
+      "0.1010221094",
+      "0.1010221094"
+    ]
+  },
+  "TR_AGMA_2001_C95/LEISTUNGSVERH_P_AT/P": {
+    "numbers": [
+      0.0467905477,
+      0.0560887195
+    ],
+    "values": [
+      "0.0467905477",
+      "0.0560887195"
+    ]
+  },
+  "TR_AGMA_2001_C95/MIN_HAERTETIEFE_HC": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/MIN_HAERTETIEFE_HE": {
+    "numbers": [
+      0.090136968,
+      0.090136968
+    ],
+    "values": [
+      "9.0136968E-02",
+      "9.0136968E-02"
+    ]
+  },
+  "TR_AGMA_2001_C95/MIN_SICHERHEIT_S_FMIN": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/MIN_SICHERHEIT_S_HMIN": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/OBERFLAECHENFAKTOR_C_F": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/PRODUKT_SAT_YN": {
+    "numbers": [
+      71356.09375,
+      71872.953125
+    ],
+    "values": [
+      "71356.0937500000",
+      "71872.9531250000"
+    ]
+  },
+  "TR_AGMA_2001_C95/RITZEL_LAGERUNGSF_C_PM": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/RITZEL_PROPORTIONSF_C_PF": {
+    "numbers": [
+      0.0250000004
+    ],
+    "values": [
+      "0.0250000004"
+    ]
+  },
+  "TR_AGMA_2001_C95/SERVICEFAKTOR_C_SF": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/SERVICEFAKTOR_K_SF": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/SICHERHEIT_S_F": {
+    "numbers": [
+      0.0467939898,
+      0.0560928509
+    ],
+    "values": [
+      "0.0467939898",
+      "0.0560928509"
+    ]
+  },
+  "TR_AGMA_2001_C95/SICHERHEIT_S_F_MIN": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/SICHERHEIT_S_H": {
+    "numbers": [
+      0.317851454,
+      0.317851454
+    ],
+    "values": [
+      "0.3178514540",
+      "0.3178514540"
+    ]
+  },
+  "TR_AGMA_2001_C95/SICHERHEIT_S_H_MIN": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/STRECKGRENZE_S_AY": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/TEILUNGSABWEICHUNG_V_PA": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000E+00",
+      "0.0000000E+00"
+    ]
+  },
+  "TR_AGMA_2001_C95/TEMPERATURFAKTOR_K_T": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/UEBERLASTFAKTOR_K_O": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/UEBERSETZUNGSFAKTOR_C_G": {
+    "numbers": [
+      0.6000000238
+    ],
+    "values": [
+      "0.6000000238"
+    ]
+  },
+  "TR_AGMA_2001_C95/UEBERSETZUNGSGENAUIGKEIT": {
+    "numbers": [
+      9.0
+    ],
+    "values": [
+      "9"
+    ]
+  },
+  "TR_AGMA_2001_C95/ZAHNFUSSPANNUNG_S_AT": {
+    "numbers": [
+      75420.0,
+      75420.0
+    ],
+    "values": [
+      "75420.0000000000",
+      "75420.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/ZAHNFUSSPANNUNG_S_T": {
+    "numbers": [
+      1611745.5,
+      1344556.375
+    ],
+    "values": [
+      "1611745.5000000000",
+      "1344556.3750000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/ZAHNFUSSSICHERHEIT_S_F": {
+    "numbers": [
+      0.0442725569,
+      0.0534547716
+    ],
+    "values": [
+      "0.0442725569",
+      "0.0534547716"
+    ]
+  },
+  "TR_AGMA_2001_C95/ZUL_EINHEITSLAST_U_AT": {
+    "numbers": [
+      16753.505859375,
+      20228.21875
+    ],
+    "values": [
+      "16753.5058593750",
+      "20228.2187500000"
+    ]
+  },
+  "TR_AGMA_2001_C95/ZUL_KONTAKTLASTFAK_K_AC": {
+    "numbers": [
+      1442.1455078125,
+      1469.2961425781
+    ],
+    "values": [
+      "1442.1455078125",
+      "1469.2961425781"
+    ]
+  },
+  "TR_AGMA_2001_C95/ZUL_LEISTUNG_FLANKE": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/ZUL_LEISTUNG_FUSS": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/ZUL_LEISTUNG_P_A": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_AGMA_2001_C95/ZUL_VERHAELTNIS_PAC_P": {
+    "numbers": [
+      0.0836831927,
+      0.0852586776
+    ],
+    "values": [
+      "0.0836831927",
+      "0.0852586776"
+    ]
+  },
+  "TR_AGMA_2001_C95/ZUL_VERHAELTNIS_PAT_P": {
+    "numbers": [
+      0.044269301,
+      0.0534508377
+    ],
+    "values": [
+      "0.0442693010",
+      "0.0534508377"
+    ]
+  },
+  "TR_AGMA_2001_C95/ZUVERLAESSIGKEITSF_K_R": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_API613_1977/FORMFAKTOR_Y_C": {
+    "numbers": [
+      0.5619080067,
+      0.6901860833
+    ],
+    "values": [
+      "0.5619080067",
+      "0.6901860833"
+    ]
+  },
+  "TR_API613_1977/GEOMETRIEFAKTOR_J": {
+    "numbers": [
+      0.3208225071,
+      0.384576112
+    ],
+    "values": [
+      "0.3208225071",
+      "0.3845761120"
+    ]
+  },
+  "TR_API613_1977/KERBFAKTOR_K_F": {
+    "numbers": [
+      1.7514606714,
+      1.7946671247
+    ],
+    "values": [
+      "1.7514606714",
+      "1.7946671247"
+    ]
+  },
+  "TR_API613_1977/LASTAUFTEILUNGSF_M_N": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_API613_1977/MATERIAL_INDEX_NR": {
+    "numbers": [
+      3.0999999046,
+      3.0999999046
+    ],
+    "values": [
+      "3.0999999046",
+      "3.0999999046"
+    ]
+  },
+  "TR_API613_1977/SCHRAEGUNGSFAKTOR_C_H": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_API613_1977/SERVICE_FAKTOR_S_F": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_API613_1977/VORHANDENER_K_FAKTOR": {
+    "numbers": [
+      118.8113708496
+    ],
+    "values": [
+      "118.8113708496"
+    ]
+  },
+  "TR_API613_1977/VORH_BENDING_STRESS_NR": {
+    "numbers": [
+      14638.5478515625,
+      12211.8232421875
+    ],
+    "values": [
+      "14638.5478515625",
+      "12211.8232421875"
+    ]
+  },
+  "TR_API613_1977/ZULAESSIGER_K_FAKTOR": {
+    "numbers": [
+      3.0999999046
+    ],
+    "values": [
+      "3.0999999046"
+    ]
+  },
+  "TR_API613_1977/ZUL_BENDING_STRESS_NR": {
+    "numbers": [
+      276.0,
+      276.0
+    ],
+    "values": [
+      "276.0000000000",
+      "276.0000000000"
+    ]
+  },
+  "TR_API613_1977/ZUL_LEISTUNG_FLANKE": {
+    "numbers": [
+      10.4367113113
+    ],
+    "values": [
+      "10.4367113113"
+    ]
+  },
+  "TR_API613_1977/ZUL_LEISTUNG_FUSS": {
+    "numbers": [
+      7.5417318344,
+      9.0404186249
+    ],
+    "values": [
+      "7.5417318344",
+      "9.0404186249"
+    ]
+  },
+  "TR_BV_1990/ANWENDUNGSFAKTOR_K_A": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_BV_1990/AUFTEILUNGSFAKTOR_K_GAM": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_BV_1990/BREITENFAKTOR_K_FBETA": {
+    "numbers": [
+      1.0932391882
+    ],
+    "values": [
+      "1.0932391882"
+    ]
+  },
+  "TR_BV_1990/BREITENFAKTOR_K_HBETA": {
+    "numbers": [
+      1.116661787
+    ],
+    "values": [
+      "1.1166617870"
+    ]
+  },
+  "TR_BV_1990/DESIGNFAKTOR_Y_D": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_BV_1990/DYNAMIKFAKTOR_K_V": {
+    "numbers": [
+      1.126937747
+    ],
+    "values": [
+      "1.1269377470"
+    ]
+  },
+  "TR_BV_1990/EINLAUFFAKTOR_KAPPABETA": {
+    "numbers": [
+      0.8500000238
+    ],
+    "values": [
+      "0.8500000238"
+    ]
+  },
+  "TR_BV_1990/ELASTIZITAETSFAKTOR_Z_E": {
+    "numbers": [
+      191.6456756592
+    ],
+    "values": [
+      "191.6456756592"
+    ]
+  },
+  "TR_BV_1990/FAKTOR_C_ZV": {
+    "numbers": [
+      0.9300000072,
+      0.9300000072
+    ],
+    "values": [
+      "0.9300000072",
+      "0.9300000072"
+    ]
+  },
+  "TR_BV_1990/FLANKENLINIENABW_F_SH": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_BV_1990/FLANKENLINIENLAST_P_FP": {
+    "numbers": [
+      290.9199523926,
+      341.2985534668
+    ],
+    "values": [
+      "290.9199523926",
+      "341.2985534668"
+    ]
+  },
+  "TR_BV_1990/FLANKENLINIENLAST_P_H": {
+    "numbers": [
+      6676.0629882812
+    ],
+    "values": [
+      "6676.0629882812"
+    ]
+  },
+  "TR_BV_1990/FLANKENLINIENLAST_P_HP": {
+    "numbers": [
+      285.4748840332,
+      285.4748840332
+    ],
+    "values": [
+      "285.4748840332",
+      "285.4748840332"
+    ]
+  },
+  "TR_BV_1990/FORMFAKTOR_Y_FA": {
+    "numbers": [
+      2.256914854,
+      1.8932338953
+    ],
+    "values": [
+      "2.2569148540",
+      "1.8932338953"
+    ]
+  },
+  "TR_BV_1990/GESCHW.FAKTOR_Z_V": {
+    "numbers": [
+      0.9762843847,
+      0.9762843847
+    ],
+    "values": [
+      "0.9762843847",
+      "0.9762843847"
+    ]
+  },
+  "TR_BV_1990/GROESSENFAKTOR_Y_X": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_BV_1990/GROESSENFAKTOR_Z_X": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_BV_1990/HERSTELLABWEICHUNG_F_MA": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_BV_1990/HERTZSCHE_PRESSUNG": {
+    "numbers": [
+      5402.1904296875
+    ],
+    "values": [
+      "5402.1904296875"
+    ]
+  },
+  "TR_BV_1990/KERBPARAMETER_Q_S": {
+    "numbers": [
+      2.7688822746,
+      2.5019817352
+    ],
+    "values": [
+      "2.7688822746",
+      "2.5019817352"
+    ]
+  },
+  "TR_BV_1990/LEBENSDAUERFAKTOR_Y_N": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_BV_1990/LEBENSDAUERFAKTOR_Z_N": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_BV_1990/NENN_LINIENLAST_TEILKR": {
+    "numbers": [
+      5305.1645507812
+    ],
+    "values": [
+      "5305.1645507812"
+    ]
+  },
+  "TR_BV_1990/RAUHEITSFAKTOR_Y_RRELT": {
+    "numbers": [
+      0.9563824534,
+      0.9563824534
+    ],
+    "values": [
+      "0.9563824534",
+      "0.9563824534"
+    ]
+  },
+  "TR_BV_1990/RAUHEITSFAKTOR_Z_R": {
+    "numbers": [
+      0.9554507732,
+      0.9554507732
+    ],
+    "values": [
+      "0.9554507732",
+      "0.9554507732"
+    ]
+  },
+  "TR_BV_1990/SCHMIERSTOFFAKTOR_Z_L": {
+    "numbers": [
+      0.9658001065
+    ],
+    "values": [
+      "0.9658001065"
+    ]
+  },
+  "TR_BV_1990/SCHRAEGUNGSFAKTOR_Y_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_BV_1990/SCHRAEGUNGSFAKTOR_Z_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_BV_1990/SICHERHEIT_S_F": {
+    "numbers": [
+      0.0712163225,
+      0.0835488364
+    ],
+    "values": [
+      "0.0712163225",
+      "0.0835488364"
+    ]
+  },
+  "TR_BV_1990/SICHERHEIT_S_F_MIN": {
+    "numbers": [
+      1.6000000238
+    ],
+    "values": [
+      "1.6000000238"
+    ]
+  },
+  "TR_BV_1990/SICHERHEIT_S_H": {
+    "numbers": [
+      0.2584840357,
+      0.2584840357
+    ],
+    "values": [
+      "0.2584840357",
+      "0.2584840357"
+    ]
+  },
+  "TR_BV_1990/SICHERHEIT_S_H_MIN": {
+    "numbers": [
+      1.25
+    ],
+    "values": [
+      "1.2500000000"
+    ]
+  },
+  "TR_BV_1990/SIGMA_FE": {
+    "numbers": [
+      900.0,
+      900.0
+    ],
+    "values": [
+      "900.0000000000",
+      "900.0000000000"
+    ]
+  },
+  "TR_BV_1990/SIGMA_FP": {
+    "numbers": [
+      537.9650878906,
+      537.9650878906
+    ],
+    "values": [
+      "537.9650878906",
+      "537.9650878906"
+    ]
+  },
+  "TR_BV_1990/SIGMA_HP": {
+    "numbers": [
+      1117.1040039062,
+      1117.1040039062
+    ],
+    "values": [
+      "1117.1040039062",
+      "1117.1040039062"
+    ]
+  },
+  "TR_BV_1990/SPANNUNGSKORR.FAKTOR_Y_S": {
+    "numbers": [
+      1.9644056559,
+      2.0003523827
+    ],
+    "values": [
+      "1.9644056559",
+      "2.0003523827"
+    ]
+  },
+  "TR_BV_1990/STIRNFAKTOR_K_FALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_BV_1990/STIRNFAKTOR_K_HALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_BV_1990/STUETZZIFFER_Y_DELRELT": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_BV_1990/UEBERDECKUNGSF_Y_EPS": {
+    "numbers": [
+      0.8815303445
+    ],
+    "values": [
+      "0.8815303445"
+    ]
+  },
+  "TR_BV_1990/UEBERDECKUNGSF_Z_EPS": {
+    "numbers": [
+      0.9682300687
+    ],
+    "values": [
+      "0.9682300687"
+    ]
+  },
+  "TR_BV_1990/ZAHNFUSSPANNUNG": {
+    "numbers": [
+      12086.3330078125,
+      10302.287109375
+    ],
+    "values": [
+      "12086.3330078125",
+      "10302.2871093750"
+    ]
+  },
+  "TR_BV_1990/ZAHNFUSS_LINIENLAST_P_F": {
+    "numbers": [
+      6536.029296875
+    ],
+    "values": [
+      "6536.0292968750"
+    ]
+  },
+  "TR_BV_1990/ZONENFAKTOR_Z_H": {
+    "numbers": [
+      2.341930151
+    ],
+    "values": [
+      "2.3419301510"
+    ]
+  },
+  "TR_CCS_1996/ANWENDUNGSFAKTOR_K_A": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_CCS_1996/AUFTEILUNGSFAKTOR_K_GAM": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_CCS_1996/BREITE": {
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "values": [
+      "20.0000000000",
+      "20.0000000000"
+    ]
+  },
+  "TR_CCS_1996/BREITENFAKTOR_F_3": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/BREITENFAKTOR_K_FBETA": {
+    "numbers": [
+      1.1608887911
+    ],
+    "values": [
+      "1.1608887911"
+    ]
+  },
+  "TR_CCS_1996/BREITENFAKTOR_K_HBETA": {
+    "numbers": [
+      1.1608887911
+    ],
+    "values": [
+      "1.1608887911"
+    ]
+  },
+  "TR_CCS_1996/DESIGNFAKTOR_Y_D": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_CCS_1996/DREHMOMENT_EIS": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/DYNAMIKFAKTOR_K_V": {
+    "numbers": [
+      1.1183142662
+    ],
+    "values": [
+      "1.1183142662"
+    ]
+  },
+  "TR_CCS_1996/EISKLASSENKOEFFIZIENT_C": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/ELASTIZITAETSFAKTOR_Z_E": {
+    "numbers": [
+      191.6456756592
+    ],
+    "values": [
+      "191.6456756592"
+    ]
+  },
+  "TR_CCS_1996/FAKTOR_F_4": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/FORMFAKTOR_Y_FA": {
+    "numbers": [
+      2.256914854,
+      1.8932338953
+    ],
+    "values": [
+      "2.2569148540",
+      "1.8932338953"
+    ]
+  },
+  "TR_CCS_1996/GESCHWINDIGKEITSF_Z_V": {
+    "numbers": [
+      0.9762843847
+    ],
+    "values": [
+      "0.9762843847"
+    ]
+  },
+  "TR_CCS_1996/GROESSENFAKTOR_Y_X": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_CCS_1996/GRUNDLEISTUNG": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/HERTZSCHE_PRESSUNG": {
+    "numbers": [
+      5487.060546875
+    ],
+    "values": [
+      "5487.0605468750"
+    ]
+  },
+  "TR_CCS_1996/LEISTUNG_HAUPTANTRIEB": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/MOMENT_UNTERSETZERGETR.": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/OBERFLAECHENFAKTOR_Y_R": {
+    "numbers": [
+      0.9698970318,
+      0.9698970318
+    ],
+    "values": [
+      "0.9698970318",
+      "0.9698970318"
+    ]
+  },
+  "TR_CCS_1996/OBERFLAECHENFAKTOR_Z_R": {
+    "numbers": [
+      0.9576864243
+    ],
+    "values": [
+      "0.9576864243"
+    ]
+  },
+  "TR_CCS_1996/PROPELLERDREHZAHL": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/PROPELLERDURCHMESSER": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/SCHMIERSTOFFAKTOR_Z_L": {
+    "numbers": [
+      0.9666329026
+    ],
+    "values": [
+      "0.9666329026"
+    ]
+  },
+  "TR_CCS_1996/SCHRAEGENFAKTOR_Y_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_CCS_1996/SCHRAEGENFAKTOR_Z_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_CCS_1996/SICHERHEIT_SH": {
+    "numbers": [
+      0.2470658869,
+      0.2470658869
+    ],
+    "values": [
+      "0.2470658869",
+      "0.2470658869"
+    ]
+  },
+  "TR_CCS_1996/SICHERHEIT_S_F": {
+    "numbers": [
+      0.069530353,
+      0.0805763155
+    ],
+    "values": [
+      "0.0695303530",
+      "0.0805763155"
+    ]
+  },
+  "TR_CCS_1996/SICHERHEIT_S_FMIN": {
+    "numbers": [
+      1.5499999523
+    ],
+    "values": [
+      "1.5499999523"
+    ]
+  },
+  "TR_CCS_1996/SICHERHEIT_S_F_EIS": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/SICHERHEIT_S_HMIN": {
+    "numbers": [
+      1.2000000477
+    ],
+    "values": [
+      "1.2000000477"
+    ]
+  },
+  "TR_CCS_1996/SICHERHEIT_S_H_EIS": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/SIGMA_FLIM": {
+    "numbers": [
+      430.0,
+      430.0
+    ],
+    "values": [
+      "430.0000000000",
+      "430.0000000000"
+    ]
+  },
+  "TR_CCS_1996/SIGMA_FP": {
+    "numbers": [
+      571.3251342773,
+      564.3590087891
+    ],
+    "values": [
+      "571.3251342773",
+      "564.3590087891"
+    ]
+  },
+  "TR_CCS_1996/SIGMA_HLIM": {
+    "numbers": [
+      1500.0,
+      1500.0
+    ],
+    "values": [
+      "1500.0000000000",
+      "1500.0000000000"
+    ]
+  },
+  "TR_CCS_1996/SIGMA_HP": {
+    "numbers": [
+      1129.7211914062,
+      1129.7211914062
+    ],
+    "values": [
+      "1129.7211914062",
+      "1129.7211914062"
+    ]
+  },
+  "TR_CCS_1996/SPANNUNGSKORREKTURF_Y_SA": {
+    "numbers": [
+      1.8589088917,
+      1.8888962269
+    ],
+    "values": [
+      "1.8589088917",
+      "1.8888962269"
+    ]
+  },
+  "TR_CCS_1996/STIRNFAKTOR_K_FALFA": {
+    "numbers": [
+      1.0000154972
+    ],
+    "values": [
+      "1.0000154972"
+    ]
+  },
+  "TR_CCS_1996/STIRNFAKTOR_K_HALFA": {
+    "numbers": [
+      1.0000154972
+    ],
+    "values": [
+      "1.0000154972"
+    ]
+  },
+  "TR_CCS_1996/STUETZZIFFER_Y_DEL": {
+    "numbers": [
+      1.0616734028,
+      1.048728466
+    ],
+    "values": [
+      "1.0616734028",
+      "1.0487284660"
+    ]
+  },
+  "TR_CCS_1996/TRAEGHEITSMOMENT_AUSGANG": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/TRAEGHEITSMOMENT_EINGANG": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/UEBERDECKUNGSF_Y_EPS": {
+    "numbers": [
+      0.8815303445
+    ],
+    "values": [
+      "0.8815303445"
+    ]
+  },
+  "TR_CCS_1996/UEBERDECKUNGSF_Z_EPS": {
+    "numbers": [
+      0.9682300687
+    ],
+    "values": [
+      "0.9682300687"
+    ]
+  },
+  "TR_CCS_1996/WASSERVERDRAENGUNG_DELTA": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_CCS_1996/WERKSTOFFPAARUNGSF_Z_W": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_CCS_1996/ZAHNFUSSPANNUNG": {
+    "numbers": [
+      12736.2216796875,
+      10856.2470703125
+    ],
+    "values": [
+      "12736.2216796875",
+      "10856.2470703125"
+    ]
+  },
+  "TR_CCS_1996/ZONENFAKTOR_Z_H": {
+    "numbers": [
+      2.341930151
+    ],
+    "values": [
+      "2.3419301510"
+    ]
+  },
+  "TR_DIN3990_1987/ANWENDUNGSFAKTOR_K_A": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/ANWENDUNGSFAKTOR_K_AB": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/ANWENDUNGSFAKTOR_K_AF": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/AUFTEILUNGSFAKTOR_K_GAM": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/AUSSERMITTIGKEIT_S": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000E+00"
+    ]
+  },
+  "TR_DIN3990_1987/BETRIEBSSTUNDEN": {
+    "numbers": [
+      10000.0,
+      10000.0
+    ],
+    "values": [
+      "10000.00",
+      "10000.00"
+    ]
+  },
+  "TR_DIN3990_1987/BEZUGSDREHZAHL": {
+    "numbers": [
+      0.10514272
+    ],
+    "values": [
+      "0.1051427200"
+    ]
+  },
+  "TR_DIN3990_1987/BEZUGSPROFILFAKTOR_C_B": {
+    "numbers": [
+      0.8978295922
+    ],
+    "values": [
+      "0.8978295922"
+    ]
+  },
+  "TR_DIN3990_1987/BEZ_FUSSRUNDUNGSRADIUS": {
+    "numbers": [
+      0.3934165,
+      0.4508134
+    ],
+    "values": [
+      "0.3934165",
+      "0.4508134"
+    ]
+  },
+  "TR_DIN3990_1987/BEZ_STEGBREITE": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.000000",
+      "1.000000"
+    ]
+  },
+  "TR_DIN3990_1987/BEZ_ZAHNKRANZDICKE": {
+    "numbers": [
+      50.0,
+      50.0
+    ],
+    "values": [
+      "50.00000",
+      "50.00000"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZFAKTOR_X_M": {
+    "numbers": [
+      50.2698936462
+    ],
+    "values": [
+      "50.2698936462"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_BA": {
+    "numbers": [
+      211.6122589111
+    ],
+    "values": [
+      "211.6122589111"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_BB": {
+    "numbers": [
+      397.6825256348
+    ],
+    "values": [
+      "397.6825256348"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_BD": {
+    "numbers": [
+      478.4125976562
+    ],
+    "values": [
+      "478.4125976562"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_BE": {
+    "numbers": [
+      222.5173187256
+    ],
+    "values": [
+      "222.5173187256"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_FLAA166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_FLAB166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_FLAD166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_FLAE": {
+    "numbers": [
+      681.9237060547
+    ],
+    "values": [
+      "681.9237060547"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_FLAE166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_FLAINT": {
+    "numbers": [
+      241.6413879395
+    ],
+    "values": [
+      "241.6413879395"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_FLAINTT": {
+    "numbers": [
+      150.1852874756
+    ],
+    "values": [
+      "150.1852874756"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_FLAMAX": {
+    "numbers": [
+      478.4125976562
+    ],
+    "values": [
+      "478.4125976562"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_FLAMAXT": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_FLINT166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/BLITZTEMP_THETA_FLMAX166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/BREITENFAKTOR_K_BBETA": {
+    "numbers": [
+      1.116661787
+    ],
+    "values": [
+      "1.1166617870"
+    ]
+  },
+  "TR_DIN3990_1987/BREITENFAKTOR_K_FBETA": {
+    "numbers": [
+      1.0910648108
+    ],
+    "values": [
+      "1.0910648108"
+    ]
+  },
+  "TR_DIN3990_1987/BREITENFAKTOR_K_HBETA": {
+    "numbers": [
+      1.116661787
+    ],
+    "values": [
+      "1.1166617870"
+    ]
+  },
+  "TR_DIN3990_1987/BREITE_UEBER_D1": {
+    "numbers": [
+      0.2777778
+    ],
+    "values": [
+      "0.2777778"
+    ]
+  },
+  "TR_DIN3990_1987/DICHTE_RHO": {
+    "numbers": [
+      7.85,
+      7.85
+    ],
+    "values": [
+      "7.850000",
+      "7.850000"
+    ]
+  },
+  "TR_DIN3990_1987/DURCHMESSERVERHAELTNIS_Q": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000E+00",
+      "0.0000000E+00"
+    ]
+  },
+  "TR_DIN3990_1987/DYNAMIKFAKTOR_K_V": {
+    "numbers": [
+      1.0259519815
+    ],
+    "values": [
+      "1.0259519815"
+    ]
+  },
+  "TR_DIN3990_1987/DYN_VISKOSITAET_ETA_OIL": {
+    "numbers": [
+      33.4647941589
+    ],
+    "values": [
+      "33.4647941589"
+    ]
+  },
+  "TR_DIN3990_1987/EINGR.TEILUNGSABW_F_PE": {
+    "numbers": [
+      10.6788520813
+    ],
+    "values": [
+      "10.6788520813"
+    ]
+  },
+  "TR_DIN3990_1987/EINGRIFFSFAKTOR_X_Q": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/EINLAUFBETRAG_Y_ALFA": {
+    "numbers": [
+      0.8009139299
+    ],
+    "values": [
+      "0.8009139299"
+    ]
+  },
+  "TR_DIN3990_1987/EINLAUFBETRAG_Y_BETA": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/EINLAUFBETRAG_Y_F": {
+    "numbers": [
+      0.8009139299
+    ],
+    "values": [
+      "0.8009139299"
+    ]
+  },
+  "TR_DIN3990_1987/EINLAUFBETRAG_Y_P": {
+    "numbers": [
+      0.8009139299
+    ],
+    "values": [
+      "0.8009139299"
+    ]
+  },
+  "TR_DIN3990_1987/EINLAUFFAKTOR_KAPPA_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.000000"
+    ]
+  },
+  "TR_DIN3990_1987/EINLAUFFAKTOR_X_E166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/EINZELEINGR.FAKTOR_Z_B": {
+    "numbers": [
+      1.0335550308
+    ],
+    "values": [
+      "1.0335550308"
+    ]
+  },
+  "TR_DIN3990_1987/EINZELEINGR.FAKTOR_Z_D": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/EINZELFEDERSTEIFIGKEIT": {
+    "numbers": [
+      14.1951
+    ],
+    "values": [
+      "14.19510"
+    ]
+  },
+  "TR_DIN3990_1987/ELASTIZITAETSFAKTOR_Z_E": {
+    "numbers": [
+      191.6456756592
+    ],
+    "values": [
+      "191.6456756592"
+    ]
+  },
+  "TR_DIN3990_1987/FAKTOR_F_RADANORDNUNG_K": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/FLANKENLINIENABW_F_BETAX": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/FLANKENLINIENABW_F_BETAY": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/FLANKENLINIENABW_F_MA": {
+    "numbers": [
+      11.6933660507
+    ],
+    "values": [
+      "11.6933660507"
+    ]
+  },
+  "TR_DIN3990_1987/FLANKENLINIENABW_F_SH": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/FLA_MASSENTEMP_THETA_M": {
+    "numbers": [
+      341.8247375488
+    ],
+    "values": [
+      "341.8247375488"
+    ]
+  },
+  "TR_DIN3990_1987/FORMFAKTOR_Y_F": {
+    "numbers": [
+      1.9319573641,
+      1.6027071476
+    ],
+    "values": [
+      "1.9319573641",
+      "1.6027071476"
+    ]
+  },
+  "TR_DIN3990_1987/FORMFAKTOR_Y_F_FVA264": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/FORMFAKTOR_Y_S_451": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/FRESSTEMP_THETA_S": {
+    "numbers": [
+      270.000213623
+    ],
+    "values": [
+      "270.0002136230"
+    ]
+  },
+  "TR_DIN3990_1987/FZG_TEST_DREHMOMENT": {
+    "numbers": [
+      534.5
+    ],
+    "values": [
+      "534.5000000000"
+    ]
+  },
+  "TR_DIN3990_1987/FZG_TEST_DREHM_A8330": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/FZG_TEST_DREHM_A8360": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/FZG_TEST_DREHM_A8390": {
+    "numbers": [
+      534.5
+    ],
+    "values": [
+      "534.5000000000"
+    ]
+  },
+  "TR_DIN3990_1987/GEFUEGEFAKTOR_X_WRELT": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/GEOMETRIEFAKTOR_X_B": {
+    "numbers": [
+      0.1624825746
+    ],
+    "values": [
+      "0.1624825746"
+    ]
+  },
+  "TR_DIN3990_1987/GESCHW.FAKTOR_Z_V": {
+    "numbers": [
+      0.9762843847
+    ],
+    "values": [
+      "0.9762843847"
+    ]
+  },
+  "TR_DIN3990_1987/GEWICHTUNGSFAKTOR_C_1": {
+    "numbers": [
+      0.6999999881
+    ],
+    "values": [
+      "0.6999999881"
+    ]
+  },
+  "TR_DIN3990_1987/GEWICHTUNGSFAKTOR_C_2": {
+    "numbers": [
+      1.5
+    ],
+    "values": [
+      "1.5000000000"
+    ]
+  },
+  "TR_DIN3990_1987/GLEITSCHICHTBREITE": {
+    "numbers": [
+      0.003,
+      0.003
+    ],
+    "values": [
+      "0.0030000000",
+      "0.0030000000"
+    ]
+  },
+  "TR_DIN3990_1987/GRENZTEMP_THETA_C30": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/GRENZTEMP_THETA_C60": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/GRENZTEMP_THETA_CMT": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/GRENZTEMP_THETA_S0": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/GRENZTEMP_THETA_S166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/GROESSENFAKTOR_Y_X": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/GROESSENFAKTOR_Z_X": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/GRUNDLASTSPIELZAHL": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/HAERTE_WEICHERES_RAD": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000E+00"
+    ]
+  },
+  "TR_DIN3990_1987/HEBELARM_60GRAD_*": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/HERTZSCHE_PRESSUNG": {
+    "numbers": [
+      5327.4208984375,
+      5154.462890625
+    ],
+    "values": [
+      "5327.4208984375",
+      "5154.4628906250"
+    ]
+  },
+  "TR_DIN3990_1987/HERTZSCHE_PRESSUNG_NENN": {
+    "numbers": [
+      4815.6962890625
+    ],
+    "values": [
+      "4815.6962890625"
+    ]
+  },
+  "TR_DIN3990_1987/INTEGRALTEMP_THETA_INT": {
+    "numbers": [
+      637.4409179688
+    ],
+    "values": [
+      "637.4409179688"
+    ]
+  },
+  "TR_DIN3990_1987/INTEGRALTEMP_THETA_INTS": {
+    "numbers": [
+      428.2129211426
+    ],
+    "values": [
+      "428.2129211426"
+    ]
+  },
+  "TR_DIN3990_1987/INT_MASSENTEMP_THETA_MT": {
+    "numbers": [
+      274.9787902832
+    ],
+    "values": [
+      "274.9787902832"
+    ]
+  },
+  "TR_DIN3990_1987/ISO_6336": {
+    "numbers": [],
+    "values": [
+      "JA"
+    ]
+  },
+  "TR_DIN3990_1987/KERBPARAMETER_Q_S": {
+    "numbers": [
+      2.7688822746,
+      2.5019817352
+    ],
+    "values": [
+      "2.7688822746",
+      "2.5019817352"
+    ]
+  },
+  "TR_DIN3990_1987/KERBPARAMETER_Q_S_451": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/KERBRADIUS_RHO_G": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/KERBTIEFE_T_G": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/KONSTANTE_B*": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/KONTAKTTEMP_THETA_BMAX": {
+    "numbers": [
+      820.2373046875
+    ],
+    "values": [
+      "820.2373046875"
+    ]
+  },
+  "TR_DIN3990_1987/KONTAKTTEMP_THETA_CMAX_B": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/KONTAKTTEMP_THETA_CMAX_P": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/KOPFRUECKNAHME": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/KOPFRUECKNAHMEF_X_CA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/KOPFRUECKNAHME_C_A": {
+    "numbers": [
+      2.1416387558
+    ],
+    "values": [
+      "2.1416387558"
+    ]
+  },
+  "TR_DIN3990_1987/KORREKTURFAKTOR_C_M": {
+    "numbers": [
+      0.8000000119
+    ],
+    "values": [
+      "0.8000000119"
+    ]
+  },
+  "TR_DIN3990_1987/KRAFTANGRIFFSWINKEL": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/KRAFTSTUFE_DIN51354": {
+    "numbers": [
+      12.0
+    ],
+    "values": [
+      "12.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/KRANZDICKENFAKTOR_Y_SR": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/KRIT_ANGRIFFSWINKEL": {
+    "numbers": [
+      24.7207,
+      23.23866
+    ],
+    "values": [
+      "24.72070",
+      "23.23866"
+    ]
+  },
+  "TR_DIN3990_1987/KRIT_BIEGEHEBELARM": {
+    "numbers": [
+      1.581064,
+      1.390135
+    ],
+    "values": [
+      "1.581064",
+      "1.390135"
+    ]
+  },
+  "TR_DIN3990_1987/KRIT_DICKENSEHNE": {
+    "numbers": [
+      2.178648,
+      2.255854
+    ],
+    "values": [
+      "2.178648",
+      "2.255854"
+    ]
+  },
+  "TR_DIN3990_1987/LAGERSTUETZWEITE_L": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000E+00"
+    ]
+  },
+  "TR_DIN3990_1987/LASTSPIELZAHL": {
+    "numbers": [
+      600000000.0,
+      400000000.0
+    ],
+    "values": [
+      "6.0000000E+08",
+      "4.0000000E+08"
+    ]
+  },
+  "TR_DIN3990_1987/LEBENSDAUERFAKTOR_Y_N": {
+    "numbers": [
+      0.8992878795,
+      0.9066230059
+    ],
+    "values": [
+      "0.8992878795",
+      "0.9066230059"
+    ]
+  },
+  "TR_DIN3990_1987/LEBENSDAUERFAKTOR_Y_NT": {
+    "numbers": [
+      0.8992878795,
+      0.9066230059
+    ],
+    "values": [
+      "0.8992878795",
+      "0.9066230059"
+    ]
+  },
+  "TR_DIN3990_1987/LEBENSDAUERFAKTOR_Z_N": {
+    "numbers": [
+      0.9266111851,
+      0.9382075071
+    ],
+    "values": [
+      "0.9266111851",
+      "0.9382075071"
+    ]
+  },
+  "TR_DIN3990_1987/LEBENSDAUERFAKTOR_Z_NT": {
+    "numbers": [
+      0.9266111851,
+      0.9382075071
+    ],
+    "values": [
+      "0.9266111851",
+      "0.9382075071"
+    ]
+  },
+  "TR_DIN3990_1987/MASSENTEMP_THETA_M166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/MASSENTEMP_THETA_MT": {
+    "numbers": [
+      202.9349975586
+    ],
+    "values": [
+      "202.9349975586"
+    ]
+  },
+  "TR_DIN3990_1987/MASSGEBENDER_DSH": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000E+00"
+    ]
+  },
+  "TR_DIN3990_1987/MITTELSP.EMPFINDLICHK_M": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/OBERFLAECHENF_Y_RRELT": {
+    "numbers": [
+      0.9567383528,
+      0.9567383528
+    ],
+    "values": [
+      "0.9567383528",
+      "0.9567383528"
+    ]
+  },
+  "TR_DIN3990_1987/PARAMETER_GAMMA_A": {
+    "numbers": [
+      -0.2271723747
+    ],
+    "values": [
+      "-0.2271723747"
+    ]
+  },
+  "TR_DIN3990_1987/PARAMETER_GAMMA_B": {
+    "numbers": [
+      -0.1478893757
+    ],
+    "values": [
+      "-0.1478893757"
+    ]
+  },
+  "TR_DIN3990_1987/PARAMETER_GAMMA_C": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/PARAMETER_GAMMA_D": {
+    "numbers": [
+      0.1954638958
+    ],
+    "values": [
+      "0.1954638958"
+    ]
+  },
+  "TR_DIN3990_1987/PARAMETER_GAMMA_E": {
+    "numbers": [
+      0.2747468948
+    ],
+    "values": [
+      "0.2747468948"
+    ]
+  },
+  "TR_DIN3990_1987/PRODUKT_Z_LVR": {
+    "numbers": [
+      0.9008902907
+    ],
+    "values": [
+      "0.9008902907"
+    ]
+  },
+  "TR_DIN3990_1987/PROFILFORMABWEICHUNG_F_F": {
+    "numbers": [
+      10.0000009537
+    ],
+    "values": [
+      "10.0000009537"
+    ]
+  },
+  "TR_DIN3990_1987/RADIUS_60GRAD_*": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/RADKOERPERFAKTOR_C_R": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/RAUHEITSFAKTOR_Z_R": {
+    "numbers": [
+      0.9554507732
+    ],
+    "values": [
+      "0.9554507732"
+    ]
+  },
+  "TR_DIN3990_1987/REDUZIERTE_MASSE": {
+    "numbers": [
+      0.0125951562
+    ],
+    "values": [
+      "0.0125951562"
+    ]
+  },
+  "TR_DIN3990_1987/REIBUNGSZAHL_MAX166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/REIBUNGSZAHL_MIN166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/REIBUNGSZAHL_MY_BMAX": {
+    "numbers": [
+      0.1966233402
+    ],
+    "values": [
+      "0.1966233402"
+    ]
+  },
+  "TR_DIN3990_1987/REIBUNGSZAHL_MY_BMIN": {
+    "numbers": [
+      0.185150668
+    ],
+    "values": [
+      "0.1851506680"
+    ]
+  },
+  "TR_DIN3990_1987/REIBUNGSZAHL_MY_M166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/REIBUNGSZAHL_MY_MC": {
+    "numbers": [
+      0.1891368628
+    ],
+    "values": [
+      "0.1891368628"
+    ]
+  },
+  "TR_DIN3990_1987/RELATIVE_RAUHTIEFE_RZ100": {
+    "numbers": [
+      5.302948
+    ],
+    "values": [
+      "5.302948"
+    ]
+  },
+  "TR_DIN3990_1987/RITZELVERHAELTNISFAKTOR_": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000E+00"
+    ]
+  },
+  "TR_DIN3990_1987/RYDER_TEST_LAST": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SCHMIERSTOFFAKTOR_Z_L": {
+    "numbers": [
+      0.9658001065
+    ],
+    "values": [
+      "0.9658001065"
+    ]
+  },
+  "TR_DIN3990_1987/SCHMIERUNGSFAKTOR_X_L166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SCHMIERUNGSFAKTOR_X_S": {
+    "numbers": [
+      1.2000000477
+    ],
+    "values": [
+      "1.2000000477"
+    ]
+  },
+  "TR_DIN3990_1987/SCHRAEGUNGSFAKTOR_K_BGAM": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SCHRAEGUNGSFAKTOR_Y_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SCHRAEGUNGSFAKTOR_Z_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SEHNE_60GRAD_*": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_SH": {
+    "numbers": [
+      0.2287732661,
+      0.2394088805
+    ],
+    "values": [
+      "0.2287732661",
+      "0.2394088805"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_SH_MO": {
+    "numbers": [
+      0.052337207,
+      0.057316612
+    ],
+    "values": [
+      "5.2337207E-02",
+      "5.7316612E-02"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_S_B": {
+    "numbers": [
+      0.2762298286
+    ],
+    "values": [
+      "0.2762298286"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_S_B166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_S_F": {
+    "numbers": [
+      0.0724076778,
+      0.0783645138
+    ],
+    "values": [
+      "0.0724076778",
+      "0.0783645138"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_S_F_451": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_S_F_453": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_S_F_FVA264": {
+    "numbers": [],
+    "values": [
+      "Infinity",
+      "Infinity"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_S_F_MIN": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_S_H_MIN": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_S_INTS": {
+    "numbers": [
+      0.6717687845
+    ],
+    "values": [
+      "0.6717687845"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_S_S166": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SICHERHEIT_S_SL": {
+    "numbers": [
+      0.6376633644
+    ],
+    "values": [
+      "0.6376633644"
+    ]
+  },
+  "TR_DIN3990_1987/SIGMA_FE": {
+    "numbers": [
+      860.0,
+      860.0
+    ],
+    "values": [
+      "860.0000000000",
+      "860.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SIGMA_FLIM": {
+    "numbers": [
+      430.0,
+      430.0
+    ],
+    "values": [
+      "430.0000000000",
+      "430.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SIGMA_FP": {
+    "numbers": [
+      741.7662963867,
+      745.9789428711
+    ],
+    "values": [
+      "741.7662963867",
+      "745.9789428711"
+    ]
+  },
+  "TR_DIN3990_1987/SIGMA_FP_451": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SIGMA_FP_453": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SIGMA_HLIM": {
+    "numbers": [
+      1460.0,
+      1460.0
+    ],
+    "values": [
+      "1460.0000000000",
+      "1460.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SIGMA_HP": {
+    "numbers": [
+      1218.771484375,
+      1234.0241699219
+    ],
+    "values": [
+      "1218.7714843750",
+      "1234.0241699219"
+    ]
+  },
+  "TR_DIN3990_1987/SPANN.K.F._Y_S_FVA264": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SPANNUNGSKORR.FAKTOR_Y_S": {
+    "numbers": [
+      1.9644056559,
+      2.0003523827
+    ],
+    "values": [
+      "1.9644056559",
+      "2.0003523827"
+    ]
+  },
+  "TR_DIN3990_1987/SPANNUNGSKORR.F_Y_ST": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SPANNUNGSKORR.F_Y_S_451": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SPANNUNGSKORR.F_Y_S_453": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/SPANNUNGSVERHAELTNIS": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/STEIFIGKEIT_C_23": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/STEIFIGKEIT_C_GAMMA": {
+    "numbers": [
+      16.1922569275
+    ],
+    "values": [
+      "16.1922569275"
+    ]
+  },
+  "TR_DIN3990_1987/STIRNFAKTOR_K_BALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/STIRNFAKTOR_K_FALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/STIRNFAKTOR_K_HALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/STUETZZIFFER_Y_DELRELT": {
+    "numbers": [
+      1.002482295,
+      1.0000188351
+    ],
+    "values": [
+      "1.0024822950",
+      "1.0000188351"
+    ]
+  },
+  "TR_DIN3990_1987/STUETZZIFFER_Y_DELRELTS": {
+    "numbers": [
+      1.0001549721
+    ],
+    "values": [
+      "1.0001549721"
+    ]
+  },
+  "TR_DIN3990_1987/STUETZZIFFER_Y_DRELT_451": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/TEMPERATURFAKTOR_X_T": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/THERM_KONTAKTKOEFF_B_M": {
+    "numbers": [
+      0.4359999895,
+      0.4359999895
+    ],
+    "values": [
+      "0.4359999895",
+      "0.4359999895"
+    ]
+  },
+  "TR_DIN3990_1987/UEBERDECKUNGSF_X_EPS": {
+    "numbers": [
+      0.3543525338
+    ],
+    "values": [
+      "0.3543525338"
+    ]
+  },
+  "TR_DIN3990_1987/UEBERDECKUNGSF_Z_EPS": {
+    "numbers": [
+      0.9682300687
+    ],
+    "values": [
+      "0.9682300687"
+    ]
+  },
+  "TR_DIN3990_1987/UMFANGSKRAFT_WBT": {
+    "numbers": [
+      6077.8154296875
+    ],
+    "values": [
+      "6077.8154296875"
+    ]
+  },
+  "TR_DIN3990_1987/WECHSELFAKTOR_Y_A": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/WECHSELLASTFAKTOR_Y_A": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/WERKSTOFFPAARUNGSF_Z_W": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/WINKELFAKTOR_X_ALFABETA": {
+    "numbers": [
+      1.0130695105
+    ],
+    "values": [
+      "1.0130695105"
+    ]
+  },
+  "TR_DIN3990_1987/WIRKS_KOPFRUECKNAHME": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/ZAHNFUSSPANNUNG": {
+    "numbers": [
+      10244.3046875,
+      9519.3466796875
+    ],
+    "values": [
+      "10244.3046875000",
+      "9519.3466796875"
+    ]
+  },
+  "TR_DIN3990_1987/ZAHNFUSSPANNUNG_451": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/ZAHNFUSSPANNUNG_453": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/ZAHNFUSSPANNUNG_NENN": {
+    "numbers": [
+      9151.765625,
+      8504.123046875
+    ],
+    "values": [
+      "9151.7656250000",
+      "8504.1230468750"
+    ]
+  },
+  "TR_DIN3990_1987/ZAHNFUSSPANNUNG_NENN_451": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/ZAHNFUSSPANNUNG_NENN_453": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DIN3990_1987/ZONENFAKTOR_Z_H": {
+    "numbers": [
+      2.341930151
+    ],
+    "values": [
+      "2.3419301510"
+    ]
+  },
+  "TR_DNV_1993/ANWENDUNGSFAKTOR_K_A": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/APPROACHFAKTOR_X_Q": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/AUFTEILUNGSFAKTOR_K_GAM": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/BEZUGSDREHZAHL": {
+    "numbers": [
+      0.1016244814
+    ],
+    "values": [
+      "0.1016244814"
+    ]
+  },
+  "TR_DNV_1993/BLITZTEMP_THETA_FLAINT": {
+    "numbers": [
+      173.4679107666
+    ],
+    "values": [
+      "173.4679107666"
+    ]
+  },
+  "TR_DNV_1993/BLITZTEMP_THETA_FLAMAX": {
+    "numbers": [
+      342.2312011719
+    ],
+    "values": [
+      "342.2312011719"
+    ]
+  },
+  "TR_DNV_1993/BLITZTEMP_THETA_FLA_AVE": {
+    "numbers": [
+      191.8377227783
+    ],
+    "values": [
+      "191.8377227783"
+    ]
+  },
+  "TR_DNV_1993/BREITENFAKTOR_K_FBETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/BREITENFAKTOR_K_HBETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/DESIGN_FAKTOR_STAT": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/DESIGN_FAKTOR_Y_D": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/DYNAMIKFAKTOR_K_V": {
+    "numbers": [
+      1.0252234936
+    ],
+    "values": [
+      "1.0252234936"
+    ]
+  },
+  "TR_DNV_1993/DYN_VISKOS_B_TETA_OIL": {
+    "numbers": [
+      33.4647941589
+    ],
+    "values": [
+      "33.4647941589"
+    ]
+  },
+  "TR_DNV_1993/EINGR.TEILUNGSABW._F_PE": {
+    "numbers": [
+      10.6788520813
+    ],
+    "values": [
+      "10.6788520813"
+    ]
+  },
+  "TR_DNV_1993/EINGRIFFSFAKTOR_Z_BD": {
+    "numbers": [
+      1.0335550308,
+      1.0
+    ],
+    "values": [
+      "1.0335550308",
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/EINLAUFBETRAG_Y_F": {
+    "numbers": [
+      0.7618304491
+    ],
+    "values": [
+      "0.7618304491"
+    ]
+  },
+  "TR_DNV_1993/EINLAUFBETRAG_Y_P": {
+    "numbers": [
+      0.8009139299
+    ],
+    "values": [
+      "0.8009139299"
+    ]
+  },
+  "TR_DNV_1993/EINLAUFBETRAG_Y_S": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/ELASTIZITAETSFAKTOR_Z_E": {
+    "numbers": [
+      191.6456756592
+    ],
+    "values": [
+      "191.6456756592"
+    ]
+  },
+  "TR_DNV_1993/FLANKENLINIENABW_F_SH": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/FORMFAKTOR_Y_F": {
+    "numbers": [
+      1.9319573641,
+      1.6027071476
+    ],
+    "values": [
+      "1.9319573641",
+      "1.6027071476"
+    ]
+  },
+  "TR_DNV_1993/FRESSTEMPERATUR_THETA_S": {
+    "numbers": [
+      315.950012207
+    ],
+    "values": [
+      "315.9500122070"
+    ]
+  },
+  "TR_DNV_1993/FZG_TEST_DNV": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/GEFUEGEFAKTOR_X_W": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/GEOMETRIEFAKTOR_X_BE": {
+    "numbers": [
+      0.1624825746
+    ],
+    "values": [
+      "0.1624825746"
+    ]
+  },
+  "TR_DNV_1993/GESCHW.FAKTOR_Z_V": {
+    "numbers": [
+      0.9762843847
+    ],
+    "values": [
+      "0.9762843847"
+    ]
+  },
+  "TR_DNV_1993/GROESSENFAKTOR_Y_X": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/GROESSENFAKTOR_Z_X": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/GRUNDKREISABW_F_PB": {
+    "numbers": [
+      10.6788520813
+    ],
+    "values": [
+      "10.6788520813"
+    ]
+  },
+  "TR_DNV_1993/HAERTET.FAKTOR_Y_C": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFENFAKTOR_STAT": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFE_300": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFE_300_Y_C_1_0": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFE_300_Z_X_1_0": {
+    "numbers": [
+      0.6985039711
+    ],
+    "values": [
+      "0.6985039711"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFE_400": {
+    "numbers": [
+      0.4930616319
+    ],
+    "values": [
+      "0.4930616319"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFE_400_Y_C_1_0": {
+    "numbers": [
+      0.2848398983
+    ],
+    "values": [
+      "0.2848398983"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFE_400_Z_X_1_0": {
+    "numbers": [
+      0.4930616319
+    ],
+    "values": [
+      "0.4930616319"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFE_550": {
+    "numbers": [
+      0.2993588448
+    ],
+    "values": [
+      "0.2993588448"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFE_550_Y_C_1_0": {
+    "numbers": [
+      0.1359912604
+    ],
+    "values": [
+      "0.1359912604"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFE_550_Z_X_1_0": {
+    "numbers": [
+      0.2993588448
+    ],
+    "values": [
+      "0.2993588448"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFE_MIN": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFE_MIN_Y_C_1_0": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/HAERTETIEFE_MIN_Z_X_1_0": {
+    "numbers": [
+      0.6985039711
+    ],
+    "values": [
+      "0.6985039711"
+    ]
+  },
+  "TR_DNV_1993/HAERTE_HV": {
+    "numbers": [
+      750.0
+    ],
+    "values": [
+      "750.0000000000"
+    ]
+  },
+  "TR_DNV_1993/HALBE_HERTZSCHE_ABPL.": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/HERTZSCHE_PRESSUNG": {
+    "numbers": [
+      5039.6684570312,
+      4876.0522460938
+    ],
+    "values": [
+      "5039.6684570312",
+      "4876.0522460938"
+    ]
+  },
+  "TR_DNV_1993/INTEGRALTEMP_THETA_INT": {
+    "numbers": [
+      465.9149169922
+    ],
+    "values": [
+      "465.9149169922"
+    ]
+  },
+  "TR_DNV_1993/INTEGRALTEMP_THETA_INTP": {
+    "numbers": [
+      210.6333465576
+    ],
+    "values": [
+      "210.6333465576"
+    ]
+  },
+  "TR_DNV_1993/KERBPARAMETER_Q_S": {
+    "numbers": [
+      2.7688822746,
+      2.5019817352
+    ],
+    "values": [
+      "2.7688822746",
+      "2.5019817352"
+    ]
+  },
+  "TR_DNV_1993/KERNHAERTE_HV": {
+    "numbers": [
+      380.0
+    ],
+    "values": [
+      "380.0000000000"
+    ]
+  },
+  "TR_DNV_1993/KONTAKTFAKTOR_X_MP": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/KONTAKTTEMP_THETA_BP": {
+    "numbers": [
+      230.6333465576
+    ],
+    "values": [
+      "230.6333465576"
+    ]
+  },
+  "TR_DNV_1993/KONTAKTTEMP_THETA_B_MAX": {
+    "numbers": [
+      517.3338623047
+    ],
+    "values": [
+      "517.3338623047"
+    ]
+  },
+  "TR_DNV_1993/KOPFRUECKNAHME": {
+    "numbers": [
+      1.8393801451,
+      1.8393801451
+    ],
+    "values": [
+      "1.8393801451",
+      "1.8393801451"
+    ]
+  },
+  "TR_DNV_1993/KOPFRUECKNAHMEF_X_CA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/KOPFRUECKNAHME_C_A": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/KOPFRUECKNAHME_C_A_OPT": {
+    "numbers": [
+      349.1392822266
+    ],
+    "values": [
+      "349.1392822266"
+    ]
+  },
+  "TR_DNV_1993/LASTFAKTOR_K_BETAGAMMA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/LEBENSDAUERFAKTOR_Y_N": {
+    "numbers": [
+      0.8994548917,
+      0.9067785144
+    ],
+    "values": [
+      "0.8994548917",
+      "0.9067785144"
+    ]
+  },
+  "TR_DNV_1993/LEBENSDAUERFAKTOR_Z_N": {
+    "numbers": [
+      0.9265505672,
+      0.9381561875
+    ],
+    "values": [
+      "0.9265505672",
+      "0.9381561875"
+    ]
+  },
+  "TR_DNV_1993/LINIENLAST_W_BT": {
+    "numbers": [
+      5788.041015625
+    ],
+    "values": [
+      "5788.0410156250"
+    ]
+  },
+  "TR_DNV_1993/LINIENLAST_W_IT": {
+    "numbers": [
+      5788.041015625
+    ],
+    "values": [
+      "5788.0410156250"
+    ]
+  },
+  "TR_DNV_1993/MASSENTEMP_THETA_MB": {
+    "numbers": [
+      175.1026306152
+    ],
+    "values": [
+      "175.1026306152"
+    ]
+  },
+  "TR_DNV_1993/MASSENTEMP_THETA_MC": {
+    "numbers": [
+      205.7130432129
+    ],
+    "values": [
+      "205.7130432129"
+    ]
+  },
+  "TR_DNV_1993/MINDESTSICHERHEIT_S_FMIN": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/MINDESTSICHERHEIT_S_HMIN": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/MINIMALE_SICHERHEIT": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/NOTWENDIGE_HAERTE_300": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/NOTWENDIGE_HAERTE_400": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/NOTWENDIGE_HAERTE_550": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/NOTWENDIGE_HAERTE_MIN": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/NOTW_OBERFLAECHENHAERTE": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/PROFILABWEICHUNG_F_F": {
+    "numbers": [
+      10.1577386856
+    ],
+    "values": [
+      "10.1577386856"
+    ]
+  },
+  "TR_DNV_1993/RAUHEITSFAKTOR_Y_RRELT": {
+    "numbers": [
+      0.9563824534,
+      0.9563824534
+    ],
+    "values": [
+      "0.9563824534",
+      "0.9563824534"
+    ]
+  },
+  "TR_DNV_1993/RAUHEITSFAKTOR_Z_R": {
+    "numbers": [
+      0.9554507732
+    ],
+    "values": [
+      "0.9554507732"
+    ]
+  },
+  "TR_DNV_1993/REDUZIERTE_MASSE": {
+    "numbers": [
+      0.0125951562
+    ],
+    "values": [
+      "0.0125951562"
+    ]
+  },
+  "TR_DNV_1993/REIBUNGSZAHL_MY": {
+    "numbers": [
+      0.1434541643
+    ],
+    "values": [
+      "0.1434541643"
+    ]
+  },
+  "TR_DNV_1993/REL_KERBFAKTOR_STAT": {
+    "numbers": [
+      0.9893217087,
+      1.0001057386
+    ],
+    "values": [
+      "0.9893217087",
+      "1.0001057386"
+    ]
+  },
+  "TR_DNV_1993/SCHMIERSTOFFAKTOR_X_L": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SCHMIERSTOFFAKTOR_X_S": {
+    "numbers": [
+      1.2000000477
+    ],
+    "values": [
+      "1.2000000477"
+    ]
+  },
+  "TR_DNV_1993/SCHMIERSTOFFAKTOR_Z_L": {
+    "numbers": [
+      0.9658001661
+    ],
+    "values": [
+      "0.9658001661"
+    ]
+  },
+  "TR_DNV_1993/SCHMIERST_TEMP_VOR_EINGR": {
+    "numbers": [
+      60.0
+    ],
+    "values": [
+      "60.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SCHRAEGUNGSFAKTOR_Y_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SCHRAEGUNGSFAKTOR_Z_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SICHERHEIT_S_F": {
+    "numbers": [
+      0.0789597183,
+      0.0855247602
+    ],
+    "values": [
+      "0.0789597183",
+      "0.0855247602"
+    ]
+  },
+  "TR_DNV_1993/SICHERHEIT_S_H": {
+    "numbers": [
+      0.2567265332,
+      0.2686645985
+    ],
+    "values": [
+      "0.2567265332",
+      "0.2686645985"
+    ]
+  },
+  "TR_DNV_1993/SICHERHEIT_S_SB_EFF": {
+    "numbers": [
+      0.5596567988
+    ],
+    "values": [
+      "0.5596567988"
+    ]
+  },
+  "TR_DNV_1993/SICHERHEIT_S_SI_EFF": {
+    "numbers": [
+      0.6781281233
+    ],
+    "values": [
+      "0.6781281233"
+    ]
+  },
+  "TR_DNV_1993/SIGMA_B": {
+    "numbers": [
+      1350.0
+    ],
+    "values": [
+      "1350.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SIGMA_FE": {
+    "numbers": [
+      860.0,
+      860.0
+    ],
+    "values": [
+      "860.0000000000",
+      "860.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SIGMA_FP": {
+    "numbers": [
+      740.8479003906,
+      745.6585083008
+    ],
+    "values": [
+      "740.8479003906",
+      "745.6585083008"
+    ]
+  },
+  "TR_DNV_1993/SIGMA_FP_STAT": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SIGMA_F_MAX": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SIGMA_F_STAT": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SIGMA_HLIM": {
+    "numbers": [
+      1550.0,
+      1550.0
+    ],
+    "values": [
+      "1550.0000000000",
+      "1550.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SIGMA_HP": {
+    "numbers": [
+      1293.8166503906,
+      1310.0225830078
+    ],
+    "values": [
+      "1293.8166503906",
+      "1310.0225830078"
+    ]
+  },
+  "TR_DNV_1993/SIGMA_HR": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SIGMA_Y": {
+    "numbers": [
+      1100.0
+    ],
+    "values": [
+      "1100.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SPANNUNGSKORR.FAKTOR_Y_S": {
+    "numbers": [
+      1.9644056559,
+      2.0003523827
+    ],
+    "values": [
+      "1.9644056559",
+      "2.0003523827"
+    ]
+  },
+  "TR_DNV_1993/SPANNUNGSVERHAELTNIS_R": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/SPITZENLASTFAKTOR_K_AP": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/STEIFIGKEITSFAKTOR": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/STEIFIGKEIT_C_GAMMA": {
+    "numbers": [
+      17.3328170776
+    ],
+    "values": [
+      "17.3328170776"
+    ]
+  },
+  "TR_DNV_1993/STEIFIGKEIT_C_S": {
+    "numbers": [
+      15.1949806213
+    ],
+    "values": [
+      "15.1949806213"
+    ]
+  },
+  "TR_DNV_1993/STIRNFAKTOR_K_FALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/STIRNFAKTOR_K_HALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/STUETZZIFFER_Y_DELRELT": {
+    "numbers": [
+      1.0014277697,
+      0.9997897744
+    ],
+    "values": [
+      "1.0014277697",
+      "0.9997897744"
+    ]
+  },
+  "TR_DNV_1993/TIEFE_300_FUER_S_H_1_2": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/TIEFE_400_FUER_S_H_1_2": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/TIEFE_550_FUER_S_H_1_2": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/TIEFE_MIN_FUER_S_H_1_2": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/UEBERDECKUNGSF_X_EPS": {
+    "numbers": [
+      0.3543525338
+    ],
+    "values": [
+      "0.3543525338"
+    ]
+  },
+  "TR_DNV_1993/UEBERDECKUNGSF_Z_EPS": {
+    "numbers": [
+      0.9682300687
+    ],
+    "values": [
+      "0.9682300687"
+    ]
+  },
+  "TR_DNV_1993/VORGEGEBENE_TIEFE_300": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/VORGEGEBENE_TIEFE_400": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/VORGEGEBENE_TIEFE_550": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/VORGEGEBENE_TIEFE_MIN": {
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "values": [
+      "0.0000000000",
+      "0.0000000000"
+    ]
+  },
+  "TR_DNV_1993/WERKSTOFFPAARUNGSF_Z_W": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_DNV_1993/ZAHNFUSSPANNUNG": {
+    "numbers": [
+      9382.60546875,
+      8718.626953125
+    ],
+    "values": [
+      "9382.6054687500",
+      "8718.6269531250"
+    ]
+  },
+  "TR_DNV_1993/ZONENFAKTOR_Z_H": {
+    "numbers": [
+      2.341930151
+    ],
+    "values": [
+      "2.3419301510"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/ANWENDUNGSFAKTOR_K_A": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/AUFTEILUNGSFAKTOR_K_GAM": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/BREITENFAKTOR_K_FBETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/BREITENFAKTOR_K_HBETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/DYNAMIKFAKTOR_K_V": {
+    "numbers": [
+      1.0259519815
+    ],
+    "values": [
+      "1.0259519815"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/EISKLASSE": {
+    "numbers": [],
+    "values": []
+  },
+  "TR_GERM_LLOYD_1998/EISKLASSENBEIWERT": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/EISKLASSENFAKTOR": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/EISKL_VERSTAERKUNGSF": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/ELASTIZITAETSFAKTOR_Z_E": {
+    "numbers": [
+      191.6456756592
+    ],
+    "values": [
+      "191.6456756592"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/FORMFAKTOR_Y_F": {
+    "numbers": [
+      1.9319573641,
+      1.6027071476
+    ],
+    "values": [
+      "1.9319573641",
+      "1.6027071476"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/GROESSENFAKTOR_Y_X": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/GROESSENFAKTOR_Z_X": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/HERTZSCHE_PRESSUNG": {
+    "numbers": [
+      4877.7841796875
+    ],
+    "values": [
+      "4877.7841796875"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/HERTZSCHE_PRESSUNG_NENN": {
+    "numbers": [
+      4815.6962890625
+    ],
+    "values": [
+      "4815.6962890625"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/LEBENSDAUERFAKTOR_Y_NT": {
+    "numbers": [
+      0.8992878795,
+      0.9066230059
+    ],
+    "values": [
+      "0.8992878795",
+      "0.9066230059"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/LEBENSDAUERFAKTOR_Z_NT": {
+    "numbers": [
+      0.9266111851,
+      0.9382075071
+    ],
+    "values": [
+      "0.9266111851",
+      "0.9382075071"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/OBERFLAECHENF_Y_RRELT": {
+    "numbers": [
+      0.9567383528,
+      0.9567383528
+    ],
+    "values": [
+      "0.9567383528",
+      "0.9567383528"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SCHMIERSTOFFAKTOR_Z_LRV": {
+    "numbers": [
+      0.9008902907
+    ],
+    "values": [
+      "0.9008902907"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SCHRAEGUNGSFAKTOR_Y_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SCHRAEGUNGSFAKTOR_Z_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SICHERHEIT_S_F": {
+    "numbers": [
+      0.0790014639,
+      0.0855007619
+    ],
+    "values": [
+      "0.0790014639",
+      "0.0855007619"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SICHERHEIT_S_FE": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SICHERHEIT_S_F_MIN": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SICHERHEIT_S_H": {
+    "numbers": [
+      0.2498617023,
+      0.2529886663
+    ],
+    "values": [
+      "0.2498617023",
+      "0.2529886663"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SICHERHEIT_S_HE": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SICHERHEIT_S_H_MIN": {
+    "numbers": [
+      0.0
+    ],
+    "values": [
+      "0.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SIGMA_FE": {
+    "numbers": [
+      860.0,
+      860.0
+    ],
+    "values": [
+      "860.0000000000",
+      "860.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SIGMA_FG": {
+    "numbers": [
+      741.7662963867,
+      745.9789428711
+    ],
+    "values": [
+      "741.7662963867",
+      "745.9789428711"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SIGMA_HG": {
+    "numbers": [
+      1218.771484375,
+      1234.0241699219
+    ],
+    "values": [
+      "1218.7714843750",
+      "1234.0241699219"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SIGMA_HLIM": {
+    "numbers": [
+      1460.0,
+      1460.0
+    ],
+    "values": [
+      "1460.0000000000",
+      "1460.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/SPANNUNGSKORR.FAKTOR_Y_S": {
+    "numbers": [
+      1.9644056559,
+      2.0003523827
+    ],
+    "values": [
+      "1.9644056559",
+      "2.0003523827"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/STIRNFAKTOR_K_FALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/STIRNFAKTOR_K_HALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/STUETZZIFFER_Y_DELRELT": {
+    "numbers": [
+      1.002482295,
+      1.0000188351
+    ],
+    "values": [
+      "1.0024822950",
+      "1.0000188351"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/UEBERDECKUNGSF_Z_EPS": {
+    "numbers": [
+      0.9682300687
+    ],
+    "values": [
+      "0.9682300687"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/WERKSTOFFPAARUNGSF_Z_W": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/ZAHNFUSSPANNUNG": {
+    "numbers": [
+      9389.2724609375,
+      8724.822265625
+    ],
+    "values": [
+      "9389.2724609375",
+      "8724.8222656250"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/ZAHNFUSSPANNUNG_NENN": {
+    "numbers": [
+      9151.765625,
+      8504.123046875
+    ],
+    "values": [
+      "9151.7656250000",
+      "8504.1230468750"
+    ]
+  },
+  "TR_GERM_LLOYD_1998/ZONENFAKTOR_Z_H": {
+    "numbers": [
+      2.341930151
+    ],
+    "values": [
+      "2.3419301510"
+    ]
+  },
+  "TR_ISO6336_PART6/AEQUI_LASTSPIELZAHL_FL": {
+    "numbers": [
+      50000000.0,
+      50000000.0
+    ],
+    "values": [
+      "50000000.0",
+      "50000000.0"
+    ]
+  },
+  "TR_ISO6336_PART6/AEQUI_LASTSPIELZAHL_FU": {
+    "numbers": [
+      3000000.0,
+      3000000.0
+    ],
+    "values": [
+      "3000000.0",
+      "3000000.0"
+    ]
+  },
+  "TR_ISO6336_PART6/ANWENDUNGSFAKTOR_FLANKE": {
+    "numbers": [
+      1.478061676,
+      1.4175726175
+    ],
+    "values": [
+      "1.4780616760",
+      "1.4175726175"
+    ]
+  },
+  "TR_ISO6336_PART6/ANWENDUNGSFAKTOR_FUSS": {
+    "numbers": [
+      1.6720819473,
+      1.661167264
+    ],
+    "values": [
+      "1.6720819473",
+      "1.6611672640"
+    ]
+  },
+  "TR_ISO6336_PART6/GESAMTLASTSPIELE": {
+    "numbers": [
+      310860000.0,
+      207240000.0
+    ],
+    "values": [
+      "310860000.0",
+      "207240000.0"
+    ]
+  },
+  "TR_ISO6336_PART6/M": {
+    "numbers": [
+      106.11,
+      100.0,
+      5.1,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "values": [
+      "106.11",
+      "N_N=",
+      "100.00",
+      "N_L=",
+      "5.10",
+      "U_I=",
+      "0.000",
+      "0.000",
+      "0.000",
+      "0.000"
+    ]
+  },
+  "TR_ISO6336_PART6/MAX_ANWENDUNGSFAKTOR": {
+    "numbers": [
+      1.6720819473
+    ],
+    "values": [
+      "1.6720819473"
+    ]
+  },
+  "TR_ISO6336_PART6/MINER_SUMME_U_F": {
+    "numbers": [
+      0.9582124949,
+      0.9918268323
+    ],
+    "values": [
+      "0.9582124949",
+      "0.9918268323"
+    ]
+  },
+  "TR_ISO6336_PART6/MINER_SUMME_U_H": {
+    "numbers": [
+      1.0180466175,
+      0.9466602206
+    ],
+    "values": [
+      "1.0180466175",
+      "0.9466602206"
+    ]
+  },
+  "TR_ISO6336_PART6/NENNDREHZAHL": {
+    "numbers": [
+      1000.0,
+      666.6666870117
+    ],
+    "values": [
+      "1000.0000000000",
+      "666.6666870117"
+    ]
+  },
+  "TR_ISO6336_PART6/NENNMOMENT": {
+    "numbers": [
+      3819.7182617188,
+      5729.5771484375
+    ],
+    "values": [
+      "3819.7182617188",
+      "5729.5771484375"
+    ]
+  },
+  "TR_ISO6336_PART6/SICHERHEIT_S_F": {
+    "numbers": [
+      0.0458861962,
+      0.0497826189
+    ],
+    "values": [
+      "0.0458861962",
+      "0.0497826189"
+    ]
+  },
+  "TR_ISO6336_PART6/SICHERHEIT_S_H": {
+    "numbers": [
+      0.1911520213,
+      0.2005982846
+    ],
+    "values": [
+      "0.1911520213",
+      "0.2005982846"
+    ]
+  },
+  "TR_ISO6336_PART6/SIGMA_FP_REF": {
+    "numbers": [
+      824.8374633789,
+      822.8104858398
+    ],
+    "values": [
+      "824.8374633789",
+      "822.8104858398"
+    ]
+  },
+  "TR_ISO6336_PART6/SIGMA_FP_STAT": {
+    "numbers": [
+      2116.3273925781,
+      2150.3330078125
+    ],
+    "values": [
+      "2116.3273925781",
+      "2150.3330078125"
+    ]
+  },
+  "TR_ISO6336_PART6/SIGMA_HP_REF": {
+    "numbers": [
+      1315.2998046875,
+      1315.2999267578
+    ],
+    "values": [
+      "1315.2998046875",
+      "1315.2999267578"
+    ]
+  },
+  "TR_ISO6336_PART6/SIGMA_HP_STAT": {
+    "numbers": [
+      2336.0,
+      2336.0
+    ],
+    "values": [
+      "2336.0000000000",
+      "2336.0000000000"
+    ]
+  },
+  "TR_ISO6336_PART6/STATISCHES_MOMENT": {
+    "numbers": [
+      6400.3203125,
+      9600.4794921875
+    ],
+    "values": [
+      "6400.3203125000",
+      "9600.4794921875"
+    ]
+  },
+  "TR_ISO6336_PART6/STAT_SICHERHEIT_S_F": {
+    "numbers": [
+      0.1233763993,
+      0.1349057108
+    ],
+    "values": [
+      "0.1233763993",
+      "0.1349057108"
+    ]
+  },
+  "TR_ISO6336_PART6/STAT_SICHERHEIT_S_H": {
+    "numbers": [
+      0.3388610482,
+      0.3502315283
+    ],
+    "values": [
+      "0.3388610482",
+      "0.3502315283"
+    ]
+  },
+  "TR_LRS_1990/ANWENDUNGSFAKTOR_K_A": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_LRS_1990/BREITENFAKTOR_K_FBETA": {
+    "numbers": [
+      1.0225737095
+    ],
+    "values": [
+      "1.0225737095"
+    ]
+  },
+  "TR_LRS_1990/BREITENFAKTOR_K_HBETA": {
+    "numbers": [
+      1.0286653042
+    ],
+    "values": [
+      "1.0286653042"
+    ]
+  },
+  "TR_LRS_1990/DESIGNFAKTOR_Y_D": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_LRS_1990/DYNAMIKFAKTOR_K_V": {
+    "numbers": [
+      1.095255971
+    ],
+    "values": [
+      "1.0952559710"
+    ]
+  },
+  "TR_LRS_1990/FEDERSTEIFIGKEIT_C_GAMMA": {
+    "numbers": [
+      16.1922569275
+    ],
+    "values": [
+      "16.1922569275"
+    ]
+  },
+  "TR_LRS_1990/FUSSFORMFAKTOR_Y_S": {
+    "numbers": [
+      1.9319573641,
+      1.6027071476
+    ],
+    "values": [
+      "1.9319573641",
+      "1.6027071476"
+    ]
+  },
+  "TR_LRS_1990/GESCHW.FAKTOR_Z_V": {
+    "numbers": [
+      0.9560385942
+    ],
+    "values": [
+      "0.9560385942"
+    ]
+  },
+  "TR_LRS_1990/GROESSENFAKTOR_Y_X": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_LRS_1990/GROESSENFAKTOR_Z_X": {
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "values": [
+      "1.0000000000",
+      "1.0000000000"
+    ]
+  },
+  "TR_LRS_1990/HERTZSCHE_PRESSUNG": {
+    "numbers": [
+      5111.5659179688
+    ],
+    "values": [
+      "5111.5659179688"
+    ]
+  },
+  "TR_LRS_1990/KERBEMPF.F_Y_DELREL_T": {
+    "numbers": [
+      1.0021510124,
+      1.0000158548
+    ],
+    "values": [
+      "1.0021510124",
+      "1.0000158548"
+    ]
+  },
+  "TR_LRS_1990/KERBPARAMETER_Q_S": {
+    "numbers": [
+      2.7688822746,
+      2.5019817352
+    ],
+    "values": [
+      "2.7688822746",
+      "2.5019817352"
+    ]
+  },
+  "TR_LRS_1990/LASTVERTEILUNGSF_K_GAMMA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_LRS_1990/MATERIALFAKTOR_Z_E": {
+    "numbers": [
+      191.6456756592
+    ],
+    "values": [
+      "191.6456756592"
+    ]
+  },
+  "TR_LRS_1990/RAUHEITSFAKTOR_Z_R": {
+    "numbers": [
+      1.0202578306
+    ],
+    "values": [
+      "1.0202578306"
+    ]
+  },
+  "TR_LRS_1990/RAUHEITSF_YRREL_T": {
+    "numbers": [
+      0.9567383528,
+      0.9567383528
+    ],
+    "values": [
+      "0.9567383528",
+      "0.9567383528"
+    ]
+  },
+  "TR_LRS_1990/SCHRAEGUNGSFAKTOR_Y_S": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_LRS_1990/SCHRAEGUNGSFAKTOR_Z_BETA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_LRS_1990/SICHERHEIT_S_F": {
+    "numbers": [
+      0.0850390717,
+      0.1004524007
+    ],
+    "values": [
+      "0.0850390717",
+      "0.1004524007"
+    ]
+  },
+  "TR_LRS_1990/SICHERHEIT_S_F_MIN": {
+    "numbers": [
+      1.7999999523
+    ],
+    "values": [
+      "1.7999999523"
+    ]
+  },
+  "TR_LRS_1990/SICHERHEIT_S_H": {
+    "numbers": [
+      0.2862349451,
+      0.2862349451
+    ],
+    "values": [
+      "0.2862349451",
+      "0.2862349451"
+    ]
+  },
+  "TR_LRS_1990/SICHERHEIT_S_H_MIN": {
+    "numbers": [
+      1.3999999762
+    ],
+    "values": [
+      "1.3999999762"
+    ]
+  },
+  "TR_LRS_1990/SIGMA_FLIM": {
+    "numbers": [
+      500.0,
+      500.0
+    ],
+    "values": [
+      "500.0000000000",
+      "500.0000000000"
+    ]
+  },
+  "TR_LRS_1990/SIGMA_FP": {
+    "numbers": [
+      532.6646118164,
+      531.5297851562
+    ],
+    "values": [
+      "532.6646118164",
+      "531.5297851562"
+    ]
+  },
+  "TR_LRS_1990/SIGMA_HLIM": {
+    "numbers": [
+      1500.0,
+      1500.0
+    ],
+    "values": [
+      "1500.0000000000",
+      "1500.0000000000"
+    ]
+  },
+  "TR_LRS_1990/SIGMA_HP": {
+    "numbers": [
+      1045.0777587891,
+      1045.0777587891
+    ],
+    "values": [
+      "1045.0777587891",
+      "1045.0777587891"
+    ]
+  },
+  "TR_LRS_1990/SPANNUNGSKORR.F_Y_S": {
+    "numbers": [
+      1.9644056559,
+      2.0003523827
+    ],
+    "values": [
+      "1.9644056559",
+      "2.0003523827"
+    ]
+  },
+  "TR_LRS_1990/STIRNFAKTOR_K_FALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_LRS_1990/STIRNFAKTOR_K_HALFA": {
+    "numbers": [
+      1.0
+    ],
+    "values": [
+      "1.0000000000"
+    ]
+  },
+  "TR_LRS_1990/UEBERDECKUNGSF_Z_EPS": {
+    "numbers": [
+      0.9682300687
+    ],
+    "values": [
+      "0.9682300687"
+    ]
+  },
+  "TR_LRS_1990/ZAHNFUSSPANNUNG": {
+    "numbers": [
+      11274.7734375,
+      9524.447265625
+    ],
+    "values": [
+      "11274.7734375000",
+      "9524.4472656250"
+    ]
+  },
+  "TR_LRS_1990/ZONENFAKTOR_Z_H": {
+    "numbers": [
+      2.341930151
+    ],
+    "values": [
+      "2.3419301510"
+    ]
+  }
+}

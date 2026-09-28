@@ -1,0 +1,4739 @@
+{
+  "A_Ae": {
+    "label": "Achsabstandsabmass . . . . . . . .",
+    "line": 395,
+    "numbers": [
+      0.015
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_Ae",
+    "tokens": [
+      "+",
+      "0.015"
+    ],
+    "unit": "mm"
+  },
+  "A_Ae [Flankenspiele]": {
+    "label": "Flankenspielaenderung durch Abmass",
+    "line": 403,
+    "numbers": [
+      0.012,
+      0.011
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Flankenspiele",
+    "symbol": "A_Ae",
+    "tokens": [
+      "0.012",
+      "/",
+      "0.011"
+    ],
+    "unit": "mm"
+  },
+  "A_Ai": {
+    "label": "Achsabstandsabmass . . . . . . . .",
+    "line": 396,
+    "numbers": [
+      -0.015
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_Ai",
+    "tokens": [
+      "-",
+      "0.015"
+    ],
+    "unit": "mm"
+  },
+  "A_Ai [Flankenspiele]": {
+    "label": "Flankenspielaenderung durch Abmass",
+    "line": 404,
+    "numbers": [
+      -0.012,
+      -0.011
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Flankenspiele",
+    "symbol": "A_Ai",
+    "tokens": [
+      "-0.012",
+      "/",
+      "-0.011"
+    ],
+    "unit": "mm"
+  },
+  "A_Md/A_sn": {
+    "label": "Abmassfaktor . . . . . . .",
+    "line": 394,
+    "numbers": [
+      2.489,
+      2.415
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_Md/A_sn",
+    "tokens": [
+      "2.489",
+      "2.415"
+    ],
+    "unit": "-"
+  },
+  "A_Mde": {
+    "label": "oberes diametrales Abmass . . .",
+    "line": 392,
+    "numbers": [
+      -0.736,
+      -0.532
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_Mde",
+    "tokens": [
+      "-0.736",
+      "-0.532"
+    ],
+    "unit": "mm"
+  },
+  "A_Mdi": {
+    "label": "unteres diametrales Abmass . .",
+    "line": 393,
+    "numbers": [
+      -0.736,
+      -0.532
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_Mdi",
+    "tokens": [
+      "-0.736",
+      "-0.532"
+    ],
+    "unit": "mm"
+  },
+  "A_W/A_Sn": {
+    "label": "Zahnweitenabmassfaktor . . .",
+    "line": 386,
+    "numbers": [
+      0.94,
+      0.94
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_W/A_Sn",
+    "tokens": [
+      "0.940",
+      "0.940"
+    ],
+    "unit": "-"
+  },
+  "A_We": {
+    "label": "oberes Zahnweitenabmass . . . . .",
+    "line": 384,
+    "numbers": [
+      -0.278,
+      -0.207
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_We",
+    "tokens": [
+      "-0.278",
+      "-0.207"
+    ],
+    "unit": "mm"
+  },
+  "A_Wi": {
+    "label": "unteres Zahnweitenabmass . . . .",
+    "line": 385,
+    "numbers": [
+      -0.278,
+      -0.207
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_Wi",
+    "tokens": [
+      "-0.278",
+      "-0.207"
+    ],
+    "unit": "mm"
+  },
+  "A_sne": {
+    "label": "oberes Abmass der Z.dickensehne",
+    "line": 379,
+    "numbers": [
+      -0.296,
+      -0.22
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_sne",
+    "tokens": [
+      "-0.296",
+      "-0.220"
+    ],
+    "unit": "mm"
+  },
+  "A_sni": {
+    "label": "unteres Abmass der Z.dickensehne",
+    "line": 380,
+    "numbers": [
+      -0.296,
+      -0.22
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_sni",
+    "tokens": [
+      "-0.296",
+      "-0.220"
+    ],
+    "unit": "mm"
+  },
+  "A_ste": {
+    "label": "oberes Zahndickenabmass . . . .",
+    "line": 369,
+    "numbers": [
+      -0.296,
+      -0.22
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": "A_ste",
+    "tokens": [
+      "-0.296",
+      "-0.220"
+    ],
+    "unit": "mm"
+  },
+  "A_sti": {
+    "label": "unteres Zahndickenabmass . . .",
+    "line": 370,
+    "numbers": [
+      -0.296,
+      -0.22
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": "A_sti",
+    "tokens": [
+      "-0.296",
+      "-0.220"
+    ],
+    "unit": "mm"
+  },
+  "Abmassreihe (DIN 3967, Aug.78)": {
+    "label": "Abmassreihe (DIN 3967, Aug.78) . . . .",
+    "line": 366,
+    "numbers": [],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": null,
+    "tokens": [],
+    "unit": "-"
+  },
+  "Angenaeherte Lastsicherheit S_SL": {
+    "label": "Angenaeherte Lastsicherheit . . . . S_SL",
+    "line": 722,
+    "numbers": [
+      40.64
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "40.64"
+    ],
+    "unit": "-"
+  },
+  "Anwendungsfaktor (EG) K_A": {
+    "label": "Anwendungsfaktor (EG) . . . . . . . K_A",
+    "line": 566,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Anwendungsfaktor (EG=J) K_A": {
+    "label": "Anwendungsfaktor (EG=J) . . . . . . K_A",
+    "line": 698,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Anwendungsfaktor K_A": {
+    "label": "Anwendungsfaktor . . . . . . . . . K_A",
+    "line": 764,
+    "numbers": [
+      1.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Arith. Mittenrauhw. (EG=0.8 ,0.8) . R_a": {
+    "label": "Arith. Mittenrauhw. (EG=0.8 ,0.8) . R_a",
+    "line": 688,
+    "numbers": [
+      0.8
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "0.8"
+    ],
+    "unit": "um"
+  },
+  "Basis nue_ 40/nue_100 100./": {
+    "label": "Basis . . . . . . . . . nue_ 40/nue_100 100./",
+    "line": 528,
+    "numbers": [
+      11.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "11.0"
+    ],
+    "unit": "-"
+  },
+  "Beruehrkreisdurchm. (Zahnweitenmessg.)": {
+    "label": "Beruehrkreisdurchm. (Zahnweitenmessg.)",
+    "line": 387,
+    "numbers": [
+      50.788,
+      51.728
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": null,
+    "tokens": [
+      "50.788",
+      "51.728"
+    ],
+    "unit": "mm"
+  },
+  "Beruehrkreisdurchm. (oberes Abmass)": {
+    "label": "Beruehrkreisdurchm. (oberes Abmass) .",
+    "line": 381,
+    "numbers": [
+      50.988,
+      51.973
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": null,
+    "tokens": [
+      "50.988",
+      "51.973"
+    ],
+    "unit": "mm"
+  },
+  "Beruehrkreisdurchmesser (Kugel/Flanke)": {
+    "label": "Beruehrkreisdurchmesser (Kugel/Flanke)",
+    "line": 389,
+    "numbers": [
+      50.779,
+      52.146
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": null,
+    "tokens": [
+      "50.779",
+      "52.146"
+    ],
+    "unit": "mm"
+  },
+  "Betriebsstunden L_H": {
+    "label": "Betriebsstunden . . . . . . . . . . L_H",
+    "line": 593,
+    "numbers": [
+      102.0,
+      102.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "102.0",
+      "102.0"
+    ],
+    "unit": "h"
+  },
+  "Bezugsdrehzahl n_1/n_e1": {
+    "label": "Bezugsdrehzahl . . . . . . . n_1/n_e1",
+    "line": 568,
+    "numbers": [
+      1.258
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.258"
+    ],
+    "unit": "-"
+  },
+  "Bezugsprofilfaktor C_B": {
+    "label": "Bezugsprofilfaktor . . . . . . . C_B",
+    "line": 588,
+    "numbers": [
+      0.84
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "0.84"
+    ],
+    "unit": "-"
+  },
+  "Blitzfaktor (EG=N) X_M": {
+    "label": "Blitzfaktor (EG=N) . . . . . . . . X_M",
+    "line": 706,
+    "numbers": [
+      20.2
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "20.2"
+    ],
+    "unit": "-"
+  },
+  "Blitztemperatur in E theta_flaE": {
+    "label": "Blitztemperatur in E . . . . theta_flaE",
+    "line": 712,
+    "numbers": [
+      2.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "2."
+    ],
+    "unit": "Grad C"
+  },
+  "Blitztemperatur in Punkt A theta_BA": {
+    "label": "Blitztemperatur in Punkt A . . theta_BA",
+    "line": 728,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Kontakttemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "1."
+    ],
+    "unit": "Grad C"
+  },
+  "Blitztemperatur in Punkt B theta_BB": {
+    "label": "Blitztemperatur in Punkt B . . theta_BB",
+    "line": 729,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Kontakttemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "1."
+    ],
+    "unit": "Grad C"
+  },
+  "Blitztemperatur in Punkt D theta_BD": {
+    "label": "Blitztemperatur in Punkt D . . theta_BD",
+    "line": 741,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1."
+    ],
+    "unit": "Grad C"
+  },
+  "Blitztemperatur in Punkt E theta_BE": {
+    "label": "Blitztemperatur in Punkt E . . theta_BE",
+    "line": 742,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1."
+    ],
+    "unit": "Grad C"
+  },
+  "Breitenfaktor (EG=N) K_Bbeta": {
+    "label": "Breitenfaktor (EG=N) . . . . . K_Bbeta",
+    "line": 701,
+    "numbers": [
+      1.19
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1.19"
+    ],
+    "unit": "-"
+  },
+  "Breitenfaktor Flanke K_Hbeta": {
+    "label": "Breitenfaktor Flanke . . . . . K_Hbeta",
+    "line": 767,
+    "numbers": [
+      1.16
+    ],
+    "section": "CCS 1996",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.16"
+    ],
+    "unit": "-"
+  },
+  "Breitenfaktor Fuss (=K_Hbeta) . K_Fbeta": {
+    "label": "Breitenfaktor Fuss (=K_Hbeta) . K_Fbeta",
+    "line": 769,
+    "numbers": [
+      1.16
+    ],
+    "section": "CCS 1996",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.16"
+    ],
+    "unit": "-"
+  },
+  "Breitenfaktor Verfahren D K_Hbeta": {
+    "label": "Breitenfaktor Verfahren D . . . K_Hbeta",
+    "line": 579,
+    "numbers": [
+      1.19
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.19"
+    ],
+    "unit": "-"
+  },
+  "Breitenfaktor Zahnfusspannung . K_Fbeta": {
+    "label": "Breitenfaktor Zahnfusspannung . K_Fbeta",
+    "line": 581,
+    "numbers": [
+      1.16
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.16"
+    ],
+    "unit": "-"
+  },
+  "D_M": {
+    "label": "Messtueckdurchmesser . . . . . . .",
+    "line": 391,
+    "numbers": [
+      1.75,
+      1.75
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "D_M",
+    "tokens": [
+      "1.750",
+      "1.750"
+    ],
+    "unit": "mm"
+  },
+  "Dauerfestigkeit Flanke sigma_Hlim": {
+    "label": "Dauerfestigkeit Flanke . . sigma_Hlim",
+    "line": 778,
+    "numbers": [
+      1500.0,
+      0.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1500.00",
+      "0.00"
+    ],
+    "unit": "N/mm2"
+  },
+  "Dauerfestigkeit Fuss sigma_Flim": {
+    "label": "Dauerfestigkeit Fuss . . . sigma_Flim",
+    "line": 793,
+    "numbers": [
+      430.0,
+      0.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "430.00",
+      "0.00"
+    ],
+    "unit": "N/mm2"
+  },
+  "Dauerfestigkeit sigma_Flim": {
+    "label": "Dauerfestigkeit . . . . . . sigma_Flim",
+    "line": 655,
+    "numbers": [
+      430.0,
+      35.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "430.0",
+      "35.0"
+    ],
+    "unit": "N/mm2"
+  },
+  "Dauerfestigkeitswert sigma_Hlim": {
+    "label": "Dauerfestigkeitswert . . . . sigma_Hlim",
+    "line": 629,
+    "numbers": [
+      1460.0,
+      70.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1460.0",
+      "70.0"
+    ],
+    "unit": "N/mm2"
+  },
+  "Designfaktor Y_D": {
+    "label": "Designfaktor . . . . . . . . . . Y_D",
+    "line": 794,
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.00",
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Dichte rho": {
+    "label": "Dichte . . . . . . . . . . . . . rho",
+    "line": 571,
+    "numbers": [
+      7.85,
+      0.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "7.85",
+      "0.00"
+    ],
+    "unit": "g/cm3"
+  },
+  "Dichte rho_15": {
+    "label": "Dichte . . . . . . . . . . . . . rho_15",
+    "line": 529,
+    "numbers": [
+      0.88
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "0.880"
+    ],
+    "unit": "g/cm3"
+  },
+  "Dynamikfaktor (EG=N) K_v": {
+    "label": "Dynamikfaktor (EG=N) . . . . . . . K_v",
+    "line": 699,
+    "numbers": [
+      1.56
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1.56"
+    ],
+    "unit": "-"
+  },
+  "Dynamikfaktor K_v": {
+    "label": "Dynamikfaktor . . . . . . . . . . . K_v",
+    "line": 766,
+    "numbers": [
+      1.12
+    ],
+    "section": "CCS 1996",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.12"
+    ],
+    "unit": "-"
+  },
+  "Dynamikfaktor Verfahren B K_v": {
+    "label": "Dynamikfaktor Verfahren B . . . . . K_v",
+    "line": 567,
+    "numbers": [
+      1.56
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.56"
+    ],
+    "unit": "-"
+  },
+  "E": {
+    "label": "Elastizitaetsmodul . . . . . . . . .",
+    "line": 506,
+    "numbers": [
+      210000.0,
+      2300.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Werkstoffdaten",
+    "symbol": "E",
+    "tokens": [
+      "210000.0",
+      "2300.0"
+    ],
+    "unit": "N/mm2"
+  },
+  "Eingr.federsteifigkeit Verf. B c_gamma": {
+    "label": "Eingr.federsteifigkeit Verf. B c_gamma",
+    "line": 586,
+    "numbers": [
+      0.1
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "0.1"
+    ],
+    "unit": "N/um/mm"
+  },
+  "Eingr.steifigkeit (EG: 0.0) c_gamma": {
+    "label": "Eingr.steifigkeit (EG: 0.0) c_gamma",
+    "line": 572,
+    "numbers": [
+      0.1
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "0.1"
+    ],
+    "unit": "N/um/mm"
+  },
+  "Eingriffsfaktor (EG=N) X_Q": {
+    "label": "Eingriffsfaktor (EG=N) . . . . . . X_Q",
+    "line": 704,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Eingriffsfedersteifigkeit c_23": {
+    "label": "Eingriffsfedersteifigkeit . . . . c_23",
+    "line": 573,
+    "numbers": [
+      0.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "0.0"
+    ],
+    "unit": "N/um/mm"
+  },
+  "Einlaufbetrag y_alfa": {
+    "label": "Einlaufbetrag . . . . . . . . . y_alfa",
+    "line": 584,
+    "numbers": [
+      2.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "2."
+    ],
+    "unit": "um"
+  },
+  "Einlaufbetrag y_f": {
+    "label": "Einlaufbetrag . . . . . . . . . . y_f",
+    "line": 577,
+    "numbers": [
+      2.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "2."
+    ],
+    "unit": "um"
+  },
+  "Einlaufbetrag y_p": {
+    "label": "Einlaufbetrag . . . . . . . . . . y_p",
+    "line": 575,
+    "numbers": [
+      2.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "2."
+    ],
+    "unit": "um"
+  },
+  "Einspritzschm., Oeltemperatur theta_oil": {
+    "label": "Einspritzschm., Oeltemperatur theta_oil",
+    "line": 678,
+    "numbers": [
+      40.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "40.0"
+    ],
+    "unit": "Grad C"
+  },
+  "Einzeleingriffsfaktor Z_B": {
+    "label": "Einzeleingriffsfaktor . . . . . . Z_B",
+    "line": 599,
+    "numbers": [
+      1.009
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.009"
+    ],
+    "unit": "-"
+  },
+  "Einzeleingriffsfaktor Z_D": {
+    "label": "Einzeleingriffsfaktor . . . . . . Z_D",
+    "line": 600,
+    "numbers": [
+      1.008
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.008"
+    ],
+    "unit": "-"
+  },
+  "Einzelfedersteifigkeit Verf. B c_s": {
+    "label": "Einzelfedersteifigkeit Verf. B . . c_s",
+    "line": 587,
+    "numbers": [
+      0.1
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "0.1"
+    ],
+    "unit": "N/um/mm"
+  },
+  "Elastizitaetsfaktor Z_E": {
+    "label": "Elastizitaetsfaktor . . . . . . . Z_E",
+    "line": 602,
+    "numbers": [
+      31.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "31.0"
+    ],
+    "unit": "(N/mm2).5"
+  },
+  "Elastizitaetsfaktor Z_E [Flankentragfaehigkeit]": {
+    "label": "Elastizitaetsfaktor . . . . . . . Z_E",
+    "line": 775,
+    "numbers": [
+      31.038
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "31.038"
+    ],
+    "unit": "-"
+  },
+  "FZG-Kraftstufe": {
+    "label": "FZG-Kraftstufe . . . . . . . . . . .",
+    "line": 522,
+    "numbers": [
+      12.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "KS",
+      "12."
+    ],
+    "unit": "-"
+  },
+  "FZG-Testdrehmoment T-1T": {
+    "label": "FZG-Testdrehmoment . . . . . . . . T-1T",
+    "line": 523,
+    "numbers": [
+      534.5
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "534.5"
+    ],
+    "unit": "Nm"
+  },
+  "FZG-Testdrehmoment T-1T [DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung]": {
+    "label": "FZG-Testdrehmoment . . . . . . . . T-1T",
+    "line": 684,
+    "numbers": [
+      534.5
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "534.5"
+    ],
+    "unit": "Nm"
+  },
+  "F_ax": {
+    "label": "Nennaxialkraft . . . . . . . . . .",
+    "line": 481,
+    "numbers": [
+      0.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Leistungen, Kraefte und Drehzahlen",
+    "symbol": "F_ax",
+    "tokens": [
+      "0.0"
+    ],
+    "unit": "N"
+  },
+  "F_t": {
+    "label": "Nennumfangskraft am Teilkreis . . .",
+    "line": 478,
+    "numbers": [
+      384.6
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Leistungen, Kraefte und Drehzahlen",
+    "symbol": "F_t",
+    "tokens": [
+      "384.6"
+    ],
+    "unit": "N"
+  },
+  "F_tb": {
+    "label": "Nennumfangskraft am Grundkreis . .",
+    "line": 480,
+    "numbers": [
+      409.3
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Leistungen, Kraefte und Drehzahlen",
+    "symbol": "F_tb",
+    "tokens": [
+      "409.3"
+    ],
+    "unit": "N"
+  },
+  "F_tw": {
+    "label": "Nennumfangskraft am Waelzkreis . .",
+    "line": 479,
+    "numbers": [
+      380.9
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Leistungen, Kraefte und Drehzahlen",
+    "symbol": "F_tw",
+    "tokens": [
+      "380.9"
+    ],
+    "unit": "N"
+  },
+  "Fase je Zahnende (Kantenbruch)": {
+    "label": "Fase je Zahnende (Kantenbruch) . . .",
+    "line": 324,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": null,
+    "tokens": [
+      "0.000",
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "Fase je Zahnende (Kantenbruch) [Allgemeine Daten zur Tragfaehigkeit]": {
+    "label": "Fase je Zahnende (Kantenbruch) . . .",
+    "line": 467,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "0.000",
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "Fl.pressg Nennwert (Waelzkr.) . sigma_H0": {
+    "label": "Fl.pressg Nennwert (Waelzkr.) . sigma_H0",
+    "line": 598,
+    "numbers": [
+      72.4
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "72.4"
+    ],
+    "unit": "N/mm2"
+  },
+  "Flankenhaerte": {
+    "label": "Flankenhaerte . . . . . . . . . . . . .",
+    "line": 504,
+    "numbers": [
+      750.0,
+      0.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Werkstoffdaten",
+    "symbol": null,
+    "tokens": [
+      "750.",
+      "0."
+    ],
+    "unit": "HV"
+  },
+  "Flankensicherheit S_H": {
+    "label": "Flankensicherheit . . . . . . . . . S_H",
+    "line": 785,
+    "numbers": [
+      16.05,
+      0.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "16.05",
+      "0.00"
+    ],
+    "unit": null
+  },
+  "Formfaktor Y_F": {
+    "label": "Formfaktor . . . . . . . . . . . Y_F",
+    "line": 639,
+    "numbers": [
+      2.417,
+      1.97
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "2.417",
+      "1.970"
+    ],
+    "unit": "-"
+  },
+  "Formfaktor Y_Fa": {
+    "label": "Formfaktor . . . . . . . . . . . Y_Fa",
+    "line": 789,
+    "numbers": [
+      2.694,
+      2.211
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "2.694",
+      "2.211"
+    ],
+    "unit": "-"
+  },
+  "Fress-Integraltemp. FZG-Test theta_intS": {
+    "label": "Fress-Integraltemp. FZG-Test theta_intS",
+    "line": 715,
+    "numbers": [
+      428.2
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "428.2"
+    ],
+    "unit": "Grad C"
+  },
+  "Fress-Sicherheit Integraltemp. . S_intS": {
+    "label": "Fress-Sicherheit Integraltemp. . S_intS",
+    "line": 720,
+    "numbers": [
+      8.64
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "8.64"
+    ],
+    "unit": "-"
+  },
+  "Fress-Sicherheit Kontakttemp. S_B": {
+    "label": "Fress-Sicherheit Kontakttemp. . . . S_B",
+    "line": 746,
+    "numbers": [
+      23.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "23.00"
+    ],
+    "unit": "-"
+  },
+  "Fresstemperatur (nach Gl. 4-28) theta_S": {
+    "label": "Fresstemperatur (nach Gl. 4-28) theta_S",
+    "line": 744,
+    "numbers": [
+      270.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "270.0"
+    ],
+    "unit": "Grad C"
+  },
+  "Fs_n": {
+    "label": "Fussfreischnitt (bei '-' Kerbtiefe)",
+    "line": 337,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "Fs_n",
+    "tokens": [
+      "0.000",
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "Gefuegefaktor X_WrelT": {
+    "label": "Gefuegefaktor . . . . . . . . . X_WrelT",
+    "line": 685,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Gemittelte Rauhtiefe R_z": {
+    "label": "Gemittelte Rauhtiefe . . . . . . . R_z",
+    "line": 689,
+    "numbers": [
+      5.0,
+      5.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "5.0",
+      "5.0"
+    ],
+    "unit": "um"
+  },
+  "Gemittelte Reibungszahl (EG=N) . my_mC": {
+    "label": "Gemittelte Reibungszahl (EG=N) . my_mC",
+    "line": 709,
+    "numbers": [
+      0.057
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "0.057"
+    ],
+    "unit": "-"
+  },
+  "Geometriefaktor (EG=N) X_B": {
+    "label": "Geometriefaktor (EG=N) . . . . . . X_B",
+    "line": 705,
+    "numbers": [
+      0.136
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "0.136"
+    ],
+    "unit": "-"
+  },
+  "Geschwindigkeitsfaktor Z_V": {
+    "label": "Geschwindigkeitsfaktor . . . . . Z_V",
+    "line": 781,
+    "numbers": [
+      0.969,
+      1.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "0.969",
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Geschwindigkeitsfaktor Z_v": {
+    "label": "Geschwindigkeitsfaktor . . . . . . Z_v",
+    "line": 610,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Gewichtungsfaktor (EG=N) C_1": {
+    "label": "Gewichtungsfaktor (EG=N) . . . . . C_1",
+    "line": 716,
+    "numbers": [
+      0.7
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "0.70"
+    ],
+    "unit": "-"
+  },
+  "Gewichtungsfaktor (EG=N) C_2": {
+    "label": "Gewichtungsfaktor (EG=N) . . . . . C_2",
+    "line": 717,
+    "numbers": [
+      1.5
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "1.50"
+    ],
+    "unit": "-"
+  },
+  "Gleitschichtbreite (EG) rho_S": {
+    "label": "Gleitschichtbreite (EG) . . . . rho_S",
+    "line": 649,
+    "numbers": [
+      0.003,
+      0.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "0.003",
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "Groessenfaktor Gruebchen Z_X": {
+    "label": "Groessenfaktor Gruebchen . . . . . Z_X",
+    "line": 614,
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000",
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Groessenfaktor Y_X": {
+    "label": "Groessenfaktor . . . . . . . . . . Y_X",
+    "line": 647,
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000",
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Groessenfaktor Y_X [Fusstragfaehigkeit]": {
+    "label": "Groessenfaktor . . . . . . . . . Y_X",
+    "line": 797,
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000",
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Gruebchen-Zeitfaktor Z_N": {
+    "label": "Gruebchen-Zeitfaktor . . . . . . . Z_N",
+    "line": 615,
+    "numbers": [
+      1.172,
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.172",
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "H_v": {
+    "label": "Zahnverlustfaktor . . . . . . . . .",
+    "line": 489,
+    "numbers": [
+      0.063
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "lastabhaengige Verzahnungsverluste",
+    "symbol": "H_v",
+    "tokens": [
+      "0.063"
+    ],
+    "unit": "-"
+  },
+  "Haerte des weicheren Rades": {
+    "label": "Haerte des weicheren Rades . . . .",
+    "line": 613,
+    "numbers": [
+      0.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "HB",
+      "0."
+    ],
+    "unit": "-"
+  },
+  "Hertzsche Flankenpressung (B..D) sigma_H": {
+    "label": "Hertzsche Flankenpressung (B..D) sigma_H",
+    "line": 597,
+    "numbers": [
+      99.6,
+      99.5
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "99.6",
+      "99.5"
+    ],
+    "unit": "N/mm2"
+  },
+  "Hertzsche Flankenpressung sigma_H": {
+    "label": "Hertzsche Flankenpressung . . . sigma_H",
+    "line": 773,
+    "numbers": [
+      82.61
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "82.61"
+    ],
+    "unit": "N/mm2"
+  },
+  "Integraltemperatur theta_int": {
+    "label": "Integraltemperatur . . . . . theta_int",
+    "line": 711,
+    "numbers": [
+      49.6
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "49.6"
+    ],
+    "unit": "Grad C"
+  },
+  "K*": {
+    "label": "K*-Faktor . . . . . . . . . . . . . .",
+    "line": 494,
+    "numbers": [
+      0.996
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "K- und U-Faktor",
+    "symbol": "K*",
+    "tokens": [
+      "0.996"
+    ],
+    "unit": "N/mm2"
+  },
+  "K_ga": {
+    "label": "Gleitfaktor am Zahnkopf . . . . . .",
+    "line": 360,
+    "numbers": [
+      0.136,
+      0.126
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "K_ga",
+    "tokens": [
+      "0.136",
+      "0.126"
+    ],
+    "unit": "-"
+  },
+  "Kerbparameter q_s": {
+    "label": "Kerbparameter . . . . . . . . . . q_s",
+    "line": 646,
+    "numbers": [
+      2.56,
+      2.88
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "2.56",
+      "2.88"
+    ],
+    "unit": "-"
+  },
+  "Kernhaerte": {
+    "label": "Kernhaerte . . . . . . . . . . . . . .",
+    "line": 505,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Werkstoffdaten",
+    "symbol": null,
+    "tokens": [
+      "0.",
+      "0."
+    ],
+    "unit": "HV"
+  },
+  "Kopfruecknahme C_a": {
+    "label": "Kopfruecknahme . . . . . . . . . . C_a",
+    "line": 690,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "0.",
+      "0."
+    ],
+    "unit": "um"
+  },
+  "Kopfruecknahme C_a(K_v)": {
+    "label": "Kopfruecknahme . . . . . . . C_a(K_v)",
+    "line": 578,
+    "numbers": [
+      8.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "8."
+    ],
+    "unit": "um"
+  },
+  "Kopfruecknahmefaktor (EG=N) X_Ca": {
+    "label": "Kopfruecknahmefaktor (EG=N) . . . . X_Ca",
+    "line": 708,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Korrekturfaktor C_M": {
+    "label": "Korrekturfaktor . . . . . . . . . C_M",
+    "line": 589,
+    "numbers": [
+      0.8
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "0.80"
+    ],
+    "unit": "-"
+  },
+  "Kraftangriffswinkel alfa_Fn": {
+    "label": "Kraftangriffswinkel . . . . . alfa_Fn",
+    "line": 643,
+    "numbers": [
+      23.222,
+      22.702
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "23.222",
+      "22.702"
+    ],
+    "unit": "Grad"
+  },
+  "Kraftstufe (DIN 51354)": {
+    "label": "Kraftstufe (DIN 51354) . . . . . . .",
+    "line": 683,
+    "numbers": [
+      12.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "KS",
+      "12."
+    ],
+    "unit": "-"
+  },
+  "Lastaufteilungsfaktor K_gamma": {
+    "label": "Lastaufteilungsfaktor . . . . . K_gamma",
+    "line": 765,
+    "numbers": [
+      1.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Lastspiele N_L": {
+    "label": "Lastspiele . . . . . . . . . . . . N_L",
+    "line": 594,
+    "numbers": [
+      6.118,
+      6.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "6.118",
+      "6.000"
+    ],
+    "unit": "Mio"
+  },
+  "Lebensdauerfaktor (Standardbed.) Z_NT": {
+    "label": "Lebensdauerfaktor (Standardbed.) Z_NT",
+    "line": 627,
+    "numbers": [
+      1.17,
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1.17",
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "M_dK": {
+    "label": "Diam. Zweikugelmass (Nennmass) . .",
+    "line": 388,
+    "numbers": [
+      53.846,
+      55.064
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "M_dK",
+    "tokens": [
+      "53.846",
+      "55.064"
+    ],
+    "unit": "mm"
+  },
+  "M_dR": {
+    "label": "Diam. Zweirollenmass (Nennmass) . .",
+    "line": 390,
+    "numbers": [
+      53.846,
+      55.064
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "M_dR",
+    "tokens": [
+      "53.846",
+      "55.064"
+    ],
+    "unit": "mm"
+  },
+  "Massentemperatur (EG=N) theta_M": {
+    "label": "Massentemperatur (EG=N) . . . . theta_M",
+    "line": 714,
+    "numbers": [
+      48.6
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "48.6"
+    ],
+    "unit": "Grad C"
+  },
+  "Massentemperatur (EG=N) theta_M [Kontakttemperatur-Verfahren]": {
+    "label": "Massentemperatur (EG=N) . . . . theta_M",
+    "line": 725,
+    "numbers": [
+      48.7
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Kontakttemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "48.7"
+    ],
+    "unit": "Grad C"
+  },
+  "Massentemperatur im Fresstest . theta_MT": {
+    "label": "Massentemperatur im Fresstest . theta_MT",
+    "line": 718,
+    "numbers": [
+      203.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "203."
+    ],
+    "unit": "Grad C"
+  },
+  "Maximale Blitztemperatur . theta_flamax": {
+    "label": "Maximale Blitztemperatur . theta_flamax",
+    "line": 724,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Kontakttemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "1."
+    ],
+    "unit": "Grad C"
+  },
+  "Maximale Kontakttemp.(Punkt \u0000)theta_Bmax": {
+    "label": "Maximale Kontakttemp.(Punkt \u0000)theta_Bmax",
+    "line": 743,
+    "numbers": [
+      50.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "50.0"
+    ],
+    "unit": "Grad C"
+  },
+  "Mittenversatz": {
+    "label": "Mittenversatz . . . . . . . . . . . .",
+    "line": 326,
+    "numbers": [
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": null,
+    "tokens": [
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "Mittenversatz [Allgemeine Daten zur Tragfaehigkeit]": {
+    "label": "Mittenversatz . . . . . . . . . . . .",
+    "line": 470,
+    "numbers": [
+      0.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "0.00"
+    ],
+    "unit": "mm"
+  },
+  "Mittl.Blitzt. im Fresstest theta_flaintT": {
+    "label": "Mittl.Blitzt. im Fresstest theta_flaintT",
+    "line": 719,
+    "numbers": [
+      150.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "150."
+    ],
+    "unit": "Grad C"
+  },
+  "Mittlere Blitztemperatur . theta_flaint": {
+    "label": "Mittlere Blitztemperatur . theta_flaint",
+    "line": 713,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "1."
+    ],
+    "unit": "Grad C"
+  },
+  "Oberflaechenfaktor Y_R": {
+    "label": "Oberflaechenfaktor . . . . . . . Y_R",
+    "line": 796,
+    "numbers": [
+      0.97,
+      0.95
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "0.970",
+      "0.950"
+    ],
+    "unit": "-"
+  },
+  "Oberflaechenfaktor Z_R": {
+    "label": "Oberflaechenfaktor . . . . . . . Z_R",
+    "line": 779,
+    "numbers": [
+      0.943,
+      1.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "0.943",
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "P": {
+    "label": "Nennleistung im Zahneingriff . . . .",
+    "line": 476,
+    "numbers": [
+      1.027
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Leistungen, Kraefte und Drehzahlen",
+    "symbol": "P",
+    "tokens": [
+      "1.027"
+    ],
+    "unit": "kW"
+  },
+  "P_VzP": {
+    "label": "Verzahnungsverlustleistung . . .",
+    "line": 490,
+    "numbers": [
+      2.9
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "lastabhaengige Verzahnungsverluste",
+    "symbol": "P_VzP",
+    "tokens": [
+      "2.9"
+    ],
+    "unit": "W"
+  },
+  "Parameter auf Eingr.Strecke . gamma_A": {
+    "label": "Parameter auf Eingr.Strecke . gamma_A",
+    "line": 693,
+    "numbers": [
+      -0.17
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "-0.17"
+    ],
+    "unit": "-"
+  },
+  "Parameter auf Eingr.Strecke . gamma_B": {
+    "label": "Parameter auf Eingr.Strecke . gamma_B",
+    "line": 694,
+    "numbers": [
+      -0.13
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "-0.13"
+    ],
+    "unit": "-"
+  },
+  "Parameter auf Eingr.Strecke . gamma_C": {
+    "label": "Parameter auf Eingr.Strecke . gamma_C",
+    "line": 695,
+    "numbers": [
+      0.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "0.00"
+    ],
+    "unit": "-"
+  },
+  "Parameter auf Eingr.Strecke . gamma_D": {
+    "label": "Parameter auf Eingr.Strecke . gamma_D",
+    "line": 696,
+    "numbers": [
+      0.14
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "0.14"
+    ],
+    "unit": "-"
+  },
+  "Parameter auf Eingr.Strecke . gamma_E": {
+    "label": "Parameter auf Eingr.Strecke . gamma_E",
+    "line": 697,
+    "numbers": [
+      0.19
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "0.19"
+    ],
+    "unit": "-"
+  },
+  "Produkt Z_L*Z_R*Z_V (sigma_Hlim= 0.)": {
+    "label": "Produkt Z_L*Z_R*Z_V (sigma_Hlim= 0.)",
+    "line": 611,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Profilformabweichung f_f": {
+    "label": "Profilformabweichung . . . . . . f_f",
+    "line": 576,
+    "numbers": [
+      8.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "8."
+    ],
+    "unit": "um"
+  },
+  "R_z-F": {
+    "label": "Rauhtiefe in der Fussausrundung .",
+    "line": 465,
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": "R_z-F",
+    "tokens": [
+      "20.00",
+      "20.00"
+    ],
+    "unit": "um"
+  },
+  "R_z-H": {
+    "label": "Rauhtiefe an den Zahnflanken . .",
+    "line": 464,
+    "numbers": [
+      5.0,
+      5.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": "R_z-H",
+    "tokens": [
+      "5.00",
+      "5.00"
+    ],
+    "unit": "um"
+  },
+  "Radkoerperfaktor C_R": {
+    "label": "Radkoerperfaktor . . . . . . . . C_R",
+    "line": 590,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Rauheitsfaktor Z_R": {
+    "label": "Rauheitsfaktor . . . . . . . . . . Z_R",
+    "line": 607,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Rauhtiefe am Fuss R_zF": {
+    "label": "Rauhtiefe am Fuss . . . . . . . . R_zF",
+    "line": 651,
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "20.",
+      "20."
+    ],
+    "unit": "um"
+  },
+  "Rechner. Sicherheitsfaktor Gruebchen S_H": {
+    "label": "Rechner. Sicherheitsfaktor Gruebchen S_H",
+    "line": 633,
+    "numbers": [
+      17.184,
+      0.703
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "17.184",
+      "0.703"
+    ],
+    "unit": "-"
+  },
+  "Rechnerischer Sicherheitsfaktor S_F": {
+    "label": "Rechnerischer Sicherheitsfaktor . . S_F",
+    "line": 659,
+    "numbers": [
+      4.571,
+      0.375
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "4.571",
+      "0.375"
+    ],
+    "unit": "-"
+  },
+  "Red. Masse (EG: 0.00 kg/mm) . m_red": {
+    "label": "Red. Masse (EG: 0.00 kg/mm) . m_red",
+    "line": 569,
+    "numbers": [
+      0.005
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "0.005"
+    ],
+    "unit": "kg/mm"
+  },
+  "Ref.Spannungskorr.faktor Y_ST": {
+    "label": "Ref.Spannungskorr.faktor . . . . Y_ST",
+    "line": 656,
+    "numbers": [
+      0.0,
+      2.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "0.00",
+      "2.00"
+    ],
+    "unit": "-"
+  },
+  "Ref.Zahnfuss-Zeitfaktor Y_NT": {
+    "label": "Ref.Zahnfuss-Zeitfaktor . . . . . Y_NT",
+    "line": 653,
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000",
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Reibungszahl (min / max). my_B": {
+    "label": "Reibungszahl (min / max). . . . . . my_B",
+    "line": 726,
+    "numbers": [
+      0.057,
+      0.057
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Kontakttemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "0.057",
+      "/",
+      "0.057"
+    ],
+    "unit": "-"
+  },
+  "Rel. Oberfl.fak.(B) Y_RrelT": {
+    "label": "Rel. Oberfl.fak.(B) . . . . . . Y_RrelT",
+    "line": 650,
+    "numbers": [
+      0.957,
+      0.973
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "0.957",
+      "0.973"
+    ],
+    "unit": "-"
+  },
+  "Rel. Stuetzz. (B) Y_delrelT": {
+    "label": "Rel. Stuetzz. (B) . . . . . . Y_delrelT",
+    "line": 648,
+    "numbers": [
+      1.001,
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.001",
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Restdicke bei Kantenbruch/Kopfruecknahme": {
+    "label": "Restdicke bei Kantenbruch/Kopfruecknahme",
+    "line": 374,
+    "numbers": [
+      0.672,
+      0.634
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": null,
+    "tokens": [
+      "0.672",
+      "0.634"
+    ],
+    "unit": "mm"
+  },
+  "Schmierstoffaktor Z_L": {
+    "label": "Schmierstoffaktor . . . . . . . . . Z_L",
+    "line": 605,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Schmierstoffaktor Z_L [Flankentragfaehigkeit]": {
+    "label": "Schmierstoffaktor . . . . . . . . Z_L",
+    "line": 780,
+    "numbers": [
+      0.967,
+      1.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "0.967",
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Schmierungsfaktor X_S": {
+    "label": "Schmierungsfaktor . . . . . . . . X_S",
+    "line": 686,
+    "numbers": [
+      1.2
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1.20"
+    ],
+    "unit": "-"
+  },
+  "Schraegenfaktor Y_beta": {
+    "label": "Schraegenfaktor . . . . . . . . Y_beta",
+    "line": 640,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Schraegenfaktor Y_beta [Fusstragfaehigkeit]": {
+    "label": "Schraegenfaktor . . . . . . . . Y_beta",
+    "line": 792,
+    "numbers": [
+      1.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Schraegenfaktor Z_beta": {
+    "label": "Schraegenfaktor . . . . . . . . Z_beta",
+    "line": 604,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Schraegenfaktor Z_beta [Flankentragfaehigkeit]": {
+    "label": "Schraegenfaktor . . . . . . . . Z_beta",
+    "line": 777,
+    "numbers": [
+      1.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Schraegungsfaktor (EG=N) K_Bgamma": {
+    "label": "Schraegungsfaktor (EG=N) . . . K_Bgamma",
+    "line": 702,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Sicherheit bezogen auf Moment . S_HMo": {
+    "label": "Sicherheit bezogen auf Moment . S_HMo",
+    "line": 634,
+    "numbers": [
+      295.287,
+      0.495
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "295.287",
+      "0.495"
+    ],
+    "unit": "-"
+  },
+  "Spannungskorr.f. Y_Sg bzw. Y_S": {
+    "label": "Spannungskorr.f. . . . . Y_Sg bzw. Y_S",
+    "line": 644,
+    "numbers": [
+      1.819,
+      1.984
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.819",
+      "1.984"
+    ],
+    "unit": "-"
+  },
+  "Spannungskorrekturfaktor Y_Sa": {
+    "label": "Spannungskorrekturfaktor . . . . Y_Sa",
+    "line": 790,
+    "numbers": [
+      1.759,
+      1.904
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.759",
+      "1.904"
+    ],
+    "unit": "-"
+  },
+  "Stirnfaktor (EG=N) K_Balfa": {
+    "label": "Stirnfaktor (EG=N) . . . . . . K_Balfa",
+    "line": 700,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Stirnfaktor Flanke K_Halfa": {
+    "label": "Stirnfaktor Flanke . . . . . . K_Halfa",
+    "line": 768,
+    "numbers": [
+      1.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Stirnfaktor Fuss (=K_Halfa) K_Falfa": {
+    "label": "Stirnfaktor Fuss (=K_Halfa) . . K_Falfa",
+    "line": 770,
+    "numbers": [
+      1.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Stirnfaktor Verfahren B K_Halfa": {
+    "label": "Stirnfaktor Verfahren B . . . . K_Halfa",
+    "line": 582,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Stirnfaktor Zahnfuss K_Falfa": {
+    "label": "Stirnfaktor Zahnfuss . . . . . K_Falfa",
+    "line": 585,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Stuetzziffer Y_del": {
+    "label": "Stuetzziffer . . . . . . . . . Y_del",
+    "line": 795,
+    "numbers": [
+      1.158,
+      1.1
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.158",
+      "1.100"
+    ],
+    "unit": "-"
+  },
+  "T": {
+    "label": "Nenndrehmoment fuer den Zahneingriff",
+    "line": 477,
+    "numbers": [
+      9.81,
+      10.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Leistungen, Kraefte und Drehzahlen",
+    "symbol": "T",
+    "tokens": [
+      "9.81",
+      "10.00"
+    ],
+    "unit": "Nm"
+  },
+  "Therm. Kontaktkoeff. (EG=N,N) B_M": {
+    "label": "Therm. Kontaktkoeff. (EG=N,N) . . . B_M",
+    "line": 687,
+    "numbers": [
+      0.44,
+      0.44
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "0.44",
+      "0.44"
+    ],
+    "unit": "N2/(m2K2s)"
+  },
+  "Toleranzreihe (DIN 3967, Aug.78)": {
+    "label": "Toleranzreihe (DIN 3967, Aug.78) . . .",
+    "line": 367,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": null,
+    "tokens": [
+      "0",
+      "0"
+    ],
+    "unit": "-"
+  },
+  "U": {
+    "label": "U-Faktor . . . . . . . . . . . . . .",
+    "line": 495,
+    "numbers": [
+      25.641
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "K- und U-Faktor",
+    "symbol": "U",
+    "tokens": [
+      "25.641"
+    ],
+    "unit": "N/mm2"
+  },
+  "Ueberdeckungsfaktor (EG=N) X_eps": {
+    "label": "Ueberdeckungsfaktor (EG=N) . . . X_eps",
+    "line": 707,
+    "numbers": [
+      0.385
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "0.385"
+    ],
+    "unit": "-"
+  },
+  "Ueberdeckungsfaktor Y_eps": {
+    "label": "Ueberdeckungsfaktor . . . . . . Y_eps",
+    "line": 791,
+    "numbers": [
+      0.9
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "0.900"
+    ],
+    "unit": "-"
+  },
+  "Ueberdeckungsfaktor Z_eps": {
+    "label": "Ueberdeckungsfaktor . . . . . . Z_eps",
+    "line": 603,
+    "numbers": [
+      0.974
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "0.974"
+    ],
+    "unit": "-"
+  },
+  "Ueberdeckungsfaktor Z_eps [Flankentragfaehigkeit]": {
+    "label": "Ueberdeckungsfaktor . . . . . . Z_eps",
+    "line": 776,
+    "numbers": [
+      0.974
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "0.974"
+    ],
+    "unit": "-"
+  },
+  "Umfangskraft je Zahnbreite w_Bt": {
+    "label": "Umfangskraft je Zahnbreite . . . . w_Bt",
+    "line": 721,
+    "numbers": [
+      47.6
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "47.6"
+    ],
+    "unit": "N/mm"
+  },
+  "VT-Steigung": {
+    "label": "VT-Steigung . . . . . . . . . . . . . .",
+    "line": 530,
+    "numbers": [
+      3.566
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "3.566"
+    ],
+    "unit": "-"
+  },
+  "Verzahnungsart der berechneten Stufe . Geradverzahnung": {
+    "label": "Verzahnungsart der berechneten Stufe . Geradverzahnung",
+    "line": 458,
+    "numbers": [],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [],
+    "unit": "-"
+  },
+  "Verzahnungsqualitaet (DIN3961/63,Aug.78)": {
+    "label": "Verzahnungsqualitaet (DIN3961/63,Aug.78)",
+    "line": 365,
+    "numbers": [
+      7.0,
+      7.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": null,
+    "tokens": [
+      "N",
+      "7",
+      "N",
+      "7"
+    ],
+    "unit": "-"
+  },
+  "Verzahnungsqualitaet nach DIN 3961": {
+    "label": "Verzahnungsqualitaet nach DIN 3961 . .",
+    "line": 461,
+    "numbers": [
+      7.0,
+      7.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "7",
+      "7"
+    ],
+    "unit": "-"
+  },
+  "Verzahnungsqualitaet nach ISO R 1328": {
+    "label": "Verzahnungsqualitaet nach ISO R 1328 .",
+    "line": 462,
+    "numbers": [
+      7.0,
+      7.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "7",
+      "7"
+    ],
+    "unit": "-"
+  },
+  "W_k": {
+    "label": "Zahnweite (Nennmass) . . . . . . .",
+    "line": 382,
+    "numbers": [
+      17.09,
+      17.18
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "W_k",
+    "tokens": [
+      "17.090",
+      "17.180"
+    ],
+    "unit": "mm"
+  },
+  "Werkstoffpaarungsfaktor Z_W": {
+    "label": "Werkstoffpaarungsfaktor . . . . . . Z_W",
+    "line": 612,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Werkstoffpaarungsfaktor Z_W [Flankentragfaehigkeit]": {
+    "label": "Werkstoffpaarungsfaktor . . . . . Z_W",
+    "line": 782,
+    "numbers": [
+      1.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Winkelfaktor (EG=N) X_alfabeta": {
+    "label": "Winkelfaktor (EG=N) . . . . . X_alfabeta",
+    "line": 692,
+    "numbers": [
+      1.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "X_L": {
+    "label": "Schmierstoffaktor . . . . . . . .",
+    "line": 488,
+    "numbers": [
+      1.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "lastabhaengige Verzahnungsverluste",
+    "symbol": "X_L",
+    "tokens": [
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "Zahnf.grundfestigkeit 1=EG sigma_FE": {
+    "label": "Zahnf.grundfestigkeit 1=EG . . sigma_FE",
+    "line": 654,
+    "numbers": [
+      860.0,
+      70.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "860.0",
+      "70.0"
+    ],
+    "unit": "N/mm2"
+  },
+  "Zahnfuss-Zeitfaktor Y_N": {
+    "label": "Zahnfuss-Zeitfaktor . . . . . . . . Y_N",
+    "line": 652,
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.000",
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "Zahnfussicherheit S_F": {
+    "label": "Zahnfussicherheit . . . . . . . . . S_F",
+    "line": 800,
+    "numbers": [
+      6.79,
+      0.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "6.79",
+      "0.00"
+    ],
+    "unit": "-"
+  },
+  "Zahnfusspannung Nennwert sigma_F0": {
+    "label": "Zahnfusspannung Nennwert . . . sigma_F0",
+    "line": 638,
+    "numbers": [
+      99.5,
+      100.2
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "99.5",
+      "100.2"
+    ],
+    "unit": "N/mm2"
+  },
+  "Zahnfusspannung Verfahren B sigma_F": {
+    "label": "Zahnfusspannung Verfahren B . . sigma_F",
+    "line": 637,
+    "numbers": [
+      180.1,
+      181.4
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "180.1",
+      "181.4"
+    ],
+    "unit": "N/mm2"
+  },
+  "Zahnfusspannung sigma_F": {
+    "label": "Zahnfusspannung . . . . . . . . sigma_F",
+    "line": 788,
+    "numbers": [
+      142.33,
+      126.46
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "142.33",
+      "126.46"
+    ],
+    "unit": "N/mm2"
+  },
+  "Zonenfaktor Z_H": {
+    "label": "Zonenfaktor . . . . . . . . . . . Z_H",
+    "line": 601,
+    "numbers": [
+      2.4
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "2.400"
+    ],
+    "unit": "-"
+  },
+  "Zonenfaktor Z_H [Flankentragfaehigkeit]": {
+    "label": "Zonenfaktor . . . . . . . . . . . Z_H",
+    "line": 774,
+    "numbers": [
+      2.4
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "2.400"
+    ],
+    "unit": "-"
+  },
+  "Zulaessige Flankenpressung sigma_HP": {
+    "label": "Zulaessige Flankenpressung . . sigma_HP",
+    "line": 783,
+    "numbers": [
+      1104.9,
+      0.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1104.90",
+      "0.00"
+    ],
+    "unit": "N/mm2"
+  },
+  "Zulaessige Zahnfusspannung sigma_FP": {
+    "label": "Zulaessige Zahnfusspannung . . sigma_FP",
+    "line": 798,
+    "numbers": [
+      623.14,
+      0.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "623.14",
+      "0.00"
+    ],
+    "unit": "N/mm2"
+  },
+  "a": {
+    "label": "Achsabstand . . . . . . . . . . . . .",
+    "line": 304,
+    "numbers": [
+      52.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "a",
+    "tokens": [
+      "52.000"
+    ],
+    "unit": "mm"
+  },
+  "alfa_n": {
+    "label": "Normaleingriffswinkel . . . . . .",
+    "line": 297,
+    "numbers": [
+      20.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "alfa_n",
+    "tokens": [
+      "20.00000"
+    ],
+    "unit": "Grad"
+  },
+  "alfa_n0": {
+    "label": "Wkz-Normaleingriffswinkel . . .",
+    "line": 409,
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Werkzeugangaben",
+    "symbol": "alfa_n0",
+    "tokens": [
+      "20.0000",
+      "20.0000"
+    ],
+    "unit": "Grad"
+  },
+  "alfa_pr0": {
+    "label": "Protuberanzwinkel . . . . . . .",
+    "line": 427,
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "alfa_pr0",
+    "tokens": [
+      "20.000",
+      "20.000"
+    ],
+    "unit": "Grad"
+  },
+  "alfa_t": {
+    "label": "Stirneingriffswinkel . . . . .",
+    "line": 298,
+    "numbers": [
+      20.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "alfa_t",
+    "tokens": [
+      "20.00000"
+    ],
+    "unit": "Grad"
+  },
+  "alfa_wt": {
+    "label": "Betriebseingriffswinkel . . .",
+    "line": 299,
+    "numbers": [
+      21.46251
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "alfa_wt",
+    "tokens": [
+      "21.46251"
+    ],
+    "unit": "Grad"
+  },
+  "alpha_Fan": {
+    "label": "Kraftangriffswinkel am Kopf .",
+    "line": 533,
+    "numbers": [
+      24.308,
+      23.767
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)",
+    "symbol": "alpha_Fan",
+    "tokens": [
+      "24.308",
+      "23.767"
+    ],
+    "unit": "Grad"
+  },
+  "alpha_Fen": {
+    "label": "Kraftangriffswinkel im AEP .",
+    "line": 534,
+    "numbers": [
+      23.222,
+      22.702
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)",
+    "symbol": "alpha_Fen",
+    "tokens": [
+      "23.222",
+      "22.702"
+    ],
+    "unit": "Grad"
+  },
+  "b": {
+    "label": "Zahnbreite (eine Pfeilhaelfte bei DSV)",
+    "line": 323,
+    "numbers": [
+      17.0,
+      15.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "b",
+    "tokens": [
+      "17.000",
+      "15.000"
+    ],
+    "unit": "mm"
+  },
+  "b [Allgemeine Daten zur Tragfaehigkeit]": {
+    "label": "Zahnbreite . . . . . . . . . . . . .",
+    "line": 466,
+    "numbers": [
+      17.0,
+      15.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": "b",
+    "tokens": [
+      "17.000",
+      "15.000"
+    ],
+    "unit": "mm"
+  },
+  "b [Fusstragfaehigkeit]": {
+    "label": "Zahnbreite fuer Zahnfusspannung . . .",
+    "line": 660,
+    "numbers": [
+      17.0,
+      15.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": "b",
+    "tokens": [
+      "17.0",
+      "15.0"
+    ],
+    "unit": "mm"
+  },
+  "b [Fusstragfaehigkeit] #2": {
+    "label": "Breite fuer Zahnfussbelastung . . . .",
+    "line": 801,
+    "numbers": [
+      15.0,
+      15.0
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": "b",
+    "tokens": [
+      "15.00",
+      "15.00"
+    ],
+    "unit": "mm"
+  },
+  "b/d": {
+    "label": "Ritzelbreite / Ritzelteilkreisdm. .",
+    "line": 471,
+    "numbers": [
+      0.333
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": "b/d",
+    "tokens": [
+      "0.333"
+    ],
+    "unit": "-"
+  },
+  "b/d [Kraftfaktoren]": {
+    "label": "Flanken ohne Einlauf; Verh. . . .",
+    "line": 580,
+    "numbers": [
+      0.29
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": "b/d",
+    "tokens": [
+      "0.29"
+    ],
+    "unit": "-"
+  },
+  "b_gem": {
+    "label": "Gemeinsame Breite . . . . . . . .",
+    "line": 325,
+    "numbers": [
+      15.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "b_gem",
+    "tokens": [
+      "15.000"
+    ],
+    "unit": "mm"
+  },
+  "b_gem [Allgemeine Daten zur Tragfaehigkeit]": {
+    "label": "Gemeinsame Zahnbreite . . . . . .",
+    "line": 469,
+    "numbers": [
+      15.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": "b_gem",
+    "tokens": [
+      "15.000"
+    ],
+    "unit": "mm"
+  },
+  "b_ges": {
+    "label": "Ritzelgesamtzahnbr. einschl. Spalt",
+    "line": 468,
+    "numbers": [
+      17.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": "b_ges",
+    "tokens": [
+      "17.000"
+    ],
+    "unit": "mm"
+  },
+  "bei Mindestsicherheit Flanke . S_Hmin": {
+    "label": "bei Mindestsicherheit Flanke . S_Hmin",
+    "line": 784,
+    "numbers": [
+      1.2
+    ],
+    "section": "CCS 1996",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.20"
+    ],
+    "unit": "-"
+  },
+  "bei Mindestsicherheit Fuss S_Fmin": {
+    "label": "bei Mindestsicherheit Fuss . . S_Fmin",
+    "line": 799,
+    "numbers": [
+      1.55
+    ],
+    "section": "CCS 1996",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.55"
+    ],
+    "unit": "-"
+  },
+  "bei S_Fmin=1.0 zul. Fusspannung sigma_FP": {
+    "label": "bei S_Fmin=1.0 zul. Fusspannung sigma_FP",
+    "line": 658,
+    "numbers": [
+      823.2,
+      68.1
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "823.2",
+      "68.1"
+    ],
+    "unit": "N/mm2"
+  },
+  "bei S_Hmin=1.0 zul. Fl.pressung sigma_HP": {
+    "label": "bei S_Hmin=1.0 zul. Fl.pressung sigma_HP",
+    "line": 630,
+    "numbers": [
+      1711.4,
+      70.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "1711.4",
+      "70.0"
+    ],
+    "unit": "N/mm2"
+  },
+  "beta": {
+    "label": "Schraegungswinkel am Teilkreis . .",
+    "line": 300,
+    "numbers": [
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "beta",
+    "tokens": [
+      "0.00000"
+    ],
+    "unit": "Grad"
+  },
+  "beta_b": {
+    "label": "Schraegungswinkel am Grundkreis",
+    "line": 301,
+    "numbers": [
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "beta_b",
+    "tokens": [
+      "0.00000"
+    ],
+    "unit": "Grad"
+  },
+  "bez. Fussrundungsradius rho_F*": {
+    "label": "bez. Fussrundungsradius . . . . rho_F*",
+    "line": 645,
+    "numbers": [
+      0.4,
+      0.38
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "0.40",
+      "0.38"
+    ],
+    "unit": "-"
+  },
+  "bezogene Stegdicke b_s/b": {
+    "label": "bezogene Stegdicke . . . . . . b_s/b",
+    "line": 591,
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "1.00",
+      "1.00"
+    ],
+    "unit": "-"
+  },
+  "bezogene Zahnfussdickensehne . s_Fn*": {
+    "label": "bezogene Zahnfussdickensehne . s_Fn*",
+    "line": 642,
+    "numbers": [
+      2.068,
+      2.197
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "2.068",
+      "2.197"
+    ],
+    "unit": "-"
+  },
+  "bezogene Zahnkranzdicke s_r/m_n": {
+    "label": "bezogene Zahnkranzdicke . . . s_r/m_n",
+    "line": 592,
+    "numbers": [
+      50.0,
+      50.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": null,
+    "tokens": [
+      "50.00",
+      "50.00"
+    ],
+    "unit": "-"
+  },
+  "bezogener Biegehebelarm h_F*": {
+    "label": "bezogener Biegehebelarm . . . . . h_F*",
+    "line": 641,
+    "numbers": [
+      1.762,
+      1.614
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Fusstragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "1.762",
+      "1.614"
+    ],
+    "unit": "-"
+  },
+  "c": {
+    "label": "Kopfspiel (Istwert) . . . . . . . . .",
+    "line": 346,
+    "numbers": [
+      0.791,
+      0.792
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "c",
+    "tokens": [
+      "0.791",
+      "0.792"
+    ],
+    "unit": "mm"
+  },
+  "c_*": {
+    "label": "bezogenes Kopfspiel . . . . . . .",
+    "line": 347,
+    "numbers": [
+      0.791,
+      0.792
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "c_*",
+    "tokens": [
+      "0.791",
+      "0.792"
+    ],
+    "unit": "-"
+  },
+  "c_n": {
+    "label": "Formuebermass . . . . . . . . . .",
+    "line": 336,
+    "numbers": [
+      0.655,
+      0.578
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "c_n",
+    "tokens": [
+      "0.655",
+      "0.578"
+    ],
+    "unit": "mm"
+  },
+  "d": {
+    "label": "Teilkreisdurchmesser . . . . . . . .",
+    "line": 328,
+    "numbers": [
+      51.0,
+      52.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d",
+    "tokens": [
+      "51.000",
+      "52.000"
+    ],
+    "unit": "mm"
+  },
+  "d_Fa": {
+    "label": "Kopf-Formkreisdurchmesser . . . . .",
+    "line": 331,
+    "numbers": [
+      52.894,
+      53.788
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_Fa",
+    "tokens": [
+      "52.894",
+      "53.788"
+    ],
+    "unit": "mm"
+  },
+  "d_Ff": {
+    "label": "Fuss-Formkreisdurchmesser . . . . .",
+    "line": 335,
+    "numbers": [
+      49.081,
+      50.158
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_Ff",
+    "tokens": [
+      "49.081",
+      "50.158"
+    ],
+    "unit": "mm"
+  },
+  "d_Fs-n": {
+    "label": "gemessen normal zur Fl. am Dm.",
+    "line": 338,
+    "numbers": [
+      49.081,
+      50.158
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_Fs-n",
+    "tokens": [
+      "49.081",
+      "50.158"
+    ],
+    "unit": "mm"
+  },
+  "d_I": {
+    "label": "Innendurchmesser des Ritzels . . .",
+    "line": 473,
+    "numbers": [
+      0.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": "d_I",
+    "tokens": [
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "d_Na": {
+    "label": "Nutzkreisdurchmesser am Kopf . . .",
+    "line": 333,
+    "numbers": [
+      52.894,
+      53.788
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_Na",
+    "tokens": [
+      "52.894",
+      "53.788"
+    ],
+    "unit": "mm"
+  },
+  "d_Nf": {
+    "label": "Nutzkreisdurchmesser am Fuss . . .",
+    "line": 334,
+    "numbers": [
+      50.391,
+      51.315
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_Nf",
+    "tokens": [
+      "50.391",
+      "51.315"
+    ],
+    "unit": "mm"
+  },
+  "d_a": {
+    "label": "Kopfkreisdurchmesser . . . . . . .",
+    "line": 330,
+    "numbers": [
+      52.894,
+      54.022
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_a",
+    "tokens": [
+      "52.894",
+      "54.022"
+    ],
+    "unit": "mm"
+  },
+  "d_b": {
+    "label": "Grundkreisdurchmesser . . . . . . .",
+    "line": 329,
+    "numbers": [
+      47.924,
+      48.864
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_b",
+    "tokens": [
+      "47.924",
+      "48.864"
+    ],
+    "unit": "mm"
+  },
+  "d_f": {
+    "label": "Fusskreisdurchmesser . . . . . . .",
+    "line": 339,
+    "numbers": [
+      48.394,
+      49.523
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_f",
+    "tokens": [
+      "48.394",
+      "49.523"
+    ],
+    "unit": "mm"
+  },
+  "d_s": {
+    "label": "Schrumpffugendurchmesser . . . . .",
+    "line": 472,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": "d_s",
+    "tokens": [
+      "0.000",
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "d_sf": {
+    "label": "Durchmesser . . . . . . . . . . . .",
+    "line": 540,
+    "numbers": [
+      48.67,
+      49.788
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)",
+    "symbol": "d_sf",
+    "tokens": [
+      "48.670",
+      "49.788"
+    ],
+    "unit": "mm"
+  },
+  "d_w": {
+    "label": "Waelzkreisdurchmesser . . . . . . .",
+    "line": 327,
+    "numbers": [
+      51.495,
+      52.505
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_w",
+    "tokens": [
+      "51.495",
+      "52.505"
+    ],
+    "unit": "mm"
+  },
+  "dyn. Viskositaet (EG= 0.0) . eta_100": {
+    "label": "dyn. Viskositaet (EG= 0.0) . eta_100",
+    "line": 682,
+    "numbers": [
+      9.07
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "9.07"
+    ],
+    "unit": "mPas"
+  },
+  "dyn. Viskositaet (EG= 0.0) eta_40": {
+    "label": "dyn. Viskositaet (EG= 0.0) . . eta_40",
+    "line": 681,
+    "numbers": [
+      86.4
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "86.4"
+    ],
+    "unit": "mPas"
+  },
+  "e_n": {
+    "label": "Zahnlueckenweite (Normalschnitt) .",
+    "line": 372,
+    "numbers": [
+      1.423,
+      1.342
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": "e_n",
+    "tokens": [
+      "1.423",
+      "1.342"
+    ],
+    "unit": "mm"
+  },
+  "eps_alfa": {
+    "label": "Profilueberdeckung . . . . . .",
+    "line": 318,
+    "numbers": [
+      1.154
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "eps_alfa",
+    "tokens": [
+      "1.154"
+    ],
+    "unit": "-"
+  },
+  "eps_beta": {
+    "label": "Sprungueberdeckung . . . . . .",
+    "line": 319,
+    "numbers": [
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "eps_beta",
+    "tokens": [
+      "0.000"
+    ],
+    "unit": "-"
+  },
+  "eps_gamma": {
+    "label": "Gesamtueberdeckung . . . . .",
+    "line": 320,
+    "numbers": [
+      1.154
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "eps_gamma",
+    "tokens": [
+      "1.154"
+    ],
+    "unit": "-"
+  },
+  "eta_zP": {
+    "label": "Verzahnungswirkungsgrad . . . . .",
+    "line": 491,
+    "numbers": [
+      0.997
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "lastabhaengige Verzahnungsverluste",
+    "symbol": "eta_zP",
+    "tokens": [
+      "0.997"
+    ],
+    "unit": "-"
+  },
+  "f_pe": {
+    "label": "Eingr.teilungsabweichung DIN 3961 .",
+    "line": 463,
+    "numbers": [
+      9.57
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": "f_pe",
+    "tokens": [
+      "9.570"
+    ],
+    "unit": "um"
+  },
+  "f_pe [Kraftfaktoren]": {
+    "label": "Eingr.teilungsabw. . . . . . . .",
+    "line": 574,
+    "numbers": [
+      10.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": "f_pe",
+    "tokens": [
+      "10."
+    ],
+    "unit": "um"
+  },
+  "f_pe [Kraftfaktoren] #2": {
+    "label": "Eingriffsteilungsabw. . . . . . .",
+    "line": 583,
+    "numbers": [
+      10.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": "f_pe",
+    "tokens": [
+      "10."
+    ],
+    "unit": "um"
+  },
+  "fuer Nennachsabstand u untere Zahnabm.": {
+    "label": "fuer Nennachsabstand u untere Zahnabm.",
+    "line": 402,
+    "numbers": [
+      0.521,
+      0.485
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Flankenspiele",
+    "symbol": null,
+    "tokens": [
+      "0.521",
+      "/",
+      "0.485"
+    ],
+    "unit": "mm"
+  },
+  "fuer Nennachsabstand u. obere Zahnabm.": {
+    "label": "fuer Nennachsabstand u. obere Zahnabm.",
+    "line": 401,
+    "numbers": [
+      0.521,
+      0.485
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Flankenspiele",
+    "symbol": null,
+    "tokens": [
+      "0.521",
+      "/",
+      "0.485"
+    ],
+    "unit": "mm"
+  },
+  "g": {
+    "label": "Eingriffsstrecke . . . . . . . . . .",
+    "line": 316,
+    "numbers": [
+      3.406
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "g",
+    "tokens": [
+      "3.406"
+    ],
+    "unit": "mm"
+  },
+  "g_alfa-a": {
+    "label": "Kopfeingriffsstrecke . . . . .",
+    "line": 348,
+    "numbers": [
+      1.771,
+      1.635
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "g_alfa-a",
+    "tokens": [
+      "1.771",
+      "1.635"
+    ],
+    "unit": "mm"
+  },
+  "h": {
+    "label": "Zahnhoehe . . . . . . . . . . . . . .",
+    "line": 343,
+    "numbers": [
+      2.25,
+      2.249
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "h",
+    "tokens": [
+      "2.250",
+      "2.249"
+    ],
+    "unit": "mm"
+  },
+  "h_*": {
+    "label": "Gemeins. Zahnhoehenfaktor . . . .",
+    "line": 317,
+    "numbers": [
+      1.341
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "h_*",
+    "tokens": [
+      "1.341"
+    ],
+    "unit": "-"
+  },
+  "h_FfP0*": {
+    "label": "Fussform-Hoehenf.(Wkz-Bezugspr.)",
+    "line": 412,
+    "numbers": [
+      1.3,
+      0.846
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Werkzeugangaben",
+    "symbol": "h_FfP0*",
+    "tokens": [
+      "1.300",
+      "0.846"
+    ],
+    "unit": "-"
+  },
+  "h_K": {
+    "label": "Kopfkantenbruch (Radialbetrag) .",
+    "line": 332,
+    "numbers": [
+      0.0,
+      0.117
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "h_K",
+    "tokens": [
+      "0.000",
+      "0.117"
+    ],
+    "unit": "mm"
+  },
+  "h_a": {
+    "label": "Kopfhoehe (bezogen auf Teilkreis) .",
+    "line": 345,
+    "numbers": [
+      0.947,
+      1.011
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "h_a",
+    "tokens": [
+      "0.947",
+      "1.011"
+    ],
+    "unit": "mm"
+  },
+  "h_a*": {
+    "label": "Hebel bei Kraftangriff am Kopf . .",
+    "line": 544,
+    "numbers": [
+      1.845,
+      1.725
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)",
+    "symbol": "h_a*",
+    "tokens": [
+      "1.845",
+      "1.725"
+    ],
+    "unit": "-"
+  },
+  "h_a-": {
+    "label": "Hoehe ueber der Zahndickensehne . .",
+    "line": 378,
+    "numbers": [
+      0.968,
+      1.04
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "h_a-",
+    "tokens": [
+      "0.968",
+      "1.040"
+    ],
+    "unit": "mm"
+  },
+  "h_aP*": {
+    "label": "Bezugspr.-Kopfhoehenfaktor (Istw.)",
+    "line": 342,
+    "numbers": [
+      0.744,
+      0.697
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "h_aP*",
+    "tokens": [
+      "0.744",
+      "0.697"
+    ],
+    "unit": "-"
+  },
+  "h_aP0*": {
+    "label": "Kopfhoehenfaktor (Wkz_Bezugspr.)",
+    "line": 410,
+    "numbers": [
+      1.1,
+      1.25
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Werkzeugangaben",
+    "symbol": "h_aP0*",
+    "tokens": [
+      "1.100",
+      "1.250"
+    ],
+    "unit": "-"
+  },
+  "h_e*": {
+    "label": "Hebel bei Kraftangriff am AEP . . .",
+    "line": 545,
+    "numbers": [
+      1.649,
+      1.534
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)",
+    "symbol": "h_e*",
+    "tokens": [
+      "1.649",
+      "1.534"
+    ],
+    "unit": "-"
+  },
+  "h_fP0*": {
+    "label": "Fuss-Hoehenfaktor (Wkz-Bezugspr.)",
+    "line": 424,
+    "numbers": [
+      1.3,
+      1.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "h_fP0*",
+    "tokens": [
+      "1.300",
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "h_fa*": {
+    "label": "Hebel bei Kraftangriff am Kopf .",
+    "line": 537,
+    "numbers": [
+      1.98,
+      1.826
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)",
+    "symbol": "h_fa*",
+    "tokens": [
+      "1.980",
+      "1.826"
+    ],
+    "unit": "-"
+  },
+  "h_fe*": {
+    "label": "Hebel bei Kraftangriff am AEP . .",
+    "line": 538,
+    "numbers": [
+      1.762,
+      1.614
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)",
+    "symbol": "h_fe*",
+    "tokens": [
+      "1.762",
+      "1.614"
+    ],
+    "unit": "-"
+  },
+  "h_gem": {
+    "label": "gemeinsame Zahnhoehe . . . . .",
+    "line": 344,
+    "numbers": [
+      1.341
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "h_gem",
+    "tokens": [
+      "1.341"
+    ],
+    "unit": "mm"
+  },
+  "h_pr0*": {
+    "label": "Protuberanzhoehenfaktor am Wkz .",
+    "line": 426,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "h_pr0*",
+    "tokens": [
+      "0.000",
+      "0.000"
+    ],
+    "unit": "-"
+  },
+  "k": {
+    "label": "Messzaehnezahl . . . . . . . . . . .",
+    "line": 383,
+    "numbers": [
+      6.0,
+      6.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "k",
+    "tokens": [
+      "6",
+      "6"
+    ],
+    "unit": "-"
+  },
+  "kin. Viskositaet (EG= 100.0) nue_40": {
+    "label": "kin. Viskositaet (EG= 100.0) . . nue_40",
+    "line": 679,
+    "numbers": [
+      100.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "100.0"
+    ],
+    "unit": "mm2/s"
+  },
+  "kin. Viskositaet (EG= 11.0) . nue_100": {
+    "label": "kin. Viskositaet (EG= 11.0) . nue_100",
+    "line": 680,
+    "numbers": [
+      11.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "11.00"
+    ],
+    "unit": "mm2/s"
+  },
+  "kin. Viskositaet bei 40. Grad Oeltemp.": {
+    "label": "kin. Viskositaet bei 40. Grad Oeltemp.",
+    "line": 527,
+    "numbers": [
+      99.2
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "99.2"
+    ],
+    "unit": "mm2/s"
+  },
+  "kinematische Viskositaet nue_100": {
+    "label": "kinematische Viskositaet . . . nue_100",
+    "line": 526,
+    "numbers": [
+      11.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "11.0"
+    ],
+    "unit": "mm2/s"
+  },
+  "kinematische Viskositaet nue_40": {
+    "label": "kinematische Viskositaet . . . . nue_40",
+    "line": 524,
+    "numbers": [
+      100.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "100."
+    ],
+    "unit": "mm2/s"
+  },
+  "kinematische Viskositaet nue_40 [Flankentragfaehigkeit]": {
+    "label": "kinematische Viskositaet . . . nue_40",
+    "line": 606,
+    "numbers": [
+      100.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "100."
+    ],
+    "unit": "mm2/s"
+  },
+  "kinematische Viskositaet nue_50": {
+    "label": "kinematische Viskositaet . . . . nue_50",
+    "line": 525,
+    "numbers": [
+      61.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "61."
+    ],
+    "unit": "mm2/s"
+  },
+  "m_n": {
+    "label": "Normalmodul . . . . . . . . . . . .",
+    "line": 305,
+    "numbers": [
+      1.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "m_n",
+    "tokens": [
+      "1.00000"
+    ],
+    "unit": "mm"
+  },
+  "m_n0": {
+    "label": "Wkz-Normalmodul . . . . . . . . . .",
+    "line": 408,
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Werkzeugangaben",
+    "symbol": "m_n0",
+    "tokens": [
+      "1.0000",
+      "1.0000"
+    ],
+    "unit": "mm"
+  },
+  "m_t": {
+    "label": "Stirnmodul . . . . . . . . . . .",
+    "line": 306,
+    "numbers": [
+      1.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "m_t",
+    "tokens": [
+      "1.00000"
+    ],
+    "unit": "mm"
+  },
+  "mit dynamischer Viskositaet . eta_oil": {
+    "label": "mit dynamischer Viskositaet . eta_oil",
+    "line": 710,
+    "numbers": [
+      85.68
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Integraltemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "85.68"
+    ],
+    "unit": "mPas"
+  },
+  "mit dynamischer Viskositaet eta_M": {
+    "label": "mit dynamischer Viskositaet . . eta_M",
+    "line": 727,
+    "numbers": [
+      85.68
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": "Kontakttemperatur-Verfahren",
+    "symbol": null,
+    "tokens": [
+      "85.68"
+    ],
+    "unit": "mPas"
+  },
+  "mittlere Rauhtiefe R_zH": {
+    "label": "mittlere Rauhtiefe . . . . . . . R_zH",
+    "line": 608,
+    "numbers": [
+      5.0,
+      5.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "5.0",
+      "5.0"
+    ],
+    "unit": "um"
+  },
+  "my_mz": {
+    "label": "mittl. Zahnreibungszahl (FVA 166)",
+    "line": 487,
+    "numbers": [
+      0.045
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "lastabhaengige Verzahnungsverluste",
+    "symbol": "my_mz",
+    "tokens": [
+      "0.045"
+    ],
+    "unit": "-"
+  },
+  "n": {
+    "label": "Nenndrehzahl . . . . . . . . . . . .",
+    "line": 482,
+    "numbers": [
+      1000.0,
+      980.769
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Leistungen, Kraefte und Drehzahlen",
+    "symbol": "n",
+    "tokens": [
+      "1000.000",
+      "980.769"
+    ],
+    "unit": "1/min"
+  },
+  "nach DIN 3964 Toleranzfeld": {
+    "label": "nach DIN 3964 Toleranzfeld",
+    "line": 397,
+    "numbers": [
+      7.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": null,
+    "tokens": [
+      "JS",
+      "7"
+    ],
+    "unit": null
+  },
+  "nue": {
+    "label": "Querkontraktionszahl . . . . . . .",
+    "line": 507,
+    "numbers": [
+      0.3,
+      0.5
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Werkstoffdaten",
+    "symbol": "nue",
+    "tokens": [
+      "0.30",
+      "0.50"
+    ],
+    "unit": "-"
+  },
+  "p_en": {
+    "label": "Normaleingriffsteilung . . . . . .",
+    "line": 315,
+    "numbers": [
+      2.952
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "p_en",
+    "tokens": [
+      "2.952"
+    ],
+    "unit": "mm"
+  },
+  "p_et": {
+    "label": "Stirneingriffsteilung . . . . . . .",
+    "line": 314,
+    "numbers": [
+      2.952
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "p_et",
+    "tokens": [
+      "2.952"
+    ],
+    "unit": "mm"
+  },
+  "p_n": {
+    "label": "Normalteilung . . . . . . . . . . .",
+    "line": 313,
+    "numbers": [
+      3.142
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "p_n",
+    "tokens": [
+      "3.142"
+    ],
+    "unit": "mm"
+  },
+  "p_t": {
+    "label": "Stirnteilung . . . . . . . . . . .",
+    "line": 312,
+    "numbers": [
+      3.142
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "p_t",
+    "tokens": [
+      "3.142"
+    ],
+    "unit": "mm"
+  },
+  "pr_0": {
+    "label": "Protuberanzbetrag am Wkz . . . . .",
+    "line": 425,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "pr_0",
+    "tokens": [
+      "0.000",
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "q": {
+    "label": "Gesamt-Bearbeitungszugabe . . . . . .",
+    "line": 428,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "q",
+    "tokens": [
+      "0.000",
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "q [Kraftfaktoren]": {
+    "label": "Durchmesserverhaeltnis . . . . . .",
+    "line": 570,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Kraftfaktoren",
+    "symbol": "q",
+    "tokens": [
+      "0.00",
+      "0.00"
+    ],
+    "unit": "-"
+  },
+  "relative Rauhtiefe R_z100": {
+    "label": "relative Rauhtiefe . . . . . . R_z100",
+    "line": 609,
+    "numbers": [
+      0.0
+    ],
+    "section": "DIN 3990 Teil 1-3 (Dezember 87): Flanke, Fuss",
+    "subsection": "Flankentragfaehigkeit",
+    "symbol": null,
+    "tokens": [
+      "0.0"
+    ],
+    "unit": "um"
+  },
+  "rho_aP0*": {
+    "label": "Wkz-Kopfabrundungsfaktor . . .",
+    "line": 411,
+    "numbers": [
+      0.2,
+      0.2
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Werkzeugangaben",
+    "symbol": "rho_aP0*",
+    "tokens": [
+      "0.200",
+      "0.200"
+    ],
+    "unit": "-"
+  },
+  "rho_f*": {
+    "label": "Radius . . . . . . . . . . . . .",
+    "line": 539,
+    "numbers": [
+      0.404,
+      0.381
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)",
+    "symbol": "rho_f*",
+    "tokens": [
+      "0.404",
+      "0.381"
+    ],
+    "unit": "-"
+  },
+  "rho_f* [Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)]": {
+    "label": "Radius . . . . . . . . . . . . .",
+    "line": 546,
+    "numbers": [
+      0.246,
+      0.24
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)",
+    "symbol": "rho_f*",
+    "tokens": [
+      "0.246",
+      "0.240"
+    ],
+    "unit": "-"
+  },
+  "s_an": {
+    "label": "Zahndicke am Kopfkreis fuer A_We .",
+    "line": 373,
+    "numbers": [
+      0.672,
+      0.777
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": "s_an",
+    "tokens": [
+      "0.672",
+      "0.777"
+    ],
+    "unit": "mm"
+  },
+  "s_fn*": {
+    "label": "Sehne . . . . . . . . . . . . . .",
+    "line": 536,
+    "numbers": [
+      2.068,
+      2.197
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)",
+    "symbol": "s_fn*",
+    "tokens": [
+      "2.068",
+      "2.197"
+    ],
+    "unit": "-"
+  },
+  "s_n": {
+    "label": "Zahndicke (Nennmass, Normalschn.) .",
+    "line": 371,
+    "numbers": [
+      1.719,
+      1.8
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": "s_n",
+    "tokens": [
+      "1.719",
+      "1.800"
+    ],
+    "unit": "mm"
+  },
+  "s_n-": {
+    "label": "Zahndickensehne (Nennmass) . . . .",
+    "line": 377,
+    "numbers": [
+      1.723,
+      1.808
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "s_n-",
+    "tokens": [
+      "1.723",
+      "1.808"
+    ],
+    "unit": "mm"
+  },
+  "s_t": {
+    "label": "Zahndicke (Nennmass, Stirnschn.) .",
+    "line": 368,
+    "numbers": [
+      1.719,
+      1.8
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": "s_t",
+    "tokens": [
+      "1.719",
+      "1.800"
+    ],
+    "unit": "mm"
+  },
+  "t_a*": {
+    "label": "Sehne bei Kraftangriff am Kopf . .",
+    "line": 542,
+    "numbers": [
+      1.961,
+      2.111
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)",
+    "symbol": "t_a*",
+    "tokens": [
+      "1.961",
+      "2.111"
+    ],
+    "unit": "-"
+  },
+  "t_e*": {
+    "label": "Sehne bei Kraftangriff am AEP . . .",
+    "line": 543,
+    "numbers": [
+      1.974,
+      2.124
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n)",
+    "symbol": "t_e*",
+    "tokens": [
+      "1.974",
+      "2.124"
+    ],
+    "unit": "-"
+  },
+  "v": {
+    "label": "Nennumfangsgeschwindigkeit am Waelzkr.",
+    "line": 483,
+    "numbers": [
+      2.696
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Leistungen, Kraefte und Drehzahlen",
+    "symbol": "v",
+    "tokens": [
+      "2.696"
+    ],
+    "unit": "m/s"
+  },
+  "wirks. Kopfruecknahme (EG= N,N) . C_eff": {
+    "label": "wirks. Kopfruecknahme (EG= N,N) . C_eff",
+    "line": 691,
+    "numbers": [
+      0.0
+    ],
+    "section": "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "subsection": null,
+    "symbol": null,
+    "tokens": [
+      "0.0"
+    ],
+    "unit": "um"
+  },
+  "x": {
+    "label": "Profilverschiebungsfaktor (Nennw.) .",
+    "line": 308,
+    "numbers": [
+      0.2034,
+      0.3143
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "x",
+    "tokens": [
+      "0.2034",
+      "0.3143"
+    ],
+    "unit": "-"
+  },
+  "x*m_n": {
+    "label": "Profilverschiebung (Nennw.) . .",
+    "line": 309,
+    "numbers": [
+      0.203,
+      0.314
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "x*m_n",
+    "tokens": [
+      "0.203",
+      "0.314"
+    ],
+    "unit": "mm"
+  },
+  "x_1+x_2": {
+    "label": "Summe Profilversch.faktoren . .",
+    "line": 307,
+    "numbers": [
+      0.5177
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "x_1+x_2",
+    "tokens": [
+      "0.5177"
+    ],
+    "unit": "-"
+  },
+  "x_E": {
+    "label": "Erz.-Profilversch.faktor . . . . .",
+    "line": 429,
+    "numbers": [
+      -0.203,
+      0.0117
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "x_E",
+    "tokens": [
+      "-0.2030",
+      "0.0117"
+    ],
+    "unit": "-"
+  },
+  "z": {
+    "label": "Zaehnezahl . . . . . . . . . . . . .",
+    "line": 302,
+    "numbers": [
+      51.0,
+      52.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "z",
+    "tokens": [
+      "51",
+      "52"
+    ],
+    "unit": "-"
+  },
+  "z2/z1": {
+    "label": "Zaehnezahlverhaeltnis . . . . .",
+    "line": 303,
+    "numbers": [
+      1.02
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "z2/z1",
+    "tokens": [
+      "1.020"
+    ],
+    "unit": "-"
+  },
+  "z_g": {
+    "label": "Zahl der Gegenraeder unter Last . .",
+    "line": 460,
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": null,
+    "symbol": "z_g",
+    "tokens": [
+      "1",
+      "1"
+    ],
+    "unit": "-"
+  },
+  "z_n": {
+    "label": "Virtuelle Zaehnezahl (DIN 3990) . .",
+    "line": 484,
+    "numbers": [
+      51.0,
+      52.0
+    ],
+    "section": "Allgemeine Daten zur Tragfaehigkeit",
+    "subsection": "Leistungen, Kraefte und Drehzahlen",
+    "symbol": "z_n",
+    "tokens": [
+      "51.000",
+      "52.000"
+    ],
+    "unit": "-"
+  },
+  "zeta_a": {
+    "label": "Spezifisches Gleiten (Zahnkopf) .",
+    "line": 361,
+    "numbers": [
+      0.313,
+      0.294
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "zeta_a",
+    "tokens": [
+      "0.313",
+      "0.294"
+    ],
+    "unit": "-"
+  },
+  "zeta_f": {
+    "label": "Spezifisches Gleiten (Zahnfuss) .",
+    "line": 362,
+    "numbers": [
+      -0.416,
+      -0.457
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "zeta_f",
+    "tokens": [
+      "-0.416",
+      "-0.457"
+    ],
+    "unit": "-"
+  }
+}

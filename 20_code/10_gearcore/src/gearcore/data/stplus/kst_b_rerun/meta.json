@@ -1,0 +1,61 @@
+{
+  "case": "kst_b_rerun",
+  "cfg": "Firmenname = FZG\nSachbearbeiter = gearcore oracle\nEingabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_b_rerun\\eingabe.ste\nAusgabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_b_rerun\\ausgabe.sta\nGraphikdatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_b_rerun\\grafik1.stz\nGraphikdatei_2 = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_b_rerun\\grafik2.stz\nZuordnungsdatei = qelesed.stq\nWerkzeugdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wkz\\wkz.dat\nWerkzeugdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wkz_glob.dat\nWerkzeugdatei_3 = %\nWerkzeugdatei_4 = %\nWerkzeugdatei_5 = %\nWerkzeugdatei_6 = %\nWerkzeugdatei_7 = %\nWerkzeugdatei_8 = %\nWerkzeugdatei_9 = %\nWerkzeugdatei_10 = %\nWerkstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wst\\WST.dat\nWerkstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wst_glob.dat\nSchmierstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\oel\\Oel.dat\nSchmierstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\oel_glob.dat\nPfad_Maskendateien = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\zubeh\\\nSchnittstellendatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_b_rerun\\ausgabe.sts\nSTEP_Konfiguration = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_b_rerun\\config.dat\nPfad_Meldungsausgabe = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_b_rerun\\\n",
+  "contour_format": "zahnkonXwzY.txt: one point per line, `x ; y` in mm (transverse section, scientific notation); one tooth centred on +y from root circle (left flank) over the tip to root circle (right flank)",
+  "contours": [
+    {
+      "columns": 3,
+      "file": "contour_wz1.json",
+      "points": 138,
+      "source": "zahnkon1wz1.txt"
+    },
+    {
+      "columns": 3,
+      "file": "contour_wz2.json",
+      "points": 118,
+      "source": "zahnkon1wz2.txt"
+    }
+  ],
+  "exe": "30_references_and_examples/33_STplus/STplus11-1F/bin/STplus.exe",
+  "exit_code": 0,
+  "interface_file": "interface.sts.txt",
+  "material_kinds": {
+    "16MnCr5": "steel"
+  },
+  "notes": "kst-B input re-run with 11.1F (supplied listing is 9.0F)",
+  "origin": "run",
+  "plot_accuracy": 0.005,
+  "run_date": "2026-09-28T18:52:25+02:00",
+  "scratch": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_b_rerun",
+  "sections": [
+    "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "Besonderheiten der Radpaarung:",
+    "Allgemeine Daten zur Tragfaehigkeit",
+    "ISO 6336 Teil 1-3 (1996)",
+    "DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung",
+    "ANSI/AGMA 2001-C95",
+    "DET NORSKE VERITAS (Aug. 90, Juli 93)  Berechnung Flanke und Fuss",
+    "DET NORSKE VERITAS (Juli 1993)   Fresstragfaehigkeit",
+    "LLOYDS REGISTER OF SHIPPING  (1990 - 2006)",
+    "API STANDARD 613, 5th edition (Februar 2003)",
+    "BUREAU VERITAS (2003)",
+    "GERMANISCHER LLOYD (1998 bis 2006)",
+    "CCS 1996",
+    "American Bureau of Shipping (ABS) 2004",
+    "ISO 6336 Teil 1-3 (1996): Statische Berechnung",
+    "ISO 6336 Teil 6 (2006): Lastkollektivberechnung"
+  ],
+  "source_ste": "30_references_and_examples/33_STplus/weitere_Konfigurationen/kst-B_eingabe.ste",
+  "stdout": " Config file path C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\kst_b_rerun\\\n stplus.cfg passed as CLI parameter. Found file.\n ... Eingabedatenverarbeitung wird durchgefuehrt ...\n ... Geometrieberechnung wird durchgefuehrt ...\n ... Geometrieplots werden gezeichnet ...\n ... Tragfaehigkeitsberechnung wird durchgefuehrt ...\n ... Lastkollektivberechnung wird durchgefuehrt ...\n ... Tragfaehigkeitsplots werden gezeichnet ...\nRuntime:  0.665s\n",
+  "ste_sha256": "db6781c86beabd37543fe80f9bf998be6e333ed89da3c349b91a3db55998df42",
+  "stplus_version": "11.1F",
+  "trust": "generated",
+  "typed_import": {
+    "notes": [],
+    "ok": true,
+    "unmapped_keys": [
+      "BR.MITTENVERSATZ",
+      "FASE"
+    ]
+  }
+}

@@ -25,9 +25,6 @@ eggs/
 .eggs/
 lib/
 lib64/
-# The React frontend keeps source under src/lib/ — exempt it from the Python "lib/" rule above.
-!20_code/50_frontend/src/lib/
-!20_code/50_frontend/src/lib/**
 parts/
 sdist/
 wheels/
@@ -35,6 +32,7 @@ wheels/
 .installed.cfg
 *.egg
 .pytest_cache/
+.hypothesis/
 .ruff_cache/
 .mypy_cache/
 .dmypy.json
@@ -54,6 +52,7 @@ ENV/
 
 # --- Jupyter -------------------------------------------------------------------
 .ipynb_checkpoints/
+20_code/10_gearcore/build/
 
 # --- Node / frontend -----------------------------------------------------------
 node_modules/
@@ -63,13 +62,6 @@ node_modules/
 .vite/
 
 # --- Build / runtime output ----------------------------------------------------
-20_code/60_cache/**
-!20_code/60_cache/.gitkeep
-20_code/80_output/**
-!20_code/80_output/.gitkeep
-20_code/40_backend/80_output/**
-20_code/90_logs/**
-!20_code/90_logs/.gitkeep
 
 # --- Docker --------------------------------------------------------------------
 *.pid
@@ -88,6 +80,9 @@ Thumbs.db
 desktop.ini
 
 # --- Abaqus --------------------------------------------------------------------
+# TRAPS (verified 2026-09-28): the patterns below apply repo-wide. Fixtures derived from
+# STplus must therefore be named report.sta.txt / *.json (never *.sta, *.dat), and no
+# tracked folder may be called lib/, build/ or dist/.
 *.odb
 *.sim
 *.prt
@@ -107,5 +102,6 @@ desktop.ini
 # --- S-Life Plastics ----------------------------------------------------------
 *.cof
 
+# Read-only references (STplus installation, licensed listings, the archived legacy
+# workbench 38_legacy_workbench/) stay local — never versioned.
 30_references_and_examples/
-20_code/40_backend/app/static/

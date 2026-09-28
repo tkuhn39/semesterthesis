@@ -1,0 +1,1598 @@
+ 
+       *********************************************************************
+       *           Forschungsvereinigung Antriebstechnik e.V. (FVA)        *
+       *                          Lyoner Str. 18                           *
+       *                         60528  Frankfurt                          *
+       *********************************************************************
+ 
+ 
+ 
+       Angaben zum Programm
+       --------------------
+       Programmname:           STplus
+       Version:                9.0F
+       Freigabe:               09.04.2019
+       Berechnungsumfang:      Geometrieberechnung von Stirnraedern sowie
+                               Tragfaehigkeitsberechnung nach den unter-
+                               schiedlichsten Verfahren
+ 
+ 
+       Angaben zur Erstellung
+       ----------------------
+       Erstellung:             Das Programm wurde im Rahmen des FVA-
+                               Forschungsvorhabens Nr. 241 erstellt.
+       Forschungsstelle:       FZG, TU Muenchen
+                               Prof. Dr.-Ing. K. Stahl
+ 
+ 
+       Angaben zum Anwender
+       --------------------
+       Firmenname:             FZG
+       Sachbearbeiter:         Automatischer Test
+ 
+ 
+       Angaben zur Berechnung
+       ----------------------
+       Datum:                  05.05.23
+       Uhrzeit:                14:21:59 Uhr
+       Eingabedatei:           C:\FVA\STplus9F\work\eingabe.ste
+       Ausgabedatei:           C:\FVA\STplus9F\work\ausgabe.sta
+ 
+ 
+       Firmenspezifische Angaben
+       -------------------------
+ 
+ 
+ 
+       Angaben zum Berechnungsinhalt
+       -----------------------------
+ 
+ 
+ 
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt  2 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+ 
+                              Echoprint der Datensaetze
+ 
+               =========== Ausgabe des ersten Datensatzes ===========
+ 
+       $ Geometriedaten
+ 
+       ZAHNBREITE = 22 20
+       NORMALMODUL = 2.0
+       ACHSABSTAND = 91.5
+       EINGRIFFSWINKEL = 20
+       SCHRAEGUNGSWINKEL = 0 0
+       ZAHNWEITE = 27.827 46.21
+       MESSZAEHNEZAHL = 5 8
+       AUFTEILUNG_X1X2 = 0
+       BR.MITTENVERSATZ = 0
+       FASE = 0 0
+       KOPFKREISDM = 76.46 112.95
+       KOPFKANTENBRUCH = 0 0
+       ZAEHNEZAHL = 36 54
+       WERKZEUG_VORVERZ. = WKZ_Profil_B_Ritzel WKZ_Profil_B_Rad
+ 
+       $ WKZ_Profil_B_Rad
+ 
+       KOPFHOEHENFAKTOR = 1.25
+       KOPFABRUNDUNGSFAKTOR = 0.394
+       WKZ_NORMALMODUL = 2
+       WKZ_EINGRIFFSWINKEL = 20
+       KANTENBRECHWINKEL = 45.0
+       FUSSFORMHOEHENFAKTOR = 0.7388
+ 
+       $ WKZ_Profil_B_Ritzel
+ 
+       KOPFHOEHENFAKTOR = 1.25
+       KOPFABRUNDUNGSFAKTOR = 0.25
+       WKZ_NORMALMODUL = 2
+       WKZ_EINGRIFFSWINKEL = 20
+       FUSSFORMHOEHENFAKTOR = 1.75
+ 
+       $ AUSDRUCKSTEUERUNG
+       AUSDRUCK_IN_DEUTSCH = ja
+       LANGAUSDR_GEOMETRIE = ja
+       LANGAUSDR_TRAGFAEHIGKEIT = ja
+       AUSDRUCK_DECKBLATT = ja
+       ECHODRUCK_EINGABEDATEI = ja
+ 
+       $ PLOTSTEUERUNG
+       PLOTFORMAT = A4h A4h
+       PLOT_TEILKREIS = ja ja
+       PLOT_VERZAHNUNG_W1 = ja ja
+       PLOT_VERZAHNUNG_W2 = nein nein
+       PLOT_FERTIGVERZAHNUNG = nein nein
+       PLOT_WERKZEUG1 = nein nein
+       PLOT_WERKZEUG2 = nein nein
+       STIRNKOORD_EIN_WKZ = ja
+       Plot_Eingriff = ja
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt  3 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+ 
+       $ Tragfaehigkeit_Allgem
+ 
+       LEISTUNG = 400
+       DREHZAHL = 1000
+       DREHMOMENT_STAT = 8000
+       SCHMIERSTOFF = ISO-VG-100
+       WERKSTOFF = 16MnCr5 16MnCr5
+       OELTEMPERATUR = 60
+       BETRIEBSSTUNDEN = 10000
+       ANTEIL_DREHMOMENT = 1.6756 ANTEIL_LASTSPIELE = 0.0036
+       ANTEIL_DREHMOMENT = 1.6705 ANTEIL_LASTSPIELE = 0.0021
+       ANTEIL_DREHMOMENT = 1.6654 ANTEIL_LASTSPIELE = 0.0016
+       ANTEIL_DREHMOMENT = 1.6603 ANTEIL_LASTSPIELE = 0.0021
+       ANTEIL_DREHMOMENT = 1.6552 ANTEIL_LASTSPIELE = 0.0042
+       ANTEIL_DREHMOMENT = 1.6496 ANTEIL_LASTSPIELE = 0.0008
+       ANTEIL_DREHMOMENT = 1.6434 ANTEIL_LASTSPIELE = 0.0031
+       ANTEIL_DREHMOMENT = 1.6368 ANTEIL_LASTSPIELE = 0.0029
+       ANTEIL_DREHMOMENT = 1.6297 ANTEIL_LASTSPIELE = 0.0044
+       ANTEIL_DREHMOMENT = 1.6220 ANTEIL_LASTSPIELE = 0.0049
+       ANTEIL_DREHMOMENT = 1.6133 ANTEIL_LASTSPIELE = 0.0036
+       ANTEIL_DREHMOMENT = 1.6036 ANTEIL_LASTSPIELE = 0.0036
+       ANTEIL_DREHMOMENT = 1.5929 ANTEIL_LASTSPIELE = 0.0029
+       ANTEIL_DREHMOMENT = 1.5811 ANTEIL_LASTSPIELE = 0.0039
+       ANTEIL_DREHMOMENT = 1.5641 ANTEIL_LASTSPIELE = 0.0081
+       ANTEIL_DREHMOMENT = 1.5541 ANTEIL_LASTSPIELE = 0.0073
+       ANTEIL_DREHMOMENT = 1.5382 ANTEIL_LASTSPIELE = 0.0094
+       ANTEIL_DREHMOMENT = 1.5209 ANTEIL_LASTSPIELE = 0.0135
+       ANTEIL_DREHMOMENT = 1.5019 ANTEIL_LASTSPIELE = 0.0099
+       ANTEIL_DREHMOMENT = 1.4815 ANTEIL_LASTSPIELE = 0.0250
+       ANTEIL_DREHMOMENT = 1.4590 ANTEIL_LASTSPIELE = 0.0276
+       ANTEIL_DREHMOMENT = 1.4345 ANTEIL_LASTSPIELE = 0.0128
+       ANTEIL_DREHMOMENT = 1.4080 ANTEIL_LASTSPIELE = 0.0305
+       ANTEIL_DREHMOMENT = 1.3793 ANTEIL_LASTSPIELE = 0.0323
+       ANTEIL_DREHMOMENT = 1.3487 ANTEIL_LASTSPIELE = 0.0159
+       ANTEIL_DREHMOMENT = 1.3155 ANTEIL_LASTSPIELE = 0.0365
+       ANTEIL_DREHMOMENT = 1.2797 ANTEIL_LASTSPIELE = 0.0388
+       ANTEIL_DREHMOMENT = 1.2414 ANTEIL_LASTSPIELE = 0.0305
+       ANTEIL_DREHMOMENT = 1.2005 ANTEIL_LASTSPIELE = 0.0315
+       ANTEIL_DREHMOMENT = 1.1571 ANTEIL_LASTSPIELE = 0.0456
+       ANTEIL_DREHMOMENT = 1.1106 ANTEIL_LASTSPIELE = 0.0482
+       ANTEIL_DREHMOMENT = 1.0611 ANTEIL_LASTSPIELE = 0.0510
+ 
+       $ TR_DIN3990_1987
+ 
+       ISO_6336 = ja
+       ANWENDUNGSFAKTOR = 1
+       DRUCKERGRAFIK = ja
+       UNLEGIERTES_OEL = ja
+ 
+       $ TR_ABS_1997
+ 
+       ANWENDUNGSFAKTOR = 1
+ 
+       $ TR_AGMA_2001_C95
+ 
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt  4 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       UEBERLASTFAKTOR_K_O = 1
+ 
+       $ TR_API613_1977
+ 
+       BETRIEBSFAKTOR = 1
+ 
+       $ TR_BV_1990
+ 
+       ANWENDUNGSFAKTOR = 1
+ 
+       $ TR_CCS_1996
+ 
+       ANWENDUNGSFAKTOR = 1
+ 
+       $ TR_DNV_1990
+ 
+       ANWENDUNGSFAKTOR = 1
+ 
+       $ TR_GERM_LLOYD_1998
+ 
+       ANWENDUNGSFAKTOR = 1.
+ 
+       $ TR_LRS_1990
+ 
+       ANWENDUNGSFAKTOR = 1
+ 
+       $ ISO-VG-100
+ 
+       SCHMIERSTOFFBEZEICHNUNG = ISO-VG-100
+       NUE40 = 100
+       NUE100 = 11
+       RHO15 = 0.88
+       FZG_KRAFTSTUFE = 12
+ 
+       $ 16MnCr5
+ 
+       WERKSTOFFBEZEICHNUNG = 16MnCr5
+       ELASTIZITAETSMODUL = 210000.
+       QUERKONTRAKTIONSZAHL = .3
+       WAERMEBEHANDLUNG = einsatzgehaertet
+       KERNHAERTE_ZAHN = 380
+       OBERFLAECHENHAERTE = 750
+       STRECKGRENZE_SIGMA02 = 1100
+       BRUCHGRENZE = 1350
+       DICHTE_RADKRANZMATERIAL = 7.85E-6
+       DIN3990/87_SIGMA_HLIM = 1460
+       DIN3990/87_SIGMA_FE = 860
+       AGMA2001/95_SAC = 277022
+       AGMA2001/95_SAT = 75420
+       ABS/97_SIGMA_FE = 840
+       ABS/97_SIGMA_HLIM = 1500
+       CCS/96_SIGMA_FLIM = 430
+       CCS/96_SIGMA_HLIM = 1500
+       DNV/90_SIGMA_HLIM = 1550
+       DNV/90_SIGMA_H5 = 2480
+       DNV/90_SIGMA_H3 = 3100
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt  5 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       DNV/90_SIGMA_FE = 860
+       G_LLOYD/98_SIGMA_FE = 860
+       G_LLOYD/98_SIGMA_HLIM = 1460
+       API/77_MATERIALINDEX = 3.1
+       API/77_BENDING_INDEX = 276
+       LRS/90_SIGMA_FLIM = 500
+       LRS/90_SIGMA_HLIM = 1500
+       BV/90_SIGMA_HLIM = 1550
+       BV/90_SIGMA_FE = 900
+ 
+ 
+ 
+       Daten zu RAD 1 bezueglich WERKZEUG_VORVERZ.: WKZ_PROFIL_B_RITZE
+            -> Daten sind bereits in der Eingabedatei enthalten.
+ 
+ 
+       Daten zu RAD 2 bezueglich WERKZEUG_VORVERZ.: WKZ_PROFIL_B_RAD
+            -> Daten sind bereits in der Eingabedatei enthalten.
+ 
+ 
+       Daten zu RAD 1 bezueglich WERKSTOFF: 16MNCR5
+            -> Daten sind bereits in der Eingabedatei enthalten.
+ 
+ 
+       Daten zu RAD 2 bezueglich WERKSTOFF: 16MNCR5
+                                (siehe oben)
+ 
+ 
+ 
+       Daten bezueglich SCHMIERSTOFF: ISO-VG-100
+            -> Daten sind bereits in der Eingabedatei enthalten.
+ 
+                                 Ende des Echoprints
+ 
+       Hinweis: Geometrieberechnungs-Genauigkeitsgrenzwert DESTGR
+           wird fuer diesen Datensatz feiner (kl.) als bis
+           STplus 8.1F vorgesehen belegt.
+            In aktueller Rechnung verwendeter Wert:     0.0002000000.
+            Bis STplus 8.1F verwendeter Grenzwert:      0.0004000000.
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt  6 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       Geometrieberechnung nach DIN 3960 (Maerz 1987)
+       ---------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       Normaleingriffswinkel . . . . . . alfa_n            20.00000     Grad
+         Stirneingriffswinkel  . . . . . alfa_t            20.00000     Grad
+         Betriebseingriffswinkel . . .  alfa_wt            22.43879     Grad
+       Schraegungswinkel am Teilkreis  . . beta             0.00000     Grad
+         Schraegungswinkel am Grundkreis beta_b             0.00000     Grad
+       Zaehnezahl  . . . . . . . . . . . . .  z        36          54   -
+         Zaehnezahlverhaeltnis . . . . .  z2/z1             1.500       -
+       Achsabstand . . . . . . . . . . . . .  a            91.500       mm
+       Normalmodul . . . . . . . . . . . .  m_n             2.00000     mm
+         Stirnmodul  . . . . . . . . . . .  m_t             2.00000     mm
+       Summe Profilversch.faktoren . .  x_1+x_2             0.7947      -
+       Profilverschiebungsfaktor (Nennw.)  .  x      0.2407      0.5540 -
+         Profilverschiebung (Nennw.) . .  x*m_n       0.481       1.108 mm
+ 
+       --- Teilungen, Ueberdeckungen etc. ----------------------------------
+       Stirnteilung  . . . . . . . . . . .  p_t             6.283       mm
+       Normalteilung . . . . . . . . . . .  p_n             6.283       mm
+       Stirneingriffsteilung . . . . . . . p_et             5.904       mm
+       Normaleingriffsteilung  . . . . . . p_en             5.904       mm
+       Eingriffsstrecke  . . . . . . . . . .  g             7.012       mm
+         Gemeins. Zahnhoehenfaktor . . . .  h_*             1.459       -
+       Profilueberdeckung  . . . . . . eps_alfa             1.188       -
+       Sprungueberdeckung  . . . . . . eps_beta             0.000       -
+       Gesamtueberdeckung  . . . . .  eps_gamma             1.188       -
+ 
+       --- Breiten, Durchmesser etc. ---------------------------------------
+       Zahnbreite (eine Pfeilhaelfte bei DSV) b      22.000      20.000 mm
+         Fase je Zahnende (Kantenbruch)  . . .        0.000       0.000 mm
+       Gemeinsame Breite . . . . . . . .  b_gem            20.000       mm
+         Mittenversatz . . . . . . . . . . . .              0.000       mm
+       Waelzkreisdurchmesser . . . . . . .  d_w      73.200     109.800 mm
+       Teilkreisdurchmesser  . . . . . . . .  d      72.000     108.000 mm
+       Grundkreisdurchmesser . . . . . . .  d_b      67.658     101.487 mm
+       Kopfkreisdurchmesser  . . . . . . .  d_a      76.460     112.950 mm
+       Kopf-Formkreisdurchmesser . . . . . d_Fa      76.460     112.376 mm
+         Kopfkantenbruch (Radialbetrag)  .  h_K       0.000       0.287 mm
+       Nutzkreisdurchmesser am Kopf  . . . d_Na      76.460     112.376 mm
+       Nutzkreisdurchmesser am Fuss  . . . d_Nf      71.020     107.105 mm
+       Fuss-Formkreisdurchmesser . . . . . d_Ff      69.103     105.521 mm
+         Formuebermass . . . . . . . . . .  c_n       0.958       0.792 mm
+       Fussfreischnitt (bei '-' Kerbtiefe) Fs_n       0.000       0.000 mm
+         gemessen normal zur Fl. am Dm.  d_Fs-n      69.103     105.521 mm
+       Fusskreisdurchmesser  . . . . . . .  d_f      67.729     104.215 mm
+ 
+       --- Zahnhoehen, Gleitfaktoren etc. ----------------------------------
+       Bezugspr.-Kopfhoehenfaktor (Istw.) h_aP*       0.874       0.684 -
+       Zahnhoehe . . . . . . . . . . . . . .  h       4.365       4.368 mm
+         gemeinsame Zahnhoehe  . . . . .  h_gem             2.918       mm
+       Kopfhoehe (bezogen auf Teilkreis) .  h_a       2.230       2.475 mm
+       Kopfspiel (Istwert) . . . . . . . . .  c       1.163       1.160 mm
+         bezogenes Kopfspiel . . . . . . .  c_*       0.581       0.580 -
+       Kopfeingriffsstrecke  . . . . . g_alfa-a       3.838       3.174 mm
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt  7 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       Geometrieberechnung nach DIN 3960 (Maerz 1987)
+       ---------------------------------------------------------------------
+       Gleitfaktor am Zahnkopf . . . . . . K_ga       0.175       0.145 -
+       Spezifisches Gleiten (Zahnkopf) . zeta_a       0.359       0.329 -
+       Spezifisches Gleiten (Zahnfuss) . zeta_f      -0.490      -0.561 -
+ 
+       --- Abmasse, Zahndicken etc. ----------------------------------------
+       Verzahnungsqualitaet (DIN3961/63,Aug.78)        N 7         N 7  -
+       Abmassreihe (DIN 3967, Aug.78)  . . . .         C           C    -
+       Toleranzreihe (DIN 3967, Aug.78)  . . .         25          25   -
+       Zahndicke (Nennmass, Stirnschn.)  .  s_t       3.492       3.948 mm
+         oberes Zahndickenabmass . . . .  A_ste      -0.085      -0.364 mm
+         unteres Zahndickenabmass  . . .  A_sti      -0.125      -0.404 mm
+       Zahndicke (Nennmass, Normalschn.) .  s_n       3.492       3.948 mm
+       Zahnlueckenweite (Normalschnitt)  .  e_n       2.791       2.335 mm
+       Zahndicke am Kopfkreis fuer A_We  . s_an       1.557       1.580 mm
+       Restdicke bei Kantenbruch/Kopfruecknahme       1.557       1.233 mm
+ 
+       --- Angaben zu Pruefmassen ------------------------------------------
+       Zahndickensehne (Nennmass)  . . . . s_n-       3.230       3.623 mm
+       Hoehe ueber der Zahndickensehne . . h_a-       1.875       2.031 mm
+         oberes Abmass der Z.dickensehne  A_sne      -0.085      -0.364 mm
+         unteres Abmass der Z.dickensehne A_sni      -0.125      -0.404 mm
+         Beruehrkreisdurchm. (oberes Abmass) .       72.782     108.949 mm
+       Zahnweite (Nennmass)  . . . . . . .  W_k      27.907      46.552 mm
+       Messzaehnezahl  . . . . . . . . . . .  k         5           8   -
+         oberes Zahnweitenabmass . . . . . A_We      -0.080      -0.342 mm
+         unteres Zahnweitenabmass  . . . . A_Wi      -0.117      -0.380 mm
+         Zahnweitenabmassfaktor  . . . A_W/A_Sn       0.940       0.940 -
+         Beruehrkreisdurchm. (Zahnweitenmessg.)      73.157     111.512 mm
+       Diam. Zweikugelmass (Nennmass)  . . M_dK      77.811     114.943 mm
+         Beruehrkreisdurchmesser (Kugel/Flanke)      72.758     109.254 mm
+       Diam. Zweirollenmass (Nennmass) . . M_dR      77.811     114.943 mm
+       Messtueckdurchmesser  . . . . . . .  D_M       3.500       3.500 mm
+         oberes diametrales Abmass . . .  A_Mde      -0.194      -0.845 mm
+         unteres diametrales Abmass  . .  A_Mdi      -0.287      -0.939 mm
+         Abmassfaktor  . . . . . . .  A_Md/A_sn       2.287       2.318 -
+       Achsabstandsabmass  . . . . . . . . A_Ae           + 0.018       mm
+       Achsabstandsabmass  . . . . . . . . A_Ai           - 0.018       mm
+         nach DIN 3964 Toleranzfeld JS  7
+ 
+       --- Flankenspiele ---------------------------------------------------
+       Verdrehfl.spiel(Waelzkr.)/Normalfl.spiel       j_t    /    j_n
+         fuer Nennachsabstand u. obere Zahnabm.       0.457  /    0.422 mm
+         fuer Nennachsabstand u untere Zahnabm.       0.538  /    0.497 mm
+       Flankenspielaenderung durch Abmass  A_Ae       0.014  /    0.013 mm
+       Flankenspielaenderung durch Abmass  A_Ai      -0.014  /   -0.013 mm
+ 
+       --- Werkzeugangaben -------------------------------------------------
+       Zahnradfertigung mit Fraeser oder Hobelkamm
+       Wkz-Normalmodul . . . . . . . . . . m_n0      2.0000      2.0000 mm
+       Wkz-Normaleingriffswinkel . . .  alfa_n0     20.0000     20.0000 Grad
+       Kopfhoehenfaktor (Wkz_Bezugspr.)  h_aP0*       1.250       1.250 -
+       Wkz-Kopfabrundungsfaktor  . . . rho_aP0*       0.250       0.394 -
+       Fussform-Hoehenf.(Wkz-Bezugspr.) h_FfP0*       1.750       0.739 -
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt  8 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       Geometrieberechnung nach DIN 3960 (Maerz 1987)
+       ---------------------------------------------------------------------
+       Fuss-Hoehenfaktor (Wkz-Bezugspr.) h_fP0*       1.750       1.244 -
+       Protuberanzbetrag am Wkz  . . . . . pr_0       0.000       0.000 mm
+       Protuberanzhoehenfaktor am Wkz  . h_pr0*       0.000       0.000 -
+       Protuberanzwinkel . . . . . . . alfa_pr0      20.000      20.000 Grad
+       Gesamt-Bearbeitungszugabe . . . . . .  q       0.000       0.000 mm
+       Erz.-Profilversch.faktor  . . . . .  x_E      0.1823      0.3037 -
+       Wkz-Profilbezugslinie Rad 1/2 gem. DIN 3972 fuer Wkz-Zahndicke=Luecke
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt  9 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       Besonderheiten der Radpaarung:
+       ---------------------------------------------------------------------
+       Wkz.daten h_FfP0*, d_Ff0, alfa_Kn0 oder alfa_Kt0 fuer Rad 2 geaendert
+       Kopfkantenbruch an Rad 2 durch Werkzeug (alfa_K0 = 45.00 grd)
+       Kopfkreise 1/2: Eingabe von Durchmesser oder Mindest-Zahnkopfdicke
+       Fasen an Kopfkante o. Zahnende in Profil-/Sprungueberdeckung erfasst
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 10 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       Allgemeine Daten zur Tragfaehigkeit
+       ---------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       Verzahnungsart der berechneten Stufe  .      Geradverzahnung     -
+       Flankenfertigbearbeitung  . . . . . . . geschliffen ohne Br.korr.-
+       Zahl der Gegenraeder unter Last . .  z_g       1           1     -
+       Verzahnungsqualitaet nach DIN 3961  . .        7           7     -
+       Verzahnungsqualitaet nach ISO R 1328  .        7           7     -
+       Eingr.teilungsabweichung DIN 3961 . f_pe            10.679       um
+       Rauhtiefe an den Zahnflanken  . .  R_z-H       5.00        5.00  um
+       Rauhtiefe in der Fussausrundung .  R_z-F      20.00       20.00  um
+       Zahnbreite  . . . . . . . . . . . . .  b      22.000      20.000 mm
+         Fase je Zahnende (Kantenbruch)  . . .        0.000       0.000 mm
+       Ritzelgesamtzahnbr. einschl. Spalt b_ges      22.000             mm
+       Gemeinsame Zahnbreite . . . . . .  b_gem            20.000       mm
+         Mittenversatz . . . . . . . . . . . .              0.00        mm
+       Ritzelbreite / Ritzelteilkreisdm. .  b/d             0.306       -
+       Schrumpffugendurchmesser  . . . . .  d_s       0.000       0.000 mm
+       Innendurchmesser des Ritzels  . . .  d_I       0.000             mm
+ 
+       --- Leistungen, Kraefte und Drehzahlen ------------------------------
+       Nennleistung im Zahneingriff  . . . .  P           400.000       kW
+       Nenndrehmoment fuer den Zahneingriff   T    3819.72      5729.58 Nm
+       Nennumfangskraft am Teilkreis . . .  F_t        106103.3         N
+       Nennumfangskraft am Waelzkreis  . . F_tw        104363.9         N
+       Nennumfangskraft am Grundkreis  . . F_tb        112912.8         N
+       Nennaxialkraft  . . . . . . . . . . F_ax             0.0         N
+       Nenndrehzahl  . . . . . . . . . . . .  n    1000.000     666.667 1/min
+       Nennumfangsgeschwindigkeit am Waelzkr. v             3.833       m/s
+       Virtuelle Zaehnezahl (DIN 3990) . .  z_n      36.000      54.000 -
+ 
+       --- lastabhaengige Verzahnungsverluste ------------------------------
+       mittl. Zahnreibungszahl (FVA 166)  my_mz             0.114       -
+         Schmierstoffaktor . . . . . . . .  X_L             1.00        -
+       Zahnverlustfaktor  . . . . . . . . . H_v             0.076       -
+       Verzahnungsverlustleistung  . . .  P_VzP          3480.7         W
+       Verzahnungswirkungsgrad . . . . . eta_zP             0.991       -
+ 
+       --- K- und U-Faktor -------------------------------------------------
+       K*-Faktor . . . . . . . . . . . . . . K*           122.805       N/mm2
+       U-Faktor  . . . . . . . . . . . . . .  U          2652.582       N/mm2
+ 
+       --- Werkstoffdaten --------------------------------------------------
+       Werkstoff Rad 1 (Stahl) . . . . . . . .  16MnCr5
+       Werkstoff Rad 2 (Stahl) . . . . . . . .  16MnCr5
+       Waermebehandlung  . . . . . . . . . . .  einsatz-    einsatz-
+         . . . . . . . . . . . . . . . . . . . gehaertet   gehaertet
+       Nachbehandlung  . . . . . . . . . . . .  keine       keine
+         . . . . . . . . . . . . . . . . . . .  Angabe      Angabe
+       Flankenhaerte . . . . . . . . . . . . .      750.        750.    HV
+       Kernhaerte  . . . . . . . . . . . . . .      380.        380.    HV
+       Elastizitaetsmodul  . . . . . . . . .  E  210000.0    210000.0   N/mm2
+       Querkontraktionszahl  . . . . . . .  nue       0.30        0.30  -
+ 
+       --- Schmierstoffdaten -----------------------------------------------
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 11 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       Allgemeine Daten zur Tragfaehigkeit
+       ---------------------------------------------------------------------
+       Schmierstoff  . . . . . . . . . . . . . ISO-VG-100
+       FZG-Kraftstufe  . . . . . . . . . . . KS            12.          -
+       FZG-Testdrehmoment  . . . . . . . . T-1T           534.5         Nm
+       kinematische Viskositaet  . . . . nue_40           100.          mm2/s
+       kinematische Viskositaet  . . . . nue_50            61.          mm2/s
+       kinematische Viskositaet  . . .  nue_100            11.0         mm2/s
+       kin. Viskositaet bei  60. Grad  Oeltemp.            39.3         mm2/s
+       Basis . . . . . . . . .  nue_ 40/nue_100          100./ 11.0     -
+       Dichte  . . . . . . . . . . . . . rho_15             0.880       g/cm3
+       VT-Steigung . . . . . . . . . . . . . .              3.566       -
+ 
+       --- Daten am kritischen Zahnfussquerschnitt (* = bezogen auf m_n) ---
+       Kraftangriffswinkel am Kopf .  alpha_Fan       26.597     24.489 Grad
+       Kraftangriffswinkel im AEP  .  alpha_Fen       24.721     23.239 Grad
+       30 Grad-Tangente:
+       Sehne . . . . . . . . . . . . . .  s_fn*        2.179      2.256 -
+       Hebel bei Kraftangriff am Kopf  .  h_fa*        1.876      1.658 -
+       Hebel bei Kraftangriff am AEP . .  h_fe*        1.581      1.390 -
+       Radius  . . . . . . . . . . . . . rho_f*        0.393      0.451 -
+       Durchmesser . . . . . . . . . . . . d_sf       68.299    104.984 mm
+       Lewis Parabel:
+       Sehne bei Kraftangriff am Kopf  . . t_a*        2.092      2.180 -
+       Sehne bei Kraftangriff am AEP . . . t_e*        2.109      2.201 -
+       Hebel bei Kraftangriff am Kopf  . . h_a*        1.772      1.575 -
+       Hebel bei Kraftangriff am AEP . . . h_e*        1.504      1.334 -
+       Radius  . . . . . . . . . . . . . rho_f*        0.286      0.405 -
+ 
+       --- Sonstiges -------------------------------------------------------
+ 
+       zu Rauhtiefen, Durchmesser und Haerten: 0.0 = keine Angabe
+       ---------------------------------------------------------------------
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 12 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       ISO 6336 Teil 1-3 (1996)
+       ---------------------------------------------------------------------
+       Eingaben statt ISO 6336 mit EG gekennzeichnet, Vermerke s. Sonstiges
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       --- Kraftfaktoren ---------------------------------------------------
+       Anwendungsfaktor (EG) . . . . . . .  K_A             1.00        -
+       Dynamikfaktor Verfahren B . . . . .  K_v             1.03        -
+         Bezugsdrehzahl  . . . . . . . n_1/n_e1             0.105       -
+         Red. Masse (EG:   0.00 kg/mm) .  m_red             0.013       kg/mm
+         Durchmesserverhaeltnis  . . . . . .  q       0.00        0.00  -
+         Dichte  . . . . . . . . . . . . .  rho       7.85        7.85  g/cm3
+         Eingr.steifigkeit (EG:  0.0)   c_gamma            16.2         N/um/mm
+         Eingriffsfedersteifigkeit . . . . c_23             0.0         N/um/mm
+         Eingr.teilungsabw.  . . . . . . . f_pe            11.          um
+         Einlaufbetrag . . . . . . . . . .  y_p             1.          um
+         Profilformabweichung  . . . . . .  f_f            10.          um
+         Einlaufbetrag . . . . . . . . . .  y_f             1.          um
+         Kopfruecknahme  . . . . . . . C_a(K_v)             2.          um
+       Breitenfaktor Verfahren D . . .  K_Hbeta             1.12        -
+         Verfahren D gilt praktisch nur fuer
+         mittig gelagertes Stirnrad
+         Flanken ohne Einlauf; Verhaeltnis  b/d             0.28        -
+       Breitenfaktor Zahnfusspannung .  K_Fbeta             1.09        -
+       Stirnfaktor Verfahren B . . . .  K_Halfa             1.00        -
+         Eingriffsteilungsabw. . . . . . . f_pe            11.          um
+         Einlaufbetrag . . . . . . . . . y_alfa             1.          um
+       Stirnfaktor Zahnfuss  . . . . .  K_Falfa             1.00        -
+       Eingr.federsteifigkeit Verf. B   c_gamma            16.2         N/um/mm
+       Einzelfedersteifigkeit Verf. B  . .  c_s            14.2         N/um/mm
+         Bezugsprofilfaktor  . . . . . . .  C_B             0.90        -
+         Korrekturfaktor . . . . . . . . .  C_M             0.80        -
+         Radkoerperfaktor  . . . . . . . .  C_R             1.00        -
+         bezogene Stegdicke  . . . . . .  b_s/b       1.00        1.00  -
+         bezogene Zahnkranzdicke . . .  s_r/m_n      50.00       50.00  -
+       Betriebsstunden . . . . . . . . . .  L_H   10000.0     10000.0   h
+       Lastspiele  . . . . . . . . . . . .  N_L     600.000     400.000 Mio
+ 
+       --- Flankentragfaehigkeit -------------------------------------------
+       Hertzsche Flankenpressung (B..D) sigma_H    5327.4      5154.5   N/mm2
+       Fl.pressg Nennwert (Waelzkr.) . sigma_H0          4815.7         N/mm2
+         Einzeleingriffsfaktor . . . . . .  Z_B             1.034       -
+         Einzeleingriffsfaktor . . . . . .  Z_D             1.000       -
+         Zonenfaktor . . . . . . . . . . .  Z_H             2.342       -
+         Elastizitaetsfaktor . . . . . . .  Z_E           191.6         (N/mm2).5
+         Ueberdeckungsfaktor . . . . . .  Z_eps             0.968       -
+         Schraegenfaktor . . . . . . . . Z_beta             1.000       -
+       Schmierstoffaktor . . . . . . . . .  Z_L             0.966       -
+         kinematische Viskositaet  . . . nue_40           100.          mm2/s
+       Rauheitsfaktor  . . . . . . . . . .  Z_R             0.955       -
+         mittlere Rauhtiefe  . . . . . . . R_zH       5.0         5.0   um
+         relative Rauhtiefe  . . . . . . R_z100             5.3         um
+       Geschwindigkeitsfaktor  . . . . . .  Z_v             0.976       -
+       Produkt Z_L*Z_R*Z_V (sigma_Hlim=  1200.)             0.901       -
+       Werkstoffpaarungsfaktor . . . . . .  Z_W             1.000       -
+         Haerte des weicheren Rades  . . . . HB             0.          -
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 13 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       ISO 6336 Teil 1-3 (1996)
+       ---------------------------------------------------------------------
+       Groessenfaktor Gruebchen  . . . . .  Z_X       1.000       1.000 -
+       Gruebchen-Zeitfaktor  . . . . . . .  Z_N       0.927       0.938 -
+         Lebensdauerfaktor (Standardbed.)  Z_NT       0.93        0.94  -
+       Dauerfestigkeitswert  . . . . sigma_Hlim    1460.0      1460.0   N/mm2
+       bei S_Hmin=1.0 zul. Fl.pressung sigma_HP    1218.8      1234.0   N/mm2
+         Lastwechsel erlauben Auslegung  . . .    dauerfest   dauerfest
+       Rechner. Sicherheitsfaktor Gruebchen S_H       0.229       0.239 -
+         Sicherheit bezogen auf Moment .  S_HMo       0.052       0.057 -
+ 
+       --- Fusstragfaehigkeit ----------------------------------------------
+       Zahnfusspannung Verfahren B . .  sigma_F    10244.      9519.3   N/mm2
+       Zahnfusspannung Nennwert  . . . sigma_F0    9151.8      8504.1   N/mm2
+         Formfaktor  . . . . . . . . . . .  Y_F       1.932       1.603 -
+         Schraegenfaktor . . . . . . . . Y_beta             1.000       -
+         bezogener Biegehebelarm . . . . . h_F*       1.581       1.390 -
+         bezogene Zahnfussdickensehne  .  s_Fn*       2.179       2.256 -
+         Kraftangriffswinkel . . . . .  alfa_Fn      24.721      23.239 Grad
+       Spannungskorr.f.  . . . .  Y_Sg bzw. Y_S       1.964       2.000 -
+         bez. Fussrundungsradius . . . . rho_F*       0.39        0.45  -
+         Kerbparameter . . . . . . . . . .  q_s       2.77        2.50  -
+       Groessenfaktor  . . . . . . . . . .  Y_X       1.000       1.000 -
+       Rel. Stuetzz. (B) . . . . . .  Y_delrelT       1.002       1.000 -
+         Gleitschichtbreite (EG) . . . .  rho_S       0.003       0.003 mm
+       Rel. Oberfl.fak.(B) . . . . . .  Y_RrelT       0.957       0.957 -
+         Rauhtiefe am Fuss . . . . . . . . R_zF      20.         20.    um
+       Zahnfuss-Zeitfaktor . . . . . . . .  Y_N       0.899       0.907 -
+         Ref.Zahnfuss-Zeitfaktor . . . . . Y_NT       0.899       0.907 -
+       Zahnf.grundfestigkeit 1+2=EG  . sigma_FE     860.0       860.0   N/mm2
+         Dauerfestigkeit . . . . . . sigma_Flim     430.0       430.0   N/mm2
+         Ref.Spannungskorr.faktor  . . . . Y_ST       0.00        0.00  -
+         Lastwechsel erlauben Auslegung  . . .    dauerfest   dauerfest
+       bei S_Fmin=1.0 zul. Fusspannung sigma_FP     741.8       746.0   N/mm2
+       Rechnerischer Sicherheitsfaktor . .  S_F       0.072       0.078 -
+       Zahnbreite fuer Zahnfusspannung . . .  b      22.0        20.0   mm
+ 
+       --- Sonstiges -------------------------------------------------------
+ 
+       zu c_gamma, c_s: x1 oder x2 nicht im zugelassenen Bereich
+       ---------------------------------------------------------------------
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 14 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung
+       ---------------------------------------------------------------------
+       Eingaben statt DIN 3990 mit EG gekennzeichnet, Vermerke s. Sonstiges
+       Einspritzschm., Oeltemperatur  theta_oil            60.0         Grad C
+       kin. Viskositaet (EG= 100.0)  . . nue_40           100.0         mm2/s
+       kin. Viskositaet (EG=  11.0)  .  nue_100            11.00        mm2/s
+       dyn. Viskositaet (EG=   0.0)  . . eta_40            86.4         mPas
+       dyn. Viskositaet (EG=   0.0)  .  eta_100             9.07        mPas
+       Kraftstufe (DIN 51354)  . . . . . . . KS            12.          -
+       FZG-Testdrehmoment  . . . . . . . . T-1T           534.5         Nm
+       Gefuegefaktor . . . . . . . . .  X_WrelT             1.00        -
+       Schmierungsfaktor   . . . . . . . .  X_S             1.20        -
+       Therm. Kontaktkoeff. (EG=N,N) . . .  B_M       0.44        0.44  N2/(m2K2s)
+       Arith. Mittenrauhw. (EG=0.8 ,0.8) .  R_a             0.8         um
+       Gemittelte Rauhtiefe  . . . . . . .  R_z       5.0         5.0   um
+       Kopfruecknahme  . . . . . . . . . .  C_a       0.          0.    um
+       wirks. Kopfruecknahme (EG= N,N) .  C_eff             0.0         um
+       Winkelfaktor (EG=N) . . . . . X_alfabeta             1.01        -
+         Parameter auf Eingr.Strecke .  gamma_A            -0.23        -
+         Parameter auf Eingr.Strecke .  gamma_B            -0.15        -
+         Parameter auf Eingr.Strecke .  gamma_C             0.00        -
+         Parameter auf Eingr.Strecke .  gamma_D             0.20        -
+         Parameter auf Eingr.Strecke .  gamma_E             0.27        -
+       Anwendungsfaktor (EG=J) . . . . . .  K_A             1.00        -
+       Dynamikfaktor (EG=N)  . . . . . . .  K_v             1.03        -
+       Stirnfaktor (EG=N)  . . . . . .  K_Balfa             1.00        -
+       Breitenfaktor (EG=N)  . . . . .  K_Bbeta             1.12        -
+       Schraegungsfaktor (EG=N)  . . . K_Bgamma             1.00        -
+       --- Integraltemperatur-Verfahren ------------------------------------
+       Eingriffsfaktor (EG=N)  . . . . . .  X_Q             1.00        -
+       Geometriefaktor (EG=N)  . . . . . .  X_B             0.162       -
+       Blitzfaktor (EG=N)  . . . . . . . .  X_M            50.3         -
+       Ueberdeckungsfaktor (EG=N)  . . .  X_eps             0.354       -
+       Kopfruecknahmefaktor (EG=N) . . . . X_Ca             1.00        -
+       Gemittelte Reibungszahl (EG=N)  .  my_mC             0.189       -
+         mit dynamischer Viskositaet .  eta_oil            33.46        mPas
+       Integraltemperatur  . . . . .  theta_int           637.4         Grad C
+       Blitztemperatur in E  . . . . theta_flaE           682.          Grad C
+       Mittlere Blitztemperatur  . theta_flaint           242.          Grad C
+       Massentemperatur (EG=N) . . . .  theta_M           275.0         Grad C
+       Fress-Integraltemp. FZG-Test  theta_intS           428.2         Grad C
+       Gewichtungsfaktor (EG=N)  . . . . .  C_1              0.70       -
+       Gewichtungsfaktor (EG=N)  . . . . .  C_2              1.50       -
+       Massentemperatur im Fresstest . theta_MT            203.         Grad C
+       Mittl.Blitzt. im Fresstest theta_flaintT            150.         Grad C
+       Fress-Sicherheit Integraltemp.  . S_intS             0.67        -
+       Umfangskraft je Zahnbreite  . . . . w_Bt          6077.8         N/mm
+       Angenaeherte Lastsicherheit . . . . S_SL             0.64        -
+       --- Kontakttemperatur-Verfahren -------------------------------------
+       Maximale Blitztemperatur  . theta_flamax           478.          Grad C
+       Massentemperatur (EG=N) . . . .  theta_M           341.8         Grad C
+       Reibungszahl (min / max). . . . . . my_B        0.185 / 0.197    -
+         mit dynamischer Viskositaet . .  eta_M            33.46        mPas
+       Blitztemperatur in Punkt A  . . theta_BA           212.          Grad C
+       Blitztemperatur in Punkt B  . . theta_BB           398.          Grad C
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 15 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       DIN 3990 Teil 4 (Dezember 87): Fress-Berechnung
+       ---------------------------------------------------------------------
+       Blitztemperatur in Punkt D  . . theta_BD           478.          Grad C
+       Blitztemperatur in Punkt E  . . theta_BE           223.          Grad C
+       Maximale Kontakttemp.(Punkt D)theta_Bmax           820.2         Grad C
+       Fresstemperatur (nach Gl. 4-28)  theta_S           270.0         Grad C
+         nur gueltig fuer un- oder mildlegiertes Oel
+       Fress-Sicherheit Kontakttemp. . . .  S_B             0.28        -
+         Kraftaufteilung fuer X_gamma ohne Kopfruecknahme
+       ---------------------------------------------------------------------
+ 
+ 
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 16 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       ANSI/AGMA 2001-C95
+       ---------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       Nennleistung  . . . . . . . . . . . .  P           536.41        hp
+       Ritzel-Drehzahl . . . . . . . . . .  n_p          1000.0         rpm
+ 
+       --- Einflussfaktoren fuer Flanke und Fuss ---------------------------
+       Ueberlastfaktor   . . . . . . . . .  K_o             1.00        -
+       Dynamikfaktor fuer Q_v =  9 . . . .  K_v             1.17        -
+       Groessenfaktor  . . . . . . . . . .  K_s             1.00        -
+       Lastverteilungsfaktor . . . . . . .  K_m             1.16        -
+         Breiten-Korrekturfaktor . . . . . C_mc             1.00        -
+         Ritzel-Proportionsfaktor  . . . . C_pf             0.03        -
+         Ritzel-Lagerungskennwert  . . . . C_pm             1.00        -
+         Eingriffsabweichungsf. n. Kurve 2 C_ma             0.14        -
+         Eingriffskorrekturfaktor  . . . .  C_e             1.00        -
+       Zuverlaessigkeitsfaktor . . . . . .  K_R             1.00        -
+       Temperaturfaktor  . . . . . . . . .  K_T             1.00        -
+       Massgebende Zahnbreite  . . . . . . .  F             0.79        in
+       Min. Haertetiefe  . . . . . . . . .  h_e       0.090       0.090 in
+         Haerteprozessfaktor . . . . . . .  U_H 6381658.    6381658.    psi
+ 
+       --- Flankentragfaehigkeit -------------------------------------------
+       Geometriefaktor (Flanke)  . . . . . .  I             0.099       -
+       Elastizitaetskoeffizient  . . . . .  C_p           191.65        -
+       Oberflaechenfaktor  . . . . . . . .  C_f             1.00        -
+       Uebersetzungsfaktor . . . . . . . .  C_G             0.60        -
+       Haerteverhaeltnisfaktor . . . . . .  C_H             1.00        -
+       Kontaktlastfaktor (K-Faktor)  . . . .  K         17232.123       psi
+       Kontaktpressung . . . . . . . . . .  s_c        871545.50        psi
+       Zul. Kontaktpressung  . . . . . . . s_ac  277022.0    277022.0   psi
+       Lastwechselfaktor (Flanke). . . . .  Z_N       1.00        1.00  -
+       Rechnerische Gruebchensicherheit  .  S_H       0.32        0.32  -
+       Zulaessige Werte fuer Mindest-Sicherheit S_H,min =  1.000
+         Zul. Leistungsverhaeltnis . . . P_ac/P       0.101       0.101 -
+         Zul. Kontaktlastfaktor  . . . . . K_ac    1740.954    1740.954  psi
+ 
+       --- Fusstragfaehigkeit ----------------------------------------------
+       Geometriefaktor (Fuss)  . . . . . . .  J       0.321       0.385 -
+       Kranzdickenfaktor (m_B >= 1.2)  . .  K_B       1.000       1.000 -
+       Einheitslast f. Fusstragf.  . . . .  U_L        378417.4         psi
+       Zahnfussspannung  . . . . . . . . .  s_t 1611745.5   1344556.4   psi
+       Zul. Zahnfussspannung . . . . . . . s_at   75420.0     75420.0   psi
+       Lastwechselfaktor (Fuss)  . . . . .  Y_N       1.00        1.00  -
+       Rechnerische Zahnfussicherheit  . .  S_F       0.05        0.06  -
+       Zulaessige Werte fuer Mindest-Sicherheit S_F,min =  1.000
+         Zul. Leistungsverhaeltnis . . . P_at/P       0.047       0.056 -
+         Zul. Einheitslast . . . . . . . . U_at   17707.7     21226.5   psi
+ 
+       --- Lebensdauerberechnung -------------------------------------------
+       Betriebsstunden . . . . . . . . . . .  L         10000.0         h
+       Lastwechsel (Ueberrollungen)  . . . .  N     600.        400.    Mio
+ 
+       Lastwechselfaktor (Flanke). . . . .  Z_N       0.91        0.92  -
+         fuer allgemeine Anwendungen
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 17 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       ANSI/AGMA 2001-C95
+       ---------------------------------------------------------------------
+       Rechnerische Gruebchensicherheit  .  S_H       0.29        0.29  -
+       Zulaessige Werte fuer Mindest-Sicherheit S_H,min =  1.000
+         Zul. Leistungsverhaeltnis . . . P_ac/P       0.084       0.085 -
+         Zul. Kontaktlastfaktor  . . . . . K_ac    1442.146    1469.296 psi
+ 
+       Lastwechselfaktor (Fuss). . . . . .  Y_N       0.95        0.95  -
+         fuer allgemeine Anwendungen
+       Rechnerische Zahnfussicherheit  . .  S_F       0.04        0.05  -
+       Zulaessige Werte fuer Mindest-Sicherheit S_F,min =  1.000
+         Zul. Leistungsverhaeltnis . . . P_at/P       0.044       0.053 -
+         Zul. Einheitslast . . . . . . . . U_at   16753.5     20228.2   psi
+       Streckgrenze . . . . . . . . . . .  s_ay       0.0         0.0   psi
+       Produkt s_at * Y_N  . . . . . . . . . .    71356.1     71873.0   psi
+       ---------------------------------------------------------------------
+ 
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 18 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ----------------------------------------------------------------------
+       DET NORSKE VERITAS (Aug. 90, Juli 93)  Berechnung Flanke und Fuss
+       ----------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       --- Kraftfaktoren ----------------------------------------------------
+       Anwendungsfaktor  . . . . . . . . .  K_A             1.00        -
+       Stirnfaktor Flanke  . . . . . .  K_Halfa             1.00        -
+         Grundkreisabweichung  . . . . . . f_pb            11.          um
+         Einlaufbetrag . . . . . . . . . y_alfa             1.          um
+       Stirnfaktor Fuss  . . . . . . .  K_Falfa             1.00        -
+       Breitenfaktor Flanke (Egb/Vorb)  K_Hbeta             1.00        -
+       Breitenfaktor Fuss  . . . . . .  K_Fbeta             1.00        -
+       Dynamikfaktor (Drehzahlverh. N= 0.1) K_v             1.03        -
+         Eingr.teilungsabweichung  . . . . f_pb            11.          um
+         Einlaufbetrag . . . . . . . . . .  y_p             1.          um
+         Profilabweichung  . . . . . . . .  f_f            10.          um
+         Einlaufbetrag . . . . . . . . . .  y_f             1.          um
+         Kopfruecknahme  . . . . . . . . .  C_a             0.          um
+         Red. Masse  . . . . . . . . . .  m_red             0.013       kg/mm
+       Zahnfedersteifigk.  . . . . . .  c_gamma            17.3         N/um/mm
+         Groesstwert der Einzelfederst.  . . c'            15.          N/um/mm
+       Tragende Zahnbreite . . . . . .  b_eff/b           100.          Proz.
+       Kopfruecknahme  . . . . . . . . . .  C_a       0.          0.    um
+ 
+       --- Flankentragfaehigkeit -------------------------------------------
+       Flankenpressung (K_tot=1.03)  .  sigma_H    5039.7      4876.1   N/mm2
+       Zonenfaktor (Einzeleingr.punkte)  . Z_BD       1.03        1.00  -
+         Elastizitaetsfaktor . . . . . . .  Z_E           191.6         -
+         Zonenfaktor . . . . . . . . . . .  Z_H             2.342       -
+         Ueberdeckungsfaktor . . . . . .  Z_eps             0.968       -
+         Schraegenfaktor . . . . . . . . Z_beta             1.000       -
+       Zul. Fl.pressung (S_H = 1.00) . sigma_HP    1293.8      1310.0   N/mm2
+         Achtung: sigma_HP wird ueberschritten an Rad 1 und 2 !
+       Lebensd.faktor. . . . . . . . . . . .Z_N       0.93        0.94  -
+       Lastwechsel in   10000. Betr.stunden N_L     600.000     400.000 Mio
+       Schmierstoffaktor . . . . . . . . .  Z_L       0.97        0.97  -
+         kin. Viskositaet  . . . . . . . nue_40           100.0         mm2/s
+       Geschwindigkeitsfaktor  . . . . . .  Z_v       0.98        0.98  -
+         Umfangsgesschwindigkeit . . . . . .  v             3.83        m/s)
+       Rauheitsfaktor  . . . . . . . . . .  Z_R       0.96        0.96  -
+         rel. Rauhtiefe  . . . . . . . . R_zrel             5.3         um
+         Eingabe zu              .  Z_L*Z_R*Z_v       0.90        0.90  -
+       Groessenfaktor  . . . . . . . . . .  Z_X       1.00        1.00  -
+       Werkstoffpaarungsfaktor . . . . . .  Z_W             1.00        -
+       Dauerfestigkeitswert  . . . . sigma_Hlim    1550.0      1550.0   N/mm2
+       rechn. Sicherheit (Flanke)  . . . .  S_H       0.26        0.27  -
+       Mindestsicherheit . . . . . . . . S_Hmin             1.00        -
+ 
+ 
+       --- Fusstragfaehigkeit ----------------------------------------------
+       Zahnfusspannung (K_tot=1.03)  .  sigma_F    9382.6      8718.6   N/mm2
+       Fussformfaktor (s. allg. Daten) . .  Y_F       1.93        1.60  -
+       Spanngskorr.faktor  . . . . . . . .  Y_S       1.96        2.00  -
+         Kerbparameter . . . . . . . . . .  q_s       2.77        2.50  -
+       Schraegungswinkel-Faktor  . . . . Y_beta             1.000       -
+       Zahnbreite fuer Fusspannung . . . . .  b      22.0       20.0    mm
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 19 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ----------------------------------------------------------------------
+       DET NORSKE VERITAS (Aug. 90, Juli 93)  Berechnung Flanke und Fuss
+       ----------------------------------------------------------------------
+       Zul. Zahnfusspannung (S_F=1.00) sigma_FP     740.8      745.7    N/mm2
+         Achtung: sigma_FP wird ueberschritten an Rad 1 und 2 !
+       Design-Faktor . . . . . . . . . . .  Y_d       1.00        1.00  -
+         Spannungsverhaeltnis  . . . . . . .  R             0.0         -
+       Lebensd.f.  (Lastwechsel s. bei Z_N) Y_N       0.90        0.91  -
+       Rel. Kerbempfindlichkeitsf. . Y_del-relT       1.00        1.00  -
+       Rel. Rauhautsfaktor . . . . . .  Y_RrelT       0.96        0.96  -
+         Oberflaechenrauheit . . . . . . . R_zy      20.         20.    um
+       Groessenfaktor fuer Zahnfuss  . . .  Y_X       1.00        1.00  -
+       Haertet.faktor fuer Zahnfuss  . . .  Y_C       1.00        1.00  -
+       Dauerfestigkeit (Ref.-Pruefrad) sigma_FE     860.00      860.00  N/mm2
+       rechn. Sicherheit (Fuss)  . . . . .  S_F       0.08        0.09  -
+       Mindestsicherheit . . . . . . . . S_Fmin             1.00        -
+ 
+       --- Werkstoffangaben ------------------------------------------------
+       Werkstoff Rad 1: 16MNCR5
+       Haerte  . . . . . . . . . . . . . . . HV           750.          -
+       Kernhaerte  . . . . . . . . . .  HV_Kern           380.          -
+       Bruchgrenze . . . . . . . . . .  sigma_B          1350.          N/mm2
+       Streckgrenze  . . . . . . . . .  sigma_Y          1100.          N/mm2
+       Haertetiefen                                 t_550  t_400  t_300
+       vorhandene Werte  . . . . . . . . . . .       0.30   0.49   0.00 mm
+       fuer Z_X=1.0 erforderlich . . . . . . .       0.30   0.49   0.70 mm
+       fuer Y_C=1.0 erforderlich . . . . . . .       0.14   0.28   0.00 mm
+       Werkstoff Rad 2: 16MNCR5
+       Haerte  . . . . . . . . . . . . . . . HV           750.          -
+       Kernhaerte  . . . . . . . . . .  HV_Kern           380.          -
+       Bruchgrenze . . . . . . . . . .  sigma_B          1350.          N/mm2
+       Streckgrenze  . . . . . . . . .  sigma_Y          1100.          N/mm2
+       Haertetiefen                                 t_550  t_400  t_300
+       vorhandene Werte  . . . . . . . . . . .       0.30   0.49   0.00 mm
+       fuer Z_X=1.0 erforderlich . . . . . . .       0.30   0.49   0.70 mm
+       fuer Y_C=1.0 erforderlich . . . . . . .       0.15   0.31   0.00 mm
+ 
+ 
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 20 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       DET NORSKE VERITAS (Juli 1993)   Fresstragfaehigkeit
+       ---------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       Nenn-Leistung . . . . . . . . . . P_nenn           400.0         kW
+       Nenn-Drehmoment . . . . . . . . . T_nenn    3819.7      5729.6   Nm
+       Umfangsgeschwindigkeit  . . . . . . .  v             3.83        m/s
+       Produkt der Kraftfaktoren . . . .  K_tot             1.03        -
+         Anwendungsfaktor  . . . . . . . .  K_A             1.00        -
+         Dynamikfaktor . . . . . . . . . .  K_v             1.03        -
+         Stirnfaktor . . . . . . . . . . . K_Ha             1.00        -
+         Breitenfaktor . . . . . . . . . . K_Hb             1.00        -
+         Steifigkeitsfaktor  . . . . . .  K_gam             1.00        -
+       gemittelter arithm. Mittenrauhwert  R_am             0.83        um
+       arithmetischer Mittenrauhwert . . .  R_a       0.83        0.83  um
+       Kopfruecknahme (EG:  0. /   0.um) .  C_a       2.          2.    um
+       Optimale Kopfruecknahme nach DNV C_a-opt           349.          um
+       Verh. vorh./opt. Ruecknahme  C_a/C_a-opt       0.00        0.00  -
+       Qualitaet nach ISO 1328 (1975) ISO-Class        7           7    -
+       Gesamtueberdeckung DNV  . . . . . eps_ga             1.19        -
+         mit eps_alfa =  1.2, eps_beta =  0.0
+ 
+       --- Schmierstoffdaten -----------------------------------------------
+       Schmierstoffbezeichnung: ISO-VG-100
+       FZG-Test-Drehmoment . . . . . . . . T_1T           534.5         Nm
+       FZG-Test-Kraftstufe . . . . . . . . . KS            12           -
+       kinematische Viskositaet  . . . . nue_40           100.00        mm2/s
+       kinematische Viskositaet  . . .  nue_100            11.00        mm2/s
+       Schmierst.temperatur vor Eingr.theta_oil            60.0         Grad C
+       dyn. Viskositaet bei theta_oil eta_theta            33.46        mPas
+       Dichte  . . . . . . . . . . . . . rho_15           880.00        kg/m3
+       Kontaktfaktor . . . . . . . . . . . X_mp             1.00        -
+         Zahl der Eingiffe . . . . . . . .  n_p             1           -
+       Schmierstoffaktor . . . . . . . . .  X_L             1.00        -
+       Gefuegefaktor . . . . . . . . . . .  X_w             1.00        -
+       Schmierungsart: Einspritzen in den Eingriff
+       Schmierstoffaktor . . . . . . . . .  X_S             1.20        -
+       FZG-Test-Fresstemperatur: .  KS fuer DNV            11           -
+         Fresstemperatur . . . . . . .  theta_S           316.0         Grad C
+       Reibwert  . . . . . . . . . . . . .  mue            0.143        -
+         Summengeschwindigkeit in C  . . v_sumC            2.926        m/s
+ 
+       --- Kontakttemperatur-Kriterium (C_a = 1.8/1.8 um) ------------------
+       Spezifische Linienlast  . . . . . . w_BT          5788.0         N/mm
+       Massentemperatur  . . . . . . . theta_MB           175.1         Grad C
+       Blitztemperatur . . . . . . theta_flamax           342.2         Grad C
+         gemittelte Blitztemp.theta_fla_average           191.8         Grad C
+       Maximale Kontakttemperatur   theta_B-max           517.3         Grad C
+       Zul. Kontakttemp. fuer S_S=1.50 theta_BP           230.6         Grad C
+       Vorh. Kontakttemp.sicherheit  . S_SB-eff             0.56        -
+       theta_B-max tritt auf im Punkt Y_max der Eingriffsstrecke, s.u.
+ 
+ 
+ 
+ 
+ 
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 21 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       DET NORSKE VERITAS (Juli 1993)   Fresstragfaehigkeit
+       ---------------------------------------------------------------------
+       AE = 100 Proz.   A     B    B2     C    D2   Y-max   D     E
+       Abst. von A      0.0  15.8  15.8  45.3  84.2  84.2  84.2 100.0
+       Param. gamma   -0.23 -0.15 -0.15  0.00  0.20  0.20  0.20  0.27
+       K-Temp theta_B  485.  412.  497.  175.  517.  517.  428.  385.
+       Fakt. X_gamma   0.33  0.67  1.00  1.00  1.00  1.00  0.67  0.33
+       Faktor X_but    1.00  1.00  1.00  1.00  1.00  1.00  1.00  1.00
+       Faktor X_corr   1.64  1.18  1.18  1.00  1.00  1.00  1.00  1.00
+       rho_red in mm    7.5   7.8   7.8   8.4   8.7   8.7   8.7   8.7
+ 
+       --- Integraltemperatur-Kriterium (C_a =   0. um) --------------------
+       Spez. Linienlast Integral-Temp. . . w_IT          5788.0         N/mm
+         Lastfaktor  . . . . . . .  K_betagamma             1.00        -
+       Massentemperatur  . . . . . . . theta_MC           205.7         Grad C
+       Integraltemperatur  . . . . .  theta_int           465.9         Grad C
+         mittl. Blitztemperatur  . theta_flaint           173.5         Grad C
+       Zul. Integraltemp. (S_S= 1.5) theta_intP           210.6         Grad C
+       Vorh. Integraltemp.-Sicherheit  S_SI-eff             0.68        -
+         Geometriefaktor . . . . . . . . . X_BE             0.162       -
+         Kopfruecknahmefaktor  . . . . . . X_Ca             1.00        -
+         Approach-Faktor . . . . . . . . .  X_Q             1.00        -
+         Ueberdeckungsfaktor . . . . . .  X_eps             0.354       -
+       Fussueberdeckung am Treiber . . .  eps_f             0.54        -
+       Kopfueberdeckung am Treiber . . .  eps_a             0.65        -
+       ---------------------------------------------------------------------
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 22 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       LLOYDS REGISTER OF SHIPPING  (1990 - 2006)
+       ---------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       Nennleistung  . . . . . . . . . . . .  P           400.0         kW
+       Ritzel-Nenndrehmoment . . . . . . . T_Ri          3819.7         Nm
+       Ritzeldrehzahl (v =   3.8 m/s)  . . n_Ri          1000.0         1/min
+ 
+       --- Kraftfaktoren ---------------------------------------------------
+       Anwendungsfaktor  . . . . . . . . .  K_A             1.00        -
+       Lastverteilungsfaktor . . . . .  K_gamma             1.00        -
+       Stirnfaktor (Flanke)  . . . . .  K_Halfa             1.00        -
+         Grundkreisabweichung  . . . . . . f_pb            11.          um
+         Einlaufbetrag . . . . . . . . . y_alfa             0.8         um
+       Kopfruecknahme nicht vorhanden
+       Stirnfaktor Zahnfuss  . . . . .  K_Falfa             1.00        -
+       Breitenfaktor Flanke  . . . . .  K_Hbeta             1.03        -
+         wirksame Flankenlinienabw.  .  F_betaY            21.          um
+         wirksame Flankenlinienabw.  .  F_betaX            24.          um
+         Einlaufbetrag . . . . . . . . . y_beta             3.6         um
+         Flankenlinienabweichung . . . . . f_ma            10.5         um
+         Flankenliniengesamtabweichung . F_beta            15.7         um
+         Flankenlinienabweichung . . . . . f_sh            10.3         um
+         Verformung fuer Einheitslast  .  f_sh0             0.002       um*mm/N
+         Keine Endruecknahme etc.
+       Breitenfaktor Zahnfuss  . . . .  K_Fbeta             1.02        -
+       Dynamikfaktor . . . . . . . . . . .  K_v             1.10        -
+         berechnet fuer ISO-Qualitaet   7
+       Produkt Kraftfaktoren Flanke  .  K_tot-H             1.13        -
+       Produkt Kraftfaktoren Fuss  . .  K_tot-F             1.12        -
+       Eingr.federsteifigkeit (Eingabe) c_gamma            16.2         N/mm/um
+         aus DIN 3990-Berechnung uebernommen
+       Zahnbreite (Flanke und Fuss)  . . . .  b            20.0         mm
+ 
+       --- Flankentragfaehigkeit -------------------------------------------
+       Flankenpressung am Waelzkreis .  sigma_H          5111.6         N/mm2
+         Ueberdeckungsfaktor . . . . . . .  Z_E           191.6         -
+         Zonenfaktor . . . . . . . . . . .  Z_H             2.342       -
+         Ueberdeckungsfaktor . . . . . .  Z_eps             0.968       -
+         Schraegenfaktor . . . . . . . . Z_beta             1.000       -
+       Zulaessige Flankenpressung  . . sigma_HP    1045.1      1045.1   N/mm2
+       Mindestsicherheit . . . . . . . . S_Hmin             1.400       -
+       Geschwindigk.faktor (v =   3.83 m/s) Z_v             0.956       -
+       Rauheitsfaktor (R_a-H = 0.8 um) . .  Z_R             1.020       -
+       Groessenfaktor  . . . . . . . . . .  Z_X       1.000       1.000 -
+       Dauerfestigkeitswert  . . . . sigma_Hlim    1500.0      1500.0   N/mm2
+       Rechn. Sicherheit (Gruebchen) . . .  S_H       0.29        0.29  -
+ 
+       --- Fusstragfaehigkeit ----------------------------------------------
+       Zahnfusspannung . . . . . . . .  sigma_F   11274.8      9524.4   N/mm2
+       Fussformfaktor (s. allg. Daten) . .  Y_F       1.932       1.603 -
+       Spann.korr.faktor (q_s = 2.77  2.50) Y_S       1.964       2.000 -
+       Schraegungswinkelfaktor . . . . . Y_beta             1.000       -
+       Zulaessige Zahnfusspannung . .  sigma_FP     532.7       531.5   N/mm2
+       Mindestsicherheit . . . . . . . . S_Fmin             1.800       -
+       Design-Faktor . . . . . . . . . . .  Y_D       1.00        1.00  -
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 23 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       LLOYDS REGISTER OF SHIPPING  (1990 - 2006)
+       ---------------------------------------------------------------------
+       Rel. Kerbempfindlichk.faktor  Y_del-relT       1.002       1.000 -
+       Rel. Rauheitsf. (R_a=3.3 3.3 um) Y_RrelT       0.957       0.957 -
+       Groessenfaktor  . . . . . . . . . .  Y_X       1.000       1.000 -
+       Dauerfestigkeitswert  . . . . sigma_Flim     500.0       500.0   N/mm2
+       Rechn. Sicherheit (Fuss)  . . . . .  S_F       0.09        0.10  -
+ 
+       --- Zulaessige Leistungen -------------------------------------------
+       Zulaessige Nennleistung fuer S_min P_zul            16.72        kW
+       Zul. Nennleistung (Flanke)  . .  P_zul-H      17.         17.    kW
+         fuer Flankensicherheit  . . . . S_Hmin             1.40        -
+       Zul. Nennleistung (Fuss)  . . .  P_zul-F      19.         22.    kW
+         fuer Fussicherheit  . . . . . . S_Fmin             1.80        -
+         Achtung: fuer Flanke wird sigma_HP ueberschritten an Rad 1 und 2 !
+         Achtung: fuer Fuss   wird sigma_FP ueberschritten an Rad 1 und 2 !
+ 
+       --- Werkstoffangaben ------------------------------------------------
+       Werkstoff Rad 1: 16MNCR5
+       Oberflaechenhaerte HV =   750.  Kernhaerte HV_Kern =   380.
+       Werkstoff Rad 2: 16MNCR5
+       Oberflaechenhaerte HV =   750.  Kernhaerte HV_Kern =   380.
+       ---------------------------------------------------------------------
+ 
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 24 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       API STANDARD 613, 5th edition (Februar 2003)
+       ---------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       Service-Faktor  . . . . . . . . . . . SF             1.00        -
+       Nennleistung  . . . . . . . . . . . .  P           536.4         hp
+       Nennleistung  . . . . . . . . . . . .  P           400.0         kW
+ 
+       --- Flankentragfaehigkeit -------------------------------------------
+       Vorhandener K-Faktor  . . . . . . . .  K           118.81        N/mm2
+       Zulaessiger K-Faktor  . . .  Allowable K             3.10        N/mm2
+       Material-Index-Nr (L/D = 0.30)  . . . .        3.10        3.10  N/mm2
+       Zulaessige Leistung (Flanke)  . .  P_zul            10.4         kW
+       Vorhandener K-Faktor  . . . . . . . .  K         17232.          psi
+       Zulaessiger K-Faktor  . . .  Allowable K           450.          psi
+       Material-Index-Nr (L/D = 0.30)  . . . .            450.          psi
+       Zulaessige Leistung (Flanke)  . .  P_zul            14.0         hp
+ 
+       --- Fusstragfaehigkeit ----------------------------------------------
+       Geometriefaktor nach AGMA 908-B89 . .  J       0.321       0.385 -
+         Formfaktor  . . . . . . . . . . .  Y_c       0.56        0.69  -
+         Kerbfaktor  . . . . . . . . . . .  K_f       1.75        1.79  -
+         Schraegungsfaktor . . . . . . . .  C_h             1.00        -
+         Lastaufteilungsfaktor . . . . . .  m_N             1.000       -
+       Vorhandene bending-stress-nr  . . . . .    14638.5     12211.8   N/mm2
+       Zulaessige bending-stress-nr  . . . . .      276.0       276.0   N/mm2
+       Zulaessige Leistung (Fuss)  . . .  P_zul       7.5         9.0   kW
+       Vorhandene bending-stress-nr  . . . . .  2123175.    1771203.    psi
+       Zulaessige bending-stress-nr  . . . . .    40031.      40031.    psi
+       Zulaessige Leistung (Fuss)  . . .  P_zul      10.1        12.1   hp
+       Achtung! API-Vorschrift gilt nicht fuer Geradverzahnungen !
+       ---------------------------------------------------------------------
+ 
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 25 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       BUREAU VERITAS (2003)
+       ---------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       Berechnung fuer Nenn-Leistung . . . .  P           400.00        kW
+       Nenn-Linienlast am Teilkreis  . .  F_t/b          5305.2         N/mm
+       Ritzel-Drehzahl  (v =  3.8 m/s) . .  n_R          1000.0         min-1
+ 
+       --- Kraftfaktoren ---------------------------------------------------
+       Anwendungsfaktor  . . . . . . . . .  K_A             1.00        -
+       Lastaufteilungsfaktor . . . . .  K_gamma             1.00        -
+       Stirnfaktor Flanke  . . . . . .  K_Halfa             1.00        -
+       Stirnfaktor  Zahnfuss . . . . .  K_Falfa             1.00        -
+       Breitenfaktor Flanke  . . . . .  K_Hbeta             1.12        -
+       Breitenfaktor Fuss  . . . . . .  K_Fbeta             1.09        -
+       Dynamikfaktor . . . . . . . . . . .  K_v             1.13        -
+       Gesamtwirkung Kraftfaktoren Fl.  K_tot-H             1.26        -
+       Gesamtwirkung Kraftfaktoren Fuss K_tot-F             1.23        -
+         aus DIN/ISO-Berechnung uebernommen: K_Hb
+       Zahnbreite (Flanken- und Fussbeanspr.  b            20.00        mm
+       Qualitaet nach ISO 1328 (1975) ISO-Class             7           -
+ 
+       --- Flankentragfaehigkeit -------------------------------------------
+       Flankenlinienlast nach BV . . . . .  P_H          6676.06        N/mm
+       Hertz. Pressung (Waelzpunkt)  .  sigma_H          5402.19        N/mm2
+         Elastizitaetsfaktor . . . . . . .  Z_E           191.65        -
+         Zonenfaktor . . . . . . . . . . .  Z_H             2.342       -
+         Ueberdeckungsfaktor . . . . . .  Z_eps             0.968       -
+         Schraegenfaktor . . . . . . . . Z_beta             1.000       -
+       Zulaessige Linienlast (S_Hmin=1.25) P_HP     285.5       285.5   N/mm
+       Zul. Pressung . . . . . . . . . sigma_HP    1117.1      1117.1   N/mm2
+         Lebensd.faktor  . . . . . . . . .  Z_N       1.000       1.000 -
+       Schmierstoffaktor . . . . . . . . .  Z_L             0.966       -
+       Geschwindigkeitsfaktor  . . . . . .  Z_v       0.976       0.976 -
+         Faktor  . . . . . . . . . . . .   C_zv       0.93        0.93  -
+       Rauheitsfaktor  . . . . . . . . . .  Z_R       0.955       0.955 -
+       Werkstoffpaarungsfaktor fuer Rad 2   Z_w             1.000       -
+       Dauerfestigkeitswert Flanke . sigma_Hlim    1550.00     1550.00  N/mm2
+       Groessenfaktor  . . . . . . . . . .  Z_X       1.000       1.000 -
+       Rechn. Sicherheit (Gruebchen) . . .  S_H       0.26        0.26  -
+       Mindestsicherheit . . . . . . . . S_Hmin             1.25        -
+ 
+       --- Fusstragfaehigkeit ----------------------------------------------
+       Zahnfuss-Linienlast nach BV . . . .  P_F          6536.03        N/mm
+       Zahnfusspannung . . . . . . . .  sigma_F   12086.33    10302.29  N/mm2
+       Zul. Linienlast fuer S_Fmin=1.60  . P_FP     290.92      341.30  N/mm
+       Zul. Fusspannung  . . . . . . . sigma_FP     537.97      537.97  N/mm2
+       Fussformfaktor  . . . . . . . . . . Y_Fa       2.257       1.893 -
+       Ueberdeckungsfaktor . . . . . . .  Y_eps             0.882       -
+       Spannungskorr.faktor  . . . . . . . Y_Sa       1.859       1.889 -
+          Faktor . . . . . . . . . . . . .  q_s       2.77        2.50  -
+       Schraegungswinkelfaktor . . . . . Y_beta             1.000       -
+       Design-Faktor . . . . . . . . . . .  Y_d       1.000       1.000 -
+       Lebensdauerfaktor . . . . . . . . .  Y_N       1.000       1.000 -
+       rel. Kerbempfindlichkeitsfaktor  Y_drelT       1.000       1.000 -
+       rel. Rauheitsf. . . . . . . . . .Y_RrelT       0.956       0.956 -
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 26 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       BUREAU VERITAS (2003)
+       ---------------------------------------------------------------------
+       Groessenfaktor  fuer Zahnfuss . . . .Y_X       1.000       1.000 -
+       Dauerfestigkeitswert  . . . . . sigma_FE     900.00      900.00  N/mm2
+       Rechn. Sicherheit (Fuss)  . . . . .  S_F       0.07        0.08  -
+       Mindestsicherheit . . . . . . . . S_Fmin             1.60        -
+ 
+       --- Zul. Leistungen, Werkstoffangaben -------------------------------
+       Zulaessige Nennleistung fuer S_min P_zul            17.10        kW
+       Zulaessige Nennleistung . . P_zul-Flanke      17.10       17.10  kW
+         bei S_H-min . . . . . . . . . . . . .              1.25        -
+       Zulaessige Nennleistung . . . P_zul-Fuss      17.80       20.89  kW
+         bei S_F-min . . . . . . . . . . . . .              1.60        -
+       Waermebehandlung  Ritzel / Rad  . . . .  einsatzgeh.   einsatzgeh.
+       Achtung: zulaessige Leistung wird ueberschritten an Rad 1 und 2 !
+       Werkstoff Rad 1: 16MNCR5
+       HV = 750., HV_Kern = 380.
+       Werkstoff Rad 2: 16MNCR5
+       HV = 750., HV_Kern = 380.
+       ---------------------------------------------------------------------
+ 
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 27 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       GERMANISCHER LLOYD (1998 bis 2006)
+       ---------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       --- Kraftfaktoren ---------------------------------------------------
+       Anwendungsfaktor  . . . . . . . . .  K_A             1.00        -
+       Lastaufteilungsfaktor . . . . .  K_gamma             1.00        -
+       Dynamikfaktor . . . . . . . . . . .  K_v             1.03        -
+       Breitenfaktor Flanke  (Eingabe)  K_Hbeta             1.00        -
+       Breitenfaktor Fuss  (Eingabe) .  K_Fbeta             1.00        -
+       Stirnfaktor Flanke  (Vorbel.) .  K_Halfa             1.00        -
+       Stirnfaktor Fuss (Vorbel.)  . .  K_Falfa             1.00        -
+ 
+       --- Flankentragfaehigkeit -------------------------------------------
+       Hertzsche Flankenpressung . . .  sigma_H          4877.78        N/mm2
+       Nominelle Flankenpressung . . . sigma_H0          4815.70        N/mm2
+         Zonenfaktor . . . . . . . . . . .  Z_H             2.342       -
+         Elastizitaetsfaktor . . . . . . .  Z_E           191.646       -
+         Ueberdeckungsfaktor . . . . . .  Z_eps             0.968       -
+         Schraegenfaktor . . . . . . . . Z_beta             1.000       -
+       Grenzfestigkeit Flanke  . . . . sigma_HG    1218.77     1234.02  N/mm2
+         Dauerfestigkeit Flanke  . . sigma_Hlim    1460.00     1460.00  N/mm2
+         Lebensdauerfaktor . . . . . . . . Z_NT       0.927       0.938 -
+         Schmierfilmbildungsfaktoren . .  Z_LRV             0.901       -
+         Werkstoffpaarungsfaktor . . . . .  Z_W             1.000       -
+         Groessenfaktor  . . . . . . . . .  Z_X       1.000       1.000 -
+       Sicherheitsfaktor Flanke  . . . . .  S_H       0.250       0.253 -
+ 
+       --- Fusstragfaehigkeit ----------------------------------------------
+       Zahnfusspannung . . . . . . . .  sigma_F    9389.27     8724.82  N/mm2
+       Nominelle Zahnfusspannung . . . sigma_F0    9151.77     8504.12  N/mm2
+         Formfaktor  . . . . . . . . . . .  Y_F       1.932       1.603 -
+         Spannungskorrekturfaktor  . . . .  Y_S       1.964       2.000 -
+         Schraegenfaktor . . . . . . . . Y_beta             1.000       -
+       Grenzfestigkeit Zahnfuss  . . . sigma_FG     741.77      745.98  N/mm2
+         Zahnfussgrundfestigkeit . . . sigma_FE     860.00      860.00  N/mm2
+         Lebensdauerfaktor . . . . . . . . Y_NT       0.899       0.907 -
+         Rel. Stuetzziffer . . . . .  Y_delrelT       1.002       1.000 -
+         Rel. Oberflaechenfaktor . . .  Y_RrelT       0.957       0.957 -
+         Groessenfaktor  . . . . . . . . .  Y_X       1.000       1.000 -
+       Sicherheitsfaktor Zahnfuss  . . . .  S_F       0.079       0.086 -
+       ---------------------------------------------------------------------
+ 
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 28 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       CCS 1996
+       ---------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       --- Kraftfaktoren ---------------------------------------------------
+       Anwendungsfaktor  . . . . . . . . .  K_A             1.00        -
+       Lastaufteilungsfaktor . . . . .  K_gamma             1.00        -
+       Dynamikfaktor . . . . . . . . . . .  K_v             1.12        -
+       Breitenfaktor Flanke  . . . . .  K_Hbeta             1.16        -
+       Stirnfaktor Flanke  . . . . . .  K_Halfa             1.00        -
+       Breitenfaktor Fuss (=K_Hbeta) .  K_Fbeta             1.16        -
+       Stirnfaktor Fuss (=K_Halfa) . .  K_Falfa             1.00        -
+ 
+       --- Flankentragfaehigkeit -------------------------------------------
+       Hertzsche Flankenpressung . . .  sigma_H          5487.06        N/mm2
+         Zonenfaktor . . . . . . . . . . .  Z_H             2.342       -
+         Elastizitaetsfaktor . . . . . . .  Z_E           191.646       -
+         Ueberdeckungsfaktor . . . . . .  Z_eps             0.968       -
+         Schraegenfaktor . . . . . . . . Z_beta             1.000       -
+         Dauerfestigkeit Flanke  . . sigma_Hlim    1500.00     1500.00  N/mm2
+         Oberflaechenfaktor  . . . . . . .  Z_R       0.958       0.958 -
+         Schmierstoffaktor . . . . . . . .  Z_L       0.967       0.967 -
+         Geschwindigkeitsfaktor  . . . . .  Z_V       0.976       0.976 -
+         Werkstoffpaarungsfaktor . . . . .  Z_W             1.000       -
+       Zulaessige Flankenpressung  . . sigma_HP    1129.72     1129.72  N/mm2
+         bei Mindestsicherheit Flanke  . S_Hmin             1.20        -
+       Flankensicherheit . . . . . . . . .  S_H       0.25        0.25
+ 
+       --- Fusstragfaehigkeit ----------------------------------------------
+       Zahnfusspannung . . . . . . . .  sigma_F   12736.22    10856.25  N/mm2
+         Formfaktor  . . . . . . . . . . . Y_Fa       2.257       1.893 -
+         Spannungskorrekturfaktor  . . . . Y_Sa       1.859       1.889 -
+         Ueberdeckungsfaktor . . . . . .  Y_eps             0.882       -
+         Schraegenfaktor . . . . . . . . Y_beta             1.000       -
+         Dauerfestigkeit Fuss  . . . sigma_Flim     430.00      430.00  N/mm2
+         Designfaktor  . . . . . . . . . .  Y_D       1.00        1.00  -
+         Stuetzziffer  . . . . . . . . .  Y_del       1.062       1.049 -
+         Oberflaechenfaktor  . . . . . . .  Y_R       0.970       0.970 -
+         Groessenfaktor  . . . . . . . . .  Y_X       1.000       1.000 -
+       Zulaessige Zahnfusspannung  . . sigma_FP     571.33      564.36  N/mm2
+         bei Mindestsicherheit Fuss  . . S_Fmin             1.55        -
+       Zahnfussicherheit . . . . . . . . .  S_F       0.07        0.08  -
+       Breite fuer Zahnfussbelastung . . . .  b      20.00       20.00  mm
+       ---------------------------------------------------------------------
+ 
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 29 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       American Bureau of Shipping (ABS) 2004
+       ---------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       --- Kraftfaktoren ---------------------------------------------------
+       Anwendungsfaktor  . . . . . . . . .  K_A             1.00        -
+       Kraftaufteilungsfaktor  . . . .  K_gamma             1.00        -
+       Dynamikfaktor . . . . . . . . . . .  K_v             1.12        -
+       Breitenfaktor Flanke  . . . . .  K_Hbeta             1.04        -
+         Flankenlinienabweichung . . . . F_beta            14.          um
+         Flankenlinienabweichung . . . . . f_ma            14.          um
+         Flankenlinienabweichung . . .  F_betaY            28.          um
+       Stirnfaktor Flanke  . . . . . .  K_Halfa             1.00        -
+         Einlauffaktor . . . . . . . . . y_alfa             0.          um
+       Breitenfaktor Fuss  . . . . . .  K_Fbeta             1.03        -
+       Stirnfaktor Fuss  . . . . . . .  K_Falfa             1.00        -
+ 
+       --- Flankentragfaehigkeit -------------------------------------------
+       Hertzsche Flankenpressung . . .  sigma_H    5358.33     5184.37  N/mm2
+         Einzeleingriffsfaktor . . . . . .  Z_B             1.034       -
+         Einzeleingriffsfaktor . . . . . .  Z_D             1.000       -
+         Zonenfaktor . . . . . . . . . . .  Z_H             2.342       -
+         Elastizitaetsfaktor . . . . . . .  Z_E           191.646       -
+         Ueberdeckungsfaktor . . . . . .  Z_eps             0.968       -
+         Schraegenfaktor . . . . . . . . Z_beta             1.000       -
+         Dauerfestigkeit Flanke  . . sigma_Hlim    1500.00     1500.00  N/mm2
+         Lebensdauerfaktor   . . . . . . .  Z_N       0.927       0.938 -
+         Schmierstoffaktor . . . . . . . .  Z_L             0.966       -
+         Oberflaechenfaktor  . . . . . . .  Z_R             0.955       -
+         Geschwindigkeitsfaktor  . . . . .  Z_V             0.976       -
+         Werkstoffpaarungsfaktor . . . . .  Z_W             1.000       -
+         Groessenfaktor  . . . . . . . . .  Z_X             1.000       -
+       Zulaessige Flankenpressung  . . sigma_HP     894.40      905.60  N/mm2
+         bei Mindestsicherheit Flanke  . S_Hmin             1.40        -
+       Rechnerische Sicherheit (Flanke)  .  S_H       0.23        0.24  -
+ 
+       --- Fusstragfaehigkeit ----------------------------------------------
+       Zahnfusspannung . . . . . . . .  sigma_F   10523.33     9778.63  N/mm2
+         Formfaktor  . . . . . . . . . . .  Y_F       1.932       1.603 -
+         Spannungskorrekturfaktor  . . . .  Y_S       1.964       2.000 -
+         Schraegenfaktor . . . . . . . . Y_beta             1.000       -
+         Grundfestigkeit Fuss  . . . . sigma_FE     840.00      840.00  N/mm2
+         Designfaktor  . . . . . . . . . .  Y_d       1.000       1.000 -
+         Lebensdauerfaktor . . . . . . . .  Y_N       0.899       0.907 -
+         rel. Stuetzziffer   . . . .  Y_delrelT       1.000       1.000 -
+         rel. Oberflaechenfaktor . . .  Y_RrelT       0.956       0.956 -
+         Groessenfaktor  . . . . . . . . .  Y_X       1.000       1.000 -
+       Zulaessige Zahnfusspannung  . . sigma_FP     401.36      404.64  N/mm2
+         bei Mindestsicherheit Fuss  . . S_Fmin             1.80        -
+       Rechnerische Sicherheit (Fuss)  . .  S_F       0.07        0.07  -
+       Breite fuer Zahnfussbelastung . . . .  b      20.000      20.000 mm
+       ---------------------------------------------------------------------
+ 
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 30 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       ISO 6336 Teil 1-3 (1996): Statische Berechnung
+       ---------------------------------------------------------------------
+ 
+                                   (Treiber=1)  Ritzel=1        Rad=2
+ 
+       Drehmoment (statisch) . . . . . . T_stat    8000.0     12000.0   Nm
+ 
+       --- Kraftfaktoren ---------------------------------------------------
+       Dynamikfaktor Verfahren B . . . . .  K_v             1.03        -
+       Breitenfaktor Verfahren D . . .  K_Hbeta             1.12        -
+         Verfahren D gilt praktisch nur fuer
+         mittig gelagertes Stirnrad
+       Breitenfaktor Zahnfusspannung .  K_Fbeta             1.09        -
+       Stirnfaktor Verfahren B . . . .  K_Halfa             1.00        -
+       Stirnfaktor Zahnfuss  . . . . .  K_Falfa             1.00        -
+ 
+       --- Flankentragfaehigkeit -------------------------------------------
+       Hertzsche Flankenpressung (B..D) sigma_H    7706.4      7456.2   N/mm2
+       Fl.pressg Nennwert (Waelzkr.) . sigma_H0          6969.3         N/mm2
+         Einzeleingriffsfaktor . . . . . .  Z_B             1.034       -
+         Einzeleingriffsfaktor . . . . . .  Z_D             1.000       -
+         Zonenfaktor . . . . . . . . . . .  Z_H             2.342       -
+         Elastizitaetsfaktor . . . . . . .  Z_E           191.6         (N/mm2).5
+         Ueberdeckungsfaktor . . . . . .  Z_eps             0.968       -
+         Schraegenfaktor . . . . . . . . Z_beta             1.000       -
+       Produkt . . . . . . . . . . . .  Z_L,R,v             1.000       -
+       Werkstoffpaarungsfaktor . . . . . .  Z_W             1.000       -
+       Groessenfaktor Gruebchen  . . . . .  Z_X       1.000       1.000 -
+         Lebensdauerfaktor (Standardbed.)  Z_NT       1.60        1.60  -
+       bei S_Hmin=1.0 zul. Fl.pressung sigma_HP    2336.0      2336.0   N/mm2
+       Rechn. Sicherheitsfaktor  . .   S_H-stat       0.303       0.313 -
+         Sicherheit bezogen auf Moment .  S_HMo       0.092       0.098 -
+ 
+       --- Fusstragfaehigkeit ----------------------------------------------
+       Zahnfusspannung Verfahren B . .  sigma_F    21436.      19919.   N/mm2
+       Zahnfusspannung Nennwert  . . . sigma_F0    19167.      17811.   N/mm2
+         Formfaktor  . . . . . . . . . . .  Y_F       1.932       1.603 -
+         Schraegenfaktor . . . . . . . . Y_beta             1.000       -
+       Spannungskorrekturfaktor   Y_Sg bzw. Y_S       1.964       2.000 -
+       Groessenfaktor  . . . . . . . . . .  Y_X       1.000       1.000 -
+       Rel. Stuetzziffer (B) . . . .  Y_delrelT       0.984       1.000 -
+       Rel. Oberflaechenfaktor (B) . .  Y_RrelT       1.000       1.000 -
+         Ref.Zahnfuss-Zeitfaktor . . . . . Y_NT       2.500       2.500 -
+       bei S_Fmin=1.0 zul. Fusspannung sigma_FP    2116.3      2150.3   N/mm2
+       Rechn. Sicherheitsfaktor  . . . S_F-stat       0.099       0.108 -
+ 
+       --- Sonstiges -------------------------------------------------------
+       zu c_gamma, c_s: x1 oder x2 nicht im zugelassenen Bereich
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 31 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       ISO 6336 Teil 6 (2006): Lastkollektivberechnung
+       ---------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+ 
+       Nennmoment  . . . . . . . . . . . T_nenn    3819.72     5729.58  Nm
+       Nenndrehzahl  . . . . . . . . . . n_nenn    1000.00      666.67  1/min
+       Gesamtlastspiele  . . . . . . . . .  n_l     310.86      207.24  Mio.
+       statisches Moment (= 1. Lastst.)  T_stat    6400.32     9600.48  Nm
+ 
+       --- Flankentragfaehigkeit -------------------------------------------
+       Miner-Summe bei S_H = 1.0 . . . . . U_H0      1.2E        5.8E   -
+       Miner-Summe . . . . . . . . . . . .  U_H       1.02        0.95  -
+       Anteil Schaedigung im Zeitfestigkeitsb.      100.00      100.00  Proz.
+         --> zul. Miner-Summe n. FVA 498 .  U_H       0.85        0.85  -
+       Sicherheit bei U_H  . . . . . . . .  S_H       0.19        0.20  -
+       stat. Sicherheit  . . . . . . . S_H-stat       0.34        0.35  -
+ 
+       --- Fusstragfaehigkeit ----------------------------------------------
+       Miner-Summe bei S_F = 1.0 . . . . . U_F0      3.E         8.E    -
+       Miner-Summe . . . . . . . . . . . .  U_F       0.96        0.99  -
+       Sicherheit bei U_F  . . . . . . . .  S_F       0.05        0.05  -
+       stat. Sicherheit  . . . . . . . S_F-stat       0.12        0.13  -
+ 
+               Lastkollektiv            Einzelschaedigungsanteile
+       lfd. Drehm. Drehz.  Lastsp.       Flanke             Fuss
+       Nr.    T      n      n_l      U_I,1    U_I,2    U_I,1    U_I,2
+       ---------------------------------------------------------------------
+ 
+        1   167.56 100.00   0.36000  5.0047   4.1734  20.9005  20.9327  Proz.
+        2   167.05 100.00   0.21000  2.8730   2.3957  10.5063  10.5198  Proz.
+        3   166.54 100.00   0.16000  2.1540   1.7961   6.8950   6.9021  Proz.
+        4   166.03 100.00   0.21000  2.7819   2.3195   7.7915   7.7975  Proz.
+        5   165.52 100.00   0.42000  5.4745   4.5644  13.4105  13.4172  Proz.
+        6   164.96 100.00   0.08000  1.0243   0.8540   2.1650   2.1655  Proz.
+        7   164.34 100.00   0.31000  3.8915   3.2443   6.9812   6.9804  Proz.
+        8   163.68 100.00   0.29000  3.5642   2.9712   5.3665   5.3641  Proz.
+        9   162.97 100.00   0.44000  5.2855   4.4060   6.5862   6.5808  Proz.
+       10   162.20 100.00   0.49000  5.6729   4.7857   5.8216   5.8144  Proz.
+       11   161.33 100.00   0.36000  3.8275   3.4177   3.2902   3.2845  Proz.
+       12   160.36 100.00   0.36000  3.4789   3.3108   2.4518   2.4463  Proz.
+       13   159.29 100.00   0.29000  2.5206   2.5746   1.4249   1.4209  Proz.
+       14   158.11 100.00   0.39000  3.0134   3.3295   1.3336   1.3290  Proz.
+       15   156.41 100.00   0.81000  5.2745   5.9454   1.6353   1.6280  Proz.
+       16   155.41 100.00   0.73000  4.2949   4.8398   1.0781   1.0727  Proz.
+       17   153.82 100.00   0.94000  4.7002   5.2942   0.8411   0.8361  Proz.
+       18   152.09 100.00   1.35000  5.6448   6.3551   0.6963   0.6914  Proz.
+       19   150.19 100.00   0.99000  3.3935   3.8184   0.2768   0.2746  Proz.
+       20   148.15 100.00   2.50000  6.9043   7.7640   0.3592   0.3558  Proz.
+       21   145.90 100.00   2.76000  5.9858   6.7264   0.1883   0.1863  Proz.
+       22   143.45 100.00   1.28000  2.1249   2.3859   0.0000   0.0000  Proz.
+       23   140.80 100.00   3.05000  3.7728   4.2327   0.0000   0.0000  Proz.
+       24   137.93 100.00   3.23000  2.8878   3.2366   0.0000   0.0000  Proz.
+       25   134.87 100.00   1.59000  0.9983   1.1176   0.0000   0.0000  Proz.
+       26   131.55 100.00   3.65000  1.5479   1.7309   0.0000   0.0000  Proz.
+       27   127.97 100.00   3.88000  1.0662   1.1905   0.0000   0.0000  Proz.
+1      *********************************************************************
+       * FVA-Stirnradprogramm STplus 9.0F  FZG             Blatt 32 von 32 *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 05.05.23  14:21:59 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       ISO 6336 Teil 6 (2006): Lastkollektivberechnung
+       ---------------------------------------------------------------------
+       28   124.14 100.00   3.05000  0.5200   0.5797   0.0000   0.0000  Proz.
+       29   120.05 100.00   3.15000  0.3174   0.3532   0.0000   0.0000  Proz.
+       30   115.71 100.00   4.56000  0.0000   0.2866   0.0000   0.0000  Proz.
+       31   111.06 100.00   4.82000  0.0000   0.0000   0.0000   0.0000  Proz.
+       32   106.11 100.00   5.10000  0.0000   0.0000   0.0000   0.0000  Proz.
+ 
+       --- Anwendungsfaktor nach Anhang A ----------------------------------
+       Anwendungsfaktor Flanke . . . . . . K_AH       1.48        1.42  -
+         bei Lastspielzahlen Flanke  . n_l-eq,H      50.000      50.000 Mio.
+       Anwendungsfaktor Fuss . . . . . . . K_AF       1.67        1.66  -
+         bei Lastspielzahlen Fuss  . . n_l-eq,F       3.000       3.000 Mio.
+       Max. Anwendungsfaktor . . . . .  K_A,max             1.67        -
+ 
+       ---------------------------------------------------------------------
