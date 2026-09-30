@@ -51,26 +51,42 @@
       "additionalProperties": false,
       "description": "Base tangent length W_k over k teeth (DIN 21773:2014 §7) as an alternative to x.",
       "properties": {
-        "span_mm": {
-          "description": "ZAHNWEITE",
+        "span_measurement_mm": {
+          "description": "Span measurement",
+          "designation": "Zahnweite über k Messzähne oder Messlücken",
+          "designation_en": "Span measurement",
           "exclusiveMinimum": 0.0,
+          "factor": false,
+          "location": "§3.1 symbol list, p. 15",
+          "quantity": "span_measurement",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "ZAHNWEITE",
           "symbol": "W_k",
-          "title": "Span Mm",
+          "title": "Span Measurement Mm",
           "type": "number",
           "unit": "mm"
         },
-        "teeth": {
-          "description": "MESSZAEHNEZAHL",
+        "number_of_teeth_spanned": {
+          "description": "Number of teeth spanned",
+          "designation": "Anzahl der Zähne, Lücken oder Teilungen in einem Bereich (z. B. Messzähnezahl)",
+          "designation_en": "Number of teeth spanned",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 12",
           "minimum": 2,
+          "quantity": "number_of_teeth_spanned",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "MESSZAEHNEZAHL",
           "symbol": "k",
-          "title": "Teeth",
+          "title": "Number Of Teeth Spanned",
           "type": "integer",
           "unit": "-"
         }
       },
       "required": [
-        "span_mm",
-        "teeth"
+        "span_measurement_mm",
+        "number_of_teeth_spanned"
       ],
       "title": "SpanMeasurement",
       "type": "object"
@@ -86,7 +102,7 @@
     },
     "ToolProfile": {
       "additionalProperties": false,
-      "description": "Tool reference profile of a rack-type tool (DIN ISO 21771:2014 §7.1; DIN 3972; DIN 867).\n\nHeight factors refer to the tool normal module ``m_n0``. ``normal_module_mm`` and\n``pressure_angle_deg`` default to ``None`` = \"same as the gear\" (STplus manual §4.16.2: tool\nmodule and pressure angle are entered only when they deviate from the gear). Other optional\nfields stay ``None`` when the tool does not define them; the generation module then applies the\nnorm default and reports it in ``warnings`` — never a silent fallback inside the model.",
+      "description": "Tool reference profile of a rack-type tool (DIN ISO 21771:2014 §7.1; DIN 3972; DIN 867).\n\nHeight factors refer to the tool normal module ``m_n0``. ``normal_module_mm`` and\n``profile_angle_deg`` default to ``None`` = \"same as the gear\" (STplus manual §4.16.2: tool\nmodule and profile angle are entered only when they deviate from the gear). Other optional\nfields stay ``None`` when the tool does not define them; the generation module then applies the\nnorm default and reports it in ``warnings`` — never a silent fallback inside the model.",
       "properties": {
         "kind": {
           "$ref": "#/$defs/ToolKind",
@@ -116,12 +132,20 @@
             }
           ],
           "default": null,
-          "description": "WKZ_NORMALMODUL; None = gear normal module",
+          "description": "tool normal module",
+          "designation": null,
+          "designation_en": null,
+          "factor": false,
+          "location": null,
+          "quantity": "tool_normal_module",
+          "source": null,
+          "status": "pending",
+          "stplus_key": "WKZ_NORMALMODUL",
           "symbol": "m_n0",
           "title": "Normal Module Mm",
           "unit": "mm"
         },
-        "pressure_angle_deg": {
+        "profile_angle_deg": {
           "anyOf": [
             {
               "maximum": 30.0,
@@ -133,24 +157,48 @@
             }
           ],
           "default": null,
-          "description": "WKZ_EINGRIFFSWINKEL; None = gear pressure angle",
+          "description": "Profilwinkel des Bezugserzeugungsprofils",
+          "designation": "Profilwinkel des Bezugserzeugungsprofils",
+          "designation_en": null,
+          "factor": false,
+          "location": "§3.1 symbol list, p. 15",
+          "quantity": "tool_profile_angle",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "WKZ_EINGRIFFSWINKEL",
           "symbol": "alpha_P0",
-          "title": "Pressure Angle Deg",
+          "title": "Profile Angle Deg",
           "unit": "deg"
         },
         "addendum_factor": {
-          "description": "KOPFHOEHENFAKTOR — tool addendum = gear dedendum factor",
+          "description": "addendum of tool (module factor)",
+          "designation": "Kopfhöhe des Werkzeug-Bezugsprofils",
+          "designation_en": "addendum of tool",
           "exclusiveMinimum": 0.0,
+          "factor": true,
+          "location": "§3.1 symbol list, p. 12; §7.5 Eq. (125), p. 68",
           "maximum": 2.5,
+          "quantity": "tool_addendum",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "KOPFHOEHENFAKTOR",
           "symbol": "h_aP0*",
           "title": "Addendum Factor",
           "type": "number",
           "unit": "-"
         },
         "tip_radius_factor": {
-          "description": "KOPFABRUNDUNGSFAKTOR — tool tip rounding",
+          "description": "tool tip corner rounding (module factor)",
+          "designation": "Kopfkantenrundungsradius des Werkzeug-Bezugsprofils",
+          "designation_en": "tool tip corner rounding",
+          "factor": true,
+          "location": "§2 table, p. 1; §4.4 and §4.5 Anmerkung, p. 2",
           "maximum": 0.6,
           "minimum": 0.0,
+          "quantity": "tool_tip_radius",
+          "source": "DIN867:1986",
+          "status": "verified",
+          "stplus_key": "KOPFABRUNDUNGSFAKTOR",
           "symbol": "rho_aP0*",
           "title": "Tip Radius Factor",
           "type": "number",
@@ -168,7 +216,15 @@
             }
           ],
           "default": null,
-          "description": "FUSSHOEHENFAKTOR — tool dedendum",
+          "description": "Fußhöhe des Werkzeug-Bezugsprofils (module factor)",
+          "designation": "Fußhöhe des Werkzeug-Bezugsprofils",
+          "designation_en": null,
+          "factor": true,
+          "location": "§3.1 symbol list, p. 12",
+          "quantity": "tool_dedendum",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "FUSSHOEHENFAKTOR",
           "symbol": "h_fP0*",
           "title": "Dedendum Factor",
           "unit": "-"
@@ -185,7 +241,15 @@
             }
           ],
           "default": null,
-          "description": "FUSSFORMHOEHENFAKTOR — start of the tool's edge-break flank",
+          "description": "tool root form height (module factor)",
+          "designation": null,
+          "designation_en": null,
+          "factor": true,
+          "location": null,
+          "quantity": "tool_root_form_height",
+          "source": null,
+          "status": "pending",
+          "stplus_key": "FUSSFORMHOEHENFAKTOR",
           "symbol": "h_FfP0*",
           "title": "Root Form Height Factor",
           "unit": "-"
@@ -202,16 +266,32 @@
             }
           ],
           "default": null,
-          "description": "KANTENBRECHWINKEL — tool-cut tip chamfer flank angle",
-          "symbol": "alpha_K0",
+          "description": "tool edge break angle",
+          "designation": null,
+          "designation_en": null,
+          "factor": false,
+          "location": null,
+          "quantity": "tool_edge_break_angle",
+          "source": null,
+          "status": "pending",
+          "stplus_key": "KANTENBRECHWINKEL",
+          "symbol": "alpha_KP",
           "title": "Edge Break Angle Deg",
           "unit": "deg"
         },
         "protuberance_mm": {
           "default": 0.0,
-          "description": "PROTUBERANZBETRAG (extension point)",
+          "description": "tool protuberance",
+          "designation": null,
+          "designation_en": null,
+          "factor": false,
+          "location": null,
           "minimum": 0.0,
-          "symbol": "pr_P0",
+          "quantity": "tool_protuberance",
+          "source": null,
+          "status": "pending",
+          "stplus_key": "PROTUBERANZBETRAG",
+          "symbol": "pr",
           "title": "Protuberance Mm",
           "type": "number",
           "unit": "mm"
@@ -228,15 +308,31 @@
             }
           ],
           "default": null,
-          "description": "PROTUBERANZWINKEL (extension point)",
-          "symbol": "alpha_prP0",
+          "description": "tool protuberance angle",
+          "designation": null,
+          "designation_en": null,
+          "factor": false,
+          "location": null,
+          "quantity": "tool_protuberance_angle",
+          "source": null,
+          "status": "pending",
+          "stplus_key": "PROTUBERANZWINKEL",
+          "symbol": "alpha_pr",
           "title": "Protuberance Angle Deg",
           "unit": "deg"
         },
         "machining_allowance_mm": {
           "default": 0.0,
-          "description": "BEARBEITUNGSZUGABE per flank (extension point)",
+          "description": "Material allowance for finishing",
+          "designation": "Bearbeitungszugabe auf der Zahnflanke",
+          "designation_en": "Material allowance for finishing",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 13; §7.1 Bild 36 b), p. 64",
           "minimum": 0.0,
+          "quantity": "machining_allowance",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "BEARB_ZUGABE_WKZ",
           "symbol": "q",
           "title": "Machining Allowance Mm",
           "type": "number",
@@ -252,22 +348,30 @@
     }
   },
   "additionalProperties": false,
-  "description": "One gear of a pair. Either ``profile_shift`` or ``span`` (or a and the mate's x) fixes x.",
+  "description": "One gear of a pair. ``profile_shift_coefficient``, ``span`` or a_w with the mate's x fix x.",
   "properties": {
     "kind": {
       "$ref": "#/$defs/GearKind",
       "default": "external"
     },
-    "teeth": {
-      "description": "ZAEHNEZAHL (>0; negative STplus values map to INTERNAL)",
+    "number_of_teeth": {
+      "description": "number of teeth",
+      "designation": "Zähnezahl",
+      "designation_en": "number of teeth",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 14",
       "maximum": 1000,
       "minimum": 5,
+      "quantity": "number_of_teeth",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "ZAEHNEZAHL",
       "symbol": "z",
-      "title": "Teeth",
+      "title": "Number Of Teeth",
       "type": "integer",
       "unit": "-"
     },
-    "profile_shift": {
+    "profile_shift_coefficient": {
       "anyOf": [
         {
           "maximum": 2.0,
@@ -279,9 +383,17 @@
         }
       ],
       "default": null,
-      "description": "PROFILVERSCHIEBUNG_N — nominal profile shift coefficient",
+      "description": "profile shift coefficient",
+      "designation": "Profilverschiebungsfaktor",
+      "designation_en": "profile shift coefficient",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 13",
+      "quantity": "profile_shift_coefficient",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "PROFILVERSCHIEBUNG_N",
       "symbol": "x",
-      "title": "Profile Shift",
+      "title": "Profile Shift Coefficient",
       "unit": "-"
     },
     "span": {
@@ -296,9 +408,17 @@
       "default": null
     },
     "face_width_mm": {
-      "description": "ZAHNBREITE",
+      "description": "face width",
+      "designation": "Zahnbreite",
+      "designation_en": "face width",
       "exclusiveMinimum": 0.0,
+      "factor": false,
+      "location": "§3.1 symbol list, p. 11",
       "maximum": 2000.0,
+      "quantity": "face_width",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "ZAHNBREITE",
       "symbol": "b",
       "title": "Face Width Mm",
       "type": "number",
@@ -315,15 +435,31 @@
         }
       ],
       "default": null,
-      "description": "KOPFKREISDM — given tip diameter; None = from the basic rack",
+      "description": "tip diameter",
+      "designation": "Kopfkreisdurchmesser",
+      "designation_en": "tip diameter",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 11",
+      "quantity": "tip_diameter",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "KOPFKREISDM",
       "symbol": "d_a",
       "title": "Tip Diameter Mm",
       "unit": "mm"
     },
     "tip_chamfer_radial_mm": {
       "default": 0.0,
-      "description": "KOPFKANTENBRUCH — separately machined tip chamfer (radial amount)",
+      "description": "Tip chamfer",
+      "designation": "Radiale Höhe des Kopfkantenbruchs oder der Kopfkantenrundung",
+      "designation_en": "Tip chamfer",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 12",
       "minimum": 0.0,
+      "quantity": "tip_chamfer_radial",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "KOPFKANTENBRUCH",
       "symbol": "h_K",
       "title": "Tip Chamfer Radial Mm",
       "type": "number",
@@ -354,7 +490,7 @@
       ],
       "default": null
     },
-    "span_teeth": {
+    "number_of_teeth_spanned": {
       "anyOf": [
         {
           "minimum": 2,
@@ -365,9 +501,17 @@
         }
       ],
       "default": null,
-      "description": "MESSZAEHNEZAHL_K — teeth for the span check dimension (None = auto per DIN 21773)",
+      "description": "Number of teeth spanned",
+      "designation": "Anzahl der Zähne, Lücken oder Teilungen in einem Bereich (z. B. Messzähnezahl)",
+      "designation_en": "Number of teeth spanned",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 12",
+      "quantity": "number_of_teeth_spanned",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "MESSZAEHNEZAHL",
       "symbol": "k",
-      "title": "Span Teeth",
+      "title": "Number Of Teeth Spanned",
       "unit": "-"
     },
     "tooth_thickness_allowance_um": {
@@ -390,10 +534,17 @@
         }
       ],
       "default": null,
-      "description": "upper/lower tooth-thickness allowance (DIN 3967 A_sne/A_sni)",
+      "description": "tooth thickness allowance",
+      "designation": null,
+      "designation_en": null,
+      "factor": false,
+      "location": null,
+      "quantity": "tooth_thickness_allowance",
+      "source": null,
+      "status": "pending",
       "symbol": "E_sns/E_sni",
       "title": "Tooth Thickness Allowance Um",
-      "unit": "um"
+      "unit": "µm"
     },
     "span_allowance_um": {
       "anyOf": [
@@ -415,10 +566,18 @@
         }
       ],
       "default": null,
-      "description": "OBERES/UNTERES_ZAHNW_ABMASS — upper/lower span allowance",
+      "description": "span allowance",
+      "designation": null,
+      "designation_en": null,
+      "factor": false,
+      "location": null,
+      "quantity": "span_allowance",
+      "source": null,
+      "status": "pending",
+      "stplus_key": "OBERES_ZAHNW_ABMASS",
       "symbol": "A_We/A_Wi",
       "title": "Span Allowance Um",
-      "unit": "um"
+      "unit": "µm"
     },
     "allowance_series": {
       "anyOf": [
@@ -445,7 +604,15 @@
         }
       ],
       "default": null,
-      "description": "DIN_QUALITAET / ISO_QUALITAET flank tolerance class",
+      "description": "quality grade",
+      "designation": null,
+      "designation_en": null,
+      "factor": false,
+      "location": null,
+      "quantity": "quality_grade",
+      "source": null,
+      "status": "pending",
+      "stplus_key": "DIN_QUALITAET",
       "symbol": "Q",
       "title": "Quality Grade",
       "unit": "-"
@@ -463,7 +630,7 @@
     }
   },
   "required": [
-    "teeth",
+    "number_of_teeth",
     "face_width_mm",
     "tool"
   ],

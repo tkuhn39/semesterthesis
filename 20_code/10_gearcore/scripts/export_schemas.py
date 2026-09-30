@@ -16,11 +16,23 @@ from pydantic import BaseModel
 
 from gearcore.models.inputs import GearInput, PairInput, SpanMeasurement, ToolProfile
 from gearcore.models.materials import MaterialRecord
+from gearcore.models.profiles import BasicRackProfile
+from gearcore.models.results import BasicGearGeometry
+from gearcore.parity import ParityRow
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUT = REPO_ROOT / "20_code" / "00_development_documentation" / "schemas"
 
-MODELS: list[type[BaseModel]] = [ToolProfile, SpanMeasurement, GearInput, PairInput, MaterialRecord]
+MODELS: list[type[BaseModel]] = [
+    ToolProfile,
+    SpanMeasurement,
+    GearInput,
+    PairInput,
+    MaterialRecord,
+    BasicRackProfile,
+    BasicGearGeometry,
+    ParityRow,
+]
 
 
 def main() -> None:

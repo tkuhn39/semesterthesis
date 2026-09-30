@@ -113,13 +113,13 @@ def test_typed_extraction_maps_geometry_tools_and_materials() -> None:
         ste, material_kinds={"16MnCr5": MaterialKind.STEEL, "WST_PA66": MaterialKind.PLASTIC}
     )
     p = result.pair
-    assert (p.gears.pinion.teeth, p.gears.wheel.teeth) == (51, 52)
-    assert p.center_distance_mm == 52.0 and p.normal_module_mm == 1.0
+    assert (p.gears.pinion.number_of_teeth, p.gears.wheel.number_of_teeth) == (51, 52)
+    assert p.centre_distance_mm == 52.0 and p.normal_module_mm == 1.0
     assert p.gears.wheel.tool.edge_break_angle_deg == 45.0
     assert p.gears.wheel.tool.root_form_height_factor == 0.8456
     assert p.gears.pinion.tool.edge_break_angle_deg is None
     assert p.gears.pinion.span_allowance_um == (-278.0, -278.0)
-    assert p.gears.pinion.span_teeth == 6
+    assert p.gears.pinion.number_of_teeth_spanned == 6
     # ZAHNWEITE is given together with x: x wins, the span is only an inspection value
     assert p.gears.pinion.span is None
     assert any("ZAHNWEITE 17.09 ignored for x" in n for n in result.notes)
@@ -182,8 +182,8 @@ def test_span_without_profile_shift_is_accepted() -> None:
         "$ B\nKOPFHOEHENFAKTOR = 1.25\nKOPFABRUNDUNGSFAKTOR = 0.394\nKANTENBRECHWINKEL = 45.0\n$ Ende\n"
     )
     p = pair_input_from_ste(parse_ste(text)).pair
-    assert p.gears.pinion.profile_shift is None
-    assert p.gears.wheel.span is not None and p.gears.wheel.span.span_mm == 46.21
+    assert p.gears.pinion.profile_shift_coefficient is None
+    assert p.gears.wheel.span is not None and p.gears.wheel.span.span_measurement_mm == 46.21
 
 
 def test_packaged_fixture_inputs_parse(case_dir: Path) -> None:

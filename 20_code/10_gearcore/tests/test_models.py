@@ -22,11 +22,13 @@ from gearcore.models.materials import (
     Provenance,
     SteelData,
 )
+from gearcore.models.profiles import BasicRackProfile
+from gearcore.models.results import BasicGearGeometry
 
 UNIT_SUFFIXES = {
     "_mm": "mm",
     "_deg": "deg",
-    "_um": "um",
+    "_um": "µm",
     "_MPa": "MPa",
     "_C": "degC",
     "_kg_m3": "kg/m3",
@@ -41,8 +43,8 @@ def tool(**overrides: Any) -> ToolProfile:
 
 def gear(**overrides: Any) -> GearInput:
     base: dict[str, Any] = {
-        "teeth": 24,
-        "profile_shift": 0.1,
+        "number_of_teeth": 24,
+        "profile_shift_coefficient": 0.1,
         "face_width_mm": 14.0,
         "tool": tool(),
     }
@@ -53,8 +55,11 @@ def gear(**overrides: Any) -> GearInput:
 def pair(**overrides: Any) -> PairInput:
     base: dict[str, Any] = {
         "normal_module_mm": 4.5,
-        "center_distance_mm": 91.5,
-        "gears": Pair(pinion=gear(teeth=16), wheel=gear(teeth=24, profile_shift=None)),
+        "centre_distance_mm": 91.5,
+        "gears": Pair(
+            pinion=gear(number_of_teeth=16),
+            wheel=gear(number_of_teeth=24, profile_shift_coefficient=None),
+        ),
     }
     base.update(overrides)
     return PairInput(**base)
@@ -76,7 +81,7 @@ def test_json_round_trip_and_hash() -> None:
     p = pair()
     dumped = p.model_dump_json()
     assert PairInput.model_validate_json(dumped) == p
-    assert json.loads(dumped)["gears"]["pinion"]["teeth"] == 16
+    assert json.loads(dumped)["gears"]["pinion"]["number_of_teeth"] == 16
     assert hash(p) == hash(PairInput.model_validate_json(dumped))
 
 
@@ -95,7 +100,17 @@ def test_schema_carries_symbol_unit_source() -> None:
 
 @pytest.mark.parametrize(
     "model",
-    [ToolProfile, GearInput, PairInput, SpanMeasurement, SteelData, PolymerData, GearStrength],
+    [
+        ToolProfile,
+        GearInput,
+        PairInput,
+        SpanMeasurement,
+        SteelData,
+        PolymerData,
+        GearStrength,
+        BasicGearGeometry,
+        BasicRackProfile,
+    ],
 )
 def test_units_match_field_names(model: type[FrozenModel]) -> None:
     for name, info in model.model_fields.items():
@@ -111,14 +126,22 @@ def test_units_match_field_names(model: type[FrozenModel]) -> None:
 
 def test_profile_shift_must_be_determinable() -> None:
     with pytest.raises(ValidationError, match="profile shift undetermined"):
-        pair(center_distance_mm=None)
+        pair(centre_distance_mm=None)
     with pytest.raises(ValidationError, match="at least one gear"):
-        pair(gears=Pair(pinion=gear(profile_shift=None), wheel=gear(profile_shift=None)))
+        pair(
+            gears=Pair(
+                pinion=gear(profile_shift_coefficient=None),
+                wheel=gear(profile_shift_coefficient=None),
+            )
+        )
     ok = pair(
-        center_distance_mm=None,
+        centre_distance_mm=None,
         gears=Pair(
-            pinion=gear(profile_shift=None, span=SpanMeasurement(span_mm=27.827, teeth=5)),
-            wheel=gear(profile_shift=0.2),
+            pinion=gear(
+                profile_shift_coefficient=None,
+                span=SpanMeasurement(span_measurement_mm=27.827, number_of_teeth_spanned=5),
+            ),
+            wheel=gear(profile_shift_coefficient=0.2),
         ),
     )
     assert ok.gears.pinion.span is not None
@@ -131,17 +154,17 @@ def test_tool_module_must_generate_the_basic_rack() -> None:
     m_n0 = 4.5 * math.cos(math.radians(20)) / math.cos(math.radians(17.5))
     ok = pair(
         gears=Pair(
-            pinion=gear(tool=tool(normal_module_mm=m_n0, pressure_angle_deg=17.5)), wheel=gear()
+            pinion=gear(tool=tool(normal_module_mm=m_n0, profile_angle_deg=17.5)), wheel=gear()
         )
     )
-    assert ok.gears.pinion.tool.pressure_angle_deg == 17.5
+    assert ok.gears.pinion.tool.profile_angle_deg == 17.5
 
 
 def test_input_ranges_reject_out_of_scope_values() -> None:
     with pytest.raises(ValidationError):
-        gear(teeth=4)
+        gear(number_of_teeth=4)
     with pytest.raises(ValidationError):
-        gear(profile_shift=2.5)
+        gear(profile_shift_coefficient=2.5)
     with pytest.raises(ValidationError):
         pair(helix_angle_deg=50.0)
     with pytest.raises(ValidationError):

@@ -11,6 +11,10 @@ They remain valid as history only; the decisions below supersede them where they
 | 103 | Equation traceability (`@eq`) and verified source registry | accepted |
 | 104 | Notebooks are executable norm documentation, never the implementation | accepted |
 | 105 | Current norm wins; deviations from STplus's norms are a documented deliverable | accepted |
+| 106 | Double precision everywhere; the single precision of STplus is a property of the oracle | accepted |
+| 107 | A given centre distance is fixed; the profile shift follows it | accepted |
+| 108 | Quantity registry: one source of truth for names, symbols and designations | accepted |
+| 109 | Nothing of STplus gets lost: tool databases and defaults are kept with program version | accepted |
 
 ---
 
@@ -64,7 +68,8 @@ warn in parity tests and are additionally re-run with 11.1F to expose input erro
 Parity tests compare every mapped `.sta` symbol within a unit-based tolerance **or** an entry in
 `expected_differences.yaml` (see ADR-105). The exe, its databases and the manual never enter git, CI or
 containers; the repo is private, so raw listings may be committed as `report.sta.txt` (`*.sta` is
-git-ignored repo-wide).
+git-ignored repo-wide). (Amended 2026-09-30 by ADR-109: the tool databases and the input key
+register are packaged as labelled data; exe and manual stay outside.)
 
 **Consequences.** Every geometry quantity of the DIN 3960 chain and the sampled contour can be checked
 differentially against the institute's tool for any input; CI/Linux never need the exe.
@@ -87,6 +92,18 @@ differentially against the institute's tool for any input; CI/Linux never need t
   6.0) and one rounding digit of the chordal thickness. The trust levels stay as the user stated
   them (they concern the inputs, not the computation).
 
+**Corrections and findings of 2026-09-29 (increment 1):**
+- The interface file prints **five decimals** (e.g. `TEILKREISDURCHM = 86.60255 138.56407`), not ten
+  significant digits as stated above. The listing prints lengths with three decimals, angles and the
+  transverse module with five and the profile shift coefficient with four.
+- The values come from a single-precision computation; see ADR-106 for the evidence and the
+  resulting comparison tolerance.
+- Profile shift: STplus takes x₁ from the input. With a centre distance given it derives x₂ from the
+  centre distance and overrides a given x₂ (kst-E: input 0.3143, used 0.31433); with a span
+  measurement given, x follows from the span measurement. `gearcore.parity` therefore computes with
+  the input x only where STplus uses it and with the printed x elsewhere. The pair geometry of
+  increment 2 has to settle which input wins in gearcore when a, x₁ and x₂ are all given.
+
 ## ADR-103 — Equation traceability (`@eq`) and verified source registry (2026-09-28)
 
 **Decision.** `gearcore.trace.eq(source, eq, *, section, page, note)` records, without wrapping the
@@ -96,8 +113,12 @@ function realises; stacked decorators are allowed. Tests link via `@pytest.mark.
 notebooks | status). `data/sources.yaml` lists every source with identifier (norm edition, DOI, ISBN-13,
 patent number, FVA Heft) and an explicit `verified {method, by, date}` block; `scripts/verify_sources.py`
 resolves DOIs via Crossref and checks ISBN checksums, printing the comparison for the user — it never
-writes automatically. `test_trace.py` fails on unknown source keys and on public computational functions
-without `@eq`. No norm text is reproduced; formulas are transcribed in own LaTeX.
+writes automatically. `test_trace.py` fails on unknown source keys, on public computational functions
+without `@eq`, on citations of sources without identifier (`status: missing`) and — user decision
+2026-09-28 — on citations of sources the user has not yet confirmed against the PDF
+(`confirmed_by_user: false`). Uncited entries may stay unconfirmed; `verify_sources.py` lists them.
+Accepted identifiers: DOI, ISBN-13, URN (theses via nbn-resolving), norm number + edition, patent
+number, FVA Heft. No norm text is reproduced; formulas are transcribed in own LaTeX.
 
 **Consequences.** Every formula in code and every citation in the thesis can be checked back to a page of
 a primary source; fabricated references cannot enter the registry unnoticed.
@@ -126,3 +147,172 @@ current norm and the STplus chain differ, the difference is entered in `expected
 `norm_differences.md` (German, thesis-ready). Correct current-norm code is never changed to match the
 oracle. Items STplus prints without a current-norm home (Lewis parabola, K*/U factor, FVA-166 losses,
 CCS 1996) are left out.
+
+## ADR-106 — Double precision everywhere; the single precision of STplus is a property of the oracle (2026-09-29)
+
+**Context.** The first parity run of increment 1 showed interface values of STplus 11.1F that differ
+from gearcore by one unit of the fifth decimal (helix30_z25_40: `TEILKREISDURCHM = 86.60255`, while
+d = 25 · 3 / cos 30° = 86.6025404 mm). Probe over the eleven own runs, five basic quantities
+(α_t, β_b, m_t, d, d_b), 99 printed values:
+
+| Hypothesis | Values reproduced |
+|---|---|
+| binary64 result, rounded to five decimals | 93 / 99 |
+| binary64 result, stored in a 32-bit variable before printing | 95 / 99 |
+| same formulas with every operation rounded to binary32 | **99 / 99** |
+
+STplus therefore **computes** in single precision (about seven significant digits). The six values
+that binary64 misses belong to the two helical runs (18 of the 99 values); the 81 values of the nine
+spur runs are insensitive (β = 0). The six differ by at most 1.5 binary32 steps, 1.1 · 10⁻⁷ relative,
+0.014 µm absolute (d₂ = 345.857776 mm printed as 345.85779). The `.sta` listing prints lengths with
+three decimals and hides the effect.
+
+**Decision (user decision 2026-09-29).**
+1. gearcore computes in IEEE 754 **binary64 everywhere** and never rounds inside the computational
+   chain; values are handed over between functions, models, JSON and later the API with all digits
+   (project rule 8a). `tests/test_numeric_precision.py` guards the usual violations by a scan of the
+   syntax tree and by behavioural tests; the scan cannot prove their absence.
+2. The accuracy of STplus is part of the comparison, not of gearcore: `gearcore.parity` reports per
+   value the print tolerance (half a unit of the last printed digit), the arithmetic tolerance
+   (two binary32 steps at the printed value) and the input tolerance (rounding of the profile shift
+   coefficient, only where STplus derived x itself), and the verdict `identical` (equal at the
+   printed precision), `oracle_accuracy` (explained by the accuracy of the STplus value) or
+   `different`.
+3. The evidence stays executable: `tests/test_stplus_parity.py` evaluates the basic chain with every
+   operation rounded to binary32 (test code only, deterministic on every platform) and asserts the
+   three counts above.
+
+State of increment 1 over all 15 cases and both STplus outputs: 443 comparisons (eight quantities
+and, where it is an input, the profile shift coefficient), 431 `identical`, 12 `oracle_accuracy`,
+0 `different`; the counts are pinned in `test_verdict_counts_of_increment_1`.
+
+**Alternative rejected.** Computing in binary32 first, to match STplus digit for digit, and switching
+later (considered 2026-09-29). Rejected because Python computes in binary64 natively, so binary32
+would be an emulation in every formula; because digit identity could still not be guaranteed for
+longer chains (iterations, trochoid), whose last digit depends on the operation order and the runtime
+library of STplus; and because accumulated rounding errors would enter every value handed over to
+later stages (contour, FE deck).
+
+**Consequences.** gearcore values are more accurate than the oracle. A comparison with STplus detects
+relative errors from about 5 · 10⁻⁷ (mutation tests in `test_stplus_parity.py`); beyond that, norm
+worked examples, references computed with 45-digit decimal arithmetic, property-based invariants and
+independent solvers carry the verification. Reports for third parties show both values and the
+verdict instead of forcing equal digits.
+
+## ADR-107 — A given centre distance is fixed; the profile shift follows it (2026-09-29)
+
+**Context.** An input can name the centre distance a and both profile shift coefficients x₁, x₂,
+which over-determines the pair. STplus 11.1F asks for two of the three values a, β and Σx and for
+"entweder x_1 oder x_2" (manual Bild 4.12, p. 25); when a, x₁ and x₂ are all given it keeps x₁ and
+derives x₂ from a (kst-E: input x₂ = 0.3143, used 0.31433).
+
+**Decision (user decision 2026-09-29).** A centre distance that is given is fixed: it is the
+distance of the bores in the housing and cannot be adjusted, so every other value follows it.
+1. a and x₁ given: x₂ follows from a (profile shift sum from the working pressure angle).
+2. a and x₂ given: x₁ follows from a.
+3. a, x₁ and x₂ given: a and x₁ are kept, x₂ follows from a; a given x₂ that differs from the derived
+   value is reported as a warning with both values, never used silently and never an error.
+4. No a given: a follows from x₁ and x₂.
+5. a given without any profile shift: the distribution of the sum is a separate input
+   (STplus `AUFTEILUNG_X1X2`), an extension point that raises `NotSupportedError`.
+A profile shift derived from a span measurement or another inspection dimension describes the tooth
+thickness as manufactured; it does not change the centre distance either, the difference appears as
+backlash.
+
+**Evidence from the norm example (user explanation 2026-09-29).** ISO/TR 6336-30:2022 Annex A
+example 1, Table A.1 (p. 43) gives the centre distance ("a = 500 mm") and "x_2 = 0" and prints
+"x_1 = (0,145 22)" in parentheses: x₂ and the centre distance lead, x₁ results. This is case 2. The fixture marks x₁ as
+`derived: [pinion]`, and the worked-example test of increment 2 has to reproduce the printed x₁
+from a and x₂ instead of taking it as an input.
+
+**Open for increment 2.** Case 3 follows STplus (x₁ kept). Whether an input with all three values
+may name the coefficient that follows (the norm example lets x₂ lead) is decided with the user
+before the pair geometry is implemented; until then no code depends on it.
+
+**Consequences.** Implemented with the pair geometry of increment 2 (DIN ISO 21771:2014-08 §5);
+`gearcore.parity` already compares with the x that STplus used. The input contract keeps both x
+as given, so the warning can name the input value.
+
+## ADR-108 — Quantity registry: one source of truth for names, symbols and designations (2026-09-29)
+
+**Context.** The user's review of the first worked-example fixture found five rows of the norm table
+missing, labels reworded into program names and no symbols at all; the program names themselves
+(`teeth`, `profile_shift`, `pressure_angle_deg`, `span_teeth`) did not say which quantity of the norm
+they hold. Symbols were defined in three places (field metadata, `symbol_map.yaml`, the comparison
+table of `parity.py`). User: names as close to the norm as possible, and one source of truth that
+every increment extends with symbols and their relation to STplus and the older norms.
+
+**Decision (user decision 2026-09-29).**
+1. `src/gearcore/data/quantities.yaml` is the only place that names a quantity: program name,
+   symbol, unit, designation of the governing norm with source and location, English designation,
+   symbols of other current documents (`also`), STplus names (`stplus`), symbols of replaced norms
+   (`replaced`), note, increment, status. `gearcore.quantities` validates and serves it.
+2. Contracts declare fields with `Q(<quantity>, factor=..., equation=...)`; symbol, unit and
+   designations reach the JSON schema from the registry. `symbol_map.yaml` and the symbol table of
+   `parity.py` are removed; `parity` reads the STplus names from the registry.
+3. Program names follow the designations (project rule 3b). Renamed: `teeth` → `number_of_teeth`,
+   `profile_shift` → `profile_shift_coefficient`, `pressure_angle_deg` →
+   `normal_pressure_angle_deg` (gear) and `profile_angle_deg` (basic rack, tool),
+   `center_distance_mm` → `centre_distance_mm`, `span_mm` → `span_measurement_mm`, `span_teeth` and
+   `SpanMeasurement.teeth` → `number_of_teeth_spanned`, `clearance_factor` →
+   `bottom_clearance_factor`; functions `transverse_pressure_angle_at` →
+   `transverse_profile_angle_at`, `normal_pressure_angle_at` → `normal_profile_angle_at`
+   (DIN ISO 21771 says Eingriffswinkel at the reference cylinder and Profilwinkel at any cylinder).
+   The symbol of the centre distance is `a_w` (DIN ISO 21771) instead of `a` (DIN 3960, STplus).
+4. `tests/test_quantities.py` binds contracts, function arguments, worked examples, the comparison
+   with STplus, the STplus fixtures, the typography of the notebooks and the generated table
+   `quantities.md` to the registry.
+
+**Consequences.** A new quantity costs one registry entry read from the norm page before any code
+uses it; in return a wrong or missing symbol breaks a test instead of reaching the thesis. Nine
+quantities of contract fields that later increments implement are `pending` until their designation
+is verified. The adversarial gate checks the registry entries of its increment against the pages.
+
+**First review (2026-09-29).** Three read-only reviewers compared the registry with the pages and the STplus fixtures (findings REG1-01 to REG1-10 in `gate_reports/increment_1.md`). The entries of the governing norms held; the errors were in the translations, above all in the symbols of DIN 3960, which were taken from its list §2.1 instead of its clauses. Consequence for the rule: an older symbol is cited from the clause that defines the quantity, and the entry of a symbol list is named with it.
+
+## ADR-109 — Nothing of STplus gets lost: tool databases and defaults are kept with program version (2026-09-30)
+
+**Context.** gearcore computes by the current norms and has no silent defaults (norm map, section
+"Tabellenwerte und Vorbelegungen"). STplus, however, ships tool databases and presets many inputs;
+laboratory practice relies on both. User: nothing STplus offered may get lost. The tool database
+exists for a reason even though it is not maintained by a norm; the old defaults are to be kept so
+that one can fall back on them later; both are to be labelled with the STplus version they come from.
+ADR-102 and project rule 5 had excluded the databases of STplus from git.
+
+**Decision (user decision 2026-09-30).**
+1. `src/gearcore/data/stplus_program/` keeps, verbatim with line endings normalised to LF, the
+   tool databases of the installation (`wkz/wkz.dat`, `global/WKZ_GLOB.DAT`) and the register of input
+   keys (`bin/DEFAULT.STY`). `provenance.yaml` names program, version and release as the installation
+   itself prints them in a listing (STplus 11.1F, Freigabe 01.12.2025), and size, SHA-256 and date of
+   every file. `scripts/import_stplus_program.py` reproduces the import.
+2. `defaults.yaml` records the defaults of STplus: the sentence of the manual with its printed page,
+   and what a probe run of the program shows (`probes/<name>/`). Five probes are kept: minimal input,
+   input without pressure angle, and three tools of the databases. Defaults that are only located in
+   the text layer of the manual carry `status: located` and no value.
+3. `gearcore.stplus_program` serves the data: `tool_database()`, `stplus_tool(name)`,
+   `stplus_defaults()`, `stplus_default_tool()`, `input_key_register()`, `probe_listing(name)`. Every
+   record and every default carries the label "STplus 11.1F (Freigabe 01.12.2025)".
+4. gearcore applies none of it silently. A tool record is a `ToolProfile` only where the contract
+   neither guesses nor bends a value; otherwise the record is kept as written and says why it is no
+   contract. Falling back on an STplus default is an explicit, named choice of the caller.
+5. The executable and the manual stay outside git, CI and containers. The material and lubricant
+   databases (`wst.dat`, `oel.dat`) and the defaults of the load capacity are kept the same way with
+   stage 2.
+
+**Findings of the probes.**
+- The default pressure angle of 20° belongs to the user interface: a batch input without
+  `EINGRIFFSWINKEL` is rejected.
+- Without a tool STplus uses a hob with h_aP0* = 1,25, ρ_aP0* = 0,25, h_fP0* = h_FfP0* = 1,3; the manual
+  gives no numbers.
+- Six of the twelve records of the local tool database ("_F_", finishing tools) carry factors and
+  absolute values that contradict each other. STplus computes with the factor of the addendum and
+  reduces tip rounding (0,5 → 0,383) and dedendum (3,0 → 2,317) to the geometric limit; it reports
+  only the change of the root form height. gearcore keeps these records and rejects them as contracts.
+- A record without tip rounding (global database) gets ρ_aP0* = 0,25.
+- `bin/DEFAULT.STY` holds 822 entries of 816 configurable input keys and 22 program-internal entries,
+  not 844 input keys as assumed in increment 0.
+
+**Consequences.** The old behaviour of STplus stays reproducible and citable after the program is gone.
+`defaults.yaml` quotes single sentences of the manual as evidence; the repository is private, and the
+quotations have to be reviewed before it is opened. Resolving a tool that an input file references by
+name from the tool database is an extension point of the importer (`extension_points.md`).

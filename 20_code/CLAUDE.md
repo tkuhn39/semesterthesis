@@ -30,12 +30,20 @@ ruff check . ../40_jupyter-notebooks && ruff format --check . ../40_jupyter-note
 mypy --strict 10_gearcore/src
 python 10_gearcore/scripts/stplus_oracle.py run-all      # Windows only, local STplus
 python 10_gearcore/scripts/build_traceability.py
+python 10_gearcore/scripts/build_quantities.py          # after every change of quantities.yaml
+python 10_gearcore/scripts/import_stplus_program.py probes      # Windows only: STplus defaults
+python 10_gearcore/scripts/import_stplus_program.py databases   # tool databases + provenance
 ```
 Git signing (SSH via 1Password) only works from PowerShell, not from Git Bash.
 
 ## Things to never get wrong
 - One equation = one function with a full `@eq` reference (norm + edition + eq + section + page).
+- One quantity = one entry in `10_gearcore/src/gearcore/data/quantities.yaml`, read from the norm
+  page before use; contract fields are declared with `Q(<quantity>)`; names follow the norm.
+- In formulas the symbol is italic, every subscript upright (`\mathrm{...}`).
 - Current norm wins; STplus mismatches become documented norm differences, never code "fixes".
+- Nothing of STplus gets lost: tool databases and defaults live in `data/stplus_program/`, labelled
+  with program version; none of it is applied silently (ADR-109).
 - Typed errors instead of `None`/clamping; steel and plastic never mixed; helical always supported.
 - Never import from `30_references_and_examples/38_legacy_workbench` (`app` is banned).
 - Every increment ends with the adversarial gate (`00_development_documentation/adversarial_gate.md`)

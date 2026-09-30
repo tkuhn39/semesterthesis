@@ -14,10 +14,48 @@ Rules are numbered so ADRs and reviews can cite them.
    computational basis. STplus is a numeric oracle only. Every deviation from it is recorded in
    `data/stplus/expected_differences.yaml` (old source/eq, new source/eq, reason, numeric example, effect)
    and rendered to `norm_differences.md` for the thesis.
-4. **Citations are verified**, not assumed: DOI via Crossref, ISBN checksum, norm edition from the PDF
-   header, patent number from the DPMA front page. Unverified entries are flagged, never silently used.
+3a. **Current notation in the tool, original notation in quotations — never mixed.** Code, contracts,
+   notebooks and the later program use the symbols of the currently valid norms (e.g. `h_aP0`,
+   DIN ISO 21771:2014-08 §7.1). When an older document is quoted (DIN 3972:1952 `h_kw`, `r_1`; DIN 3960;
+   STplus listings), its own symbols are kept and the mapping to the current symbol is stated
+   explicitly. Where current documents differ, the equations and the symbol list of the newest
+   geometry norm decide (figure lettering can differ from them); the other documents are recorded.
+3b. **One source of truth for names, symbols and designations** (user decision 2026-09-29, ADR-108):
+   `data/quantities.yaml`. Every quantity is entered there **before** it is used, with the symbol
+   and the designation of the governing norm (verbatim, with location), the English designation of
+   an ISO document, what other current documents print, what STplus prints (listing symbol and
+   label, input key, interface key) and what the replaced norms printed. Every text is read on the
+   rendered page. Contracts declare their fields with `Q(<quantity>)`; fixtures, the comparison
+   with STplus, notebooks and the generated table `quantities.md` refer to the registry. Nothing
+   else defines a symbol.
+   - **Program names** render the designation of the governing norm in English, using the wording
+     of an ISO document in the repository where one exists; they are shortened only where the
+     designation has more than four words. A contract field is the program name without the
+     context prefix of its model, plus `_factor` for a module factor, plus the unit suffix.
+     Arguments of single-equation functions are the symbol plus the unit suffix (`m_n_mm`).
+     Names are ASCII only: the unit µm has the suffix `_um`, Greek letters are spelled out
+     (`alpha_n`). Python normalises the micro sign in an identifier to the Greek letter mu, so a
+     key typed as `..._µm` in JSON or YAML would no longer match the field. The unit itself is
+     written "µm" wherever it is a value (`unit`, `printed`, tables, plots).
+   - **Fixtures of norm examples** hold the complete table of the norm in its order; every entry
+     carries the label of the norm verbatim, the symbol, the unit and the printed text, and the
+     tests require the stored number to equal the printed one.
+   - **Typography:** the symbol is italic, every subscript upright, letters as well as digits
+     (`\mathrm{...}`; `gearcore.quantities.latex` renders the symbols of the registry).
+   - A quantity whose designation is not yet verified has `status: pending`; no computation,
+     fixture or notebook may use it.
+4. **Citations are verified**, not assumed: DOI via Crossref, ISBN checksum, URN via nbn-resolving, norm
+   edition from the PDF header, patent number from the DPMA front page. A source may be cited from code
+   (`@eq`) only after the user has checked the entry against the PDF and set `confirmed_by_user: true`
+   in `sources.yaml`; `test_trace.py` fails otherwise (user decision 2026-09-28).
 5. **Licence hygiene.** No norm text is reproduced verbatim; formulas are transcribed in own LaTeX with a
-   reference. STplus exe, databases and manual never enter git, CI or containers.
+   reference. The STplus executable and its manual never enter git, CI or containers.
+5a. **Nothing of STplus gets lost** (user decision 2026-09-30, ADR-109). What STplus ships and
+   presets — tool databases, the register of input keys, defaults — is kept under
+   `data/stplus_program/` as written, labelled with program version and release and with its
+   evidence (page of the manual, probe run). It is no norm and is never applied silently: a
+   caller asks for a record or a default by name. A value that is not entered is either a named
+   value of a norm table or missing; falling back on an old STplus default is an explicit choice.
 
 ## B. Code
 6. **One equation = one function**; models are data, computations are module-level functions. No
@@ -29,6 +67,14 @@ Rules are numbered so ADRs and reviews can cite them.
 8. **Frozen, validated contracts.** All inputs and results are pydantic models (`FrozenModel`:
    `frozen`, `extra="forbid"`, `allow_inf_nan=False`) with `symbol`/`unit`/`source` metadata; units are
    part of field names (`_mm`, `_deg`, `_um`). Results round-trip through JSON.
+8a. **Double precision everywhere, no rounding in the chain** (user decision 2026-09-29, ADR-106).
+   Every computation runs in IEEE 754 binary64 (Python `float`, numpy `float64`); reduced-precision
+   types (`float32` …) are forbidden in `src/gearcore`. Values are handed over between functions,
+   models, JSON and later the API with all their digits; rounding happens only where a number is
+   displayed or printed. Inputs that were rounded by someone else (a printed STplus value, a norm
+   table) carry their rounding as an explicit tolerance, never as a silent assumption.
+   `test_numeric_precision.py` guards the usual violations (syntax scan and behavioural tests); it
+   cannot prove their absence, so reviews check the rule as well.
 9. **Steel and plastic are never mixed.** `MaterialKind` is a required field without default; every
    material-dependent branch dispatches on it explicitly.
 10. **Helical is first class.** Every closed-form quantity accepts β ≠ 0; the transverse section is the

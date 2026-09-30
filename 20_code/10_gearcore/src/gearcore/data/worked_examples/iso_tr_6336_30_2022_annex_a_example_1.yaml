@@ -1,0 +1,448 @@
+# Worked example transcribed from the rendered norm pages (never from the text layer).
+#
+# Every entry names the quantity as the norm prints it:
+#   <key>        name of the quantity in the registry (data/quantities.yaml) with its unit suffix;
+#                `quantity` names the registry entry where the key cannot (involute function)
+#   table        table or clause of the norm the row stands in
+#   description  label of the row in the norm, verbatim
+#   meaning      own clarification where the label alone is ambiguous
+#   symbol       symbol as the norm prints it; subscripts follow an underscore, Greek letters are
+#                spelled out (alpha, beta, epsilon, rho). Per gear the norm appends 1 (pinion) and
+#                2 (wheel). null = the norm prints no symbol.
+#                In print the symbol is italic and every subscript upright.
+#   unit         unit as printed; `note` says where the norm prints none
+#   printed      text as printed (decimal comma, digit groups separated by a space)
+#   formula      (expected only) formula of the norm in a plain-text transcription:
+#                abs(x) for |x|, atan for the inverse tangent, sqrt for the root
+#   decimals     (expected only) number of printed decimals, sets the test tolerance
+#   value | pinion, wheel
+#                the number the tests use; `tests/test_worked_examples.py` checks that it equals
+#                the number in `printed`
+#   factor_of_normal_module
+#                the norm prints the value as a multiple of m_n; value = factor · m_n
+#   derived      gears whose value is not given but follows from the other inputs
+# Both sections keep the order of the norm.
+id: iso_tr_6336_30_2022_annex_a_example_1
+source: ISOTR6336-30:2022
+location: "Annex A 'Example 1 detailed calculation': Table A.1 'Gear geometry' (printed p. 43, PDF p. 49), A.6 'Supplementary calculations' (printed p. 45 and 46, PDF p. 51 and 52); single rows of Table A.2 (p. 43) and Table A.5 (p. 45)"
+transcribed:
+  by: "claude (pdftoppm 150 and 300 dpi, read from the rendered pages)"
+  date: "2026-09-29"
+  method: visual
+  confirmed_by_user: true
+
+# ---- Table A.1 — Gear geometry (printed p. 43), all 19 rows; then the rows of Table A.2 and
+# ---- Table A.5 that A.6 uses --------------------------------------------------------------------
+inputs:
+  number_of_teeth:
+    table: "Table A.1"
+    description: "Number of teeth"
+    symbol: "z"
+    unit: "-"
+    printed: { pinion: "z_1 = 17", wheel: "z_2 = 103" }
+    pinion: 17
+    wheel: 103
+  normal_module_mm:
+    table: "Table A.1"
+    description: "Normal module"
+    symbol: "m_n"
+    unit: "mm"
+    note: "the norm prints no unit in this row"
+    printed: "m_n = 8"
+    value: 8.0
+  normal_pressure_angle_deg:
+    table: "Table A.1"
+    description: "Normal pressure angle"
+    symbol: "alpha_n"
+    unit: "deg"
+    printed: "alpha_n = 20,00°"
+    value: 20.0
+  helix_angle_deg:
+    table: "Table A.1"
+    description: "Helix angle"
+    symbol: "beta"
+    unit: "deg"
+    printed: "beta = 15,8°"
+    value: 15.8
+  hand_of_helix:
+    table: "Table A.1"
+    description: "Hand of helix"
+    symbol: null
+    unit: "-"
+    printed: { pinion: "Left", wheel: "Right" }
+    pinion: left
+    wheel: right
+  face_width_mm:
+    table: "Table A.1"
+    description: "Facewidth"
+    symbol: "b"
+    unit: "mm"
+    printed: { pinion: "b_1 = 100 mm", wheel: "b_2 = 100 mm" }
+    pinion: 100.0
+    wheel: 100.0
+  contact_face_width_mm:
+    table: "Table A.1"
+    description: "Contact facewidth"
+    symbol: "b"
+    unit: "mm"
+    printed: "b = 100 mm"
+    value: 100.0
+  centre_distance_mm:
+    table: "Table A.1"
+    description: "Centre distance"
+    symbol: "a"
+    unit: "mm"
+    printed: "a = 500 mm"
+    value: 500.0
+  profile_shift_coefficient:
+    table: "Table A.1"
+    description: "Nominal addendum correction factor"
+    symbol: "x"
+    unit: "-"
+    derived: [pinion]
+    note: "x_2 = 0 and the centre distance are given and lead; x_1 follows from them, which is why the norm prints it in parentheses"
+    printed: { pinion: "x_1 = (0,145 22)", wheel: "x_2 = 0" }
+    pinion: 0.14522
+    wheel: 0.0
+  span_measurement_mm:
+    table: "Table A.1"
+    description: "Span measurement"
+    symbol: "W_k"
+    unit: "mm"
+    printed: { pinion: "W_k1 = 38,196 mm", wheel: "W_k2 = 307,943 mm" }
+    pinion: 38.196
+    wheel: 307.943
+  number_of_teeth_spanned:
+    table: "Table A.1"
+    description: "Number of teeth spanned"
+    symbol: "k"
+    unit: "-"
+    printed: { pinion: "k_1 = 2", wheel: "k_2 = 13" }
+    pinion: 2
+    wheel: 13
+  tip_diameter_mm:
+    table: "Table A.1"
+    description: "Tip diameter"
+    symbol: "d_a"
+    unit: "mm"
+    printed: { pinion: "d_a1 = 159,66 mm", wheel: "d_a2 = 872,35 mm" }
+    pinion: 159.66
+    wheel: 872.35
+  basic_rack_dedendum_mm:
+    table: "Table A.1"
+    description: "Basic rack dedendum"
+    symbol: "h_fP"
+    unit: "mm"
+    note: "printed as 1,4 · m_n; the evaluated value 11,2 mm is printed once (wheel) and holds for both gears"
+    printed:
+      { pinion: "h_fP1 = 1,4 m_n mm", wheel: "h_fP2 = 1,4 m_n = 11,2 mm" }
+    factor_of_normal_module: { pinion: 1.4, wheel: 1.4 }
+    pinion: 11.2
+    wheel: 11.2
+  basic_rack_fillet_radius_mm:
+    table: "Table A.1"
+    description: "Basic rack fillet root radius"
+    symbol: "rho_fP"
+    unit: "mm"
+    note: "printed as 0,39 · m_n; the evaluated value 3,12 mm is printed once (wheel) and holds for both gears"
+    printed:
+      { pinion: "rho_fP1 = 0,39 m_n mm", wheel: "rho_fP2 = 0,39 m_n = 3,12 mm" }
+    factor_of_normal_module: { pinion: 0.39, wheel: 0.39 }
+    pinion: 3.12
+    wheel: 3.12
+  residual_fillet_undercut_mm:
+    table: "Table A.1"
+    description: "residual fillet undercut"
+    symbol: "s_pr"
+    unit: "mm"
+    printed: { pinion: "s_pr1 = 0,00 mm", wheel: "s_pr2 = 0,00 mm" }
+    pinion: 0.0
+    wheel: 0.0
+  machining_allowance_mm:
+    table: "Table A.1"
+    description: "Material allowance for finishing"
+    symbol: "q"
+    unit: "mm"
+    printed: { pinion: "q_1 = 0,00 mm", wheel: "q_2 = 0,00 mm" }
+    pinion: 0.0
+    wheel: 0.0
+  tip_relief_um:
+    table: "Table A.1"
+    description: "Tip relief"
+    symbol: "C_a"
+    unit: "µm"
+    printed: "C_a = 70 µm"
+    value: 70.0
+  root_relief_um:
+    table: "Table A.1"
+    description: "Root relief"
+    symbol: "C_f"
+    unit: "µm"
+    printed: "C_f = 0 µm"
+    value: 0.0
+  profile_modification_compensates_deflections:
+    table: "Table A.1"
+    description: "Profile modification compensate for the deflections"
+    symbol: null
+    unit: "-"
+    printed: "Yes"
+    value: true
+  single_pitch_tolerance_um:
+    table: "Table A.2"
+    description: "Single pitch tolerance"
+    symbol: "f_pT"
+    unit: "µm"
+    note: "row of Table A.2 'Gear quality' (p. 43), used by f_pb in A.6"
+    printed: { pinion: "f_pT1 = 8,5 µm", wheel: "f_pT2 = 9,0 µm" }
+    pinion: 8.5
+    wheel: 9.0
+  rotation_speed_per_min:
+    table: "Table A.5"
+    description: "Pinion speed"
+    symbol: "n"
+    unit: "1/min"
+    note: "row of Table A.5 'Load data' (p. 45), given for the pinion only; used by v_w and v in A.6"
+    printed: "n_1 = 360 min^-1"
+    value: 360.0
+
+# ---- A.6 — Supplementary calculations (printed p. 45 and 46), all 25 results ---------------------
+expected:
+  gear_ratio:
+    page: 45
+    description: "Gear ratio"
+    symbol: "u"
+    formula: "u = z_2 / z_1"
+    unit: "-"
+    printed: "6,058 82"
+    value: 6.05882
+    decimals: 5
+  transverse_module_mm:
+    page: 45
+    description: "Transverse module"
+    symbol: "m_t"
+    formula: "m_t = m_n / cos(beta)"
+    unit: "mm"
+    printed: "8,314 12 mm"
+    value: 8.31412
+    decimals: 5
+  reference_diameter_mm:
+    page: 45
+    description: "Reference diameter"
+    symbol: "d"
+    formula: "d_1 = z_1 · m_t; d_2 = z_2 · m_t"
+    unit: "mm"
+    printed: { pinion: "141,340 mm", wheel: "856,355 mm" }
+    pinion: 141.340
+    wheel: 856.355
+    decimals: 3
+  inv_alpha_n_rad:
+    page: 45
+    quantity: involute_function
+    description: "Involute normal pressure angle"
+    meaning: "involute function of the normal pressure angle alpha_n"
+    symbol: "inv alpha_n"
+    formula: "inv alpha_n = tan(alpha_n) - alpha_n"
+    unit: "rad"
+    printed: "0,014 90 rad"
+    value: 0.01490
+    decimals: 5
+  transverse_pressure_angle_deg:
+    page: 45
+    description: "Transverse pressure angle"
+    symbol: "alpha_t"
+    formula: "alpha_t = atan(tan(alpha_n) / cos(beta))"
+    unit: "deg"
+    printed: "20,720°"
+    value: 20.720
+    decimals: 3
+  inv_alpha_t_rad:
+    page: 45
+    quantity: involute_function
+    description: "Transverse pressure angle"
+    meaning: "involute function of the transverse pressure angle alpha_t; the norm prints it as the second formula of the row 'Transverse pressure angle', without a label of its own"
+    symbol: "inv alpha_t"
+    formula: "inv alpha_t = tan(alpha_t) - alpha_t"
+    unit: "rad"
+    printed: "0,016 63 rad"
+    value: 0.01663
+    decimals: 5
+  transverse_working_pressure_angle_deg:
+    page: 45
+    description: "Transverse working pressure angle"
+    symbol: "alpha_wt"
+    formula: "alpha_wt = acos(abs(z_1 + z_2) · (m_n · cos(alpha_t)) / (2 · a_w · cos(beta)))"
+    unit: "deg"
+    printed: "21,066°"
+    value: 21.066
+    decimals: 3
+  generating_profile_shift_coefficient:
+    page: 45
+    description: "Generating profile shift coefficient"
+    symbol: "x_E"
+    formula: "x_E1 = (W_k1 - m_n · cos(alpha_n) · (pi · (k_1 - 0,5) + z_1 · inv alpha_t)) / (2 · m_n · sin(alpha_n)); x_E2 alike"
+    unit: "-"
+    printed: { pinion: "0,117 79", wheel: "-0,027 48" }
+    pinion: 0.11779
+    wheel: -0.02748
+    decimals: 5
+  generated_root_diameter_mm:
+    page: 45
+    description: "Root diameter (based on generating profile shift coefficient, x_E)"
+    symbol: "d_f"
+    formula: "d_f1 = d_1 - 2 · (h_fP1 - x_E1 · m_n); d_f2 alike"
+    unit: "mm"
+    printed: { pinion: "120,825 mm", wheel: "833,515 mm" }
+    pinion: 120.825
+    wheel: 833.515
+    decimals: 3
+  root_form_diameter_mm:
+    page: 45
+    description: "Root form diameter (based on generated profile shift coefficient, x_E; in this case there is no undercut or protuberance, so the following formula can be applied)"
+    symbol: "d_Ff"
+    formula: "d_Ff1 = sqrt((d_1 · sin(alpha_t) - 2 · (h_aP0 - x_E1 · m_n - rho_aP0 · (1 - sin(alpha_n))) / sin(alpha_t))^2 + d_b1^2); d_Ff2 alike"
+    unit: "mm"
+    printed: { pinion: "132,248 mm", wheel: "839,084 mm" }
+    pinion: 132.248
+    wheel: 839.084
+    decimals: 3
+  base_diameter_mm:
+    page: 45
+    description: "Base diameter"
+    symbol: "d_b"
+    formula: "d_b1 = d_1 · cos(alpha_t); d_b2 = d_2 · cos(alpha_t)"
+    unit: "mm"
+    printed: { pinion: "132,199 mm", wheel: "800,968 mm" }
+    pinion: 132.199
+    wheel: 800.968
+    decimals: 3
+  base_helix_angle_deg:
+    page: 45
+    description: "Base helix angle"
+    symbol: "beta_b"
+    formula: "beta_b = atan(tan(beta) · cos(alpha_t))"
+    unit: "deg"
+    note: "the norm prints the inverse tangent as tan with the exponent -1"
+    printed: "14,825°"
+    value: 14.825
+    decimals: 3
+  working_pitch_diameter_mm:
+    page: 46
+    description: "Working pitch diameter"
+    symbol: "d_w"
+    formula: "d_w1 = d_b1 / cos(alpha_wt); d_w2 = d_b2 / cos(alpha_wt)"
+    unit: "mm"
+    printed: { pinion: "141,667 mm", wheel: "858,333 mm" }
+    pinion: 141.667
+    wheel: 858.333
+    decimals: 3
+  normal_pitch_mm:
+    page: 46
+    description: "Normal pitch"
+    symbol: "p_n"
+    formula: "p_n = pi · m_n"
+    unit: "mm"
+    printed: "25,133 mm"
+    value: 25.133
+    decimals: 3
+  transverse_pitch_mm:
+    page: 46
+    description: "Transverse pitch"
+    symbol: "p_t"
+    formula: "p_t = pi · m_t"
+    unit: "mm"
+    printed: "26,120 mm"
+    value: 26.120
+    decimals: 3
+  transverse_base_pitch_mm:
+    page: 46
+    description: "Transverse base pitch"
+    symbol: "p_bt"
+    formula: "p_bt = p_t · cos(alpha_t)"
+    unit: "mm"
+    printed: "24,430 mm"
+    value: 24.430
+    decimals: 3
+  transverse_contact_pitch_mm:
+    page: 46
+    description: "Transverse base pitch on the path of contact"
+    symbol: "p_et"
+    formula: "p_et = p_bt"
+    unit: "mm"
+    printed: "24,430 mm"
+    value: 24.430
+    decimals: 3
+  length_of_path_of_contact_mm:
+    page: 46
+    description: "Length of line of contact"
+    symbol: "g_alpha"
+    formula: "g_alpha = 1/2 · (sqrt(d_Na1^2 - d_b1^2) + z_2 / abs(z_2) · (sqrt(d_Na2^2 - d_b2^2) - 2 · a_w · sin(alpha_wt)))"
+    unit: "mm"
+    printed: "37,845 mm"
+    value: 37.845
+    decimals: 3
+  sap_diameter_mm:
+    page: 46
+    description: "SAP diameter"
+    meaning: "diameter at the start of the active profile"
+    symbol: "d_Nf"
+    formula: "d_Nf1 = sqrt((2 · abs(a) · sin(alpha_wt) - sqrt(d_Fa2^2 - d_b2^2))^2 + d_b1^2); d_Nf2 = z_2 / abs(z_2) · sqrt((2 · a · sin(alpha_wt) - sqrt(d_Fa1^2 - d_b1^2))^2 + d_b2^2)"
+    unit: "mm"
+    printed: { pinion: "132,921 mm", wheel: "845,225 mm" }
+    pinion: 132.921
+    wheel: 845.225
+    decimals: 3
+  transverse_contact_ratio:
+    page: 46
+    description: "Transverse contact ratio"
+    symbol: "epsilon_alpha"
+    formula: "epsilon_alpha = g_alpha / p_et"
+    unit: "-"
+    printed: "1,549 09"
+    value: 1.54909
+    decimals: 5
+  overlap_ratio:
+    page: 46
+    description: "Overlap ratio"
+    symbol: "epsilon_beta"
+    formula: "epsilon_beta = b · sin(beta) / (m_n · pi)"
+    unit: "-"
+    printed: "1,083 37"
+    value: 1.08337
+    decimals: 5
+  total_contact_ratio:
+    page: 46
+    description: "Total contact ratio"
+    symbol: "epsilon_gamma"
+    formula: "epsilon_gamma = epsilon_alpha + epsilon_beta"
+    unit: "-"
+    printed: "2,632 46"
+    value: 2.63246
+    decimals: 5
+  transverse_base_pitch_deviation_um:
+    page: 46
+    description: "Transverse base pitch deviation"
+    symbol: "f_pb"
+    formula: "f_pb1 = f_pT1 · cos(alpha_t); f_pb2 = f_pT2 · cos(alpha_t)"
+    unit: "µm"
+    printed: { pinion: "7,950 24 µm", wheel: "8,417 90 µm" }
+    pinion: 7.95024
+    wheel: 8.41790
+    decimals: 5
+  pitch_line_velocity_m_s:
+    page: 46
+    description: "Pitch line velocity"
+    symbol: "v_w"
+    formula: "v_w = d_w1 · pi · n_1 / (60 · 10^3)"
+    unit: "m/s"
+    printed: "2,670 35 m/s"
+    value: 2.67035
+    decimals: 5
+  circumferential_velocity_m_s:
+    page: 46
+    description: "Circumferential velocity at the reference circle (see ISO 6336-1:2019, 4.2.2)"
+    symbol: "v"
+    formula: "v = d_1 · pi · n_1 / (60 · 10^3)"
+    unit: "m/s"
+    printed: "2,664 20 m/s"
+    value: 2.66420
+    decimals: 5

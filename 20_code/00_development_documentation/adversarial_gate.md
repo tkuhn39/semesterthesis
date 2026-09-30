@@ -23,7 +23,11 @@ scratchpad. After the report: `git status` must show no unexpected change (incid
 4. **Code smells:** `max(x, 1e-12)`-style clamping, `abs()` before `sqrt`, `try/except` around math,
    silent `None`, unbracketed iteration, duplicated helpers (a second `inv_inverse` anywhere = P0),
    missing or bare `@eq` references, equation numbers without source key.
-5. **Contract checks:** JSON round trip, schema export, typed error classes for every failure path.
+5. **Quantity registry:** every quantity the increment introduces has an entry in
+   `data/quantities.yaml`; symbol, designation and location are compared with the rendered page;
+   worked-example fixtures are complete and carry the labels of the norm. Tabulated values and
+   defaults of the increment are listed in `norm_map.md` and compared with the current norm.
+6. **Contract checks:** JSON round trip, schema export, typed error classes for every failure path.
 
 ## Output
 Table `ID | severity P0–P3 | repro (≤ 5 lines) | expected (norm reference) | actual`.

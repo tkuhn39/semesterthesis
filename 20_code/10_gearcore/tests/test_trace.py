@@ -34,6 +34,7 @@ VERIFIED_METHODS = {
     "isbn-checksum",
     "crossref",
     "dpma-front-page",
+    "urn-resolver",
     None,
 }
 
@@ -67,10 +68,11 @@ def test_sources_yaml_entries_are_well_formed() -> None:
                 f"{key}: no verification method (set status: missing instead)"
             )
         assert isinstance(entry["confirmed_by_user"], bool)
-        if entry["type"] in {"article", "conference", "book"}:
-            assert any(k in entry for k in ("doi", "isbn13")) or entry.get("status") == "missing", (
-                f"{key}: article/book without doi/isbn13 must be marked status: missing"
-            )
+        if entry["type"] in {"article", "conference", "book", "thesis"}:
+            assert (
+                any(k in entry for k in ("doi", "isbn13", "urn"))
+                or entry.get("status") == "missing"
+            ), f"{key}: article/book/thesis without doi/isbn13/urn must be marked status: missing"
 
 
 def test_isbn13_checksums_are_valid() -> None:
@@ -91,8 +93,12 @@ def test_every_eq_source_key_is_registered() -> None:
     for func_key, refs in EQUATIONS.items():
         for ref in refs:
             assert ref.source in sources, f"{func_key}: unknown source key {ref.source!r}"
-            assert sources[ref.source].get("status") != "missing", (
-                f"{func_key}: cites {ref.source}, which has no verifiable identifier yet"
+            assert sources[ref.source].get("status") not in {"missing", "draft"}, (
+                f"{func_key}: cites {ref.source}, which has no verifiable identifier yet or is only a draft edition"
+            )
+            assert sources[ref.source].get("confirmed_by_user") is True, (
+                f"{func_key}: cites {ref.source}, which the user has not confirmed against the PDF yet "
+                "(set confirmed_by_user: true in sources.yaml after checking)"
             )
 
 

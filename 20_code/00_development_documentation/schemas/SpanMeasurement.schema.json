@@ -2,26 +2,42 @@
   "additionalProperties": false,
   "description": "Base tangent length W_k over k teeth (DIN 21773:2014 §7) as an alternative to x.",
   "properties": {
-    "span_mm": {
-      "description": "ZAHNWEITE",
+    "span_measurement_mm": {
+      "description": "Span measurement",
+      "designation": "Zahnweite über k Messzähne oder Messlücken",
+      "designation_en": "Span measurement",
       "exclusiveMinimum": 0.0,
+      "factor": false,
+      "location": "§3.1 symbol list, p. 15",
+      "quantity": "span_measurement",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "ZAHNWEITE",
       "symbol": "W_k",
-      "title": "Span Mm",
+      "title": "Span Measurement Mm",
       "type": "number",
       "unit": "mm"
     },
-    "teeth": {
-      "description": "MESSZAEHNEZAHL",
+    "number_of_teeth_spanned": {
+      "description": "Number of teeth spanned",
+      "designation": "Anzahl der Zähne, Lücken oder Teilungen in einem Bereich (z. B. Messzähnezahl)",
+      "designation_en": "Number of teeth spanned",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 12",
       "minimum": 2,
+      "quantity": "number_of_teeth_spanned",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "MESSZAEHNEZAHL",
       "symbol": "k",
-      "title": "Teeth",
+      "title": "Number Of Teeth Spanned",
       "type": "integer",
       "unit": "-"
     }
   },
   "required": [
-    "span_mm",
-    "teeth"
+    "span_measurement_mm",
+    "number_of_teeth_spanned"
   ],
   "title": "SpanMeasurement",
   "type": "object"

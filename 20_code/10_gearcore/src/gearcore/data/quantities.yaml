@@ -1,0 +1,1289 @@
+# Quantity registry — the single source of truth for names, symbols and designations.
+#
+# One entry per physical quantity. Contracts, fixtures, the comparison with STplus, the notebooks
+# and the generated table `quantities.md` take symbol, unit and designation from here; nothing
+# defines a symbol a second time (project rule 3b, ADR-108). Every increment adds the quantities it
+# introduces before it uses them.
+#
+#   <key>        program name. A contract field is this name without the context prefix of its
+#                model (`tool_`, `basic_rack_`), plus `_factor` for a module factor, plus the unit
+#                suffix (`_mm`, `_deg`, `_um`).
+#   symbol       symbol of the governing norm; subscripts follow an underscore, Greek letters are
+#                spelled out (alpha, beta, eta, psi, rho, xi). A module factor appends `*`.
+#   unit         unit of the quantity. DIN ISO 21771 §3.3 (p. 18): angles enter equations in radian
+#                and may be given and shown in degree; contracts hold degrees (`_deg`), functions
+#                of single equations take radians (`_rad`). A contract field declared as module
+#                factor holds quantity / m_n and has no unit. Micrometre is written µm, the field
+#                suffix is `_um` (names are ASCII).
+#   description  designation of the governing norm, verbatim. Text in parentheses is an own remark
+#                where the document prints a symbol without a designation.
+#   source       key in sources.yaml of the governing norm; location = where it is printed
+#   english      English designation of an ISO document in the repository, verbatim (null = none
+#                found; the program name is then a translation of `description`)
+#   also         symbols and designations other CURRENT documents print for the same quantity
+#   stplus       STplus 11.1F: symbol and label of the listing (.sta), key of the input (.ste) and
+#                of the interface file (.sts). null = none recorded yet (quantities of the load
+#                capacity get their STplus names with stage 2).
+#   replaced     what withdrawn or older norms print for this quantity, also where the symbol is
+#                the same as today. DIN 3960 lists symbols in §2.1 without the index of the section
+#                (s, e, p_b, p_e, alpha_y); its clauses write s_t, s_n, ... and give the short form
+#                for a spur gear, so the clause is cited and the entry of §2.1 is named with it.
+#   note         what a reader has to know when the documents differ
+#   since        increment that introduced the quantity
+#   status       verified = every text above was read on the rendered page (independent review
+#                           of 2026-09-29: gate_reports/increment_1.md)
+#                pending  = the contract carries the quantity, the designation is not verified yet;
+#                           no computation, fixture or notebook may use it
+#
+# Governing norm of the geometry: DIN ISO 21771:2014-08 (with Anhang NB). Basic rack: DIN ISO 21771
+# §3.1 and Bild 4, completed by DIN 867:1986-02 and ISO 53:1998.
+quantities:
+  # ---- gear data ---------------------------------------------------------------------------------
+  number_of_teeth:
+    symbol: "z"
+    unit: "-"
+    description: "Zähnezahl"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 14"
+    english: { text: "number of teeth", source: "ISO6336-1:2019", location: "Table 2, p. 10" }
+    also: []
+    stplus: { symbol: "z", label: "Zaehnezahl", input_key: "ZAEHNEZAHL", interface_key: "ZAEHNEZAHL" }
+    replaced:
+      - { symbol: "z", description: "Zähnezahl", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: null
+    since: 0
+    status: verified
+  normal_module:
+    symbol: "m_n"
+    unit: "mm"
+    description: "Normalmodul"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12"
+    english: { text: "normal module", source: "ISO6336-1:2019", location: "Table 2, p. 8" }
+    also: []
+    stplus: { symbol: "m_n", label: "Normalmodul", input_key: "NORMALMODUL", interface_key: "NORMALMODUL" }
+    replaced:
+      - { symbol: "m_n", description: "Normalmodul", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: null
+    since: 0
+    status: verified
+  normal_pressure_angle:
+    symbol: "alpha_n"
+    unit: "deg"
+    description: "Normaleingriffswinkel"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 15"
+    english: { text: "Normal pressure angle", source: "ISOTR6336-30:2022", location: "Table 2, p. 5" }
+    also: []
+    stplus: { symbol: "alfa_n", label: "Normaleingriffswinkel", input_key: "EINGRIFFSWINKEL", interface_key: "NORMALEINGRIFFSWINKEL" }
+    replaced:
+      - { symbol: "alpha_n", description: "Normaleingriffswinkel", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: null
+    since: 0
+    status: verified
+  helix_angle:
+    symbol: "beta"
+    unit: "deg"
+    description: "Schrägungswinkel"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: { text: "helix angle (without subscript, at reference cylinder)", source: "ISO6336-1:2019", location: "Table 2, p. 10" }
+    also: []
+    stplus: { symbol: "beta", label: "Schraegungswinkel am Teilkreis", input_key: "SCHRAEGUNGSWINKEL", interface_key: "SCHRAEGUNGSWINKEL_TEILK" }
+    replaced:
+      - { symbol: "beta", description: "Schrägungswinkel", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "STplus sign: positive = pinion right-hand; the interface file prints the hand of each gear as a sign."
+    since: 0
+    status: verified
+  centre_distance:
+    symbol: "a_w"
+    unit: "mm"
+    description: "Achsabstand eines Zylinderradpaares"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11"
+    english: { text: "Centre distance", source: "ISOTR6336-30:2022", location: "Table 2, p. 2" }
+    also:
+      - { symbol: "a", description: "Centre distance", source: "ISOTR6336-30:2022", location: "Table 2, p. 2; Table A.1, p. 43" }
+    stplus: { symbol: "a", label: "Achsabstand", input_key: "ACHSABSTAND", interface_key: "ACHSABSTAND" }
+    replaced:
+      - { symbol: "a", description: "Achsabstand eines Stirnradpaares", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "Symbol changed from a (DIN 3960, STplus) to a_w. ISO/TR 6336-30:2022 prints a in its tables and in the formulas of d_Nf (A.6, p. 46), a_w in the formulas of alpha_wt (A.6, p. 45) and g_alpha (p. 46). A given centre distance is fixed (ADR-107)."
+    since: 0
+    status: verified
+  profile_shift_coefficient:
+    symbol: "x"
+    unit: "-"
+    description: "Profilverschiebungsfaktor"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13"
+    english: { text: "profile shift coefficient", source: "ISO6336-1:2019", location: "Table 2, p. 9" }
+    also:
+      - { symbol: "x", description: "Nominal profile shift coefficient", source: "ISOTR6336-30:2022", location: "Table 2, p. 4" }
+      - { symbol: "x", description: "Nominal addendum correction factor", source: "ISOTR6336-30:2022", location: "Table A.1, p. 43" }
+    stplus: { symbol: "x", label: "Profilverschiebungsfaktor (Nennw.)", input_key: "PROFILVERSCHIEBUNG_N", interface_key: "PROFILVERSCHIEBFAKTOR" }
+    replaced:
+      - { symbol: "x", description: "Profilverschiebungsfaktor", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "ISO/TR 6336-30:2022 names the same quantity differently in Table 2 and in Table A.1. Table A.1 prints x_1 in parentheses; clause 4.2.18 (p. 9): 'Values in the input table (e.g. nominal profile shift coefficient x) are put in parenthesis when they are calculated and for reference only.' x_2 = 0 and the centre distance are given, x_1 follows from them (ADR-107)."
+    since: 0
+    status: verified
+  face_width:
+    symbol: "b"
+    unit: "mm"
+    description: "Zahnbreite"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11"
+    english: { text: "face width", source: "ISO6336-1:2019", location: "Table 2, p. 3" }
+    also:
+      - { symbol: "b", description: "Facewidth (total facewidth if double helical)", source: "ISOTR6336-30:2022", location: "Table 2, p. 2" }
+    stplus: { symbol: "b", label: "Zahnbreite (eine Pfeilhaelfte bei DSV)", input_key: "ZAHNBREITE", interface_key: "ZAHNBREITE" }
+    replaced:
+      - { symbol: "b", description: "Zahnbreite", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: null
+    since: 0
+    status: verified
+  contact_face_width:
+    symbol: "b_w"
+    unit: "mm"
+    description: "wirksame Zahnbreite (genutzte Zahnbreite)"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11"
+    english: { text: "Contact facewidth", source: "ISOTR6336-30:2022", location: "Table 2, p. 2" }
+    also:
+      - { symbol: "b_eff", description: "Contact facewidth", source: "ISOTR6336-30:2022", location: "Table 2, p. 2" }
+      - { symbol: "b", description: "Contact facewidth", source: "ISOTR6336-30:2022", location: "Table A.1, p. 43" }
+      - { symbol: "b_w", description: "gemeinsame Zahnbreite", source: "VDI2736-2:2014", location: "Abschnitt 4 (Ausgangsdaten), p. 21" }
+    stplus: { symbol: "b_gem", label: "Gemeinsame Breite", input_key: null, interface_key: "GEMEINSAME_BREITE" }
+    replaced: []
+    note: "ISO/TR 6336-30:2022 lists b_eff in Table 2 and prints b in Table A.1. Used from increment 2 on."
+    since: 1
+    status: verified
+  tip_diameter:
+    symbol: "d_a"
+    unit: "mm"
+    description: "Kopfkreisdurchmesser"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11"
+    english: { text: "tip diameter", source: "ISO6336-1:2019", location: "Table 2, p. 4" }
+    also: []
+    stplus: { symbol: "d_a", label: "Kopfkreisdurchmesser", input_key: "KOPFKREISDM", interface_key: "KOPFKREISDURCHM" }
+    replaced:
+      - { symbol: "d_a", description: "Kopfkreisdurchmesser", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: null
+    since: 0
+    status: verified
+  tip_chamfer_radial:
+    symbol: "h_K"
+    unit: "mm"
+    description: "Radiale Höhe des Kopfkantenbruchs oder der Kopfkantenrundung"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12"
+    english: { text: "Tip chamfer", source: "ISOTR6336-30:2022", location: "Table 2, p. 3" }
+    also: []
+    stplus: { symbol: "h_K", label: "Kopfkantenbruch (Radialbetrag)", input_key: "KOPFKANTENBRUCH", interface_key: "KOPFKANTENBRUCH" }
+    replaced:
+      - { symbol: "h_K", description: "Radialbetrag des Kopfkantenbruchs oder der Kopfkantenrundung", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "The program name keeps 'radial' of the German designation; ISO/TR 6336-30 says 'Tip chamfer' only."
+    since: 0
+    status: verified
+  span_measurement:
+    symbol: "W_k"
+    unit: "mm"
+    description: "Zahnweite über k Messzähne oder Messlücken"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 15"
+    english: { text: "Span measurement", source: "ISOTR6336-30:2022", location: "Table 2, p. 4" }
+    also: []
+    stplus: { symbol: "W_k", label: "Zahnweite (Nennmass)", input_key: "ZAHNWEITE", interface_key: "ZAHNWEITE" }
+    replaced:
+      - { symbol: "W_k", description: "Zahnweite über k Meßzähne oder Meßlücken", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "Inspection dimensions are governed by DIN 21773:2014-08 (increment 4); the entry is reviewed there."
+    since: 0
+    status: verified
+  number_of_teeth_spanned:
+    symbol: "k"
+    unit: "-"
+    description: "Anzahl der Zähne, Lücken oder Teilungen in einem Bereich (z. B. Messzähnezahl)"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12"
+    english: { text: "Number of teeth spanned", source: "ISOTR6336-30:2022", location: "Table 2, p. 3" }
+    also: []
+    stplus: { symbol: "k", label: "Messzaehnezahl", input_key: "MESSZAEHNEZAHL", interface_key: "MESSZAEHNEZAHL" }
+    replaced:
+      - { symbol: "k", description: "Anzahl der Zähne oder Teilungen in einem Bereich", source: "DIN3960:1987", location: "§2.1, p. 3" }
+      - { symbol: "k", description: "Meßzähnezahl (Meßlückenzahl) bei der Zahnweitenmessung", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "STplus has a second key MESSZAEHNEZAHL_K for the span used as a check dimension."
+    since: 0
+    status: verified
+  hand_of_helix:
+    symbol: null
+    unit: "-"
+    description: "Hand of helix"
+    source: "ISOTR6336-30:2022"
+    location: "Table A.1, p. 43"
+    english: { text: "Hand of helix", source: "ISOTR6336-30:2022", location: "Table A.1, p. 43" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "No symbol. gearcore carries the hand in the sign of beta; it enters with the pair geometry (increment 2)."
+    since: 1
+    status: verified
+
+  # ---- single gear, results (DIN ISO 21771 §4) ---------------------------------------------------
+  transverse_module:
+    symbol: "m_t"
+    unit: "mm"
+    description: "Stirnmodul"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12"
+    english: { text: "Transverse module", source: "ISOTR6336-30:2022", location: "A.6, p. 45" }
+    also: []
+    stplus: { symbol: "m_t", label: "Stirnmodul", input_key: null, interface_key: "STIRNMODUL" }
+    replaced:
+      - { symbol: "m_t", description: "Stirnmodul", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: null
+    since: 1
+    status: verified
+  transverse_pressure_angle:
+    symbol: "alpha_t"
+    unit: "deg"
+    description: "Stirneingriffswinkel"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 15"
+    english: { text: "transverse pressure angle", source: "ISO6336-1:2019", location: "Table 2, p. 10" }
+    also: []
+    stplus: { symbol: "alfa_t", label: "Stirneingriffswinkel", input_key: null, interface_key: "STIRNEINGRIFFSWINKEL" }
+    replaced:
+      - { symbol: "alpha_t", description: "Stirneingriffswinkel", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: null
+    since: 1
+    status: verified
+  base_helix_angle:
+    symbol: "beta_b"
+    unit: "deg"
+    description: "Grundschrägungswinkel"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: { text: "base helix angle", source: "ISO6336-1:2019", location: "Table 2, p. 10" }
+    also: []
+    stplus: { symbol: "beta_b", label: "Schraegungswinkel am Grundkreis", input_key: null, interface_key: "SCHRAEGUNGSWINKEL_GRUND" }
+    replaced:
+      - { symbol: "beta_b", description: "Grundschrägungswinkel", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "The listing prints the magnitude, the interface file the sign of each gear."
+    since: 1
+    status: verified
+  reference_diameter:
+    symbol: "d"
+    unit: "mm"
+    description: "Teilkreisdurchmesser"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11"
+    english: { text: "diameter (without subscript, reference diameter)", source: "ISO6336-1:2019", location: "Table 2, p. 4" }
+    also:
+      - { symbol: "d", description: "Reference diameter", source: "ISOTR6336-30:2022", location: "Table 2, p. 2" }
+    stplus: { symbol: "d", label: "Teilkreisdurchmesser", input_key: null, interface_key: "TEILKREISDURCHM" }
+    replaced:
+      - { symbol: "d", description: "Teilkreisdurchmesser", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: null
+    since: 1
+    status: verified
+  base_diameter:
+    symbol: "d_b"
+    unit: "mm"
+    description: "Grundkreisdurchmesser"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11"
+    english: { text: "base diameter", source: "ISO6336-1:2019", location: "Table 2, p. 4" }
+    also:
+      - { symbol: "d_b", description: "Base circle diameter", source: "ISOTR6336-30:2022", location: "Table 2, p. 2" }
+    stplus: { symbol: "d_b", label: "Grundkreisdurchmesser", input_key: null, interface_key: "GRUNDKREISDURCHM" }
+    replaced:
+      - { symbol: "d_b", description: "Grundkreisdurchmesser", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: null
+    since: 1
+    status: verified
+  transverse_tooth_thickness:
+    symbol: "s_t"
+    unit: "mm"
+    description: "Zahndicke auf dem Teilzylinder im Stirnschnitt"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13"
+    english: null
+    also: []
+    stplus: { symbol: "s_t", label: "Zahndicke (Nennmass, Stirnschn.)", input_key: null, interface_key: "ZAHNDICKE_STIRNSCHNITT" }
+    replaced:
+      - { symbol: "s_t", description: "Stirnzahndicke", source: "DIN3960:1987", location: "§3.5.8.1, Eq. (3.5.24), p. 12; §2.1, p. 3 lists s 'Zahndicke auf dem Teilzylinder'" }
+    note: "Signed value of Eq. (39); see BasicGearGeometry. Same symbol as in DIN 3960, which writes s for a spur gear."
+    since: 1
+    status: verified
+  normal_tooth_thickness:
+    symbol: "s_n"
+    unit: "mm"
+    description: "Zahndicke auf dem Teilzylinder im Normalschnitt"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13"
+    english: null
+    also: []
+    stplus: { symbol: "s_n", label: "Zahndicke (Nennmass, Normalschn.)", input_key: null, interface_key: "ZAHNDICKE_NORMAL" }
+    replaced:
+      - { symbol: "s_n", description: "Normalzahndicken", source: "DIN3960:1987", location: "§3.5.8.5 (heading 'Normalzahndicken s_n, s_yn, s_vn und s_bn'), Eq. (3.5.44), p. 13" }
+    note: "Signed value of Eq. (49). Same symbol as in DIN 3960."
+    since: 1
+    status: verified
+  transverse_space_width:
+    symbol: "e_t"
+    unit: "mm"
+    description: "Lückenweite auf dem Teilzylinder"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "e_t", description: "Lückenweite", source: "DIN3960:1987", location: "§3.5.8.3, Eq. (3.5.33), p. 13; §2.1, p. 2 lists e 'Lückenweite auf dem Teilzylinder'" }
+    note: "Signed value of Eq. (44). STplus prints the normal space width only. Same symbol as in DIN 3960, which writes e for a spur gear."
+    since: 1
+    status: verified
+  normal_space_width:
+    symbol: "e_n"
+    unit: "mm"
+    description: "Normallückenweite"
+    source: "ISO21771:2014"
+    location: "§4.7.6 (heading), Eq. (51) for the reference cylinder, p. 37"
+    english: null
+    also: []
+    stplus: { symbol: "e_n", label: "Zahnlueckenweite (Normalschnitt)", input_key: null, interface_key: "ZAHNLUECKE_NORMAL" }
+    replaced:
+      - { symbol: "e_n", description: "Normallückenweiten", source: "DIN3960:1987", location: "§3.5.8.6 (heading 'Normallückenweiten e_n, e_yn, e_vn und e_bn'), p. 13" }
+    note: "Not in the symbol list §3.1 of DIN ISO 21771; the designation is taken from §4.7.6."
+    since: 1
+    status: verified
+  tooth_thickness_half_angle:
+    symbol: "psi"
+    unit: "deg"
+    description: "Zahndicken-Halbwinkel am Teilkreis"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "psi", description: "Zahndicken-Halbwinkel am Teilkreis", source: "DIN3960:1987", location: "§2.1, p. 5" }
+    note: null
+    since: 1
+    status: verified
+  space_width_half_angle:
+    symbol: "eta"
+    unit: "deg"
+    description: "Zahnlücken-Halbwinkel am Teilkreis"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "eta", description: "Zahnlücken-Halbwinkel am Teilkreis", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: null
+    since: 1
+    status: verified
+  base_tooth_thickness_half_angle:
+    symbol: "psi_b"
+    unit: "deg"
+    description: "Zahndicken-Halbwinkel am Grundkreis"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "psi_b", description: "Grunddicken-Halbwinkel", source: "DIN3960:1987", location: "§2.1, p. 5" }
+    note: null
+    since: 1
+    status: verified
+  base_space_width_half_angle:
+    symbol: "eta_b"
+    unit: "deg"
+    description: "Zahnlücken-Halbwinkel am Grundkreis"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "eta_b", description: "Grundlücken-Halbwinkel", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "Signed (Eq. (47)). Negative when the two involutes that bound a tooth space meet above the base circle; for x = 0, alpha_n = 20°, beta = 0 from z = 106 on. The root circle of such a gear lies above that point."
+    since: 1
+    status: verified
+
+  # ---- quantities at an arbitrary diameter (arguments and results of single functions) -----------
+  y_diameter:
+    symbol: "d_y"
+    unit: "mm"
+    description: "Y-Kreis-Durchmesser"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "d_y", description: "Y-Kreis-Durchmesser", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: null
+    since: 1
+    status: verified
+  helix_angle_at_y:
+    symbol: "beta_y"
+    unit: "deg"
+    description: "Schrägungswinkel auf dem Y-Zylinder"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "beta_y", description: "Schrägungswinkel auf dem Y-Zylinder", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: null
+    since: 1
+    status: verified
+  transverse_profile_angle_at_y:
+    symbol: "alpha_yt"
+    unit: "deg"
+    description: "Stirnprofilwinkel am Y-Zylinder"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 15"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "alpha_yt", description: "Stirnprofilwinkel", source: "DIN3960:1987", location: "§3.3.3, Eq. (3.3.02), p. 8; §2.1, p. 4 lists alpha_y 'Profilwinkel am Y-Zylinder'" }
+    note: "DIN ISO 21771 distinguishes the pressure angle (Eingriffswinkel, at the reference cylinder) from the profile angle (Profilwinkel, at any cylinder)."
+    since: 1
+    status: verified
+  normal_profile_angle_at_y:
+    symbol: "alpha_yn"
+    unit: "deg"
+    description: "Normalprofilwinkel am Y-Zylinder"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 15"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "alpha_yn", description: "Normalprofilwinkel", source: "DIN3960:1987", location: "§3.3.4, p. 8" }
+    note: null
+    since: 1
+    status: verified
+  roll_angle:
+    symbol: "xi_y"
+    unit: "rad"
+    description: "Wälzwinkel der Evolvente im Punkt Y"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "xi_y", description: "Wälzwinkel der Evolvente im Punkt Y", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: null
+    since: 1
+    status: verified
+  radius_of_curvature:
+    symbol: "rho_y"
+    unit: "mm"
+    description: "Krümmungshalbmesser der Evolvente im Punkt Y"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "rho_y", description: "Krümmungshalbmesser der Evolvente im Punkt Y", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: null
+    since: 1
+    status: verified
+  involute_function:
+    symbol: "inv"
+    unit: "rad"
+    description: "Involute- (Evolventen-)Funktion"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12"
+    english: null
+    also:
+      - { symbol: "inv alpha_n", description: "Involute normal pressure angle", source: "ISOTR6336-30:2022", location: "A.6, p. 45" }
+      - { symbol: "inv alpha_t", description: "Transverse pressure angle", source: "ISOTR6336-30:2022", location: "A.6, p. 45, second formula of the row" }
+    stplus: null
+    replaced:
+      - { symbol: "inv", description: "Evolventenfunktion", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "ISO/TR 6336-30 names inv alpha_n and lists inv alpha_t in the row 'Transverse pressure angle'."
+    since: 1
+    status: verified
+  tooth_thickness_half_angle_at_y:
+    symbol: "psi_y"
+    unit: "deg"
+    description: "Zahndicken-Halbwinkel am Y-Kreis"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "psi_y", description: "Zahndicken-Halbwinkel am Y-Kreis", source: "DIN3960:1987", location: "§2.1, p. 5" }
+    note: null
+    since: 1
+    status: verified
+  space_width_half_angle_at_y:
+    symbol: "eta_y"
+    unit: "deg"
+    description: "Zahnlücken-Halbwinkel am Y-Kreis"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "eta_y", description: "Zahnlücken-Halbwinkel am Y-Kreis", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: null
+    since: 1
+    status: verified
+  transverse_tooth_thickness_at_y:
+    symbol: "s_yt"
+    unit: "mm"
+    description: "Zahndicke auf dem Y-Zylinder im Stirnschnitt"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "s_yt", description: "Stirnzahndicke", source: "DIN3960:1987", location: "§3.5.8.1, Eq. (3.5.25), p. 12; §2.1, p. 3 lists s_y 'Zahndicke auf dem Y-Zylinder'" }
+    note: null
+    since: 1
+    status: verified
+  normal_tooth_thickness_at_y:
+    symbol: "s_yn"
+    unit: "mm"
+    description: "Zahndicke auf dem Y-Zylinder im Normalschnitt"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "s_yn", description: "Normalzahndicken", source: "DIN3960:1987", location: "§3.5.8.5 (heading), Eq. (3.5.45), p. 13" }
+    note: null
+    since: 1
+    status: verified
+  transverse_space_width_at_y:
+    symbol: "e_yt"
+    unit: "mm"
+    description: "Lückenweite auf dem Y-Zylinder"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "e_yt", description: "Lückenweite", source: "DIN3960:1987", location: "§3.5.8.3, Eq. (3.5.35), p. 13; §2.1, p. 2 lists e_y 'Lückenweite auf dem Y-Zylinder'" }
+    note: null
+    since: 1
+    status: verified
+  normal_space_width_at_y:
+    symbol: "e_yn"
+    unit: "mm"
+    description: "Normallückenweite"
+    source: "ISO21771:2014"
+    location: "§4.7.6 (heading), Eq. (50) for any cylinder, p. 37"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "e_yn", description: "Normallückenweiten", source: "DIN3960:1987", location: "§3.5.8.6 (heading), p. 13" }
+    note: "Not in the symbol list §3.1 of DIN ISO 21771; the designation is taken from §4.7.6."
+    since: 1
+    status: verified
+
+  # ---- basic rack of the gear --------------------------------------------------------------------
+  module:
+    symbol: "m"
+    unit: "mm"
+    description: "Module"
+    source: "ISO53:1998"
+    location: "Table 1, p. 2"
+    english: { text: "Module", source: "ISO53:1998", location: "Table 1, p. 2" }
+    also:
+      - { symbol: "m", description: "Modul", source: "DIN867:1986", location: "§2 table, p. 1" }
+    stplus: null
+    replaced:
+      - { symbol: "m", description: "Modul (Durchmesserteilung)", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "Module of the basic rack; DIN ISO 21771 lists m_n, m_t and m_x only."
+    since: 1
+    status: verified
+  pitch:
+    symbol: "p"
+    unit: "mm"
+    description: "Teilung, Teilung auf dem Teilzylinder"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13; Bild 4, p. 22"
+    english: { text: "Pitch", source: "ISO53:1998", location: "Table 1, p. 2" }
+    also:
+      - { symbol: "p", description: "Teilung", source: "DIN867:1986", location: "§2 table, p. 1" }
+    stplus: null
+    replaced:
+      - { symbol: "p", description: "Teilung auf dem Teilzylinder", source: "DIN3960:1987", location: "§2.1, p. 3" }
+      - { symbol: "t_0", description: "(no designation; figure 't_0 = m·pi' and table column t_0)", source: "DIN3972:1952", location: "p. 1" }
+    note: null
+    since: 1
+    status: verified
+  basic_rack_profile_angle:
+    symbol: "alpha_P"
+    unit: "deg"
+    description: "Profilwinkel des Bezugsprofils"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 15"
+    english: { text: "Pressure angle", source: "ISO53:1998", location: "Table 1, p. 2" }
+    also:
+      - { symbol: "alpha_Pn", description: "normal pressure angle of the basic rack for cylindrical gears", source: "ISO6336-1:2019", location: "Table 2, p. 10" }
+    stplus: null
+    replaced:
+      - { symbol: "alpha_P", description: "Profilwinkel des Stirnrad-Bezugsprofils", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "ISO 53 says 'pressure angle'; the program name follows 'Profilwinkel' of DIN ISO 21771."
+    since: 1
+    status: verified
+  basic_rack_addendum:
+    symbol: "h_aP"
+    unit: "mm"
+    description: "Kopfhöhe des Bezugsprofils"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12; Bild 4, p. 22"
+    english: { text: "Addendum of standard basic rack tooth", source: "ISO53:1998", location: "Table 1, p. 2" }
+    also:
+      - { symbol: "h_aP", description: "addendum of basic rack of cylindrical gears", source: "ISO6336-3:2019", location: "Table 2, p. 3" }
+    stplus: { symbol: "h_aP*", label: "Bezugspr.-Kopfhoehenfaktor (Istw.)", input_key: null, interface_key: "BEZPR_KOPFHOEHENFAKTOR" }
+    replaced:
+      - { symbol: "h_aP", description: "Kopfhöhe des Stirnrad-Bezugsprofils", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "The STplus row is an actual value ('Istw.'), not an input of the basic rack: it equals (d_a - d) / (2 m_n) - x and contains the tip alteration (kst_c_rerun prints 0.88761 and 0.75096, neg_shift_z17_xm08 1.00000 and 0.26148)."
+    since: 1
+    status: verified
+  basic_rack_dedendum:
+    symbol: "h_fP"
+    unit: "mm"
+    description: "Fußhöhe des Bezugsprofils"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12; Bild 4, p. 22"
+    english: { text: "Dedendum of standard basic rack tooth", source: "ISO53:1998", location: "Table 1, p. 2" }
+    also:
+      - { symbol: "h_fP", description: "Basic rack dedendum", source: "ISOTR6336-30:2022", location: "Table 2, p. 3; Table A.1, p. 43" }
+      - { symbol: "h_fP", description: "dedendum of basic rack of cylindrical gears (ISO 53:1998 shall apply)", source: "ISO6336-3:2019", location: "Table 2, p. 3" }
+      - { symbol: "h_fP/m_n", description: "Basic rack dedendum coefficient", source: "ISOTR6336-30:2022", location: "Table 13, p. 30" }
+    stplus: null
+    replaced:
+      - { symbol: "h_fP", description: "Fußhöhe des Stirnrad-Bezugsprofils", source: "DIN3960:1987", location: "§2.1, p. 2" }
+      - { symbol: "h_fr", description: "Fußhöhe", source: "DIN3972:1952", location: "p. 1, figure (h_fr at the 'Bezugsprofil des Zahnrades') and block above the table ('bei einer Fußhöhe von h_fr'); indices f = 'bezogen auf Zahnfuß', r = 'bezogen auf Zahnrad'" }
+    note: "DIN 3972 p. 2 uses h_fr also for the dedendum a gear gets by a larger infeed ('Zahnfußhöhe h_fr, die größer als 1,25 · m ist'), which is a dedendum of the gear, not of the basic rack."
+    since: 1
+    status: verified
+  basic_rack_bottom_clearance:
+    symbol: "c_P"
+    unit: "mm"
+    description: "Kopfspiel zwischen Bezugsprofil und Gegenprofil"
+    source: "DIN867:1986"
+    location: "§2 table, p. 1; §4.3 and §4.4, p. 2"
+    english: { text: "Bottom clearance between standard basic rack tooth and mating standard basic rack tooth", source: "ISO53:1998", location: "Table 1, p. 2" }
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "c_P", description: "Kopfspiel zwischen Bezugsprofil und Gegenprofil", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "Not in the symbol list of DIN ISO 21771 (which lists c, the tip clearance of a gear pair)."
+    since: 1
+    status: verified
+  basic_rack_fillet_radius:
+    symbol: "rho_fP"
+    unit: "mm"
+    description: "Zahnfußradius am Bezugsprofil"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16; Bild 4, p. 22"
+    english: { text: "Fillet radius of the basic rack", source: "ISO53:1998", location: "Table 1, p. 2" }
+    also:
+      - { symbol: "rho_fP", description: "Fußrundungsradius des Bezugsprofils", source: "DIN867:1986", location: "§2 table, p. 1; §4.5, p. 2" }
+      - { symbol: "rho_fP", description: "tooth root fillet radius of the basic rack for cylindrical gears", source: "ISO6336-3:2019", location: "Table 2, p. 7" }
+      - { symbol: "rho_fP", description: "Root fillet radius of the basic rack for cylindrical gears", source: "ISOTR6336-30:2022", location: "Table 2, p. 5" }
+      - { symbol: "rho_fP", description: "Basic rack fillet root radius", source: "ISOTR6336-30:2022", location: "Table A.1, p. 43" }
+      - { symbol: "rho_fP/m_n", description: "Basic rack fillet root radius coefficient", source: "ISOTR6336-30:2022", location: "Table 13, p. 30" }
+    stplus: null
+    replaced:
+      - { symbol: "rho_fP", description: "Zahnfußradius am Stirnrad-Bezugsprofil", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: null
+    since: 1
+    status: verified
+  basic_rack_root_form_height:
+    symbol: "h_FfP"
+    unit: "mm"
+    description: "Fuß-Formhöhe des Bezugsprofils"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12; Bild 4, p. 22"
+    english: { text: "Straight portion of the standard basic rack tooth dedendum", source: "ISO53:1998", location: "Table 1, p. 2" }
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "h_FfP", description: "Fuß-Formhöhe des Stirnrad-Bezugsprofils", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: null
+    since: 1
+    status: verified
+
+  # ---- tool reference profile (rack-type tool) ---------------------------------------------------
+  tool_profile_angle:
+    symbol: "alpha_P0"
+    unit: "deg"
+    description: "Profilwinkel des Bezugserzeugungsprofils"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 15"
+    english: null
+    also: []
+    stplus: { symbol: "alfa_n0", label: "Wkz-Normaleingriffswinkel", input_key: "WKZ_EINGRIFFSWINKEL", interface_key: "WKZ_NORMALEINGRWINKEL" }
+    replaced:
+      - { symbol: "alpha_0", description: "Eingriffswinkel", source: "DIN3972:1952", location: "p. 1, figure (alpha_0 = 20°); p. 2" }
+    note: "None in the contract = profile angle of the gear."
+    since: 0
+    status: verified
+  tool_addendum:
+    symbol: "h_aP0"
+    unit: "mm"
+    description: "Kopfhöhe des Werkzeug-Bezugsprofils"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12; §7.5 Eq. (125), p. 68"
+    english: { text: "addendum of tool", source: "ISO6336-3:2019", location: "Table 2, p. 3" }
+    also: []
+    stplus: { symbol: "h_aP0*", label: "Kopfhoehenfaktor (Wkz_Bezugspr.)", input_key: "KOPFHOEHENFAKTOR", interface_key: "WKZ_KOPFHOEHENFAKTOR" }
+    replaced:
+      - { symbol: "h_aP0", description: "Kopfhöhe des Werkzeug-Bezugsprofils", source: "DIN3960:1987", location: "§2.1, p. 2" }
+      - { symbol: "h_kw", description: "Kopfhöhe", source: "DIN3972:1952", location: "p. 1, text ('Die Kopfhöhe ist für die Bezugsprofile I, II, III und IV ... angegeben'), figure and table head; indices k = 'bezogen auf Zahnkopf', w = 'bezogen auf Werkzeug'" }
+    note: "The contract holds the module factor h_aP0* (Anhang NB of DIN ISO 21771, p. 6: * marks a module factor). STplus manual Bild 4.174 (p. 185): 'Kopfhöhenfaktor d. Wkz-Bez-profils h_aP0*'."
+    since: 0
+    status: verified
+  tool_tip_radius:
+    symbol: "rho_aP0"
+    unit: "mm"
+    description: "Kopfkantenrundungsradius des Werkzeug-Bezugsprofils"
+    source: "DIN867:1986"
+    location: "§2 table, p. 1; §4.4 and §4.5 Anmerkung, p. 2"
+    english: { text: "tool tip corner rounding", source: "ISO6336-3:2019", location: "Table 2, p. 7" }
+    also:
+      - { symbol: "rho_aP0", description: "(used in Eq. (128) of the normative Anhang NB and in Eq. (130), without designation)", source: "ISO21771:2014", location: "Anhang NB, p. 6; §7.6, p. 69" }
+      - { symbol: "r_aP0", description: "(lettering of Bild 35, in contrast to the equations of the same norm)", source: "ISO21771:2014", location: "§7.1 Bild 35, p. 63" }
+      - { symbol: "rho_aP0", description: "(used as a length in the formula of d_Ff, without designation)", source: "ISOTR6336-30:2022", location: "A.6, p. 45" }
+      - { symbol: "rho_a0", description: "tool tip corner rounding", source: "ISO6336-3:2019", location: "Table 2, p. 7" }
+      - { symbol: "rho_a0", description: "(Wälzfräsergeometrie)", source: "VDI2736-2:2014", location: "Abschnitt 4, p. 21" }
+    stplus: { symbol: "rho_aP0*", label: "Wkz-Kopfabrundungsfaktor", input_key: "KOPFABRUNDUNGSFAKTOR", interface_key: "WKZ_KOPFABRUNDUNGSF" }
+    replaced:
+      - { symbol: "rho_a0", description: "Kopfkanten-Rundungshalbmesser am Werkzeug", source: "DIN3960:1987", location: "§2.1, p. 4" }
+      - { symbol: "r_1", description: "Rundung am Zahnkopf des Werkzeugs", source: "DIN3972:1952", location: "p. 1, table column r_1 (= r_2)" }
+    note: "DIN ISO 21771 uses rho_aP0 in its equations but names it nowhere; the designation comes from DIN 867. ISO 6336-3:2019 lists the quantity as rho_a0. ISO/TR 6336-30:2022 uses the symbol in two senses: as this length in the formula of d_Ff (A.6, p. 45) and as the dimensionless 'Pinion cutter tip radius coefficient' (Table 2, p. 5; input of example 6, Table 13, p. 30). The program name translates the German designation. The STplus manual writes ro_aP0* (Bild 4.174, p. 185), the listing rho_aP0*."
+    since: 0
+    status: verified
+  tool_dedendum:
+    symbol: "h_fP0"
+    unit: "mm"
+    description: "Fußhöhe des Werkzeug-Bezugsprofils"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12"
+    english: null
+    also: []
+    stplus: { symbol: "h_fP0*", label: "Fuss-Hoehenfaktor (Wkz-Bezugspr.)", input_key: "FUSSHOEHENFAKTOR", interface_key: "WKZ_FUSSHOEHENF" }
+    replaced:
+      - { symbol: "h_fP0", description: "Fußhöhe des Werkzeug-Bezugsprofils", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "STplus manual Bild 4.174 (p. 185): 'Fußhöhenfaktor d. Wkz-Bez.profils h_fP0*'."
+    since: 0
+    status: verified
+  machining_allowance:
+    symbol: "q"
+    unit: "mm"
+    description: "Bearbeitungszugabe auf der Zahnflanke"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13; §7.1 Bild 36 b), p. 64"
+    english: { text: "Material allowance for finishing", source: "ISOTR6336-30:2022", location: "Table 2, p. 4; Table A.1, p. 43" }
+    also:
+      - { symbol: "q", description: "material allowance for finish machining per flank", source: "ISO6336-3:2019", location: "Table 2, p. 4" }
+    stplus: { symbol: "q", label: "Gesamt-Bearbeitungszugabe", input_key: "BEARB_ZUGABE_WKZ", interface_key: "BEARBEITUNGSZUGABE" }
+    replaced:
+      - { symbol: "q", description: "Bearbeitungszugabe auf den Stirnrad-Zahnflanken", source: "DIN3960:1987", location: "§2.1, p. 3" }
+      - { symbol: "p", description: "Bearbeitungszugabe je Flanke", source: "DIN3972:1952", location: "p. 1 legend; p. 2" }
+    note: "The program name translates 'Bearbeitungszugabe'; ISO/TR 6336-30 words it differently. STplus has two inputs: BEARBEITUNGSZUGABE ('Bearbeitungzugabe q', geometry data, manual Bild 4.8, p. 20), applied in addition to the allowance contained in the tool (p. 184), and BEARB_ZUGABE_WKZ ('Werkzeuginterne Bearbeitungszugabe', tool data, Bild 4.174, p. 185); the listing prints the total. The contract field of the tool reads BEARB_ZUGABE_WKZ; BEARBEITUNGSZUGABE is reported as unmapped key until the generation (increment 3) implements q. No fixture contains either key, the listed total is 0 in all 15 listings."
+    since: 0
+    status: verified
+  tool_normal_module:
+    symbol: "m_n0"
+    unit: "mm"
+    description: null
+    source: null
+    location: null
+    english: null
+    also: []
+    stplus: { symbol: "m_n0", label: "Wkz-Normalmodul", input_key: "WKZ_NORMALMODUL", interface_key: "WKZ_NORMALMODUL" }
+    replaced: []
+    note: "Symbol as STplus prints it; no symbol of a current norm verified yet. None in the contract = normal module of the gear."
+    since: 0
+    status: pending
+  tool_root_form_height:
+    symbol: "h_FfP0"
+    unit: "mm"
+    description: null
+    source: null
+    location: null
+    english: null
+    also:
+      - { symbol: "h_FfP0", description: "(lettering of Bild 36 a), without designation)", source: "ISO21771:2014", location: "§7.1 Bild 36 a), p. 64" }
+    stplus: { symbol: "h_FfP0*", label: "Fussform-Hoehenf.(Wkz-Bezugspr.)", input_key: "FUSSFORMHOEHENFAKTOR", interface_key: "WKZ_FUSSFORMHOEHENF" }
+    replaced:
+      - { symbol: "h_FfP0", description: "Fuß-Formhöhe des Werkzeug-Bezugsprofils", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "Designation of the current norm to be verified with the generation (increment 3)."
+    since: 0
+    status: pending
+  tool_edge_break_angle:
+    symbol: "alpha_KP"
+    unit: "deg"
+    description: null
+    source: null
+    location: null
+    english: null
+    also:
+      - { symbol: "alpha_KP", description: "(lettering of Bild 36 a), without designation)", source: "ISO21771:2014", location: "§7.1 Bild 36 a), p. 64" }
+    stplus: { symbol: null, label: null, input_key: "KANTENBRECHWINKEL", interface_key: null }
+    replaced:
+      - { symbol: "alpha_K", description: "Profilwinkel der Kantenbruchflanke", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "STplus manual Bild 4.174 (p. 185): 'Kantenbrechwinkel d. Wkz-Bez.profils alfa_Kn0'. To be verified with the generation (increment 3)."
+    since: 0
+    status: pending
+  tool_protuberance:
+    symbol: "pr"
+    unit: "mm"
+    description: null
+    source: null
+    location: null
+    english: null
+    also:
+      - { symbol: "pr", description: "As cut basic rack undercut", source: "ISOTR6336-30:2022", location: "Table 2, p. 4" }
+    stplus: { symbol: null, label: null, input_key: "PROTUBERANZBETRAG", interface_key: "PROTUBERANZBETRAG" }
+    replaced:
+      - { symbol: "pr", description: "Protuberanzbetrag", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "Extension point (protuberance flank). STplus manual Bild 4.174 (p. 185): 'Protuberanzbetrag pr_n0'."
+    since: 0
+    status: pending
+  tool_protuberance_angle:
+    symbol: "alpha_pr"
+    unit: "deg"
+    description: null
+    source: null
+    location: null
+    english: null
+    also: []
+    stplus: { symbol: "alfa_pr0", label: "Protuberanzwinkel", input_key: "PROTUBERANZWINKEL", interface_key: "PROTUBERANZWINKEL" }
+    replaced:
+      - { symbol: "alpha_pr", description: "Protuberanz-Profilwinkel", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "Extension point (protuberance flank); symbol of DIN 3960 until a current norm is verified."
+    since: 0
+    status: pending
+
+  # ---- pair and generation: named by the worked example, implemented by later increments ---------
+  gear_ratio:
+    symbol: "u"
+    unit: "-"
+    description: "Zähnezahlverhältnis"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13"
+    english: { text: "gear ratio (z_2 / z_1) ≥ 1", source: "ISO6336-1:2019", location: "Table 2, p. 9" }
+    also:
+      - { symbol: "u", description: "Gear ratio", source: "ISOTR6336-30:2022", location: "A.6, p. 45" }
+    stplus: { symbol: "z2/z1", label: "Zaehnezahlverhaeltnis", input_key: "ZAEHNEZAHLVERHAELTNIS", interface_key: "ZAEHNEZAHLVERHAELTNIS" }
+    replaced:
+      - { symbol: "u", description: "Zähnezahlverhältnis", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "Implemented in increment 2. The input key is documented in the STplus manual (Bild 4.3, p. 15; Bild 4.12, p. 25) and occurs in no fixture."
+    since: 1
+    status: verified
+  transverse_working_pressure_angle:
+    symbol: "alpha_wt"
+    unit: "deg"
+    description: "Betriebseingriffswinkel des Radpaares"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 15"
+    english: { text: "Transverse working pressure angle", source: "ISOTR6336-30:2022", location: "Table 2, p. 5; A.6, p. 45" }
+    also:
+      - { symbol: "alpha_wt", description: "working transverse pressure angle at the pitch cylinder", source: "ISO6336-1:2019", location: "Table 2, p. 10" }
+    stplus: { symbol: "alfa_wt", label: "Betriebseingriffswinkel", input_key: null, interface_key: "BETRIEBSEINGRIFFSWINKEL" }
+    replaced:
+      - { symbol: "alpha_wt", description: "Betriebseingriffswinkel", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "Implemented in increment 2."
+    since: 1
+    status: verified
+  generating_profile_shift_coefficient:
+    symbol: "x_E"
+    unit: "-"
+    description: "Erzeugungs-Profilverschiebungsfaktor"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13"
+    english: { text: "Generating profile shift coefficient", source: "ISOTR6336-30:2022", location: "Table 2, p. 4; A.6, p. 45" }
+    also: []
+    stplus: { symbol: "x_E", label: "Erz.-Profilversch.faktor", input_key: null, interface_key: "ERZ_PROFILVERSCHFAKTOR" }
+    replaced:
+      - { symbol: "x_E", description: "Erzeugungs-Profilverschiebungsfaktor", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "Implemented in increment 3."
+    since: 1
+    status: verified
+  generated_root_diameter:
+    symbol: "d_fE"
+    unit: "mm"
+    description: "Erzeugter Fußkreisdurchmesser"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11; §7.5 Eq. (125), p. 68"
+    english: { text: "Root diameter (based on x_E)", source: "ISOTR6336-30:2022", location: "Table 2, p. 2" }
+    also:
+      - { symbol: "d_f", description: "Root diameter (based on generating profile shift coefficient, x_E)", source: "ISOTR6336-30:2022", location: "A.6, p. 45" }
+      - { symbol: "d_f", description: "root diameter", source: "ISO6336-1:2019", location: "Table 2, p. 4" }
+    stplus: { symbol: "d_f", label: "Fusskreisdurchmesser", input_key: null, interface_key: "FUSSKREISDURCHM" }
+    replaced:
+      - { symbol: "d_fE", description: "Erzeugter Fußkreisdurchmesser", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "DIN ISO 21771 separates d_f (Fußkreisdurchmesser, Nennmaß) from d_fE (generated with x_E). ISO/TR 6336-30 and STplus print d_f for the generated value; ISO 6336-1:2019 lists d_f 'root diameter' without saying which of the two it is. Implemented in increment 3."
+    since: 1
+    status: verified
+  root_form_diameter:
+    symbol: "d_Ff"
+    unit: "mm"
+    description: "Fuß-Formkreisdurchmesser"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11; Eq. (128) in Anhang NB, p. 6"
+    english: { text: "Root form diameter (based on x_E)", source: "ISOTR6336-30:2022", location: "Table 2, p. 2" }
+    also: []
+    stplus: { symbol: "d_Ff", label: "Fuss-Formkreisdurchmesser", input_key: null, interface_key: "FUSSFORMKREISDURCHM" }
+    replaced:
+      - { symbol: "d_Ff", description: "Fuß-Formkreisdurchmesser", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "Implemented in increment 3."
+    since: 1
+    status: verified
+  residual_fillet_undercut:
+    symbol: "s_pr"
+    unit: "mm"
+    description: "Residual fillet undercut, s_pr = pr - q"
+    source: "ISOTR6336-30:2022"
+    location: "Table 2, p. 4"
+    english: { text: "Residual fillet undercut, s_pr = pr - q", source: "ISOTR6336-30:2022", location: "Table 2, p. 4" }
+    also:
+      - { symbol: "s_pr", description: "residual fillet undercut, s_pr = pr - q", source: "ISO6336-3:2019", location: "Table 2, p. 4" }
+    stplus: null
+    replaced: []
+    note: "Quantity of the load capacity norms (ISO 6336-3); DIN ISO 21771 does not list it. Table A.1 prints the label in lower case."
+    since: 1
+    status: verified
+  tip_relief:
+    symbol: "C_a"
+    unit: "µm"
+    description: "Tip relief"
+    source: "ISOTR6336-30:2022"
+    location: "Table 2, p. 2"
+    english: { text: "tip relief", source: "ISO6336-1:2019", location: "Table 2, p. 4" }
+    also:
+      - { symbol: "C_alpha_a", description: "Betrag der Kopfrücknahme", source: "ISO21771:2014", location: "§3.1 symbol list, p. 14" }
+    stplus: null
+    replaced: []
+    note: "Flank modification, used by the load capacity (stage 2). DIN ISO 21771 writes C with the indices alpha and a."
+    since: 1
+    status: verified
+  root_relief:
+    symbol: "C_f"
+    unit: "µm"
+    description: "Root relief"
+    source: "ISOTR6336-30:2022"
+    location: "Table 2, p. 2"
+    english: { text: "root relief", source: "ISO6336-1:2019", location: "Table 2, p. 4" }
+    also:
+      - { symbol: "C_alpha_f", description: "Betrag der Fußrücknahme", source: "ISO21771:2014", location: "§3.1 symbol list, p. 14" }
+    stplus: null
+    replaced: []
+    note: "Flank modification, used by the load capacity (stage 2)."
+    since: 1
+    status: verified
+  profile_modification_compensates_deflections:
+    symbol: null
+    unit: "-"
+    description: "Profile modification compensate for the deflections"
+    source: "ISOTR6336-30:2022"
+    location: "Table A.1, p. 43"
+    english: { text: "Profile modification compensate for the deflections", source: "ISOTR6336-30:2022", location: "Table A.1, p. 43" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Yes/no statement of the worked example, used by the load capacity (stage 2)."
+    since: 1
+    status: verified
+
+  # ---- pair geometry named by the worked example (A.6, p. 46), implemented by increment 2 --------
+  working_pitch_diameter:
+    symbol: "d_w"
+    unit: "mm"
+    description: "Wälzkreisdurchmesser"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11"
+    english: { text: "Working pitch diameter", source: "ISOTR6336-30:2022", location: "Table 2, p. 2; A.6, p. 46" }
+    also:
+      - { symbol: "d_w", description: "pitch diameter", source: "ISO6336-1:2019", location: "Table 2, p. 5" }
+    stplus: { symbol: "d_w", label: "Waelzkreisdurchmesser", input_key: null, interface_key: "WAELZKREISDURCHM" }
+    replaced:
+      - { symbol: "d_w", description: "Wälzkreisdurchmesser", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "Implemented in increment 2."
+    since: 1
+    status: verified
+  normal_pitch:
+    symbol: "p_n"
+    unit: "mm"
+    description: "Normalteilung"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13"
+    english: { text: "Normal pitch", source: "ISOTR6336-30:2022", location: "A.6, p. 46" }
+    also: []
+    stplus: { symbol: "p_n", label: "Normalteilung", input_key: null, interface_key: "NORMALTEILUNG" }
+    replaced:
+      - { symbol: "p_n", description: "Normalteilung", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "Implemented in increment 2."
+    since: 1
+    status: verified
+  transverse_pitch:
+    symbol: "p_t"
+    unit: "mm"
+    description: "Stirnteilung"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13"
+    english: { text: "Transverse pitch", source: "ISOTR6336-30:2022", location: "A.6, p. 46" }
+    also: []
+    stplus: { symbol: "p_t", label: "Stirnteilung", input_key: null, interface_key: "STIRNTEILUNG" }
+    replaced:
+      - { symbol: "p_t", description: "Stirnteilung, Teilkreisteilung", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "Implemented in increment 2."
+    since: 1
+    status: verified
+  transverse_base_pitch:
+    symbol: "p_bt"
+    unit: "mm"
+    description: "Teilung auf dem Grundzylinder im Stirnschnitt"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13"
+    english: { text: "transverse pitch on the base cylinder", source: "ISO6336-1:2019", location: "Table 2, p. 8" }
+    also:
+      - { symbol: "p_bt", description: "Transverse base pitch", source: "ISOTR6336-30:2022", location: "A.6, p. 46" }
+    stplus: null
+    replaced:
+      - { symbol: "p_bt", description: "Grundkreisteilung", source: "DIN3960:1987", location: "§3.4.5.1, Eq. (3.4.10), p. 10; §2.1, p. 3 lists p_b 'Teilung auf dem Grundzylinder'" }
+    note: "Implemented in increment 2."
+    since: 1
+    status: verified
+  transverse_contact_pitch:
+    symbol: "p_et"
+    unit: "mm"
+    description: "Eingriffsteilung im Stirnschnitt"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13"
+    english: { text: "Transverse base pitch on the path of contact", source: "ISOTR6336-30:2022", location: "A.6, p. 46" }
+    also:
+      - { symbol: "p_et", description: "transverse base pitch on the path of conctact", source: "ISO6336-1:2019", location: "Table 2, p. 8 (spelling as printed)" }
+    stplus: { symbol: "p_et", label: "Stirneingriffsteilung", input_key: null, interface_key: "STIRNEINGRTEILUNG" }
+    replaced:
+      - { symbol: "p_et", description: "Stirneingriffsteilung", source: "DIN3960:1987", location: "§3.4.6.1, p. 10; §2.1, p. 3 lists p_e 'Eingriffsteilung'" }
+    note: "The English designation has eight words; the program name shortens it. Implemented in increment 2."
+    since: 1
+    status: verified
+  length_of_path_of_contact:
+    symbol: "g_alpha"
+    unit: "mm"
+    description: "Länge der Eingriffsstrecke"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12"
+    english: { text: "length of path of contact", source: "ISO6336-1:2019", location: "Table 2, p. 6" }
+    also:
+      - { symbol: "g_alpha", description: "Length of line of contact", source: "ISOTR6336-30:2022", location: "A.6, p. 46" }
+    stplus: { symbol: "g", label: "Eingriffsstrecke", input_key: null, interface_key: "EINGRIFFSSTRECKE" }
+    replaced:
+      - { symbol: "g_alpha", description: "Länge der Eingriffsstrecke (gesamte)", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "ISO/TR 6336-30 says 'line of contact' where ISO 6336-1 says 'path of contact'. Implemented in increment 2."
+    since: 1
+    status: verified
+  sap_diameter:
+    symbol: "d_Nf"
+    unit: "mm"
+    description: "Fuß-Nutzkreisdurchmesser (SAP Durchmesser, nutzbarer Fußdurchmesser)"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11"
+    english: { text: "SAP diameter", source: "ISOTR6336-30:2022", location: "A.6, p. 46" }
+    also:
+      - { symbol: "d_Nf", description: "Start of active profile diameter", source: "ISOTR6336-30:2022", location: "Table 2, p. 2" }
+    stplus: { symbol: "d_Nf", label: "Nutzkreisdurchmesser am Fuss", input_key: null, interface_key: "NUTZKREISDURCHM_FUSS" }
+    replaced:
+      - { symbol: "d_Nf", description: "Fuß-Nutzkreisdurchmesser", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "Implemented in increment 2."
+    since: 1
+    status: verified
+  transverse_contact_ratio:
+    symbol: "epsilon_alpha"
+    unit: "-"
+    description: "Profilüberdeckung"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: { text: "transverse contact ratio", source: "ISO6336-1:2019", location: "Table 2, p. 11" }
+    also: []
+    stplus: { symbol: "eps_alfa", label: "Profilueberdeckung", input_key: null, interface_key: "PROFILUEBERDECKUNG" }
+    replaced:
+      - { symbol: "epsilon_alpha", description: "Profilüberdeckung", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "Implemented in increment 2."
+    since: 1
+    status: verified
+  overlap_ratio:
+    symbol: "epsilon_beta"
+    unit: "-"
+    description: "Sprungüberdeckung"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: { text: "overlap ratio", source: "ISO6336-1:2019", location: "Table 2, p. 11" }
+    also: []
+    stplus: { symbol: "eps_beta", label: "Sprungueberdeckung", input_key: null, interface_key: "SPRUNGUEBERDECKUNG" }
+    replaced:
+      - { symbol: "epsilon_beta", description: "Sprungüberdeckung", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "Implemented in increment 2."
+    since: 1
+    status: verified
+  total_contact_ratio:
+    symbol: "epsilon_gamma"
+    unit: "-"
+    description: "Gesamtüberdeckung"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16"
+    english: { text: "total contact ratio, epsilon_gamma = epsilon_alpha + epsilon_beta", source: "ISO6336-1:2019", location: "Table 2, p. 11" }
+    also: []
+    stplus: { symbol: "eps_gamma", label: "Gesamtueberdeckung", input_key: null, interface_key: "GESAMTUEBERDECKUNG" }
+    replaced:
+      - { symbol: "epsilon_gamma", description: "Gesamtüberdeckung", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "Implemented in increment 2."
+    since: 1
+    status: verified
+  transverse_base_pitch_deviation:
+    symbol: "f_pb"
+    unit: "µm"
+    description: "Transverse base pitch deviation (the values of f_pT may be used for calculations in accordance with the ISO 6336 series, using tolerances according to ISO 1328-1:2013)"
+    source: "ISOTR6336-30:2022"
+    location: "Table 2, p. 3"
+    english: { text: "Transverse base pitch deviation", source: "ISOTR6336-30:2022", location: "A.6, p. 46" }
+    also:
+      - { symbol: "f_pb", description: "transverse base pitch deviation (the values of f_pt may be used for calculations in accordance with the ISO 6336 series, using tolerances complying with ISO 1328-1:2013)", source: "ISO6336-1:2019", location: "Table 2, p. 6" }
+    stplus: null
+    replaced: []
+    note: "Quantity of the load capacity (stage 2)."
+    since: 1
+    status: verified
+  pitch_line_velocity:
+    symbol: "v_w"
+    unit: "m/s"
+    description: "Pitch line velocity"
+    source: "ISOTR6336-30:2022"
+    location: "Table 2, p. 4"
+    english: { text: "Pitch line velocity", source: "ISOTR6336-30:2022", location: "Table 2, p. 4; A.6, p. 46" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Quantity of the load capacity (stage 2)."
+    since: 1
+    status: verified
+  circumferential_velocity:
+    symbol: "v"
+    unit: "m/s"
+    description: "Circumferential velocity at the reference cylinder"
+    source: "ISOTR6336-30:2022"
+    location: "Table 2, p. 4"
+    english: { text: "Circumferential velocity at the reference cylinder", source: "ISOTR6336-30:2022", location: "Table 2, p. 4" }
+    also:
+      - { symbol: "v", description: "Circumferential velocity at the reference circle (see ISO 6336-1:2019, 4.2.2)", source: "ISOTR6336-30:2022", location: "A.6, p. 46" }
+      - { symbol: "v", description: "circumferential velocity (without subscript at the reference circle)", source: "ISO6336-1:2019", location: "Table 2, p. 9" }
+    stplus: null
+    replaced: []
+    note: "Quantity of the load capacity (stage 2)."
+    since: 1
+    status: verified
+
+  single_pitch_tolerance:
+    symbol: "f_pT"
+    unit: "µm"
+    description: "Single pitch tolerance (see ISO 1328-1:2013, ISO 6336 refers to f_pT as f_pt)"
+    source: "ISOTR6336-30:2022"
+    location: "Table 2, p. 3"
+    english: { text: "Single pitch tolerance", source: "ISOTR6336-30:2022", location: "Table A.2, p. 43" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Quantity of the tolerances (increment 5) and of the load capacity (stage 2)."
+    since: 1
+    status: verified
+  rotation_speed:
+    symbol: "n"
+    unit: "1/min"
+    description: "Rotation speed of pinion (or wheel)"
+    source: "ISOTR6336-30:2022"
+    location: "Table 2, p. 4"
+    english: { text: "rotation speed of pinion (or wheel)", source: "ISO6336-1:2019", location: "Table 2, p. 8" }
+    also:
+      - { symbol: "n_1", description: "Pinion speed", source: "ISOTR6336-30:2022", location: "Table A.5, p. 45" }
+      - { symbol: "n", description: "rotational speed", source: "ISO6336-1:2019", location: "Table 2, p. 8" }
+    stplus: null
+    replaced: []
+    note: "Quantity of the load capacity (stage 2); Table 2 of both documents prints the symbol as n_1,2; the registry writes a symbol without the index of the gear. ISO 6336-1:2019 has a second row n 'rotational speed'. The documents print the unit as min^-1."
+    since: 1
+    status: verified
+
+  # ---- contract fields of later increments -------------------------------------------------------
+  tooth_thickness_allowance:
+    symbol: "E_sns/E_sni"
+    unit: "µm"
+    description: null
+    source: null
+    location: null
+    english: null
+    also:
+      - { symbol: "E_sns", description: "oberes Zahndickengrenzabmaß", source: "ISO21771:2014", location: "§3.1 symbol list, p. 14" }
+      - { symbol: "E_sni", description: "unteres Zahndickengrenzabmaß", source: "ISO21771:2014", location: "§3.1 symbol list, p. 14" }
+    stplus: null
+    replaced: []
+    note: "Pair of upper and lower allowance; governed by DIN 3967:1978-08 and DIN 21773:2014-08, verified in increment 5."
+    since: 0
+    status: pending
+  span_allowance:
+    symbol: "A_We/A_Wi"
+    unit: "µm"
+    description: null
+    source: null
+    location: null
+    english: null
+    also: []
+    stplus: { symbol: "A_We", label: null, input_key: "OBERES_ZAHNW_ABMASS", interface_key: "OBERES_ZAHNWEITENABM" }
+    replaced: []
+    note: "Symbols as STplus prints them (DIN 3967 notation); the current symbols are verified in increment 5."
+    since: 0
+    status: pending
+  quality_grade:
+    symbol: "Q"
+    unit: "-"
+    description: null
+    source: null
+    location: null
+    english: null
+    also:
+      - { symbol: "A", description: "Flank tolerance class", source: "ISOTR6336-30:2022", location: "Table 2, p. 2; Table A.2, p. 43" }
+    stplus: { symbol: null, label: null, input_key: "DIN_QUALITAET", interface_key: null }
+    replaced: []
+    note: "Verified in increment 5 (DIN ISO 1328-1:2018-03)."
+    since: 0
+    status: pending
+  min_tip_clearance:
+    symbol: "c_min"
+    unit: "mm"
+    description: null
+    source: null
+    location: null
+    english: null
+    also:
+      - { symbol: "c", description: "Kopfspiel", source: "ISO21771:2014", location: "§3.1 symbol list, p. 11; §5.2.7, p. 41" }
+    stplus: null
+    replaced: []
+    note: "Input of a tip diameter check (STplus MINDESTKOPFSPIEL); verified in increment 2."
+    since: 0
+    status: pending

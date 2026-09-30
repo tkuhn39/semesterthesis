@@ -1,0 +1,42 @@
+program: STplus
+version: 11.1F
+release: 01.12.2025
+publisher: Forschungsvereinigung Antriebstechnik e.V. (FVA)
+evidence: 'header of probes/defaults_minimal/report.sta.txt, printed by this installation: Programmname,
+  Version, Freigabe'
+installation: 30_references_and_examples/33_STplus/STplus11-1F
+manual:
+  file: doku/STplus_11-1F_Benutzeranleitung.pdf
+  note: page headers of the manual print 'STplus 11.0F' and 'STplus 10F'; pages are cited by their printed
+    number (PDF page = printed page + 6)
+imported: '2026-09-30'
+note: Files as found in the installation. The local tool database is meant to be extended by its users
+  (manual p. 21), so its records are not vendor defaults.
+files:
+- stored: tool_database_local.txt
+  original: wkz/wkz.dat
+  role: Werkzeugdatei_lokal
+  bytes: 3679
+  sha256: b31b5aa5d9c6765690faf76126cebd31f6f6675d4bbd5a59bba259b356a7a14d
+  stored_sha256: 9929accda9070e37692b554a127e37b3e1dd1c6211ca3a75717aca910c98ad0d
+  line_endings: CRLF, normalised to LF
+  encoding: latin-1
+  modified: '2025-12-04T12:56:00+01:00'
+- stored: tool_database_global.txt
+  original: global/WKZ_GLOB.DAT
+  role: Werkzeugdatei_global
+  bytes: 213
+  sha256: ffae4e00675e74f712f48145fc5df3cd71aa95f28441e5ce41dd5b574965bcac
+  stored_sha256: 9fdd92fb837bdd48a996204e9e99bd95d32cefd4820a49ae6e1068923c6aa423
+  line_endings: CRLF, normalised to LF
+  encoding: latin-1
+  modified: '2025-12-04T12:55:59+01:00'
+- stored: input_key_register.txt
+  original: bin/DEFAULT.STY
+  role: Register der Eingabeschluessel
+  bytes: 26901
+  sha256: c8d64980ea9a26f85be429ca4ee45ec2582dcd366c30d52871770c85e34cd7fe
+  stored_sha256: 49ba0877941f4a9487ebca32b522c6fb7a2e065a9ced161dc3af925e1a253919
+  line_endings: CRLF, normalised to LF
+  encoding: latin-1
+  modified: '2025-12-04T12:55:58+01:00'

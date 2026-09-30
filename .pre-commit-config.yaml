@@ -4,27 +4,33 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
+      # Kept as written: reference material (frozen FVA post-processing), STplus fixtures and the
+      # packaged STplus data (ADR-109).
       - id: trailing-whitespace
-        exclude: ^(10_report/|00_literatur/|20_code/10_gearcore/src/gearcore/data/stplus/)
+        exclude: ^(10_report/|00_literatur/|30_references_and_examples/|20_code/10_gearcore/src/gearcore/data/stplus(_program)?/)
       - id: end-of-file-fixer
-        exclude: ^(10_report/|00_literatur/|20_code/10_gearcore/src/gearcore/data/stplus/)
+        exclude: ^(10_report/|00_literatur/|30_references_and_examples/|20_code/10_gearcore/src/gearcore/data/stplus(_program)?/)
       - id: check-yaml
       - id: check-toml
       - id: check-merge-conflict
       - id: check-added-large-files
         args: ["--maxkb=2048"]
 
+  # Same configuration as CI (the ruff settings live in the package's pyproject.toml; without
+  # --config the notebooks would be formatted with ruff's default line length).
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.0
     hooks:
       - id: ruff
-        args: ["--fix"]
+        args: ["--config", "20_code/10_gearcore/pyproject.toml", "--fix"]
         files: ^(20_code|40_jupyter-notebooks)/
       - id: ruff-format
+        args: ["--config", "20_code/10_gearcore/pyproject.toml"]
         files: ^(20_code|40_jupyter-notebooks)/
 
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1
     hooks:
       - id: nbstripout
+        args: ["--keep-id"]
         files: ^40_jupyter-notebooks/.*\.ipynb$

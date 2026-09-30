@@ -1,0 +1,103 @@
+{
+  "$defs": {
+    "ParityVerdict": {
+      "enum": [
+        "identical",
+        "oracle_accuracy",
+        "different"
+      ],
+      "title": "ParityVerdict",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One quantity of one gear compared with one STplus output.\n\nThe values carry the unit named in ``unit`` (the row is generic over quantities).",
+  "properties": {
+    "case": {
+      "title": "Case",
+      "type": "string"
+    },
+    "trust": {
+      "title": "Trust",
+      "type": "string"
+    },
+    "origin": {
+      "enum": [
+        "listing",
+        "interface"
+      ],
+      "title": "Origin",
+      "type": "string"
+    },
+    "field": {
+      "title": "Field",
+      "type": "string"
+    },
+    "symbol": {
+      "title": "Symbol",
+      "type": "string"
+    },
+    "unit": {
+      "title": "Unit",
+      "type": "string"
+    },
+    "gear": {
+      "enum": [
+        "pinion",
+        "wheel"
+      ],
+      "title": "Gear",
+      "type": "string"
+    },
+    "gearcore_value": {
+      "title": "Gearcore Value",
+      "type": "number"
+    },
+    "stplus_value": {
+      "title": "Stplus Value",
+      "type": "number"
+    },
+    "stplus_token": {
+      "title": "Stplus Token",
+      "type": "string"
+    },
+    "difference": {
+      "title": "Difference",
+      "type": "number"
+    },
+    "print_tolerance": {
+      "title": "Print Tolerance",
+      "type": "number"
+    },
+    "arithmetic_tolerance": {
+      "title": "Arithmetic Tolerance",
+      "type": "number"
+    },
+    "input_tolerance": {
+      "title": "Input Tolerance",
+      "type": "number"
+    },
+    "verdict": {
+      "$ref": "#/$defs/ParityVerdict"
+    }
+  },
+  "required": [
+    "case",
+    "trust",
+    "origin",
+    "field",
+    "symbol",
+    "unit",
+    "gear",
+    "gearcore_value",
+    "stplus_value",
+    "stplus_token",
+    "difference",
+    "print_tolerance",
+    "arithmetic_tolerance",
+    "input_tolerance",
+    "verdict"
+  ],
+  "title": "ParityRow",
+  "type": "object"
+}

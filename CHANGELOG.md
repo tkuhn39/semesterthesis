@@ -48,6 +48,126 @@ small, adversarially gated increments.
   `p_x` and two-token units (`Grad C`) parsed, bare `Pair` rejects NaN, fixture hashes and case
   counts tested, pre-commit no longer rewrites fixtures, property-based tests for contracts and
   the `.ste` parser, oracle never adopts foreign contour files from `bin/`.
+- **Source registry hardened** (user decision 2026-09-28): Roth/Opferkuch 2017 now carries its DOI
+  (10.51202/9783181022948-719, Crossref-checked), Frühe 2012 its URN (nbn-resolving redirect
+  checked); `test_trace.py` fails when code cites a source that is not `confirmed_by_user: true`;
+  URNs accepted as thesis identifiers.
+- **Registry audit 2026-09-29** (user check + machine comparison with the PDF title pages): titles of
+  DIN ISO 1328-2 and VDI 2736 Blatt 3 corrected, author names corrected (Roth, Kassem, Dong et al.),
+  patent designations and holders added, DIN 3972 note rewritten in the norm's own symbols
+  (h_kw, r1, r2; rounding tabulated) with the mapping to current notation, VDI 2736 Blatt 1-4 now
+  point to the final editions (Blatt 1: 2016-07, key `VDI2736-1:2016`); draft editions may not be
+  cited from code. New rule 3a: current notation in the tool, original notation in quotations.
+
+### Added (increment 1 - involute and basic rack, 2026-09-29, ADR-106)
+- `gearcore.involute`: single-gear quantities of DIN ISO 21771:2014-08 §4.2, §4.3, §4.7 (reference and
+  base diameter, transverse pressure angle, base helix angle, involute function, tooth thickness and
+  space width in the transverse and normal section), one traced function per equation, spur and
+  helical. Exactly one inverse involute (bracketed Newton with bisection fallback) that terminates
+  at the rounding level of the residual and raises typed errors outside its domain.
+- `gearcore.rack`: basic racks per DIN 867:1986-02 and ISO 53:1998 (types A-D) with the fillet radius
+  bounds, tool reference profiles I-IV per DIN 3972:1952-02 (tabulated tip rounding, machining
+  allowance), module check against ISO 54:1996 (soft finding, never an error).
+- `gearcore.parity` and contract `ParityRow`: value-by-value comparison with the STplus fixtures that
+  reports print, arithmetic and input tolerance separately and the verdict `identical`,
+  `oracle_accuracy` or `different`. State: 15 cases, 443 comparisons, 431 identical, 12 within the
+  accuracy of STplus, 0 different. Finding: with a centre distance given STplus derives x2 from it
+  and overrides a given x2 (kst-E).
+- **Double precision everywhere** (user decision 2026-09-29, ADR-106, project rule 8a): STplus
+  computes in single precision (all 99 probed interface values are reproduced by a 32-bit
+  evaluation of the same formulas, 93 by the 64-bit result); gearcore computes in binary64 and
+  never rounds inside the chain. `test_numeric_precision.py` guards against reduced-precision
+  types, rounding calls and format-and-parse in the package.
+- Norm finding: 6 of 152 table values of DIN 3972:1952-02 deviate from the formulas printed in the
+  same norm by more than half a unit of the last digit (largest: module 4.5, profile IV, printed
+  6,60, formula 6,6156). The formulas are implemented, the six cells are pinned in the test.
+- Worked example ISO/TR 6336-30:2022 Annex A example 1 as packaged fixture (geometry values of later
+  increments pinned as pending), translation old notation -> current notation (since the
+  feedback round part of the quantity registry, see below), notebook `01_involute_bezugsprofil`.
+- Root `pytest.ini`: a bare `pytest` at the repository root collects only the package tests, never
+  the archived legacy workbench.
+- **Adversarial gate 1 passed** (read-only reviewer, 45 findings, 0 P0; no formula, table or
+  equation citation of the involute chain was wrong): every result is finite or a typed error
+  (huge integers, overflow, strings, `bool`), the orchestrator enforces the verified input ranges,
+  tooth thickness and space width at the reference cylinder are signed values with a warning
+  instead of silent negatives, one tolerance at the base circle for Eq. (12) and (17), tabulated
+  modules are matched with a relative tolerance (0.07 * 100 is module 7), norm tables are
+  immutable, the fillet bound has no slack except for the two value pairs the norms print, the
+  bottom clearance outside 0.1 ... 0.4 is a soft finding (DIN 867 says "im allgemeinen"), parity
+  compares the base helix angle with its sign and uses two binary32 steps as arithmetic
+  tolerance, packaged data is addressed by name only, citation of ISO 54 corrected, symbols
+  corrected (alpha_P0; rho_aP0 located in the equations of DIN ISO 21771, whose Bild 35 letters
+  r_aP0), DIN 867 table deviation pinned,
+  test tolerances tightened to a few ulp with references from 45-digit decimal arithmetic,
+  notebooks must not contain formulas at cell level either.
+- JSON schemas exported for `BasicGearGeometry`, `BasicRackProfile`, `ParityRow`.
+
+### Changed (feedback round on increment 1, 2026-09-29, ADR-107)
+- **Notation** (user rule: always the newest symbols, with a translation from STplus): survey of
+  the tool tip rounding symbol over the current norms (rho_aP0 in DIN ISO 21771:2014-08 Eq. (128)
+  of the normative Anhang NB and in ISO/TR 6336-30:2022; rho_a0 in ISO 6336-3:2019 and VDI 2736
+  Blatt 2); every current symbol cites the newest geometry norm, the STplus listing symbols and
+  tool keys used in increment 1 are translated (quantity registry, see below).
+- **Centre distance** (user decision, ADR-107): a given centre distance is fixed, the profile
+  shift follows it; implemented with increment 2. The worked example of ISO/TR 6336-30 gives the
+  centre distance and x_2 = 0 and prints the resulting x_1 in parentheses.
+- **Worked example fixture** (user review): ISO/TR 6336-30:2022 Annex A example 1 now holds all 19
+  rows of Table A.1 and all 25 results of A.6 (p. 45 and 46) in the order of the norm, each with
+  the label of the norm, its symbol, its unit and the printed text (five rows and the results of
+  p. 46 were missing, labels were program names, symbols were absent). The basic rack dedendum and
+  fillet radius hold for both gears (11,2 mm and 3,12 mm), x_1 is marked as derived from x_2 and
+  the centre distance, formulas are written with abs() and atan(). `printed_number` parses the
+  printed text; the tests require the stored number and the printed decimals to equal it.
+- **Quantity registry** (user decision, ADR-108, project rule 3b): `data/quantities.yaml` is the
+  single source of truth for program names, symbols and designations, with the STplus names and
+  the symbols of the replaced norms per quantity (85 quantities, 9 pending). Contracts declare
+  their fields with `Q(<quantity>)`; `symbol_map.yaml` is merged into the registry; the table
+  `quantities.md` is generated.
+- **Program names follow the norm designations**: `number_of_teeth`, `profile_shift_coefficient`,
+  `normal_pressure_angle_deg`, `profile_angle_deg` (basic rack, tool), `centre_distance_mm`,
+  `span_measurement_mm`, `number_of_teeth_spanned`, `bottom_clearance_factor`,
+  `transverse_profile_angle_at`, `normal_profile_angle_at`. Symbol of the centre distance: a_w.
+- **Typography**: subscripts are set upright in every formula of the notebooks;
+  `gearcore.quantities.latex` renders the registry symbols. Names are ASCII (`_um` for µm):
+  Python normalises the micro sign of an identifier to the Greek letter mu, a key typed with
+  the micro sign would not match the field.
+- **Registry review** (three read-only reviewers against the rendered pages and the STplus
+  fixtures, findings REG1-01 to REG1-10 in `gate_reports/increment_1.md`): symbol, unit and
+  location of the governing norms held in all 66 entries. Corrected: the older symbols of twelve
+  quantities (DIN 3960 printed s_t, s_n, e_t, p_bt, alpha_yt ... as today, only its list §2.1
+  omits the index), the English designation of the tool tip radius, the two STplus inputs of
+  the machining allowance, missing STplus names, designations of DIN 867 and DIN 3972 that were
+  not verbatim (r_1 instead of r1), the note on the sign of eta_b. The worked example was
+  confirmed by the user.
+- **Table of differences** (user request): `quantities.md` starts with the symbols and
+  designations that differ from the current norm (older norms, STplus, other current
+  documents), generated by `gearcore.quantities.symbol_differences` and
+  `designation_differences`.
+- **Inventory of tabulated values and defaults** (`norm_map.md`): what STplus presets, what the
+  current norms tabulate, what gearcore holds so far and which increment adds the rest.
+
+### Added (STplus heritage, 2026-09-30, ADR-109)
+User decision: nothing STplus offered may get lost; tool databases and defaults are kept and
+labelled with the program version.
+- `data/stplus_program/`: tool databases of the installation (`wkz.dat` with 12 tools,
+  `WKZ_GLOB.DAT` with 2), the register of input keys (`DEFAULT.STY`), `provenance.yaml` (STplus
+  11.1F, Freigabe 01.12.2025, hashes), `defaults.yaml` (24 defaults with the sentence of the
+  manual and the evidence of a probe run) and five probe runs.
+- `gearcore.stplus_program`: `tool_database`, `stplus_tool`, `stplus_defaults`,
+  `stplus_default_tool`, `input_key_register`, `probe_listing`; every record carries the label
+  of program, version and release. Nothing is applied silently: six contradicting tool records
+  and two without tip rounding are kept as written and rejected as contracts.
+- Findings: the default pressure angle of 20° exists in the user interface only (a batch input
+  without it is rejected); the default hob has h_aP0* = 1,25, rho_aP0* = 0,25, h_fP0* = 1,3;
+  STplus computes a contradicting tool record with the factor and reduces tip rounding and
+  dedendum silently.
+- Project rule 5a; `scripts/import_stplus_program.py` reproduces import and probes.
+
+### Fixed (pre-commit configuration, 2026-09-30)
+- The whitespace hooks no longer touch reference material (`30_references_and_examples/`, frozen
+  FVA post-processing) or the packaged STplus data; the ruff hooks use the configuration of the
+  package as CI does (notebooks were formatted with ruff's default line length otherwise);
+  nbstripout keeps cell ids. `pre-commit run --all-files` is clean.
 
 ### Added (session save/load + sidebar recall, 2026-08-19, ADR-031)
 User requirement: "Sitzung als File speichern … alle eingestellten Parameter und

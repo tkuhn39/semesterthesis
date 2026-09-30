@@ -1,0 +1,109 @@
+{
+  "additionalProperties": false,
+  "description": "Basic rack of a cylindrical gear; factors refer to the module (``*`` in the norms).",
+  "properties": {
+    "name": {
+      "description": "designation, e.g. 'ISO 53 type A'",
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "source": {
+      "description": "key in sources.yaml of the defining norm",
+      "minLength": 1,
+      "title": "Source",
+      "type": "string"
+    },
+    "profile_angle_deg": {
+      "description": "Pressure angle",
+      "designation": "Profilwinkel des Bezugsprofils",
+      "designation_en": "Pressure angle",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 15",
+      "maximum": 30.0,
+      "minimum": 10.0,
+      "quantity": "basic_rack_profile_angle",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "alpha_P",
+      "title": "Profile Angle Deg",
+      "type": "number",
+      "unit": "deg"
+    },
+    "addendum_factor": {
+      "description": "Addendum of standard basic rack tooth (module factor)",
+      "designation": "Kopfhöhe des Bezugsprofils",
+      "designation_en": "Addendum of standard basic rack tooth",
+      "exclusiveMinimum": 0.0,
+      "factor": true,
+      "location": "§3.1 symbol list, p. 12; Bild 4, p. 22",
+      "maximum": 2.0,
+      "quantity": "basic_rack_addendum",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "h_aP*",
+      "title": "Addendum Factor",
+      "type": "number",
+      "unit": "-"
+    },
+    "dedendum_factor": {
+      "description": "Dedendum of standard basic rack tooth (module factor)",
+      "designation": "Fußhöhe des Bezugsprofils",
+      "designation_en": "Dedendum of standard basic rack tooth",
+      "exclusiveMinimum": 0.0,
+      "factor": true,
+      "location": "§3.1 symbol list, p. 12; Bild 4, p. 22",
+      "maximum": 2.5,
+      "quantity": "basic_rack_dedendum",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "h_fP*",
+      "title": "Dedendum Factor",
+      "type": "number",
+      "unit": "-"
+    },
+    "bottom_clearance_factor": {
+      "description": "Bottom clearance between standard basic rack tooth and mating standard basic rack tooth (module factor)",
+      "designation": "Kopfspiel zwischen Bezugsprofil und Gegenprofil",
+      "designation_en": "Bottom clearance between standard basic rack tooth and mating standard basic rack tooth",
+      "factor": true,
+      "location": "§2 table, p. 1; §4.3 and §4.4, p. 2",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "quantity": "basic_rack_bottom_clearance",
+      "source": "DIN867:1986",
+      "status": "verified",
+      "symbol": "c_P*",
+      "title": "Bottom Clearance Factor",
+      "type": "number",
+      "unit": "-"
+    },
+    "fillet_radius_factor": {
+      "description": "Fillet radius of the basic rack (module factor)",
+      "designation": "Zahnfußradius am Bezugsprofil",
+      "designation_en": "Fillet radius of the basic rack",
+      "factor": true,
+      "location": "§3.1 symbol list, p. 16; Bild 4, p. 22",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "quantity": "basic_rack_fillet_radius",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "rho_fP*",
+      "title": "Fillet Radius Factor",
+      "type": "number",
+      "unit": "-"
+    }
+  },
+  "required": [
+    "name",
+    "source",
+    "profile_angle_deg",
+    "addendum_factor",
+    "dedendum_factor",
+    "bottom_clearance_factor",
+    "fillet_radius_factor"
+  ],
+  "title": "BasicRackProfile",
+  "type": "object"
+}

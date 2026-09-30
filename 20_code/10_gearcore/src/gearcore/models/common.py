@@ -11,6 +11,14 @@ from typing import Any, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+# Ranges the implementation is verified for (not physical limits). The input contracts and the
+# orchestrators of the computational modules share them, so both reject the same inputs.
+TEETH_RANGE: tuple[int, int] = (5, 1000)
+PROFILE_SHIFT_RANGE: tuple[float, float] = (-2.0, 2.0)
+NORMAL_MODULE_RANGE_MM: tuple[float, float] = (0.05, 100.0)
+PRESSURE_ANGLE_RANGE_DEG: tuple[float, float] = (10.0, 30.0)
+HELIX_ANGLE_RANGE_DEG: tuple[float, float] = (-45.0, 45.0)
+
 
 class FrozenModel(BaseModel):
     """Immutable, strict base model for all gearcore contracts."""

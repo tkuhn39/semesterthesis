@@ -14,15 +14,15 @@ tools = st.builds(
     ToolProfile,
     addendum_factor=st.floats(0.8, 2.5),
     tip_radius_factor=st.floats(0.0, 0.6),
-    pressure_angle_deg=st.none(),
+    profile_angle_deg=st.none(),
     normal_module_mm=st.none(),
     dedendum_factor=st.none() | st.floats(0.8, 2.5),
     edge_break_angle_deg=st.none() | st.floats(1.0, 89.0),
 )
 gears = st.builds(
     GearInput,
-    teeth=st.integers(5, 1000),
-    profile_shift=st.floats(-2.0, 2.0),
+    number_of_teeth=st.integers(5, 1000),
+    profile_shift_coefficient=st.floats(-2.0, 2.0),
     face_width_mm=st.floats(0.1, 2000.0),
     tip_diameter_mm=st.none() | st.floats(1.0, 5000.0),
     tool=tools,
@@ -30,9 +30,9 @@ gears = st.builds(
 pairs = st.builds(
     PairInput,
     normal_module_mm=st.floats(0.05, 100.0),
-    pressure_angle_deg=st.floats(10.0, 30.0),
+    normal_pressure_angle_deg=st.floats(10.0, 30.0),
     helix_angle_deg=st.floats(-45.0, 45.0),
-    center_distance_mm=st.none() | st.floats(1.0, 5000.0),
+    centre_distance_mm=st.none() | st.floats(1.0, 5000.0),
     gears=st.builds(Pair[GearInput], pinion=gears, wheel=gears),
 )
 
@@ -49,19 +49,28 @@ def test_pair_input_round_trips_through_json_and_hashes(pair: PairInput) -> None
 def test_teeth_outside_range_are_rejected(z: int) -> None:
     tool = ToolProfile(addendum_factor=1.25, tip_radius_factor=0.25)
     if 5 <= z <= 1000:
-        assert GearInput(teeth=z, profile_shift=0.0, face_width_mm=1.0, tool=tool).teeth == z
+        assert (
+            GearInput(
+                number_of_teeth=z, profile_shift_coefficient=0.0, face_width_mm=1.0, tool=tool
+            ).number_of_teeth
+            == z
+        )
     else:
         try:
-            GearInput(teeth=z, profile_shift=0.0, face_width_mm=1.0, tool=tool)
+            GearInput(
+                number_of_teeth=z, profile_shift_coefficient=0.0, face_width_mm=1.0, tool=tool
+            )
         except ValidationError:
             return
-        raise AssertionError(f"teeth={z} accepted outside [5, 1000]")
+        raise AssertionError(f"number_of_teeth={z} accepted outside [5, 1000]")
 
 
 @given(finite)
 def test_helix_angle_outside_range_is_rejected(beta: float) -> None:
     tool = ToolProfile(addendum_factor=1.25, tip_radius_factor=0.25)
-    gear = GearInput(teeth=20, profile_shift=0.0, face_width_mm=1.0, tool=tool)
+    gear = GearInput(
+        number_of_teeth=20, profile_shift_coefficient=0.0, face_width_mm=1.0, tool=tool
+    )
     inside = -45.0 <= beta <= 45.0
     try:
         PairInput(normal_module_mm=1.0, helix_angle_deg=beta, gears=Pair(pinion=gear, wheel=gear))

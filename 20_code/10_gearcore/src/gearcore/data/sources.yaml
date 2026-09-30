@@ -3,6 +3,13 @@
 # crossref / dpma); `confirmed_by_user: false` means the user has not yet checked the entry against
 # the PDF. Entries with `status: missing` have no verifiable identifier yet and must not be cited
 # from code. Titles are transcribed from the PDF headers; norm titles are abbreviated.
+#
+# Scope (user decision 2026-09-29): only sources that are currently needed are listed. Present in
+# 00_literatur/05_normen_und_richtlinien but deliberately NOT registered yet: DIN 3990-6:1994-12
+# (used by STplus for load spectra), DIN 3990-11:1989-02 and DIN 3990-21:1989-02 (application
+# norms, reproducible in STplus via method choice; Annex B worked examples), DIN 3990-16:2020-05 and
+# DIN 3990-17:2026-07 (lubricant test methods, not in STplus), ISO/TR 10064-1…-6, and the English
+# second copies of DIN 3967, DIN 867, DIN 3972, DIN 3990-16. They are added when first needed.
 sources:
   # ---- geometry, current basis --------------------------------------------------------------
   ISO21771:2014:
@@ -10,83 +17,83 @@ sources:
     title: "DIN ISO 21771:2014-08 Zahnräder – Zylinderräder und Zylinderradpaare mit Evolventenverzahnung – Begriffe und Geometrie (ISO 21771:2007)"
     edition: "2014-08"
     file: "00_literatur/05_normen_und_richtlinien/DIN_ISO_21771_2014-08-00_DE_2144663.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "Nationales Vorwort verwirft Anhang A; Anhang NB korrigiert Gl. (56), (57), (128). Successor of DIN 3960:1987 together with DIN 21772/21773."
   DIN21773:2014:
     type: norm
-    title: "DIN 21773:2014-08 Zahnräder – Zylinderräder und Zylinderradpaare mit Evolventenverzahnung – Berechnung der Prüfmaße"
+    title: "DIN 21773:2014-08 Zahnräder – Zylinderräder und Zylinderradpaare mit Evolventenverzahnung – Prüfmaße für die Zahndicke"
     edition: "2014-08"
     file: "00_literatur/05_normen_und_richtlinien/DIN_21773_2014-08-00_DE_2144692.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   DIN21772:2012:
     type: norm
     title: "DIN 21772:2012-07 Zahnräder – Zylinderräder und Zylinderradpaare mit Evolventenverzahnung – Definition der Abweichungen"
     edition: "2012-07"
     file: "00_literatur/05_normen_und_richtlinien/DIN_21772_2012-07-00_DE_1571297.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "Replaced by DIN ISO 1328-1:2018 (stated in that norm); kept for the DIN 3960 → current mapping only."
   DIN867:1986:
     type: norm
     title: "DIN 867:1986-02 Bezugsprofile für Evolventenverzahnungen an Stirnrädern (Zylinderrädern) für den allgemeinen Maschinenbau und den Schwermaschinenbau"
     edition: "1986-02"
     file: "00_literatur/05_normen_und_richtlinien/DIN_867_1986-02-00_DE_2001943.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   ISO53:1998:
     type: norm
     title: "ISO 53:1998 Cylindrical gears for general and heavy engineering — Standard basic rack tooth profile"
     edition: "1998-08"
     file: "00_literatur/05_normen_und_richtlinien/ISO_53_1998-08-00_EN_8026177.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   ISO54:1996:
     type: norm
     title: "ISO 54:1996 Cylindrical gears for general engineering and for heavy engineering — Modules"
     edition: "1996-12"
     file: "00_literatur/05_normen_und_richtlinien/ISO_54_1996-12-00_EN_7355562.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   DIN3972:1952:
     type: norm
     title: "DIN 3972:1952-02 Bezugsprofile von Verzahnwerkzeugen für Evolventen-Verzahnungen nach DIN 867"
     edition: "1952-02"
     file: "00_literatur/05_normen_und_richtlinien/DIN_3972_1952-02-00_DE_1103448.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
-    notes: "Bezugsprofile I–IV: h_aP0 = 1,167 m / 1,25 m / 1,25 m + 0,25 ∛m / 1,25 m + 0,6 ∛m; ρ ≈ 0,2 m (Tabelle, Seite 1)."
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
+    notes: "Symbols of the norm itself (p. 1): h_kw = Kopfhöhe (indices k = 'bezogen auf Zahnkopf', w = 'bezogen auf Werkzeug'), Bezugsprofile I–IV: h_kw I = 1,167·m; h_kw II = 1,25·m; h_kw III = 1,25·m + 0,25·∛m; h_kw IV = 1,25·m + 0,6·∛m. h_fr = Fußhöhe (indices f = 'bezogen auf Zahnfuß', r = 'bezogen auf Zahnrad') (1,167·m for I, 1,25·m for II–IV); h_w = tooth depth of the tool (figure, no designation printed), Kleinstmaß ≥ 2,367·m (I) / ≥ 2,45·m (II–IV); p = Bearbeitungszugabe je Flanke (III: 0,25·∛m·sin α0; IV: 0,6·∛m·sin α0, p. 2). Rundungen: table column 'r_2 ≈ 0,2 m' is TABULATED, not a formula (0,08 at m=1; 0,12 at 1,25; 0,20 at 1,5; 0,25 at 1,75; 0,30 at 2; 0,40 at 2,25; from m=2,5 mostly 0,2·m, e.g. 0,50 at 2,5 and 2,75; 0,60 at 3 and 3,25); r_1 = Rundung am Zahnkopf des Werkzeugs 'wird gleich r_2 ausgeführt', except shaper cutters (edge only lightly broken). Mapping to current notation (DIN ISO 21771:2014-08 §7.1, Bild 35, symbol list §3.1): h_kw ≙ h_aP0 (Kopfhöhe des Werkzeug-Bezugsprofils), r_1 ≙ tool tip rounding radius (index aP0; STplus KOPFABRUNDUNGSFAKTOR rho_aP0*). The norm has no symbols h_aP0 or ρ — an earlier version of this note used the modern symbols without saying so (corrected 2026-09-29 after the user's check)."
   DIN3967:1978:
     type: norm
     title: "DIN 3967:1978-08 Getriebe-Paßsystem; Flankenspiel, Zahndickenabmaße, Zahndickentoleranzen; Grundlagen"
     edition: "1978-08"
     file: "00_literatur/05_normen_und_richtlinien/DIN_3967_1978-08-00_DE_1103340.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "Still valid. EN copy: DIN_3967_1978-08-00_EN_1103359.pdf. Worked examples in text and Annex A/B."
   DIN3964:1980:
     type: norm
     title: "DIN 3964:1980-11 Achsabstandsabmaße und Achslagetoleranzen von Gehäusen für Stirnradgetriebe"
     edition: "1980-11"
     file: "00_literatur/05_normen_und_richtlinien/DIN_3964_1980-11-00_DE_1103233.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   DINISO1328-1:2018:
     type: norm
     title: "DIN ISO 1328-1:2018-03 Zylinderräder – ISO-Toleranzsystem – Teil 1: Definitionen und zulässige Werte für Abweichungen an Zahnflanken (ISO 1328-1:2013)"
     edition: "2018-03"
     file: "00_literatur/05_normen_und_richtlinien/DIN_ISO_1328-1_2018-03-00_DE_2773568.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   DINISO1328-2:2021:
     type: norm
-    title: "DIN ISO 1328-2:2021-09 Zylinderräder – ISO-Toleranzsystem – Teil 2: Definitionen und zulässige Werte für Abweichungen bezogen auf radiale Zusammensetzung (ISO 1328-2:2020)"
+    title: "DIN ISO 1328-2:2021-09 Stirnräder – ISO-Toleranzsystem – Teil 2: Definitionen und zulässige Werte für die Zweiflanken-Wälzabweichung (ISO 1328-2:2020)"
     edition: "2021-09"
     file: "00_literatur/05_normen_und_richtlinien/DIN_ISO_1328-2_2021-09-00_DE_3276541.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
-    notes: "Anhang E Beispielberechnungen."
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-29" }
+    confirmed_by_user: true
+    notes: "Title transcribed from page 1 on 2026-09-29 (the earlier title was wrong). Header: 'Mit DIN ISO 1328-1:2018-03 Ersatz für DIN 3963:1978-08'. Anhang E Beispielberechnungen."
   # ---- geometry, withdrawn (cross-check only, never the computational basis) ------------------
   DIN3960:1987:
     type: norm
@@ -94,8 +101,8 @@ sources:
     title: "DIN 3960:1987-03 Begriffe und Bestimmungsgrößen für Stirnräder (Zylinderräder) und Stirnradpaare (Zylinderradpaare) mit Evolventenverzahnung"
     edition: "1987-03"
     file: "00_literatur/05_normen_und_richtlinien/DIN_3960.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "Header: zurückgezogen; Nachfolger DIN 21772 (2012-07), DIN 21773 (2014-08), DIN ISO 21771 (2014-08). STplus geometry basis. Anhang A: Angaben zum Verzahnen im Wälzverfahren."
   DIN3960-Bbl1:1980:
     type: norm
@@ -103,8 +110,8 @@ sources:
     title: "DIN 3960 Beiblatt 1:1980-07 Zusammenstellung der Gleichungen"
     edition: "1980-07"
     file: "00_literatur/05_normen_und_richtlinien/DIN_3960_Beiblatt.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "Equations of the 1980 edition, not 1987."
   # ---- load capacity (stage 2) ----------------------------------------------------------------
   ISO6336-1:2019:
@@ -112,162 +119,167 @@ sources:
     title: "ISO 6336-1:2019 Calculation of load capacity of spur and helical gears — Part 1: Basic principles, introduction and general influence factors"
     edition: "2019-11"
     file: "00_literatur/05_normen_und_richtlinien/ISO_6336-1_2019-11-00_EN_3129886.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   ISO6336-2:2019:
     type: norm
     title: "ISO 6336-2:2019 — Part 2: Calculation of surface durability (pitting)"
     edition: "2019-11"
     file: "00_literatur/05_normen_und_richtlinien/ISO_6336-2_2019-11-00_EN_3129888.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   ISO6336-3:2019:
     type: norm
     title: "ISO 6336-3:2019 — Part 3: Calculation of tooth bending strength"
     edition: "2019-11"
     file: "00_literatur/05_normen_und_richtlinien/ISO_6336-3_2019-11-00_EN_3129890.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   ISOTS6336-4:2019:
     type: norm
     title: "ISO/TS 6336-4:2019 — Part 4: Calculation of tooth flank fracture load capacity"
     edition: "2019-01"
     file: "00_literatur/05_normen_und_richtlinien/ISO_6336-4_2019-01-00_EN_3043701.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   ISO6336-5:2016:
     type: norm
     title: "ISO 6336-5:2016 — Part 5: Strength and quality of materials"
     edition: "2016-08"
     file: "00_literatur/05_normen_und_richtlinien/ISO_6336-5_2016-08-00_EN_2559705.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   ISO6336-6:2019:
     type: norm
     title: "ISO 6336-6:2019 — Part 6: Calculation of service life under variable load"
     edition: "2019-11"
     file: "00_literatur/05_normen_und_richtlinien/ISO_6336-6_2019-11-00_EN_3129892.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "Annex C example calculation."
   ISOTR6336-30:2022:
     type: norm
     title: "ISO/TR 6336-30:2022 — Part 30: Calculation examples for the application of ISO 6336 parts 1, 2, 3, 5"
     edition: "2022-12"
     file: "00_literatur/05_normen_und_richtlinien/ISO-TR_6336-30_2022-12-00_EN_3406102.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "8 worked examples (spur: 3, 4, 5; helical: 1, 2, 7, 8; internal: 6); Annex A detailed example 1. Tables must be read from the rendered page."
   ISOTS6336-20:2022:
     type: norm
     title: "ISO/TS 6336-20:2022 — Part 20: Calculation of scuffing load capacity — Flash temperature method"
     edition: "2022-05"
     file: "00_literatur/05_normen_und_richtlinien/ISO-TS_6336-20_2022-05-00_EN_3365163.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   ISOTS6336-21:2022:
     type: norm
     title: "ISO/TS 6336-21:2022 — Part 21: Calculation of scuffing load capacity — Integral temperature method"
     edition: "2022-05"
     file: "00_literatur/05_normen_und_richtlinien/ISO-TS_6336-21_2022-05-00_EN_3365160.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "Annex A examples."
   ISOTS6336-22:2018:
     type: norm
     title: "ISO/TS 6336-22:2018 — Part 22: Calculation of micropitting load capacity"
     edition: "2018-08"
     file: "00_literatur/05_normen_und_richtlinien/ISO-TS_6336-22_2018-08-00_EN_2889911.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
-  VDI2736-1:2014:
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
+  VDI2736-1:2016:
     type: guideline
-    title: "VDI 2736 Blatt 1:2014-06 Thermoplastische Zahnräder – Werkstoffe, Werkstoffauswahl, Herstellverfahren, Herstellgenauigkeit, Gestalten"
-    edition: "2014-06"
-    file: "00_literatur/05_normen_und_richtlinien/N39287_VDI_2736_Blatt1_06-2014.PDF"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    title: "VDI 2736 Blatt 1:2016-07 Thermoplastische Zahnräder – Werkstoffe, Werkstoffauswahl, Herstellverfahren, Herstellgenauigkeit, Gestalten"
+    edition: "2016-07"
+    file: "00_literatur/05_normen_und_richtlinien/VDI-2736_Blatt-1_2016-07-00_ML_2385994.pdf"
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-29" }
+    confirmed_by_user: true
+    notes: "Final edition July 2016, German/English, 73 pages. Page 1: 'Frühere Ausgaben: VDI 2545:1981-01, zurückgezogen; 06.14 Entwurf, deutsch'. Replaces the draft copy (06.14) that was in the repo until 2026-09-29."
   VDI2736-2:2014:
     type: guideline
     title: "VDI 2736 Blatt 2:2014-06 Thermoplastische Zahnräder – Stirnradgetriebe – Tragfähigkeitsberechnung"
     edition: "2014-06"
-    file: "00_literatur/05_normen_und_richtlinien/N39287_VDI_2736_Blatt2_06-2014.PDF"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
-    notes: "Tab. 1 σ_Fü, Tab. 2 µ, Tab. 3/4 heat transfer, Tab. 5 fatigue strengths, Tab. 6 k_W; Anhang A Beispiele; Anhang B Erläuterungen."
+    file: "00_literatur/05_normen_und_richtlinien/VDI-2736_Blatt-2_2014-06-00_ML_2090450.pdf"
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-29" }
+    confirmed_by_user: true
+    notes: "German/English, 38 pages. Page 1: 'Frühere Ausgabe: 01.13 Entwurf, deutsch'. Tab. 1 σ_Fü, Tab. 2 µ, Tab. 3/4 heat transfer, Tab. 5 fatigue strengths, Tab. 6 k_W; Anhang A Beispiele; Anhang B Erläuterungen."
   VDI2736-3:2014:
     type: guideline
-    title: "VDI 2736 Blatt 3:2014-05 Thermoplastische Zahnräder – Schneckengetriebe – Tragfähigkeitsberechnung"
+    title: "VDI 2736 Blatt 3:2014-05 Thermoplastische Zahnräder – Schraubradgetriebe – Paarung Zylinderschnecke Schrägstirnrad – Tragfähigkeitsberechnung"
     edition: "2014-05"
-    file: "00_literatur/05_normen_und_richtlinien/N39287_VDI_2736_Blatt3_05-2014.PDF"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    file: "00_literatur/05_normen_und_richtlinien/VDI-2736_Blatt-3_2014-05-00_ML_2082658.pdf"
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-29" }
+    confirmed_by_user: true
+    notes: "German/English, 28 pages. Page 1: 'Frühere Ausgabe: 11.12 Entwurf, deutsch'. Crossed helical gears; outside the spur/helical scope of this project."
   VDI2736-4:2016:
     type: guideline
     title: "VDI 2736 Blatt 4:2016-01 Thermoplastische Zahnräder – Ermittlung von Tragfähigkeitskennwerten an Zahnrädern"
     edition: "2016-01"
-    file: "00_literatur/05_normen_und_richtlinien/N39287_VDI_2736_Blatt4_01-2016.PDF"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    file: "00_literatur/05_normen_und_richtlinien/VDI-2736_Blatt-4_2016-01-00_ML_2355836.pdf"
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-29" }
+    confirmed_by_user: true
+    notes: "German/English, 23 pages. Page 1: 'Frühere Ausgabe: 06.14 Entwurf, deutsch'."
   DIN3990-1:1987:
     type: norm
     title: "DIN 3990-1:1987-12 Tragfähigkeitsberechnung von Stirnrädern – Einführung und allgemeine Einflußfaktoren"
     edition: "1987-12"
     file: "00_literatur/05_normen_und_richtlinien/DIN_3990-1_1987-12-00_DE_2069785.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "STplus load-capacity basis (parts 1–5); cross-check only."
   DIN3990-2:1987:
     type: norm
     title: "DIN 3990-2:1987-12 – Berechnung der Grübchentragfähigkeit"
     edition: "1987-12"
     file: "00_literatur/05_normen_und_richtlinien/DIN_3990-2_1987-12-00_DE_2069794.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   DIN3990-3:1987:
     type: norm
     title: "DIN 3990-3:1987-12 – Berechnung der Zahnfußtragfähigkeit"
     edition: "1987-12"
     file: "00_literatur/05_normen_und_richtlinien/DIN_3990-3_1987-12-00_DE_2069801.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   DIN3990-4:1987:
     type: norm
     title: "DIN 3990-4:1987-12 – Berechnung der Freßtragfähigkeit"
     edition: "1987-12"
     file: "00_literatur/05_normen_und_richtlinien/DIN_3990-4_1987-12-00_DE_2069810.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   DIN3990-5:1987:
     type: norm
     title: "DIN 3990-5:1987-12 – Dauerfestigkeitswerte und Werkstoffqualitäten"
     edition: "1987-12"
     file: "00_literatur/05_normen_und_richtlinien/DIN_3990-5_1987-12-00_DE_2069829.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   # ---- textbooks and reports -----------------------------------------------------------------
   Linke2010:
     type: book
     title: "Stirnradverzahnung – Berechnung, Werkstoffe, Fertigung"
     authors: ["Linke, Heinz"]
     edition: "2., vollständig überarbeitete Auflage"
-    publisher: "Carl Hanser Verlag, München"
+    publisher: "Carl Hanser Verlag München Wien"
     year: 2010
     isbn13: "978-3-446-41464-8"
     file: "00_literatur/04_buecher/Linke - Stirnradverzahnung_2010.pdf"
-    verified: {method: pdf-imprint, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified:
+      { method: pdf-imprint, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "Trochoid / envelope derivation source for the root fillet (chapter to be recorded when used)."
   KlockeBrecher2017:
     type: book
-    title: "Zahnrad- und Getriebetechnik"
+    title: "Zahnrad- und Getriebetechnik – Auslegung – Herstellung – Untersuchung – Simulation"
     authors: ["Klocke, Fritz", "Brecher, Christian"]
-    publisher: "Carl Hanser Verlag, München"
+    publisher: "Carl Hanser Verlag München"
     year: 2017
     isbn13: "978-3-446-43068-6"
     file: "00_literatur/04_buecher/Klocke, Brecher 2017 - Zahnrad- und Getriebetechnik.pdf"
-    verified: {method: pdf-imprint, by: "claude/rendered page", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified:
+      { method: pdf-imprint, by: "claude/rendered page", date: "2026-09-28" }
+    confirmed_by_user: true
   FVA604-I:2012:
     type: report
     title: "Flankengenerator – Erzeugung allgemeiner Flankengeometrien. Forschungsvorhaben Nr. 604 I, Abschlussbericht"
@@ -275,8 +287,8 @@ sources:
     series: "FVA-Heft 1017"
     year: 2012
     file: "00_literatur/07_themis/KR_604_AB_1017.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   FVA604-II:2016:
     type: report
     title: "Flankengenerator II – Anwendernahe Umsetzung der Erzeugung allgemeiner Flankengeometrien nach FVA 604/I und Adaption an bestehende FVA-Programme. Forschungsvorhaben Nr. 604 II, Abschlussbericht"
@@ -284,101 +296,135 @@ sources:
     series: "FVA-Heft 1176"
     year: 2016
     file: "00_literatur/07_themis/KR_604_II_AB_1176.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   STplus-Manual:11.1F:
     type: manual
     title: "Programmanleitung FVA-Stirnradprogramm STplus 11.1F (Rothemund, M.; Otto, M.; FZG, TU München)"
     edition: "11.1F, 2025-12-01"
     file: "30_references_and_examples/33_STplus/STplus11-1F/doku/STplus_11-1F_Benutzeranleitung.pdf"
-    verified: {method: pdf-header, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "Oracle documentation only (batch mode §3.2, input keys §4.2, contour export §6.4.2, program blocks §10)."
   # ---- root-fillet sources (stage 3) --------------------------------------------------------
   DE102008045318B3:2009:
     type: patent
-    title: "DE 10 2008 045 318 B3 (Patentschrift, Int. Cl. F16H 55/08; Anmeldetag 02.09.2008, Patenterteilung veröffentlicht 08.10.2009)"
+    title: "Verzahnung eines Zahnrads (Patentschrift DE 10 2008 045 318 B3; Int. Cl. F16H 55/08; Anmeldetag 02.09.2008, Patenterteilung veröffentlicht 08.10.2009)"
     number: "DE 10 2008 045 318 B3"
+    holder: "Voith Patent GmbH, Heidenheim"
+    inventors: ["Roth, Zsolt", "Etzold, Mathias"]
     year: 2009
     file: "00_literatur/08_patentschriften/DE102008045318B3.pdf"
-    verified: {method: dpma-front-page, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified:
+      { method: dpma-front-page, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "Voith bionic tooth-root contour (cited by Kassem 22FTM13 and Roth/Opferkuch 2017)."
   DE102013004861B3:2014:
     type: patent
-    title: "DE 10 2013 004 861 B3 (Patentschrift, Int. Cl. F16H 55/08; Anmeldetag 21.03.2013, Patenterteilung veröffentlicht 27.02.2014)"
+    title: "Verzahnung eines Zahnrads (Patentschrift DE 10 2013 004 861 B3; Int. Cl. F16H 55/08; Anmeldetag 21.03.2013, Patenterteilung veröffentlicht 27.02.2014)"
     number: "DE 10 2013 004 861 B3"
+    holder: "Voith Patent GmbH, Heidenheim"
     year: 2014
+    notes: "Inventors per front page (72): Schneider, Lars; Roth, Zsolt; Münzer, Michael; Lubos, Florian; further names to be read from the rendered front page (two-column layout)."
     file: "00_literatur/08_patentschriften/DE102013004861B3.pdf"
-    verified: {method: dpma-front-page, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified:
+      { method: dpma-front-page, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   Kassem2022:
     type: conference
     title: "Effect of Tooth Root Fillet Design on Tooth Root Stress in Short Fiber Reinforced Plastic Gears"
-    authors: ["Kassem, Wael", "Oehler, Manuel", "Koch, Oliver"]
+    authors: ["Kassem, W.", "Oehler, M.", "Koch, O."] # initials as printed; full names see Kassem2023
     venue: "AGMA Technical Paper 22FTM13, Fall Technical Meeting 2022"
     year: 2022
     isbn13: "978-1-64353-133-5"
     file: "00_literatur/03_paper/22FTM13---Kassem.pdf"
-    verified: {method: pdf-imprint, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified:
+      { method: pdf-imprint, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   Kassem2023:
     type: article
     title: "Tooth root stress reduction of plastic gears with biological inspired shape optimization"
-    authors: ["Kassem, Wael", "Oehler, Manuel", "Koch, Oliver"]
+    authors: ["Kassem, Wassiem", "Oehler, Manuel", "Koch, Oliver"]
     venue: "Proc. IMechE Part C: Journal of Mechanical Engineering Science 238(7), 2592–2601"
     year: 2023
     doi: "10.1177/09544062231196028"
     file: "00_literatur/03_paper/kassem-et-al-2023-tooth-root-stress-reduction-of-plastic-gears-with-biological-inspired-shape-optimization.pdf"
-    verified: {method: pdf-print, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-print, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "DOI printed in the PDF; Crossref resolution pending (scripts/verify_sources.py)."
   Landi2021:
     type: article
     title: "Analytical procedure for the optimization of plastic gear tooth root"
-    authors: ["Landi, Luca", "Stecconi, Alessandro", "Morettini, Giulia", "Cianetti, Filippo"]
+    authors:
+      [
+        "Landi, Luca",
+        "Stecconi, Alessandro",
+        "Morettini, Giulia",
+        "Cianetti, Filippo",
+      ]
     venue: "Mechanism and Machine Theory 166, 104496"
     year: 2021
     doi: "10.1016/j.mechmachtheory.2021.104496"
     file: "00_literatur/03_paper/Lan21_Analytical procedure for the optimization of plastic gear tooth root_a.pdf"
-    verified: {method: pdf-print, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-print, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   Dong2020:
     type: article
     title: "Optimum design of the tooth root profile for improving bending capacity"
-    authors: ["Dong, Peng", "Zuo, Shuhan", "Du, Shengqiang", "Tenberge, Peter", "Wang, Shuhan", "Xu, Xiangyang", "Wang, Xiaojun"]
+    authors:
+      [
+        "Dong, Peng",
+        "Zuo, Shumiao",
+        "Du, Shaofeng",
+        "Tenberge, Peter",
+        "Wang, Shuhan",
+        "Xu, Xiangyang",
+        "Wang, Xiaohai",
+      ]
     venue: "Mechanism and Machine Theory 151, 103910"
     year: 2020
     doi: "10.1016/j.mechmachtheory.2020.103910"
     file: "00_literatur/03_paper/Optimum design of the tooth root profile for improving bending capacity.pdf"
-    verified: {method: pdf-print, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-print, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
   Fruehe2012:
     type: thesis
-    status: missing
     title: "Berechnung und Minimierung der Zahnfußspannung von Standard- und LowLoss-Verzahnungen"
     authors: ["Frühe, Thomas"]
-    venue: "Dissertation, Technische Universität München (eingereicht 06.09.2011, angenommen 12.03.2012)"
+    venue: "Dissertation, Technische Universität München, Fakultät für Maschinenwesen (eingereicht 06.09.2011, angenommen 12.03.2012)"
     year: 2012
-    file: "00_literatur/03_paper/Frühe_Minimierung von Zahnfußspannungen an Standard- und Low Loss-Verzahnungen.pdf"
-    verified: {method: null, by: null, date: null}
-    confirmed_by_user: false
-    notes: "No ISBN/DOI printed; mediaTUM URN to be supplied by the user before citation from code."
+    urn: "urn:nbn:de:bvb:91-diss-20120601-1083583-1-4"
+    url: "https://nbn-resolving.org/urn:nbn:de:bvb:91-diss-20120601-1083583-1-4"
+    file: "00_literatur/02_dissertationen/914751_Fruehe_2012.pdf"
+    verified:
+      {
+        method: urn-resolver,
+        by: "user (URN) + claude/nbn-resolving redirect",
+        date: "2026-09-28",
+      }
+    confirmed_by_user: true
+    notes: "154 pages, print version (Diss-Fr-48-Druck); no identifier printed in the PDF. URN supplied by the user; nbn-resolving.org redirects (307) to https://mediatum.ub.tum.de/node?id=1083583. A duplicate copy lies in 00_literatur/03_paper/Frühe_Minimierung von Zahnfußspannungen an Standard- und Low Loss-Verzahnungen.pdf."
   RothOpferkuch2017:
     type: conference
-    status: missing
     title: "High Load Capacity Gear Root Fillet Contour with a Bézier Curve"
-    authors: ["Roth, Zoltan", "Opferkuch, Johannes"]
+    authors: ["Roth, Zsolt", "Opferkuch, Johannes"]
+    venue: "International Conference on Gears 2017, VDI-Berichte 2294, VDI Verlag, Düsseldorf, pp. 719–732"
     year: 2017
+    doi: "10.51202/9783181022948-719"
     file: "00_literatur/03_paper/Roth, Opferkuch 2017 - High Load Capacity Gear Root.pdf"
-    verified: {method: null, by: null, date: null}
-    confirmed_by_user: false
-    notes: "Venue not printed (PDF metadata hints at VDI-Berichte 2294); user to confirm before citation."
+    verified:
+      {
+        method: crossref,
+        by: "user (DOI) + claude/crossref lookup",
+        date: "2026-09-28",
+      }
+    confirmed_by_user: true
+    notes: "DOI supplied by the user; Crossref: title, authors Z. Roth / J. Opferkuch, container 'International Conference on Gears 2017', pages 719-732 match the PDF. No ORCIDs on the Crossref record."
   CAMPUS-StanylTW200F6:2024:
     type: datasheet
     title: "CAMPUS Automobil OEM Datenblatt Stanyl TW200F6 – PA46-GF30 (Envalior)"
     year: 2024
     file: "00_literatur/06_datenblaetter/StanylTW200F6.pdf"
-    verified: {method: pdf-footer, by: "claude/pdftotext", date: "2026-09-28"}
-    confirmed_by_user: false
+    verified: { method: pdf-footer, by: "claude/pdftotext", date: "2026-09-28" }
+    confirmed_by_user: true
     notes: "Footer: https://www.campusplastics.com – Envalior – 2024-07-12. ISO 10350 single-point data; no gear strength values."

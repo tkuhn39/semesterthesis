@@ -18,6 +18,7 @@ The raw layer (``SteFile``) keeps every token; the typed layer maps the geometry
 material blocks onto gearcore contracts and reports explicitly what it could not map.
 """
 
+import math
 import re
 from pathlib import Path
 from typing import Any
@@ -68,7 +69,12 @@ class SteEntry(FrozenModel):
             raise ParseError(
                 f"line {self.line}: {self.key} value {index + 1}: non-numeric token {token!r}"
             )
-        return float(token.replace("d", "e").replace("D", "E"))
+        value = float(token.replace("d", "e").replace("D", "E"))
+        if not math.isfinite(value):
+            raise ParseError(
+                f"line {self.line}: {self.key} value {index + 1}: {token!r} exceeds the number range"
+            )
+        return value
 
     def numbers(self) -> tuple[float | None, ...]:
         return tuple(self.number(i) for i in range(len(self.values)))
@@ -200,7 +206,7 @@ TOOL_KEYS: dict[str, str] = {
     "FUSSFORMHOEHENFAKTOR": "root_form_height_factor",
     "KOPFABRUNDUNGSFAKTOR": "tip_radius_factor",
     "WKZ_NORMALMODUL": "normal_module_mm",
-    "WKZ_EINGRIFFSWINKEL": "pressure_angle_deg",
+    "WKZ_EINGRIFFSWINKEL": "profile_angle_deg",
     "KANTENBRECHWINKEL": "edge_break_angle_deg",
     "PROTUBERANZBETRAG": "protuberance_mm",
     "PROTUBERANZWINKEL": "protuberance_angle_deg",
@@ -474,7 +480,7 @@ def pair_input_from_ste(
             k = _integer(span_k[i], "MESSZAEHNEZAHL", gear_no)
             if k is None:
                 raise ParseError(f"gear {gear_no}: ZAHNWEITE given without MESSZAEHNEZAHL")
-            span = SpanMeasurement(span_mm=w, teeth=k)
+            span = SpanMeasurement(span_measurement_mm=w, number_of_teeth_spanned=k)
         elif w is not None:
             notes.append(
                 f"gear {gear_no}: ZAHNWEITE {w} ignored for x (PROFILVERSCHIEBUNG_N given); "
@@ -501,15 +507,15 @@ def pair_input_from_ste(
         gears.append(
             GearInput(
                 kind=GearKind.EXTERNAL,
-                teeth=teeth[i],
-                profile_shift=x[i],
+                number_of_teeth=teeth[i],
+                profile_shift_coefficient=x[i],
                 span=span,
                 face_width_mm=b,
                 tip_diameter_mm=tip[i],
                 tip_chamfer_radial_mm=0.0 if h_k is None else h_k,
                 tool=tools[i],
                 material=refs[i],
-                span_teeth=_integer(span_k_check[i], "MESSZAEHNEZAHL_K", gear_no),
+                number_of_teeth_spanned=_integer(span_k_check[i], "MESSZAEHNEZAHL_K", gear_no),
                 span_allowance_um=allowance,
                 allowance_series=(
                     None
@@ -526,9 +532,9 @@ def pair_input_from_ste(
 
     pair = PairInput(
         normal_module_mm=module,
-        pressure_angle_deg=alpha,
+        normal_pressure_angle_deg=alpha,
         helix_angle_deg=beta,
-        center_distance_mm=a,
+        centre_distance_mm=a,
         gears=Pair(pinion=gears[0], wheel=gears[1]),
         min_tip_clearance_factor=c_min,
     )

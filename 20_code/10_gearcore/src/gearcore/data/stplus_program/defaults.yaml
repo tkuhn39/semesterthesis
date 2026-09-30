@@ -1,0 +1,291 @@
+# Defaults of STplus — what the program presets when an input is missing.
+#
+# User decision 2026-09-30 (ADR-109): the defaults of STplus are no norm values, but they are kept
+# so that a later user can fall back on them knowingly. gearcore applies none of them silently.
+# Program and version: see provenance.yaml (STplus 11.1F, Freigabe 01.12.2025).
+#
+#   <key>        name of the default
+#   quantity     entry of data/quantities.yaml the default belongs to (null = none yet)
+#   input_key    key of the STplus input file (.ste) that the default replaces
+#   value        the preset value (number or text); null where the default is a rule
+#   unit         unit of the value
+#   rule         the default as a rule, in own words
+#   applies_to   "user interface", "batch input" or "both" (the batch input is the .ste file)
+#   manual       printed page of the manual (STplus_11-1F_Benutzeranleitung.pdf) and the sentence,
+#                verbatim; null where the manual is silent
+#   probe        what a run of STplus 11.1F showed: probes/<name>/report.sta.txt
+#   file         packaged file of the installation that is the evidence
+#   status       verified = manual sentence read on the rendered page and/or value seen in a probe
+#                located  = found in the text layer of the manual only, not transcribed yet
+#   note         what a reader has to know
+#
+# Scope: geometry input (manual section 4.2, p. 15 to 22) and rack-type tools (p. 183 to 188).
+# Defaults of the load capacity (p. 35 to 58), of shaper cutters (p. 189 to 192) and the material
+# and lubricant databases are only located; they are transcribed with the stage that uses them.
+defaults:
+  normal_pressure_angle:
+    quantity: normal_pressure_angle
+    input_key: "EINGRIFFSWINKEL"
+    value: 20.0
+    unit: "deg"
+    rule: null
+    applies_to: "user interface"
+    manual: { page: 15, text: "Der Normaleingriffswinkel α_n ist mit 20 Grad vorbelegt, er kann jedoch bei Bedarf geändert werden." }
+    probe: "no_pressure_angle: a batch input without EINGRIFFSWINKEL is rejected ('ALN = 0.00', 'Eingaben ... sind unvollstaendig oder unzulaessig')"
+    status: verified
+    note: "The default belongs to the user interface; the batch input needs the angle."
+  helix_angle:
+    quantity: helix_angle
+    input_key: "SCHRAEGUNGSWINKEL"
+    value: null
+    unit: "deg"
+    rule: "without input the helix angle is computed by the program; gear 1 is then right-handed, gear 2 left-handed"
+    applies_to: "both"
+    manual: { page: 16, text: "Erfolgt keine Eingabe zum Schrägungswinkel, wird der Schrägungswinkel vom Programm berechnet. Rad 1 wird dabei als rechtssteigend angesehen, Rad 2 als linkssteigend." }
+    probe: null
+    status: verified
+    note: "Two of centre distance, helix angle and profile shift sum have to be given (manual Bild 4.12, p. 25)."
+  tip_diameter:
+    quantity: tip_diameter
+    input_key: "KOPFKREISDM"
+    value: null
+    unit: "mm"
+    rule: "d_a = d + 2 m_n (h_aP* + x); afterwards the program checks the tip circle against the tool and the mating gear and reduces it to the feasible value"
+    applies_to: "both"
+    manual: { page: 19, text: "Erfolgt keine Eingabe zum Kopfkreisdurchmesser wird der Kopfkreis gemäß d_a = d + 2 • m_n • (h_aP* + x) berechnet. Innerhalb des Programmes wird überprüft, ob der Kopfkreis mit dem eventuell vorgegebenen Werkzeug oder der Radpaarung verträglich ist. Ist dieses nicht der Fall, wird der geometrisch ausführbare Kopfkreis verwendet, der das maßgebende Grenzkriterium gerade erfüllt." }
+    probe: "defaults_minimal: d_a = 44.000 and 84.000 mm for z = 20 and 40, m_n = 2, x = 0 (h_aP* = 1.000)"
+    status: verified
+    note: null
+  tip_chamfer_tangential:
+    quantity: null
+    input_key: null
+    value: 0.7
+    unit: "-"
+    rule: "tangential amount of the tip chamfer = 0,7 times its radial amount h_K"
+    applies_to: "both"
+    manual: { page: 19, text: "Der Tangentialbetrag ist mit 0,7 • h_k vorbelegt und bestimmt die Restkopfdicke s_ak." }
+    probe: null
+    status: verified
+    note: "Factor of h_K. The manual writes the index in lower case (h_k, s_ak)."
+  quality_din:
+    quantity: quality_grade
+    input_key: "DIN_QUALITAET"
+    value: 7
+    unit: "-"
+    rule: null
+    applies_to: "both"
+    manual: { page: 19, text: "Die Verzahnungsqualität nach DIN ist mit 7 vorbelegt." }
+    probe: "defaults_minimal: 'Verzahnungsqualitaet (DIN3961/63,Aug.78) N 7 N 7'"
+    status: verified
+    note: "DIN 3961/63 of 1978 are withdrawn; the current norm is DIN ISO 1328-1:2018-03 (increment 5)."
+  tooth_thickness_allowance_series:
+    quantity: tooth_thickness_allowance
+    input_key: "ABMASS_TOL_REIHE"
+    value: "c25"
+    unit: "-"
+    rule: null
+    applies_to: "both"
+    manual: { page: 19, text: "Die Zahndickentoleranzen und -abmaße sind mit c25 nach DIN 3967 vorbelegt." }
+    probe: "defaults_minimal: 'Abmassreihe (DIN 3967, Aug.78) C C', 'Toleranzreihe (DIN 3967, Aug.78) 25 25'; A_ste = -0.065 and -0.085 mm, A_sti = -0.095 and -0.125 mm for d = 40 and 80 mm, m_n = 2"
+    status: verified
+    note: "DIN 3967:1978-08 is valid; the tables are implemented with increment 5."
+  span_allowance_lower:
+    quantity: span_allowance
+    input_key: "UNTERES_ZAHNW_ABMASS"
+    value: null
+    unit: "µm"
+    rule: "if only the upper span allowance A_We is given, the lower one is set equal to it"
+    applies_to: "both"
+    manual: { page: 20, text: "Wird nur das obere Zahnweitenabmaß A_We eingegeben, wird A_We = A_Wi gesetzt." }
+    probe: null
+    status: verified
+    note: null
+  span_allowance_upper:
+    quantity: span_allowance
+    input_key: "OBERES_ZAHNW_ABMASS"
+    value: null
+    unit: "µm"
+    rule: "without input A_We of gear 1 follows the default series, A_We of gear 2 follows from the sum of the upper span allowances"
+    applies_to: "both"
+    manual: { page: 20, text: "Werden keine Zahnweitenabmaße vorgeben so wird A_We1 gemäß der Vorbelegung belegt und A_We2 aus der Summe der oberen Zahnweitenabmaße berechnet." }
+    probe: "defaults_minimal: A_We = -0.061 and -0.080 mm, A_Wi = -0.089 and -0.117 mm"
+    status: verified
+    note: null
+  centre_distance_allowance:
+    quantity: null
+    input_key: "ACHSABST_MASS_DIN"
+    value: "js7"
+    unit: "-"
+    rule: null
+    applies_to: "both"
+    manual: { page: 20, text: "Erfolgt keine Eingabe wird die Vorbelegung js = 7 verwendet." }
+    probe: "defaults_minimal: 'Achsabstandsabmass A_Ae + 0.015 mm', 'A_Ai - 0.015 mm', 'nach DIN 3964 Toleranzfeld JS 7' for a = 60 mm"
+    status: verified
+    note: "DIN 3964:1980-11 is valid; the table is implemented with increment 5."
+  number_of_teeth_spanned:
+    quantity: number_of_teeth_spanned
+    input_key: "MESSZAEHNEZAHL_K"
+    value: null
+    unit: "-"
+    rule: "computed by the program; an input overrides it"
+    applies_to: "both"
+    manual: { page: 20, text: "Mit Hilfe der Eingaben zu Messzähnezahl k bzw. zu Messstückdurchmesser D_M können Werte vorgegeben werden, die von den programmintern berechneten Werten bzw. von den im 1. Fenster eingegebenen Werten abweichen." }
+    probe: "defaults_minimal: k = 3 and 5 for z = 20 and 40"
+    status: verified
+    note: "Rule of the current norm: DIN 21773:2014-08 (increment 4)."
+  measuring_ball_diameter:
+    quantity: null
+    input_key: "MESSTUECKDM_D_M"
+    value: null
+    unit: "mm"
+    rule: "computed by the program; an input overrides it"
+    applies_to: "both"
+    manual: { page: 20, text: "Mit Hilfe der Eingaben zu Messzähnezahl k bzw. zu Messstückdurchmesser D_M können Werte vorgegeben werden, die von den programmintern berechneten Werten bzw. von den im 1. Fenster eingegebenen Werten abweichen." }
+    probe: "defaults_minimal: D_M = 3.500 mm for m_n = 2"
+    status: verified
+    note: "How the program chooses D_M is not stated on the pages read; clarified with increment 4."
+  default_rack_tool:
+    quantity: null
+    input_key: "WERKZEUG_VORVERZ."
+    value: null
+    unit: "-"
+    rule: "without a tool the program uses a hob with the factors below, module and pressure angle of the gear, no protuberance and no machining allowance"
+    applies_to: "both"
+    manual: { page: 22, text: "Gibt der Benutzer kein Werkzeug vor, wird programmintern auf ein geeignetes Wälzwerkzeug zurückgegriffen. Hierfür sind im Programm Vorbelegungswerte vorhanden." }
+    probe: "defaults_minimal: 'Zahnradfertigung mit Fraeser oder Hobelkamm', m_n0 = 2.0000, alfa_n0 = 20.0000, h_aP0* = 1.250, rho_aP0* = 0.250, h_FfP0* = 1.300, h_fP0* = 1.300, pr_0 = 0.000, q = 0.000"
+    status: verified
+    note: "The manual gives no numbers; they are read from the probe."
+    tool: { addendum_factor: 1.25, tip_radius_factor: 0.25, dedendum_factor: 1.3, root_form_height_factor: 1.3 }
+  predefined_tooth_space:
+    quantity: null
+    input_key: "PW_WKZV_WAEHLEN"
+    value: null
+    unit: "-"
+    rule: "predefined tooth space (profile tool) instead of the default hob: addendum h_aP0 = 1,25 m_n, fully rounded tip"
+    applies_to: "both"
+    manual: { page: 22, text: "Als Vorbelegungswerte für die Profillücke sind folgende Profilwerkzeugwerte in STplus fest eingestellt: - Kopfhöhe h_aP0 = 1,25 • m_n - Art der Kopfrundung: Vollausrundung" }
+    probe: null
+    status: verified
+    note: "Profile tools are an extension point of gearcore."
+  tool_tip_radius:
+    quantity: tool_tip_radius
+    input_key: "KOPFABRUNDUNGSFAKTOR"
+    value: 0.25
+    unit: "-"
+    rule: "a tool record without tip rounding gets rho_aP0* = 0,25"
+    applies_to: "both"
+    manual: null
+    probe: "tool_without_tip_rounding: tool hochverz1 (no KOPFABRUNDUNGSFAKTOR) is run with 'Wkz-Kopfabrundungsfaktor rho_aP0* 0.250'"
+    status: verified
+    note: "Module factor. Not stated in the manual pages read; seen in the probe only."
+  tool_module_and_pressure_angle:
+    quantity: tool_normal_module
+    input_key: "WKZ_NORMALMODUL"
+    value: null
+    unit: "mm"
+    rule: "normal module and normal pressure angle of the tool equal those of the gear"
+    applies_to: "both"
+    manual: { page: 187, text: "Im Normalfall sind der Normalmodul und der Normaleingriffswinkel an Werkzeug und Stirnrad gleich groß. Dieser Fall entspricht zugleich der Vorbelegung." }
+    probe: "tool_without_tip_rounding: m_n0 = 2.0000, alfa_n0 = 20.0000 for a record without module and angle"
+    status: verified
+    note: "gearcore does the same: None in the contract means the value of the gear."
+  tool_protuberance_angle:
+    quantity: tool_protuberance_angle
+    input_key: "PROTUBERANZWINKEL"
+    value: null
+    unit: "deg"
+    rule: "alpha_prn0 = alpha_n0 / 2; below 1 degree the protuberance amount is set to 0"
+    applies_to: "both"
+    manual: { page: 186, text: "Für Protuberanzwerkzeuge muss der Protuberanzwinkel α_prn0 ≥ 1,0° sein, für α_prn0 < 1° wird programmintern der Protuberanzbetrag p_rn = 0 gesetzt. Die Vorbelegung für den Protuberanzwinkel α_prn0 ist α_n0/2." }
+    probe: "defaults_minimal prints 'Protuberanzwinkel alfa_pr0 20.000' for a tool without protuberance (pr_0 = 0.000), not alpha_n0 / 2"
+    status: verified
+    note: "Manual and listing disagree for a tool without protuberance; to be clarified with the protuberance flank (extension point)."
+  tool_edge_break_angle:
+    quantity: tool_edge_break_angle
+    input_key: "KANTENBRECHWINKEL"
+    value: null
+    unit: "deg"
+    rule: "alpha_Kn0 = alpha_n0 + 10 degrees"
+    applies_to: "both"
+    manual: { page: 186, text: "Der Kantenbrechwinkel α_Kn0 ist mit α_n0 + 10° vorbelegt." }
+    probe: null
+    status: verified
+    note: "Enters with the generation (increment 3)."
+  tool_without_allowance_is_finishing_tool:
+    quantity: machining_allowance
+    input_key: "BEARBEITUNGSZUGABE"
+    value: null
+    unit: "mm"
+    rule: "a single tool with a machining allowance is a pre-cutting tool, without one it is the finishing tool"
+    applies_to: "both"
+    manual: { page: 22, text: "Die Angabe einer Bearbeitungszugabe bewirkt, dass dieses Werkzeug als Vorverzahnungswerkzeug angesehen wird. Erfolgt keine Angabe zur Bearbeitungszugabe, wird das Werkzeug als Fertigverzahnungswerkzeug angesehen." }
+    probe: "defaults_minimal: 'Gesamt-Bearbeitungszugabe q 0.000 0.000'"
+    status: verified
+    note: null
+  tool_record_factor_before_absolute_value:
+    quantity: tool_addendum
+    input_key: "KOPFHOEHENFAKTOR"
+    value: null
+    unit: "-"
+    rule: "if a tool record gives the factor and the absolute value of the addendum and they contradict, the factor is used; tip rounding and dedendum beyond the geometric limit are reduced by the program"
+    applies_to: "both"
+    manual: { page: 186, text: "Die jeweiligen Werkzeugfuß- und -kopfhöhen können entweder als Absolutwerte oder als auf den Normalmodul bezogene Faktoren (mit * gekennzeichnet) eingegeben werden." }
+    probe: "tool_contradicting_record: record S_19_00374_F_(_77 (KOPFHOEHENFAKTOR = 1.6, KOPFHOEHE = 5.377 at m_n0 = 2.8; KOPFABRUNDUNGSFAKTOR = 0.5; FUSSHOEHENFAKTOR = 3.0) is run with h_aP0* = 1.600, rho_aP0* = 0.383, h_fP0* = 2.317 and the message 'Wkz.daten h_FfP0*, d_Ff0, alfa_Kn0 oder alfa_Kt0 fuer Rad 1 geaendert'"
+    status: verified
+    note: "The manual says 'either ... or' and does not state a precedence. STplus changes tool data and reports it for the root form height only; gearcore rejects such a record instead."
+  geometry_accuracy_limit:
+    quantity: null
+    input_key: null
+    value: 0.0002
+    unit: "-"
+    rule: "limit DESTGR of the geometry computation"
+    applies_to: "both"
+    manual: null
+    probe: "defaults_minimal: 'Geometrieberechnungs-Genauigkeitsgrenzwert DESTGR ... In aktueller Rechnung verwendeter Wert: 0.0002000000. Bis STplus 8.1F verwendeter Grenzwert: 0.0004000000.'"
+    status: verified
+    note: "Program-internal iteration limit; its unit and meaning are not documented on the pages read."
+  register_default_sty:
+    quantity: null
+    input_key: null
+    value: "RAUHTIEFE_FLANKE = 5; RAUHTIEFE_FUSS = 20; SW_TRIKOR = J; NUMERISCHE_GEO_FEINHEIT = 170; RECHTSFL_TRAEGT = j"
+    unit: "-"
+    rule: "the register bin/DEFAULT.STY lists 822 entries of 816 configurable input keys with a DEFAULT value, followed by 22 program-internal entries; all are 0 except these five"
+    applies_to: "both"
+    manual: null
+    probe: null
+    file: "input_key_register.txt"
+    status: verified
+    note: "Read from bin/DEFAULT.STY of the installation. Whether the program uses these entries as defaults of the computation is not documented; the roughness values belong to the load capacity (stage 2)."
+  empty_input_falls_back:
+    quantity: null
+    input_key: null
+    value: null
+    unit: "-"
+    rule: "an input 'Name = ' without value falls back on the default, or counts as not given where no default exists"
+    applies_to: "batch input"
+    manual: { page: 11, text: "(text layer only, not transcribed)" }
+    probe: null
+    status: located
+    note: null
+  shaper_cutter_defaults:
+    quantity: null
+    input_key: null
+    value: null
+    unit: "-"
+    rule: "defaults of shaper cutters: tip diameter d_a0, edge break angle alpha_Kt0 = alpha_n0 + 10 degrees, module and pressure angle of the gear"
+    applies_to: "both"
+    manual: { page: 190, text: "(text layer only, p. 190 to 192, not transcribed)" }
+    probe: null
+    status: located
+    note: "Shaper cutters are an extension point."
+  load_capacity_defaults:
+    quantity: null
+    input_key: null
+    value: null
+    unit: "-"
+    rule: "defaults of the load capacity input (alternating load factor, operating hours, life factors, application factors, lubrication ...)"
+    applies_to: "both"
+    manual: { page: 35, text: "(text layer only, p. 35 to 58, not transcribed)" }
+    probe: null
+    status: located
+    note: "Transcribed with stage 2 together with the material and lubricant databases (wst.dat, oel.dat)."
