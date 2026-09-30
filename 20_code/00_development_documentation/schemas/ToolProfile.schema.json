@@ -11,7 +11,7 @@
     }
   },
   "additionalProperties": false,
-  "description": "Tool reference profile of a rack-type tool (DIN ISO 21771:2014 §7.1; DIN 3972; DIN 867).\n\nHeight factors refer to the tool normal module ``m_n0``. ``normal_module_mm`` and\n``profile_angle_deg`` default to ``None`` = \"same as the gear\" (STplus manual §4.16.2: tool\nmodule and profile angle are entered only when they deviate from the gear). Other optional\nfields stay ``None`` when the tool does not define them; the generation module then applies the\nnorm default and reports it in ``warnings`` — never a silent fallback inside the model.",
+  "description": "Tool reference profile of a rack-type tool (DIN ISO 21771:2014 §7.1; DIN 3972; DIN 867).\n\nHeight factors refer to the tool normal module ``m_n0``. ``normal_module_mm`` and\n``profile_angle_deg`` default to ``None`` = \"same as the gear\" (STplus manual §4.16.2: tool\nmodule and profile angle are entered only when they deviate from the gear). Other optional\nfields stay ``None`` when the tool does not define them; the generation module then applies the\nnorm default and reports it in ``warnings`` — never a silent fallback inside the model.\n\n``protuberance_mm`` and ``machining_allowance_mm`` are required (user decision 2026-09-30):\na tool without protuberance or allowance states the zero instead of leaving it to a default.",
   "properties": {
     "kind": {
       "$ref": "#/$defs/ToolKind",
@@ -189,7 +189,6 @@
       "unit": "deg"
     },
     "protuberance_mm": {
-      "default": 0.0,
       "description": "tool protuberance",
       "designation": null,
       "designation_en": null,
@@ -231,7 +230,6 @@
       "unit": "deg"
     },
     "machining_allowance_mm": {
-      "default": 0.0,
       "description": "Material allowance for finishing",
       "designation": "Bearbeitungszugabe auf der Zahnflanke",
       "designation_en": "Material allowance for finishing",
@@ -250,7 +248,9 @@
   },
   "required": [
     "addendum_factor",
-    "tip_radius_factor"
+    "tip_radius_factor",
+    "protuberance_mm",
+    "machining_allowance_mm"
   ],
   "title": "ToolProfile",
   "type": "object"

@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from gearcore import involute, rack
+from gearcore import involute, pair, rack
 from gearcore.data import (
     has_stplus,
     load_stplus,
@@ -27,10 +27,10 @@ from gearcore.io import ste
 from gearcore.models import inputs as inputs_module
 from gearcore.models import profiles as profiles_module
 from gearcore.models import results as results_module
-from gearcore.models.common import FrozenModel
+from gearcore.models.common import FrozenModel, Pair
 from gearcore.models.inputs import GearInput, PairInput, SpanMeasurement, ToolProfile
 from gearcore.models.profiles import BasicRackProfile
-from gearcore.models.results import BasicGearGeometry
+from gearcore.models.results import BasicGearGeometry, PairGeometry
 from gearcore.parity import COMPARED_FIELDS, PROFILE_SHIFT_FIELD, stplus_names
 from gearcore.quantities import (
     GREEK,
@@ -58,14 +58,16 @@ CONTRACTS: tuple[type[FrozenModel], ...] = (
     BasicGearGeometry,
     BasicRackProfile,
 )
-RESULTS: tuple[type[FrozenModel], ...] = (BasicGearGeometry, BasicRackProfile)
+RESULTS: tuple[type[FrozenModel], ...] = (BasicGearGeometry, BasicRackProfile, PairGeometry)
 """Contracts of implemented computations: every quantity must be verified."""
 
 OLDER_NOTATION = {"DIN3972:1952"}
 """Valid norms that print an older notation; their symbols stand under ``replaced``."""
 
 STPLUS_REFERENCE_CASE = "helix30_z25_40"
-MANUAL_INPUT_KEYS = {"ZAEHNEZAHLVERHAELTNIS"}
+HOMONYMS = {"k": {"number_of_teeth_spanned", "tip_alteration_coefficient"}}
+"""One letter for two quantities in the symbol list of DIN ISO 21771:2014-08 (§3.1, p. 12)."""
+MANUAL_INPUT_KEYS = {"ZAEHNEZAHLVERHAELTNIS", "PR.VERSCH.SUMME"}
 """Input keys of the STplus manual (Bild 4.12, p. 25) that the importer does not map."""
 
 # arguments that name no quantity: (function, argument) -> what it is
@@ -79,6 +81,9 @@ NOT_A_QUANTITY = {
     ("validate_basic_rack", "rack"): "a contract",
     ("check_basic_rack", "rack"): "a contract",
     ("tool_from_basic_rack", "rack"): "a contract",
+    ("compute_pair_geometry", "pair"): "a contract",
+    ("resolve_profile_shift", "pair"): "a contract",
+    ("with_nominal_tip_diameters", "pair"): "a contract",
 }
 ARGUMENT_SUFFIXES = ("_mm", "_rad", "_deg", "_um")
 
@@ -86,6 +91,9 @@ ARGUMENT_SUFFIXES = ("_mm", "_rad", "_deg", "_um")
 def _is_numeric(annotation: Any) -> bool:
     if annotation in (int, float):
         return True
+    generic = getattr(annotation, "__pydantic_generic_metadata__", None)
+    if generic and generic["origin"] is Pair:  # Pair[float]: one number per gear
+        return any(_is_numeric(argument) for argument in generic["args"])
     return any(_is_numeric(argument) for argument in typing.get_args(annotation))
 
 
@@ -95,7 +103,7 @@ def _is_numeric(annotation: Any) -> bool:
 def test_registry_is_well_formed() -> None:
     sources = load_sources()
     registry = quantities()
-    assert len(registry) == 85
+    assert len(registry) == 93
     symbols: dict[str, str] = {}
     for name, entry in registry.items():
         current = [entry.source] if entry.source else []
@@ -114,13 +122,15 @@ def test_registry_is_well_formed() -> None:
             assert withdrawn or printed.source in OLDER_NOTATION, (
                 f"{name}: {printed.source} is current, its symbol belongs under 'also'"
             )
-        if entry.symbol is not None:
+        if entry.symbol is not None and entry.symbol not in HOMONYMS:
             assert entry.symbol not in symbols, (
                 f"symbol {entry.symbol} names {symbols[entry.symbol]} and {name}"
             )
             symbols[entry.symbol] = name
         assert entry.unit in UNIT_SUFFIX
-        assert 0 <= entry.since <= 1, f"{name}: increment {entry.since} has not started"
+        assert 0 <= entry.since <= 2, f"{name}: increment {entry.since} has not started"
+    for symbol, names in HOMONYMS.items():
+        assert {name for name, entry in registry.items() if entry.symbol == symbol} == names
 
 
 def test_verified_and_pending_quantities() -> None:
@@ -227,6 +237,8 @@ def _names_a_quantity(argument: str) -> bool:
     bare = argument
     for suffix in ARGUMENT_SUFFIXES:
         bare = bare.removesuffix(suffix)
+    # the norm appends 1 (pinion) and 2 (wheel) to a symbol: z_1, d_a1, rho_y2
+    bare = re.sub(r"_?[12]$", "", bare) if re.search(r"[A-Za-z]_?[12]$", bare) else bare
     if bare in symbols:
         return True
     # an angle in radians is a quantity the registry lists in degrees
@@ -241,7 +253,7 @@ def _names_a_quantity(argument: str) -> bool:
     return False
 
 
-@pytest.mark.parametrize("module", [involute, rack], ids=lambda m: m.__name__)
+@pytest.mark.parametrize("module", [involute, rack, pair], ids=lambda m: m.__name__)
 def test_arguments_are_named_by_symbol_or_registry_name(module: Any) -> None:
     checked = 0
     for function_name, function in _public_functions(module):
@@ -328,6 +340,7 @@ def test_review_symbols_that_changed_since_din_3960() -> None:
     }
     assert {name: old for name, old in changed.items() if old} == {
         "centre_distance": ["a"],
+        "tip_alteration_coefficient": ["k*"],
         "tool_tip_radius": ["rho_a0"],
         "tool_edge_break_angle": ["alpha_K"],
     }
@@ -442,6 +455,7 @@ def test_symbol_differences_list_exactly_what_changed() -> None:
     assert older == {
         ("centre_distance", "a", "DIN3960:1987"),
         ("tool_tip_radius", "rho_a0", "DIN3960:1987"),
+        ("tip_alteration_coefficient", "k*", "DIN3960:1987"),
         ("pitch", "t_0", "DIN3972:1952"),
         ("basic_rack_dedendum", "h_fr", "DIN3972:1952"),
         ("tool_profile_angle", "alpha_0", "DIN3972:1952"),
@@ -457,11 +471,16 @@ def test_symbol_differences_list_exactly_what_changed() -> None:
         "gear_ratio": "z2/z1",
         "generated_root_diameter": "d_f",
         "length_of_path_of_contact": "g",
+        "sum_of_profile_shift_coefficients": "x_1+x_2",
+        "common_tooth_depth": "h_gem",
+        "length_of_addendum_path_of_contact": "g_alfa-a",
     }
     spelled = {d.other for d in verified if d.kind == "stplus" and d.spelling_only}
     assert spelled == {"alfa_n", "alfa_t", "alfa_wt", "eps_alfa", "eps_beta", "eps_gamma"}
-    # the factor mark and a function with its argument are no differences
-    assert not [d for d in verified if d.other.removesuffix("*") == d.symbol]
+    # the factor mark of STplus and a function with its argument are no differences. Between
+    # norms the mark is one: DIN 3960 writes k* for the factor and k for the alteration in mm
+    starred = [d for d in verified if d.other.removesuffix("*") == d.symbol]
+    assert [(d.quantity, d.kind) for d in starred] == [("tip_alteration_coefficient", "replaced")]
     assert not [d for d in verified if d.quantity == "involute_function"]
     pending = {d.quantity for d in symbol_differences() if d.status == "pending"}
     assert "tool_edge_break_angle" in pending

@@ -8,7 +8,9 @@ from gearcore.models.common import (
     TEETH_RANGE,
     FrozenModel,
     InputWarning,
+    Pair,
 )
+from gearcore.models.inputs import PairInput
 from gearcore.quantities import Q
 
 _SRC = "ISO21771:2014"
@@ -54,5 +56,71 @@ class BasicGearGeometry(FrozenModel):
     )
     base_space_width_half_angle_deg: float = Q(
         "base_space_width_half_angle", equation=f"{_SRC} (47)"
+    )
+    warnings: tuple[InputWarning, ...] = ()
+
+
+class PairGeometry(FrozenModel):
+    """Mating quantities of an external gear pair (DIN ISO 21771:2014-08 §5).
+
+    ``profile_shift_coefficient`` and ``centre_distance_mm`` are the resolved values: two of a_w,
+    x_1, x_2 are given, the third follows (ADR-107). ``gears`` holds the single-gear quantities
+    with the resolved profile shift; the helix angle of the wheel has the opposite sign.
+    Quantities per gear are written for that gear: ``length_of_addendum_path_of_contact_mm`` is
+    g_a1 (Eq. (80)) and g_a2 = g_f1 (Eq. (79)); ``sliding_factor_at_tip`` is K_ga (Eq. (113)) for
+    the pinion and the norm's K_gf (Eq. (112)) for the wheel; ``specific_sliding_at_end_points``
+    is zeta_f1 (Eq. (116)) and zeta_f2 (Eq. (117)), the values at the root of each gear.
+    ``root_form_diameter_mm`` holds the root form diameters the mesh was computed with (the
+    optional input, a value within rounding noise below the base circle taken as the base
+    circle); without it ``warnings`` says that the limit of the active profile by the root form
+    circle was not applied. ``inputs`` is the pair as the contract validated it.
+    ``common_tooth_depth_mm`` is Eq. (59) evaluated with the tip form circles instead of the tip
+    circles (user decision, ADR-112); where the two differ, ``warnings`` names the value of the
+    tip circles.
+    """
+
+    inputs: PairInput
+    gears: Pair[BasicGearGeometry]
+    gear_ratio: float = Q("gear_ratio", equation=f"{_SRC} (52)", ge=1.0)
+    centre_distance_mm: float = Q("centre_distance", equation=f"{_SRC} (54)", gt=0.0)
+    transverse_working_pressure_angle_deg: float = Q(
+        "transverse_working_pressure_angle", equation=f"{_SRC} (54), (55)", ge=0.0, lt=90.0
+    )
+    profile_shift_coefficient: Pair[float] = Q("profile_shift_coefficient")
+    sum_of_profile_shift_coefficients: float = Q(
+        "sum_of_profile_shift_coefficients", equation=f"x_1 + x_2 of the result; {_SRC} §5.3"
+    )
+    working_pitch_diameter_mm: Pair[float] = Q(
+        "working_pitch_diameter", equation=f"{_SRC} (56), (57)"
+    )
+    tip_diameter_mm: Pair[float] = Q("tip_diameter")
+    tip_form_diameter_mm: Pair[float] = Q(
+        "tip_form_diameter", equation=f"{_SRC} (127), or given by the generation"
+    )
+    active_tip_diameter_mm: Pair[float] = Q("active_tip_diameter", equation=f"{_SRC} (68), (69)")
+    sap_diameter_mm: Pair[float] = Q("sap_diameter", equation=f"{_SRC} (64) to (67)")
+    root_form_diameter_mm: Pair[float] | None = Q("root_form_diameter", default=None)
+    common_tooth_depth_mm: float = Q(
+        "common_tooth_depth", equation=f"{_SRC} (59), with the tip form diameters (ADR-112)"
+    )
+    normal_pitch_mm: float = Q("normal_pitch", equation=f"{_SRC} (24)", gt=0.0)
+    transverse_pitch_mm: float = Q("transverse_pitch", equation=f"{_SRC} (23)", gt=0.0)
+    transverse_base_pitch_mm: float = Q("transverse_base_pitch", equation=f"{_SRC} (28)", gt=0.0)
+    transverse_contact_pitch_mm: float = Q(
+        "transverse_contact_pitch", equation=f"{_SRC} (30)", gt=0.0
+    )
+    contact_face_width_mm: float = Q("contact_face_width", gt=0.0)
+    length_of_path_of_contact_mm: float = Q(
+        "length_of_path_of_contact", equation=f"{_SRC} (77)", gt=0.0
+    )
+    length_of_addendum_path_of_contact_mm: Pair[float] = Q(
+        "length_of_addendum_path_of_contact", equation=f"{_SRC} (80), (79)"
+    )
+    transverse_contact_ratio: float = Q("transverse_contact_ratio", equation=f"{_SRC} (90)", gt=0.0)
+    overlap_ratio: float = Q("overlap_ratio", equation=f"{_SRC} (93)", ge=0.0)
+    total_contact_ratio: float = Q("total_contact_ratio", equation=f"{_SRC} (97)", gt=0.0)
+    sliding_factor_at_tip: Pair[float] = Q("sliding_factor_at_tip", equation=f"{_SRC} (113), (112)")
+    specific_sliding_at_end_points: Pair[float] = Q(
+        "specific_sliding_at_end_points", equation=f"{_SRC} (116), (117)"
     )
     warnings: tuple[InputWarning, ...] = ()

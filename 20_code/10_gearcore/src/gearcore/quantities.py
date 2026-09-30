@@ -54,6 +54,8 @@ GREEK = MappingProxyType(
         "xi": r"\xi",
         "psi": r"\psi",
         "rho": r"\rho",
+        "zeta": r"\zeta",
+        "Sigma": r"\Sigma",
     }
 )
 

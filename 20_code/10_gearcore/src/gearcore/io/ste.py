@@ -23,6 +23,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from pydantic import ValidationError
+
 from gearcore.errors import NotSupportedError, ParseError
 from gearcore.models.common import FrozenModel, Pair
 from gearcore.models.inputs import (
@@ -251,8 +253,30 @@ class SteImport(FrozenModel):
     notes: tuple[str, ...] = ()
 
 
-def tool_from_section(section: SteSection) -> ToolProfile:
-    """Build a ``ToolProfile`` from a ``$ WKZ_...`` block; shaper/profile tools are flagged, not guessed."""
+def _not_valid(error: ValidationError, what: str) -> ParseError:
+    """Reading an input file is not mathematics: the verdict of a contract is a parse error."""
+    reasons = "; ".join(
+        ".".join(str(part) for part in item["loc"]) + ": " + str(item["msg"])
+        for item in error.errors()
+    )
+    return ParseError(f"{what} is no valid input: {reasons}")
+
+
+ABSENT_MEANS_NONE: dict[str, str] = {
+    "PROTUBERANZBETRAG": "no protuberance",
+    "BEARB_ZUGABE_WKZ": "no machining allowance of the tool",
+}
+"""Tool keys whose absence in a ``.ste`` block means that the feature is absent. The contract
+requires the value, so the importer states the zero and says so in its notes (user decision
+2026-09-30: a blanket zero only together with a note)."""
+
+
+def tool_from_section(section: SteSection, notes: list[str] | None = None) -> ToolProfile:
+    """Build a ``ToolProfile`` from a ``$ WKZ_...`` block; shaper/profile tools are flagged, not guessed.
+
+    A block without ``PROTUBERANZBETRAG`` or ``BEARB_ZUGABE_WKZ`` yields a tool with the value
+    zero; each such zero is appended to ``notes`` (when a list is passed) as a note.
+    """
     keys = {entry.key for entry in section.entries}
     if any(k.startswith(SHAPER_PREFIX) for k in keys):
         raise NotSupportedError(
@@ -276,7 +300,15 @@ def tool_from_section(section: SteSection) -> ToolProfile:
             f"tool {section.name!r}: KOPFHOEHENFAKTOR and KOPFABRUNDUNGSFAKTOR are required "
             "(STplus would default them; gearcore does not guess)"
         )
-    return ToolProfile(**fields)
+    for key, meaning in ABSENT_MEANS_NONE.items():
+        if TOOL_KEYS[key] not in fields:
+            fields[TOOL_KEYS[key]] = 0.0
+            if notes is not None:
+                notes.append(f"tool {section.name!r}: {key} not given → 0 ({meaning})")
+    try:
+        return ToolProfile(**fields)
+    except ValidationError as error:
+        raise _not_valid(error, f"tool {section.name!r}") from error
 
 
 def _values(section: SteSection, key: str) -> tuple[float | None, float | None]:
@@ -284,6 +316,10 @@ def _values(section: SteSection, key: str) -> tuple[float | None, float | None]:
     entry = section.get(key)
     if entry is None:
         return (None, None)
+    if len(entry.values) > 2:
+        raise ParseError(
+            f"line {entry.line}: {key} has {len(entry.values)} values; a pair has two gears"
+        )
     return (entry.number(0), entry.number(1) if len(entry.values) > 1 else None)
 
 
@@ -318,6 +354,13 @@ def material_from_section(section: SteSection, kind: MaterialKind) -> MaterialRe
     STplus files carry no explicit steel/plastic flag for user-defined blocks (``WERKSTOFFART`` only
     knows metals), so the caller states the kind — rule 9 forbids inferring it from E-modulus.
     """
+    try:
+        return _material_from_section(section, kind)
+    except ValidationError as error:
+        raise _not_valid(error, f"material {section.name!r}") from error
+
+
+def _material_from_section(section: SteSection, kind: MaterialKind) -> MaterialRecord:
     prov = Provenance(source=f"STplus:{section.name}", location="$ " + section.name)
 
     def num(key: str) -> float | None:
@@ -368,7 +411,17 @@ def pair_input_from_ste(
 
     ``material_kinds`` names the kind of every referenced material block (``{"WST_PA66":
     MaterialKind.PLASTIC}``); blocks without a stated kind are reported in ``notes`` and skipped.
+
+    Whatever a contract rejects while the file is read (``ToolProfile``, ``SpanMeasurement``,
+    ``GearInput``, ``MaterialRecord``, ``PairInput``) leaves this function as a ``ParseError``.
     """
+    try:
+        return _pair_input_from_ste(ste, material_kinds)
+    except ValidationError as error:
+        raise _not_valid(error, "the file") from error
+
+
+def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] | None) -> SteImport:
     names = [s.name.upper() for s in ste.sections]
     if "NEU" in names or "VARIANTE" in names:
         raise NotSupportedError("multi-dataset .ste files ($ Neu / $ Variante) are not supported")
@@ -385,7 +438,8 @@ def pair_input_from_ste(
     teeth: list[int] = []
     for gear, z in enumerate(teeth_raw, start=1):
         z_int = _integer(z, "ZAEHNEZAHL", gear, unsupported=True)
-        assert z_int is not None  # narrowed above (both values present)
+        if z_int is None:
+            raise ParseError(f"gear {gear}: ZAEHNEZAHL has no value")
         if z_int < 0:
             raise NotSupportedError("internal gear (ZAEHNEZAHL < 0) is an extension point")
         teeth.append(z_int)
@@ -395,12 +449,13 @@ def pair_input_from_ste(
         raise ParseError("NORMALMODUL missing")
     alpha = _pair_key(geo, "EINGRIFFSWINKEL")
     if alpha is None:
-        alpha = 20.0
-        notes.append("EINGRIFFSWINKEL absent → 20° assumed (STplus default, manual §4.2)")
+        # the default of 20 degrees belongs to the user interface of STplus; the program itself
+        # rejects such a batch input (probe data/stplus_program/probes/no_pressure_angle)
+        raise ParseError("EINGRIFFSWINKEL missing (STplus rejects a batch input without it)")
     beta = _pair_key(geo, "SCHRAEGUNGSWINKEL")
     if beta is None:
         beta = 0.0
-        notes.append("SCHRAEGUNGSWINKEL absent → 0° (spur) assumed")
+        notes.append("SCHRAEGUNGSWINKEL not given → 0 (spur gears)")
 
     split = _values(geo, "AUFTEILUNG_X1X2")[0]
     if split not in (None, 0.0):
@@ -411,7 +466,18 @@ def pair_input_from_ste(
     if geo.get("PR.VERSCH.SUMME") is not None:
         raise NotSupportedError("PR.VERSCH.SUMME (profile-shift sum input) is not supported")
 
+    a = _pair_key(geo, "ACHSABSTAND")
     x = _values(geo, "PROFILVERSCHIEBUNG_N")
+    x_in_file = x
+    if a is not None and x[0] is not None and x[1] is not None:
+        # STplus keeps x_1 and derives x_2 from the centre distance without saying so; gearcore
+        # admits only two of a_w, x_1, x_2 (ADR-107), so the translation is made explicit here
+        notes.append(
+            f"ACHSABSTAND and PROFILVERSCHIEBUNG_N of both gears given: x_2 = {x[1]:g} of the "
+            "file is not passed on (STplus derives x_2 from the centre distance; gearcore admits "
+            "only two of a_w, x_1, x_2)"
+        )
+        x = (x[0], None)
     span_w = _values(geo, "ZAHNWEITE")
     span_k = _values(geo, "MESSZAEHNEZAHL")
     span_k_check = _values(geo, "MESSZAEHNEZAHL_K")
@@ -431,7 +497,6 @@ def pair_input_from_ste(
         )
     quality = iso_q if has_iso else din_q
     quality_system = QualitySystem.ISO1328 if has_iso else QualitySystem.DIN3962
-    a = _values(geo, "ACHSABSTAND")[0]
 
     tools_entry = geo.get("WERKZEUG_VORVERZ.")
     tools: list[ToolProfile] = []
@@ -440,11 +505,17 @@ def pair_input_from_ste(
             "WERKZEUG_VORVERZ. must name a tool block for both gears (STplus would use a default "
             "hob; gearcore requires the tool explicitly)"
         )
+    for entry_of_names in (tools_entry, series_entry):
+        if entry_of_names is not None and len(entry_of_names.values) > 2:
+            raise ParseError(
+                f"line {entry_of_names.line}: {entry_of_names.key} has "
+                f"{len(entry_of_names.values)} values; a pair has two gears"
+            )
     for name in tools_entry.values[:2]:
         section = ste.section(name)
         if section is None:
             raise ParseError(f"tool block '$ {name}' referenced by WERKZEUG_VORVERZ. not found")
-        tools.append(tool_from_section(section))
+        tools.append(tool_from_section(section, notes))
     if geo.get("WERKZEUG_FERTIGVERZ.") is not None:
         raise NotSupportedError("WERKZEUG_FERTIGVERZ. (second tool) is an extension point")
 
@@ -453,7 +524,11 @@ def pair_input_from_ste(
     load = ste.section("Tragfaehigkeit_Allgem")
     entry = None if load is None else load.get("WERKSTOFF")
     if entry is not None:
-        for index, name in enumerate(entry.values[:2]):
+        if len(entry.values) > 2:
+            raise ParseError(
+                f"line {entry.line}: WERKSTOFF has {len(entry.values)} values; a pair has two gears"
+            )
+        for index, name in enumerate(entry.values):
             section = ste.section(name)
             kind = (material_kinds or {}).get(name)
             if section is None:
@@ -474,17 +549,19 @@ def pair_input_from_ste(
         gear_no = i + 1
         span = None
         w = span_w[i]
-        if w is not None and x[i] is None:
-            # ZAHNWEITE + MESSZAEHNEZAHL define x (manual Bild 4.12); MESSZAEHNEZAHL_K is the
-            # check-dimension tooth count and must NOT stand in for it (gate ADV0-11)
+        if w is not None and x_in_file[i] is None:
+            # STplus takes ZAHNWEITE with MESSZAEHNEZAHL in place of x (manual Bild 4.12). For
+            # gearcore the span is an inspection dimension that is passed on as such (ADR-107).
+            # MESSZAEHNEZAHL_K is the check-dimension tooth count and must NOT stand in for
+            # MESSZAEHNEZAHL (gate ADV0-11)
             k = _integer(span_k[i], "MESSZAEHNEZAHL", gear_no)
             if k is None:
                 raise ParseError(f"gear {gear_no}: ZAHNWEITE given without MESSZAEHNEZAHL")
             span = SpanMeasurement(span_measurement_mm=w, number_of_teeth_spanned=k)
         elif w is not None:
             notes.append(
-                f"gear {gear_no}: ZAHNWEITE {w} ignored for x (PROFILVERSCHIEBUNG_N given); "
-                "it is compared as an inspection dimension instead"
+                f"gear {gear_no}: ZAHNWEITE {w} is not used for x (PROFILVERSCHIEBUNG_N is in "
+                "the file); it is an inspection dimension"
             )
         b = width[i]
         if b is None:
@@ -492,9 +569,10 @@ def pair_input_from_ste(
                 f"gear {gear_no}: ZAHNBREITE missing (a lone value belongs to gear 1 only)"
             )
         h_k = chamfer[i]
-        if h_k is None and chamfer[0] is not None:
+        if h_k is None:
+            # the contract requires the value; a file without it has no tip chamfer
             h_k = 0.0
-            notes.append(f"gear {gear_no}: KOPFKANTENBRUCH not given → 0 (manual §3.2 default)")
+            notes.append(f"gear {gear_no}: KOPFKANTENBRUCH not given → 0 (no tip chamfer)")
         allowance = None
         if a_we[i] is not None or a_wi[i] is not None:
             upper, lower = a_we[i], a_wi[i]
@@ -512,7 +590,7 @@ def pair_input_from_ste(
                 span=span,
                 face_width_mm=b,
                 tip_diameter_mm=tip[i],
-                tip_chamfer_radial_mm=0.0 if h_k is None else h_k,
+                tip_chamfer_radial_mm=h_k,
                 tool=tools[i],
                 material=refs[i],
                 number_of_teeth_spanned=_integer(span_k_check[i], "MESSZAEHNEZAHL_K", gear_no),
@@ -530,6 +608,17 @@ def pair_input_from_ste(
     config = ste.section("Konfigurationsdaten")
     c_min = None if config is None else _values(config, "MINDESTKOPFSPIEL")[0]
 
+    determined = [g.profile_shift_coefficient is not None or g.span is not None for g in gears]
+    if a is not None and not any(determined):
+        raise NotSupportedError(
+            "ACHSABSTAND without PROFILVERSCHIEBUNG_N and without ZAHNWEITE: the distribution of "
+            "the sum of the profile shift coefficients (AUFTEILUNG_X1X2) is an extension point"
+        )
+    if a is None and not all(determined):
+        raise ParseError(
+            "without ACHSABSTAND both gears need PROFILVERSCHIEBUNG_N (a gear with ZAHNWEITE "
+            "and MESSZAEHNEZAHL instead is imported, but its nominal x stays open)"
+        )
     pair = PairInput(
         normal_module_mm=module,
         normal_pressure_angle_deg=alpha,

@@ -163,6 +163,70 @@ labelled with the program version.
   dedendum silently.
 - Project rule 5a; `scripts/import_stplus_program.py` reproduces import and probes.
 
+### Added (increment 2 - pair geometry, 2026-09-30, ADR-107, ADR-110)
+- `gearcore.pair`: mating quantities of an external gear pair per DIN ISO 21771:2014-08 §4.4, §4.5,
+  §5.2 to §5.4, §5.6 and Eq. (127) of §7.6 (pitches, tip and tip form diameter, working pressure
+  angle, centre distance, sum of the profile shift coefficients, working pitch diameters, working
+  depth, tip clearance, start of the active profile and its limit by the root form circle, active
+  tip diameter, form over-dimension, path of contact, contact ratios, sliding factor, specific
+  sliding): 28 traced functions for 36 equations; contract `PairGeometry`.
+- **Two of a_w, x_1, x_2** (user decision 2026-09-30, ADR-107): all three together are an input
+  error; a given centre distance is fixed and the missing coefficient follows. The `.ste` importer
+  translates the silent behaviour of STplus (keeps x_1, derives x_2) and names the dropped value.
+  Span measurements are not evaluated yet: a span is reported as not used, and a pair that gives
+  spans in place of a missing x is read but not computed (`NotSupportedError`). How a span
+  determines the profile shift (DIN 21773 Eq. (14): x or x_E) and how STplus handles it is left
+  open by the user until increments 4 and 5 (ADR-107).
+- Nothing is assumed silently: tip diameters are an input (`with_nominal_tip_diameters` applies
+  Eq. (33) as an explicit choice), root form and tip form diameters are optional results of the
+  generation with a warning when absent, the normal pressure angle has no default in the contract,
+  and a `.ste` file without pressure angle is rejected as STplus does.
+- The contract holds for every call: the orchestrators apply `PairInput` again (strict) to the
+  pair they receive and compute with the validated pair; `PairInput` requires z_1 <= z_2; a gear
+  declared as internal raises `NotSupportedError`. A mesh whose active profile starts on the
+  base circle (d_Nf <= d_b (1 + 1e-12)) is rejected with `GeometryInfeasibleError` because the
+  specific sliding is unbounded there; all boundaries use the same relative tolerance.
+- `compare_pair_geometry` with a tolerance from first-order error propagation of the single
+  precision of STplus: 18 cases, 855 comparisons, 786 identical, 69 within the accuracy of STplus,
+  none different. `parity.detection_limits` and `parity.rows_repeating_an_input` state what the
+  comparison can show (173 rows repeat an input; limits per quantity in ADR-110).
+- **Common tooth depth with the tip form circles** (user decision 2026-09-30, ADR-112): the
+  comparison showed that STplus evaluates h_w with the tip form diameters, while DIN ISO 21771
+  Eq. (59) and DIN 3960 Eq. (4.2.08) define it with the tip circles (0,117 to 0,500 mm, 8 to 12 %,
+  with a tip chamfer). gearcore follows the tip form circles as a deliberate, documented deviation
+  from the letter of the norm (on the chamfer the tooth does not carry); the result names the
+  value of the tip circles in a warning, and the new `data/stplus/expected_differences.yaml`
+  records the decision under `deviations_from_the_norm`.
+- Three further STplus runs (fixtures): tip chamfer given as an input (`chamfer_hk_z20_34`),
+  helical pair with different face widths (`helix15_b_unequal`), centre distance with x_2 only
+  (`a_x2_only_z18_45`: STplus derives x_1 as gearcore does). The evidence for the single precision
+  of STplus now covers 14 runs and 126 values (ADR-106, update); one spur value shows it as well.
+- Worked example ISO/TR 6336-30:2022 Annex A example 1: twelve further results reproduced, and
+  the x_1 the norm prints in parentheses follows from the centre distance and x_2, with the span
+  measurements of the table passed on.
+- Decimal references for the pair equations, including the limited mesh (both gears, wheel only),
+  from the generator `scripts/decimal_reference_pair.py`, which is part of the repository now.
+- Eight quantities added to the registry (sum of the profile shift coefficients, tip alteration
+  coefficient, tip form diameter, active tip diameter, common tooth depth, length of the addendum
+  path of contact, sliding factor at the tip, specific sliding at the end points).
+- DIN 3992:1964-03 and DIN 58412:1987-11 (both withdrawn; supplied and confirmed by the user)
+  registered in `sources.yaml`; notebook `02_paarungsgeometrie_iso21771`.
+- Adversarial gate with two reviewers (1 P0, 7 P1, 17 P2, 17 P3) and a verification review of the
+  fixes in two passes (3 P1, 6 P2, 8 P3; then 3 P2, 5 P3), resolved (`gate_reports/increment_2.md`, regression
+  tests `tests/test_adv_2.py` incl. a property test of the orchestrator); `pair.py` at 100 % line
+  coverage. Shared input guards moved to `gearcore._guards`. The `.ste` importer turns every
+  rejection by a contract into a `ParseError`.
+
+### Changed (increment 2)
+- `PairInput.normal_pressure_angle_deg` is required (the default of 20° is removed).
+- **Zero is stated, never assumed** (user decision 2026-09-30, ADR-111): `helix_angle_deg`,
+  `tip_chamfer_radial_mm`, `protuberance_mm` and `machining_allowance_mm` are required fields.
+  The `.ste` importer sets a zero for an absent key only together with a note; the fixtures
+  record these notes (`stplus_oracle.py refresh-import`).
+- Test runs write nothing into the repository: hypothesis keeps no example database and its
+  storage directory is a temporary directory.
+- Notebook 01 and ADR-106 state the evidence for the single precision of STplus for the 14 runs.
+
 ### Fixed (pre-commit configuration, 2026-09-30)
 - The whitespace hooks no longer touch reference material (`30_references_and_examples/`, frozen
   FVA post-processing) or the packaged STplus data; the ruff hooks use the configuration of the

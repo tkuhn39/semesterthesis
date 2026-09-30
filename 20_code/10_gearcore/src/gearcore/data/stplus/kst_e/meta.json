@@ -25,8 +25,15 @@
   "trust": "verified",
   "typed_import": {
     "notes": [
-      "gear 1: ZAHNWEITE 17.09 ignored for x (PROFILVERSCHIEBUNG_N given); it is compared as an inspection dimension instead",
-      "gear 2: ZAHNWEITE 17.18 ignored for x (PROFILVERSCHIEBUNG_N given); it is compared as an inspection dimension instead"
+      "ACHSABSTAND and PROFILVERSCHIEBUNG_N of both gears given: x_2 = 0.3143 of the file is not passed on (STplus derives x_2 from the centre distance; gearcore admits only two of a_w, x_1, x_2)",
+      "tool 'WKZ_Profil_B_Ritzel': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'WKZ_Profil_B_Ritzel': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "tool 'WKZ_Profil_B_Rad': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'WKZ_Profil_B_Rad': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "gear 1: ZAHNWEITE 17.09 is not used for x (PROFILVERSCHIEBUNG_N is in the file); it is an inspection dimension",
+      "gear 1: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
+      "gear 2: ZAHNWEITE 17.18 is not used for x (PROFILVERSCHIEBUNG_N is in the file); it is an inspection dimension",
+      "gear 2: KOPFKANTENBRUCH not given → 0 (no tip chamfer)"
     ],
     "ok": true,
     "unmapped_keys": []

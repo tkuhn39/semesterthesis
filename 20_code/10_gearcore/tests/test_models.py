@@ -36,7 +36,12 @@ UNIT_SUFFIXES = {
 
 
 def tool(**overrides: Any) -> ToolProfile:
-    base: dict[str, Any] = {"addendum_factor": 1.25, "tip_radius_factor": 0.25}
+    base: dict[str, Any] = {
+        "addendum_factor": 1.25,
+        "tip_radius_factor": 0.25,
+        "protuberance_mm": 0.0,
+        "machining_allowance_mm": 0.0,
+    }
     base.update(overrides)
     return ToolProfile(**base)
 
@@ -46,6 +51,7 @@ def gear(**overrides: Any) -> GearInput:
         "number_of_teeth": 24,
         "profile_shift_coefficient": 0.1,
         "face_width_mm": 14.0,
+        "tip_chamfer_radial_mm": 0.0,
         "tool": tool(),
     }
     base.update(overrides)
@@ -55,6 +61,8 @@ def gear(**overrides: Any) -> GearInput:
 def pair(**overrides: Any) -> PairInput:
     base: dict[str, Any] = {
         "normal_module_mm": 4.5,
+        "normal_pressure_angle_deg": 20.0,
+        "helix_angle_deg": 0.0,
         "centre_distance_mm": 91.5,
         "gears": Pair(
             pinion=gear(number_of_teeth=16),
@@ -127,7 +135,7 @@ def test_units_match_field_names(model: type[FrozenModel]) -> None:
 def test_profile_shift_must_be_determinable() -> None:
     with pytest.raises(ValidationError, match="profile shift undetermined"):
         pair(centre_distance_mm=None)
-    with pytest.raises(ValidationError, match="at least one gear"):
+    with pytest.raises(ValidationError, match="one gear needs its nominal x"):
         pair(
             gears=Pair(
                 pinion=gear(profile_shift_coefficient=None),
@@ -147,14 +155,37 @@ def test_profile_shift_must_be_determinable() -> None:
     assert ok.gears.pinion.span is not None
 
 
+def test_only_two_of_centre_distance_and_profile_shifts_may_be_given() -> None:
+    """User decision 2026-09-30 (ADR-107): a_w, x_1 and x_2 together are an input error."""
+    both = Pair(pinion=gear(number_of_teeth=16), wheel=gear(number_of_teeth=24))
+    with pytest.raises(ValidationError, match="only two of the three may be given"):
+        pair(gears=both)
+    assert pair(gears=both, centre_distance_mm=None).centre_distance_mm is None
+    one = pair()  # a_w and x_1
+    assert one.gears.wheel.profile_shift_coefficient is None
+    other = pair(
+        gears=Pair(
+            pinion=gear(number_of_teeth=16, profile_shift_coefficient=None),
+            wheel=gear(number_of_teeth=24),
+        )
+    )  # a_w and x_2
+    assert other.gears.pinion.profile_shift_coefficient is None
+
+
 def test_tool_module_must_generate_the_basic_rack() -> None:
     with pytest.raises(ValidationError, match="cannot generate this basic rack"):
-        pair(gears=Pair(pinion=gear(tool=tool(normal_module_mm=5.0)), wheel=gear()))
+        pair(
+            gears=Pair(
+                pinion=gear(tool=tool(normal_module_mm=5.0)),
+                wheel=gear(profile_shift_coefficient=None),
+            )
+        )
     # m_n0 cos alpha_n0 = m_n cos alpha_n holds for the STplus-allowed combination
     m_n0 = 4.5 * math.cos(math.radians(20)) / math.cos(math.radians(17.5))
     ok = pair(
         gears=Pair(
-            pinion=gear(tool=tool(normal_module_mm=m_n0, profile_angle_deg=17.5)), wheel=gear()
+            pinion=gear(tool=tool(normal_module_mm=m_n0, profile_angle_deg=17.5)),
+            wheel=gear(profile_shift_coefficient=None),
         )
     )
     assert ok.gears.pinion.tool.profile_angle_deg == 17.5

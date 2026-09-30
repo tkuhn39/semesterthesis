@@ -70,6 +70,9 @@ class ToolProfile(FrozenModel):
     module and profile angle are entered only when they deviate from the gear). Other optional
     fields stay ``None`` when the tool does not define them; the generation module then applies the
     norm default and reports it in ``warnings`` — never a silent fallback inside the model.
+
+    ``protuberance_mm`` and ``machining_allowance_mm`` are required (user decision 2026-09-30):
+    a tool without protuberance or allowance states the zero instead of leaving it to a default.
     """
 
     QUANTITY_PREFIX: ClassVar[str] = "tool_"
@@ -90,22 +93,28 @@ class ToolProfile(FrozenModel):
         "tool_root_form_height", factor=True, default=None, ge=0.0, le=2.5
     )
     edge_break_angle_deg: float | None = Q("tool_edge_break_angle", default=None, gt=0.0, lt=90.0)
-    protuberance_mm: float = Q("tool_protuberance", default=0.0, ge=0.0)
+    protuberance_mm: float = Q("tool_protuberance", ge=0.0)
     protuberance_angle_deg: float | None = Q(
         "tool_protuberance_angle", default=None, gt=0.0, lt=90.0
     )
-    machining_allowance_mm: float = Q("machining_allowance", default=0.0, ge=0.0)
+    machining_allowance_mm: float = Q("machining_allowance", ge=0.0)
 
 
 class SpanMeasurement(FrozenModel):
-    """Base tangent length W_k over k teeth (DIN 21773:2014 §7) as an alternative to x."""
+    """Base tangent length W_k over k teeth (DIN 21773:2014-08 §7, Eq. (14)).
+
+    Carried as given and not evaluated yet. A span and a profile shift coefficient determine
+    each other; whether a given span stands for the nominal x or, with the tooth thickness
+    allowance, for x_E is settled with increments 4 and 5 (open in ADR-107).
+    """
 
     span_measurement_mm: float = Q("span_measurement", gt=0.0)
     number_of_teeth_spanned: int = Q("number_of_teeth_spanned", ge=2, strict=True)
 
 
 class GearInput(FrozenModel):
-    """One gear of a pair. ``profile_shift_coefficient``, ``span`` or a_w with the mate's x fix x."""
+    """One gear of a pair. Its nominal x is given, or follows from a_w and the mate's x
+    (ADR-107); ``span`` is carried and not evaluated yet."""
 
     kind: GearKind = GearKind.EXTERNAL
     number_of_teeth: int = Q("number_of_teeth", ge=TEETH_RANGE[0], le=TEETH_RANGE[1], strict=True)
@@ -118,7 +127,8 @@ class GearInput(FrozenModel):
     span: SpanMeasurement | None = None
     face_width_mm: float = Q("face_width", gt=0.0, le=2000.0)
     tip_diameter_mm: float | None = Q("tip_diameter", default=None, gt=0.0)
-    tip_chamfer_radial_mm: float = Q("tip_chamfer_radial", default=0.0, ge=0.0)
+    # required (user decision 2026-09-30): a gear without tip chamfer states 0
+    tip_chamfer_radial_mm: float = Q("tip_chamfer_radial", ge=0.0)
     tool: ToolProfile
     finishing_tool: ToolProfile | None = None  # WERKZEUG_FERTIGVERZ. (extension point)
     material: MaterialRef | None = None  # geometry needs no material; load capacity requires it
@@ -163,12 +173,12 @@ class PairInput(FrozenModel):
     )
     normal_pressure_angle_deg: float = Q(
         "normal_pressure_angle",
-        default=20.0,
         ge=PRESSURE_ANGLE_RANGE_DEG[0],
         le=PRESSURE_ANGLE_RANGE_DEG[1],
     )
+    # required (user decision 2026-09-30): a spur pair states 0
     helix_angle_deg: float = Q(
-        "helix_angle", default=0.0, ge=HELIX_ANGLE_RANGE_DEG[0], le=HELIX_ANGLE_RANGE_DEG[1]
+        "helix_angle", ge=HELIX_ANGLE_RANGE_DEG[0], le=HELIX_ANGLE_RANGE_DEG[1]
     )
     # None = the centre distance follows from the profile shift sum; a given one is fixed (ADR-107)
     centre_distance_mm: float | None = Q("centre_distance", default=None, gt=0.0)
@@ -178,22 +188,44 @@ class PairInput(FrozenModel):
     )
 
     @model_validator(mode="after")
+    def _index_1_is_the_pinion(self) -> Self:
+        """DIN ISO 21771:2014-08 §5.1.3: index 1 names the smaller gear of an external pair."""
+        z_1, z_2 = self.gears.pinion.number_of_teeth, self.gears.wheel.number_of_teeth
+        if z_1 > z_2:
+            raise ValueError(
+                f"the pinion is the smaller gear: z_1 = {z_1} > z_2 = {z_2}; swap the gears"
+            )
+        return self
+
+    @model_validator(mode="after")
     def _profile_shift_determinable(self) -> Self:
-        """Each gear's x must follow from x, from W_k, or from a together with the mate's x."""
+        """Of a_w, x_1 and x_2 two are given; all three are over-determined (user decision
+        2026-09-30, ADR-107). A pair that gives span measurements in place of a missing x is
+        accepted as an input, because such files exist and have to be readable; spans are not
+        evaluated yet (open in ADR-107), so the pair geometry answers such a pair with
+        ``NotSupportedError``."""
         fixed = [
             g.profile_shift_coefficient is not None or g.span is not None
             for g in self.gears.as_tuple()
         ]
+        shifts = [g.profile_shift_coefficient is not None for g in self.gears.as_tuple()]
+        if self.centre_distance_mm is not None and all(shifts):
+            raise ValueError(
+                "over-determined: the centre distance and both profile shift coefficients are "
+                "given; only two of the three may be given (a given centre distance is fixed, "
+                "ADR-107)"
+            )
         if all(fixed):
             return self
         if self.centre_distance_mm is None:
             raise ValueError(
-                "profile shift undetermined: give x or a span measurement for both gears, "
-                "or the centre distance together with one gear's x"
+                "profile shift undetermined: give the nominal x of both gears, or the centre "
+                "distance together with the x of one gear (ADR-107)"
             )
         if not any(fixed):
             raise ValueError(
-                "profile shift undetermined: with a given centre distance at least one gear needs x or a span"
+                "profile shift undetermined: with a given centre distance one gear needs its "
+                "nominal x (ADR-107)"
             )
         return self
 

@@ -113,6 +113,34 @@ sources:
     verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
     confirmed_by_user: true
     notes: "Equations of the 1980 edition, not 1987."
+  DIN3992:1964:
+    type: norm
+    status: withdrawn
+    title: "DIN 3992:1964-03 Profilverschiebung bei Stirnrädern mit Außenverzahnung"
+    edition: "1964-03"
+    file: "00_literatur/05_normen_und_richtlinien/DIN_3992_1964-03-00_DE_1103733.pdf"
+    verified:
+      {
+        method: pdf-header,
+        by: "claude/pdftoppm (rendered p. 1)",
+        date: "2026-09-30",
+      }
+    confirmed_by_user: true
+    notes: "Title page: 'März 1964', 'Mit DIN 3994 und DIN 3995 Blatt 1 bis 8 Ersatz für DIN 870', watermark 'zurückgezogen - withdrawn'; English title 'Addendum modification of external spur and helical gears'. Withdrawn without a successor named on the document (user, 2026-09-30). STplus distributes the profile shift sum by its diagrams (AUFTEILUNG_X1X2 = 1). Its own notation is older than DIN 3960 (d_0, d_k, d_g, alpha_n0, beta_0, S_k). Not a computational basis of gearcore; the distribution of the sum is an extension point."
+  DIN58412:1987:
+    type: norm
+    status: withdrawn
+    title: "DIN 58412:1987-11 Bezugsprofile für Verzahnwerkzeuge der Feinwerktechnik; Evolventenverzahnungen nach DIN 58400 und DIN 867"
+    edition: "1987-11"
+    file: "00_literatur/05_normen_und_richtlinien/DIN_58412_1987-11-00_DE_2062697.pdf"
+    verified:
+      {
+        method: pdf-header,
+        by: "claude/pdftoppm (rendered p. 1)",
+        date: "2026-09-30",
+      }
+    confirmed_by_user: true
+    notes: "Title page: 'November 1987', 'Ersatz für Ausgabe 03.67', watermark 'zurückgezogen - withdrawn'; English title 'Basic rack tooth profile for gear tools for fine mechanics; involute gears according DIN 58400 and DIN 867' (the title page groups the digits as '58 400'; the norm is DIN 58400, user 2026-09-30). Tool reference profiles U1, N1, V1 (gears with basic rack per DIN 58400) and U2, N2, V2 (basic rack per DIN 867). Withdrawn without a successor named on the document (user, 2026-09-30). The STplus manual (p. 183) names it for tools dimensioned from a measuring line. DIN 58400 is not in the repository. Read for the generation (increment 3); a withdrawn norm can only serve as a labelled preset, never as the governing source."
   # ---- load capacity (stage 2) ----------------------------------------------------------------
   ISO6336-1:2019:
     type: norm

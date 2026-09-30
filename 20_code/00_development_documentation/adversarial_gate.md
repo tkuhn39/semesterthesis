@@ -39,5 +39,9 @@ Table `ID | severity P0–P3 | repro (≤ 5 lines) | expected (norm reference) |
 ## Exit criterion
 P0 = 0. Every P1 fixed or entered in `known_limits.md` with a reason and owner. Every finding becomes a
 regression test `tests/test_adv_<increment>_<id>.py` written by the implementer, not the reviewer.
+**Verification review (since increment 2).** Before the gate is reported as passed, a read-only
+reviewer re-runs the original repros of every finding against the fixed code, repeats the sweeps,
+tries in-memory mutations against the new tests and recomputes the numbers the documents quote. In
+increment 2 this step showed that a P1 reported as resolved was not (`gate_reports/increment_2.md`).
 Budget: 30–45 min reviewer time per increment. The gate result is summarised in the roadmap entry of the
 increment and reported to the user before the next increment starts.

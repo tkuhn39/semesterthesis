@@ -21,11 +21,14 @@ d_y below zero means d_y lies beyond the pointed tooth, where no tooth exists, a
 
 import math
 
+from gearcore._guards import HALF_PI
+from gearcore._guards import helix as _helix
+from gearcore._guards import pressure_angle as _pressure_angle
+from gearcore._guards import teeth as _teeth
 from gearcore._safe import (
     EPS,
     finite_input,
     finite_result,
-    integer_input,
     positive_input,
     safe_acos,
     safe_asin,
@@ -35,7 +38,6 @@ from gearcore._safe import (
 from gearcore.errors import (
     GeometryInfeasibleError,
     InputRangeError,
-    NotSupportedError,
     SolverError,
 )
 from gearcore.models.common import (
@@ -50,7 +52,6 @@ from gearcore.models.results import BasicGearGeometry
 from gearcore.trace import eq
 
 SOURCE = "ISO21771:2014"
-HALF_PI = math.pi / 2.0
 INV_ALPHA_MAX_RAD = math.radians(89.0)
 """Largest angle ``inv_inverse`` returns; inv grows without bound towards 90°."""
 INV_MAX = math.tan(INV_ALPHA_MAX_RAD) - INV_ALPHA_MAX_RAD
@@ -60,29 +61,6 @@ EQ_EXEMPT = ("compute_basic_gear_geometry",)
 
 
 # --- input guards ---------------------------------------------------------------------------
-
-
-def _teeth(z: int) -> int:
-    number = integer_input(z, "number of teeth z")
-    if number == 0:
-        raise InputRangeError("number of teeth z must not be zero")
-    if number < 0:
-        raise NotSupportedError("internal gears (z < 0) are a prepared extension point")
-    return number
-
-
-def _helix(beta_rad: float) -> float:
-    beta = finite_input(beta_rad, "helix angle beta")
-    if abs(beta) >= HALF_PI - EPS:
-        raise InputRangeError(f"helix angle |beta| must be < 90 deg, got {math.degrees(beta)!r}")
-    return beta
-
-
-def _pressure_angle(alpha_rad: float, what: str) -> float:
-    alpha = finite_input(alpha_rad, what)
-    if not 0.0 <= alpha < HALF_PI - EPS:
-        raise InputRangeError(f"{what} must lie in [0, 90 deg), got {math.degrees(alpha)!r}")
-    return alpha
 
 
 def _shift(x: float) -> float:

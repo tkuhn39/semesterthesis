@@ -1,0 +1,1478 @@
+{
+  "A_Ae": {
+    "label": "Achsabstandsabmass . . . . . . . .",
+    "line": 241,
+    "numbers": [
+      0.015
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_Ae",
+    "tokens": [
+      "+",
+      "0.015"
+    ],
+    "unit": "mm"
+  },
+  "A_Ae [Flankenspiele]": {
+    "label": "Flankenspielaenderung durch Abmass",
+    "line": 249,
+    "numbers": [
+      0.012,
+      0.011
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Flankenspiele",
+    "symbol": "A_Ae",
+    "tokens": [
+      "0.012",
+      "/",
+      "0.011"
+    ],
+    "unit": "mm"
+  },
+  "A_Ai": {
+    "label": "Achsabstandsabmass . . . . . . . .",
+    "line": 242,
+    "numbers": [
+      -0.015
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_Ai",
+    "tokens": [
+      "-",
+      "0.015"
+    ],
+    "unit": "mm"
+  },
+  "A_Ai [Flankenspiele]": {
+    "label": "Flankenspielaenderung durch Abmass",
+    "line": 250,
+    "numbers": [
+      -0.012,
+      -0.011
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Flankenspiele",
+    "symbol": "A_Ai",
+    "tokens": [
+      "-0.012",
+      "/",
+      "-0.011"
+    ],
+    "unit": "mm"
+  },
+  "A_Md/A_sn": {
+    "label": "Abmassfaktor . . . . . . .",
+    "line": 240,
+    "numbers": [
+      2.108,
+      2.347
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_Md/A_sn",
+    "tokens": [
+      "2.108",
+      "2.347"
+    ],
+    "unit": "-"
+  },
+  "A_Mde": {
+    "label": "oberes diametrales Abmass . . .",
+    "line": 238,
+    "numbers": [
+      -0.137,
+      -0.2
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_Mde",
+    "tokens": [
+      "-0.137",
+      "-0.200"
+    ],
+    "unit": "mm"
+  },
+  "A_Mdi": {
+    "label": "unteres diametrales Abmass . .",
+    "line": 239,
+    "numbers": [
+      -0.201,
+      -0.294
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_Mdi",
+    "tokens": [
+      "-0.201",
+      "-0.294"
+    ],
+    "unit": "mm"
+  },
+  "A_W/A_Sn": {
+    "label": "Zahnweitenabmassfaktor . . .",
+    "line": 232,
+    "numbers": [
+      0.94,
+      0.94
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_W/A_Sn",
+    "tokens": [
+      "0.940",
+      "0.940"
+    ],
+    "unit": "-"
+  },
+  "A_We": {
+    "label": "oberes Zahnweitenabmass . . . . .",
+    "line": 230,
+    "numbers": [
+      -0.061,
+      -0.08
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_We",
+    "tokens": [
+      "-0.061",
+      "-0.080"
+    ],
+    "unit": "mm"
+  },
+  "A_Wi": {
+    "label": "unteres Zahnweitenabmass . . . .",
+    "line": 231,
+    "numbers": [
+      -0.089,
+      -0.117
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_Wi",
+    "tokens": [
+      "-0.089",
+      "-0.117"
+    ],
+    "unit": "mm"
+  },
+  "A_sne": {
+    "label": "oberes Abmass der Z.dickensehne",
+    "line": 225,
+    "numbers": [
+      -0.065,
+      -0.085
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_sne",
+    "tokens": [
+      "-0.065",
+      "-0.085"
+    ],
+    "unit": "mm"
+  },
+  "A_sni": {
+    "label": "unteres Abmass der Z.dickensehne",
+    "line": 226,
+    "numbers": [
+      -0.095,
+      -0.125
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "A_sni",
+    "tokens": [
+      "-0.095",
+      "-0.125"
+    ],
+    "unit": "mm"
+  },
+  "A_ste": {
+    "label": "oberes Zahndickenabmass . . . .",
+    "line": 215,
+    "numbers": [
+      -0.065,
+      -0.085
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": "A_ste",
+    "tokens": [
+      "-0.065",
+      "-0.085"
+    ],
+    "unit": "mm"
+  },
+  "A_sti": {
+    "label": "unteres Zahndickenabmass . . .",
+    "line": 216,
+    "numbers": [
+      -0.095,
+      -0.125
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": "A_sti",
+    "tokens": [
+      "-0.095",
+      "-0.125"
+    ],
+    "unit": "mm"
+  },
+  "Abmassreihe (DIN 3967, Aug.78)": {
+    "label": "Abmassreihe (DIN 3967, Aug.78) . . . .",
+    "line": 212,
+    "numbers": [],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": null,
+    "tokens": [
+      "C",
+      "C"
+    ],
+    "unit": "-"
+  },
+  "Beruehrkreisdurchm. (Zahnweitenmessg.)": {
+    "label": "Beruehrkreisdurchm. (Zahnweitenmessg.)",
+    "line": 233,
+    "numbers": [
+      40.671,
+      69.596
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": null,
+    "tokens": [
+      "40.671",
+      "69.596"
+    ],
+    "unit": "mm"
+  },
+  "Beruehrkreisdurchm. (oberes Abmass)": {
+    "label": "Beruehrkreisdurchm. (oberes Abmass) .",
+    "line": 227,
+    "numbers": [
+      41.046,
+      68.324
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": null,
+    "tokens": [
+      "41.046",
+      "68.324"
+    ],
+    "unit": "mm"
+  },
+  "Beruehrkreisdurchmesser (Kugel/Flanke)": {
+    "label": "Beruehrkreisdurchmesser (Kugel/Flanke)",
+    "line": 235,
+    "numbers": [
+      40.493,
+      68.316
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": null,
+    "tokens": [
+      "40.493",
+      "68.316"
+    ],
+    "unit": "mm"
+  },
+  "D_M": {
+    "label": "Messtueckdurchmesser . . . . . . .",
+    "line": 237,
+    "numbers": [
+      3.5,
+      3.5
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "D_M",
+    "tokens": [
+      "3.500",
+      "3.500"
+    ],
+    "unit": "mm"
+  },
+  "Fase je Zahnende (Kantenbruch)": {
+    "label": "Fase je Zahnende (Kantenbruch) . . .",
+    "line": 170,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": null,
+    "tokens": [
+      "0.000",
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "Fs_n": {
+    "label": "Fussfreischnitt (bei '-' Kerbtiefe)",
+    "line": 183,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "Fs_n",
+    "tokens": [
+      "0.000",
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "K_ga": {
+    "label": "Gleitfaktor am Zahnkopf . . . . . .",
+    "line": 206,
+    "numbers": [
+      0.344,
+      0.292
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "K_ga",
+    "tokens": [
+      "0.344",
+      "0.292"
+    ],
+    "unit": "-"
+  },
+  "M_dK": {
+    "label": "Diam. Zweikugelmass (Nennmass) . .",
+    "line": 234,
+    "numbers": [
+      45.558,
+      73.331
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "M_dK",
+    "tokens": [
+      "45.558",
+      "73.331"
+    ],
+    "unit": "mm"
+  },
+  "M_dR": {
+    "label": "Diam. Zweirollenmass (Nennmass) . .",
+    "line": 236,
+    "numbers": [
+      45.558,
+      73.331
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "M_dR",
+    "tokens": [
+      "45.558",
+      "73.331"
+    ],
+    "unit": "mm"
+  },
+  "Mittenversatz": {
+    "label": "Mittenversatz . . . . . . . . . . . .",
+    "line": 172,
+    "numbers": [
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": null,
+    "tokens": [
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "Restdicke bei Kantenbruch/Kopfruecknahme": {
+    "label": "Restdicke bei Kantenbruch/Kopfruecknahme",
+    "line": 220,
+    "numbers": [
+      0.881,
+      0.938
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": null,
+    "tokens": [
+      "0.881",
+      "0.938"
+    ],
+    "unit": "mm"
+  },
+  "Toleranzreihe (DIN 3967, Aug.78)": {
+    "label": "Toleranzreihe (DIN 3967, Aug.78) . . .",
+    "line": 213,
+    "numbers": [
+      25.0,
+      25.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": null,
+    "tokens": [
+      "25",
+      "25"
+    ],
+    "unit": "-"
+  },
+  "Verzahnungsqualitaet (DIN3961/63,Aug.78)": {
+    "label": "Verzahnungsqualitaet (DIN3961/63,Aug.78)",
+    "line": 211,
+    "numbers": [
+      7.0,
+      7.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": null,
+    "tokens": [
+      "N",
+      "7",
+      "N",
+      "7"
+    ],
+    "unit": "-"
+  },
+  "W_k": {
+    "label": "Zahnweite (Nennmass) . . . . . . .",
+    "line": 228,
+    "numbers": [
+      15.594,
+      27.658
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "W_k",
+    "tokens": [
+      "15.594",
+      "27.658"
+    ],
+    "unit": "mm"
+  },
+  "a": {
+    "label": "Achsabstand . . . . . . . . . . . . .",
+    "line": 150,
+    "numbers": [
+      54.578
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "a",
+    "tokens": [
+      "54.578"
+    ],
+    "unit": "mm"
+  },
+  "alfa_n": {
+    "label": "Normaleingriffswinkel . . . . . .",
+    "line": 143,
+    "numbers": [
+      20.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "alfa_n",
+    "tokens": [
+      "20.00000"
+    ],
+    "unit": "Grad"
+  },
+  "alfa_n0": {
+    "label": "Wkz-Normaleingriffswinkel . . .",
+    "line": 255,
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Werkzeugangaben",
+    "symbol": "alfa_n0",
+    "tokens": [
+      "20.0000",
+      "20.0000"
+    ],
+    "unit": "Grad"
+  },
+  "alfa_pr0": {
+    "label": "Protuberanzwinkel . . . . . . .",
+    "line": 273,
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "alfa_pr0",
+    "tokens": [
+      "20.000",
+      "20.000"
+    ],
+    "unit": "Grad"
+  },
+  "alfa_t": {
+    "label": "Stirneingriffswinkel . . . . .",
+    "line": 144,
+    "numbers": [
+      20.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "alfa_t",
+    "tokens": [
+      "20.00000"
+    ],
+    "unit": "Grad"
+  },
+  "alfa_wt": {
+    "label": "Betriebseingriffswinkel . . .",
+    "line": 145,
+    "numbers": [
+      21.60424
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "alfa_wt",
+    "tokens": [
+      "21.60424"
+    ],
+    "unit": "Grad"
+  },
+  "b": {
+    "label": "Zahnbreite (eine Pfeilhaelfte bei DSV)",
+    "line": 169,
+    "numbers": [
+      20.0,
+      20.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "b",
+    "tokens": [
+      "20.000",
+      "20.000"
+    ],
+    "unit": "mm"
+  },
+  "b_gem": {
+    "label": "Gemeinsame Breite . . . . . . . .",
+    "line": 171,
+    "numbers": [
+      20.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "b_gem",
+    "tokens": [
+      "20.000"
+    ],
+    "unit": "mm"
+  },
+  "beta": {
+    "label": "Schraegungswinkel am Teilkreis . .",
+    "line": 146,
+    "numbers": [
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "beta",
+    "tokens": [
+      "0.00000"
+    ],
+    "unit": "Grad"
+  },
+  "beta_b": {
+    "label": "Schraegungswinkel am Grundkreis",
+    "line": 147,
+    "numbers": [
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "beta_b",
+    "tokens": [
+      "0.00000"
+    ],
+    "unit": "Grad"
+  },
+  "c": {
+    "label": "Kopfspiel (Istwert) . . . . . . . . .",
+    "line": 192,
+    "numbers": [
+      0.594,
+      0.567
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "c",
+    "tokens": [
+      "0.594",
+      "0.567"
+    ],
+    "unit": "mm"
+  },
+  "c_*": {
+    "label": "bezogenes Kopfspiel . . . . . . .",
+    "line": 193,
+    "numbers": [
+      0.297,
+      0.283
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "c_*",
+    "tokens": [
+      "0.297",
+      "0.283"
+    ],
+    "unit": "-"
+  },
+  "c_n": {
+    "label": "Formuebermass . . . . . . . . . .",
+    "line": 182,
+    "numbers": [
+      0.313,
+      0.581
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "c_n",
+    "tokens": [
+      "0.313",
+      "0.581"
+    ],
+    "unit": "mm"
+  },
+  "d": {
+    "label": "Teilkreisdurchmesser . . . . . . . .",
+    "line": 174,
+    "numbers": [
+      40.0,
+      68.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d",
+    "tokens": [
+      "40.000",
+      "68.000"
+    ],
+    "unit": "mm"
+  },
+  "d_Fa": {
+    "label": "Kopf-Formkreisdurchmesser . . . . .",
+    "line": 177,
+    "numbers": [
+      44.4,
+      71.8
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_Fa",
+    "tokens": [
+      "44.400",
+      "71.800"
+    ],
+    "unit": "mm"
+  },
+  "d_Ff": {
+    "label": "Fuss-Formkreisdurchmesser . . . . .",
+    "line": 181,
+    "numbers": [
+      37.693,
+      64.848
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_Ff",
+    "tokens": [
+      "37.693",
+      "64.848"
+    ],
+    "unit": "mm"
+  },
+  "d_Fs-n": {
+    "label": "gemessen normal zur Fl. am Dm.",
+    "line": 184,
+    "numbers": [
+      37.693,
+      64.848
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_Fs-n",
+    "tokens": [
+      "37.693",
+      "64.848"
+    ],
+    "unit": "mm"
+  },
+  "d_Na": {
+    "label": "Nutzkreisdurchmesser am Kopf . . .",
+    "line": 179,
+    "numbers": [
+      44.4,
+      71.8
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_Na",
+    "tokens": [
+      "44.400",
+      "71.800"
+    ],
+    "unit": "mm"
+  },
+  "d_Nf": {
+    "label": "Nutzkreisdurchmesser am Fuss . . .",
+    "line": 180,
+    "numbers": [
+      38.318,
+      66.009
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_Nf",
+    "tokens": [
+      "38.318",
+      "66.009"
+    ],
+    "unit": "mm"
+  },
+  "d_a": {
+    "label": "Kopfkreisdurchmesser . . . . . . .",
+    "line": 176,
+    "numbers": [
+      44.8,
+      72.4
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_a",
+    "tokens": [
+      "44.800",
+      "72.400"
+    ],
+    "unit": "mm"
+  },
+  "d_b": {
+    "label": "Grundkreisdurchmesser . . . . . . .",
+    "line": 175,
+    "numbers": [
+      37.588,
+      63.899
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_b",
+    "tokens": [
+      "37.588",
+      "63.899"
+    ],
+    "unit": "mm"
+  },
+  "d_f": {
+    "label": "Fusskreisdurchmesser . . . . . . .",
+    "line": 185,
+    "numbers": [
+      35.621,
+      63.166
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_f",
+    "tokens": [
+      "35.621",
+      "63.166"
+    ],
+    "unit": "mm"
+  },
+  "d_w": {
+    "label": "Waelzkreisdurchmesser . . . . . . .",
+    "line": 173,
+    "numbers": [
+      40.428,
+      68.727
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "d_w",
+    "tokens": [
+      "40.428",
+      "68.727"
+    ],
+    "unit": "mm"
+  },
+  "e_n": {
+    "label": "Zahnlueckenweite (Normalschnitt) .",
+    "line": 218,
+    "numbers": [
+      2.85,
+      2.996
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": "e_n",
+    "tokens": [
+      "2.850",
+      "2.996"
+    ],
+    "unit": "mm"
+  },
+  "eps_alfa": {
+    "label": "Profilueberdeckung . . . . . .",
+    "line": 164,
+    "numbers": [
+      1.371
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "eps_alfa",
+    "tokens": [
+      "1.371"
+    ],
+    "unit": "-"
+  },
+  "eps_beta": {
+    "label": "Sprungueberdeckung . . . . . .",
+    "line": 165,
+    "numbers": [
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "eps_beta",
+    "tokens": [
+      "0.000"
+    ],
+    "unit": "-"
+  },
+  "eps_gamma": {
+    "label": "Gesamtueberdeckung . . . . .",
+    "line": 166,
+    "numbers": [
+      1.371
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "eps_gamma",
+    "tokens": [
+      "1.371"
+    ],
+    "unit": "-"
+  },
+  "fuer Nennachsabstand u untere Zahnabm.": {
+    "label": "fuer Nennachsabstand u untere Zahnabm.",
+    "line": 248,
+    "numbers": [
+      0.222,
+      0.207
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Flankenspiele",
+    "symbol": null,
+    "tokens": [
+      "0.222",
+      "/",
+      "0.207"
+    ],
+    "unit": "mm"
+  },
+  "fuer Nennachsabstand u. obere Zahnabm.": {
+    "label": "fuer Nennachsabstand u. obere Zahnabm.",
+    "line": 247,
+    "numbers": [
+      0.152,
+      0.141
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Flankenspiele",
+    "symbol": null,
+    "tokens": [
+      "0.152",
+      "/",
+      "0.141"
+    ],
+    "unit": "mm"
+  },
+  "g": {
+    "label": "Eingriffsstrecke . . . . . . . . . .",
+    "line": 162,
+    "numbers": [
+      8.093
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "g",
+    "tokens": [
+      "8.093"
+    ],
+    "unit": "mm"
+  },
+  "g_alfa-a": {
+    "label": "Kopfeingriffsstrecke . . . . .",
+    "line": 194,
+    "numbers": [
+      4.374,
+      3.719
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "g_alfa-a",
+    "tokens": [
+      "4.374",
+      "3.719"
+    ],
+    "unit": "mm"
+  },
+  "h": {
+    "label": "Zahnhoehe . . . . . . . . . . . . . .",
+    "line": 189,
+    "numbers": [
+      4.589,
+      4.617
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "h",
+    "tokens": [
+      "4.589",
+      "4.617"
+    ],
+    "unit": "mm"
+  },
+  "h_*": {
+    "label": "Gemeins. Zahnhoehenfaktor . . . .",
+    "line": 163,
+    "numbers": [
+      1.761
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "h_*",
+    "tokens": [
+      "1.761"
+    ],
+    "unit": "-"
+  },
+  "h_FfP0*": {
+    "label": "Fussform-Hoehenf.(Wkz-Bezugspr.)",
+    "line": 258,
+    "numbers": [
+      1.3,
+      1.3
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Werkzeugangaben",
+    "symbol": "h_FfP0*",
+    "tokens": [
+      "1.300",
+      "1.300"
+    ],
+    "unit": "-"
+  },
+  "h_K": {
+    "label": "Kopfkantenbruch (Radialbetrag) .",
+    "line": 178,
+    "numbers": [
+      0.2,
+      0.3
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Breiten, Durchmesser etc.",
+    "symbol": "h_K",
+    "tokens": [
+      "0.200",
+      "0.300"
+    ],
+    "unit": "mm"
+  },
+  "h_a": {
+    "label": "Kopfhoehe (bezogen auf Teilkreis) .",
+    "line": 191,
+    "numbers": [
+      2.4,
+      2.2
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "h_a",
+    "tokens": [
+      "2.400",
+      "2.200"
+    ],
+    "unit": "mm"
+  },
+  "h_a-": {
+    "label": "Hoehe ueber der Zahndickensehne . .",
+    "line": 224,
+    "numbers": [
+      1.935,
+      2.075
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "h_a-",
+    "tokens": [
+      "1.935",
+      "2.075"
+    ],
+    "unit": "mm"
+  },
+  "h_aP*": {
+    "label": "Bezugspr.-Kopfhoehenfaktor (Istw.)",
+    "line": 188,
+    "numbers": [
+      1.0,
+      1.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "h_aP*",
+    "tokens": [
+      "1.000",
+      "1.000"
+    ],
+    "unit": "-"
+  },
+  "h_aP0*": {
+    "label": "Kopfhoehenfaktor (Wkz_Bezugspr.)",
+    "line": 256,
+    "numbers": [
+      1.25,
+      1.25
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Werkzeugangaben",
+    "symbol": "h_aP0*",
+    "tokens": [
+      "1.250",
+      "1.250"
+    ],
+    "unit": "-"
+  },
+  "h_fP0*": {
+    "label": "Fuss-Hoehenfaktor (Wkz-Bezugspr.)",
+    "line": 270,
+    "numbers": [
+      1.3,
+      1.3
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "h_fP0*",
+    "tokens": [
+      "1.300",
+      "1.300"
+    ],
+    "unit": "-"
+  },
+  "h_gem": {
+    "label": "gemeinsame Zahnhoehe . . . . .",
+    "line": 190,
+    "numbers": [
+      3.522
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Zahnhoehen, Gleitfaktoren etc.",
+    "symbol": "h_gem",
+    "tokens": [
+      "3.522"
+    ],
+    "unit": "mm"
+  },
+  "h_pr0*": {
+    "label": "Protuberanzhoehenfaktor am Wkz .",
+    "line": 272,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "h_pr0*",
+    "tokens": [
+      "0.000",
+      "0.000"
+    ],
+    "unit": "-"
+  },
+  "k": {
+    "label": "Messzaehnezahl . . . . . . . . . . .",
+    "line": 229,
+    "numbers": [
+      3.0,
+      5.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "k",
+    "tokens": [
+      "3",
+      "5"
+    ],
+    "unit": "-"
+  },
+  "m_n": {
+    "label": "Normalmodul . . . . . . . . . . . .",
+    "line": 151,
+    "numbers": [
+      2.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "m_n",
+    "tokens": [
+      "2.00000"
+    ],
+    "unit": "mm"
+  },
+  "m_n0": {
+    "label": "Wkz-Normalmodul . . . . . . . . . .",
+    "line": 254,
+    "numbers": [
+      2.0,
+      2.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Werkzeugangaben",
+    "symbol": "m_n0",
+    "tokens": [
+      "2.0000",
+      "2.0000"
+    ],
+    "unit": "mm"
+  },
+  "m_t": {
+    "label": "Stirnmodul . . . . . . . . . . .",
+    "line": 152,
+    "numbers": [
+      2.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "m_t",
+    "tokens": [
+      "2.00000"
+    ],
+    "unit": "mm"
+  },
+  "nach DIN 3964 Toleranzfeld": {
+    "label": "nach DIN 3964 Toleranzfeld",
+    "line": 243,
+    "numbers": [
+      7.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": null,
+    "tokens": [
+      "JS",
+      "7"
+    ],
+    "unit": null
+  },
+  "p_en": {
+    "label": "Normaleingriffsteilung . . . . . .",
+    "line": 161,
+    "numbers": [
+      5.904
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "p_en",
+    "tokens": [
+      "5.904"
+    ],
+    "unit": "mm"
+  },
+  "p_et": {
+    "label": "Stirneingriffsteilung . . . . . . .",
+    "line": 160,
+    "numbers": [
+      5.904
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "p_et",
+    "tokens": [
+      "5.904"
+    ],
+    "unit": "mm"
+  },
+  "p_n": {
+    "label": "Normalteilung . . . . . . . . . . .",
+    "line": 159,
+    "numbers": [
+      6.283
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "p_n",
+    "tokens": [
+      "6.283"
+    ],
+    "unit": "mm"
+  },
+  "p_t": {
+    "label": "Stirnteilung . . . . . . . . . . .",
+    "line": 158,
+    "numbers": [
+      6.283
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Teilungen, Ueberdeckungen etc.",
+    "symbol": "p_t",
+    "tokens": [
+      "6.283"
+    ],
+    "unit": "mm"
+  },
+  "pr_0": {
+    "label": "Protuberanzbetrag am Wkz . . . . .",
+    "line": 271,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "pr_0",
+    "tokens": [
+      "0.000",
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "q": {
+    "label": "Gesamt-Bearbeitungszugabe . . . . . .",
+    "line": 274,
+    "numbers": [
+      0.0,
+      0.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "q",
+    "tokens": [
+      "0.000",
+      "0.000"
+    ],
+    "unit": "mm"
+  },
+  "rho_aP0*": {
+    "label": "Wkz-Kopfabrundungsfaktor . . .",
+    "line": 257,
+    "numbers": [
+      0.25,
+      0.25
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Werkzeugangaben",
+    "symbol": "rho_aP0*",
+    "tokens": [
+      "0.250",
+      "0.250"
+    ],
+    "unit": "-"
+  },
+  "s_an": {
+    "label": "Zahndicke am Kopfkreis fuer A_We .",
+    "line": 219,
+    "numbers": [
+      1.161,
+      1.358
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": "s_an",
+    "tokens": [
+      "1.161",
+      "1.358"
+    ],
+    "unit": "mm"
+  },
+  "s_n": {
+    "label": "Zahndicke (Nennmass, Normalschn.) .",
+    "line": 217,
+    "numbers": [
+      3.433,
+      3.287
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": "s_n",
+    "tokens": [
+      "3.433",
+      "3.287"
+    ],
+    "unit": "mm"
+  },
+  "s_n-": {
+    "label": "Zahndickensehne (Nennmass) . . . .",
+    "line": 223,
+    "numbers": [
+      3.093,
+      3.181
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Angaben zu Pruefmassen",
+    "symbol": "s_n-",
+    "tokens": [
+      "3.093",
+      "3.181"
+    ],
+    "unit": "mm"
+  },
+  "s_t": {
+    "label": "Zahndicke (Nennmass, Stirnschn.) .",
+    "line": 214,
+    "numbers": [
+      3.433,
+      3.287
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": "Abmasse, Zahndicken etc.",
+    "symbol": "s_t",
+    "tokens": [
+      "3.433",
+      "3.287"
+    ],
+    "unit": "mm"
+  },
+  "x": {
+    "label": "Profilverschiebungsfaktor (Nennw.) .",
+    "line": 154,
+    "numbers": [
+      0.2,
+      0.1
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "x",
+    "tokens": [
+      "0.2000",
+      "0.1000"
+    ],
+    "unit": "-"
+  },
+  "x*m_n": {
+    "label": "Profilverschiebung (Nennw.) . .",
+    "line": 155,
+    "numbers": [
+      0.4,
+      0.2
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "x*m_n",
+    "tokens": [
+      "0.400",
+      "0.200"
+    ],
+    "unit": "mm"
+  },
+  "x_1+x_2": {
+    "label": "Summe Profilversch.faktoren . .",
+    "line": 153,
+    "numbers": [
+      0.3
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "x_1+x_2",
+    "tokens": [
+      "0.3000"
+    ],
+    "unit": "-"
+  },
+  "x_E": {
+    "label": "Erz.-Profilversch.faktor . . . . .",
+    "line": 275,
+    "numbers": [
+      0.1554,
+      0.0416
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "x_E",
+    "tokens": [
+      "0.1554",
+      "0.0416"
+    ],
+    "unit": "-"
+  },
+  "z": {
+    "label": "Zaehnezahl . . . . . . . . . . . . .",
+    "line": 148,
+    "numbers": [
+      20.0,
+      34.0
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "z",
+    "tokens": [
+      "20",
+      "34"
+    ],
+    "unit": "-"
+  },
+  "z2/z1": {
+    "label": "Zaehnezahlverhaeltnis . . . . .",
+    "line": 149,
+    "numbers": [
+      1.7
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "z2/z1",
+    "tokens": [
+      "1.700"
+    ],
+    "unit": "-"
+  },
+  "zeta_a": {
+    "label": "Spezifisches Gleiten (Zahnkopf) .",
+    "line": 207,
+    "numbers": [
+      0.588,
+      0.613
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "zeta_a",
+    "tokens": [
+      "0.588",
+      "0.613"
+    ],
+    "unit": "-"
+  },
+  "zeta_f": {
+    "label": "Spezifisches Gleiten (Zahnfuss) .",
+    "line": 208,
+    "numbers": [
+      -1.587,
+      -1.427
+    ],
+    "section": "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "subsection": null,
+    "symbol": "zeta_f",
+    "tokens": [
+      "-1.587",
+      "-1.427"
+    ],
+    "unit": "-"
+  }
+}

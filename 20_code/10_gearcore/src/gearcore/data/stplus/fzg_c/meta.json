@@ -42,7 +42,14 @@
   "stplus_version": "11.1F",
   "trust": "generated",
   "typed_import": {
-    "notes": [],
+    "notes": [
+      "tool 'Fraes_WKZ': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'Fraes_WKZ': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "tool 'Fraes_WKZ': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'Fraes_WKZ': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "gear 1: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
+      "gear 2: KOPFKANTENBRUCH not given → 0 (no tip chamfer)"
+    ],
     "ok": true,
     "unmapped_keys": []
   }

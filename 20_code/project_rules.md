@@ -13,7 +13,10 @@ Rules are numbered so ADRs and reviews can cite them.
 3. **Current norm wins.** Withdrawn norms (DIN 3960:1987, DIN 3961–63:1978, ISO/TR 13989 …) are never the
    computational basis. STplus is a numeric oracle only. Every deviation from it is recorded in
    `data/stplus/expected_differences.yaml` (old source/eq, new source/eq, reason, numeric example, effect)
-   and rendered to `norm_differences.md` for the thesis.
+   and rendered to `norm_differences.md` for the thesis (generator: increment 6). A deviation of
+   gearcore itself from the letter of the current norm needs a decision of the user, an ADR and an
+   entry under `deviations_from_the_norm` in the same file; the result names the norm value
+   (first case: common tooth depth, ADR-112).
 3a. **Current notation in the tool, original notation in quotations — never mixed.** Code, contracts,
    notebooks and the later program use the symbols of the currently valid norms (e.g. `h_aP0`,
    DIN ISO 21771:2014-08 §7.1). When an older document is quoted (DIN 3972:1952 `h_kw`, `r_1`; DIN 3960;

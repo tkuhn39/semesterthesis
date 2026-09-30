@@ -1,0 +1,35 @@
+# Documented differences between gearcore and the STplus oracle (ADR-105), and deliberate
+# deviations of gearcore from the current norm.
+#
+# `differences`: a value that the comparison reports as `different` must be explained here, or it
+# is a defect. The current norm is never changed to match STplus.
+#
+#   field          compared field of the result contract
+#   condition      when the difference occurs
+#   new            what gearcore computes: current norm, equation, section, printed page
+#   old            the same quantity in the norm STplus names as its basis
+#   stplus         what STplus prints, with the evidence
+#   example        one fixture case with both values
+#   effect         what a user has to know
+#
+# `deviations_from_the_norm`: where gearcore does not follow the letter of the current norm. Each
+# entry is a decision of the user with its reason (an ADR), the equation of the norm, what gearcore
+# computes instead, and one example with both values. The result names the norm value wherever the
+# two differ.
+differences: {}
+
+deviations_from_the_norm:
+  common_tooth_depth_with_tip_form_circles:
+    field: "common_tooth_depth_mm"
+    decision: "user decision 2026-09-30, ADR-112"
+    condition: "at least one gear has a tip form diameter below its tip diameter (tip chamfer or edge break flank of the tool)"
+    norm: { source: "ISO21771:2014", eq: "(59)", section: "5.2.6", page: 41, formula: "h_w = (d_a1 + d_a2) / 2 - a_w" }
+    old_norm: { source: "DIN3960:1987", eq: "(4.2.08)", section: "4.2.6", page: 31, formula: "h_w = (d_a1 + d_a2) / 2 - a" }
+    gearcore:
+      formula: "h_w = (d_Fa1 + d_Fa2) / 2 - a_w"
+      reason: "Beyond the tip form circle, on the tip chamfer, the tooth does not carry. A tip chamfer is used deliberately to control the beginning and the end of the mesh; the depth over which involute flanks can overlap ends at the tip form circles (user, 2026-09-30)."
+    stplus:
+      formula: "h_gem = (d_Fa1 + d_Fa2) / 2 - a"
+      evidence: "reproduces the printed 'gemeinsame Zahnhoehe h_gem' of all 18 listings and 14 interface files within the tolerance of the comparison; the cases with d_Fa < d_a are kst_b, kst_c, kst_e and their re-runs (tool with an edge break flank at the wheel) and chamfer_hk_z20_34 (tip chamfer given as an input on both gears). The printed 'Gemeins. Zahnhoehenfaktor h_*' = h_gem / m_n follows the same rule. The manual gives no definition of h_gem. test_common_tooth_depth_follows_the_tip_form_circles"
+    example: { case: "kst_b_rerun", quantity: "h_w", norm_value: 3.205, gearcore_value: 2.917975, stplus_value: 2.91798, unit: "mm" }
+    effect: "With a tip chamfer the value of gearcore and of STplus is smaller than the value by the letter of both norms by (d_a - d_Fa) / 2 summed over both gears (0,117 to 0,500 mm in the reference cases, 8 to 12 %). Without a chamfer all agree. The result carries the warning common_tooth_depth_with_tip_form_circles with the value of the tip circles."

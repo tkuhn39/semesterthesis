@@ -35,7 +35,14 @@
   "stplus_version": "11.1F",
   "trust": "generated",
   "typed_import": {
-    "notes": [],
+    "notes": [
+      "tool 'WKZ_1': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'WKZ_1': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "tool 'WKZ_2': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'WKZ_2': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "gear 1: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
+      "gear 2: KOPFKANTENBRUCH not given → 0 (no tip chamfer)"
+    ],
     "ok": true,
     "unmapped_keys": []
   }

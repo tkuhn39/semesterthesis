@@ -18,6 +18,8 @@ tools = st.builds(
     normal_module_mm=st.none(),
     dedendum_factor=st.none() | st.floats(0.8, 2.5),
     edge_break_angle_deg=st.none() | st.floats(1.0, 89.0),
+    protuberance_mm=st.floats(0.0, 1.0),
+    machining_allowance_mm=st.floats(0.0, 1.0),
 )
 gears = st.builds(
     GearInput,
@@ -25,15 +27,49 @@ gears = st.builds(
     profile_shift_coefficient=st.floats(-2.0, 2.0),
     face_width_mm=st.floats(0.1, 2000.0),
     tip_diameter_mm=st.none() | st.floats(1.0, 5000.0),
+    tip_chamfer_radial_mm=st.floats(0.0, 2.0),
     tool=tools,
 )
-pairs = st.builds(
-    PairInput,
-    normal_module_mm=st.floats(0.05, 100.0),
-    normal_pressure_angle_deg=st.floats(10.0, 30.0),
-    helix_angle_deg=st.floats(-45.0, 45.0),
-    centre_distance_mm=st.none() | st.floats(1.0, 5000.0),
-    gears=st.builds(Pair[GearInput], pinion=gears, wheel=gears),
+
+
+def _pinion_is_smaller(pair: Pair[GearInput]) -> bool:
+    return pair.pinion.number_of_teeth <= pair.wheel.number_of_teeth
+
+
+gears_without_shift = st.builds(
+    GearInput,
+    number_of_teeth=st.integers(5, 1000),
+    profile_shift_coefficient=st.none(),
+    face_width_mm=st.floats(0.1, 2000.0),
+    tip_diameter_mm=st.none() | st.floats(1.0, 5000.0),
+    tip_chamfer_radial_mm=st.floats(0.0, 2.0),
+    tool=tools,
+)
+# only two of a_w, x_1, x_2 are given (ADR-107)
+pairs = st.one_of(
+    st.builds(
+        PairInput,
+        normal_module_mm=st.floats(0.05, 100.0),
+        normal_pressure_angle_deg=st.floats(10.0, 30.0),
+        helix_angle_deg=st.floats(-45.0, 45.0),
+        centre_distance_mm=st.none(),
+        gears=st.builds(Pair[GearInput], pinion=gears, wheel=gears).filter(_pinion_is_smaller),
+    ),
+    st.builds(
+        PairInput,
+        normal_module_mm=st.floats(0.05, 100.0),
+        normal_pressure_angle_deg=st.floats(10.0, 30.0),
+        helix_angle_deg=st.floats(-45.0, 45.0),
+        centre_distance_mm=st.floats(1.0, 5000.0),
+        gears=st.one_of(
+            st.builds(Pair[GearInput], pinion=gears, wheel=gears_without_shift).filter(
+                _pinion_is_smaller
+            ),
+            st.builds(Pair[GearInput], pinion=gears_without_shift, wheel=gears).filter(
+                _pinion_is_smaller
+            ),
+        ),
+    ),
 )
 
 
@@ -47,18 +83,31 @@ def test_pair_input_round_trips_through_json_and_hashes(pair: PairInput) -> None
 
 @given(st.integers(-10_000, 10_000))
 def test_teeth_outside_range_are_rejected(z: int) -> None:
-    tool = ToolProfile(addendum_factor=1.25, tip_radius_factor=0.25)
+    tool = ToolProfile(
+        addendum_factor=1.25,
+        tip_radius_factor=0.25,
+        protuberance_mm=0.0,
+        machining_allowance_mm=0.0,
+    )
     if 5 <= z <= 1000:
         assert (
             GearInput(
-                number_of_teeth=z, profile_shift_coefficient=0.0, face_width_mm=1.0, tool=tool
+                number_of_teeth=z,
+                profile_shift_coefficient=0.0,
+                face_width_mm=1.0,
+                tip_chamfer_radial_mm=0.0,
+                tool=tool,
             ).number_of_teeth
             == z
         )
     else:
         try:
             GearInput(
-                number_of_teeth=z, profile_shift_coefficient=0.0, face_width_mm=1.0, tool=tool
+                number_of_teeth=z,
+                profile_shift_coefficient=0.0,
+                face_width_mm=1.0,
+                tip_chamfer_radial_mm=0.0,
+                tool=tool,
             )
         except ValidationError:
             return
@@ -67,13 +116,27 @@ def test_teeth_outside_range_are_rejected(z: int) -> None:
 
 @given(finite)
 def test_helix_angle_outside_range_is_rejected(beta: float) -> None:
-    tool = ToolProfile(addendum_factor=1.25, tip_radius_factor=0.25)
+    tool = ToolProfile(
+        addendum_factor=1.25,
+        tip_radius_factor=0.25,
+        protuberance_mm=0.0,
+        machining_allowance_mm=0.0,
+    )
     gear = GearInput(
-        number_of_teeth=20, profile_shift_coefficient=0.0, face_width_mm=1.0, tool=tool
+        number_of_teeth=20,
+        profile_shift_coefficient=0.0,
+        face_width_mm=1.0,
+        tip_chamfer_radial_mm=0.0,
+        tool=tool,
     )
     inside = -45.0 <= beta <= 45.0
     try:
-        PairInput(normal_module_mm=1.0, helix_angle_deg=beta, gears=Pair(pinion=gear, wheel=gear))
+        PairInput(
+            normal_module_mm=1.0,
+            normal_pressure_angle_deg=20.0,
+            helix_angle_deg=beta,
+            gears=Pair(pinion=gear, wheel=gear),
+        )
     except ValidationError:
         assert not inside, f"beta={beta} rejected inside the range"
         return

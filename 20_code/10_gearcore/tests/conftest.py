@@ -1,17 +1,28 @@
 """Shared fixtures: repository paths, the (optional) local STplus installation, packaged fixtures."""
 
 import os
+import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 
-import pytest
-from hypothesis import HealthCheck, settings
+# hypothesis keeps caches (constants, unicode data) in a storage directory: not in the repository
+os.environ.setdefault(
+    "HYPOTHESIS_STORAGE_DIRECTORY", str(Path(tempfile.gettempdir()) / "gearcore_hypothesis")
+)
 
-from gearcore.data import data_path, stplus_case_dirs
+import pytest  # noqa: E402
+from hypothesis import HealthCheck, settings  # noqa: E402
 
-settings.register_profile("dev", max_examples=50, deadline=None)
+from gearcore.data import data_path, stplus_case_dirs  # noqa: E402
+
+# no example database: a test run writes nothing into the repository
+settings.register_profile("dev", max_examples=50, deadline=None, database=None)
 settings.register_profile(
-    "ci", max_examples=300, deadline=None, suppress_health_check=[HealthCheck.too_slow]
+    "ci",
+    max_examples=300,
+    deadline=None,
+    database=None,
+    suppress_health_check=[HealthCheck.too_slow],
 )
 settings.load_profile(os.environ.get("HYPOTHESIS_PROFILE", "dev"))
 

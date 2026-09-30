@@ -1,0 +1,1583 @@
+{
+  "$defs": {
+    "BasicGearGeometry": {
+      "additionalProperties": false,
+      "description": "Reference/base quantities and nominal tooth thickness of one external gear (DIN ISO 21771 §4).\n\nThickness, space width and their half angles at the reference cylinder are the signed values\nof the norm equations. A value <= 0 means that the reference cylinder lies outside the toothed\nzone (possible for large |x| together with a large pressure angle); ``warnings`` names it.\nWhether the gear can be generated is decided by the generation module, not here.",
+      "properties": {
+        "number_of_teeth": {
+          "description": "number of teeth",
+          "designation": "Zähnezahl",
+          "designation_en": "number of teeth",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 14",
+          "maximum": 1000,
+          "minimum": 5,
+          "quantity": "number_of_teeth",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "ZAEHNEZAHL",
+          "symbol": "z",
+          "title": "Number Of Teeth",
+          "type": "integer",
+          "unit": "-"
+        },
+        "normal_module_mm": {
+          "description": "normal module",
+          "designation": "Normalmodul",
+          "designation_en": "normal module",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 12",
+          "maximum": 100.0,
+          "minimum": 0.05,
+          "quantity": "normal_module",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "NORMALMODUL",
+          "symbol": "m_n",
+          "title": "Normal Module Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "normal_pressure_angle_deg": {
+          "description": "Normal pressure angle",
+          "designation": "Normaleingriffswinkel",
+          "designation_en": "Normal pressure angle",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 15",
+          "maximum": 30.0,
+          "minimum": 10.0,
+          "quantity": "normal_pressure_angle",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "EINGRIFFSWINKEL",
+          "symbol": "alpha_n",
+          "title": "Normal Pressure Angle Deg",
+          "type": "number",
+          "unit": "deg"
+        },
+        "helix_angle_deg": {
+          "description": "helix angle (without subscript, at reference cylinder)",
+          "designation": "Schrägungswinkel",
+          "designation_en": "helix angle (without subscript, at reference cylinder)",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 16",
+          "maximum": 45.0,
+          "minimum": -45.0,
+          "quantity": "helix_angle",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "SCHRAEGUNGSWINKEL",
+          "symbol": "beta",
+          "title": "Helix Angle Deg",
+          "type": "number",
+          "unit": "deg"
+        },
+        "profile_shift_coefficient": {
+          "description": "profile shift coefficient",
+          "designation": "Profilverschiebungsfaktor",
+          "designation_en": "profile shift coefficient",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 13",
+          "maximum": 2.0,
+          "minimum": -2.0,
+          "quantity": "profile_shift_coefficient",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "PROFILVERSCHIEBUNG_N",
+          "symbol": "x",
+          "title": "Profile Shift Coefficient",
+          "type": "number",
+          "unit": "-"
+        },
+        "transverse_module_mm": {
+          "description": "Transverse module",
+          "designation": "Stirnmodul",
+          "designation_en": "Transverse module",
+          "equation": "ISO21771:2014 (2)",
+          "exclusiveMinimum": 0.0,
+          "factor": false,
+          "location": "§3.1 symbol list, p. 12",
+          "quantity": "transverse_module",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "m_t",
+          "title": "Transverse Module Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "transverse_pressure_angle_deg": {
+          "description": "transverse pressure angle",
+          "designation": "Stirneingriffswinkel",
+          "designation_en": "transverse pressure angle",
+          "equation": "ISO21771:2014 (14)",
+          "exclusiveMaximum": 90.0,
+          "exclusiveMinimum": 0.0,
+          "factor": false,
+          "location": "§3.1 symbol list, p. 15",
+          "quantity": "transverse_pressure_angle",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "alpha_t",
+          "title": "Transverse Pressure Angle Deg",
+          "type": "number",
+          "unit": "deg"
+        },
+        "base_helix_angle_deg": {
+          "description": "base helix angle",
+          "designation": "Grundschrägungswinkel",
+          "designation_en": "base helix angle",
+          "equation": "ISO21771:2014 (6)",
+          "exclusiveMaximum": 90.0,
+          "exclusiveMinimum": -90.0,
+          "factor": false,
+          "location": "§3.1 symbol list, p. 16",
+          "quantity": "base_helix_angle",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "beta_b",
+          "title": "Base Helix Angle Deg",
+          "type": "number",
+          "unit": "deg"
+        },
+        "reference_diameter_mm": {
+          "description": "diameter (without subscript, reference diameter)",
+          "designation": "Teilkreisdurchmesser",
+          "designation_en": "diameter (without subscript, reference diameter)",
+          "equation": "ISO21771:2014 (1)",
+          "exclusiveMinimum": 0.0,
+          "factor": false,
+          "location": "§3.1 symbol list, p. 11",
+          "quantity": "reference_diameter",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "d",
+          "title": "Reference Diameter Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "base_diameter_mm": {
+          "description": "base diameter",
+          "designation": "Grundkreisdurchmesser",
+          "designation_en": "base diameter",
+          "equation": "ISO21771:2014 (19)",
+          "exclusiveMinimum": 0.0,
+          "factor": false,
+          "location": "§3.1 symbol list, p. 11",
+          "quantity": "base_diameter",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "d_b",
+          "title": "Base Diameter Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "transverse_tooth_thickness_mm": {
+          "description": "Zahndicke auf dem Teilzylinder im Stirnschnitt",
+          "designation": "Zahndicke auf dem Teilzylinder im Stirnschnitt",
+          "designation_en": null,
+          "equation": "ISO21771:2014 (39)",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 13",
+          "quantity": "transverse_tooth_thickness",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "s_t",
+          "title": "Transverse Tooth Thickness Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "normal_tooth_thickness_mm": {
+          "description": "Zahndicke auf dem Teilzylinder im Normalschnitt",
+          "designation": "Zahndicke auf dem Teilzylinder im Normalschnitt",
+          "designation_en": null,
+          "equation": "ISO21771:2014 (49)",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 13",
+          "quantity": "normal_tooth_thickness",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "s_n",
+          "title": "Normal Tooth Thickness Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "transverse_space_width_mm": {
+          "description": "Lückenweite auf dem Teilzylinder",
+          "designation": "Lückenweite auf dem Teilzylinder",
+          "designation_en": null,
+          "equation": "ISO21771:2014 (44)",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 11",
+          "quantity": "transverse_space_width",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "e_t",
+          "title": "Transverse Space Width Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "normal_space_width_mm": {
+          "description": "Normallückenweite",
+          "designation": "Normallückenweite",
+          "designation_en": null,
+          "equation": "ISO21771:2014 (51)",
+          "factor": false,
+          "location": "§4.7.6 (heading), Eq. (51) for the reference cylinder, p. 37",
+          "quantity": "normal_space_width",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "e_n",
+          "title": "Normal Space Width Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "tooth_thickness_half_angle_deg": {
+          "description": "Zahndicken-Halbwinkel am Teilkreis",
+          "designation": "Zahndicken-Halbwinkel am Teilkreis",
+          "designation_en": null,
+          "equation": "ISO21771:2014 (41)",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 16",
+          "quantity": "tooth_thickness_half_angle",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "psi",
+          "title": "Tooth Thickness Half Angle Deg",
+          "type": "number",
+          "unit": "deg"
+        },
+        "space_width_half_angle_deg": {
+          "description": "Zahnlücken-Halbwinkel am Teilkreis",
+          "designation": "Zahnlücken-Halbwinkel am Teilkreis",
+          "designation_en": null,
+          "equation": "ISO21771:2014 (46)",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 16",
+          "quantity": "space_width_half_angle",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "eta",
+          "title": "Space Width Half Angle Deg",
+          "type": "number",
+          "unit": "deg"
+        },
+        "base_tooth_thickness_half_angle_deg": {
+          "description": "Zahndicken-Halbwinkel am Grundkreis",
+          "designation": "Zahndicken-Halbwinkel am Grundkreis",
+          "designation_en": null,
+          "equation": "ISO21771:2014 (42)",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 16",
+          "quantity": "base_tooth_thickness_half_angle",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "psi_b",
+          "title": "Base Tooth Thickness Half Angle Deg",
+          "type": "number",
+          "unit": "deg"
+        },
+        "base_space_width_half_angle_deg": {
+          "description": "Zahnlücken-Halbwinkel am Grundkreis",
+          "designation": "Zahnlücken-Halbwinkel am Grundkreis",
+          "designation_en": null,
+          "equation": "ISO21771:2014 (47)",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 16",
+          "quantity": "base_space_width_half_angle",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "symbol": "eta_b",
+          "title": "Base Space Width Half Angle Deg",
+          "type": "number",
+          "unit": "deg"
+        },
+        "warnings": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/InputWarning"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "number_of_teeth",
+        "normal_module_mm",
+        "normal_pressure_angle_deg",
+        "helix_angle_deg",
+        "profile_shift_coefficient",
+        "transverse_module_mm",
+        "transverse_pressure_angle_deg",
+        "base_helix_angle_deg",
+        "reference_diameter_mm",
+        "base_diameter_mm",
+        "transverse_tooth_thickness_mm",
+        "normal_tooth_thickness_mm",
+        "transverse_space_width_mm",
+        "normal_space_width_mm",
+        "tooth_thickness_half_angle_deg",
+        "space_width_half_angle_deg",
+        "base_tooth_thickness_half_angle_deg",
+        "base_space_width_half_angle_deg"
+      ],
+      "title": "BasicGearGeometry",
+      "type": "object"
+    },
+    "GearInput": {
+      "additionalProperties": false,
+      "description": "One gear of a pair. Its nominal x is given, or follows from a_w and the mate's x\n(ADR-107); ``span`` is carried and not evaluated yet.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/GearKind",
+          "default": "external"
+        },
+        "number_of_teeth": {
+          "description": "number of teeth",
+          "designation": "Zähnezahl",
+          "designation_en": "number of teeth",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 14",
+          "maximum": 1000,
+          "minimum": 5,
+          "quantity": "number_of_teeth",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "ZAEHNEZAHL",
+          "symbol": "z",
+          "title": "Number Of Teeth",
+          "type": "integer",
+          "unit": "-"
+        },
+        "profile_shift_coefficient": {
+          "anyOf": [
+            {
+              "maximum": 2.0,
+              "minimum": -2.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "profile shift coefficient",
+          "designation": "Profilverschiebungsfaktor",
+          "designation_en": "profile shift coefficient",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 13",
+          "quantity": "profile_shift_coefficient",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "PROFILVERSCHIEBUNG_N",
+          "symbol": "x",
+          "title": "Profile Shift Coefficient",
+          "unit": "-"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SpanMeasurement"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "face_width_mm": {
+          "description": "face width",
+          "designation": "Zahnbreite",
+          "designation_en": "face width",
+          "exclusiveMinimum": 0.0,
+          "factor": false,
+          "location": "§3.1 symbol list, p. 11",
+          "maximum": 2000.0,
+          "quantity": "face_width",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "ZAHNBREITE",
+          "symbol": "b",
+          "title": "Face Width Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "tip_diameter_mm": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "tip diameter",
+          "designation": "Kopfkreisdurchmesser",
+          "designation_en": "tip diameter",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 11",
+          "quantity": "tip_diameter",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "KOPFKREISDM",
+          "symbol": "d_a",
+          "title": "Tip Diameter Mm",
+          "unit": "mm"
+        },
+        "tip_chamfer_radial_mm": {
+          "description": "Tip chamfer",
+          "designation": "Radiale Höhe des Kopfkantenbruchs oder der Kopfkantenrundung",
+          "designation_en": "Tip chamfer",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 12",
+          "minimum": 0.0,
+          "quantity": "tip_chamfer_radial",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "KOPFKANTENBRUCH",
+          "symbol": "h_K",
+          "title": "Tip Chamfer Radial Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "tool": {
+          "$ref": "#/$defs/ToolProfile"
+        },
+        "finishing_tool": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ToolProfile"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "material": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MaterialRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "number_of_teeth_spanned": {
+          "anyOf": [
+            {
+              "minimum": 2,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Number of teeth spanned",
+          "designation": "Anzahl der Zähne, Lücken oder Teilungen in einem Bereich (z. B. Messzähnezahl)",
+          "designation_en": "Number of teeth spanned",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 12",
+          "quantity": "number_of_teeth_spanned",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "MESSZAEHNEZAHL",
+          "symbol": "k",
+          "title": "Number Of Teeth Spanned",
+          "unit": "-"
+        },
+        "tooth_thickness_allowance_um": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "tooth thickness allowance",
+          "designation": null,
+          "designation_en": null,
+          "factor": false,
+          "location": null,
+          "quantity": "tooth_thickness_allowance",
+          "source": null,
+          "status": "pending",
+          "symbol": "E_sns/E_sni",
+          "title": "Tooth Thickness Allowance Um",
+          "unit": "µm"
+        },
+        "span_allowance_um": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "span allowance",
+          "designation": null,
+          "designation_en": null,
+          "factor": false,
+          "location": null,
+          "quantity": "span_allowance",
+          "source": null,
+          "status": "pending",
+          "stplus_key": "OBERES_ZAHNW_ABMASS",
+          "symbol": "A_We/A_Wi",
+          "title": "Span Allowance Um",
+          "unit": "µm"
+        },
+        "allowance_series": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ABMASS_TOL_REIHE — DIN 3967 designation such as 'C25' or 'cd25'",
+          "title": "Allowance Series"
+        },
+        "quality_grade": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "quality grade",
+          "designation": null,
+          "designation_en": null,
+          "factor": false,
+          "location": null,
+          "quantity": "quality_grade",
+          "source": null,
+          "status": "pending",
+          "stplus_key": "DIN_QUALITAET",
+          "symbol": "Q",
+          "title": "Quality Grade",
+          "unit": "-"
+        },
+        "quality_system": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/QualitySystem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "number_of_teeth",
+        "face_width_mm",
+        "tip_chamfer_radial_mm",
+        "tool"
+      ],
+      "title": "GearInput",
+      "type": "object"
+    },
+    "GearKind": {
+      "enum": [
+        "external",
+        "internal"
+      ],
+      "title": "GearKind",
+      "type": "string"
+    },
+    "InputWarning": {
+      "additionalProperties": false,
+      "description": "A soft finding about an input that is valid but unusual (never raised, always returned).",
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "InputWarning",
+      "type": "object"
+    },
+    "MaterialKind": {
+      "description": "Steel and plastic branches are never mixed; every material-dependent function dispatches on this.",
+      "enum": [
+        "steel",
+        "plastic"
+      ],
+      "title": "MaterialKind",
+      "type": "string"
+    },
+    "MaterialRef": {
+      "additionalProperties": false,
+      "description": "Reference to a material record (name in the database or in the ``.ste`` file) with its kind.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/MaterialKind"
+        },
+        "name": {
+          "description": "record name, e.g. '16MnCr5' or 'WST_PA66'",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ],
+      "title": "MaterialRef",
+      "type": "object"
+    },
+    "PairInput": {
+      "additionalProperties": false,
+      "description": "A cylindrical gear pair: common module, angles, optional centre distance, two gears.",
+      "properties": {
+        "normal_module_mm": {
+          "description": "normal module",
+          "designation": "Normalmodul",
+          "designation_en": "normal module",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 12",
+          "maximum": 100.0,
+          "minimum": 0.05,
+          "quantity": "normal_module",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "NORMALMODUL",
+          "symbol": "m_n",
+          "title": "Normal Module Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "normal_pressure_angle_deg": {
+          "description": "Normal pressure angle",
+          "designation": "Normaleingriffswinkel",
+          "designation_en": "Normal pressure angle",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 15",
+          "maximum": 30.0,
+          "minimum": 10.0,
+          "quantity": "normal_pressure_angle",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "EINGRIFFSWINKEL",
+          "symbol": "alpha_n",
+          "title": "Normal Pressure Angle Deg",
+          "type": "number",
+          "unit": "deg"
+        },
+        "helix_angle_deg": {
+          "description": "helix angle (without subscript, at reference cylinder)",
+          "designation": "Schrägungswinkel",
+          "designation_en": "helix angle (without subscript, at reference cylinder)",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 16",
+          "maximum": 45.0,
+          "minimum": -45.0,
+          "quantity": "helix_angle",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "SCHRAEGUNGSWINKEL",
+          "symbol": "beta",
+          "title": "Helix Angle Deg",
+          "type": "number",
+          "unit": "deg"
+        },
+        "centre_distance_mm": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Centre distance",
+          "designation": "Achsabstand eines Zylinderradpaares",
+          "designation_en": "Centre distance",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 11",
+          "quantity": "centre_distance",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "ACHSABSTAND",
+          "symbol": "a_w",
+          "title": "Centre Distance Mm",
+          "unit": "mm"
+        },
+        "gears": {
+          "$ref": "#/$defs/Pair_GearInput_"
+        },
+        "min_tip_clearance_factor": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "min tip clearance (module factor)",
+          "designation": null,
+          "designation_en": null,
+          "factor": true,
+          "location": null,
+          "quantity": "min_tip_clearance",
+          "source": null,
+          "status": "pending",
+          "symbol": "c_min*",
+          "title": "Min Tip Clearance Factor",
+          "unit": "-"
+        }
+      },
+      "required": [
+        "normal_module_mm",
+        "normal_pressure_angle_deg",
+        "helix_angle_deg",
+        "gears"
+      ],
+      "title": "PairInput",
+      "type": "object"
+    },
+    "Pair_BasicGearGeometry_": {
+      "additionalProperties": false,
+      "properties": {
+        "pinion": {
+          "$ref": "#/$defs/BasicGearGeometry"
+        },
+        "wheel": {
+          "$ref": "#/$defs/BasicGearGeometry"
+        }
+      },
+      "required": [
+        "pinion",
+        "wheel"
+      ],
+      "title": "Pair[BasicGearGeometry]",
+      "type": "object"
+    },
+    "Pair_GearInput_": {
+      "additionalProperties": false,
+      "properties": {
+        "pinion": {
+          "$ref": "#/$defs/GearInput"
+        },
+        "wheel": {
+          "$ref": "#/$defs/GearInput"
+        }
+      },
+      "required": [
+        "pinion",
+        "wheel"
+      ],
+      "title": "Pair[GearInput]",
+      "type": "object"
+    },
+    "Pair_float_": {
+      "additionalProperties": false,
+      "properties": {
+        "pinion": {
+          "title": "Pinion",
+          "type": "number"
+        },
+        "wheel": {
+          "title": "Wheel",
+          "type": "number"
+        }
+      },
+      "required": [
+        "pinion",
+        "wheel"
+      ],
+      "title": "Pair[float]",
+      "type": "object"
+    },
+    "QualitySystem": {
+      "description": "Tolerance system a quality grade refers to; DIN 3962 Q7 and ISO 1328 Q7 are not the same.",
+      "enum": [
+        "DIN3962",
+        "ISO1328"
+      ],
+      "title": "QualitySystem",
+      "type": "string"
+    },
+    "SpanMeasurement": {
+      "additionalProperties": false,
+      "description": "Base tangent length W_k over k teeth (DIN 21773:2014-08 §7, Eq. (14)).\n\nCarried as given and not evaluated yet. A span and a profile shift coefficient determine\neach other; whether a given span stands for the nominal x or, with the tooth thickness\nallowance, for x_E is settled with increments 4 and 5 (open in ADR-107).",
+      "properties": {
+        "span_measurement_mm": {
+          "description": "Span measurement",
+          "designation": "Zahnweite über k Messzähne oder Messlücken",
+          "designation_en": "Span measurement",
+          "exclusiveMinimum": 0.0,
+          "factor": false,
+          "location": "§3.1 symbol list, p. 15",
+          "quantity": "span_measurement",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "ZAHNWEITE",
+          "symbol": "W_k",
+          "title": "Span Measurement Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "number_of_teeth_spanned": {
+          "description": "Number of teeth spanned",
+          "designation": "Anzahl der Zähne, Lücken oder Teilungen in einem Bereich (z. B. Messzähnezahl)",
+          "designation_en": "Number of teeth spanned",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 12",
+          "minimum": 2,
+          "quantity": "number_of_teeth_spanned",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "MESSZAEHNEZAHL",
+          "symbol": "k",
+          "title": "Number Of Teeth Spanned",
+          "type": "integer",
+          "unit": "-"
+        }
+      },
+      "required": [
+        "span_measurement_mm",
+        "number_of_teeth_spanned"
+      ],
+      "title": "SpanMeasurement",
+      "type": "object"
+    },
+    "ToolKind": {
+      "enum": [
+        "rack",
+        "shaper",
+        "profile"
+      ],
+      "title": "ToolKind",
+      "type": "string"
+    },
+    "ToolProfile": {
+      "additionalProperties": false,
+      "description": "Tool reference profile of a rack-type tool (DIN ISO 21771:2014 §7.1; DIN 3972; DIN 867).\n\nHeight factors refer to the tool normal module ``m_n0``. ``normal_module_mm`` and\n``profile_angle_deg`` default to ``None`` = \"same as the gear\" (STplus manual §4.16.2: tool\nmodule and profile angle are entered only when they deviate from the gear). Other optional\nfields stay ``None`` when the tool does not define them; the generation module then applies the\nnorm default and reports it in ``warnings`` — never a silent fallback inside the model.\n\n``protuberance_mm`` and ``machining_allowance_mm`` are required (user decision 2026-09-30):\na tool without protuberance or allowance states the zero instead of leaving it to a default.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/ToolKind",
+          "default": "rack"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "STplus section name ($ WKZ_...)",
+          "title": "Name"
+        },
+        "normal_module_mm": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "tool normal module",
+          "designation": null,
+          "designation_en": null,
+          "factor": false,
+          "location": null,
+          "quantity": "tool_normal_module",
+          "source": null,
+          "status": "pending",
+          "stplus_key": "WKZ_NORMALMODUL",
+          "symbol": "m_n0",
+          "title": "Normal Module Mm",
+          "unit": "mm"
+        },
+        "profile_angle_deg": {
+          "anyOf": [
+            {
+              "maximum": 30.0,
+              "minimum": 10.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Profilwinkel des Bezugserzeugungsprofils",
+          "designation": "Profilwinkel des Bezugserzeugungsprofils",
+          "designation_en": null,
+          "factor": false,
+          "location": "§3.1 symbol list, p. 15",
+          "quantity": "tool_profile_angle",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "WKZ_EINGRIFFSWINKEL",
+          "symbol": "alpha_P0",
+          "title": "Profile Angle Deg",
+          "unit": "deg"
+        },
+        "addendum_factor": {
+          "description": "addendum of tool (module factor)",
+          "designation": "Kopfhöhe des Werkzeug-Bezugsprofils",
+          "designation_en": "addendum of tool",
+          "exclusiveMinimum": 0.0,
+          "factor": true,
+          "location": "§3.1 symbol list, p. 12; §7.5 Eq. (125), p. 68",
+          "maximum": 2.5,
+          "quantity": "tool_addendum",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "KOPFHOEHENFAKTOR",
+          "symbol": "h_aP0*",
+          "title": "Addendum Factor",
+          "type": "number",
+          "unit": "-"
+        },
+        "tip_radius_factor": {
+          "description": "tool tip corner rounding (module factor)",
+          "designation": "Kopfkantenrundungsradius des Werkzeug-Bezugsprofils",
+          "designation_en": "tool tip corner rounding",
+          "factor": true,
+          "location": "§2 table, p. 1; §4.4 and §4.5 Anmerkung, p. 2",
+          "maximum": 0.6,
+          "minimum": 0.0,
+          "quantity": "tool_tip_radius",
+          "source": "DIN867:1986",
+          "status": "verified",
+          "stplus_key": "KOPFABRUNDUNGSFAKTOR",
+          "symbol": "rho_aP0*",
+          "title": "Tip Radius Factor",
+          "type": "number",
+          "unit": "-"
+        },
+        "dedendum_factor": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 2.5,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Fußhöhe des Werkzeug-Bezugsprofils (module factor)",
+          "designation": "Fußhöhe des Werkzeug-Bezugsprofils",
+          "designation_en": null,
+          "factor": true,
+          "location": "§3.1 symbol list, p. 12",
+          "quantity": "tool_dedendum",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "FUSSHOEHENFAKTOR",
+          "symbol": "h_fP0*",
+          "title": "Dedendum Factor",
+          "unit": "-"
+        },
+        "root_form_height_factor": {
+          "anyOf": [
+            {
+              "maximum": 2.5,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "tool root form height (module factor)",
+          "designation": null,
+          "designation_en": null,
+          "factor": true,
+          "location": null,
+          "quantity": "tool_root_form_height",
+          "source": null,
+          "status": "pending",
+          "stplus_key": "FUSSFORMHOEHENFAKTOR",
+          "symbol": "h_FfP0*",
+          "title": "Root Form Height Factor",
+          "unit": "-"
+        },
+        "edge_break_angle_deg": {
+          "anyOf": [
+            {
+              "exclusiveMaximum": 90.0,
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "tool edge break angle",
+          "designation": null,
+          "designation_en": null,
+          "factor": false,
+          "location": null,
+          "quantity": "tool_edge_break_angle",
+          "source": null,
+          "status": "pending",
+          "stplus_key": "KANTENBRECHWINKEL",
+          "symbol": "alpha_KP",
+          "title": "Edge Break Angle Deg",
+          "unit": "deg"
+        },
+        "protuberance_mm": {
+          "description": "tool protuberance",
+          "designation": null,
+          "designation_en": null,
+          "factor": false,
+          "location": null,
+          "minimum": 0.0,
+          "quantity": "tool_protuberance",
+          "source": null,
+          "status": "pending",
+          "stplus_key": "PROTUBERANZBETRAG",
+          "symbol": "pr",
+          "title": "Protuberance Mm",
+          "type": "number",
+          "unit": "mm"
+        },
+        "protuberance_angle_deg": {
+          "anyOf": [
+            {
+              "exclusiveMaximum": 90.0,
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "tool protuberance angle",
+          "designation": null,
+          "designation_en": null,
+          "factor": false,
+          "location": null,
+          "quantity": "tool_protuberance_angle",
+          "source": null,
+          "status": "pending",
+          "stplus_key": "PROTUBERANZWINKEL",
+          "symbol": "alpha_pr",
+          "title": "Protuberance Angle Deg",
+          "unit": "deg"
+        },
+        "machining_allowance_mm": {
+          "description": "Material allowance for finishing",
+          "designation": "Bearbeitungszugabe auf der Zahnflanke",
+          "designation_en": "Material allowance for finishing",
+          "factor": false,
+          "location": "§3.1 symbol list, p. 13; §7.1 Bild 36 b), p. 64",
+          "minimum": 0.0,
+          "quantity": "machining_allowance",
+          "source": "ISO21771:2014",
+          "status": "verified",
+          "stplus_key": "BEARB_ZUGABE_WKZ",
+          "symbol": "q",
+          "title": "Machining Allowance Mm",
+          "type": "number",
+          "unit": "mm"
+        }
+      },
+      "required": [
+        "addendum_factor",
+        "tip_radius_factor",
+        "protuberance_mm",
+        "machining_allowance_mm"
+      ],
+      "title": "ToolProfile",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Mating quantities of an external gear pair (DIN ISO 21771:2014-08 §5).\n\n``profile_shift_coefficient`` and ``centre_distance_mm`` are the resolved values: two of a_w,\nx_1, x_2 are given, the third follows (ADR-107). ``gears`` holds the single-gear quantities\nwith the resolved profile shift; the helix angle of the wheel has the opposite sign.\nQuantities per gear are written for that gear: ``length_of_addendum_path_of_contact_mm`` is\ng_a1 (Eq. (80)) and g_a2 = g_f1 (Eq. (79)); ``sliding_factor_at_tip`` is K_ga (Eq. (113)) for\nthe pinion and the norm's K_gf (Eq. (112)) for the wheel; ``specific_sliding_at_end_points``\nis zeta_f1 (Eq. (116)) and zeta_f2 (Eq. (117)), the values at the root of each gear.\n``root_form_diameter_mm`` holds the root form diameters the mesh was computed with (the\noptional input, a value within rounding noise below the base circle taken as the base\ncircle); without it ``warnings`` says that the limit of the active profile by the root form\ncircle was not applied. ``inputs`` is the pair as the contract validated it.\n``common_tooth_depth_mm`` is Eq. (59) evaluated with the tip form circles instead of the tip\ncircles (user decision, ADR-112); where the two differ, ``warnings`` names the value of the\ntip circles.",
+  "properties": {
+    "inputs": {
+      "$ref": "#/$defs/PairInput"
+    },
+    "gears": {
+      "$ref": "#/$defs/Pair_BasicGearGeometry_"
+    },
+    "gear_ratio": {
+      "description": "gear ratio (z_2 / z_1) ≥ 1",
+      "designation": "Zähnezahlverhältnis",
+      "designation_en": "gear ratio (z_2 / z_1) ≥ 1",
+      "equation": "ISO21771:2014 (52)",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 13",
+      "minimum": 1.0,
+      "quantity": "gear_ratio",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "ZAEHNEZAHLVERHAELTNIS",
+      "symbol": "u",
+      "title": "Gear Ratio",
+      "type": "number",
+      "unit": "-"
+    },
+    "centre_distance_mm": {
+      "description": "Centre distance",
+      "designation": "Achsabstand eines Zylinderradpaares",
+      "designation_en": "Centre distance",
+      "equation": "ISO21771:2014 (54)",
+      "exclusiveMinimum": 0.0,
+      "factor": false,
+      "location": "§3.1 symbol list, p. 11",
+      "quantity": "centre_distance",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "ACHSABSTAND",
+      "symbol": "a_w",
+      "title": "Centre Distance Mm",
+      "type": "number",
+      "unit": "mm"
+    },
+    "transverse_working_pressure_angle_deg": {
+      "description": "Transverse working pressure angle",
+      "designation": "Betriebseingriffswinkel des Radpaares",
+      "designation_en": "Transverse working pressure angle",
+      "equation": "ISO21771:2014 (54), (55)",
+      "exclusiveMaximum": 90.0,
+      "factor": false,
+      "location": "§3.1 symbol list, p. 15",
+      "minimum": 0.0,
+      "quantity": "transverse_working_pressure_angle",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "alpha_wt",
+      "title": "Transverse Working Pressure Angle Deg",
+      "type": "number",
+      "unit": "deg"
+    },
+    "profile_shift_coefficient": {
+      "$ref": "#/$defs/Pair_float_",
+      "description": "profile shift coefficient",
+      "designation": "Profilverschiebungsfaktor",
+      "designation_en": "profile shift coefficient",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 13",
+      "quantity": "profile_shift_coefficient",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "PROFILVERSCHIEBUNG_N",
+      "symbol": "x",
+      "unit": "-"
+    },
+    "sum_of_profile_shift_coefficients": {
+      "description": "Summe der Profilverschiebungsfaktoren",
+      "designation": "Summe der Profilverschiebungsfaktoren",
+      "designation_en": null,
+      "equation": "x_1 + x_2 of the result; ISO21771:2014 §5.3",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 17; §5.3 Eq. (62), p. 41",
+      "quantity": "sum_of_profile_shift_coefficients",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "PR.VERSCH.SUMME",
+      "symbol": "Sigma x",
+      "title": "Sum Of Profile Shift Coefficients",
+      "type": "number",
+      "unit": "-"
+    },
+    "working_pitch_diameter_mm": {
+      "$ref": "#/$defs/Pair_float_",
+      "description": "Working pitch diameter",
+      "designation": "Wälzkreisdurchmesser",
+      "designation_en": "Working pitch diameter",
+      "equation": "ISO21771:2014 (56), (57)",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 11",
+      "quantity": "working_pitch_diameter",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "d_w",
+      "unit": "mm"
+    },
+    "tip_diameter_mm": {
+      "$ref": "#/$defs/Pair_float_",
+      "description": "tip diameter",
+      "designation": "Kopfkreisdurchmesser",
+      "designation_en": "tip diameter",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 11",
+      "quantity": "tip_diameter",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "stplus_key": "KOPFKREISDM",
+      "symbol": "d_a",
+      "unit": "mm"
+    },
+    "tip_form_diameter_mm": {
+      "$ref": "#/$defs/Pair_float_",
+      "description": "Kopf-Formkreisdurchmesser",
+      "designation": "Kopf-Formkreisdurchmesser",
+      "designation_en": null,
+      "equation": "ISO21771:2014 (127), or given by the generation",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 11; §7.6 Eq. (127), p. 68",
+      "quantity": "tip_form_diameter",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "d_Fa",
+      "unit": "mm"
+    },
+    "active_tip_diameter_mm": {
+      "$ref": "#/$defs/Pair_float_",
+      "description": "active tip diameter of pinion or wheel",
+      "designation": "Kopf-Nutzkreisdurchmesser",
+      "designation_en": "active tip diameter of pinion or wheel",
+      "equation": "ISO21771:2014 (68), (69)",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 11; §5.4.1, p. 43",
+      "quantity": "active_tip_diameter",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "d_Na",
+      "unit": "mm"
+    },
+    "sap_diameter_mm": {
+      "$ref": "#/$defs/Pair_float_",
+      "description": "SAP diameter",
+      "designation": "Fuß-Nutzkreisdurchmesser (SAP Durchmesser, nutzbarer Fußdurchmesser)",
+      "designation_en": "SAP diameter",
+      "equation": "ISO21771:2014 (64) to (67)",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 11",
+      "quantity": "sap_diameter",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "d_Nf",
+      "unit": "mm"
+    },
+    "root_form_diameter_mm": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Pair_float_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Root form diameter (based on x_E)",
+      "designation": "Fuß-Formkreisdurchmesser",
+      "designation_en": "Root form diameter (based on x_E)",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 11; Eq. (128) in Anhang NB, p. 6",
+      "quantity": "root_form_diameter",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "d_Ff",
+      "unit": "mm"
+    },
+    "common_tooth_depth_mm": {
+      "description": "Gemeinsame Zahnhöhe eines Radpaares",
+      "designation": "Gemeinsame Zahnhöhe eines Radpaares",
+      "designation_en": null,
+      "equation": "ISO21771:2014 (59), with the tip form diameters (ADR-112)",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 12; §5.2.6 Eq. (59), p. 41",
+      "quantity": "common_tooth_depth",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "h_w",
+      "title": "Common Tooth Depth Mm",
+      "type": "number",
+      "unit": "mm"
+    },
+    "normal_pitch_mm": {
+      "description": "Normal pitch",
+      "designation": "Normalteilung",
+      "designation_en": "Normal pitch",
+      "equation": "ISO21771:2014 (24)",
+      "exclusiveMinimum": 0.0,
+      "factor": false,
+      "location": "§3.1 symbol list, p. 13",
+      "quantity": "normal_pitch",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "p_n",
+      "title": "Normal Pitch Mm",
+      "type": "number",
+      "unit": "mm"
+    },
+    "transverse_pitch_mm": {
+      "description": "Transverse pitch",
+      "designation": "Stirnteilung",
+      "designation_en": "Transverse pitch",
+      "equation": "ISO21771:2014 (23)",
+      "exclusiveMinimum": 0.0,
+      "factor": false,
+      "location": "§3.1 symbol list, p. 13",
+      "quantity": "transverse_pitch",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "p_t",
+      "title": "Transverse Pitch Mm",
+      "type": "number",
+      "unit": "mm"
+    },
+    "transverse_base_pitch_mm": {
+      "description": "transverse pitch on the base cylinder",
+      "designation": "Teilung auf dem Grundzylinder im Stirnschnitt",
+      "designation_en": "transverse pitch on the base cylinder",
+      "equation": "ISO21771:2014 (28)",
+      "exclusiveMinimum": 0.0,
+      "factor": false,
+      "location": "§3.1 symbol list, p. 13",
+      "quantity": "transverse_base_pitch",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "p_bt",
+      "title": "Transverse Base Pitch Mm",
+      "type": "number",
+      "unit": "mm"
+    },
+    "transverse_contact_pitch_mm": {
+      "description": "Transverse base pitch on the path of contact",
+      "designation": "Eingriffsteilung im Stirnschnitt",
+      "designation_en": "Transverse base pitch on the path of contact",
+      "equation": "ISO21771:2014 (30)",
+      "exclusiveMinimum": 0.0,
+      "factor": false,
+      "location": "§3.1 symbol list, p. 13",
+      "quantity": "transverse_contact_pitch",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "p_et",
+      "title": "Transverse Contact Pitch Mm",
+      "type": "number",
+      "unit": "mm"
+    },
+    "contact_face_width_mm": {
+      "description": "Contact facewidth",
+      "designation": "wirksame Zahnbreite (genutzte Zahnbreite)",
+      "designation_en": "Contact facewidth",
+      "exclusiveMinimum": 0.0,
+      "factor": false,
+      "location": "§3.1 symbol list, p. 11",
+      "quantity": "contact_face_width",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "b_w",
+      "title": "Contact Face Width Mm",
+      "type": "number",
+      "unit": "mm"
+    },
+    "length_of_path_of_contact_mm": {
+      "description": "length of path of contact",
+      "designation": "Länge der Eingriffsstrecke",
+      "designation_en": "length of path of contact",
+      "equation": "ISO21771:2014 (77)",
+      "exclusiveMinimum": 0.0,
+      "factor": false,
+      "location": "§3.1 symbol list, p. 12",
+      "quantity": "length_of_path_of_contact",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "g_alpha",
+      "title": "Length Of Path Of Contact Mm",
+      "type": "number",
+      "unit": "mm"
+    },
+    "length_of_addendum_path_of_contact_mm": {
+      "$ref": "#/$defs/Pair_float_",
+      "description": "Länge der Kopfeingriffsstrecke",
+      "designation": "Länge der Kopfeingriffsstrecke",
+      "designation_en": null,
+      "equation": "ISO21771:2014 (80), (79)",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 12; §5.4.5.2 Eq. (79), (80), p. 46",
+      "quantity": "length_of_addendum_path_of_contact",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "g_a",
+      "unit": "mm"
+    },
+    "transverse_contact_ratio": {
+      "description": "transverse contact ratio",
+      "designation": "Profilüberdeckung",
+      "designation_en": "transverse contact ratio",
+      "equation": "ISO21771:2014 (90)",
+      "exclusiveMinimum": 0.0,
+      "factor": false,
+      "location": "§3.1 symbol list, p. 16",
+      "quantity": "transverse_contact_ratio",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "epsilon_alpha",
+      "title": "Transverse Contact Ratio",
+      "type": "number",
+      "unit": "-"
+    },
+    "overlap_ratio": {
+      "description": "overlap ratio",
+      "designation": "Sprungüberdeckung",
+      "designation_en": "overlap ratio",
+      "equation": "ISO21771:2014 (93)",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 16",
+      "minimum": 0.0,
+      "quantity": "overlap_ratio",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "epsilon_beta",
+      "title": "Overlap Ratio",
+      "type": "number",
+      "unit": "-"
+    },
+    "total_contact_ratio": {
+      "description": "total contact ratio, epsilon_gamma = epsilon_alpha + epsilon_beta",
+      "designation": "Gesamtüberdeckung",
+      "designation_en": "total contact ratio, epsilon_gamma = epsilon_alpha + epsilon_beta",
+      "equation": "ISO21771:2014 (97)",
+      "exclusiveMinimum": 0.0,
+      "factor": false,
+      "location": "§3.1 symbol list, p. 16",
+      "quantity": "total_contact_ratio",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "epsilon_gamma",
+      "title": "Total Contact Ratio",
+      "type": "number",
+      "unit": "-"
+    },
+    "sliding_factor_at_tip": {
+      "$ref": "#/$defs/Pair_float_",
+      "description": "Gleitfaktor am Zahnkopf",
+      "designation": "Gleitfaktor am Zahnkopf",
+      "designation_en": null,
+      "equation": "ISO21771:2014 (113), (112)",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 14; §5.6.2 Eq. (113), p. 54",
+      "quantity": "sliding_factor_at_tip",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "K_ga",
+      "unit": "-"
+    },
+    "specific_sliding_at_end_points": {
+      "$ref": "#/$defs/Pair_float_",
+      "description": "Spezifisches Gleiten in den Endpunkten der Eingriffsstrecke",
+      "designation": "Spezifisches Gleiten in den Endpunkten der Eingriffsstrecke",
+      "designation_en": null,
+      "equation": "ISO21771:2014 (116), (117)",
+      "factor": false,
+      "location": "§3.1 symbol list, p. 16; §5.6.3 Eq. (116), (117), p. 54",
+      "quantity": "specific_sliding_at_end_points",
+      "source": "ISO21771:2014",
+      "status": "verified",
+      "symbol": "zeta_f",
+      "unit": "-"
+    },
+    "warnings": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/InputWarning"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "inputs",
+    "gears",
+    "gear_ratio",
+    "centre_distance_mm",
+    "transverse_working_pressure_angle_deg",
+    "profile_shift_coefficient",
+    "sum_of_profile_shift_coefficients",
+    "working_pitch_diameter_mm",
+    "tip_diameter_mm",
+    "tip_form_diameter_mm",
+    "active_tip_diameter_mm",
+    "sap_diameter_mm",
+    "common_tooth_depth_mm",
+    "normal_pitch_mm",
+    "transverse_pitch_mm",
+    "transverse_base_pitch_mm",
+    "transverse_contact_pitch_mm",
+    "contact_face_width_mm",
+    "length_of_path_of_contact_mm",
+    "length_of_addendum_path_of_contact_mm",
+    "transverse_contact_ratio",
+    "overlap_ratio",
+    "total_contact_ratio",
+    "sliding_factor_at_tip",
+    "specific_sliding_at_end_points"
+  ],
+  "title": "PairGeometry",
+  "type": "object"
+}

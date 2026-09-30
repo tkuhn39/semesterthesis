@@ -122,7 +122,7 @@ def test_typed_extraction_maps_geometry_tools_and_materials() -> None:
     assert p.gears.pinion.number_of_teeth_spanned == 6
     # ZAHNWEITE is given together with x: x wins, the span is only an inspection value
     assert p.gears.pinion.span is None
-    assert any("ZAHNWEITE 17.09 ignored for x" in n for n in result.notes)
+    assert any("ZAHNWEITE 17.09 is not used for x" in n for n in result.notes)
     assert (
         p.gears.pinion.material is not None and p.gears.pinion.material.kind is MaterialKind.STEEL
     )

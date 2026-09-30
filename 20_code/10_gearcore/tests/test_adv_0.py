@@ -48,7 +48,15 @@ def test_adv0_01_tool_pressure_angle_inherits_gear_angle() -> None:
         pair = pair_input_from_ste(parse_ste(base(alpha))).pair
         assert pair.gears.pinion.tool.profile_angle_deg is None
         assert pair.normal_pressure_angle_deg == alpha
-    assert ToolProfile(addendum_factor=1.25, tip_radius_factor=0.25).profile_angle_deg is None
+    assert (
+        ToolProfile(
+            addendum_factor=1.25,
+            tip_radius_factor=0.25,
+            protuberance_mm=0.0,
+            machining_allowance_mm=0.0,
+        ).profile_angle_deg
+        is None
+    )
 
 
 def test_adv0_02_x_distribution_modes_are_not_silently_accepted() -> None:
@@ -140,12 +148,28 @@ def test_adv0_08_module_lower_bound_is_inclusive() -> None:
         number_of_teeth=20,
         profile_shift_coefficient=0.0,
         face_width_mm=5.0,
-        tool=ToolProfile(addendum_factor=1.25, tip_radius_factor=0.25),
+        tip_chamfer_radial_mm=0.0,
+        tool=ToolProfile(
+            addendum_factor=1.25,
+            tip_radius_factor=0.25,
+            protuberance_mm=0.0,
+            machining_allowance_mm=0.0,
+        ),
     )
-    pair = PairInput(normal_module_mm=0.05, gears=Pair(pinion=gear, wheel=gear))
+    pair = PairInput(
+        normal_module_mm=0.05,
+        normal_pressure_angle_deg=20.0,
+        helix_angle_deg=0.0,
+        gears=Pair(pinion=gear, wheel=gear),
+    )
     assert pair.normal_module_mm == 0.05
     with pytest.raises(ValidationError):
-        PairInput(normal_module_mm=0.0499, gears=Pair(pinion=gear, wheel=gear))
+        PairInput(
+            normal_module_mm=0.0499,
+            normal_pressure_angle_deg=20.0,
+            helix_angle_deg=0.0,
+            gears=Pair(pinion=gear, wheel=gear),
+        )
 
 
 def test_adv0_10_missing_width_is_a_parse_error_not_zero() -> None:
@@ -255,8 +279,14 @@ def test_adv0_23_quality_systems_are_kept_apart() -> None:
             number_of_teeth=20,
             profile_shift_coefficient=0.0,
             face_width_mm=5.0,
+            tip_chamfer_radial_mm=0.0,
             quality_grade=7,
-            tool=ToolProfile(addendum_factor=1.25, tip_radius_factor=0.25),
+            tool=ToolProfile(
+                addendum_factor=1.25,
+                tip_radius_factor=0.25,
+                protuberance_mm=0.0,
+                machining_allowance_mm=0.0,
+            ),
         )
 
 
@@ -276,11 +306,28 @@ def test_adv0_26_27_28_value_with_equals_sign_and_placeholder_helix() -> None:
 
 
 def test_adv0_32_strict_integers_and_stripped_names() -> None:
-    tool = ToolProfile(addendum_factor=1.25, tip_radius_factor=0.25)
+    tool = ToolProfile(
+        addendum_factor=1.25,
+        tip_radius_factor=0.25,
+        protuberance_mm=0.0,
+        machining_allowance_mm=0.0,
+    )
     with pytest.raises(ValidationError):
-        GearInput(number_of_teeth="24", profile_shift_coefficient=0.0, face_width_mm=5.0, tool=tool)  # type: ignore[arg-type]
+        GearInput(
+            number_of_teeth="24",
+            profile_shift_coefficient=0.0,
+            tip_chamfer_radial_mm=0.0,
+            face_width_mm=5.0,
+            tool=tool,
+        )  # type: ignore[arg-type]
     with pytest.raises(ValidationError):
-        GearInput(number_of_teeth=24.0, profile_shift_coefficient=0.0, face_width_mm=5.0, tool=tool)  # type: ignore[arg-type]
+        GearInput(
+            number_of_teeth=24.0,
+            profile_shift_coefficient=0.0,
+            tip_chamfer_radial_mm=0.0,
+            face_width_mm=5.0,
+            tool=tool,
+        )  # type: ignore[arg-type]
     from gearcore.models.inputs import MaterialKind, MaterialRef
 
     with pytest.raises(ValidationError):

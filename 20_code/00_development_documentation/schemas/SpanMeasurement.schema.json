@@ -1,6 +1,6 @@
 {
   "additionalProperties": false,
-  "description": "Base tangent length W_k over k teeth (DIN 21773:2014 §7) as an alternative to x.",
+  "description": "Base tangent length W_k over k teeth (DIN 21773:2014-08 §7, Eq. (14)).\n\nCarried as given and not evaluated yet. A span and a profile shift coefficient determine\neach other; whether a given span stands for the nominal x or, with the tooth thickness\nallowance, for x_E is settled with increments 4 and 5 (open in ADR-107).",
   "properties": {
     "span_measurement_mm": {
       "description": "Span measurement",

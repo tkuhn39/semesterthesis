@@ -15,6 +15,7 @@ They remain valid as history only; the decisions below supersede them where they
 | 107 | A given centre distance is fixed; the profile shift follows it | accepted |
 | 108 | Quantity registry: one source of truth for names, symbols and designations | accepted |
 | 109 | Nothing of STplus gets lost: tool databases and defaults are kept with program version | accepted |
+| 110 | Pair geometry: what is input, what follows, how it is compared with STplus | accepted |
 
 ---
 
@@ -186,6 +187,16 @@ State of increment 1 over all 15 cases and both STplus outputs: 443 comparisons 
 and, where it is an input, the profile shift coefficient), 431 `identical`, 12 `oracle_accuracy`,
 0 `different`; the counts are pinned in `test_verdict_counts_of_increment_1`.
 
+**Update 2026-09-30 (three further own runs, gate of increment 2).** The numbers above are the
+state of increment 1; the tests pin the current state. Probe over the 14 own runs, 126 printed
+values: binary64 rounded to five decimals 117 / 126, binary64 stored in a 32-bit variable 120 / 126,
+every operation rounded to binary32 **126 / 126**. Of the nine values that binary64 misses, eight
+belong to the three helical runs (27 values) and one to a spur run (`a_x2_only_z18_45`:
+d_b2 = 126.858504 mm printed as 126.85851). Spur values are therefore mostly insensitive, not
+always, as stated above. The largest deviation is 1.72 binary32 steps (`helix15_b_unequal`:
+d_b2 = 113.831847 mm printed as 113.83186). Basic comparison over all 18 cases: 549 comparisons,
+531 `identical`, 18 `oracle_accuracy`, 0 `different`.
+
 **Alternative rejected.** Computing in binary32 first, to match STplus digit for digit, and switching
 later (considered 2026-09-29). Rejected because Python computes in binary64 natively, so binary32
 would be an emulation in every formula; because digit identity could still not be guaranteed for
@@ -206,32 +217,67 @@ which over-determines the pair. STplus 11.1F asks for two of the three values a,
 "entweder x_1 oder x_2" (manual Bild 4.12, p. 25); when a, x₁ and x₂ are all given it keeps x₁ and
 derives x₂ from a (kst-E: input x₂ = 0.3143, used 0.31433).
 
-**Decision (user decision 2026-09-29).** A centre distance that is given is fixed: it is the
-distance of the bores in the housing and cannot be adjusted, so every other value follows it.
-1. a and x₁ given: x₂ follows from a (profile shift sum from the working pressure angle).
-2. a and x₂ given: x₁ follows from a.
-3. a, x₁ and x₂ given: a and x₁ are kept, x₂ follows from a; a given x₂ that differs from the derived
-   value is reported as a warning with both values, never used silently and never an error.
-4. No a given: a follows from x₁ and x₂.
-5. a given without any profile shift: the distribution of the sum is a separate input
-   (STplus `AUFTEILUNG_X1X2`), an extension point that raises `NotSupportedError`.
-A profile shift derived from a span measurement or another inspection dimension describes the tooth
-thickness as manufactured; it does not change the centre distance either, the difference appears as
-backlash.
+**Decision (user decisions 2026-09-29 and 2026-09-30).** A centre distance that is given is fixed:
+it is the distance of the bores in the housing and cannot be adjusted, so every other value follows
+it. Of the centre distance a_w and the nominal profile shift coefficients x₁, x₂ **exactly two are
+given**:
+1. a_w and x₁ given: x₂ follows from a_w (sum of the profile shift coefficients, Eq. (62), with the
+   working pressure angle of Eq. (54)).
+2. a_w and x₂ given: x₁ follows from a_w.
+3. x₁ and x₂ given: a_w follows (Eq. (55), then Eq. (54) solved for a_w).
+4. a_w, x₁ and x₂ given: **error** — only two of the three may be given (user decision 2026-09-30;
+   it replaces the first version of this ADR, which kept x₁ and reported a differing x₂ as a
+   warning). An over-determined input is never resolved silently.
+5. a_w given without any profile shift coefficient and without a span measurement: the pair is
+   undetermined and `PairInput` rejects it. The distribution of the sum is a separate input (STplus
+   `AUFTEILUNG_X1X2`, DIN 3992:1964-03, withdrawn) and an extension point: the `.ste` importer
+   answers such a file with `NotSupportedError`. (With span measurements in place of x: see below.)
+
+**Span measurements: open (user decision 2026-09-30).** The gate of increment 2 (findings G2A-05,
+G2B-06) showed that the first version of this ADR ("a gear with a span measurement counts as
+'x given'") was not what the code did. What the sources say:
+- DIN 21773:2014-08 §7.2 Eq. (14), p. 13: W_k = m_n cos α_n [π (k − 0,5) + z inv α_t] + 2 x m_n sin α_n.
+  A span and a profile shift coefficient determine each other. The sentence below the equation says
+  that the tooth thickness half angle is taken with the profile shift coefficient or with the
+  generating profile shift coefficient.
+- DIN ISO 21771:2014-08 §7.4 Eq. (123), (124), p. 67: x_E m_n = x m_n + E_sn / (2 tan α_n). A span
+  that includes the tooth thickness allowance therefore corresponds to x_E, a nominal span to the
+  nominal x.
+- ISO/TR 6336-30:2022 Annex A example 1: Table A.1 (p. 43) gives W_k1 = 38,196 mm and
+  x_1 = (0,145 22); A.6 (p. 45) computes x_E1 = 0,117 79 from W_k1. The span of that example is one
+  with allowance.
+- STplus takes `ZAHNWEITE` with `MESSZAEHNEZAHL` in place of x (manual Bild 4.12, p. 25) and prints
+  a nominal x for such a file; how it forms that value is not reproduced (PAIR-06).
+
+The user: a given span determines the nominal profile shift and vice versa; how a span of an input
+is to be treated is **not decided now**. It is researched with the inspection dimensions and
+allowances (increments 4 and 5), including how STplus handles it, and confirmed by the user then.
+The implementer's wording "a span never stands in for the nominal x" is withdrawn as a rule.
+
+Behaviour of increment 2 until then (no rule for later increments):
+- No span is evaluated. A gear that carries a span next to the values of cases 1 to 3 is computed
+  from those values; the span is reported (warning `span_measurement_not_used`).
+- A pair whose profile shift would have to come from a span (spans on both gears and no x; no a_w
+  and only one x) is accepted by `PairInput`, because such files exist (the supplied kst-A, kst-B
+  and kst-C give a and both spans) and have to be readable; the pair geometry answers it with
+  `NotSupportedError`.
+
+**STplus.** STplus resolves case 4 silently: it keeps x₁ and derives x₂ from a (kst-E: input
+x₂ = 0.3143, used 0.31433). The `.ste` importer translates that behaviour explicitly: from a file
+with all three values it passes a_w and x₁ on and reports the dropped x₂ in its notes. In case 2
+STplus derives x₁ from a as gearcore does (own run `a_x2_only_z18_45`: x₁ = 0.42842 in both).
 
 **Evidence from the norm example (user explanation 2026-09-29).** ISO/TR 6336-30:2022 Annex A
 example 1, Table A.1 (p. 43) gives the centre distance ("a = 500 mm") and "x_2 = 0" and prints
-"x_1 = (0,145 22)" in parentheses: x₂ and the centre distance lead, x₁ results. This is case 2. The fixture marks x₁ as
-`derived: [pinion]`, and the worked-example test of increment 2 has to reproduce the printed x₁
-from a and x₂ instead of taking it as an input.
+"x_1 = (0,145 22)" in parentheses; clause 4.2.18 (p. 9) says that parenthesised input values are
+calculated and for reference only. This is case 2. The fixture marks x₁ as `derived: [pinion]`, and
+the worked-example test reproduces the printed x₁ from a_w and x₂ with the span measurements of the
+table passed on.
 
-**Open for increment 2.** Case 3 follows STplus (x₁ kept). Whether an input with all three values
-may name the coefficient that follows (the norm example lets x₂ lead) is decided with the user
-before the pair geometry is implemented; until then no code depends on it.
-
-**Consequences.** Implemented with the pair geometry of increment 2 (DIN ISO 21771:2014-08 §5);
-`gearcore.parity` already compares with the x that STplus used. The input contract keeps both x
-as given, so the warning can name the input value.
+**Consequences.** Implemented with the pair geometry of increment 2 (DIN ISO 21771:2014-08 §5):
+`PairInput` rejects case 4 and a pair without enough values (case 5), `gearcore.pair` resolves
+cases 1 to 3 and answers a pair that gives span measurements in place of x with
+`NotSupportedError`.
 
 ## ADR-108 — Quantity registry: one source of truth for names, symbols and designations (2026-09-29)
 
@@ -304,8 +350,10 @@ ADR-102 and project rule 5 had excluded the databases of STplus from git.
   `EINGRIFFSWINKEL` is rejected.
 - Without a tool STplus uses a hob with h_aP0* = 1,25, ρ_aP0* = 0,25, h_fP0* = h_FfP0* = 1,3; the manual
   gives no numbers.
-- Six of the twelve records of the local tool database ("_F_", finishing tools) carry factors and
-  absolute values that contradict each other. STplus computes with the factor of the addendum and
+- Six of the twelve records of the local tool database (those with "_F_" in the name; what the
+  letter stands for is not documented) carry factors and absolute values that contradict each other:
+  the absolute values repeat those of the record without "_F_", the factors do not belong to them
+  (S_19_00374_F_(_77: KOPFHOEHENFAKTOR = 1.6 but KOPFHOEHE = 5.377 mm at m_n0 = 2.8 mm, i.e. 1.920). STplus computes with the factor of the addendum and
   reduces tip rounding (0,5 → 0,383) and dedendum (3,0 → 2,317) to the geometric limit; it reports
   only the change of the root form height. gearcore keeps these records and rejects them as contracts.
 - A record without tip rounding (global database) gets ρ_aP0* = 0,25.
@@ -316,3 +364,208 @@ ADR-102 and project rule 5 had excluded the databases of STplus from git.
 `defaults.yaml` quotes single sentences of the manual as evidence; the repository is private, and the
 quotations have to be reviewed before it is opened. Resolving a tool that an input file references by
 name from the tool database is an extension point of the importer (`extension_points.md`).
+
+## ADR-110 — Pair geometry: what is input, what follows, how it is compared with STplus (2026-09-30)
+
+**Context.** Increment 2 implements DIN ISO 21771:2014-08 §5 (`gearcore.pair`, contract `PairGeometry`).
+The mesh needs values that the pair equations do not provide themselves: tip diameters, and the form
+diameters that the generation (§7, increment 3) produces. STplus fills every gap itself.
+
+**Decision.**
+1. **Two of a_w, x_1, x_2** (ADR-107): `PairInput` rejects all three; `resolve_profile_shift` derives
+   the third and enforces the verified range of x for the derived coefficient. Span measurements
+   are not evaluated yet; a pair whose x is neither given nor follows from a_w and the mating gear
+   raises `NotSupportedError` (open in ADR-107, increments 4 and 5).
+2. **Tip diameters are an input.** The nominal value of Eq. (33) needs the addendum of the basic rack,
+   which the tool-based input does not carry; `with_nominal_tip_diameters(pair, h_aP_mm=..., k=...)`
+   applies it as an explicit choice. A missing tip diameter is an `InputRangeError`, never a default.
+3. **Form diameters come from the generation.** `compute_pair_geometry` takes the root form diameters
+   d_Ff and the tip form diameters d_Fa as optional arguments. Without d_Ff the start of the active
+   profile follows from Eq. (64), (65) alone and the result carries the warning
+   `root_form_diameter_not_checked`; without d_Fa Eq. (127) is used with the radial amount of the tip
+   chamfer of the input, and a tool with an edge break flank yields `tip_form_diameter_not_generated`.
+   A given d_Fa together with a chamfer of the input yields `tip_chamfer_input_not_used`. The root
+   form circle limits the active profile only if it is larger than the value of Eq. (64), (65)
+   (norm p. 43); then the result carries `active_profile_limited_by_root_form_circle`. Increment 3
+   supplies both diameters.
+4. **Quantities per gear.** Points A and E swap with the driving gear, so the contract holds the
+   values per gear: g_a1 (Eq. (80)) and g_a2 = g_f1 (Eq. (79)); the sliding factor at the tip of each
+   gear (Eq. (113) and the norm's K_gf of Eq. (112)); the specific sliding at the root of each gear
+   (Eq. (116), (117)). g_a and the sliding factor are signed (negative if the active tip circle lies
+   inside the working pitch circle).
+5. **Contact face width** b_w = min(b_1, b_2): the input has no axial offset.
+6. **Not in the result yet:** tip clearance (Eq. (60) needs the generated root diameter of the mating
+   gear), form over-dimension c_F (Eq. (76) needs the root form diameter of the generation) and
+   backlash (§5.5 needs the tooth thickness allowances of increment 5). The functions of Eq. (60) and
+   (76) exist and are tested against STplus.
+7. **The contract holds for every call.** The orchestrators apply `PairInput` again, in strict mode,
+   to the pair they receive, and compute with the validated pair; the result carries that pair as
+   `inputs`. A pair assembled with `model_copy` or `model_construct` is thereby held to the same
+   types, verified ranges and rules. The strict validation converts numbers of other numeric types
+   (int, numpy scalars, `Decimal`, `Fraction`) to float and the dump of a nested model to the
+   model; it rejects `bool` and `str` for a number, and whatever it rejects is an
+   `InputRangeError`. (The constructor of the contract validates in pydantic's lax mode, PAIR-11.)
+   `PairInput` has no default pressure angle or helix angle (ADR-111) and requires z_1 ≤ z_2 (§5.1.3: index 1 names the
+   smaller gear). A gear declared as internal raises `NotSupportedError`. The optional arguments
+   d_Ff and d_Fa are checked for type, sign and order (d_b ≤ d_Ff < d_Fa ≤ d_a).
+8. **Singular mesh and boundaries.** If the active profile of a gear starts on its base circle, the
+   specific sliding of Eq. (116), (117) is unbounded. The criterion is the diameter the result
+   reports: `compute_pair_geometry` raises `GeometryInfeasibleError` when d_Nf ≤ d_b · (1 + EPS),
+   EPS = 1e-12. In terms of the radius of curvature at the root this is about 7e-7 · d_b (16 nm at
+   d_b = 22,5 mm), and no result reports a start of the active profile on the base circle. The
+   specific sliding that can still be returned depends on the pair: its magnitude is bounded by
+   about T_1T_2 / (7e-7 · d_b1) at the root of the wheel and by that value divided by u at the
+   root of the pinion; values of −3,5e5 (pinion) and −1,1e6 (wheel) occur for z = 12/40 with a tip
+   just short of the tangent point, up to −1,3e7 in random sweeps. All boundaries are decided with the
+   same relative EPS, so the same pair behaves the same at every module: interference only if a
+   circle reaches beyond the tangent point by more than EPS · T_1T_2; d_Ff within EPS below d_b is
+   d_b, d_Fa within EPS above d_a is d_a, a derived x within EPS beyond its range is the limit, a
+   centre distance within EPS below the sum of the base radii gives α_wt = 0; the root form circle
+   limits only if it exceeds the value of Eq. (64), (65) by more than EPS (close to the base circle
+   this band in the diameter is a wide band in the roll length: the contact ratio can change in
+   its sixth digit across it); an active profile without length, d_Nf ≥ d_Na · (1 − EPS), is no
+   mesh.
+9. **Comparison with STplus** (`compare_pair_geometry`, addendum to ADR-106). Values STplus determined
+   itself are taken from its most precise output (the nominal x_1 it prints for a file with span
+   measurements only, tip diameters it chose, form diameters of the generation); their rounding enters
+   `input_tolerance` by recomputing with each value shifted by half a unit of its last digit. Pair
+   quantities are differences and quotients of larger numbers, so the accuracy of a single-precision
+   result is set by the operands: the arithmetic tolerance is a first-order error propagation (every
+   number STplus holds shifted by `ARITHMETIC_STEPS` binary32 steps, absolute changes summed, plus the
+   steps at the printed value; without a given centre distance the cancellation of inv(alpha_wt) in
+   the inverse involute enters as one more shifted computation).
+10. **Documented differences** live in `data/stplus/expected_differences.yaml` (ADR-105): field,
+    condition, the equation of the current norm, the equation of the norm STplus names, what STplus
+    prints with its evidence, one example. A row with the verdict `different` must be explained there.
+    The same file records, under `deviations_from_the_norm`, where gearcore does not follow the
+    letter of the current norm by a decision of the user (ADR-112).
+
+**State.** 18 cases (the 15 of increment 0 and three own runs added by the gate: a tip chamfer given
+as an input, a helical pair with different face widths, a centre distance with x_2 only), 855
+comparisons: 786 identical, 69 within the accuracy of STplus, 0 different. Before the decision of
+ADR-112 eleven rows were different, all of them the common tooth depth of pairs with a tip form
+diameter below the tip diameter (kst-B, kst-C, kst-E and their re-runs: edge break flank of the tool
+at the wheel; `chamfer_hk_z20_34`: chamfer given as an input on both gears): STplus prints
+(d_Fa1 + d_Fa2) / 2 − a, while DIN ISO 21771 Eq. (59) and DIN 3960 Eq. (4.2.08) both define
+(d_a1 + d_a2) / 2 − a. gearcore now evaluates Eq. (59) with the tip form circles as well (ADR-112).
+The counts are pinned in `test_verdict_counts_of_the_pair_geometry`.
+The worked example ISO/TR 6336-30:2022 Annex A example 1 is reproduced for twelve further results,
+including the x_1 the norm prints in parentheses.
+
+**What the comparison can show.**
+- *Rows that repeat an input.* 173 of the 855 rows compare a value that equals a number the comparison
+  was computed from (`parity.rows_repeating_an_input`): tip form diameter without a chamfer (51),
+  active tip diameter that is not limited (56), contact face width (32), overlap ratio of zero (26),
+  sum of x that is zero or equals the one non-zero x (4), start of the active profile equal to the
+  given d_Ff (4). They test a decision,
+  not a formula. Eq. (68), (69) are compared in four rows of two cases, Eq. (127) with h_K > 0 in
+  four rows of one case.
+- *Detection limit* (`parity.detection_limits`: largest tolerance relative to the value, over all
+  cases). Interface file (five decimals, the 14 own runs): up to 7e-6 for angles, pitches, diameters,
+  gear ratio and overlap ratio; 2.3e-5 to 3.0e-5 for the working depth, the path of contact and the
+  contact ratios; 7.0e-5 for Σx; 8.1e-5 for the sliding factor; 1.8e-4 for the specific sliding
+  (small_z8_x05, near the base circle); 3.2e-4 for a derived x. Listing (three decimals): 3.2e-6
+  (α_wt, printed with five decimals) to 9.8e-4, 2.0e-3 for the specific sliding and 5.8e-3 for the
+  sliding factor. The four supplied cases (kst-A, -B, -C, -E) have a listing only. A smaller relative
+  error of gearcore would go unnoticed by the comparison; the decimal references and the norm example
+  cover the digits beyond.
+
+**Findings on the norm and on STplus.**
+- The number (61) does not occur in DIN ISO 21771:2014-08: Eq. (60) holds two formulas (tip clearance
+  of pinion and wheel) and is followed by Eq. (62).
+- Eq. (93) writes the face width b where the overlap angle of Eq. (91) is defined with the contact
+  face width b_w.
+- Anhang NB (p. 6) corrects the first form of Eq. (56), (57). It prints the middle term of the
+  corrected equations as cos α_t / cos α_wt without the factor d_1 or d_2. gearcore uses the last
+  form d_w = d_b / cos(alpha_wt), which is the same in both versions.
+- DIN 3960:1987-03 writes g_a for the length of the addendum path of contact in its clause
+  (Eq. (4.4.13), p. 35), as DIN ISO 21771 does; g_αa stands only in its list §2.1 and in the STplus
+  listing.
+- STplus prints the form over-dimension c_F of Eq. (76) under the symbol c_n.
+
+**Importer.** A `.ste` file without `EINGRIFFSWINKEL` is a `ParseError` (STplus rejects it, probe
+`no_pressure_angle`); the former assumption of 20° is removed. A file with a_w, x_1 and x_2 is
+translated to a_w and x_1 with a note that names the dropped x_2. `ACHSABSTAND` is a pair key (a
+placeholder in front of the value or a second value is an error), a third value on a per-gear key
+(numbers and names) is a `ParseError`, a file with a_w, no x and no span measurement is
+`NotSupportedError` (distribution of the sum), and whatever a contract rejects while the file is
+read (`ToolProfile`, `SpanMeasurement`, `GearInput`, `MaterialRecord`, `PairInput`) leaves the
+importer as a `ParseError`, also through `tool_from_section` and `material_from_section`. A file with a_w and span measurements only (kst-A, -B, -C) is imported;
+its pair geometry is not computed (ADR-107). Helix angle, tip chamfer, protuberance and machining
+allowance are required by the contracts; for a key that is absent in the file the importer states
+the zero and names it in its notes (ADR-111).
+
+## ADR-111 — Zero is stated, never assumed: required inputs for absent features (2026-09-30)
+
+**Context.** After the default of 20° for the pressure angle was removed (ADR-110), four contract
+fields still had the default zero: helix angle, radial amount of the tip chamfer, protuberance and
+machining allowance of the tool. The gate listed them as "zero as the neutral value of an absent
+feature" and asked the user (PAIR-10).
+
+**Decision (user decision 2026-09-30).** These values are necessary and are asked for with the input.
+In most cases they are zero, but a blanket zero is admitted only together with a note; otherwise they
+are required fields.
+1. `PairInput.helix_angle_deg`, `GearInput.tip_chamfer_radial_mm`, `ToolProfile.protuberance_mm` and
+   `ToolProfile.machining_allowance_mm` have no default. A spur pair states β = 0, a gear without tip
+   chamfer states h_K = 0, a tool without protuberance or allowance states 0.
+2. The `.ste` importer reads files in which an absent key means that the feature is absent. It sets
+   the zero and names every such value in its notes ("… not given → 0 (…)"): `SCHRAEGUNGSWINKEL`,
+   `KOPFKANTENBRUCH` per gear, `PROTUBERANZBETRAG` and `BEARB_ZUGABE_WKZ` per tool. The fixtures
+   record these notes (`meta.json`, `stplus_oracle.py refresh-import`).
+3. Functions of the package that build a tool state the zero in their docstring and in the value:
+   `tool_from_basic_rack` (the counterpart of a basic rack has neither), `din3972_tool` (allowance of
+   the norm, no protuberance), `stplus_default_tool` (probe `defaults_minimal`: pr_0 = 0,000,
+   q = 0,000). Tool records of the STplus databases carry the notes of their contract.
+
+**Not covered.** `GearInput.kind` (external) and `ToolProfile.kind` (rack) keep their defaults: they
+name the only kind stage 1 supports, and every other value raises `NotSupportedError`. Optional fields
+with the default `None` mean "not given" and are reported by the module that needs them.
+
+**Consequences.** Every construction of the contracts names the four values; a later input form asks
+for them. The worked example takes them from its table (ISO/TR 6336-30:2022 Table A.1: q = 0,
+s_pr = 0; ISO 6336-3:2019 Table 2, p. 4: s_pr = pr − q).
+
+## ADR-112 — Common tooth depth with the tip form circles: a deliberate deviation from the norm (2026-09-30)
+
+**Context.** DIN ISO 21771:2014-08 §5.2.6 (p. 41) defines the common tooth depth h_w of a pair as the
+overlap of the tip circles on the line of centres, Eq. (59): h_w = (d_a1 + d_a2) / 2 − a_w.
+DIN 3960:1987-03 §4.2.6 Eq. (4.2.08) (p. 31) says the same. STplus evaluates this formula with the
+tip form diameters d_Fa = d_a − 2 h_K (Eq. (127)) instead of the tip diameters; this is not stated in
+its manual and was found by the comparison (all 18 listings and 14 interface files). With a tip
+chamfer the two values differ by the radial amounts of the chamfers of both gears: 0,117 to 0,500 mm
+(8 to 12 %) in the reference cases. The user knew the discrepancy from comparisons with another
+program without knowing its cause.
+
+**Decision (user decision 2026-09-30).** gearcore evaluates the common tooth depth with the tip form
+circles, as STplus does, and documents this as a deliberate deviation from the letter of Eq. (59):
+h_w = (d_Fa1 + d_Fa2) / 2 − a_w. Reason given by the user: beyond the tip form circle, on the tip
+chamfer, the tooth does not carry. A tip chamfer is applied deliberately to control the beginning and
+the end of the mesh; it shortens the path of contact and can reduce meshing interference under real
+conditions (misalignment of the gear unit). The depth over which flanks can work together therefore
+ends at the tip form circles. The norm supports the premise, not the formula: DIN ISO 21771:2014-08
+§6.1.2 (p. 55) describes tip chamfer and tip rounding as reliefs of the transverse profile that
+restrict the usable region of the tooth flank, and §7.6 (p. 68) says that the maximum usable region
+of the flank is enclosed by the tip form circle and the root form circle. Eq. (127) of §7.6 holds
+for a tip rounding as for a tip chamfer (h_K is the radial amount of either), so the decision
+covers both.
+
+**What is implemented.**
+1. `compute_pair_geometry` calls the traced function of Eq. (59), `common_tooth_depth`, with the tip
+   form diameters. Without a chamfer d_Fa = d_a and the value is that of the norm.
+2. Where the two differ, the result carries the warning `common_tooth_depth_with_tip_form_circles`,
+   which names the value of the tip circles. Nothing is hidden and the norm value is not lost.
+3. The decision is recorded as data in `data/stplus/expected_differences.yaml` under
+   `deviations_from_the_norm` (equation of the norm, what gearcore computes, reason, example with both
+   values) and is tested (`test_common_tooth_depth_follows_the_tip_form_circles`).
+
+**Relation to the rules.** Rule 3 and ADR-105 say that the current norm wins and that norm-conforming
+code is never changed to match the oracle. This decision is an exception made by the user on
+technical grounds, not an adaptation to STplus; that STplus computes the same is the evidence that
+the practice exists. Further deviations from the letter of a norm need a decision of the user, an ADR
+and an entry under `deviations_from_the_norm`.
+
+**Consequences.** The comparison with STplus has no `different` row any more (855 comparisons: 786
+identical, 69 within the accuracy of STplus). Quantities that the norm builds on h_w by its letter are
+not affected: the tip clearance is computed with Eq. (60) from the tip diameter and the generated
+root diameter. Profile modifications in the sense of §6.2 (tip and root relief) do not restrict the
+usable flank and do not enter this quantity.

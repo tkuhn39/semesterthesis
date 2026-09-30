@@ -286,7 +286,9 @@ def tool_from_basic_rack(rack: BasicRackProfile) -> ToolProfile:
 
     The tool addendum cuts the gear dedendum (h_aP0 = h_fP) and the tool tip rounding forms the
     basic rack fillet (rho_aP0 = rho_fP, DIN 867 §4.5 note). The tool dedendum is not defined by
-    the basic rack (non-topping tools leave the gear tip untouched) and stays ``None``.
+    the basic rack (non-topping tools leave the gear tip untouched) and stays ``None``. The
+    counterpart of a basic rack generates the nominal profile: it has no protuberance and no
+    machining allowance, which the returned tool states as zero.
     """
     validate_basic_rack(rack)
     return ToolProfile(
@@ -295,6 +297,8 @@ def tool_from_basic_rack(rack: BasicRackProfile) -> ToolProfile:
         profile_angle_deg=rack.profile_angle_deg,
         addendum_factor=rack.dedendum_factor,
         tip_radius_factor=rack.fillet_radius_factor,
+        protuberance_mm=0.0,
+        machining_allowance_mm=0.0,
     )
 
 
@@ -353,7 +357,10 @@ def din3972_machining_allowance_mm(
 
 @eq("DIN3972:1952", "Tabelle", page=1, note="r_1 = r_2 (norm symbols) = tool tip rounding rho_aP0")
 def din3972_tool(profile: Din3972Profile, module_mm: float) -> ToolProfile:
-    """Tool reference profile I–IV of DIN 3972 for a tabulated module (1 … 16 mm)."""
+    """Tool reference profile I–IV of DIN 3972 for a tabulated module (1 … 16 mm).
+
+    The machining allowance is that of the norm (zero for profiles I and II). DIN 3972 defines no
+    protuberance; the returned tool states it as zero."""
     module = positive_input(module_mm, "module m")
     tabulated = _tabulated(module, DIN3972_TIP_ROUNDING_MM)
     if tabulated is None:
@@ -369,6 +376,7 @@ def din3972_tool(profile: Din3972Profile, module_mm: float) -> ToolProfile:
         profile_angle_deg=20.0,
         addendum_factor=addendum / tabulated,
         tip_radius_factor=DIN3972_TIP_ROUNDING_MM[tabulated] / tabulated,
+        protuberance_mm=0.0,
         machining_allowance_mm=din3972_machining_allowance_mm(profile, tabulated),
     )
 

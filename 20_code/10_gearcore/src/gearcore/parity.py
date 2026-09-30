@@ -15,6 +15,7 @@ Nothing in this module feeds back into the geometry: it only reads packaged fixt
 """
 
 import math
+from collections.abc import Iterable
 from enum import StrEnum
 from typing import Any, Literal
 
@@ -23,12 +24,14 @@ from gearcore.data import has_stplus, load_stplus, printed_tolerance, stplus_inp
 from gearcore.errors import ParseError
 from gearcore.involute import compute_basic_gear_geometry
 from gearcore.io.ste import load_ste, pair_input_from_ste
-from gearcore.models.common import FrozenModel
-from gearcore.models.results import BasicGearGeometry
+from gearcore.models.common import FrozenModel, Pair
+from gearcore.models.inputs import PairInput
+from gearcore.models.results import BasicGearGeometry, PairGeometry
+from gearcore.pair import compute_pair_geometry
 from gearcore.quantities import quantity_of_field
 
 ARITHMETIC_STEPS = 2.0
-"""Accuracy of a value STplus computed, in binary32 steps (largest deviation observed: 1.5)."""
+"""Accuracy of a value STplus computed, in binary32 steps (largest deviation observed: 1.72)."""
 
 REPRESENTATION_SLACK = 1.0e-9
 """Absolute slack for comparing a binary64 value with a printed decimal token."""
@@ -130,6 +133,14 @@ def _verdict(difference: float, print_tol: float, further_tol: float) -> ParityV
     return ParityVerdict.DIFFERENT
 
 
+def _symbol_and_unit(model: type[FrozenModel], field: str) -> tuple[str, str]:
+    """Symbol and unit of a contract field (from the quantity registry, via the schema)."""
+    extra = model.model_fields[field].json_schema_extra
+    if not isinstance(extra, dict):
+        raise ParseError(f"{model.__name__}.{field} carries no quantity metadata")
+    return str(extra["symbol"]), str(extra["unit"])
+
+
 def _row(
     *,
     case: str,
@@ -142,8 +153,7 @@ def _row(
     token: str,
     input_tolerance: float,
 ) -> ParityRow:
-    extra = BasicGearGeometry.model_fields[field].json_schema_extra
-    assert isinstance(extra, dict)
+    symbol, unit = _symbol_and_unit(BasicGearGeometry, field)
     by_magnitude = origin == "listing" and field in _MAGNITUDE_IN_LISTING
     difference = abs(value) - abs(reference) if by_magnitude else value - reference
     print_tol = printed_tolerance(printed_decimals(token))
@@ -153,8 +163,8 @@ def _row(
         trust=trust,
         origin=origin,
         field=field,
-        symbol=str(extra["symbol"]),
-        unit=str(extra["unit"]),
+        symbol=symbol,
+        unit=unit,
         gear=gear,
         gearcore_value=value,
         stplus_value=reference,
@@ -170,11 +180,11 @@ def _row(
 def compare_basic_geometry(case: str) -> tuple[ParityRow, ...]:
     """Compare the basic single-gear geometry of a packaged STplus case, value by value.
 
-    Where STplus uses the profile shift coefficient of ``input.ste`` (x1 always, x2 if no centre
-    distance is given), gearcore computes with that input and the printed x is compared as a
-    quantity of its own. Where STplus derived x (span measurement, centre distance), gearcore
-    computes with the printed x and its rounding enters ``input_tolerance`` of the thickness
-    quantities.
+    Where the importer passes a profile shift coefficient of ``input.ste`` on (two of a_w, x_1,
+    x_2, ADR-107), gearcore computes with that input and the printed x is compared as a
+    quantity of its own. Where STplus determined x itself (from the centre distance, or for a
+    file with span measurements), gearcore computes with the printed x and its rounding enters
+    ``input_tolerance`` of the thickness quantities.
     """
     meta = load_stplus(case, "meta")
     listing = load_stplus(case, "geometry")
@@ -196,13 +206,11 @@ def compare_basic_geometry(case: str) -> tuple[ParityRow, ...]:
             printed_shift[origin] = (document[key]["numbers"][gear], document[key][tokens][gear])
 
         best: Origin = outputs[-1][0]  # the interface file prints more decimals than the listing
-        # STplus takes x1 as given; with a centre distance it derives x2 from a and overrides a
-        # given x2 (kst-E: input 0.3143, used 0.31433)
-        shift_is_input = gear_input.profile_shift_coefficient is not None and (
-            gear == 0 or pair.centre_distance_mm is None
-        )
-        shift = gear_input.profile_shift_coefficient if shift_is_input else printed_shift[best][0]
-        assert shift is not None
+        # the importer passes on what STplus uses: with a, x_1 and x_2 in the file it drops x_2,
+        # which STplus overrides (kst-E: input 0.3143, used 0.31433)
+        given = gear_input.profile_shift_coefficient
+        shift_is_input = given is not None
+        shift = printed_shift[best][0] if given is None else given
         shift_rounding = (
             0.0 if shift_is_input else printed_tolerance(printed_decimals(printed_shift[best][1]))
         )
@@ -252,3 +260,274 @@ def compare_basic_geometry(case: str) -> tuple[ParityRow, ...]:
                     )
                 )
     return tuple(rows)
+
+
+# --- pair geometry (increment 2) ------------------------------------------------------------------
+#
+# Pair quantities are differences and quotients of larger numbers (h_w = (d_a1 + d_a2) / 2 - a_w,
+# alpha_wt from an arc cosine, zeta near the base circle). The accuracy of a single-precision
+# result is then set by the magnitude of the operands, not of the result. The arithmetic tolerance
+# of a pair value is therefore a first-order error propagation: every number STplus holds (module,
+# angles, centre distance, profile shift, diameters, face widths) is shifted by ``ARITHMETIC_STEPS``
+# binary32 steps, the absolute changes of the value are summed, and ``ARITHMETIC_STEPS`` steps at
+# the printed value are added for the final operations. Printed inputs are treated the same way
+# with half a unit of their last digit (``input_tolerance``).
+#
+# Without a given centre distance the working pressure angle is the inverse involute of
+# inv(alpha_wt). In single precision inv = tan(alpha) - alpha cancels: its error is that of
+# tan(alpha_wt), which the inverse amplifies by 1 / tan^2(alpha_wt). This enters as one more
+# shifted computation (x_1 shifted by the equivalent of ``ARITHMETIC_STEPS`` steps of
+# tan(alpha_wt) in Eq. (55)).
+
+# compared field of PairGeometry -> one value per gear?
+PAIR_FIELDS: dict[str, bool] = {
+    "gear_ratio": False,
+    "centre_distance_mm": False,
+    "transverse_working_pressure_angle_deg": False,
+    "sum_of_profile_shift_coefficients": False,
+    "profile_shift_coefficient": True,
+    "working_pitch_diameter_mm": True,
+    "tip_form_diameter_mm": True,
+    "active_tip_diameter_mm": True,
+    "sap_diameter_mm": True,
+    "common_tooth_depth_mm": False,
+    "normal_pitch_mm": False,
+    "transverse_pitch_mm": False,
+    "transverse_contact_pitch_mm": False,
+    "contact_face_width_mm": False,
+    "length_of_path_of_contact_mm": False,
+    "length_of_addendum_path_of_contact_mm": True,
+    "transverse_contact_ratio": False,
+    "overlap_ratio": False,
+    "total_contact_ratio": False,
+    "sliding_factor_at_tip": True,
+    "specific_sliding_at_end_points": True,
+}
+ROLES: tuple[Role, Role] = ("pinion", "wheel")
+
+
+class PairData(FrozenModel):
+    """The numbers of one comparison: what STplus computed the pair from.
+
+    ``values`` holds every number by name (m_n, alpha_n, beta, a_w, x_1, x_2, d_a1, d_a2, d_Fa1,
+    d_Fa2, d_Ff1, d_Ff2, b_1, b_2; absent = follows from the others). ``printed`` names those
+    taken from an STplus output, with half a unit of their last printed digit.
+    """
+
+    pair: PairInput
+    values: dict[str, float]
+    printed: dict[str, float]
+
+
+def _printed(
+    document: dict[str, Any], origin: Origin, field: str, gear: int
+) -> tuple[float, float]:
+    symbol, key = stplus_names(field)
+    entry = document[symbol if origin == "listing" else f"GEOMETRIEDATEN/{key}"]
+    token = _per_gear(entry["tokens" if origin == "listing" else "values"], gear)
+    return _per_gear(entry["numbers"], gear), printed_tolerance(printed_decimals(token))
+
+
+def pair_data(case: str) -> PairData:
+    """The pair as STplus computed it: values of ``input.ste`` where STplus used them, values of
+    its most precise output elsewhere (the nominal profile shift coefficient x_1 it prints for a
+    file that gives span measurements only, tip diameters STplus chose itself, tip form diameters
+    generated by an edge break flank of the tool, root form diameters of the generation).
+
+    How STplus arrives at the nominal x_1 of a file with spans is not reproduced here; it
+    belongs to the inspection dimensions (DIN 21773, increment 4)."""
+    pair = pair_input_from_ste(load_ste(stplus_input_path(case))).pair
+    origin: Origin = "interface" if has_stplus(case, "interface") else "listing"
+    document = load_stplus(case, "interface" if origin == "interface" else "geometry")
+    values: dict[str, float] = {
+        "m_n": pair.normal_module_mm,
+        "alpha_n": pair.normal_pressure_angle_deg,
+        "beta": pair.helix_angle_deg,
+    }
+    printed: dict[str, float] = {}
+    shifts = [gear.profile_shift_coefficient for gear in pair.gears.as_tuple()]
+    needed: tuple[int, ...] = (0, 1)
+    if pair.centre_distance_mm is not None:
+        values["a_w"] = pair.centre_distance_mm
+        # ADR-107: with a centre distance one coefficient is given and the other follows. Where
+        # the file gives none (span measurements), x_1 is taken from the STplus output
+        needed = (1,) if shifts[0] is None and shifts[1] is not None else (0,)
+    for index, gear in enumerate(pair.gears.as_tuple()):
+        number = index + 1
+        values[f"b_{number}"] = gear.face_width_mm
+        if index in needed:
+            if gear.profile_shift_coefficient is not None:
+                values[f"x_{number}"] = gear.profile_shift_coefficient
+            else:
+                values[f"x_{number}"], printed[f"x_{number}"] = _printed(
+                    document, origin, PROFILE_SHIFT_FIELD, index
+                )
+        if gear.tip_diameter_mm is not None:
+            values[f"d_a{number}"] = gear.tip_diameter_mm
+        else:
+            values[f"d_a{number}"], printed[f"d_a{number}"] = _printed(
+                document, origin, "tip_diameter_mm", index
+            )
+        form, tolerance = _printed(document, origin, "tip_form_diameter_mm", index)
+        from_chamfer = values[f"d_a{number}"] - 2.0 * gear.tip_chamfer_radial_mm
+        if abs(form - from_chamfer) > tolerance + printed.get(f"d_a{number}", 0.0) + 1.0e-9:
+            # the tool broke the tip edge: d_Fa is a result of the generation
+            values[f"d_Fa{number}"], printed[f"d_Fa{number}"] = form, tolerance
+        values[f"d_Ff{number}"], printed[f"d_Ff{number}"] = _printed(
+            document, origin, "root_form_diameter_mm", index
+        )
+    return PairData(pair=pair, values=values, printed=printed)
+
+
+def compute_pair_from_data(data: PairData, values: dict[str, float]) -> PairGeometry:
+    """The pair geometry for one set of numbers (``values`` replaces ``data.values``)."""
+    gears = []
+    for index, gear in enumerate(data.pair.gears.as_tuple()):
+        number = index + 1
+        gears.append(
+            gear.model_copy(
+                update={
+                    "span": None,
+                    "profile_shift_coefficient": values.get(f"x_{number}"),
+                    "tip_diameter_mm": values[f"d_a{number}"],
+                    "face_width_mm": values[f"b_{number}"],
+                }
+            )
+        )
+    pair = data.pair.model_copy(
+        update={
+            "normal_module_mm": values["m_n"],
+            "normal_pressure_angle_deg": values["alpha_n"],
+            "helix_angle_deg": values["beta"],
+            "centre_distance_mm": values.get("a_w"),
+            "gears": Pair(pinion=gears[0], wheel=gears[1]),
+        }
+    )
+    form: Pair[float] | None = None
+    if "d_Fa1" in values or "d_Fa2" in values:
+        chamfer = [gear.tip_chamfer_radial_mm for gear in gears]
+        form = Pair(
+            pinion=values.get("d_Fa1", values["d_a1"] - 2.0 * chamfer[0]),
+            wheel=values.get("d_Fa2", values["d_a2"] - 2.0 * chamfer[1]),
+        )
+    return compute_pair_geometry(
+        pair,
+        root_form_diameter_mm=Pair(pinion=values["d_Ff1"], wheel=values["d_Ff2"]),
+        tip_form_diameter_mm=form,
+    )
+
+
+def _pair_value(result: PairGeometry, field: str, gear: int) -> float:
+    value = getattr(result, field)
+    return float(value.as_tuple()[gear]) if isinstance(value, Pair) else float(value)
+
+
+def _is_input(data: PairData, field: str, gear: int) -> bool:
+    """True if the compared field was an input of the comparison for this gear."""
+    number = gear + 1
+    if field == PROFILE_SHIFT_FIELD:
+        return f"x_{number}" in data.values
+    if field == "centre_distance_mm":
+        return "a_w" in data.values
+    if field == "tip_form_diameter_mm":
+        return f"d_Fa{number}" in data.values
+    return False
+
+
+def compare_pair_geometry(case: str) -> tuple[ParityRow, ...]:
+    """Compare the pair geometry of a packaged STplus case, value by value.
+
+    Tolerances per value: half a unit of the last printed digit; the arithmetic tolerance from
+    the error propagation described above; the input tolerance from the rounding of the inputs
+    taken from an STplus output.
+    """
+    trust = str(load_stplus(case, "meta")["trust"])
+    data = pair_data(case)
+    ours = compute_pair_from_data(data, data.values)
+    by_rounding = [
+        compute_pair_from_data(data, {**data.values, name: data.values[name] + half_unit})
+        for name, half_unit in data.printed.items()
+    ]
+    by_arithmetic = [
+        compute_pair_from_data(
+            data, {**data.values, name: value + ARITHMETIC_STEPS * binary32_step(value)}
+        )
+        for name, value in data.values.items()
+        if value != 0.0
+    ]
+    if "a_w" not in data.values:
+        teeth = sum(gear.number_of_teeth for gear in data.pair.gears.as_tuple())
+        tangent = math.tan(math.radians(ours.transverse_working_pressure_angle_deg))
+        involute = ARITHMETIC_STEPS * binary32_step(tangent)
+        shift = teeth * involute / (2.0 * math.tan(math.radians(data.values["alpha_n"])))
+        by_arithmetic.append(
+            compute_pair_from_data(data, {**data.values, "x_1": data.values["x_1"] + shift})
+        )
+    outputs: list[tuple[Origin, dict[str, Any], str]] = [
+        ("listing", load_stplus(case, "geometry"), "tokens")
+    ]
+    if has_stplus(case, "interface"):
+        outputs.append(("interface", load_stplus(case, "interface"), "values"))
+
+    rows: list[ParityRow] = []
+    for field, per_gear in PAIR_FIELDS.items():
+        symbol, key = stplus_names(field)
+        field_symbol, field_unit = _symbol_and_unit(PairGeometry, field)
+        for gear in range(2 if per_gear else 1):
+            if _is_input(data, field, gear):
+                continue  # an input of the comparison is no result of gearcore
+            value = _pair_value(ours, field, gear)
+            rounding = sum(abs(_pair_value(o, field, gear) - value) for o in by_rounding)
+            propagated = sum(abs(_pair_value(o, field, gear) - value) for o in by_arithmetic)
+            for origin, document, tokens in outputs:
+                entry = document[symbol if origin == "listing" else f"GEOMETRIEDATEN/{key}"]
+                reference = _per_gear(entry["numbers"], gear)
+                token = _per_gear(entry[tokens], gear)
+                print_tol = printed_tolerance(printed_decimals(token))
+                arithmetic_tol = propagated + ARITHMETIC_STEPS * binary32_step(reference)
+                rows.append(
+                    ParityRow(
+                        case=case,
+                        trust=trust,
+                        origin=origin,
+                        field=field,
+                        symbol=field_symbol,
+                        unit=field_unit,
+                        gear=ROLES[gear],
+                        gearcore_value=value,
+                        stplus_value=reference,
+                        stplus_token=token,
+                        difference=value - reference,
+                        print_tolerance=print_tol,
+                        arithmetic_tolerance=arithmetic_tol,
+                        input_tolerance=rounding,
+                        verdict=_verdict(value - reference, print_tol, arithmetic_tol + rounding),
+                    )
+                )
+    return tuple(rows)
+
+
+def detection_limits(rows: Iterable[ParityRow]) -> dict[tuple[str, Origin], float]:
+    """What a comparison can show: per compared field and STplus output the largest tolerance
+    relative to the STplus value. A smaller relative error of gearcore would go unnoticed.
+
+    Rows with an STplus value of zero (overlap ratio of a spur pair, a sum of profile shift
+    coefficients of zero) have no relative limit and are left out.
+    """
+    limits: dict[tuple[str, Origin], float] = {}
+    for row in rows:
+        if row.stplus_value == 0.0:
+            continue
+        tolerance = row.print_tolerance + row.arithmetic_tolerance + row.input_tolerance
+        key = (row.field, row.origin)
+        limits[key] = max(limits.get(key, 0.0), tolerance / abs(row.stplus_value))
+    return limits
+
+
+def rows_repeating_an_input(case: str) -> tuple[ParityRow, ...]:
+    """The rows of ``compare_pair_geometry`` whose gearcore value equals a number the comparison
+    was computed from (or zero): a tip form diameter without a chamfer, an active tip diameter
+    that is not limited, the contact face width, an overlap ratio of zero. Such a row tests a
+    decision, not a formula."""
+    given = {*pair_data(case).values.values(), 0.0}
+    return tuple(row for row in compare_pair_geometry(case) if row.gearcore_value in given)

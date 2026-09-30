@@ -15,6 +15,7 @@ from typing import Any
 import pytest
 
 from gearcore import involute as iv
+from gearcore import pair as pr
 from gearcore.data import (
     load_worked_example,
     printed_number,
@@ -22,7 +23,9 @@ from gearcore.data import (
     worked_example_ids,
 )
 from gearcore.errors import ParseError
-from gearcore.models.results import BasicGearGeometry
+from gearcore.models.common import Pair
+from gearcore.models.inputs import GearInput, PairInput, SpanMeasurement, ToolProfile
+from gearcore.models.results import BasicGearGeometry, PairGeometry
 from gearcore.trace import load_sources
 
 Evaluator = Callable[[dict[str, Any], str | None], float]
@@ -80,6 +83,62 @@ def _base_helix_deg(inputs: dict[str, Any], role: str | None) -> float:
     return math.degrees(iv.base_helix_angle(beta, alpha_n))
 
 
+def pair_of_example(inputs: dict[str, Any]) -> PairInput:
+    """The pair as the norm gives it: values in parentheses are calculated (clause 4.2.18) and
+    therefore not passed on. The centre distance and x_2 lead, x_1 follows (ADR-107). The span
+    measurements of Table A.1 are passed on; gearcore does not evaluate spans yet (ADR-107)."""
+    shift = inputs["profile_shift_coefficient"]
+    hand = {"left": -1.0, "right": 1.0}[inputs["hand_of_helix"]["pinion"]]
+    # Table A.1: h_fP = 1,4 m_n, rho_fP = 0,39 m_n, q = 0, s_pr = 0. The protuberance follows from
+    # s_pr = pr - q (ISO 6336-3:2019 Table 2, p. 4)
+    tools = {
+        role: ToolProfile(
+            addendum_factor=inputs["basic_rack_dedendum_mm"]["factor_of_normal_module"][role],
+            tip_radius_factor=inputs["basic_rack_fillet_radius_mm"]["factor_of_normal_module"][
+                role
+            ],
+            protuberance_mm=inputs["residual_fillet_undercut_mm"][role]
+            + inputs["machining_allowance_mm"][role],
+            machining_allowance_mm=inputs["machining_allowance_mm"][role],
+        )
+        for role in ROLES
+    }
+    gears = [
+        GearInput(
+            number_of_teeth=inputs["number_of_teeth"][role],
+            profile_shift_coefficient=None if role in shift.get("derived", []) else shift[role],
+            span=SpanMeasurement(
+                span_measurement_mm=inputs["span_measurement_mm"][role],
+                number_of_teeth_spanned=inputs["number_of_teeth_spanned"][role],
+            ),
+            face_width_mm=inputs["face_width_mm"][role],
+            tip_diameter_mm=inputs["tip_diameter_mm"][role],
+            tip_chamfer_radial_mm=0.0,  # Table A.1 names no tip chamfer
+            tool=tools[role],
+        )
+        for role in ROLES
+    ]
+    return PairInput(
+        normal_module_mm=_module(inputs),
+        normal_pressure_angle_deg=inputs["normal_pressure_angle_deg"]["value"],
+        helix_angle_deg=hand * inputs["helix_angle_deg"]["value"],
+        centre_distance_mm=inputs["centre_distance_mm"]["value"],
+        gears=Pair(pinion=gears[0], wheel=gears[1]),
+    )
+
+
+def _pair_geometry(inputs: dict[str, Any]) -> PairGeometry:
+    return pr.compute_pair_geometry(pair_of_example(inputs))
+
+
+def _of_pair(field: str) -> Evaluator:
+    def evaluate(inputs: dict[str, Any], role: str | None) -> float:
+        value = getattr(_pair_geometry(inputs), field)
+        return float(getattr(value, role)) if role is not None else float(value)
+
+    return evaluate
+
+
 IMPLEMENTED: dict[str, Evaluator] = {
     "transverse_module_mm": _transverse_module,
     "reference_diameter_mm": _reference_diameter,
@@ -88,27 +147,27 @@ IMPLEMENTED: dict[str, Evaluator] = {
     "inv_alpha_t_rad": _inv_alpha_t,
     "base_diameter_mm": _base_diameter,
     "base_helix_angle_deg": _base_helix_deg,
+    # pair geometry (increment 2)
+    "gear_ratio": _of_pair("gear_ratio"),
+    "transverse_working_pressure_angle_deg": _of_pair("transverse_working_pressure_angle_deg"),
+    "working_pitch_diameter_mm": _of_pair("working_pitch_diameter_mm"),
+    "normal_pitch_mm": _of_pair("normal_pitch_mm"),
+    "transverse_pitch_mm": _of_pair("transverse_pitch_mm"),
+    "transverse_base_pitch_mm": _of_pair("transverse_base_pitch_mm"),
+    "transverse_contact_pitch_mm": _of_pair("transverse_contact_pitch_mm"),
+    "length_of_path_of_contact_mm": _of_pair("length_of_path_of_contact_mm"),
+    "sap_diameter_mm": _of_pair("sap_diameter_mm"),
+    "transverse_contact_ratio": _of_pair("transverse_contact_ratio"),
+    "overlap_ratio": _of_pair("overlap_ratio"),
+    "total_contact_ratio": _of_pair("total_contact_ratio"),
 }
 
-PAIR = "increment 2 (pair geometry)"
 GENERATION = "increment 3 (tool-based generation)"
 LOAD_CAPACITY = "stage 2 (load capacity)"
 PENDING: dict[str, str] = {
-    "gear_ratio": PAIR,
-    "transverse_working_pressure_angle_deg": PAIR,
     "generating_profile_shift_coefficient": GENERATION,
     "generated_root_diameter_mm": GENERATION,
     "root_form_diameter_mm": GENERATION,
-    "working_pitch_diameter_mm": PAIR,
-    "normal_pitch_mm": PAIR,
-    "transverse_pitch_mm": PAIR,
-    "transverse_base_pitch_mm": PAIR,
-    "transverse_contact_pitch_mm": PAIR,
-    "length_of_path_of_contact_mm": PAIR,
-    "sap_diameter_mm": PAIR,
-    "transverse_contact_ratio": PAIR,
-    "overlap_ratio": PAIR,
-    "total_contact_ratio": PAIR,
     "transverse_base_pitch_deviation_um": LOAD_CAPACITY,
     "pitch_line_velocity_m_s": LOAD_CAPACITY,
     "circumferential_velocity_m_s": LOAD_CAPACITY,
@@ -237,6 +296,32 @@ def test_example_1_x1_follows_from_x2_and_the_centre_distance() -> None:
     shift = load_worked_example(EXAMPLE_1)["inputs"]["profile_shift_coefficient"]
     assert shift["derived"] == ["pinion"] and shift["wheel"] == 0.0
     assert shift["printed"]["pinion"] == "x_1 = (0,145 22)" and shift["pinion"] == 0.14522
+
+
+def test_example_1_pair_reproduces_the_value_in_parentheses() -> None:
+    """The centre distance and x_2 = 0 are given; gearcore derives the x_1 that the norm prints in
+    parentheses (clause 4.2.18: calculated, for reference only)."""
+    inputs = load_worked_example(EXAMPLE_1)["inputs"]
+    pair = pair_of_example(inputs)
+    assert pair.gears.pinion.profile_shift_coefficient is None, "x_1 is not passed on"
+    assert pair.helix_angle_deg == -15.8, "the pinion of the example is left-handed"
+    result = pr.compute_pair_geometry(pair)
+    printed, decimals = printed_number(inputs["profile_shift_coefficient"]["printed"]["pinion"])
+    assert abs(result.profile_shift_coefficient.pinion - printed) <= printed_tolerance(decimals)
+    assert result.profile_shift_coefficient.wheel == 0.0
+    assert result.centre_distance_mm == 500.0, "a given centre distance is fixed"
+    # the spans of Table A.1 give x_E1 = 0,117 79 (printed p. 45; spans with allowance). Spans
+    # are not evaluated yet: they are reported and not used (gate finding G2A-05, ADR-107)
+    not_used = ["span_measurement_not_used"] * 2
+    assert [w.code for w in result.warnings] == [*not_used, "root_form_diameter_not_checked"]
+    # the root form diameters the norm prints (p. 45) lie below the start of the active profile,
+    # so the limit of Eq. (66), (67) does not change the mesh of this example
+    d_Ff = load_worked_example(EXAMPLE_1)["expected"]["root_form_diameter_mm"]
+    limited = pr.compute_pair_geometry(
+        pair, root_form_diameter_mm=Pair(pinion=d_Ff["pinion"], wheel=d_Ff["wheel"])
+    )
+    assert limited.sap_diameter_mm == result.sap_diameter_mm
+    assert [w.code for w in limited.warnings] == not_used
 
 
 def test_symbols_of_the_example_are_the_symbols_of_the_contract() -> None:

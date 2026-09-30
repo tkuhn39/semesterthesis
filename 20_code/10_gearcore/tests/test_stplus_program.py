@@ -146,7 +146,7 @@ def test_stplus_prints_the_factors_of_a_consistent_record() -> None:
 
 
 def test_contradicting_records_are_kept_but_are_no_contracts() -> None:
-    """Factor and absolute value contradict in the finishing tools '_F_'. STplus computes with the
+    """Factor and absolute value contradict in the records with '_F_' in the name. STplus computes with the
     factor and reduces what is not possible; gearcore keeps the record and rejects it."""
     records = tool_database()
     for name in CONTRADICTING_TOOLS:

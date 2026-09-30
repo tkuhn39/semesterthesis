@@ -17,7 +17,12 @@
   "stplus_version": "6.0.9",
   "trust": "unverified",
   "typed_import": {
-    "notes": [],
+    "notes": [
+      "tool 'WKZ_Profil_A_Ritzel': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'WKZ_Profil_A_Ritzel': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "tool 'WKZ_Profil_A_Rad': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'WKZ_Profil_A_Rad': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)"
+    ],
     "ok": true,
     "unmapped_keys": [
       "BR.MITTENVERSATZ",

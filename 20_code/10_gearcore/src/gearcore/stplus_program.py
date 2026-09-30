@@ -91,6 +91,9 @@ class StplusToolRecord(FrozenModel):
     profile: ToolProfile | None
     """The contract of the factor keys; ``None`` where ``issues`` say why there is none."""
     issues: tuple[str, ...] = ()
+    notes: tuple[str, ...] = ()
+    """Zeros the contract states for keys the record does not carry (no protuberance, no
+    machining allowance)."""
 
 
 class ManualPassage(FrozenModel):
@@ -155,8 +158,9 @@ def _record(
 ) -> StplusToolRecord:
     issues = _contradictions(section)
     profile: ToolProfile | None = None
+    notes: list[str] = []
     try:
-        profile = tool_from_section(section)
+        profile = tool_from_section(section, notes)
     except (ParseError, NotSupportedError) as error:
         issues.append(f"no tool contract: {error}")
     except ValidationError as error:
@@ -172,6 +176,7 @@ def _record(
         entries=tuple((entry.key, " ".join(entry.values)) for entry in section.entries),
         profile=profile,
         issues=tuple(issues),
+        notes=tuple(notes) if profile is not None else (),
     )
 
 

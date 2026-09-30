@@ -1230,6 +1230,121 @@ quantities:
     since: 1
     status: verified
 
+  # ---- pair geometry (DIN ISO 21771 §5), increment 2 ----------------------------------------------
+  sum_of_profile_shift_coefficients:
+    symbol: "Sigma x"
+    unit: "-"
+    description: "Summe der Profilverschiebungsfaktoren"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 17; §5.3 Eq. (62), p. 41"
+    english: null
+    also: []
+    stplus: { symbol: "x_1+x_2", label: "Summe Profilversch.faktoren", input_key: "PR.VERSCH.SUMME", interface_key: "SUMME_X" }
+    replaced:
+      - { symbol: "Sigma x", description: "Summe der Profilverschiebungsfaktoren", source: "DIN3960:1987", location: "§4.3.4 Eq. (4.3.05), p. 32; §2.1, p. 5" }
+    note: "Both norms print the summation sign in front of x. The program name translates the German designation. STplus reads the sum with the key PR.VERSCH.SUMME (manual Bild 4.12, p. 25); the importer reports that key as not supported."
+    since: 2
+    status: verified
+  tip_alteration_coefficient:
+    symbol: "k"
+    unit: "-"
+    description: "Kopfhöhenänderungsfaktor"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12; §4.5.2, p. 34"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "k*", description: "Kopfhöhenänderungsfaktor", source: "DIN3960:1987", location: "§4.3.6 Eq. (4.3.08), p. 32" }
+    note: "Signed; a negative value shortens the tooth (§4.5.2). The norm uses the letter k for the number of teeth spanned as well. DIN 3960 writes k for the tip alteration as a length (Eq. (4.3.07); §2.1 lists k 'Kopfhöhenänderung') and k* for the factor. The program name translates the German designation."
+    since: 2
+    status: verified
+  tip_form_diameter:
+    symbol: "d_Fa"
+    unit: "mm"
+    description: "Kopf-Formkreisdurchmesser"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11; §7.6 Eq. (127), p. 68"
+    english: null
+    also: []
+    stplus: { symbol: "d_Fa", label: "Kopf-Formkreisdurchmesser", input_key: null, interface_key: "KOPFFORMKREISDURCHM" }
+    replaced:
+      - { symbol: "d_Fa", description: "Kopf-Formkreisdurchmesser", source: "DIN3960:1987", location: "§3.6.7 Eq. (3.6.07), p. 16; §2.1, p. 2" }
+    note: "The program name translates the German designation (cf. 'Root form diameter' for d_Ff in ISO/TR 6336-30:2022 Table 2, p. 2)."
+    since: 2
+    status: verified
+  active_tip_diameter:
+    symbol: "d_Na"
+    unit: "mm"
+    description: "Kopf-Nutzkreisdurchmesser"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11; §5.4.1, p. 43"
+    english: { text: "active tip diameter of pinion or wheel", source: "ISO6336-1:2019", location: "Table 2, p. 4" }
+    also:
+      - { symbol: "d_Na", description: "Effective tip diameter", source: "ISOTS6336-21:2022", location: "Table 2, p. 2" }
+    stplus: { symbol: "d_Na", label: "Nutzkreisdurchmesser am Kopf", input_key: null, interface_key: "NUTZKREISDURCHM_KOPF" }
+    replaced:
+      - { symbol: "d_Na", description: "Kopf-Nutzkreisdurchmesser", source: "DIN3960:1987", location: "§4.4.3, p. 33; §2.1, p. 2" }
+    note: null
+    since: 2
+    status: verified
+  common_tooth_depth:
+    symbol: "h_w"
+    unit: "mm"
+    description: "Gemeinsame Zahnhöhe eines Radpaares"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12; §5.2.6 Eq. (59), p. 41"
+    english: null
+    also: []
+    stplus: { symbol: "h_gem", label: "gemeinsame Zahnhoehe", input_key: null, interface_key: "GEMEINSAME_ZAHNHOEHE" }
+    replaced:
+      - { symbol: "h_w", description: "Gemeinsame Zahnhöhe eines Stirnradpaares", source: "DIN3960:1987", location: "§4.2.6 Eq. (4.2.08), p. 31; §2.1, p. 2" }
+    note: "The program name translates the German designation (cf. 'Tooth depth' for h in ISO/TR 6336-30:2022 Table 2, p. 3). DIN ISO 21771 Eq. (59) and DIN 3960 Eq. (4.2.08) define it with the tip circles; STplus prints the overlap of the tip form circles under this label, and gearcore evaluates Eq. (59) with the tip form diameters as well (user decision 2026-09-30, ADR-112; data/stplus/expected_differences.yaml, deviations_from_the_norm)."
+    since: 2
+    status: verified
+  length_of_addendum_path_of_contact:
+    symbol: "g_a"
+    unit: "mm"
+    description: "Länge der Kopfeingriffsstrecke"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12; §5.4.5.2 Eq. (79), (80), p. 46"
+    english: null
+    also: []
+    stplus: { symbol: "g_alfa-a", label: "Kopfeingriffsstrecke", input_key: null, interface_key: "KOPFEINGRSTRECKE" }
+    replaced:
+      - { symbol: "g_a", description: "Länge der Austritt-Eingriffsstrecke", source: "DIN3960:1987", location: "Eq. (4.4.13), p. 35 ('Austritt-Eingriffsstrecke gleich Kopfeingriffsstrecke des Rades 1'); §2.1, p. 2 lists g_a under this designation and g_alpha_a 'Länge der Kopfeingriffsstrecke'" }
+    note: "Same symbol as in the equations of DIN 3960; only its list §2.1 has a second symbol g_alpha_a, which the STplus listing uses (g_alfa-a). Per gear: g_a1 (Eq. (80)) and g_a2 = g_f1 (Eq. (79)). The program name translates the German designation."
+    since: 2
+    status: verified
+  sliding_factor_at_tip:
+    symbol: "K_ga"
+    unit: "-"
+    description: "Gleitfaktor am Zahnkopf"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 14; §5.6.2 Eq. (113), p. 54"
+    english: null
+    also: []
+    stplus: { symbol: "K_ga", label: "Gleitfaktor am Zahnkopf", input_key: null, interface_key: "GLEITFAKTOR_KOPF" }
+    replaced:
+      - { symbol: "K_ga", description: "Gleitfaktor am Zahnkopf", source: "DIN3960:1987", location: "§4.5.2 Eq. (4.5.08), p. 38; §2.1, p. 4" }
+    note: "The norm gives K_ga at point E (Eq. (113), with g_a) and K_gf 'Gleitfaktor am Zahnfuß' at point A (Eq. (112), with g_f) for the driving pinion. Per gear the value at the tip of the wheel is the norm's K_gf (g_a2 = g_f1); STplus prints both as K_ga of each gear. The program name translates the German designation."
+    since: 2
+    status: verified
+  specific_sliding_at_end_points:
+    symbol: "zeta_f"
+    unit: "-"
+    description: "Spezifisches Gleiten in den Endpunkten der Eingriffsstrecke"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 16; §5.6.3 Eq. (116), (117), p. 54"
+    english: null
+    also: []
+    stplus: { symbol: "zeta_f", label: "Spezifisches Gleiten (Zahnfuss)", input_key: null, interface_key: "SPEZ_GLEITEN_FUSS" }
+    replaced:
+      - { symbol: "zeta_f", description: "Spezifisches Gleiten im Endpunkt der Eingriffsstrecke", source: "DIN3960:1987", location: "§4.5.3 Eq. (4.5.11), (4.5.12), p. 38; §2.1, p. 4" }
+    note: "zeta_f1 at point A (Eq. (116)) and zeta_f2 at point E (Eq. (117)): the values at the root of each gear. The program name shortens the designation."
+    since: 2
+    status: verified
+
   # ---- contract fields of later increments -------------------------------------------------------
   tooth_thickness_allowance:
     symbol: "E_sns/E_sni"
@@ -1284,6 +1399,6 @@ quantities:
       - { symbol: "c", description: "Kopfspiel", source: "ISO21771:2014", location: "§3.1 symbol list, p. 11; §5.2.7, p. 41" }
     stplus: null
     replaced: []
-    note: "Input of a tip diameter check (STplus MINDESTKOPFSPIEL); verified in increment 2."
+    note: "Input of a tip diameter check (STplus MINDESTKOPFSPIEL). The tip clearance of Eq. (60) needs the generated root diameter of the mating gear; verified with the generation (increment 3)."
     since: 0
     status: pending

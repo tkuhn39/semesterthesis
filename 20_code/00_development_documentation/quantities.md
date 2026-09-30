@@ -27,6 +27,7 @@ die aktuelle Norm.
 | `tool_tip_radius` | rho_aP0 | rho_a0 | Kopfkanten-Rundungshalbmesser am Werkzeug | DIN3960:1987, §2.1, p. 4 |
 | `tool_tip_radius` | rho_aP0 | r_1 | Rundung am Zahnkopf des Werkzeugs | DIN3972:1952, p. 1, table column r_1 (= r_2) |
 | `machining_allowance` | q | p | Bearbeitungszugabe je Flanke | DIN3972:1952, p. 1 legend; p. 2 |
+| `tip_alteration_coefficient` | k | k* | Kopfhöhenänderungsfaktor | DIN3960:1987, §4.3.6 Eq. (4.3.08), p. 32 |
 
 ### Abweichende Formelzeichen in STplus 11.1F
 
@@ -40,6 +41,9 @@ Der Stern am Zeichen (Modulfaktor) ist keine Abweichung.
 | `gear_ratio` | u | z2/z1 | Zaehnezahlverhaeltnis |
 | `generated_root_diameter` | d_fE | d_f | Fusskreisdurchmesser |
 | `length_of_path_of_contact` | g_alpha | g | Eingriffsstrecke |
+| `sum_of_profile_shift_coefficients` | Sigma x | x_1+x_2 | Summe Profilversch.faktoren |
+| `common_tooth_depth` | h_w | h_gem | gemeinsame Zahnhoehe |
+| `length_of_addendum_path_of_contact` | g_a | g_alfa-a | Kopfeingriffsstrecke |
 
 Nur andere Schreibweise griechischer Buchstaben: alfa_n = alpha_n, alfa_t = alpha_t, alfa_wt = alpha_wt, eps_alfa = epsilon_alpha, eps_beta = epsilon_beta, eps_gamma = epsilon_gamma.
 
@@ -96,6 +100,9 @@ Nur andere Schreibweise griechischer Buchstaben: alfa_n = alpha_n, alfa_t = alph
 | `transverse_contact_pitch` | p_et | Eingriffsteilung im Stirnschnitt | Stirneingriffsteilung | DIN3960:1987, §3.4.6.1, p. 10; §2.1, p. 3 lists p_e 'Eingriffsteilung' |
 | `length_of_path_of_contact` | g_alpha | Länge der Eingriffsstrecke | Länge der Eingriffsstrecke (gesamte) | DIN3960:1987, §2.1, p. 2 |
 | `sap_diameter` | d_Nf | Fuß-Nutzkreisdurchmesser (SAP Durchmesser, nutzbarer Fußdurchmesser) | Fuß-Nutzkreisdurchmesser | DIN3960:1987, §2.1, p. 2 |
+| `common_tooth_depth` | h_w | Gemeinsame Zahnhöhe eines Radpaares | Gemeinsame Zahnhöhe eines Stirnradpaares | DIN3960:1987, §4.2.6 Eq. (4.2.08), p. 31; §2.1, p. 2 |
+| `length_of_addendum_path_of_contact` | g_a | Länge der Kopfeingriffsstrecke | Länge der Austritt-Eingriffsstrecke | DIN3960:1987, Eq. (4.4.13), p. 35 ('Austritt-Eingriffsstrecke gleich Kopfeingriffsstrecke des Rades 1'); §2.1, p. 2 lists g_a under this designation and g_alpha_a 'Länge der Kopfeingriffsstrecke' |
+| `specific_sliding_at_end_points` | zeta_f | Spezifisches Gleiten in den Endpunkten der Eingriffsstrecke | Spezifisches Gleiten im Endpunkt der Eingriffsstrecke | DIN3960:1987, §4.5.3 Eq. (4.5.11), (4.5.12), p. 38; §2.1, p. 4 |
 
 Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: `tool_edge_break_angle`: alpha_K (DIN3960:1987) statt alpha_KP; `tool_protuberance_angle`: alfa_pr0 (STplus 11.1F) statt alpha_pr; `tooth_thickness_allowance`: E_sns (ISO21771:2014) statt E_sns/E_sni; `tooth_thickness_allowance`: E_sni (ISO21771:2014) statt E_sns/E_sni; `span_allowance`: A_We (STplus 11.1F) statt A_We/A_Wi; `quality_grade`: A (ISOTR6336-30:2022) statt Q; `min_tip_clearance`: c (ISO21771:2014) statt c_min.
 
@@ -184,6 +191,14 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `circumferential_velocity` | v | m/s | Circumferential velocity at the reference cylinder | ISOTR6336-30:2022, Table 2, p. 4 | Circumferential velocity at the reference cylinder (ISOTR6336-30:2022, Table 2, p. 4) | Inkrement 1 | verified |
 | `single_pitch_tolerance` | f_pT | µm | Single pitch tolerance (see ISO 1328-1:2013, ISO 6336 refers to f_pT as f_pt) | ISOTR6336-30:2022, Table 2, p. 3 | Single pitch tolerance (ISOTR6336-30:2022, Table A.2, p. 43) | Inkrement 1 | verified |
 | `rotation_speed` | n | 1/min | Rotation speed of pinion (or wheel) | ISOTR6336-30:2022, Table 2, p. 4 | rotation speed of pinion (or wheel) (ISO6336-1:2019, Table 2, p. 8) | Inkrement 1 | verified |
+| `sum_of_profile_shift_coefficients` | Sigma x | - | Summe der Profilverschiebungsfaktoren | ISO21771:2014, §3.1 symbol list, p. 17; §5.3 Eq. (62), p. 41 | – | Inkrement 2 | verified |
+| `tip_alteration_coefficient` | k | - | Kopfhöhenänderungsfaktor | ISO21771:2014, §3.1 symbol list, p. 12; §4.5.2, p. 34 | – | Inkrement 2 | verified |
+| `tip_form_diameter` | d_Fa | mm | Kopf-Formkreisdurchmesser | ISO21771:2014, §3.1 symbol list, p. 11; §7.6 Eq. (127), p. 68 | – | Inkrement 2 | verified |
+| `active_tip_diameter` | d_Na | mm | Kopf-Nutzkreisdurchmesser | ISO21771:2014, §3.1 symbol list, p. 11; §5.4.1, p. 43 | active tip diameter of pinion or wheel (ISO6336-1:2019, Table 2, p. 4) | Inkrement 2 | verified |
+| `common_tooth_depth` | h_w | mm | Gemeinsame Zahnhöhe eines Radpaares | ISO21771:2014, §3.1 symbol list, p. 12; §5.2.6 Eq. (59), p. 41 | – | Inkrement 2 | verified |
+| `length_of_addendum_path_of_contact` | g_a | mm | Länge der Kopfeingriffsstrecke | ISO21771:2014, §3.1 symbol list, p. 12; §5.4.5.2 Eq. (79), (80), p. 46 | – | Inkrement 2 | verified |
+| `sliding_factor_at_tip` | K_ga | - | Gleitfaktor am Zahnkopf | ISO21771:2014, §3.1 symbol list, p. 14; §5.6.2 Eq. (113), p. 54 | – | Inkrement 2 | verified |
+| `specific_sliding_at_end_points` | zeta_f | - | Spezifisches Gleiten in den Endpunkten der Eingriffsstrecke | ISO21771:2014, §3.1 symbol list, p. 16; §5.6.3 Eq. (116), (117), p. 54 | – | Inkrement 2 | verified |
 | `tooth_thickness_allowance` | E_sns/E_sni | µm | – | – | – | Inkrement 0 | pending |
 | `span_allowance` | A_We/A_Wi | µm | – | – | – | Inkrement 0 | pending |
 | `quality_grade` | Q | - | – | – | – | Inkrement 0 | pending |
@@ -238,6 +253,13 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `transverse_contact_ratio` | epsilon_alpha | eps_alfa | Profilueberdeckung | – | PROFILUEBERDECKUNG |
 | `overlap_ratio` | epsilon_beta | eps_beta | Sprungueberdeckung | – | SPRUNGUEBERDECKUNG |
 | `total_contact_ratio` | epsilon_gamma | eps_gamma | Gesamtueberdeckung | – | GESAMTUEBERDECKUNG |
+| `sum_of_profile_shift_coefficients` | Sigma x | x_1+x_2 | Summe Profilversch.faktoren | PR.VERSCH.SUMME | SUMME_X |
+| `tip_form_diameter` | d_Fa | d_Fa | Kopf-Formkreisdurchmesser | – | KOPFFORMKREISDURCHM |
+| `active_tip_diameter` | d_Na | d_Na | Nutzkreisdurchmesser am Kopf | – | NUTZKREISDURCHM_KOPF |
+| `common_tooth_depth` | h_w | h_gem | gemeinsame Zahnhoehe | – | GEMEINSAME_ZAHNHOEHE |
+| `length_of_addendum_path_of_contact` | g_a | g_alfa-a | Kopfeingriffsstrecke | – | KOPFEINGRSTRECKE |
+| `sliding_factor_at_tip` | K_ga | K_ga | Gleitfaktor am Zahnkopf | – | GLEITFAKTOR_KOPF |
+| `specific_sliding_at_end_points` | zeta_f | zeta_f | Spezifisches Gleiten (Zahnfuss) | – | SPEZ_GLEITEN_FUSS |
 | `span_allowance` | A_We/A_Wi | A_We | – | OBERES_ZAHNW_ABMASS | OBERES_ZAHNWEITENABM |
 | `quality_grade` | Q | – | – | DIN_QUALITAET | – |
 
@@ -320,6 +342,14 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `transverse_contact_ratio` | epsilon_alpha | epsilon_alpha | Profilüberdeckung | DIN3960:1987, §2.1, p. 4 |
 | `overlap_ratio` | epsilon_beta | epsilon_beta | Sprungüberdeckung | DIN3960:1987, §2.1, p. 4 |
 | `total_contact_ratio` | epsilon_gamma | epsilon_gamma | Gesamtüberdeckung | DIN3960:1987, §2.1, p. 4 |
+| `sum_of_profile_shift_coefficients` | Sigma x | Sigma x | Summe der Profilverschiebungsfaktoren | DIN3960:1987, §4.3.4 Eq. (4.3.05), p. 32; §2.1, p. 5 |
+| `tip_alteration_coefficient` | k | k* | Kopfhöhenänderungsfaktor | DIN3960:1987, §4.3.6 Eq. (4.3.08), p. 32 |
+| `tip_form_diameter` | d_Fa | d_Fa | Kopf-Formkreisdurchmesser | DIN3960:1987, §3.6.7 Eq. (3.6.07), p. 16; §2.1, p. 2 |
+| `active_tip_diameter` | d_Na | d_Na | Kopf-Nutzkreisdurchmesser | DIN3960:1987, §4.4.3, p. 33; §2.1, p. 2 |
+| `common_tooth_depth` | h_w | h_w | Gemeinsame Zahnhöhe eines Stirnradpaares | DIN3960:1987, §4.2.6 Eq. (4.2.08), p. 31; §2.1, p. 2 |
+| `length_of_addendum_path_of_contact` | g_a | g_a | Länge der Austritt-Eingriffsstrecke | DIN3960:1987, Eq. (4.4.13), p. 35 ('Austritt-Eingriffsstrecke gleich Kopfeingriffsstrecke des Rades 1'); §2.1, p. 2 lists g_a under this designation and g_alpha_a 'Länge der Kopfeingriffsstrecke' |
+| `sliding_factor_at_tip` | K_ga | K_ga | Gleitfaktor am Zahnkopf | DIN3960:1987, §4.5.2 Eq. (4.5.08), p. 38; §2.1, p. 4 |
+| `specific_sliding_at_end_points` | zeta_f | zeta_f | Spezifisches Gleiten im Endpunkt der Eingriffsstrecke | DIN3960:1987, §4.5.3 Eq. (4.5.11), (4.5.12), p. 38; §2.1, p. 4 |
 
 ## Andere aktuelle Dokumente
 
@@ -374,6 +404,7 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `circumferential_velocity` | v | v | circumferential velocity (without subscript at the reference circle) | ISO6336-1:2019, Table 2, p. 9 |
 | `rotation_speed` | n | n_1 | Pinion speed | ISOTR6336-30:2022, Table A.5, p. 45 |
 | `rotation_speed` | n | n | rotational speed | ISO6336-1:2019, Table 2, p. 8 |
+| `active_tip_diameter` | d_Na | d_Na | Effective tip diameter | ISOTS6336-21:2022, Table 2, p. 2 |
 | `tooth_thickness_allowance` | E_sns/E_sni | E_sns | oberes Zahndickengrenzabmaß | ISO21771:2014, §3.1 symbol list, p. 14 |
 | `tooth_thickness_allowance` | E_sns/E_sni | E_sni | unteres Zahndickengrenzabmaß | ISO21771:2014, §3.1 symbol list, p. 14 |
 | `quality_grade` | Q | A | Flank tolerance class | ISOTR6336-30:2022, Table 2, p. 2; Table A.2, p. 43 |
@@ -437,7 +468,14 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 - `circumferential_velocity` (v): Quantity of the load capacity (stage 2).
 - `single_pitch_tolerance` (f_pT): Quantity of the tolerances (increment 5) and of the load capacity (stage 2).
 - `rotation_speed` (n): Quantity of the load capacity (stage 2); Table 2 of both documents prints the symbol as n_1,2; the registry writes a symbol without the index of the gear. ISO 6336-1:2019 has a second row n 'rotational speed'. The documents print the unit as min^-1.
+- `sum_of_profile_shift_coefficients` (Sigma x): Both norms print the summation sign in front of x. The program name translates the German designation. STplus reads the sum with the key PR.VERSCH.SUMME (manual Bild 4.12, p. 25); the importer reports that key as not supported.
+- `tip_alteration_coefficient` (k): Signed; a negative value shortens the tooth (§4.5.2). The norm uses the letter k for the number of teeth spanned as well. DIN 3960 writes k for the tip alteration as a length (Eq. (4.3.07); §2.1 lists k 'Kopfhöhenänderung') and k* for the factor. The program name translates the German designation.
+- `tip_form_diameter` (d_Fa): The program name translates the German designation (cf. 'Root form diameter' for d_Ff in ISO/TR 6336-30:2022 Table 2, p. 2).
+- `common_tooth_depth` (h_w): The program name translates the German designation (cf. 'Tooth depth' for h in ISO/TR 6336-30:2022 Table 2, p. 3). DIN ISO 21771 Eq. (59) and DIN 3960 Eq. (4.2.08) define it with the tip circles; STplus prints the overlap of the tip form circles under this label, and gearcore evaluates Eq. (59) with the tip form diameters as well (user decision 2026-09-30, ADR-112; data/stplus/expected_differences.yaml, deviations_from_the_norm).
+- `length_of_addendum_path_of_contact` (g_a): Same symbol as in the equations of DIN 3960; only its list §2.1 has a second symbol g_alpha_a, which the STplus listing uses (g_alfa-a). Per gear: g_a1 (Eq. (80)) and g_a2 = g_f1 (Eq. (79)). The program name translates the German designation.
+- `sliding_factor_at_tip` (K_ga): The norm gives K_ga at point E (Eq. (113), with g_a) and K_gf 'Gleitfaktor am Zahnfuß' at point A (Eq. (112), with g_f) for the driving pinion. Per gear the value at the tip of the wheel is the norm's K_gf (g_a2 = g_f1); STplus prints both as K_ga of each gear. The program name translates the German designation.
+- `specific_sliding_at_end_points` (zeta_f): zeta_f1 at point A (Eq. (116)) and zeta_f2 at point E (Eq. (117)): the values at the root of each gear. The program name shortens the designation.
 - `tooth_thickness_allowance` (E_sns/E_sni): Pair of upper and lower allowance; governed by DIN 3967:1978-08 and DIN 21773:2014-08, verified in increment 5.
 - `span_allowance` (A_We/A_Wi): Symbols as STplus prints them (DIN 3967 notation); the current symbols are verified in increment 5.
 - `quality_grade` (Q): Verified in increment 5 (DIN ISO 1328-1:2018-03).
-- `min_tip_clearance` (c_min): Input of a tip diameter check (STplus MINDESTKOPFSPIEL); verified in increment 2.
+- `min_tip_clearance` (c_min): Input of a tip diameter check (STplus MINDESTKOPFSPIEL). The tip clearance of Eq. (60) needs the generated root diameter of the mating gear; verified with the generation (increment 3).

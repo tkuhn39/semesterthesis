@@ -113,3 +113,30 @@ cases:
       m_n: 4
       pinion: {z: 17, x: -0.8, b: 20, tool: {h_aP0: 1.25, rho_aP0: 0.25}}
       wheel: {z: 60, x: 0.6, b: 20, tool: {h_aP0: 1.25, rho_aP0: 0.25}}
+  # ---- added by the gate of increment 2 (finding G2B-10) ----------------------------------------
+  - name: chamfer_hk_z20_34
+    mode: run
+    trust: generated
+    notes: "tip chamfer as an input (KOPFKANTENBRUCH > 0 on both gears): Eq. (127) against STplus"
+    template:
+      m_n: 2
+      pinion: {z: 20, x: 0.2, b: 20, h_K: 0.2, tool: {h_aP0: 1.25, rho_aP0: 0.25}}
+      wheel: {z: 34, x: 0.1, b: 20, h_K: 0.3, tool: {h_aP0: 1.25, rho_aP0: 0.25}}
+  - name: helix15_b_unequal
+    mode: run
+    trust: generated
+    notes: "helical pair with different face widths: contact face width and overlap ratio"
+    template:
+      m_n: 2.5
+      beta: 15
+      pinion: {z: 19, x: 0.3, b: 30, tool: {h_aP0: 1.25, rho_aP0: 0.3}}
+      wheel: {z: 47, x: 0.0, b: 24, tool: {h_aP0: 1.25, rho_aP0: 0.3}}
+  - name: a_x2_only_z18_45
+    mode: run
+    trust: generated
+    notes: "centre distance and x_2 given, x_1 open: the rule of ADR-107 against STplus"
+    template:
+      m_n: 3
+      a: 96
+      pinion: {z: 18, b: 25, tool: {h_aP0: 1.25, rho_aP0: 0.25}}
+      wheel: {z: 45, x: 0.1, b: 25, tool: {h_aP0: 1.25, rho_aP0: 0.25}}

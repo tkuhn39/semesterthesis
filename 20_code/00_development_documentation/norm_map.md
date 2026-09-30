@@ -1,8 +1,9 @@
 # Normenlandkarte Stirnräder (gerad- und schrägverzahnt, Außenverzahnung)
 
-Stand 2026-09-29, verifiziert aus den Norm-PDFs in `00_literatur/05_normen_und_richtlinien/`.
+Stand 2026-09-30, verifiziert aus den Norm-PDFs in `00_literatur/05_normen_und_richtlinien/`.
 Pflege: bei jeder Änderung der Berechnungsbasis (ADR) aktualisieren. Gleichungsebene der Unterschiede:
-`norm_differences.md` (generiert aus `expected_differences.yaml`).
+`data/stplus/expected_differences.yaml`; die Darstellung `norm_differences.md` wird daraus mit
+Inkrement 6 erzeugt.
 
 ## Zuordnung STplus (DIN 3960-Kette) → aktuelle Normen
 
@@ -120,6 +121,57 @@ Pflege: bei jeder Änderung der Berechnungsbasis (ADR) aktualisieren. Gleichungs
 - **Werkzeugprofil im Stirnschnitt:** Die Umrechnung des Werkzeug-Bezugsprofils vom Normal- in den
   Stirnschnitt (Kopfrundung wird zur Ellipse) gehört zur Erzeugung und entsteht mit Inkrement 3.
 
+## Befunde aus Inkrement 2 (2026-09-30)
+
+- **Gemeinsame Zahnhöhe (bewusste Abweichung von der Norm, ADR-112):** DIN ISO 21771:2014-08 §5.2.6
+  Gl. (59), S. 41, und DIN 3960:1987-03 §4.2.6 Gl. (4.2.08), S. 31, definieren
+  h_w = (d_a1 + d_a2) / 2 − a mit den Kopfkreisen. STplus setzt in dieselbe Formel die
+  Kopf-Formkreise ein, (d_Fa1 + d_Fa2) / 2 − a (kst-B: 2,918 mm statt 3,205 mm; mit eingegebenem
+  Kantenbruch an beiden Rädern, Referenzfall `chamfer_hk_z20_34`: 3,522 mm statt 4,022 mm); das
+  Handbuch sagt es nicht, der Vergleich hat es gezeigt. Beide Normen sagen dasselbe, der Unterschied
+  ist eine Eigenschaft des Programms. Nach Entscheidung des Nutzers (2026-09-30) rechnet `gearcore`
+  ebenfalls mit den Kopf-Formkreisen: Auf dem Kopfkantenbruch trägt der Zahn nicht (vgl. DIN ISO
+  21771 §6.1.2, S. 55: Kopfkantenbruch und Kopfkantenrundung schränken den nutzbaren Bereich der
+  Zahnflanke ein). Wo beide Werte verschieden sind, nennt das Ergebnis den Wert nach dem Wortlaut
+  der Norm als Hinweis; der Eintrag steht in `data/stplus/expected_differences.yaml` unter
+  `deviations_from_the_norm`.
+- **Gleichungsnummern:** Die Nummer (61) kommt in DIN ISO 21771:2014-08 nicht vor; unter (60) stehen
+  zwei Formeln (Kopfspiel c_1 und c_2), darauf folgt (62).
+- **Zahnbreite in der Sprungüberdeckung:** Gl. (93) schreibt b, der Sprung-Überdeckungswinkel in
+  Gl. (91) ist mit der genutzten Zahnbreite b_w definiert. `gearcore` rechnet mit b_w und setzt ohne
+  Angabe eines Mittenversatzes b_w = min(b_1, b_2).
+- **Gleitfaktoren je Rad:** Die Norm gibt K_ga (Gl. (113), Punkt E) und K_gf (Gl. (112), Punkt A) für
+  das treibende Ritzel an. STplus druckt beide als „Gleitfaktor am Zahnkopf“ je Rad; der Wert des
+  Rades ist das K_gf der Norm. `gearcore` führt die Größen ebenfalls je Rad und nennt die Gleichung.
+- **Formelzeichen der Kopfeingriffsstrecke:** DIN 3960:1987-03 schreibt im Abschnitt selbst g_a
+  (Gl. (4.4.13), S. 35), wie DIN ISO 21771; g_αa steht nur in der Zeichenliste §2.1 und im
+  STplus-Listing. Das Zeichen hat sich also nicht geändert (Korrektur nach dem Gate).
+- **Kopfhöhenänderungsfaktor:** DIN 3960:1987-03 schreibt k* für den Faktor und k für die
+  Kopfhöhenänderung als Länge (§4.3.6 Gl. (4.3.07), (4.3.08), S. 32); DIN ISO 21771 schreibt k für
+  den Faktor (§4.5.2, S. 34).
+- **Formübermaß:** STplus druckt c_F (Gl. (76)) im Listing unter dem Zeichen c_n.
+- **Korrektur im Anhang NB:** Anhang NB (S. 6) korrigiert die erste Form von Gl. (56) und (57). Der
+  mittlere Term der korrigierten Gleichungen ist dort als cos α_t / cos α_wt ohne den Faktor d_1
+  bzw. d_2 gedruckt. `gearcore` verwendet die letzte Form d_w = d_b / cos α_wt.
+- **Zahnweite und Profilverschiebung (offen):** Zahnweite und Profilverschiebungsfaktor bestimmen
+  einander: DIN 21773:2014-08 §7.2 Gl. (14), S. 13, W_k = m_n·cos α_n·[π·(k − 0,5) + z·inv α_t] +
+  2·x·m_n·sin α_n, mit dem Profilverschiebungsfaktor bzw. dem Erzeugungs-Profilverschiebungsfaktor.
+  Eine Zahnweite mit Zahndickenabmaß entspricht x_E (DIN ISO 21771:2014-08 §7.4 Gl. (123), (124),
+  S. 67). ISO/TR 6336-30:2022 Anhang A Beispiel 1 berechnet aus W_k1 = 38,196 mm (Tabelle A.1,
+  S. 43) x_E1 = 0,117 79 (S. 45); der Nennwert desselben Rades ist x_1 = (0,145 22). Wie eine
+  eingegebene Zahnweite zu behandeln ist und wie STplus das handhabt, wird mit den Prüfmaßen und
+  Abmaßen (Inkremente 4 und 5) geklärt und vom Nutzer bestätigt; bis dahin wertet `gearcore` keine
+  Zahnweite aus (ADR-107, PAIR-06).
+- **Beginn der aktiven Flanke auf dem Grundkreis:** Das spezifische Gleiten nach Gl. (116), (117)
+  ist dort unbeschränkt; `gearcore` bricht mit einer Meldung ab, wenn d_Nf ≤ d_b·(1 + 10⁻¹²) ist
+  (ADR-110).
+- **Überbestimmte Eingabe:** STplus behält bei gegebenem a, x_1 und x_2 den Wert x_1 und leitet x_2
+  ab, ohne es zu melden. `gearcore` lässt nur zwei der drei Werte zu (ADR-107). Sind a und nur x_2
+  gegeben, leitet STplus x_1 ab wie `gearcore` (Referenzfall `a_x2_only_z18_45`).
+- **Rechenbeispiel:** ISO/TR 6336-30:2022 Anhang A Beispiel 1 gibt a und x_2 = 0 an; das in Klammern
+  gedruckte x_1 = 0,145 22 (Abschnitt 4.2.18, S. 9: berechnet, nur zur Information) wird von
+  `gearcore` aus a und x_2 reproduziert (0,145 222 1).
+
 ## Tabellenwerte und Vorbelegungen (Stand 2026-09-30)
 
 Werte, die nicht eingegeben werden müssen, stammen aus zwei verschiedenen Quellen: aus
@@ -128,24 +180,28 @@ Programms** (STplus setzt einen Wert, wenn die Eingabe fehlt). Beides wird je In
 Was belegt STplus vor (Programmanleitung), was tabelliert die aktuelle, nicht zurückgezogene Norm,
 weichen die Werte ab. `gearcore` kennt keine stillen Vorbelegungen: Ein nicht eingegebener Wert ist
 entweder ein benannter Wert einer Normtabelle (Funktion mit Quellenangabe) oder er fehlt, und die
-Rechnung, die ihn braucht, meldet das.
+Rechnung, die ihn braucht, meldet das. Das gilt auch für die Null eines fehlenden Merkmals:
+Schrägungswinkel, Kopfkantenbruch, Protuberanz und Bearbeitungszugabe sind Pflichteingaben; der
+`.ste`-Import setzt die Null nur zusammen mit einem Hinweis (Nutzerentscheidung 2026-09-30,
+ADR-111).
 
 | Wert | STplus 11.1F | aktuelle Norm | Stand in `gearcore` | Inkrement |
 |---|---|---|---|---|
-| Normaleingriffswinkel | 20° vorbelegt (Anleitung S. 15), aber nur in der Benutzeroberfläche: eine Eingabedatei ohne `EINGRIFFSWINKEL` wird abgelehnt (Probelauf) | DIN 867:1986-02, ISO 53:1998: α_P = 20° | Vorbelegung 20° im Datenvertrag | 0 ✓ |
+| Normaleingriffswinkel | 20° vorbelegt (Anleitung S. 15), aber nur in der Benutzeroberfläche: eine Eingabedatei ohne `EINGRIFFSWINKEL` wird abgelehnt (Probelauf) | DIN 867:1986-02, ISO 53:1998: α_P = 20° | keine Vorbelegung: Pflichteingabe im Datenvertrag und im Import (seit Inkrement 2) | 2 ✓ |
+| Schrägungswinkel, Kopfkantenbruch, Protuberanz, Bearbeitungszugabe des Werkzeugs | fehlt die Eingabe, gilt 0 (kein Merkmal) | – | Pflichteingaben im Datenvertrag; der Import setzt 0 mit Hinweis (ADR-111) | 2 ✓ |
 | Bezugsprofil des Rades (h_aP, h_fP, c_P, ρ_fP) | über Werkzeugfaktoren | DIN 867:1986-02; ISO 53:1998 Typ A–D | Funktionen `din867_basic_rack`, `iso53_basic_rack`; Grenzen des Fußrundungsradius beider Normen verglichen (gleich) | 1 ✓ |
 | Werkzeug-Bezugsprofile I–IV (Kopfhöhe, Kopfrundung, Bearbeitungszugabe) | fest im Programm; ohne Werkzeugeingabe „geeignetes Wälzwerkzeug“ (S. 22) | DIN 3972:1952-02 (gültig) | `din3972_tool`; alle 152 Tabellenwerte gegen die Formeln geprüft, 6 Abweichungen dokumentiert. Kein stilles Standardwerkzeug: das Werkzeug ist Pflichteingabe | 1 ✓ |
 | Modulreihe | – | ISO 54:1996 | `check_module` (Hinweis, keine Ablehnung) | 1 ✓ |
 | Werkzeugdatenbank | `wkz.dat` (12 Werkzeuge) und `WKZ_GLOB.DAT` (2 Werkzeuge), keine Normtabelle | – | unverändert übernommen, gekennzeichnet „STplus 11.1F (Freigabe 01.12.2025)“ (`gearcore.stplus_program.tool_database`, ADR-109). 6 Datensätze sind gültige Werkzeuge; 6 widersprechen sich (Faktor und Absolutwert), 2 haben keine Kopfrundung: aufbewahrt, aber kein Datenvertrag | 1 ✓ |
 | Standardwerkzeug ohne Werkzeugeingabe | Wälzfräser mit h_aP0* = 1,25; ρ_aP0* = 0,25; h_fP0* = h_FfP0* = 1,3 (Probelauf; die Anleitung nennt keine Zahlen, S. 22) | DIN 3972:1952-02 Profil II hat dieselbe Kopfhöhe 1,25·m, die Kopfrundung ist dort je Modul tabelliert | `stplus_default_tool()`, nie stillschweigend | 1 ✓ |
-| Kopfkreisdurchmesser ohne Eingabe | d_a = d + 2·m_n·(h_aP* + x), danach Verträglichkeitsprüfung (S. 19) | DIN ISO 21771:2014-08 §5 (Kopfhöhenänderung, Kopfspiel) | offen | 2 |
-| Kopfspiel, Mindestkopfspiel | Kopfspielfaktor c* als Eingabe (S. 18/19) | DIN ISO 21771:2014-08 §5.2.7 | offen | 2 |
-| Aufteilung der Profilverschiebungssumme | nach DIN 3992 u. a. (S. 17, 25) | – (DIN 3992 liegt nicht im Repo) | Erweiterungspunkt, `NotSupportedError` | – |
+| Kopfkreisdurchmesser ohne Eingabe | d_a = d + 2·m_n·(h_aP* + x), danach Verträglichkeitsprüfung und gegebenenfalls Verkleinerung (S. 19) | DIN ISO 21771:2014-08 Gl. (33), S. 34: d_a = d + 2·(x·m_n + h_aP + k·m_n) | Kopfkreis ist Eingabe; der Nennwert nach Gl. (33) steht über `with_nominal_tip_diameters` als ausdrückliche Wahl bereit. Die Verkleinerung von STplus ist nicht nachgebildet | 2 ✓ |
+| Kopfspiel, Mindestkopfspiel | Kopfspielfaktor c* als Eingabe (S. 18/19) | DIN ISO 21771:2014-08 §5.2.7 Gl. (60), S. 41 (mit dem erzeugten Fußkreisdurchmesser des Gegenrades) | Funktion `tip_clearance` vorhanden und gegen STplus geprüft; im Ergebnis ab Inkrement 3 | 3 |
+| Aufteilung der Profilverschiebungssumme | nach DIN 3992 u. a. (S. 17, 25) | keine: DIN 3992:1964-03 ist zurückgezogen (liegt im Repo); DIN ISO 21771:2014-08 §5.3 (S. 42) überlässt die Aufteilung den zulässigen Beanspruchungen, den Gleitgeschwindigkeiten oder anderen vorgeschriebenen Maßen | Erweiterungspunkt: der Import meldet `NotSupportedError`, der Datenvertrag lehnt einen Achsabstand ohne Profilverschiebungsfaktor und ohne Zahnweite ab | – |
 | Kopfkantenbruch: Tangentialbetrag | 0,7·h_K vorbelegt (S. 19) | zu prüfen (DIN ISO 21771 §7, DIN 3960 A.3.1) | offen | 3 |
 | Kantenbrechwinkel des Werkzeugs | α_n0 + 10° vorbelegt (S. 186, nur Textstelle geortet) | zu prüfen | offen (`pending`) | 3 |
 | Bearbeitungszugabe | zwei Eingaben, Summe im Listing (S. 20, 184, 185) | DIN ISO 21771:2014-08 §7.2 | Importer liest nur die werkzeuginterne (REG1-03b) | 3 |
 | Messzähnezahl k | programmintern, überschreibbar (S. 20) | DIN 21773:2014-08 §7.2 | offen | 4 |
-| Messkugel-/Messrollendurchmesser D_M | programmintern, überschreibbar (S. 20) | DIN 21773:2014-08 §8–§11; eine eigene Norm für die Durchmesserreihe liegt nicht im Repo | offen | 4 |
+| Messkugel-/Messrollendurchmesser D_M | programmintern, überschreibbar (S. 20) | DIN 21773:2014-08, S. 18: Gl. (26) mit Gl. (27) für schrägverzahnte Räder (Anlage der Messkugel am V-Zylinder); für α_n = 20° näherungsweise Gl. (28), D_M = m_n·D_M*, mit dem Faktor D_M* aus der Netztafel Bild 8. Eine Durchmesserreihe aus einer weiteren Norm verlangt DIN 21773 nicht | offen | 4 |
 | Zahndickenabmaße und -toleranzen | Reihe c25 vorbelegt (S. 19) | DIN 3967:1978-08 Tabelle 1 und 2 (gültig) | offen; Eingabefelder vorhanden | 5 |
 | Achsabstandsabmaße | js 7 vorbelegt (S. 20) | DIN 3964:1980-11 Tabelle 1 (gültig) | offen | 5 |
 | Verzahnungsqualität | DIN-Qualität 7 vorbelegt (S. 19); Tabellen DIN 3962/63 und ISO 1328:1975/1995 als XML | DIN ISO 1328-1:2018-03 (Formeln statt Tabellen), DIN ISO 1328-2:2021-09 | offen; Tabellen gegen Formeln ist ein dokumentierter Normunterschied | 5 |
@@ -156,9 +212,12 @@ Rechnung, die ihn braucht, meldet das.
 Die Vorbelegungen von STplus sind mit Fundstelle und Probelauf in `data/stplus_program/defaults.yaml` aufbewahrt (ADR-109), gekennzeichnet mit Programmversion und Freigabedatum; `gearcore` wendet keine davon stillschweigend an.
 
 Seitenangaben: STplus-Programmanleitung 11.1F (gedruckte Seitenzahl). Offen heißt: weder
-hinterlegt noch gegen die aktuelle Norm verglichen. Fehlende Normen für diese Aufgabe: DIN 3992
-(Profilverschiebung), DIN 58412 und weitere Feinwerktechnik-Bezugsprofile (die Anleitung nennt
-DIN 58412 auf S. 183 für Werkzeuge mit Messlinie), eine Norm für die Messstück-Durchmesserreihe.
+hinterlegt noch gegen die aktuelle Norm verglichen. Zurückgezogene Normen, auf die sich STplus stützt und die im Repo liegen: DIN 3992:1964-03
+(Profilverschiebung) und DIN 58412:1987-11 (Bezugsprofile für Verzahnwerkzeuge der Feinwerktechnik;
+die Anleitung nennt sie auf S. 183). Beide sind keine Rechengrundlage von `gearcore`; ihre Werte
+können nur als gekennzeichnete alte Voreinstellung dienen. DIN 58400 (Bezugsprofil der
+Feinwerktechnik, von DIN 58412 vorausgesetzt) liegt nicht im Repo. Für den Messkugeldurchmesser ist
+keine weitere Norm nötig (DIN 21773:2014-08 Gl. (26) bis (28)).
 
 Die Einzelabweichungen mit Zahlenbeispiel entstehen in Inkrement 2–6 und werden in
 `expected_differences.yaml` geführt.

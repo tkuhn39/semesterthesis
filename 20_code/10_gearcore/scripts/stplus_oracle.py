@@ -10,6 +10,7 @@ nevertheless write into ``bin/``, the run fails loudly instead of adopting forei
     python scripts/stplus_oracle.py import --case kst_e --ste <path> --sta <path> --trust verified
     python scripts/stplus_oracle.py run --case fzg_c --ste <path> [--plot-accuracy 0.005]
     python scripts/stplus_oracle.py run-all            # everything listed in scripts/oracle_cases.yaml
+    python scripts/stplus_oracle.py refresh-import     # typed-import record of every fixture, no STplus run
 
 Fixture layout ``src/gearcore/data/stplus/<case>/``: ``input.ste`` (as run), ``report.sta.txt`` (raw
 listing; ``*.sta`` is git-ignored repo-wide), ``geometry.json`` (DIN 3960 geometry block + pairing
@@ -275,20 +276,37 @@ def write_fixture(
         "interface_file": "interface.sts.txt" if sts_text is not None else None,
         "sections": list(report.sections),
     }
-    # the typed import must succeed or say why — recorded, never hidden
+    meta["typed_import"] = _typed_import(target, meta)
+    _write_json(target / "meta.json", meta)
+    return target
+
+
+def _typed_import(target: Path, meta: dict[str, Any]) -> dict[str, Any]:
+    """The typed import must succeed or say why — recorded, never hidden."""
     ste = load_ste(target / "input.ste")
     kinds = {k: MaterialKind(v) for k, v in (meta.get("material_kinds") or {}).items()}
     try:
         imported = pair_input_from_ste(ste, material_kinds=kinds)
-        meta["typed_import"] = {
-            "ok": True,
-            "unmapped_keys": list(imported.unmapped_keys),
-            "notes": list(imported.notes),
-        }
     except Exception as exc:  # recorded verbatim for the fixture consumer, never swallowed
-        meta["typed_import"] = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
-    _write_json(target / "meta.json", meta)
-    return target
+        return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+    return {
+        "ok": True,
+        "unmapped_keys": list(imported.unmapped_keys),
+        "notes": list(imported.notes),
+    }
+
+
+def refresh_typed_import() -> None:
+    """Recompute the typed-import record of every packaged fixture with the current importer.
+
+    Nothing else of a fixture is touched and STplus is not run: the record states what the
+    importer of this version reads from ``input.ste`` (unmapped keys, notes)."""
+    for target in sorted(p for p in FIXTURES.iterdir() if (p / "meta.json").is_file()):
+        meta = json.loads((target / "meta.json").read_text(encoding="utf-8"))
+        meta["typed_import"] = _typed_import(target, meta)
+        _write_json(target / "meta.json", meta)
+        status = "ok" if meta["typed_import"]["ok"] else meta["typed_import"]["error"]
+        print(f"{target.name:<24} typed import: {status}")
 
 
 def run_case(
@@ -450,8 +468,13 @@ def template_ste(spec: dict[str, Any]) -> str:
     elif x1 is not None:
         geo.append(f"PROFILVERSCHIEBUNG_N = {x1}")
         geo.append("AUFTEILUNG_X1X2 = 0")
+    elif x2 is not None:
+        geo.append(f"PROFILVERSCHIEBUNG_N = % {x2}")
+        geo.append("AUFTEILUNG_X1X2 = 0")
     if "d_a" in g1 or "d_a" in g2:
         geo.append(f"KOPFKREISDM = {g1.get('d_a', '%')} {g2.get('d_a', '%')}")
+    if "h_K" in g1 or "h_K" in g2:
+        geo.append(f"KOPFKANTENBRUCH = {g1.get('h_K', 0)} {g2.get('h_K', 0)}")
     geo.append("WERKZEUG_VORVERZ. = WKZ_1 WKZ_2")
     return (
         "\n".join(geo)
@@ -534,11 +557,17 @@ def main(argv: list[str] | None = None) -> None:
     p_all = sub.add_parser("run-all", help="process every case in oracle_cases.yaml")
     p_all.add_argument("--stplus-root")
     p_all.add_argument("--only")
+    sub.add_parser(
+        "refresh-import", help="recompute the typed-import record of every fixture (no STplus run)"
+    )
     args = parser.parse_args(argv)
 
     if args.command == "discover":
         for name, ste, sta in discover():
             print(f"{name:<12} {_relative(ste)}  +  {sta.name}")
+        return
+    if args.command == "refresh-import":
+        refresh_typed_import()
         return
     if args.command == "import":
         target = import_case(

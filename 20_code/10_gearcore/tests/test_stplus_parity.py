@@ -22,7 +22,7 @@ import numpy as np
 import pytest
 
 from gearcore import parity
-from gearcore.data import stplus_case_dirs
+from gearcore.data import load_expected_differences, load_norm_deviations, stplus_case_dirs
 from gearcore.errors import InputRangeError, ParseError
 from gearcore.involute import compute_basic_gear_geometry
 from gearcore.io.ste import load_ste, pair_input_from_ste
@@ -35,20 +35,23 @@ from gearcore.parity import (
     ParityVerdict,
     binary32_step,
     compare_basic_geometry,
+    compare_pair_geometry,
+    compute_pair_from_data,
+    pair_data,
     printed_decimals,
     stplus_names,
 )
 
 ALL_FIELDS = (*sorted(COMPARED_FIELDS), PROFILE_SHIFT_FIELD)
-HELICAL_RUNS = ("helix20_z25_65", "helix30_z25_40")
+HELICAL_RUNS = ("helix15_b_unequal", "helix20_z25_65", "helix30_z25_40")
 
-# State of increment 1 over the 15 packaged cases; a new fixture or quantity changes these numbers
-# deliberately (ADR-106 quotes them).
+# State over the 18 packaged cases (15 of increment 1, three added by the gate of increment 2);
+# a new fixture or quantity changes these numbers deliberately (ADR-106 quotes them).
 EXPECTED_VERDICTS = {
-    ("listing", "identical"): 253,
+    ("listing", "identical"): 306,
     ("listing", "oracle_accuracy"): 1,
-    ("interface", "identical"): 178,
-    ("interface", "oracle_accuracy"): 11,
+    ("interface", "identical"): 225,
+    ("interface", "oracle_accuracy"): 17,
 }
 
 
@@ -103,11 +106,11 @@ def test_the_listing_needs_no_arithmetic_tolerance(case_dir: Path) -> None:
 @pytest.mark.oracle
 def test_verdict_counts_of_increment_1() -> None:
     cases = stplus_case_dirs()
-    assert len(cases) == 15
+    assert len(cases) == 18
     rows = [row for case in cases for row in compare_basic_geometry(case.name)]
     counts = Counter((row.origin, row.verdict.value) for row in rows)
     assert dict(counts) == EXPECTED_VERDICTS
-    assert len(rows) == sum(EXPECTED_VERDICTS.values()) == 443
+    assert len(rows) == sum(EXPECTED_VERDICTS.values()) == 549
 
 
 def test_parity_rows_separate_the_tolerance_parts() -> None:
@@ -160,10 +163,12 @@ def test_stplus_overrides_a_given_x2_when_the_centre_distance_is_given() -> None
     shifts = {(r.gear, r.origin): r for r in rows if r.field == "profile_shift_coefficient"}
     assert set(shifts) == {("pinion", "listing"), ("pinion", "interface")}
     assert shifts[("pinion", "interface")].stplus_token == "0.20340"
-    pair = pair_input_from_ste(
-        load_ste(stplus_case_dirs()[0].parent / "kst_e_rerun/input.ste")
-    ).pair
-    assert pair.gears.wheel.profile_shift_coefficient == 0.3143 and pair.centre_distance_mm == 52.0
+    imported = pair_input_from_ste(load_ste(stplus_case_dirs()[0].parent / "kst_e_rerun/input.ste"))
+    pair = imported.pair
+    # gearcore admits only two of a_w, x_1, x_2 (ADR-107): the importer says that it drops x_2
+    assert pair.gears.wheel.profile_shift_coefficient is None and pair.centre_distance_mm == 52.0
+    assert pair.gears.wheel.span is None, "the span of the file is an inspection dimension"
+    assert any("x_2 = 0.3143 of the file is not passed on" in note for note in imported.notes)
     interface = _load(stplus_case_dirs()[0].parent / "kst_e_rerun", "interface")
     assert interface is not None
     assert interface["GEOMETRIEDATEN/PROFILVERSCHIEBFAKTOR"]["values"][1] == "0.31433"
@@ -315,12 +320,19 @@ def test_evidence_for_single_precision_as_quoted_in_adr_106() -> None:
     single_hits = [v for v in values if f"{v[4]:.5f}" == f"{v[3]:.5f}"]
     double_hits = [v for v in values if f"{v[5]:.5f}" == f"{v[3]:.5f}"]
     stored_hits = [v for v in values if f"{_r32(v[5]):.5f}" == f"{v[3]:.5f}"]
-    assert len(runs) == 11 and len(values) == 99
-    assert (len(double_hits), len(stored_hits), len(single_hits)) == (93, 95, 99)
-    missed = {v[0] for v in values if v not in double_hits}
-    assert missed == set(HELICAL_RUNS), "binary64 misses values of the helical runs only"
+    assert len(runs) == 14 and len(values) == 126
+    assert (len(double_hits), len(stored_hits), len(single_hits)) == (117, 120, 126)
+    missed = Counter(v[0] for v in values if v not in double_hits)
+    # the helical runs, and one base diameter of a spur run (d_b2 = 126.8585038 mm, printed
+    # 126.85851): most spur values are insensitive, not all
+    assert missed == {
+        "helix15_b_unequal": 2,
+        "helix20_z25_65": 4,
+        "helix30_z25_40": 2,
+        "a_x2_only_z18_45": 1,
+    }
     helical = [v for v in values if v[0] in HELICAL_RUNS]
-    assert len(helical) == 18, "the 81 values of the nine spur runs are insensitive (beta = 0)"
+    assert len(helical) == 27
     worst_steps = max(
         abs(v[3] - v[5]) / binary32_step(v[5]) for v in values if v not in double_hits
     )
@@ -349,3 +361,193 @@ def test_the_interface_file_is_used_where_it_exists(case_dir: Path) -> None:
     assert has_interface == (meta["origin"] == "run"), (
         f"{case_dir.name}: own runs carry the interface file, supplied listings do not"
     )
+
+
+# --- pair geometry (increment 2) ------------------------------------------------------------------
+
+# no value differs: the common tooth depth follows the tip form circles like STplus (ADR-112)
+EXPECTED_PAIR_VERDICTS = {"identical": 786, "oracle_accuracy": 69}
+# tip form diameter below the tip diameter: an edge break flank of the tool at the wheel (kst),
+# a tip chamfer given as an input on both gears (chamfer_hk)
+CHAMFERED_CASES = {
+    "kst_b",
+    "kst_b_rerun",
+    "kst_c",
+    "kst_c_rerun",
+    "kst_e",
+    "kst_e_rerun",
+    "chamfer_hk_z20_34",
+}
+
+
+def _pair_rows() -> list[ParityRow]:
+    return [row for case in stplus_case_dirs() for row in compare_pair_geometry(case.name)]
+
+
+@pytest.mark.oracle
+def test_verdict_counts_of_the_pair_geometry() -> None:
+    rows = _pair_rows()
+    counts = Counter(row.verdict.value for row in rows)
+    assert dict(counts) == EXPECTED_PAIR_VERDICTS
+    assert len(rows) == 855
+    by_origin = Counter((row.origin, row.verdict.value) for row in rows)
+    assert by_origin == {
+        ("listing", "identical"): 470,
+        ("listing", "oracle_accuracy"): 10,
+        ("interface", "identical"): 316,
+        ("interface", "oracle_accuracy"): 59,
+    }
+    assert {row.field for row in rows} == set(parity.PAIR_FIELDS)
+    # every case contributes, the supplied listings without interface file with the listing only
+    per_case = Counter(row.case for row in rows)
+    assert len(per_case) == 18 and min(per_case.values()) >= 26
+
+
+@pytest.mark.eq("ISO21771:2014", "(59)")
+@pytest.mark.oracle
+def test_common_tooth_depth_follows_the_tip_form_circles() -> None:
+    """User decision ADR-112: h_w is Eq. (59) evaluated with the tip form circles, as STplus prints
+    it. With the tip circles, by the letter of both norms, the value is larger by the radial
+    amounts of the chamfers; the result names that value."""
+    from gearcore.pair import common_tooth_depth
+
+    record = load_norm_deviations()["common_tooth_depth_with_tip_form_circles"]
+    assert record["field"] == "common_tooth_depth_mm"
+    assert (record["norm"]["eq"], record["old_norm"]["eq"]) == ("(59)", "(4.2.08)")
+    assert load_expected_differences() == {}, "no value differs from STplus without explanation"
+    chamfered: set[str] = set()
+    for path in stplus_case_dirs():
+        data = pair_data(path.name)
+        ours = compute_pair_from_data(data, data.values)
+        form, tip = ours.tip_form_diameter_mm, ours.tip_diameter_mm
+        chamfer = 0.5 * (tip.pinion - form.pinion) + 0.5 * (tip.wheel - form.wheel)
+        by_norm = common_tooth_depth(tip.pinion, tip.wheel, ours.centre_distance_mm)
+        assert by_norm - ours.common_tooth_depth_mm == pytest.approx(chamfer, abs=1e-12)
+        noted = [w for w in ours.warnings if w.code == "common_tooth_depth_with_tip_form_circles"]
+        assert bool(noted) == (chamfer > 0.0), path.name
+        rows = [r for r in compare_pair_geometry(path.name) if r.field == "common_tooth_depth_mm"]
+        assert rows and all(row.verdict is not ParityVerdict.DIFFERENT for row in rows), path.name
+        if not noted:
+            continue
+        chamfered.add(path.name)
+        assert repr(by_norm) in noted[0].message
+        # the value of the tip circles is not what STplus prints
+        for row in rows:
+            tolerance = row.print_tolerance + row.arithmetic_tolerance + row.input_tolerance
+            assert abs(by_norm - row.stplus_value) > 10.0 * tolerance, path.name
+    assert chamfered == CHAMFERED_CASES
+    example = record["example"]
+    data = pair_data(example["case"])
+    ours = compute_pair_from_data(data, data.values)
+    assert ours.common_tooth_depth_mm == pytest.approx(example["gearcore_value"], abs=1e-12)
+    assert common_tooth_depth(
+        ours.tip_diameter_mm.pinion, ours.tip_diameter_mm.wheel, ours.centre_distance_mm
+    ) == pytest.approx(example["norm_value"], abs=1e-12)
+    row = next(
+        r
+        for r in compare_pair_geometry(example["case"])
+        if r.field == "common_tooth_depth_mm" and r.origin == "interface"
+    )
+    assert row.stplus_value == example["stplus_value"]
+
+
+def test_pair_data_says_which_inputs_come_from_an_stplus_output() -> None:
+    """Only what STplus derived itself is taken from its output, and only that has a rounding."""
+    given = pair_data("helix20_z25_65")  # a and x_1 in the input, tip diameters chosen by STplus
+    assert set(given.printed) == {"d_a1", "d_a2", "d_Ff1", "d_Ff2"}
+    assert "x_2" not in given.values and given.values["x_1"] == 0.25
+    spans = pair_data("kst_b_rerun")  # x from span measurements, tool breaks the wheel tip
+    assert set(spans.printed) == {"x_1", "d_Fa2", "d_Ff1", "d_Ff2"}
+    assert spans.values["d_a1"] == 76.46 and spans.values["d_Fa2"] == 112.37595
+    shifts = pair_data("undercut_z12_x0")  # x_1 and x_2 in the input, no centre distance
+    assert "a_w" not in shifts.values and shifts.values["x_2"] == 0.0
+    rows = compare_pair_geometry("helix20_z25_65")
+    fields = {(row.field, row.gear) for row in rows}
+    assert ("profile_shift_coefficient", "wheel") in fields, "x_2 follows from a_w: a result"
+    assert ("profile_shift_coefficient", "pinion") not in fields, "x_1 was an input"
+    assert not [row for row in rows if row.field == "centre_distance_mm"]
+    assert [
+        row for row in compare_pair_geometry("undercut_z12_x0") if row.field == "centre_distance_mm"
+    ]
+
+
+def test_pair_tolerances_follow_from_the_error_propagation() -> None:
+    rows = {(r.field, r.gear, r.origin): r for r in compare_pair_geometry("fzg_c")}
+    depth = rows[("common_tooth_depth_mm", "pinion", "interface")]
+    # h_w = (82,45 + 118,35) / 2 - 91,5: the accuracy is that of the operands near 100 mm
+    assert depth.gearcore_value == pytest.approx(8.9, abs=1e-12) and depth.stplus_token == "8.89999"
+    assert depth.arithmetic_tolerance > ARITHMETIC_STEPS * binary32_step(91.5)
+    assert depth.verdict is ParityVerdict.ORACLE_ACCURACY
+    pitch = rows[("normal_pitch_mm", "pinion", "interface")]
+    assert pitch.input_tolerance == 0.0 and pitch.verdict is ParityVerdict.IDENTICAL
+    # a value that depends on a printed root form diameter carries its rounding
+    limited = {(r.field, r.gear, r.origin): r for r in compare_pair_geometry("undercut_z12_x0")}
+    start = limited[("sap_diameter_mm", "pinion", "interface")]
+    assert start.input_tolerance == pytest.approx(0.5e-5, rel=1e-6)
+
+
+@pytest.mark.parametrize(
+    "field, relative_error",
+    [
+        ("transverse_working_pressure_angle_deg", 1e-5),
+        ("working_pitch_diameter_mm", 1e-5),
+        ("sap_diameter_mm", 1e-5),
+        ("length_of_path_of_contact_mm", 2e-5),
+        ("transverse_contact_ratio", 2e-5),
+        ("overlap_ratio", 2e-5),
+        ("sliding_factor_at_tip", 1e-4),
+        ("specific_sliding_at_end_points", 1e-4),
+    ],
+)
+def test_pair_comparison_detects_relative_errors(
+    monkeypatch: pytest.MonkeyPatch, field: str, relative_error: float
+) -> None:
+    """Detection limit of the pair comparison on helix20_z25_65 (interface file, five decimals):
+    a relative error of 1e-5 in diameters and angles, 2e-5 in the path of contact and the contact
+    ratios, 1e-4 in the sliding quantities is reported as ``different``."""
+    original = parity.compute_pair_from_data
+
+    def mutated(d: Any, values: dict[str, float]) -> Any:
+        # every computation carries the error, so the error propagation sees the same defect
+        result = original(d, values)
+        value = getattr(result, field)
+        scaled = (
+            value.model_copy(update={"pinion": value.pinion * (1.0 + relative_error)})
+            if hasattr(value, "pinion")
+            else value * (1.0 + relative_error)
+        )
+        return result.model_copy(update={field: scaled})
+
+    monkeypatch.setattr(parity, "compute_pair_from_data", mutated)
+    rows = [row for row in compare_pair_geometry("helix20_z25_65") if row.field == field]
+    wrong = [row for row in rows if row.origin == "interface" and row.gear == "pinion"]
+    assert wrong and all(row.verdict is ParityVerdict.DIFFERENT for row in wrong), field
+
+
+@pytest.mark.eq("ISO21771:2014", "(60)")
+@pytest.mark.oracle
+def test_tip_clearance_equation_against_stplus() -> None:
+    """Eq. (60) with the generated root diameter STplus prints: c = a - d_a / 2 - d_fE(mate) / 2."""
+    from gearcore.data import has_stplus, load_stplus
+    from gearcore.pair import tip_clearance
+
+    checked = 0
+    for path in stplus_case_dirs():
+        if not has_stplus(path.name, "interface"):
+            continue
+        table = load_stplus(path.name, "interface")
+
+        def numbers(key: str, source: dict[str, Any] = table) -> list[float]:
+            return [float(v) for v in source[f"GEOMETRIEDATEN/{key}"]["numbers"]]
+
+        (a_w,) = numbers("ACHSABSTAND")
+        tips, roots, printed = (
+            numbers("KOPFKREISDURCHM"),
+            numbers("FUSSKREISDURCHM"),
+            numbers("KOPFSPIEL"),
+        )
+        for gear in (0, 1):
+            ours = tip_clearance(a_w, tips[gear], roots[1 - gear])
+            assert ours == pytest.approx(printed[gear], abs=3e-5), (path.name, gear)
+            checked += 1
+    assert checked == 28

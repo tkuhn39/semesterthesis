@@ -53,6 +53,25 @@ def has_stplus(case: str, name: str) -> bool:
     return (_stplus_case_dir(case) / f"{name}.json").is_file()
 
 
+def load_expected_differences() -> dict[str, dict[str, Any]]:
+    """Documented differences between gearcore and the STplus oracle (ADR-105), by name."""
+    path = data_path("stplus", "expected_differences.yaml")
+    loaded: dict[str, dict[str, Any]] = yaml.safe_load(path.read_text(encoding="utf-8"))[
+        "differences"
+    ]
+    return loaded
+
+
+def load_norm_deviations() -> dict[str, dict[str, Any]]:
+    """Deliberate deviations of gearcore from the letter of the current norm (decisions of the
+    user with an ADR), by name."""
+    path = data_path("stplus", "expected_differences.yaml")
+    loaded: dict[str, dict[str, Any]] = yaml.safe_load(path.read_text(encoding="utf-8"))[
+        "deviations_from_the_norm"
+    ]
+    return loaded
+
+
 def load_stplus(case: str, name: str = "geometry") -> dict[str, Any]:
     """One JSON document of an STplus fixture case (``geometry``, ``interface``, ``meta``, ...)."""
     if not has_stplus(case, name):
