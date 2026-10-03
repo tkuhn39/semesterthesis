@@ -341,6 +341,8 @@ ADR-102 and project rule 5 had excluded the databases of STplus from git.
 4. gearcore applies none of it silently. A tool record is a `ToolProfile` only where the contract
    neither guesses nor bends a value; otherwise the record is kept as written and says why it is no
    contract. Falling back on an STplus default is an explicit, named choice of the caller.
+   (Amended 2026-10-03 by ADR-114: the `.ste` importer is such a caller. It reads a file or a
+   tool record as STplus computes it and records every preset and correction in its notes.)
 5. The executable and the manual stay outside git, CI and containers. The material and lubricant
    databases (`wst.dat`, `oel.dat`) and the defaults of the load capacity are kept the same way with
    stage 2.
@@ -356,7 +358,12 @@ ADR-102 and project rule 5 had excluded the databases of STplus from git.
   (S_19_00374_F_(_77: KOPFHOEHENFAKTOR = 1.6 but KOPFHOEHE = 5.377 mm at m_n0 = 2.8 mm, i.e. 1.920). STplus computes with the factor of the addendum and
   reduces tip rounding (0,5 → 0,383) and dedendum (3,0 → 2,317) to the geometric limit; it reports
   only the change of the root form height. gearcore keeps these records and rejects them as contracts.
-- A record without tip rounding (global database) gets ρ_aP0* = 0,25.
+  (Corrected 2026-10-03, ADR-114: the listing prints both remarks, for the tip data and for the
+  root data of the tool, and the records are read as STplus computes with them; the two at
+  α_n0 = 16° stay beyond the bound of the contract.)
+- A record without tip rounding (global database) gets ρ_aP0* = 0,25. (2026-10-03: where the
+  limits of STplus admit it; these two records name no profile angle and are completed with that
+  of the gear.)
 - `bin/DEFAULT.STY` holds 822 entries of 816 configurable input keys and 22 program-internal entries,
   not 844 input keys as assumed in increment 0.
 
@@ -569,3 +576,272 @@ identical, 69 within the accuracy of STplus). Quantities that the norm builds on
 not affected: the tip clearance is computed with Eq. (60) from the tip diameter and the generated
 root diameter. Profile modifications in the sense of §6.2 (tip and root relief) do not restrict the
 usable flank and do not enter this quantity.
+
+## ADR-113 — Tool-based generation and transverse tooth contour (2026-09-30)
+
+**Context.** Increment 3 implements what a rack-type tool generates on an external gear (DIN ISO
+21771:2014-08 §7) and the transverse tooth contour, spur and helical. Several points are not settled
+by the letter of the current norm and had to be decided; the decisions and the findings that led to
+them are recorded here. Modules: `generation.py` (traced equations of §4.6, §4.7, §7.3 to §7.7, §7.9
+and DIN 3960:1987-03 Anhang A.3.1, orchestrator `compute_generation`), `trochoid.py` (rolling of the
+tool on the gear), `contour.py` (assembly, whole gear, comparison). Contracts `GearGeneration`,
+`GenerationResult`, `ToothContour`, `ContourDiff`; `GearInput.residual_tip_thickness_mm` added.
+
+**Decisions.**
+
+1. **Which generating profile shift coefficient.** The allowances give x_Es (upper, Eq. (123)) and
+   x_Ei (lower, Eq. (124)); Bild 38 letters both root diameters. The generation is evaluated at x_Es
+   (the maximum-material tooth, as STplus prints it) and reports x_Ei and d_fEi alongside. Without
+   allowances x_E = x, said by the warning `no_tooth_thickness_allowance`. The allowance of the
+   contract is the normal allowance E_sn of §7.3 (DIN 3967 §1: the fit system is defined in the
+   normal section). Finding: STplus prints A_ste = E_sns / cos β, the transverse value (DIN 3967
+   Anhang A, p. 7), and reproduces Eq. (123) with the normal value (helix30_z25_40, helix20_z25_65).
+2. **Root form circle.** Eq. (128) in the corrected form of Anhang NB, (1 − sin α_n) in the bracket
+   (the height of the flank tangent point of the tool tip rounding is a height of the normal section
+   and stays in the transverse section, FVA 604 I p. 29). Below the undercut limit of Eq. (135) the
+   equation does not apply and gearcore raises; the orchestrator then takes the intersection of the
+   fillet with the involute (§7.6, p. 70), found numerically in `trochoid.py`, and says so
+   (`root_form_diameter_by_intersection`). Finding: Eq. (130) as printed uses (1 − sin α_t) and is
+   kept as a cross-check (`root_form_diameter_by_roll_angle`); for the helical example 1 of ISO/TR
+   6336-30 it gives 132,243 mm where the norm prints 132,248 mm = Eq. (128) NB.
+3. **Fillet.** No closed formula of the fillet is transcribed. The envelope condition of the law of
+   gearing (Linke §1.3, FVA 604 I §3.1) is applied to the tool profile in the transverse section,
+   where the tip rounding of a helical tool is an ellipse with the semi-axes ρ_aP0 / cos β and
+   ρ_aP0 (FVA 604 I p. 29). The same condition reproduces the involute from the straight flank and
+   the root circle from the tip line (tests of the module). Finding: FVA 604 I approximates the
+   ellipse by a circle of radius ρ_aP0 / cos β; against the STplus contour export that approximation
+   (constant radius about the centre of the rounding) deviates by 176 µm at β = 30°, 96 µm at
+   20° and 26,5 µm at 15°, the ellipse by 0,6 µm at most (`scripts/circle_approximation_fva604.py`). STplus therefore uses the exact
+   transverse kinematics, and so does gearcore.
+4. **Tip form circle of an edge break flank.** The current norm gives no equation; DIN 3960 Anhang
+   A.3.1 Eq. (A.3.03), (A.3.05), (A.3.06) are implemented and cited as such (rule 3: the withdrawn
+   norm fills the gap, marked). The short trochoid of the corner of the tool profile between the two
+   involutes is not modelled, as in DIN 3960. A chamfer given as an input is defined by h_K and s_aK
+   (§6.1.2, Bild 24); STplus presets the tangential amount to 0,7 h_K (manual p. 19), which the
+   computing core applies only through the labelled rule
+   `stplus_program.stplus_residual_tip_thickness`. Without s_aK the result carries
+   `tip_chamfer_shape_not_given` and the contour refuses to guess. (Since ADR-114 the `.ste`
+   importer applies the rule and records it.)
+5. **Tool dedendum.** §7 does not use h_fP0. *Revised by ADR-114 (2026-10-03):* a tip circle above
+   the root line of the tool is cut to d + 2 (x_E m_n + h_fP0) with the warning
+   `tip_circle_cut_by_tool`, as STplus does. The earlier reading of this section, "STplus raises
+   the dedendum (kst-E lists h_fP0* = 1,3 for an input of 1,0)", was wrong: root form height and
+   dedendum are both preset with 1,3, and a dedendum below the root form height is set equal to
+   it. A tool that gives the root form height without the angle, with a dedendum above it, has in
+   the core a tool root rounding that would shape the tip of the gear, a prepared extension point
+   (`NotSupportedError`, GEN-10); the `.ste` importer sets the edge break angle STplus presets
+   (α_n0 + 10°).
+6. **Not supported, typed.** Tools with a protuberance (DIN 3960 A.3.3), tools with a machining
+   allowance q > 0 (the pre-machined gear needs the finishing tool, `finishing_tool` extension
+   point), tools whose module or profile angle differs from the gear's (generating gear with α_wt0,
+   Bild 39 note; the registry entry `tool_normal_module` stays pending), shaper and form tools,
+   internal gears. Eq. (120), (121) are implemented and tested as single equations; Eq. (122) needs
+   the tolerances of increment 5.
+7. **Heights and tip tooth thickness.** Eq. (35) to (37) are evaluated in their first form with the
+   generated root diameter, as STplus prints them; the tip tooth thickness is Eq. (38) on the tip
+   circle with x_E (§4.7: with x_E the equations give the generated values) and Eq. (48) in the
+   normal section, which is what STplus prints as ZAHNDICKE_KOPF.
+
+**Comparison with STplus.** 533 comparisons of the generation over the 18 cases: 364 identical, 169
+within the accuracy of STplus, none different (a tip form diameter that echoes d_a and h_K is not
+compared; `parity.rows_without_evidence` names the three case/field pairs, five rows, whose
+tolerance covers the value). Until the fifth round of the gate the counts were 537 / 368 and four
+pairs, seven rows: the chamfer height of zero of helix20_z25_65, whose tool states an edge break
+angle without having a flank, was compared although it is an input (ADR-114). Finding on the form circles: STplus does not evaluate
+Eq. (128); its root form diameter (and the tip form diameter of an edge break) is the numerical
+junction of its two curves, visible as a dedicated doubled vertex of its contour export whose radius
+equals the printed d_Ff / 2 within 4e-5 mm on all own runs, while its curves agree with gearcore's
+within 0,6 µm. A tangential junction found with a normal tolerance ε lies within sqrt(2 ε / Δκ) along
+the curves; measured against Eq. (128) and the exact intersection the printed values deviate by up to
+6,4 µm (diametral). The comparison allows 0,007 mm for d_Ff and d_Fa (`parity.FORM_CIRCLE_ACCURACY_MM`)
+and half of it for c_F and h_K as the accuracy of the STplus value, with the measured maxima pinned.
+Contours: on all 14 own runs (28 gears, four with undercut, β up to 30°) the STplus export lies
+within 0,6 µm (fillet), 0,25 µm (involute) and 0,01 µm (tip) of the gearcore contour; the gate of
+the plan was 10 µm and 5 µm.
+
+**Consequences.** `compute_pair_geometry` receives the generated form circles from
+`compute_generation`, so the start of the active profile, the form over-dimension and the tip
+clearance are now computed from the generation. The worked example of ISO/TR 6336-30 checks d_fE
+and d_Ff from the printed x_E; the span measurements that give x_E in the example remain the
+question of increment 4 (ADR-107). Registry: 13 new quantities, `tool_root_form_height`,
+`tool_edge_break_angle` (symbol α_kP as Bild 36 a) letters it, lower-case k) and
+`tooth_thickness_allowance` verified.
+
+## ADR-114 — The `.ste` importer reads a file as STplus computes it; a tip circle above the tool root line is cut (2026-10-03)
+
+**Context.** Until 2026-10-03 the importer rejected an incomplete input file (no tool, no tip
+rounding), stated a zero for a missing helix angle (ADR-111) and applied one preset of STplus, the
+root form height 1,3, only where a tool gave an edge break angle; the generation left a tip circle
+above the root line of the tool untouched and reported it (ADR-113 §5). The user discussed the work
+with his supervisor at the FZG and asked whether the complete manual had been studied. It had not:
+only §3.2, §4.2 (p. 15 to 25), p. 183 to 188, §6.2 and §6.4.2 had been read. The check that followed
+(manual ch. 1 to 3, 4.1, 4.2, 4.14 to 4.17, 5 to 8 and 10; p. 186, p. 224 to 228 and the listing of
+example 1, p. 254 to 259, on the rendered pages; 62 runs of STplus 11.1F with incomplete and
+contradicting inputs, 34 of them kept as probes) showed that the implementation had drawn rules from
+single listings that the program does not follow:
+
+- "STplus raises the tool dedendum where the root line cuts the tip" (kst-E lists h_fP0* = 1,3 for
+  an input of 1,0). The rule is: root form height and dedendum are both preset with 1,3, and a
+  dedendum below the root form height is set equal to it. A tip circle above the root line of the
+  tool is cut.
+- "A root form height without an edge break angle is a tool root rounding gearcore cannot model"
+  (`NotSupportedError`, GEN-10). STplus replaces a root rounding by an edge break flank and presets
+  its angle with α_n0 + 10° (manual p. 186; the manual's example 1 prints "alfa_K0 = 30.00 grd").
+- "A missing helix angle means spur gears." STplus computes the angle from the centre distance and
+  the sum of the profile shift coefficients (manual p. 16, subroutine GE12) or rejects the input.
+
+**Decision (user decisions 2026-10-03).**
+
+1. **The importer reads a `.ste` file as STplus computes it.** It applies the presets and the
+   corrections of the program and appends each to `SteImport.notes`. Nothing is applied silently
+   (ADR-109, ADR-111), and the contracts of the computing core stay explicit: a `ToolProfile` has
+   its factors, a generation needs its tip diameters, a chamfer given by h_K needs s_aK.
+2. **A tip circle above the root line of its tool is cut** in `compute_generation`, to
+   d_a = d + 2 (x_E m_n + h_fP0), with the warning `tip_circle_cut_by_tool`, as STplus does
+   ("Kopfkreis ... von Wkz mit Fusshoehenfaktor geschnitten"). `GearGeneration.tip_diameter_mm` is
+   the generated diameter, the pair geometry is computed with it, `GenerationResult.inputs` keeps
+   the pair as given. This replaces ADR-113 §5 where it left the tip circle untouched.
+3. **Where the manual and the program disagree, the program is followed** and both are recorded
+   (`defaults.yaml`, `norm_map.md`). The disagreements are known at the FZG (user):
+
+   | Manual | Program 11.1F (probes) |
+   |---|---|
+   | p. 224: h_Ff0* preset with 1,1, h_f0* with 1,3 | 1,300 and 1,300, also in the listing of the manual's example 1 (p. 259); the controls `VB_FUSSFORMHOEHE_HFF0*`, `VB_FUSSHOEHE_HF0*` change nothing |
+   | p. 186: h_f0 < h_Ff0 is changed into h_f0max | h_f0 = h_Ff0 |
+   | p. 225: largest chamfer factor h_KgF* preset with 0,02 | a chamfer given as an input is limited to 0,20 m_n |
+   | p. 224: the controls s_a0* and e_Ff0*, which limit the tool addendum and the root form height, are preset with 0,2 and 0,4 | the program presets them with 0,12 and 0,11; given explicitly they act as documented (tip land = s_a0*, tool space = e_Ff0*) |
+   | p. 224: e_f0* is a tool space width, preset with 0,06, range 0,01 to 0,6 | the root space is 2 e_f0* tan α_n; without the control 0,06 tan α_n (e_f0* = 0,03); values up to 0,1 have no effect |
+   | p. 223, 225: a control may be varied between the ends of its range | the ends themselves are not accepted (0,3 and 1,5 of the tangential amount, 0 and 0,5 of the chamfer limit, 0,1 and 1,0 / 0,6 of the tool controls) |
+
+**The rules** (`gearcore.stplus_program`, each with its evidence in `defaults.yaml`).
+
+- Tool (`stplus_tool_factors`): h_aP0* missing → 1,25, beyond (π/2 − 0,120) / (2 tan α_n) reduced;
+  ρ_aP0* missing → 0,25, beyond the full radius (π/4 − h_aP0* tan α_n) / (1/cos α_n − tan α_n)
+  reduced; h_FfP0* missing → 1,3, beyond (π/2 − 0,110) / (2 tan α_n) reduced (the dedendum
+  follows); h_fP0* missing → 1,3, below h_FfP0* set equal to it. Where h_fP0* exceeds h_FfP0*, the
+  tool has an edge break flank between the two: its angle is the given one, else α_n0 + 10°, and
+  the dedendum is limited to h_f0max* = h_FfP0* + (π/2 − (2 h_FfP0* + 0,06) tan α_n) / (2 tan α_K).
+  An angle of 90° is the tool without edge break flank of manual p. 186: h_fP0* = h_FfP0*; so is
+  an angle equal to α_n0. An angle below α_n0 is replaced by α_n0 + 10°. STplus computes a flank
+  of 85° and aborts at 88°: an angle above 85° and below 90° is a `NotSupportedError`.
+  A factor wins over a contradicting absolute value; an absolute value alone is divided by the
+  module. No tool named → the hob 1,25 / 0,25 / 1,3 / 1,3. The limits apply to a preset as to a
+  given value (the hob at α_n = 28°: ρ_aP0* 0,201; at 30°: 0,110 and 1,265 / 1,265), so the rule
+  needs the pressure angle: a tool without one is a `ParseError`. The limits are not printed in the
+  manual; they are fitted to the listings (α_n = 15°, 17,5°, 20°, 25°, presets beyond a limit at
+  28° and 30°; α_K = 30° to 85°) and agree with every one in the three printed decimals.
+- Gear and pair: no helix angle → solved from centre distance and Σx (`stplus_helix_angle_deg`;
+  STplus lists 12,1313° where the equation gives 12,1322°: its iteration ends before the equation
+  is met), without them `ParseError`; `PR.VERSCH.SUMME` with one coefficient gives the other,
+  unless centre distance and helix angle are given: x_2 then follows from the centre distance and
+  the sum is not used; no `KOPFKREISDM` → d_a = d + 2 m_n (1 + x) without tip alteration
+  (`SteImport.preset_tip_diameters` says so, because STplus may shorten such a tip afterwards; of
+  that gearcore models the cut by the tool only, GEN-16); only the upper span allowance → the
+  lower one equal to it; a chamfer given by h_K → limited to 0,20 m_n, residual thickness in the
+  normal section s_aK = s_an − 2 (0,7 h_K), at least 0,2 s_an (`stplus_residual_tip_thickness`;
+  the controls `TANG_BETRAG_ZU_H_KGF` and `MAX_KOPFKANTENBRUCH` are honoured, each as one value
+  for the stage: the first value holds for both gears; a value outside its range is not
+  accepted and the preset holds; the placeholder `%` is "not given" for every key).
+- Not applied yet: the tooth thickness allowances of the series c25 and the centre distance
+  allowance js7 that STplus presets need DIN 3967 and DIN 3964 (increment 5). Until then an
+  imported pair without allowances is generated with the nominal tooth thickness, and the importer
+  says so where it matters (residual tip thickness; GEN-14).
+- Typed errors instead of a guess: the circular tool
+  tip rounding (`ABSCHALTEN_KORRGLIED = 1`), the five other definitions of the tip circle of a
+  gear without `KOPFKREISDM` (`BEZ_KOPFDICKE`, `DA_DURCH_WKZ`, `DA_NACH_DIN3960`,
+  `KOPFSPIELFAKTOR`, `K_HOEHENF_VERZ_BEZ_PR`; the last one also moves the preset of the tool
+  dedendum; beside `KOPFKREISDM` of both gears the five keys have no effect), a module or a
+  pressure angle of zero, a tool name that points to no tool block, tool keys the
+  importer does not translate (measuring line, protuberance heights, allowance as a factor), a
+  root form height beyond its limit together with a larger dedendum (not probed), a limit of STplus
+  above the bound of the tool contract (2,5), a tooth the edge break flanks make pointed below the
+  tip circle (STplus cuts the tip there; GEN-13).
+
+**Core semantics that follow.** A tool has an edge break flank where it gives the angle and the
+root form height and its dedendum lies above that height (or is not given). A dedendum equal to
+the root form height is a sharp corner: no flank, no chamfer, the warning
+`edge_break_angle_without_flank` where an angle is given nevertheless;
+`GearGeneration.tool_edge_break_angle_deg` is the angle of the flank the tool has and `None` for
+such a tool, so that the contour and the comparison take a chamfer of its gear as the given one.
+A root form height below
+the dedendum without an angle stays a tool root rounding the core does not model
+(`NotSupportedError`, GEN-10); files of STplus never reach it, because the importer sets the angle.
+
+**Evidence.** 70 probes in `data/stplus_program/probes` (65 new: 34 of the fourth round, 12 of
+the fifth, 8 of the sixth, 11 on the causes of deviations and on the controls),
+`tests/test_stplus_reading.py`: the tool factors of the 60 probes the
+importer reads and of all 18 fixture cases equal the listed ones in three decimals (of the other
+ten probes two are rejected by STplus, one is aborted by it, two lie beyond the bound of the tool
+contract, three name tools of the databases and two define the tip circle by a key that is not
+translated); cut tip circles, chamfers of the edge break flank (DIN 3960 A.3.1 with the preset angle:
+46,3069 / 0,0466 / 0,4069 against 46,307 / 0,047 / 0,407), residual thicknesses of given chamfers
+(five decimals of the interface file, spur and helical) and the helix angle agree with the
+listings. Example 1 of the manual (p. 254 to 259: pinion cut by a hob with h_FfP0* = 0,55,
+h_fP0* = 1,23 and q = 0,15 mm, finished by a grinding wheel) is reproduced: the chamfer flank of
+the hob at its x_E = 0,3061 meets the finished involute at x_E of the upper allowance in
+d_Fa = 144,535 mm (printed 144,536), h_K = 0,493 (0,493), residual thickness 3,039 (3,039).
+
+**Consequences.** `defaults.yaml` holds 62 defaults (24 before), among them the controls and limits
+of manual §4.17.2 (p. 223 to 230), which also document the iteration limit of the form circles
+(tooth thickness arcs equal within m_n / 10 000; GEN-06). Ten of the fourteen records of the
+tool databases are tool contracts by themselves, read as STplus computes with them; the two of
+the global database name no profile angle and are completed with that of the gear
+(`stplus_tool(name, normal_module_mm=…, normal_pressure_angle_deg=…, notes=…)`), two at
+α_n0 = 16° exceed the bound 2,5 of the contract after the reduction. The import records of the 18
+fixtures and of the 70 probes state what the importer reads (`refresh-import` of both scripts).
+The comparison with STplus keeps its verdicts: 533 comparisons of the generation, 364 identical,
+169 within the accuracy of STplus, none different (537 / 368 before: four rows of helix20_z25_65,
+whose tool states an edge break angle without having a flank, echoed the input h_K = 0 and are
+no longer compared). Known limits GEN-05, GEN-07, GEN-10 and GEN-11 are revised, GEN-13 to GEN-16
+added. ADR-109 item 4 reads from now on: nothing is applied silently; the importer applies and
+records, the core asks.
+
+**Amended 2026-10-03 (fifth round, after the verification review; gate report increment 3,
+G3X-01 to G3X-12).** The rules above are stated as corrected. What the review changed: the limits
+apply to presets as well; the rule requires the pressure angle; an edge break angle of 90° is a
+tool without flank; a control is one value for the stage; other definitions of the tip circle,
+the circular tool tip rounding and a module or an angle of zero are typed errors; with centre
+distance and helix angle given the sum of the profile shift coefficients is not used; the result
+of the generation carries the edge break angle only where the tool has the flank (the contour
+drew an edge break involute for a tool without one). The causes of two numbers are not known and
+are stated as such: why the iteration of STplus ends at 12,1313°, and how the documented presets
+0,2 and 0,4 of the controls relate to the observed 0,120 and 0,110.
+
+**Amended 2026-10-03 (sixth round, after the second verification review; G3Y-01 to G3Y-10).**
+The edge break angle is read as STplus reads it over its whole range (below α_n0, equal to it,
+up to 85°, 90°), and what STplus does not compute is refused; the generation itself refuses a
+flank steeper than 89,9°, beyond which DIN 3960 (A.3.05) is not resolved numerically. Whether a
+tool has an edge break flank is one predicate (`rack.has_edge_break_flank`) for generation,
+contour, comparison and pair geometry. The placeholder `%` is "not given" for every key; what
+a tool block holds besides the keys the importer reads is named in a note; every control the
+importer reads follows the same rules (first value, range, note).
+
+**Clarified 2026-10-03 (question of the user: are the deviations stated as "not known" errors
+of gearcore?).** They are not; both causes lie in STplus and are shown by experiment.
+(1) Helix angle without input: for 18 pairs (m_n 1 to 8, with and without profile shift) the centre
+distance that belongs to the angle STplus lists is 0,05 to 0,43 µm below the given one, never
+above; without profile shift the equation is elementary and STplus lists 16,25980° for
+arccos(60 / 62,5) = 16,26020°. Its iteration ends when the centre distance is met within about
+0,5 µm, the remainder goes into x_2, and neither `GRENZE_BETA_ITERATION` nor another documented
+control changes that. (2) Form circles: the root form diameter of the undercut pinion of fzg_c
+moves onto gearcore's value as the limit `BOGENDIFFERENZ` is tightened (6,4 µm, 2,6 µm, 0,7 µm
+at 10 000, 20 000, 50 000). (3) Residual thickness at an 85° edge break flank: single precision
+of STplus (the formula of the norm in binary32 yields 0,01960 or 0,02051 mm; gearcore's 0,02002 mm
+is confirmed by rolling the tool).
+
+**Clarified 2026-10-03 (second question of the user: how do the presets 0,2 and 0,4 of the
+manual relate to the observed 0,120 and 0,110?).** They do not: the manual names presets the
+program does not have. With the three controls of the tool limits varied (65 runs, and 8 on the
+ends of the ranges of the chamfer controls; seven kept as probes) the limits follow them exactly, in five decimals at α_n = 20° and 25°: the tip land
+of the tool at its largest addendum is s_a0* (`MIN_WKZ_ZAHNKOPFDICKE*`, 0,105 to 0,7), the tool
+space at the largest root form height is e_Ff0* (`MIN_LUECKENWEITE_EFF0*`, 0,105 to 0,59), and
+the tool space on the root line at the largest dedendum is 2 e_f0* tan α_n
+(`MIN_LUECKENWEITE_EF0*`, 0,15 to 0,59; α_K 30° and 45°). Without the controls the program
+computes with 0,12, 0,11 and e_f0* = 0,03; with 0.12 given the listing is that of the run
+without control, with the 0.2 of the manual the addendum limit at 20° is 1,883 instead of
+1,993. The limits of gearcore are therefore no fit any more but the documented mechanism with
+the presets of the program, and the importer reads the three controls (before: typed error).
+The same runs showed that the range of a control is an open interval: the ends the manual
+names are not accepted, the preset stays. The importer and the rule functions took the ends
+as valid until then; corrected (`controls_at_the_ends_of_their_ranges`).
+Nothing of the comparison with STplus rests on an unexplained number any more.

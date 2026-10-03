@@ -1,0 +1,50 @@
+{
+  "case": "tool_addendum_limit_at_twenty_five_degrees",
+  "cfg": "Firmenname = FZG\nSachbearbeiter = gearcore oracle\nEingabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\tool_addendum_limit_at_twenty_five_degrees\\eingabe.ste\nAusgabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\tool_addendum_limit_at_twenty_five_degrees\\ausgabe.sta\nGraphikdatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\tool_addendum_limit_at_twenty_five_degrees\\grafik1.stz\nGraphikdatei_2 = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\tool_addendum_limit_at_twenty_five_degrees\\grafik2.stz\nZuordnungsdatei = qelesed.stq\nWerkzeugdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wkz\\wkz.dat\nWerkzeugdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wkz_glob.dat\nWerkzeugdatei_3 = %\nWerkzeugdatei_4 = %\nWerkzeugdatei_5 = %\nWerkzeugdatei_6 = %\nWerkzeugdatei_7 = %\nWerkzeugdatei_8 = %\nWerkzeugdatei_9 = %\nWerkzeugdatei_10 = %\nWerkstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wst\\WST.dat\nWerkstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wst_glob.dat\nSchmierstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\oel\\Oel.dat\nSchmierstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\oel_glob.dat\nPfad_Maskendateien = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\zubeh\\\nSchnittstellendatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\tool_addendum_limit_at_twenty_five_degrees\\ausgabe.sts\nSTEP_Konfiguration = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\tool_addendum_limit_at_twenty_five_degrees\\config.dat\nPfad_Meldungsausgabe = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\tool_addendum_limit_at_twenty_five_degrees\\\n",
+  "exe": "30_references_and_examples/33_STplus/STplus11-1F/bin/STplus.exe",
+  "exit_code": 0,
+  "interface_file": "interface.sts.txt",
+  "kept_files": [
+    "input.ste",
+    "report.sta.txt",
+    "interface.sts.txt",
+    "meta.json"
+  ],
+  "material_kinds": {},
+  "notes": "KOPFHOEHENFAKTOR = 1.65 at alpha_n = 25 degrees: reduced to 1.556, rounding 0.094",
+  "origin": "run",
+  "plot_accuracy": 0.005,
+  "run_date": "2026-10-03T14:30:00+02:00",
+  "scratch": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\tool_addendum_limit_at_twenty_five_degrees",
+  "sections": [
+    "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "Besonderheiten der Radpaarung:"
+  ],
+  "source_ste": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_probe_c1198ge8\\tool_addendum_limit_at_twenty_five_degrees.ste",
+  "stdout": " Config file path C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\tool_addendu\n m_limit_at_twenty_five_degrees\\stplus.cfg passed as CLI parameter. Found file.\n ... Eingabedatenverarbeitung wird durchgefuehrt ...\n ... Geometrieberechnung wird durchgefuehrt ...\n ... Geometrieplots werden gezeichnet ...\nRuntime:  0.261s\n",
+  "ste_sha256": "9f3bf2e2944d029b89dd9b347fb758da9feb33c71a9b7bc534c3b7019060304c",
+  "stplus_version": "11.1F",
+  "trust": "generated",
+  "typed_import": {
+    "notes": [
+      "tool 'T1': KOPFHOEHENFAKTOR = 1.65 reduced to h_aP0* = 1.5556213815307514 as STplus does (the tip of the tool tooth narrows to 0.12 m_n there)",
+      "tool 'T1': KOPFABRUNDUNGSFAKTOR = 0.25 reduced to the full radius rho_aP0* = 0.0941811346270495 as STplus does",
+      "tool 'T1': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'T1': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
+      "tool 'T1': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'T1': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "tool 'T2': KOPFHOEHENFAKTOR = 1.6 reduced to h_aP0* = 1.5556213815307514 as STplus does (the tip of the tool tooth narrows to 0.12 m_n there)",
+      "tool 'T2': KOPFABRUNDUNGSFAKTOR = 0.25 reduced to the full radius rho_aP0* = 0.0941811346270495 as STplus does",
+      "tool 'T2': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'T2': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
+      "tool 'T2': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'T2': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "gear 1: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
+      "gear 2: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
+      "gear 1: KOPFKREISDM not given → d_a = 45.6 mm = d + 2 m_n (1 + x), the default of STplus without tip alteration (STplus shortens it afterwards where the tool, the tip tooth thickness or the mating gear require it; gearcore applies the cut by the tool only)",
+      "gear 2: KOPFKREISDM not given → d_a = 84.8 mm = d + 2 m_n (1 + x), the default of STplus without tip alteration (STplus shortens it afterwards where the tool, the tip tooth thickness or the mating gear require it; gearcore applies the cut by the tool only)"
+    ],
+    "ok": true,
+    "unmapped_keys": []
+  }
+}

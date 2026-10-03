@@ -14,6 +14,7 @@ from typing import Any
 
 import pytest
 
+from gearcore import generation as gn
 from gearcore import involute as iv
 from gearcore import pair as pr
 from gearcore.data import (
@@ -139,6 +140,44 @@ def _of_pair(field: str) -> Evaluator:
     return evaluate
 
 
+def _generation_with_printed_x_E(inputs: dict[str, Any], role: str) -> float:
+    """x_E of the example follows from the span measurements (p. 45), which gearcore does not
+    evaluate yet (ADR-107). The printed x_E is therefore given as the generating value: the
+    allowance that reproduces it, E_sn = 2 m_n tan(alpha_n) (x_E - x), is passed to the
+    contract, so that Eq. (125) and (128) are checked with the norm's x_E."""
+    example = load_worked_example(EXAMPLE_1)
+    pair = pair_of_example(inputs)
+    x_1, x_2, _, _ = pr.resolve_profile_shift(pair)
+    x_E = example["expected"]["generating_profile_shift_coefficient"][role]
+    x = x_1 if role == "pinion" else x_2
+    allowance_um = 1.0e3 * 2.0 * _module(inputs) * math.tan(_angles(inputs)[0]) * (x_E - x)
+    gears = {
+        r: g.model_copy(
+            update={"span": None, "tooth_thickness_allowance_um": (allowance_um, allowance_um)}
+        )
+        if r == role
+        else g.model_copy(update={"span": None})
+        for r, g in zip(ROLES, pair.gears.as_tuple(), strict=True)
+    }
+    if role == "pinion":
+        gears["pinion"] = gears["pinion"].model_copy(update={"profile_shift_coefficient": x_1})
+        pair = pair.model_copy(update={"centre_distance_mm": None})
+        gears["wheel"] = gears["wheel"].model_copy(update={"profile_shift_coefficient": x_2})
+    generated = gn.compute_generation(
+        pair.model_copy(update={"gears": Pair(pinion=gears["pinion"], wheel=gears["wheel"])})
+    )
+    return generated
+
+
+def _generated(field: str) -> Evaluator:
+    def evaluate(inputs: dict[str, Any], role: str | None) -> float:
+        assert role is not None
+        result = _generation_with_printed_x_E(inputs, role)
+        return float(getattr(getattr(result.gears, role), field))
+
+    return evaluate
+
+
 IMPLEMENTED: dict[str, Evaluator] = {
     "transverse_module_mm": _transverse_module,
     "reference_diameter_mm": _reference_diameter,
@@ -160,14 +199,15 @@ IMPLEMENTED: dict[str, Evaluator] = {
     "transverse_contact_ratio": _of_pair("transverse_contact_ratio"),
     "overlap_ratio": _of_pair("overlap_ratio"),
     "total_contact_ratio": _of_pair("total_contact_ratio"),
+    # generation (increment 3), with the printed x_E as the generating value (spans: increment 4)
+    "generated_root_diameter_mm": _generated("generated_root_diameter_mm"),
+    "root_form_diameter_mm": _generated("root_form_diameter_mm"),
 }
 
-GENERATION = "increment 3 (tool-based generation)"
+SPANS = "increment 4 (inspection dimensions: x_E from the span measurement)"
 LOAD_CAPACITY = "stage 2 (load capacity)"
 PENDING: dict[str, str] = {
-    "generating_profile_shift_coefficient": GENERATION,
-    "generated_root_diameter_mm": GENERATION,
-    "root_form_diameter_mm": GENERATION,
+    "generating_profile_shift_coefficient": SPANS,
     "transverse_base_pitch_deviation_um": LOAD_CAPACITY,
     "pitch_line_velocity_m_s": LOAD_CAPACITY,
     "circumferential_velocity_m_s": LOAD_CAPACITY,

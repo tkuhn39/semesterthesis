@@ -36,10 +36,18 @@
   "trust": "generated",
   "typed_import": {
     "notes": [
+      "tool 'WKZ_1': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'WKZ_1': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
       "tool 'WKZ_1': PROTUBERANZBETRAG not given → 0 (no protuberance)",
       "tool 'WKZ_1': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "tool 'WKZ_2': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'WKZ_2': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
       "tool 'WKZ_2': PROTUBERANZBETRAG not given → 0 (no protuberance)",
-      "tool 'WKZ_2': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)"
+      "tool 'WKZ_2': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "gear 1: KOPFKREISDM not given → d_a = 44.8 mm = d + 2 m_n (1 + x), the default of STplus without tip alteration (STplus shortens it afterwards where the tool, the tip tooth thickness or the mating gear require it; gearcore applies the cut by the tool only)",
+      "gear 2: KOPFKREISDM not given → d_a = 72.4 mm = d + 2 m_n (1 + x), the default of STplus without tip alteration (STplus shortens it afterwards where the tool, the tip tooth thickness or the mating gear require it; gearcore applies the cut by the tool only)",
+      "gear 1: residual tip thickness of the chamfer → s_aK = 0.9537133895883962 mm in the normal section (0.9537133895883961 mm transverse) by the STplus rule s_an - 2 (0.7 h_K), at least 0,2 s_an, with s_an = 1.2337133895883963 mm of the gear without tooth thickness allowance (STplus presets the series c25, increment 5)",
+      "gear 2: residual tip thickness of the chamfer → s_aK = 1.0286494278526706 mm in the normal section (1.0286494278526706 mm transverse) by the STplus rule s_an - 2 (0.7 h_K), at least 0,2 s_an, with s_an = 1.4486494278526705 mm of the gear without tooth thickness allowance (STplus presets the series c25, increment 5)"
     ],
     "ok": true,
     "unmapped_keys": []

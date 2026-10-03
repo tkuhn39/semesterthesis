@@ -161,16 +161,34 @@ def test_internal_gear_and_second_tool_are_explicit_extension_points() -> None:
 def test_shaper_and_profile_tools_are_flagged() -> None:
     ste = parse_ste("$ Anfang\n$ T\nSR_ZAEHNEZAHL = 30\nKOPFHOEHENFAKTOR = 1.25\n$ Ende\n")
     with pytest.raises(NotSupportedError, match="shaper"):
-        tool_from_section(ste.section("T"))  # type: ignore[arg-type]
+        tool_from_section(ste.section("T"), [])  # type: ignore[arg-type]
     ste = parse_ste("$ Anfang\n$ T\nPW_KOPFART = Ellipse\n$ Ende\n")
     with pytest.raises(NotSupportedError, match="profile"):
-        tool_from_section(ste.section("T"))  # type: ignore[arg-type]
+        tool_from_section(ste.section("T"), [])  # type: ignore[arg-type]
 
 
-def test_missing_tool_factors_are_not_defaulted() -> None:
-    ste = parse_ste("$ Anfang\n$ T\nKOPFHOEHENFAKTOR = 1.25\n$ Ende\n")
-    with pytest.raises(ParseError, match="KOPFABRUNDUNGSFAKTOR"):
-        tool_from_section(ste.section("T"))  # type: ignore[arg-type]
+def test_missing_tool_factors_get_the_presets_of_stplus_with_a_note() -> None:
+    """User decision 2026-10-03 (ADR-114): the importer reads a tool block as STplus computes
+    it (probes tool_without_tip_rounding, tool_without_addendum) and records every preset."""
+    ste = parse_ste(
+        "$ Anfang\n$ T\nKOPFHOEHENFAKTOR = 1.25\n$ U\nKOPFABRUNDUNGSFAKTOR = 0.3\n$ Ende\n"
+    )
+    notes: list[str] = []
+    tool = tool_from_section(ste.section("T"), notes, normal_pressure_angle_deg=20.0)  # type: ignore[arg-type]
+    assert (tool.addendum_factor, tool.tip_radius_factor) == (1.25, 0.25)
+    assert (tool.root_form_height_factor, tool.dedendum_factor) == (1.3, 1.3)
+    assert tool.edge_break_angle_deg is None
+    assert any("KOPFABRUNDUNGSFAKTOR not given → rho_aP0* = 0.25" in note for note in notes)
+    assert len(notes) == 5  # rounding, root form height, dedendum, protuberance, allowance
+    notes = []
+    tool = tool_from_section(ste.section("U"), notes, normal_pressure_angle_deg=20.0)  # type: ignore[arg-type]
+    assert (tool.addendum_factor, tool.tip_radius_factor) == (1.25, 0.3)
+    assert any("KOPFHOEHENFAKTOR not given → h_aP0* = 1.25" in note for note in notes)
+    # no block at all: the hob STplus presets
+    notes = []
+    default = tool_from_section(None, notes, name="default", normal_pressure_angle_deg=20.0)
+    assert (default.addendum_factor, default.tip_radius_factor) == (1.25, 0.25)
+    assert notes[0].startswith("tool 'default': no tool block named")
 
 
 def test_span_without_profile_shift_is_accepted() -> None:

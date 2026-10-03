@@ -25,7 +25,8 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from gearcore.errors import NotSupportedError, ParseError
+from gearcore._safe import finite_input, positive_input
+from gearcore.errors import InputRangeError, NotSupportedError, ParseError
 from gearcore.models.common import FrozenModel, Pair
 from gearcore.models.inputs import (
     GearInput,
@@ -226,6 +227,7 @@ GEOMETRY_KEYS_MAPPED = {
     "EINGRIFFSWINKEL",
     "SCHRAEGUNGSWINKEL",
     "PROFILVERSCHIEBUNG_N",
+    "PR.VERSCH.SUMME",
     "AUFTEILUNG_X1X2",
     "ZAHNBREITE",
     "KOPFKREISDM",
@@ -243,6 +245,34 @@ GEOMETRY_KEYS_MAPPED = {
 }
 
 
+TIP_CIRCLE_KEYS: tuple[str, ...] = (
+    "BEZ_KOPFDICKE",
+    "DA_DURCH_WKZ",
+    "DA_NACH_DIN3960",
+    "KOPFSPIELFAKTOR",
+    "K_HOEHENF_VERZ_BEZ_PR",
+)
+"""Keys that define the tip circle of a gear in place of ``KOPFKREISDM`` (manual Bild 4.6, p. 18,
+and Bild 4.12, p. 25: "entweder d_a oder s_na/m_n oder d_a durch Wkz oder d_a nach DIN 3960 oder
+c* oder h_ap*"). The importer does not translate them: a file that sets one for a gear without
+``KOPFKREISDM`` is not imported (probes ``tip_circle_from_reference_profile_addendum``,
+``tip_circle_per_din3960``)."""
+
+CONFIGURATION_KEYS_EVALUATED: tuple[str, ...] = (
+    "MINDESTKOPFSPIEL",
+    "MAX_KOPFKANTENBRUCH",
+    "TANG_BETRAG_ZU_H_KGF",
+    "ABSCHALTEN_KORRGLIED",
+    "VB_FUSSFORMHOEHE_HFF0*",
+    "VB_FUSSHOEHE_HF0*",
+    "MIN_WKZ_ZAHNKOPFDICKE*",
+    "MIN_LUECKENWEITE_EFF0*",
+    "MIN_LUECKENWEITE_EF0*",
+)
+"""Keys of ``$ KONFIGURATIONSDATEN`` the importer reads; every other key of the block is named
+in a note."""
+
+
 class SteImport(FrozenModel):
     """Result of the typed extraction: the contracts plus everything that was not mapped."""
 
@@ -251,6 +281,10 @@ class SteImport(FrozenModel):
     unmapped_keys: tuple[str, ...] = ()
     """Keys present in the geometry block that the typed layer ignores (kept visible, never silent)."""
     notes: tuple[str, ...] = ()
+    preset_tip_diameters: tuple[bool, bool] = (False, False)
+    """True for a gear whose file gives no ``KOPFKREISDM``: its tip diameter is the default of
+    STplus, d + 2 m_n (1 + x), which STplus may shorten afterwards (tip tooth thickness,
+    interference, tool); of these gearcore models the cut by the tool only (GEN-16)."""
 
 
 def _not_valid(error: ValidationError, what: str) -> ParseError:
@@ -271,44 +305,194 @@ requires the value, so the importer states the zero and says so in its notes (us
 2026-09-30: a blanket zero only together with a note)."""
 
 
-def tool_from_section(section: SteSection, notes: list[str] | None = None) -> ToolProfile:
-    """Build a ``ToolProfile`` from a ``$ WKZ_...`` block; shaper/profile tools are flagged, not guessed.
+TOOL_ABSOLUTE_KEYS: dict[str, str] = {
+    "KOPFHOEHE": "KOPFHOEHENFAKTOR",
+    "KOPFABRUNDUNGSRADIUS": "KOPFABRUNDUNGSFAKTOR",
+    "FUSSFORMHOEHE": "FUSSFORMHOEHENFAKTOR",
+    "FUSSHOEHE": "FUSSHOEHENFAKTOR",
+}
+"""Absolute tool dimension in mm -> its module factor (manual Bild 4.174, p. 185)."""
 
-    A block without ``PROTUBERANZBETRAG`` or ``BEARB_ZUGABE_WKZ`` yields a tool with the value
-    zero; each such zero is appended to ``notes`` (when a list is passed) as a note.
+TOOL_KEYS_NOT_SUPPORTED: tuple[str, ...] = (
+    "ABST_WKZ_KOPFLINIE/D_W0",
+    "PROTUBERANZBETRAG_FAKTOR",
+    "PROT_HOEHENFAKTOR",
+    "PROTUBERANZHOEHE",
+    "ABST_PBML_FAKTOR",
+    "ABST_PROFILBEZUGSL/MESSL",
+    "MASS_BZ0_FAKTOR",
+    "MASS_BZ0",
+    "ZAHNDICKE_S_0_FAKTOR",
+    "ZAHNDICKE_S_0",
+    "BEARB_ZUGABE_WKZ_FAKTOR",
+    "WKZ_NDPITCH",
+    "SCHLEIFSCHEIBENDM_MIN",
+)
+"""Keys of a rack tool block (manual Bild 4.176, p. 188, and Bild 4.183, p. 195) that change the
+tool and that the importer does not translate: a block that carries one is not imported."""
+
+
+STRUCTURAL_BLOCKS: tuple[str, ...] = (
+    "ANFANG",
+    "ENDE",
+    "GEOMETRIEDATEN",
+    "KONFIGURATIONSDATEN",
+    "PLOTSTEUERUNG",
+)
+"""Blocks of a ``.ste`` file that are no tool: a tool name that points to one is an input error."""
+
+
+def _given(section: SteSection, key: str) -> bool:
+    """A key is given where it carries a value other than the placeholder ``%`` (manual §3.2:
+    the placeholder stands for "not given"; the templates of the manual list every key with it)."""
+    entry = section.get(key)
+    return entry is not None and any(value != PLACEHOLDER for value in entry.values)
+
+
+def tool_from_section(
+    section: SteSection | None,
+    notes: list[str],
+    *,
+    name: str | None = None,
+    normal_module_mm: float | None = None,
+    normal_pressure_angle_deg: float | None = None,
+    limit_controls: dict[str, float] | None = None,
+) -> ToolProfile:
+    """Build a ``ToolProfile`` from a ``$ WKZ_...`` block as STplus 11.1F computes with it.
+
+    STplus completes an incomplete block and corrects a contradicting one; the importer does the
+    same and appends every such step to ``notes`` (user decision 2026-10-03, ADR-114; the rules
+    are ``stplus_program.stplus_tool_factors``): missing addendum, tip rounding, root form
+    height and dedendum get the presets of the program, the factor wins over a contradicting
+    absolute value, a tip rounding beyond the full radius and heights beyond their limits are
+    reduced, a dedendum below the root form height is set equal to it, and the flank between
+    root form height and dedendum gets the edge break angle alpha_n0 + 10 degrees where none is
+    given. ``section`` = ``None`` is the hob STplus uses where no tool is named.
+
+    A block without ``PROTUBERANZBETRAG`` or ``BEARB_ZUGABE_WKZ`` yields the value zero with a
+    note. ``normal_module_mm`` and ``normal_pressure_angle_deg`` are those of the gear; they are
+    used where the block gives none (absolute values, limits). Shaper and profile tools and keys
+    the importer does not translate are ``NotSupportedError``. The list is required: a default
+    is never applied without a record of it (ADR-109). ``limit_controls`` carries the controls
+    of the tool limits a file sets (keyword arguments ``min_..._factor`` of
+    ``stplus_tool_factors``).
     """
-    keys = {entry.key for entry in section.entries}
-    if any(k.startswith(SHAPER_PREFIX) for k in keys):
-        raise NotSupportedError(
-            f"tool {section.name!r}: shaper cutter (SR_*) tools are an extension point"
+    from gearcore.stplus_program import stplus_tool_factors
+
+    if section is not None and not isinstance(section, SteSection):
+        raise InputRangeError(
+            f"a section of a parsed .ste file is required, got {type(section).__name__}"
         )
-    if any(k.startswith(PROFILE_PREFIX) for k in keys):
-        raise NotSupportedError(
-            f"tool {section.name!r}: profile/form (PW_*) tools are an extension point"
+    if not isinstance(notes, list):
+        raise InputRangeError(
+            f"notes must be a list that takes the records of the defaults, got {type(notes).__name__}"
         )
-    fields: dict[str, Any] = {"kind": ToolKind.RACK, "name": section.name}
+    label = name if section is None else section.name
+    fields: dict[str, Any] = {"kind": ToolKind.RACK, "name": label}
+    given: dict[str, float] = {}
+    if section is None:
+        notes.append(
+            f"tool {label!r}: no tool block named → the hob STplus uses where none is given"
+        )
+    else:
+        keys = {entry.key for entry in section.entries if _given(section, entry.key)}
+        if any(k.startswith(SHAPER_PREFIX) for k in keys):
+            raise NotSupportedError(
+                f"tool {label!r}: shaper cutter (SR_*) tools are an extension point"
+            )
+        if any(k.startswith(PROFILE_PREFIX) for k in keys):
+            raise NotSupportedError(
+                f"tool {label!r}: profile/form (PW_*) tools are an extension point"
+            )
+        unsupported = sorted(k for k in keys if k in TOOL_KEYS_NOT_SUPPORTED)
+        if unsupported:
+            raise NotSupportedError(
+                f"tool {label!r}: {', '.join(unsupported)} is not translated (tools dimensioned "
+                "from a measuring line, protuberance heights and a machining allowance given "
+                "as a factor are extension points)"
+            )
+        if section.entries and not keys & {*TOOL_KEYS, *TOOL_ABSOLUTE_KEYS}:
+            raise ParseError(
+                f"block '$ {label}' is no tool block: it carries none of the keys of a rack tool"
+            )
+        for key in (*TOOL_KEYS, *TOOL_ABSOLUTE_KEYS):
+            entry = section.get(key)
+            if entry is None or key not in keys:
+                continue  # not given, or given as the placeholder
+            numbers = entry.numbers()
+            if numbers[0] is None:
+                continue  # the first position holds the value; the placeholder is "not given"
+            given[key] = numbers[0]
+            extra = sum(number is not None for number in numbers[1:])
+            if extra:
+                notes.append(
+                    f"tool {label!r}: {key} has {extra + 1} values; the first is used (a tool "
+                    "block describes one tool)"
+                )
+        unread = sorted(keys - {*TOOL_KEYS, *TOOL_ABSOLUTE_KEYS})
+        if unread:
+            notes.append(f"tool {label!r}: keys not read by the importer: {', '.join(unread)}")
     for key, field in TOOL_KEYS.items():
-        entry = section.get(key)
-        if entry is None:
-            continue
-        value = entry.number(0)
-        if value is None:
-            raise ParseError(f"tool {section.name!r}: {key} has no value (line {entry.line})")
-        fields[field] = value
-    if "addendum_factor" not in fields or "tip_radius_factor" not in fields:
+        if key in given and key not in TOOL_ABSOLUTE_KEYS.values():
+            fields[field] = given[key]
+    if normal_module_mm is not None:
+        positive_input(normal_module_mm, "normal module of the gear")
+    if normal_pressure_angle_deg is not None:
+        finite_input(normal_pressure_angle_deg, "normal pressure angle of the gear")
+    module = given.get("WKZ_NORMALMODUL", normal_module_mm)
+    alpha = given.get("WKZ_EINGRIFFSWINKEL", normal_pressure_angle_deg)
+    if module is not None and module <= 0.0:
+        raise ParseError(f"tool {label!r}: WKZ_NORMALMODUL = {module:g} is no module")
+    if alpha is not None and not 0.0 < alpha < 90.0:
+        # (a flank without inclination is the grinding wheel of the manual's example 1, p. 256)
         raise ParseError(
-            f"tool {section.name!r}: KOPFHOEHENFAKTOR and KOPFABRUNDUNGSFAKTOR are required "
-            "(STplus would default them; gearcore does not guess)"
+            f"tool {label!r}: a profile angle of {alpha:g} deg is no rack tool the importer "
+            "translates (0 < alpha < 90)"
         )
+    factors: dict[str, float | None] = {}
+    for absolute_key, factor_key in TOOL_ABSOLUTE_KEYS.items():
+        factor = given.get(factor_key)
+        if absolute_key in given:
+            if module is None:
+                raise ParseError(
+                    f"tool {label!r}: {absolute_key} in mm needs the module of the tool or of "
+                    "the gear"
+                )
+            from_absolute = given[absolute_key] / module
+            if factor is None:
+                factor = from_absolute
+                notes.append(
+                    f"tool {label!r}: {absolute_key} = {given[absolute_key]!r} mm → {factor_key} = "
+                    f"{factor!r} with the module {module!r}"
+                )
+            elif abs(factor - from_absolute) * module > 1.0e-3:
+                notes.append(
+                    f"tool {label!r}: {absolute_key} = {given[absolute_key]!r} mm contradicts "
+                    f"{factor_key} = {factor!r} ({factor * module!r} mm); STplus computes with "
+                    "the factor"
+                )
+        factors[factor_key] = factor
+    fields.update(
+        stplus_tool_factors(
+            str(label),
+            addendum=factors["KOPFHOEHENFAKTOR"],
+            tip_radius=factors["KOPFABRUNDUNGSFAKTOR"],
+            root_form_height=factors["FUSSFORMHOEHENFAKTOR"],
+            dedendum=factors["FUSSHOEHENFAKTOR"],
+            edge_break_angle_deg=given.get("KANTENBRECHWINKEL"),
+            alpha_n_deg=alpha,
+            notes=notes,
+            **(limit_controls or {}),
+        )
+    )
     for key, meaning in ABSENT_MEANS_NONE.items():
         if TOOL_KEYS[key] not in fields:
             fields[TOOL_KEYS[key]] = 0.0
-            if notes is not None:
-                notes.append(f"tool {section.name!r}: {key} not given → 0 ({meaning})")
+            notes.append(f"tool {label!r}: {key} not given → 0 ({meaning})")
     try:
         return ToolProfile(**fields)
     except ValidationError as error:
-        raise _not_valid(error, f"tool {section.name!r}") from error
+        raise _not_valid(error, f"tool {label!r}") from error
 
 
 def _values(section: SteSection, key: str) -> tuple[float | None, float | None]:
@@ -452,10 +636,11 @@ def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] |
         # the default of 20 degrees belongs to the user interface of STplus; the program itself
         # rejects such a batch input (probe data/stplus_program/probes/no_pressure_angle)
         raise ParseError("EINGRIFFSWINKEL missing (STplus rejects a batch input without it)")
+    if module <= 0.0:
+        raise ParseError(f"NORMALMODUL = {module:g} is no module")
+    if not 0.0 < alpha < 90.0:
+        raise ParseError(f"EINGRIFFSWINKEL = {alpha:g} is no pressure angle (0 < alpha < 90)")
     beta = _pair_key(geo, "SCHRAEGUNGSWINKEL")
-    if beta is None:
-        beta = 0.0
-        notes.append("SCHRAEGUNGSWINKEL not given → 0 (spur gears)")
 
     split = _values(geo, "AUFTEILUNG_X1X2")[0]
     if split not in (None, 0.0):
@@ -463,26 +648,105 @@ def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] |
             f"AUFTEILUNG_X1X2 = {split:g} (manual Bild 4.12: DIN 3992 / equal sliding / equal root "
             "stress / ... distribution of the profile-shift sum) is not supported; only 0 = x1 given"
         )
-    if geo.get("PR.VERSCH.SUMME") is not None:
-        raise NotSupportedError("PR.VERSCH.SUMME (profile-shift sum input) is not supported")
 
     a = _pair_key(geo, "ACHSABSTAND")
     x = _values(geo, "PROFILVERSCHIEBUNG_N")
+    total = _pair_key(geo, "PR.VERSCH.SUMME")
+    from_sum: int | None = None
+    if total is not None:
+        # manual Bild 4.12: the sum of the profile shift coefficients with the coefficient of one
+        # gear gives the other (probe profile_shift_sum)
+        if (x[0] is None) == (x[1] is None):
+            raise NotSupportedError(
+                "PR.VERSCH.SUMME needs PROFILVERSCHIEBUNG_N of exactly one gear; the distribution "
+                "of the sum (AUFTEILUNG_X1X2) is an extension point"
+            )
+        if a is not None and beta is not None:
+            # centre distance and helix angle fix the sum: STplus keeps x_1 and derives x_2 from
+            # the centre distance, whatever the sum says (probe
+            # profile_shift_sum_with_centre_distance: sum 0,6, x_1 0,4, a 61 -> x_2 0,1298)
+            if x[0] is None:
+                raise NotSupportedError(
+                    "PR.VERSCH.SUMME with ACHSABSTAND, SCHRAEGUNGSWINKEL and the profile shift "
+                    "coefficient of gear 2 only is not probed"
+                )
+            notes.append(
+                f"PR.VERSCH.SUMME = {total:g} is not used: with ACHSABSTAND and SCHRAEGUNGSWINKEL "
+                "given STplus derives x_2 from the centre distance"
+            )
+        else:
+            from_sum = 2 if x[1] is None else 1
+            known = x[0] if from_sum == 2 else x[1]
+            assert known is not None
+            x = (known, total - known) if from_sum == 2 else (total - known, known)
+            notes.append(
+                f"PR.VERSCH.SUMME = {total:g}: PROFILVERSCHIEBUNG_N of gear {from_sum} follows as "
+                f"{x[from_sum - 1]!r} (sum minus the coefficient given)"
+            )
+    if beta is None:
+        # STplus computes the helix angle from the centre distance and the sum of the profile
+        # shift coefficients (manual p. 16, subroutine GE12; probe
+        # helix_angle_from_centre_distance); without them it rejects the input (probe
+        # no_helix_angle_no_centre_distance)
+        if a is None or x[0] is None or x[1] is None:
+            raise ParseError(
+                "SCHRAEGUNGSWINKEL missing: STplus computes it from ACHSABSTAND and the sum of the "
+                "profile shift coefficients and rejects an input that lacks them"
+            )
+        from gearcore.stplus_program import stplus_helix_angle_deg
+
+        beta = stplus_helix_angle_deg(a, module, alpha, teeth[0], teeth[1], x[0] + x[1])
+        notes.append(
+            f"SCHRAEGUNGSWINKEL not given → beta = {beta!r} deg from ACHSABSTAND = {a:g} and the "
+            f"sum of the profile shift coefficients {x[0] + x[1]!r}, the solution of the equation "
+            "STplus iterates (STplus ends its iteration when the centre distance is met within "
+            "about 0,5 um, lists a slightly smaller angle and adds the remainder to x_2)"
+        )
     x_in_file = x
     if a is not None and x[0] is not None and x[1] is not None:
         # STplus keeps x_1 and derives x_2 from the centre distance without saying so; gearcore
         # admits only two of a_w, x_1, x_2 (ADR-107), so the translation is made explicit here
-        notes.append(
-            f"ACHSABSTAND and PROFILVERSCHIEBUNG_N of both gears given: x_2 = {x[1]:g} of the "
-            "file is not passed on (STplus derives x_2 from the centre distance; gearcore admits "
-            "only two of a_w, x_1, x_2)"
-        )
+        if from_sum is None:
+            notes.append(
+                f"ACHSABSTAND and PROFILVERSCHIEBUNG_N of both gears given: x_2 = {x[1]:g} of the "
+                "file is not passed on (STplus derives x_2 from the centre distance; gearcore "
+                "admits only two of a_w, x_1, x_2)"
+            )
+        elif from_sum == 2:
+            notes.append(
+                f"ACHSABSTAND given: x_2 = {x[1]!r} of PR.VERSCH.SUMME is not passed on (it "
+                "follows from the centre distance; gearcore admits only two of a_w, x_1, x_2)"
+            )
+        else:
+            raise NotSupportedError(
+                "PR.VERSCH.SUMME with ACHSABSTAND and the profile shift coefficient of gear 2 "
+                "only (no SCHRAEGUNGSWINKEL) is not probed"
+            )
         x = (x[0], None)
     span_w = _values(geo, "ZAHNWEITE")
     span_k = _values(geo, "MESSZAEHNEZAHL")
     span_k_check = _values(geo, "MESSZAEHNEZAHL_K")
     width = _values(geo, "ZAHNBREITE")
     tip = _values(geo, "KOPFKREISDM")
+    active = sorted(
+        key
+        for key in TIP_CIRCLE_KEYS
+        if (entry_of_key := geo.get(key)) is not None
+        and any(v != PLACEHOLDER and v.lower() != "nein" for v in entry_of_key.values)
+    )
+    if active and (tip[0] is None or tip[1] is None):
+        raise NotSupportedError(
+            f"{', '.join(active)} defines the tip circle of a gear without KOPFKREISDM "
+            "(tip tooth thickness, tip circle by the tool, tip alteration per DIN 3960, tip "
+            "clearance factor, addendum factor of the reference profile): extension points; "
+            "give KOPFKREISDM"
+        )
+    if active:
+        # probe tip_circle_given_with_other_definitions: the listing equals that of the file
+        # without these keys (tip circles, tool factors, tip clearance)
+        notes.append(
+            f"{', '.join(active)}: no effect in STplus where KOPFKREISDM is given for both gears"
+        )
     chamfer = _values(geo, "KOPFKANTENBRUCH")
     a_we = _values(geo, "OBERES_ZAHNW_ABMASS")
     a_wi = _values(geo, "UNTERES_ZAHNW_ABMASS")
@@ -498,24 +762,45 @@ def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] |
     quality = iso_q if has_iso else din_q
     quality_system = QualitySystem.ISO1328 if has_iso else QualitySystem.DIN3962
 
+    config = ste.section("Konfigurationsdaten")
+    limit_controls = {
+        argument: value
+        for argument, (key, bounds) in TOOL_LIMIT_CONTROLS.items()
+        if (value := _control(config, key, bounds, notes)) is not None
+    }
     tools_entry = geo.get("WERKZEUG_VORVERZ.")
     tools: list[ToolProfile] = []
-    if tools_entry is None or len(tools_entry.values) < 2:
-        raise ParseError(
-            "WERKZEUG_VORVERZ. must name a tool block for both gears (STplus would use a default "
-            "hob; gearcore requires the tool explicitly)"
-        )
     for entry_of_names in (tools_entry, series_entry):
         if entry_of_names is not None and len(entry_of_names.values) > 2:
             raise ParseError(
                 f"line {entry_of_names.line}: {entry_of_names.key} has "
                 f"{len(entry_of_names.values)} values; a pair has two gears"
             )
-    for name in tools_entry.values[:2]:
-        section = ste.section(name)
-        if section is None:
-            raise ParseError(f"tool block '$ {name}' referenced by WERKZEUG_VORVERZ. not found")
-        tools.append(tool_from_section(section, notes))
+    tool_names = [] if tools_entry is None else list(tools_entry.values[:2])
+    for index in range(2):
+        # a gear without a tool name (no entry, one name only, or the placeholder %) is cut by
+        # the hob STplus presets (manual p. 22; probes defaults_minimal, tool_for_one_gear_only)
+        name = tool_names[index] if index < len(tool_names) else PLACEHOLDER
+        section = None
+        if name != PLACEHOLDER:
+            if name.upper() in STRUCTURAL_BLOCKS:
+                raise ParseError(
+                    f"WERKZEUG_VORVERZ. names '{name}', which is a block of the file structure "
+                    "and no tool"
+                )
+            section = ste.section(name)
+            if section is None:
+                raise ParseError(f"tool block '$ {name}' referenced by WERKZEUG_VORVERZ. not found")
+        tools.append(
+            tool_from_section(
+                section,
+                notes,
+                name=f"STplus default hob of gear {index + 1}",
+                normal_module_mm=module,
+                normal_pressure_angle_deg=alpha,
+                limit_controls=limit_controls,
+            )
+        )
     if geo.get("WERKZEUG_FERTIGVERZ.") is not None:
         raise NotSupportedError("WERKZEUG_FERTIGVERZ. (second tool) is an extension point")
 
@@ -560,8 +845,8 @@ def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] |
             span = SpanMeasurement(span_measurement_mm=w, number_of_teeth_spanned=k)
         elif w is not None:
             notes.append(
-                f"gear {gear_no}: ZAHNWEITE {w} is not used for x (PROFILVERSCHIEBUNG_N is in "
-                "the file); it is an inspection dimension"
+                f"gear {gear_no}: ZAHNWEITE {w} is not used for x (the file gives x by "
+                "PROFILVERSCHIEBUNG_N or PR.VERSCH.SUMME); it is an inspection dimension"
             )
         b = width[i]
         if b is None:
@@ -576,9 +861,16 @@ def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] |
         allowance = None
         if a_we[i] is not None or a_wi[i] is not None:
             upper, lower = a_we[i], a_wi[i]
-            if upper is None or lower is None:
+            if upper is None:
                 raise ParseError(
-                    f"gear {gear_no}: OBERES_ and UNTERES_ZAHNW_ABMASS must be given together"
+                    f"gear {gear_no}: UNTERES_ZAHNW_ABMASS given without OBERES_ZAHNW_ABMASS"
+                )
+            if lower is None:
+                # manual p. 20; probe upper_span_allowance_only
+                lower = upper
+                notes.append(
+                    f"gear {gear_no}: UNTERES_ZAHNW_ABMASS not given → equal to the upper span "
+                    f"allowance {upper:g} as STplus sets it"
                 )
             allowance = (upper, lower)
         q = _integer(quality[i], "QUALITAET", gear_no)
@@ -605,8 +897,7 @@ def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] |
             )
         )
 
-    config = ste.section("Konfigurationsdaten")
-    c_min = None if config is None else _values(config, "MINDESTKOPFSPIEL")[0]
+    c_min = _control(config, "MINDESTKOPFSPIEL", MIN_TIP_CLEARANCE_RANGE, notes)
 
     determined = [g.profile_shift_coefficient is not None or g.span is not None for g in gears]
     if a is not None and not any(determined):
@@ -627,10 +918,216 @@ def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] |
         gears=Pair(pinion=gears[0], wheel=gears[1]),
         min_tip_clearance_factor=c_min,
     )
+    preset_tips = (gears[0].tip_diameter_mm is None, gears[1].tip_diameter_mm is None)
+    pair = _completed_like_stplus(pair, config, notes)
     unmapped = sorted(k for k in {e.key for e in geo.entries} if k not in GEOMETRY_KEYS_MAPPED)
     return SteImport(
-        pair=pair, materials=tuple(materials), unmapped_keys=tuple(unmapped), notes=tuple(notes)
+        pair=pair,
+        materials=tuple(materials),
+        unmapped_keys=tuple(unmapped),
+        notes=tuple(notes),
+        preset_tip_diameters=preset_tips,
     )
+
+
+TOOL_LIMIT_CONTROLS: dict[str, tuple[str, tuple[float, float]]] = {
+    "min_tip_land_factor": ("MIN_WKZ_ZAHNKOPFDICKE*", (0.1, 1.0)),
+    "min_space_factor": ("MIN_LUECKENWEITE_EFF0*", (0.1, 0.6)),
+    "min_root_space_factor": ("MIN_LUECKENWEITE_EF0*", (0.1, 0.6)),
+}
+"""Controls of ``$ KONFIGURATIONSDATEN`` (manual §4.17.2) that move the limits of the tool:
+argument of ``stplus_program.stplus_tool_factors`` -> key and the values STplus accepts (the
+ranges of ``stplus_program.MIN_TOOL_*_RANGE``; probes ``tool_tip_land_control``,
+``tool_space_control``, ``tool_root_space_control``)."""
+
+
+MIN_TIP_CLEARANCE_RANGE = (0.001, 0.99)
+"""Range of the control MINDESTKOPFSPIEL (manual Bild 4.231, p. 229: ``# 0.13 0.001... 0.99``)."""
+
+
+def _control(
+    config: SteSection | None, key: str, bounds: tuple[float, float], notes: list[str]
+) -> float | None:
+    """The value of a control of ``$ KONFIGURATIONSDATEN``, ``None`` where the preset holds.
+
+    The controls the importer reads are printed as ``KEY = % (%)`` in the manual (Bild 4.231,
+    p. 229): one value for the stage, the second column being a third gear. The first value
+    holds for both gears, whatever a second one says (probes
+    ``tip_chamfer_tangential_two_values``, ``tip_chamfer_limit_lowered``,
+    ``controls_first_value_holds``). STplus accepts the values between the ends of the range,
+    not the ends themselves; any other value leaves the preset in place (manual p. 223; probes
+    ``control_outside_its_range``, ``controls_at_the_ends_of_their_ranges``).
+    The placeholder ``%`` is "not given". The use of a control, a value that is not accepted
+    and a value that is not used are recorded."""
+    entry = None if config is None else config.get(key)
+    if entry is None:
+        return None
+    numbers = entry.numbers()  # (every token is a number or the placeholder, else ParseError)
+    value = numbers[0] if numbers else None
+    if value is None:
+        return None
+    if len(entry.values) > 1:
+        notes.append(
+            f"$ KONFIGURATIONSDATEN: {key} has {len(entry.values)} values; the first holds for "
+            "both gears, as in STplus (a second one belongs to a third gear)"
+        )
+    if not bounds[0] < value < bounds[1]:
+        notes.append(
+            f"$ KONFIGURATIONSDATEN: {key} = {value:g} does not lie between {bounds[0]:g} and "
+            f"{bounds[1]:g}: STplus does not accept it and keeps the preset"
+        )
+        return None
+    notes.append(f"$ KONFIGURATIONSDATEN: {key} = {value:g} is used in place of the preset")
+    return value
+
+
+def _completed_like_stplus(
+    pair: PairInput, config: SteSection | None, notes: list[str]
+) -> PairInput:
+    """Tip diameters, chamfer heights and residual tip thicknesses as STplus presets them
+    (user decision 2026-10-03, ADR-114; every step is appended to ``notes``).
+
+    - A tip chamfer given as an input is limited to 0,20 m_n (control MAX_KOPFKANTENBRUCH).
+    - A gear without ``KOPFKREISDM`` gets d_a = d + 2 m_n (h_aP* + x) with h_aP* = 1 and no tip
+      alteration (manual p. 19), where its profile shift coefficient follows from the file.
+    - A chamfer given by h_K gets the residual tip thickness of the STplus rule: the tangential
+      amount 0,7 h_K (control TANG_BETRAG_ZU_H_KGF), at least 0,2 s_an, in the normal section.
+      It needs the tip tooth thickness of the generated gear; where the generation is not
+      available, the residual thickness stays open and a note says why.
+
+    The tooth thickness allowances of the DIN 3967 series STplus presets (c25) come with
+    increment 5; until then the tip tooth thickness is that of the gear without allowance.
+    """
+    from gearcore import generation as gn
+    from gearcore import pair as pr
+    from gearcore.errors import GearCoreError
+    from gearcore.stplus_program import (
+        MAX_TIP_CHAMFER_RANGE,
+        TANGENTIAL_AMOUNT_RANGE,
+        stplus_default,
+        stplus_residual_tip_thickness,
+        stplus_tip_chamfer_height,
+        stplus_transverse_residual_tip_thickness,
+    )
+
+    if config is not None:
+        presets = sorted(k for k in {e.key for e in config.entries} if k.startswith("VB_FUSS"))
+        if presets:
+            notes.append(
+                f"$ KONFIGURATIONSDATEN: {', '.join(presets)} has no effect in STplus 11.1F (probe "
+                "tool_root_presets_of_the_configuration): the tool root keeps the presets 1,3 / 1,3"
+            )
+        flag = config.get("ABSCHALTEN_KORRGLIED")
+        switches = () if flag is None else flag.numbers()
+        circle = switches[0] if switches else None
+        if len(switches) > 1:
+            notes.append(
+                f"$ KONFIGURATIONSDATEN: ABSCHALTEN_KORRGLIED has {len(switches)} values; the "
+                "first holds for both gears, as in STplus (a second one belongs to a third gear)"
+            )
+        if circle not in (None, 0.0):
+            # manual p. 227/228: STplus then takes the tool tip rounding as a circle in the
+            # transverse section; gearcore rolls the ellipse (ADR-113)
+            raise NotSupportedError(
+                f"$ KONFIGURATIONSDATEN: ABSCHALTEN_KORRGLIED = {circle:g} (circular in place of "
+                "the elliptic tool tip rounding in the transverse section) is not supported"
+            )
+        ignored = sorted(
+            k for k in {e.key for e in config.entries} if k not in CONFIGURATION_KEYS_EVALUATED
+        )
+        if ignored:
+            notes.append(
+                f"$ KONFIGURATIONSDATEN: {', '.join(ignored)} not evaluated by the importer"
+            )
+    limit = _control(config, "MAX_KOPFKANTENBRUCH", MAX_TIP_CHAMFER_RANGE, notes)
+    tangential = _control(config, "TANG_BETRAG_ZU_H_KGF", TANGENTIAL_AMOUNT_RANGE, notes)
+    m_n = pair.normal_module_mm
+    gears = list(pair.gears.as_tuple())
+    for index, gear in enumerate(gears):
+        h_K = gear.tip_chamfer_radial_mm
+        limited = stplus_tip_chamfer_height(h_K, m_n, max_factor=limit)
+        if limited < h_K:
+            notes.append(
+                f"gear {index + 1}: KOPFKANTENBRUCH = {h_K:g} limited to {limited!r} mm as STplus "
+                f"does ({limited / m_n:g} m_n)"
+            )
+            gears[index] = gear.model_copy(update={"tip_chamfer_radial_mm": limited})
+    pair = pair.model_copy(update={"gears": Pair(pinion=gears[0], wheel=gears[1])})
+
+    shifts = [gear.profile_shift_coefficient for gear in gears]
+    follows = (
+        all(x is not None for x in shifts)
+        if pair.centre_distance_mm is None
+        else any(x is not None for x in shifts)
+    )
+    without_tip = [i for i, gear in enumerate(gears) if gear.tip_diameter_mm is None]
+    if without_tip and follows:
+        h_aP_factor = stplus_default("reference_profile_addendum").value
+        assert isinstance(h_aP_factor, float)
+        pair = pr.with_nominal_tip_diameters(pair, h_aP_mm=h_aP_factor * m_n)
+        gears = list(pair.gears.as_tuple())
+        for index in without_tip:
+            notes.append(
+                f"gear {index + 1}: KOPFKREISDM not given → d_a = {gears[index].tip_diameter_mm!r} mm "
+                "= d + 2 m_n (1 + x), the default of STplus without tip alteration (STplus "
+                "shortens it afterwards where the tool, the tip tooth thickness or the mating "
+                "gear require it; gearcore applies the cut by the tool only)"
+            )
+    elif without_tip:
+        for index in without_tip:
+            notes.append(
+                f"gear {index + 1}: KOPFKREISDM not given; the default of STplus needs the profile "
+                "shift coefficient, which a span measurement determines (increments 4 and 5)"
+            )
+
+    open_chamfers = [
+        i
+        for i, gear in enumerate(gears)
+        if gear.tip_chamfer_radial_mm > 0.0 and gear.residual_tip_thickness_mm is None
+    ]
+    if not open_chamfers:
+        return pair
+    if not follows or any(gear.tip_diameter_mm is None for gear in gears):
+        for index in open_chamfers:
+            notes.append(
+                f"gear {index + 1}: residual tip thickness of the chamfer not determined (the tip "
+                "tooth thickness needs the profile shift coefficient and the tip diameter)"
+            )
+        return pair
+    try:
+        generated = gn.compute_generation(pair).gears.as_tuple()
+    except GearCoreError as error:
+        # reading a file is not mathematics: a pair gearcore cannot generate is still imported
+        for index in open_chamfers:
+            notes.append(
+                f"gear {index + 1}: residual tip thickness of the chamfer not determined, the "
+                f"generation is not available ({type(error).__name__}: {error})"
+            )
+        return pair
+    for index in open_chamfers:
+        gear, result = gears[index], generated[index]
+        s_an = result.normal_tip_tooth_thickness_mm
+        residual = stplus_residual_tip_thickness(
+            s_an, gear.tip_chamfer_radial_mm, tangential_factor=tangential
+        )
+        # the contract carries the transverse arc on the tip circle, STplus the normal thickness
+        transverse = stplus_transverse_residual_tip_thickness(
+            result.transverse_tip_tooth_thickness_mm,
+            s_an,
+            gear.tip_chamfer_radial_mm,
+            tangential_factor=tangential,
+        )
+        amount = (
+            stplus_default("tip_chamfer_tangential").value if tangential is None else tangential
+        )
+        notes.append(
+            f"gear {index + 1}: residual tip thickness of the chamfer → s_aK = {residual!r} mm in "
+            f"the normal section ({transverse!r} mm transverse) by the STplus rule s_an - 2 "
+            f"({amount:g} h_K), at least 0,2 s_an, with s_an = {s_an!r} mm of the gear without "
+            "tooth thickness allowance (STplus presets the series c25, increment 5)"
+        )
+        gears[index] = gear.model_copy(update={"residual_tip_thickness_mm": transverse})
+    return pair.model_copy(update={"gears": Pair(pinion=gears[0], wheel=gears[1])})
 
 
 def known_keys_from_sty(path: Path) -> set[str]:

@@ -1,0 +1,58 @@
+{
+  "case": "default_hob_at_thirty_degrees",
+  "cfg": "Firmenname = FZG\nSachbearbeiter = gearcore oracle\nEingabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\default_hob_at_thirty_degrees\\eingabe.ste\nAusgabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\default_hob_at_thirty_degrees\\ausgabe.sta\nGraphikdatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\default_hob_at_thirty_degrees\\grafik1.stz\nGraphikdatei_2 = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\default_hob_at_thirty_degrees\\grafik2.stz\nZuordnungsdatei = qelesed.stq\nWerkzeugdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wkz\\wkz.dat\nWerkzeugdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wkz_glob.dat\nWerkzeugdatei_3 = %\nWerkzeugdatei_4 = %\nWerkzeugdatei_5 = %\nWerkzeugdatei_6 = %\nWerkzeugdatei_7 = %\nWerkzeugdatei_8 = %\nWerkzeugdatei_9 = %\nWerkzeugdatei_10 = %\nWerkstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wst\\WST.dat\nWerkstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wst_glob.dat\nSchmierstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\oel\\Oel.dat\nSchmierstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\oel_glob.dat\nPfad_Maskendateien = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\zubeh\\\nSchnittstellendatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\default_hob_at_thirty_degrees\\ausgabe.sts\nSTEP_Konfiguration = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\default_hob_at_thirty_degrees\\config.dat\nPfad_Meldungsausgabe = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\default_hob_at_thirty_degrees\\\n",
+  "exe": "30_references_and_examples/33_STplus/STplus11-1F/bin/STplus.exe",
+  "exit_code": 0,
+  "interface_file": "interface.sts.txt",
+  "kept_files": [
+    "input.ste",
+    "report.sta.txt",
+    "interface.sts.txt",
+    "meta.json"
+  ],
+  "material_kinds": {},
+  "notes": "as defaults_minimal at alpha_n = 30 degrees: tip rounding 0.110, and the preset root form height 1.3 is reduced to 1.265, the dedendum with it",
+  "origin": "run",
+  "plot_accuracy": 0.005,
+  "run_date": "2026-10-03T16:13:23+02:00",
+  "scratch": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\default_hob_at_thirty_degrees",
+  "sections": [
+    "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "Besonderheiten der Radpaarung:"
+  ],
+  "source_ste": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_probe_08yie67z\\default_hob_at_thirty_degrees.ste",
+  "stdout": " Config file path C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\default_hob_\n at_thirty_degrees\\stplus.cfg passed as CLI parameter. Found file.\n ... Eingabedatenverarbeitung wird durchgefuehrt ...\n ... Geometrieberechnung wird durchgefuehrt ...\n ... Geometrieplots werden gezeichnet ...\nRuntime:  0.234s\n",
+  "ste_sha256": "db73357e6cfee5f6a307b2cadac386d8a3360da441bc3f617069b1c1efa4e4dd",
+  "stplus_version": "11.1F",
+  "trust": "generated",
+  "typed_import": {
+    "notes": [
+      "tool 'STplus default hob of gear 1': no tool block named → the hob STplus uses where none is given",
+      "tool 'STplus default hob of gear 1': KOPFHOEHENFAKTOR not given → h_aP0* = 1.25 (STplus default)",
+      "tool 'STplus default hob of gear 1': KOPFABRUNDUNGSFAKTOR not given → rho_aP0* = 0.25 (STplus default)",
+      "tool 'STplus default hob of gear 1': the preset rho_aP0* = 0.25 reduced to the full radius rho_aP0* = 0.11034952317566342 as STplus does",
+      "tool 'STplus default hob of gear 1': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'STplus default hob of gear 1': the preset h_FfP0* = 1.3 reduced to h_FfP0* = 1.265086728759375 as STplus does (the tool space narrows to 0.11 m_n there)",
+      "tool 'STplus default hob of gear 1': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
+      "tool 'STplus default hob of gear 1': h_fP0* = 1.3 set to the root form height h_FfP0* = 1.265086728759375 as STplus does (no edge break flank)",
+      "tool 'STplus default hob of gear 1': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'STplus default hob of gear 1': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "tool 'STplus default hob of gear 2': no tool block named → the hob STplus uses where none is given",
+      "tool 'STplus default hob of gear 2': KOPFHOEHENFAKTOR not given → h_aP0* = 1.25 (STplus default)",
+      "tool 'STplus default hob of gear 2': KOPFABRUNDUNGSFAKTOR not given → rho_aP0* = 0.25 (STplus default)",
+      "tool 'STplus default hob of gear 2': the preset rho_aP0* = 0.25 reduced to the full radius rho_aP0* = 0.11034952317566342 as STplus does",
+      "tool 'STplus default hob of gear 2': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'STplus default hob of gear 2': the preset h_FfP0* = 1.3 reduced to h_FfP0* = 1.265086728759375 as STplus does (the tool space narrows to 0.11 m_n there)",
+      "tool 'STplus default hob of gear 2': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
+      "tool 'STplus default hob of gear 2': h_fP0* = 1.3 set to the root form height h_FfP0* = 1.265086728759375 as STplus does (no edge break flank)",
+      "tool 'STplus default hob of gear 2': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'STplus default hob of gear 2': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "gear 1: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
+      "gear 2: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
+      "gear 1: KOPFKREISDM not given → d_a = 44.0 mm = d + 2 m_n (1 + x), the default of STplus without tip alteration (STplus shortens it afterwards where the tool, the tip tooth thickness or the mating gear require it; gearcore applies the cut by the tool only)",
+      "gear 2: KOPFKREISDM not given → d_a = 84.0 mm = d + 2 m_n (1 + x), the default of STplus without tip alteration (STplus shortens it afterwards where the tool, the tip tooth thickness or the mating gear require it; gearcore applies the cut by the tool only)"
+    ],
+    "ok": true,
+    "unmapped_keys": []
+  }
+}

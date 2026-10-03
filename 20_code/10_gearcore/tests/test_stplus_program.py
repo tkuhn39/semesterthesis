@@ -2,7 +2,8 @@
 
 The tool databases are packaged verbatim, the defaults are transcribed from the manual and from
 probe runs, and every record names program, version and release. gearcore applies none of it
-silently.
+silently: the importer reads a record or a file as STplus computes it and records every default
+and every correction in its notes (user decision 2026-10-03, ADR-114).
 """
 
 import hashlib
@@ -11,7 +12,7 @@ import re
 import pytest
 
 from gearcore.data import data_path
-from gearcore.errors import InputRangeError, NotSupportedError, ParseError
+from gearcore.errors import InputRangeError, NotSupportedError
 from gearcore.io.ste import load_ste, pair_input_from_ste, parse_ste
 from gearcore.models.inputs import ToolKind, ToolProfile
 from gearcore.quantities import quantities
@@ -34,6 +35,70 @@ PROBES = (
     "tool_consistent_record",
     "tool_contradicting_record",
     "tool_without_tip_rounding",
+    # 2026-10-03: how STplus completes an incomplete input (ADR-114)
+    "tool_without_addendum",
+    "tool_for_one_gear_only",
+    "tool_addendum_limited",
+    "tool_tip_rounding_limited",
+    "tool_root_dedendum_only_low",
+    "tool_root_dedendum_only_high",
+    "tool_root_form_height_only",
+    "tool_root_both_heights",
+    "tool_root_form_height_and_angle",
+    "tool_root_dedendum_limited",
+    "tool_root_dedendum_below_form_height",
+    "tool_root_angle_only",
+    "tool_root_form_height_limited",
+    "tool_root_presets_of_the_configuration",
+    "tool_root_other_pressure_angle",
+    "tip_circle_cut_by_tool",
+    "tip_circle_cut_then_edge_break",
+    "tip_circle_cut_helical",
+    "tip_circle_cut_with_chamfer",
+    "pointed_by_edge_break",
+    "helix_angle_from_centre_distance",
+    "no_helix_angle_no_centre_distance",
+    "upper_span_allowance_only",
+    "profile_shift_sum",
+    "tip_chamfer_default",
+    "tip_chamfer_tangential_given",
+    "tip_chamfer_limits",
+    "tip_chamfer_helical",
+    # 2026-10-03: probes of the verification review (gate report increment 3, G3X)
+    "default_hob_at_twenty_eight_degrees",
+    "default_hob_at_thirty_degrees",
+    "tool_addendum_limited_without_tip_rounding",
+    "tool_for_gear_one_only",
+    "tip_circle_from_reference_profile_addendum",
+    "tip_circle_per_din3960",
+    "tip_chamfer_tangential_two_values",
+    "tip_chamfer_limit_lowered",
+    "tip_chamfer_limit_raised",
+    "tool_edge_break_angle_ninety_degrees",
+    "profile_shift_sum_with_centre_distance",
+    "tip_chamfer_floor",
+    # 2026-10-03: probes of the second verification review (G3Y)
+    "tip_circle_given_with_other_definitions",
+    "tool_edge_break_angle_eighty_five_degrees",
+    "tool_edge_break_angle_eighty_eight_degrees",
+    "tool_edge_break_angle_below_pressure_angle",
+    "tool_edge_break_angle_equal_to_pressure_angle",
+    "tool_edge_break_angle_ninety_degrees_without_form_height",
+    "controls_first_value_holds",
+    "control_outside_its_range",
+    # 2026-10-03: where two deviations from STplus come from
+    "helix_angle_without_profile_shift",
+    "helix_angle_iteration_limit_tightened",
+    "form_circle_limit_twenty_thousand",
+    "form_circle_limit_fifty_thousand",
+    # 2026-10-03: the controls of the tool limits and the ends of the ranges
+    "tool_tip_land_control",
+    "tool_tip_land_control_at_program_preset",
+    "tool_space_control",
+    "tool_root_space_control",
+    "tool_root_space_control_without_effect",
+    "tool_controls_at_the_ends_of_their_ranges",
+    "controls_at_the_ends_of_their_ranges",
 )
 VALID_TOOLS = {
     "S_19_00376_(FI_61",
@@ -52,6 +117,9 @@ CONTRADICTING_TOOLS = {
     "S_xx_xxxxx_F_(_83",
 }
 GLOBAL_TOOLS = {"hochverz1", "hochverz2"}
+BEYOND_THE_CONTRACT = {"S_19_00373_F_(_80", "S_19_00372_F_(_81"}
+"""Records at alpha_n0 = 16 degrees whose root heights (3,0 and 4,0) STplus would reduce to
+2,547, above the 2,5 the tool contract admits."""
 _NUMBER = re.compile(r"^-?\d+(\.\d+)?$")
 
 
@@ -121,7 +189,12 @@ def test_tool_database_keeps_every_record_and_entry() -> None:
 
 def test_consistent_records_are_tool_contracts() -> None:
     records = tool_database()
-    assert {name for name, record in records.items() if record.profile is not None} == VALID_TOOLS
+    # every rack tool of the databases that names its profile angle is a contract, read as
+    # STplus computes with it (ADR-114); the two of the global database take the angle of the gear
+    assert {name for name, record in records.items() if record.profile is None} == (
+        BEYOND_THE_CONTRACT | GLOBAL_TOOLS
+    )
+    assert {name for name, record in records.items() if not record.issues} == VALID_TOOLS
     tool = stplus_tool("S_19_00374_(Cr_64")
     assert isinstance(tool, ToolProfile) and tool.kind is ToolKind.RACK
     assert tool.name == "S_19_00374_(Cr_64"
@@ -145,31 +218,69 @@ def test_stplus_prints_the_factors_of_a_consistent_record() -> None:
     assert "alfa_K01/2=  43.00/ 43.00" in listing
 
 
-def test_contradicting_records_are_kept_but_are_no_contracts() -> None:
-    """Factor and absolute value contradict in the records with '_F_' in the name. STplus computes with the
-    factor and reduces what is not possible; gearcore keeps the record and rejects it."""
+def test_contradicting_records_are_read_as_stplus_computes_them() -> None:
+    """Factor and absolute value contradict in the records with '_F_' in the name. STplus computes
+    with the factor and reduces what is not possible; the importer does the same, keeps the
+    contradiction as an issue of the record and the corrections as its notes (ADR-114)."""
     records = tool_database()
     for name in CONTRADICTING_TOOLS:
         record = records[name]
-        assert record.profile is None, name
         assert any("KOPFHOEHE = " in issue and "contradicts" in issue for issue in record.issues)
-        assert any("no tool contract" in issue for issue in record.issues), name
-        with pytest.raises(NotSupportedError, match="contradicts"):
-            stplus_tool(name)
-    entries = dict(records["S_19_00374_F_(_77"].entries)
+        if name in BEYOND_THE_CONTRACT:
+            assert any("less than or equal to 2.5" in issue for issue in record.issues), name
+            with pytest.raises(NotSupportedError, match="no tool contract"):
+                stplus_tool(name)
+            continue
+        assert record.profile is not None and stplus_tool(name) == record.profile, name
+        assert any("reduced" in note for note in record.notes), name
+    record = records["S_19_00374_F_(_77"]
+    entries = dict(record.entries)
     assert (entries["KOPFHOEHENFAKTOR"], entries["KOPFHOEHE"]) == ("1.6", "5.377")
     listing = probe_listing("tool_contradicting_record")
+    profile = record.profile
+    assert profile is not None
     assert _row(listing, "Kopfhoehenfaktor (Wkz_Bezugspr.)") == [1.6, 1.6], "the factor wins"
+    assert profile.addendum_factor == 1.6
     assert _row(listing, "Wkz-Kopfabrundungsfaktor") == [0.383, 0.383], "record says 0.5"
+    assert profile.tip_radius_factor == pytest.approx(0.383, abs=5e-4)
     assert _row(listing, "Fuss-Hoehenfaktor (Wkz-Bezugspr.)") == [2.317, 2.317], "record says 3.0"
+    assert _row(listing, "Fussform-Hoehenf.(Wkz-Bezugspr.)") == [2.317, 2.317], "record says 3.0"
+    assert profile.dedendum_factor == pytest.approx(2.317, abs=5e-4)
+    assert profile.root_form_height_factor == pytest.approx(2.317, abs=5e-4)
     assert "Wkz.daten h_FfP0*, d_Ff0, alfa_Kn0 oder alfa_Kt0 fuer Rad 1 geaendert" in listing
+    assert "Werkzeugdaten h_aP0*, d_a0, rho_aP0 oder rho_at0 fuer Rad 1 geaendert" in listing
 
 
-def test_records_without_tip_rounding_are_kept_but_are_no_contracts() -> None:
+def test_records_without_tip_rounding_get_the_preset_of_stplus() -> None:
     records = tool_database()
     for name in GLOBAL_TOOLS:
+        # (G3X-10) the limits of STplus need a profile angle; these records take that of the gear
         assert records[name].profile is None
-        assert any("KOPFABRUNDUNGSFAKTOR" in issue for issue in records[name].issues), name
+        assert any("profile angle" in issue for issue in records[name].issues), name
+        with pytest.raises(NotSupportedError, match="profile angle"):
+            stplus_tool(name)
+        notes: list[str] = []
+        profile = stplus_tool(
+            name, normal_module_mm=2.0, normal_pressure_angle_deg=20.0, notes=notes
+        )
+        assert profile.tip_radius_factor == 0.25, name
+        assert any("KOPFABRUNDUNGSFAKTOR not given" in note for note in notes), name
+        with pytest.raises(InputRangeError, match="needs notes"):
+            stplus_tool(name, normal_module_mm=2.0, normal_pressure_angle_deg=20.0)
+    with pytest.raises(InputRangeError, match="notes are taken"):
+        stplus_tool("S_19_00374_(Cr_64", notes=[])
+    # at 25 degrees the full radius of hochverz2 (h_aP0* 1,5) lies below the preset rounding
+    notes = []
+    steep = stplus_tool(
+        "hochverz2", normal_module_mm=2.0, normal_pressure_angle_deg=25.0, notes=notes
+    )
+    assert steep.tip_radius_factor == pytest.approx(0.135, abs=5e-4)
+    assert any("the preset rho_aP0* = 0.25 reduced to the full radius" in note for note in notes)
+    hochverz = stplus_tool(
+        "hochverz1", normal_module_mm=2.0, normal_pressure_angle_deg=20.0, notes=[]
+    )
+    assert (hochverz.addendum_factor, hochverz.root_form_height_factor) == (1.45, 1.5)
+    assert hochverz.dedendum_factor == 1.5 and hochverz.edge_break_angle_deg is None
     assert records["hochverz1"].entries == (
         ("KOPFHOEHENFAKTOR", "1.45"),
         ("FUSSHOEHENFAKTOR", "1.500"),
@@ -198,7 +309,7 @@ def test_unknown_names_are_typed_errors() -> None:
 def test_defaults_are_labelled_and_carry_their_evidence() -> None:
     defaults = stplus_defaults()
     registry = quantities()
-    assert len(defaults) == 24
+    assert len(defaults) == 62
     for name, default in defaults.items():
         assert default.origin == LABEL, name
         if default.quantity is not None:
@@ -288,9 +399,26 @@ def test_pressure_angle_default_belongs_to_the_user_interface() -> None:
 
 
 def test_gearcore_applies_no_stplus_default_silently() -> None:
-    """The input of the probe runs in STplus with its default hob; gearcore asks for the tool."""
+    """The input of the probe runs in STplus with its default hob and its default tip circles.
+    The importer reads it the same way (ADR-114) and says what it preset; the computing core
+    still takes nothing it is not given."""
     ste = load_ste(data_path(DIRECTORY, "probes", "defaults_minimal", "input.ste"))
-    with pytest.raises(ParseError, match="gearcore requires the tool explicitly"):
-        pair_input_from_ste(ste)
-    # falling back on the old default is an explicit, labelled choice
+    imported = pair_input_from_ste(ste)
+    listing = probe_listing("defaults_minimal")
+    default = stplus_default_tool()
+    for gear in imported.pair.gears.as_tuple():
+        tool = gear.tool
+        assert (tool.addendum_factor, tool.tip_radius_factor) == (1.25, 0.25)
+        assert (tool.root_form_height_factor, tool.dedendum_factor) == (
+            default.root_form_height_factor,
+            default.dedendum_factor,
+        )
+    tips = [gear.tip_diameter_mm for gear in imported.pair.gears.as_tuple()]
+    assert tips == _row(listing, "Kopfkreisdurchmesser") == [44.0, 84.0]
+    assert imported.preset_tip_diameters == (True, True)
+    assert sum("no tool block named" in note for note in imported.notes) == 2
+    assert sum("KOPFKREISDM not given" in note for note in imported.notes) == 2
+    # the core: a tool is a contract with its factors, a generation needs its tip diameters
+    with pytest.raises(Exception, match="addendum_factor"):
+        ToolProfile(protuberance_mm=0.0, machining_allowance_mm=0.0)  # type: ignore[call-arg]
     assert stplus_default_tool().addendum_factor == 1.25

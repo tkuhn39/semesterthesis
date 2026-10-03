@@ -2,6 +2,9 @@
 #
 # User decision 2026-09-30 (ADR-109): the defaults of STplus are no norm values, but they are kept
 # so that a later user can fall back on them knowingly. gearcore applies none of them silently.
+# User decision 2026-10-03 (ADR-114): the `.ste` importer reads a file as STplus computes it, so it
+# applies these defaults and records each application in its notes; where the manual and the
+# program disagree, the program is followed and the entry says so.
 # Program and version: see provenance.yaml (STplus 11.1F, Freigabe 01.12.2025).
 #
 #   <key>        name of the default
@@ -19,7 +22,8 @@
 #                located  = found in the text layer of the manual only, not transcribed yet
 #   note         what a reader has to know
 #
-# Scope: geometry input (manual section 4.2, p. 15 to 22) and rack-type tools (p. 183 to 188).
+# Scope: geometry input (manual section 4.2, p. 15 to 25), rack-type tools (p. 183 to 188) and the
+# controls and limits of section 4.17.2 (p. 223 to 230, read on the rendered pages 2026-10-03).
 # Defaults of the load capacity (p. 35 to 58), of shaper cutters (p. 189 to 192) and the material
 # and lubricant databases are only located; they are transcribed with the stage that uses them.
 defaults:
@@ -39,12 +43,12 @@ defaults:
     input_key: "SCHRAEGUNGSWINKEL"
     value: null
     unit: "deg"
-    rule: "without input the helix angle is computed by the program; gear 1 is then right-handed, gear 2 left-handed"
+    rule: "without input the helix angle is computed by the program from the centre distance and the sum of the profile shift coefficients; gear 1 is then right-handed, gear 2 left-handed. Without a centre distance the input is rejected"
     applies_to: "both"
     manual: { page: 16, text: "Erfolgt keine Eingabe zum Schrägungswinkel, wird der Schrägungswinkel vom Programm berechnet. Rad 1 wird dabei als rechtssteigend angesehen, Rad 2 als linkssteigend." }
-    probe: null
+    probe: "helix_angle_from_centre_distance: z 20/40, m_n 2, x 0.4/0.2, a = 62.5 without SCHRAEGUNGSWINKEL is run with beta 12.13130; no_helix_angle_no_centre_distance: the same without ACHSABSTAND is rejected ('Eingaben ... sind unvollstaendig oder unzulaessig')"
     status: verified
-    note: "Two of centre distance, helix angle and profile shift sum have to be given (manual Bild 4.12, p. 25)."
+    note: "Two of centre distance, helix angle and profile shift sum have to be given (manual Bild 4.12, p. 25; subroutine GE12, p. 343). Function stplus_helix_angle_deg."
   tip_diameter:
     quantity: tip_diameter
     input_key: "KOPFKREISDM"
@@ -53,20 +57,20 @@ defaults:
     rule: "d_a = d + 2 m_n (h_aP* + x); afterwards the program checks the tip circle against the tool and the mating gear and reduces it to the feasible value"
     applies_to: "both"
     manual: { page: 19, text: "Erfolgt keine Eingabe zum Kopfkreisdurchmesser wird der Kopfkreis gemäß d_a = d + 2 • m_n • (h_aP* + x) berechnet. Innerhalb des Programmes wird überprüft, ob der Kopfkreis mit dem eventuell vorgegebenen Werkzeug oder der Radpaarung verträglich ist. Ist dieses nicht der Fall, wird der geometrisch ausführbare Kopfkreis verwendet, der das maßgebende Grenzkriterium gerade erfüllt." }
-    probe: "defaults_minimal: d_a = 44.000 and 84.000 mm for z = 20 and 40, m_n = 2, x = 0 (h_aP* = 1.000)"
+    probe: "defaults_minimal: d_a = 44.000 and 84.000 mm for z = 20 and 40, m_n = 2, x = 0 (h_aP* = 1.000); tip_circle_per_din3960: DA_NACH_DIN3960 = ja ja gives 45.347 / 85.347 with 'Kopfkreise 1/2 nach DIN 3960 gemaess k*m_n =-0.126 mm festgelegt'"
     status: verified
-    note: null
+    note: "The input offers five other definitions of the tip circle (manual Bild 4.12, p. 25: BEZ_KOPFDICKE, DA_DURCH_WKZ, DA_NACH_DIN3960, KOPFSPIELFAKTOR, K_HOEHENF_VERZ_BEZ_PR). The importer does not translate them: a file that sets one for a gear without KOPFKREISDM is a NotSupportedError. Where KOPFKREISDM is given for both gears they have no effect: probe tip_circle_given_with_other_definitions (all five keys set) gives the listing of tip_circle_cut_by_tool (tip circles, tool factors, tip clearance); the importer says so in a note. The default circle is shortened by STplus afterwards where the tool, the tip tooth thickness or the mating gear require it (small_z8_x05 pinion 11,0 to 10,990; wheels of neg_shift_z17_xm08 and undercut_z12_x0); gearcore applies the cut by the tool only (GEN-16)."
   tip_chamfer_tangential:
     quantity: null
     input_key: null
     value: 0.7
     unit: "-"
-    rule: "tangential amount of the tip chamfer = 0,7 times its radial amount h_K"
+    rule: "tangential amount of the tip chamfer = 0,7 times its radial amount h_K; residual tip thickness in the normal section s_aK = s_an - 2 (0,7 h_K)"
     applies_to: "both"
     manual: { page: 19, text: "Der Tangentialbetrag ist mit 0,7 • h_k vorbelegt und bestimmt die Restkopfdicke s_ak." }
-    probe: null
+    probe: "tip_chamfer_default: h_K 0.2 / 0.3 on tips of s_an 0.423 / 0.928 is run with 'Restdicke bei Kantenbruch/Kopfruecknahme 0.143 0.508'; tip_chamfer_helical: at beta = 25 degrees RESTDICKE = ZAHNDICKE_KOPF - 1.4 h_K in five decimals (1.12292 - 0.28 = 0.84292); tip_chamfer_tangential_given: TANG_BETRAG_ZU_H_KGF = 1.0 gives 0.928 - 0.6 = 0.328; tip_chamfer_tangential_two_values: 1.0 0.5 gives 0.223 and 0.328, the first value for both gears"
     status: verified
-    note: "Factor of h_K. The manual writes the index in lower case (h_k, s_ak)."
+    note: "Factor of h_K; control TANG_BETRAG_ZU_H_KGF, range 0,3 to 1,5 (manual p. 225: 'Der Tangentialbetrag zu h_KgF ist mit 0,7 • h_KgF vorbelegt. Er kann zwischen 0,3 und 1,5 • h_KgF variiert werden.'). The manual writes the index in lower case on p. 19 (h_k, s_ak). See tip_chamfer_residual_floor and tip_chamfer_max."
   quality_din:
     quantity: quality_grade
     input_key: "DIN_QUALITAET"
@@ -97,7 +101,7 @@ defaults:
     rule: "if only the upper span allowance A_We is given, the lower one is set equal to it"
     applies_to: "both"
     manual: { page: 20, text: "Wird nur das obere Zahnweitenabmaß A_We eingegeben, wird A_We = A_Wi gesetzt." }
-    probe: null
+    probe: "upper_span_allowance_only: OBERES_ZAHNW_ABMASS = -60 -80 alone is run with A_We -0.060 -0.080 and A_Wi -0.060 -0.080"
     status: verified
     note: null
   span_allowance_upper:
@@ -154,7 +158,7 @@ defaults:
     manual: { page: 22, text: "Gibt der Benutzer kein Werkzeug vor, wird programmintern auf ein geeignetes Wälzwerkzeug zurückgegriffen. Hierfür sind im Programm Vorbelegungswerte vorhanden." }
     probe: "defaults_minimal: 'Zahnradfertigung mit Fraeser oder Hobelkamm', m_n0 = 2.0000, alfa_n0 = 20.0000, h_aP0* = 1.250, rho_aP0* = 0.250, h_FfP0* = 1.300, h_fP0* = 1.300, pr_0 = 0.000, q = 0.000"
     status: verified
-    note: "The manual gives no numbers; they are read from the probe."
+    note: "The manual gives no numbers; they are read from the probe. A gear without a tool name gets this hob also where the other gear names a tool (probes tool_for_one_gear_only, tool_for_gear_one_only). The limits of the tool apply to it: at alpha_n = 28 degrees its tip rounding is 0.201, at 30 degrees 0.110 with root form height and dedendum 1.265 (probes default_hob_at_twenty_eight_degrees, default_hob_at_thirty_degrees)."
     tool: { addendum_factor: 1.25, tip_radius_factor: 0.25, dedendum_factor: 1.3, root_form_height_factor: 1.3, protuberance_mm: 0.0, machining_allowance_mm: 0.0 }
   predefined_tooth_space:
     quantity: null
@@ -177,7 +181,7 @@ defaults:
     manual: null
     probe: "tool_without_tip_rounding: tool hochverz1 (no KOPFABRUNDUNGSFAKTOR) is run with 'Wkz-Kopfabrundungsfaktor rho_aP0* 0.250'"
     status: verified
-    note: "Module factor. Not stated in the manual pages read; seen in the probe only."
+    note: "Module factor. Not stated in the manual pages read; seen in the probe only. The preset is reduced to the full radius like a given value (probe tool_addendum_limited_without_tip_rounding: 0.086 at h_aP0* 1.993)."
   tool_module_and_pressure_angle:
     quantity: tool_normal_module
     input_key: "WKZ_NORMALMODUL"
@@ -203,14 +207,14 @@ defaults:
   tool_edge_break_angle:
     quantity: tool_edge_break_angle
     input_key: "KANTENBRECHWINKEL"
-    value: null
+    value: 10.0
     unit: "deg"
-    rule: "alpha_Kn0 = alpha_n0 + 10 degrees"
+    rule: "alpha_Kn0 = alpha_n0 + 10 degrees for the flank between the root form height and the dedendum of the tool; a tool root rounding is replaced by that flank"
     applies_to: "both"
-    manual: { page: 186, text: "Der Kantenbrechwinkel α_Kn0 ist mit α_n0 + 10° vorbelegt." }
-    probe: null
+    manual: { page: 186, text: "Der Kantenbrechwinkel α_Kn0 ist mit α_n0 + 10° vorbelegt. Eine gegebenenfalls vorhandene Fußausrundung mit Radius ρ_f0 wird für die Berechnung durch eine Kantenbrechflanke mit dem Winkel α_Kn0 ersetzt." }
+    probe: "tool_root_both_heights: 0.9 / 1.5 without KANTENBRECHWINKEL is run with 'Kopfkantenbruch an Rad 1 durch Werkzeug (alfa_K0 = 30.00 grd)', d_Fa 46.307, h_K 0.047, Restdicke 0.407; tool_root_other_pressure_angle: at alpha_n = 25 degrees the dedendum limit is that of 35 degrees"
     status: verified
-    note: "Enters with the generation (increment 3)."
+    note: "The value is the amount added to alpha_n0. gearcore's DIN 3960 A.3.1 chain with this angle reproduces the probe (46,3069 / 0,0466 / 0,4069) and example 1 of the manual (d_Fa 144,535 against 144.536 printed on p. 257). An angle of 90 degrees is no flank: see tool_without_edge_break_flank. An angle below the profile angle is replaced by this preset (probe tool_edge_break_angle_below_pressure_angle: KANTENBRECHWINKEL = 15 at alpha_n = 20 is run with 'alfa_K0 = 30.00 grd' and 'Wkz.daten ... geaendert'). See tool_edge_break_angle_range."
   tool_without_allowance_is_finishing_tool:
     quantity: machining_allowance
     input_key: "BEARBEITUNGSZUGABE"
@@ -232,18 +236,436 @@ defaults:
     manual: { page: 186, text: "Die jeweiligen Werkzeugfuß- und -kopfhöhen können entweder als Absolutwerte oder als auf den Normalmodul bezogene Faktoren (mit * gekennzeichnet) eingegeben werden." }
     probe: "tool_contradicting_record: record S_19_00374_F_(_77 (KOPFHOEHENFAKTOR = 1.6, KOPFHOEHE = 5.377 at m_n0 = 2.8; KOPFABRUNDUNGSFAKTOR = 0.5; FUSSHOEHENFAKTOR = 3.0) is run with h_aP0* = 1.600, rho_aP0* = 0.383, h_fP0* = 2.317 and the message 'Wkz.daten h_FfP0*, d_Ff0, alfa_Kn0 oder alfa_Kt0 fuer Rad 1 geaendert'"
     status: verified
-    note: "The manual says 'either ... or' and does not state a precedence. STplus changes tool data and reports it for the root form height only; gearcore rejects such a record instead."
+    note: "The manual says 'either ... or' and does not state a precedence. STplus computes with the factors, reduces tip rounding, root form height and dedendum to its limits and prints both remarks ('Werkzeugdaten h_aP0*, d_a0, rho_aP0 oder rho_at0 ... geaendert', 'Wkz.daten h_FfP0* ... geaendert'). The importer reads the record the same way and keeps the contradiction as an issue of the record (ADR-114)."
+  tool_addendum:
+    quantity: tool_addendum
+    input_key: "KOPFHOEHENFAKTOR"
+    value: 1.25
+    unit: "-"
+    rule: "a tool record without addendum gets h_aP0* = 1,25"
+    applies_to: "both"
+    manual: null
+    probe: "tool_without_addendum: a tool block that gives the tip rounding only is run with 'Kopfhoehenfaktor (Wkz_Bezugspr.) h_aP0* 1.250'"
+    status: verified
+    note: "Module factor. Not stated in the manual; seen in the probe only."
+  tool_tip_land_limit:
+    quantity: tool_addendum
+    input_key: "MIN_WKZ_ZAHNKOPFDICKE*"
+    value: 0.12
+    unit: "-"
+    rule: "preset of the program for the smallest tip thickness factor s_a0* of the tool (the manual says 0,2); largest addendum of a rack tool: h_aP0* = (pi/2 - s_a0*) / (2 tan alpha_n), a larger one is reduced to it"
+    applies_to: "both"
+    manual: { page: 224, text: "Die max. Werkzeugkopfhöhe wird über den min. Werkzeug-Zahnkopfdickenfaktor s_a0* erfasst (Vorbelegung = 0,2, möglicher Bereich = 0,1 ... 1,0)." }
+    probe: "tool_addendum_limited: KOPFHOEHENFAKTOR = 2.1 at 20 degrees is run with h_aP0* 1.993, rho_aP0* 0.086 and 'Werkzeugdaten h_aP0*, d_a0, rho_aP0 oder rho_at0 fuer Rad 1 geaendert'; tool_tip_land_control_at_program_preset: with MIN_WKZ_ZAHNKOPFDICKE* = 0.12 the same 1.993; tool_tip_land_control: with 0.2 the addendum is limited to 1.883"
+    status: verified
+    note: "Manual and program disagree: the manual presets the control with 0,2, the program with 0,12 (1.993 at 20, 2.707 at 15, 1.556 at 25 degrees without the control). The control itself acts as documented: in exploratory runs with 0.105 to 0.7 the tip land of the straight flanks at the limited addendum equals the value in five decimals, at 20 and 25 degrees. The ends 0.1 and 1.0 of the range are not accepted (probe tool_controls_at_the_ends_of_their_ranges). Function stplus_max_tool_addendum_factor."
+  tool_tip_radius_limit:
+    quantity: tool_tip_radius
+    input_key: "KOPFABRUNDUNGSFAKTOR"
+    value: null
+    unit: "-"
+    rule: "a tip rounding beyond the full radius, rho* = (pi/4 - h_aP0* tan alpha_n) / (1/cos alpha_n - tan alpha_n), is reduced to it"
+    applies_to: "both"
+    manual: null
+    probe: "tool_tip_rounding_limited: KOPFABRUNDUNGSFAKTOR = 0.6 with h_aP0* = 1.25 at 20 degrees is run with rho_aP0* 0.472 and the message 'Werkzeugdaten h_aP0*, d_a0, rho_aP0 oder rho_at0 fuer Rad 1 geaendert'; tool_contradicting_record: 0.5 with h_aP0* = 1.6 at 17,5 degrees becomes 0.383; default_hob_at_twenty_eight_degrees: the preset 0.25 becomes 0.201, without a remark"
+    status: verified
+    note: "Function stplus_max_tool_tip_radius_factor. gearcore's generation rejects an overlapping rounding; the importer reduces it as STplus does and says so."
+  tool_root_form_height:
+    quantity: tool_root_form_height
+    input_key: "FUSSFORMHOEHENFAKTOR"
+    value: 1.3
+    unit: "-"
+    rule: "a tool record without root form height gets h_FfP0* = 1,3"
+    applies_to: "both"
+    manual: { page: 224, text: "Der Werkzeug-Fußformhöhenfaktor h_Ff0* ist mit 1,1, der Werkzeug-Fußhöhenfaktor h_f0* mit 1,3 vorbelegt. Sie können zwischen 0 und 3 variiert werden." }
+    probe: "tool_root_angle_only: a tool that gives the edge break angle only is run with 'Fussform-Hoehenf.(Wkz-Bezugspr.) h_FfP0* 1.300' and 'Kein Kopfkantenbruch durch Werkzeug 1'; defaults_minimal lists 1.300 for the default hob"
+    status: verified
+    note: "Manual and program disagree: the manual presets 1,1 (p. 224, controls VB_FUSSFORMHOEHE_HFF0*), the program computes and lists 1,300, as the listing of the manual's own example 1 does (p. 259). Known at the FZG (user, 2026-10-03); gearcore follows the program (ADR-114). Setting the VB keys changed nothing in the probe tool_root_presets_of_the_configuration."
+  tool_dedendum:
+    quantity: tool_dedendum
+    input_key: "FUSSHOEHENFAKTOR"
+    value: 1.3
+    unit: "-"
+    rule: "a tool record without dedendum gets h_fP0* = 1,3"
+    applies_to: "both"
+    manual: { page: 224, text: "Der Werkzeug-Fußformhöhenfaktor h_Ff0* ist mit 1,1, der Werkzeug-Fußhöhenfaktor h_f0* mit 1,3 vorbelegt. Sie können zwischen 0 und 3 variiert werden." }
+    probe: "tool_root_form_height_only: FUSSFORMHOEHENFAKTOR = 0.9 alone is run with h_FfP0* 0.900, h_fP0* 1.300 and 'Kopfkantenbruch an Rad 1 durch Werkzeug (alfa_K0 = 30.00 grd)'"
+    status: verified
+    note: null
+  tool_dedendum_not_below_root_form_height:
+    quantity: tool_dedendum
+    input_key: "FUSSHOEHENFAKTOR"
+    value: null
+    unit: "-"
+    rule: "a dedendum below the root form height is set equal to it; the tool then has no edge break flank, and its root line cuts a tip circle that lies above it"
+    applies_to: "both"
+    manual: { page: 186, text: "Die Fußhöhe h_f0 muss größer als die Fußformhöhe h_Ff0 sein. Der Fall h_f0 < h_Ff0 wird in h_f0 = h_f0max (spitze Lücke) geändert. Ein Kopfüberschneider ohne Kantenbrecher kann mit h_Ff0 und α_Kn0 = 90° oder h_Ff0 = h_f0 eingegeben werden." }
+    probe: "tool_root_dedendum_only_low: FUSSHOEHENFAKTOR = 1.0 alone is run with 1.300 / 1.300 (kst-E pinion likewise); tool_root_dedendum_below_form_height: 0.9 / 0.5 is run with 0.900 / 0.900 and 'Kopfkreis 1 von Wkz mit Fusshoehenfaktor geschnitten (h_fP0*1= 0.900)'"
+    status: verified
+    note: "Manual and program disagree: the manual sends h_f0 < h_Ff0 to h_f0max, the program sets h_f0 = h_Ff0. gearcore follows the program (ADR-114)."
+  min_tool_space_width_root:
+    quantity: null
+    input_key: "MIN_LUECKENWEITE_EF0*"
+    value: 0.03
+    unit: "-"
+    rule: "value e_f0* the program computes with where the control is not set: the edge break flanks may narrow the tool space on the root line to 2 e_f0* tan alpha_n (0,06 tan alpha_n); largest dedendum h_f0max* = h_FfP0* + (pi/2 - 2 (h_FfP0* + e_f0*) tan alpha_n) / (2 tan alpha_K), a larger dedendum is reduced to it"
+    applies_to: "both"
+    manual: { page: 224, text: "Die max. Fußformhöhe kann über die min. Werkzeug-Lückenweite e_Ff0*, die max. Fußhöhe über die min. Werkzeug-Lückenweite e_f0* eingestellt werden. e_Ff0* ist mit 0,4, e_f0* mit 0,06 vorbelegt." }
+    probe: "tool_root_dedendum_limited: 0.9 / 1.5 with 45 degrees is run with h_fP0* 1.347 and 'Wkz.daten h_FfP0*, d_Ff0, alfa_Kn0 oder alfa_Kt0 fuer Rad 1 geaendert'; tool_root_dedendum_only_high: 2.0 alone becomes 1.822; tool_root_other_pressure_angle: 0.9 / 2.5 at alpha_n = 25 degrees becomes 1.402; tool_root_space_control: with MIN_LUECKENWEITE_EF0* = 0.2 the dedendum 1.5 is limited to 1.285 (root space 2 x 0.2 x tan 20 degrees = 0,1456 m_n); tool_root_space_control_without_effect: with 0.1 it stays 1.347"
+    status: verified
+    note: "Manual and program disagree: the manual names a preset of 0,06 and a range of 0,01 to 0,6 for the control and calls it a tool space width. In the program the space on the root line is 2 e_f0* tan alpha_n: exploratory runs with the control at 0.15, 0.2, 0.3, 0.4, 0.5 and 0.59 (alpha_n 20 and 25 degrees, alpha_K 30 and 45 degrees) give exactly that in five decimals; values of 0.02 to 0.1 and the ends 0.01 and 0.6 leave the result of the run without control, a root space of 0,06 tan alpha_n, i.e. e_f0* = 0,03. The formula is not printed in the manual; it agrees in the three printed decimals with all tools of the repository whose dedendum STplus limits (the wheels of kst-B and kst-C: 1.244, 1.218). Function stplus_max_tool_dedendum_factor."
+  tool_space_width_at_root_form_height:
+    quantity: null
+    input_key: "MIN_LUECKENWEITE_EFF0*"
+    value: 0.11
+    unit: "-"
+    rule: "preset of the program for the smallest tool space e_Ff0* at the root form height (the manual says 0,4); largest root form height: h_FfP0* = (pi/2 - e_Ff0*) / (2 tan alpha_n), a larger one is reduced to it and the dedendum follows"
+    applies_to: "both"
+    manual: { page: 224, text: "Die max. Fußformhöhe kann über die min. Werkzeug-Lückenweite e_Ff0*, die max. Fußhöhe über die min. Werkzeug-Lückenweite e_f0* eingestellt werden. e_Ff0* ist mit 0,4, e_f0* mit 0,06 vorbelegt." }
+    probe: "tool_root_form_height_limited: FUSSFORMHOEHENFAKTOR = 2.5 at 20 degrees is run with 2.007 / 2.007 and 'Wkz.daten h_FfP0* ... geaendert'; tool_contradicting_record: 3.0 at 17,5 degrees becomes 2.317; default_hob_at_thirty_degrees: the preset 1.3 becomes 1.265; tool_space_control: with MIN_LUECKENWEITE_EFF0* = 0.4 a root form height of 2.5 is limited to 1.608, not to 2.007"
+    status: verified
+    note: "Manual and program disagree: the manual presets the control with 0,4, the program with 0,11 (four listings without the control: 0,1099, 0,1097, 0,1098, 0,1103 at 15, 17,5, 20 and 25 degrees). The control itself acts as documented: in exploratory runs with 0.105 to 0.59 the tool space at the limited root form height equals the value in five decimals. The ends 0.1 and 0.6 of the range are not accepted (probe tool_controls_at_the_ends_of_their_ranges). Function stplus_max_tool_root_form_height_factor."
+  tip_circle_cut_by_tool:
+    quantity: tip_diameter
+    input_key: "KOPFKREISDM"
+    value: null
+    unit: "mm"
+    rule: "a tip circle above the root line of the tool is cut to d_a = d + 2 m_n (x_E + h_fP0*)"
+    applies_to: "both"
+    manual: { page: 19, text: "Innerhalb des Programmes wird überprüft, ob der Kopfkreis mit dem eventuell vorgegebenen Werkzeug oder der Radpaarung verträglich ist. Ist dieses nicht der Fall, wird der geometrisch ausführbare Kopfkreis verwendet, der das maßgebende Grenzkriterium gerade erfüllt." }
+    probe: "tip_circle_cut_by_tool: KOPFKREISDM = 46.8 with the default root of the tool is run with d_a 46.621 = 40 + 4 (0.3554 + 1.3) and 'Kopfkreis 1 von Wkz mit Fusshoehenfaktor geschnitten (h_fP0*1= 1.300)'; tip_circle_cut_helical: 49.189 and 90.901 at beta = 20 degrees"
+    status: verified
+    note: "gearcore's generation does the same and warns (user decision 2026-10-03, ADR-114)."
+  profile_shift_sum:
+    quantity: sum_of_profile_shift_coefficients
+    input_key: "PR.VERSCH.SUMME"
+    value: null
+    unit: "-"
+    rule: "with the sum and the coefficient of one gear the other coefficient follows"
+    applies_to: "both"
+    manual: { page: 25, text: "(Bild 4.12) ACHSABSTAND a = % # zwei Werte von a, beta PR.VERSCH.SUMME Sum_x = % # und Sum_X" }
+    probe: "profile_shift_sum: PR.VERSCH.SUMME = 0.6 with x_1 = 0.4 is run with x 0.4000 0.2000; profile_shift_sum_with_centre_distance: with ACHSABSTAND = 61.0 and beta = 0 as well the sum is not used, x 0.4000 0.1298 follows from the centre distance"
+    status: verified
+    note: "The distribution of a sum without any coefficient (AUFTEILUNG_X1X2) is an extension point. With centre distance and helix angle given the sum is superseded; the importer says so."
+  reference_profile_addendum:
+    quantity: null
+    input_key: "K_HOEHENF_VERZ_BEZ_PR"
+    value: 1.0
+    unit: "-"
+    rule: "addendum factor h_aP* of the basic rack of the gear, used for the default tip diameter"
+    applies_to: "both"
+    manual: { page: 19, text: "Erfolgt keine Eingabe zum Kopfkreisdurchmesser wird der Kopfkreis gemäß d_a = d + 2 • m_n • (h_aP* + x) berechnet." }
+    probe: "defaults_minimal: 'Bezugspr.-Kopfhoehenfaktor (Istw.) h_aP* 1.000 1.000'"
+    status: verified
+    note: "No tip alteration k enters the default (probe tool_for_one_gear_only: 45.600 = 40 + 4 (1 + 0.4) with a sum of x of 0.6). The key K_HOEHENF_VERZ_BEZ_PR sets h_aP* per gear and moves more than the tip circle: probe tip_circle_from_reference_profile_addendum (1.1 0.9) lists d_a 46.000 / 84.400 and a tool dedendum of gear 1 of 1.430 in place of 1.300. The importer does not translate the key (NotSupportedError for a gear without KOPFKREISDM); with KOPFKREISDM given for both gears it has no effect, not on the tool dedendum either (probe tip_circle_given_with_other_definitions)."
+  tip_chamfer_max:
+    quantity: tip_chamfer_radial
+    input_key: "MAX_KOPFKANTENBRUCH"
+    value: 0.2
+    unit: "-"
+    rule: "a tip chamfer given as an input is limited to 0,20 m_n"
+    applies_to: "both"
+    manual: { page: 225, text: "Der max. Kopfkantenbruchfaktor h_KgF* durch getrennte Fertigung (Vorbelegung = 0,02) kann zwischen 0 und 0,5 variiert werden." }
+    probe: "tip_chamfer_limits: KOPFKANTENBRUCH = 0.6 at m_n = 2 is run with h_K 0.400 and 'Rad 2: Eingabe zu Kopfkantenbruch begrenzt auf 0.20 * m_n'; tip_chamfer_limit_lowered: MAX_KOPFKANTENBRUCH = 0.1 0.4 limits both gears to 0.200 ('begrenzt auf 0.10 * m_n'); tip_chamfer_limit_raised: with 0.4 a chamfer of 0.600 is kept"
+    status: verified
+    note: "Manual and program disagree: the manual says 0,02, the program limits at 0,20 m_n. The control MAX_KOPFKANTENBRUCH is the factor of the module to which the height is limited, one value for both gears. Function stplus_tip_chamfer_height."
+  tip_chamfer_residual_floor:
+    quantity: residual_tip_thickness
+    input_key: null
+    value: 0.2
+    unit: "-"
+    rule: "the residual tip thickness of a chamfer given by h_K is at least 0,2 times the normal tip tooth thickness"
+    applies_to: "both"
+    manual: null
+    probe: "tip_chamfer_limits: h_K = 0.25 on a tip of s_an 0.423 is run with 'Restdicke bei Kantenbruch/Kopfruecknahme 0.085', not 0.423 - 0.35 = 0.073; tip_chamfer_floor: h_K = 0.4 on a tip of s_an 0.564 is run with 0.113"
+    status: verified
+    note: "Seen in probes only (0.085 at s_an 0.423, 0.113 at s_an 0.564, 0.186 at s_an 0.928 in tip_chamfer_limit_raised). Function stplus_residual_tip_thickness."
+  tool_without_edge_break_flank:
+    quantity: tool_edge_break_angle
+    input_key: "KANTENBRECHWINKEL"
+    value: 90.0
+    unit: "deg"
+    rule: "an edge break angle of 90 degrees is a tool without edge break flank: its dedendum is the root form height, whatever FUSSHOEHENFAKTOR says, and its root line cuts a tip circle above it"
+    applies_to: "both"
+    manual: { page: 186, text: "Ein Kopfüberschneider ohne Kantenbrecher kann mit h_Ff0 und α_Kn0 = 90° oder h_Ff0 = h_f0 eingegeben werden." }
+    probe: "tool_edge_break_angle_ninety_degrees: 0.9 / 1.5 with KANTENBRECHWINKEL = 90 is run with h_FfP0* 0.900, h_fP0* 0.900 and 'Kopfkreis 1 von Wkz mit Fusshoehenfaktor geschnitten (h_fP0*1= 0.900)', d_a 45.021"
+    status: verified
+    note: "The importer sets the dedendum equal to the root form height and passes no angle on (stplus_tool_factors). Without root heights the presets 1.300 / 1.300 hold (probe tool_edge_break_angle_ninety_degrees_without_form_height). An angle equal to the profile angle is read the same way: probe tool_edge_break_angle_equal_to_pressure_angle (0.9 / 1.5 with 20 degrees at alpha_n = 20) lists 0.900 / 0.900 and cuts the tip circle to 45.021."
+  control_value_for_the_stage:
+    quantity: null
+    input_key: "TANG_BETRAG_ZU_H_KGF"
+    value: null
+    unit: "-"
+    rule: "the controls printed as 'KEY = % (%)' in Bild 4.231 are one value for the stage: the first value holds for both gears, whatever a second one says"
+    applies_to: "batch input"
+    manual: { page: 229, text: "TANG_BETRAG_ZU_H_KGF = % (%) # 0.7 0.3 ... 1.5" }
+    probe: "tip_chamfer_tangential_two_values: TANG_BETRAG_ZU_H_KGF = 1.0 0.5 is run with Restdicke 0.223 and 0.328, both with the factor 1.0; tip_chamfer_limit_lowered: MAX_KOPFKANTENBRUCH = 0.1 0.4 limits both gears to 0.10 m_n; controls_first_value_holds: with the order reversed (0.5 1.0 and 0.4 0.1) the first value holds as well (Restdicke 0.123 / 0.628, chamfers of 0.300 kept)"
+    status: verified
+    note: "One control of the figure is printed with two values (SPANDICKENVERHAELTNIS = % % (%)); the importer does not read it. Line of Bild 4.231; its header reads '# Begriff Rad 1 Rad 2(Rad 3)Bemerkungen', the columns of the values are '% (%)'. The importer takes the first value for both gears and records a second one as not used. Controls it does not evaluate are named in a note; those that move the limits of the tool and ABSCHALTEN_KORRGLIED = 1 are NotSupportedError."
+  control_outside_its_range:
+    quantity: null
+    input_key: "TANG_BETRAG_ZU_H_KGF"
+    value: null
+    unit: "-"
+    rule: "a control at an end of its range or beyond is not accepted: the preset holds (the range is an open interval)"
+    applies_to: "batch input"
+    manual: { page: 223, text: "Zur Absicherung gegen unsinnige Eingaben sind jeweils nur bestimmte Bereiche zugelassen, d.h. außerhalb dieser Bereiche werden die Eingaben nicht angenommen." }
+    probe: "control_outside_its_range: TANG_BETRAG_ZU_H_KGF = 2.0 (range 0.3 to 1.5) is run with Restdicke 0.283 and 0.508, as with the preset 0.7; controls_at_the_ends_of_their_ranges: TANG_BETRAG_ZU_H_KGF = 0.3 and MAX_KOPFKANTENBRUCH = 0.5 are run as with the presets (chamfers limited to 0.400, Restdicke 0.368); tool_controls_at_the_ends_of_their_ranges: MIN_WKZ_ZAHNKOPFDICKE* = 0.1 and MIN_LUECKENWEITE_EFF0* = 0.6 likewise (1.993, 2.007)"
+    status: verified
+    note: "The importer keeps the preset and says so in a note. A control given as the placeholder % is not given. Just inside the ends the controls act (exploratory runs: TANG_BETRAG_ZU_H_KGF 0.31 and 1.49, MAX_KOPFKANTENBRUCH 0.01 and 0.49, MIN_WKZ_ZAHNKOPFDICKE* 0.105, MIN_LUECKENWEITE_EFF0* 0.59). One exception was seen: BOGENDIFFERENZ = 5000, the lower end of its range, is taken."
+  tool_edge_break_angle_range:
+    quantity: tool_edge_break_angle
+    input_key: "KANTENBRECHWINKEL"
+    value: 85.0
+    unit: "deg"
+    rule: "steepest edge break flank STplus is known to compute; at 88 degrees it aborts its iteration"
+    applies_to: "both"
+    manual: null
+    probe: "tool_edge_break_angle_eighty_five_degrees: 0.9 / 1.5 with KANTENBRECHWINKEL = 85 is run with h_fP0* 0.939, d_Fa 45.077, h_K 0.050, Restdicke 0.021; tool_edge_break_angle_eighty_eight_degrees: with 88 the run ends with 'Iteration IREG = 10 fuer Rad 1 nach 100 Schritten abgebrochen'"
+    status: verified
+    note: "The importer raises NotSupportedError for an angle above 85 and below 90 degrees (stplus_program.STPLUS_MAX_EDGE_BREAK_ANGLE_DEG); where STplus fails between 85 and 88 degrees is not known. gearcore's generation reproduces the 85 degree run (d_a, d_Fa, h_K in five decimals); its residual thickness is 0.02002 against 0.02051, 0,5 um apart. The cause is the single precision of STplus: DIN 3960 (A.3.05) subtracts two numbers of the size 11 there, and evaluated in binary32 the formula yields 0.01960 or 0.02051 mm, depending on the last bit of the tip diameter; gearcore's value is confirmed by the envelope of the rolling tool flank (tests/test_stplus_reading.py). The limit BOGENDIFFERENZ does not change the printed value (exploratory runs from 5000 to 40000). The generation itself computes flanks up to 89,9 degrees (generation.MAX_EDGE_BREAK_ANGLE_DEG)."
+  min_tool_tip_thickness:
+    quantity: null
+    input_key: "MIN_WKZ_ZAHNKOPFDICKE*"
+    value: 0.2
+    unit: "-"
+    rule: "control: smallest tip thickness factor s_a0* of the tool, which limits the tool addendum"
+    applies_to: "both"
+    manual: { page: 224, text: "Die max. Werkzeugkopfhöhe wird über den min. Werkzeug-Zahnkopfdickenfaktor s_a0* erfasst (Vorbelegung = 0,2, möglicher Bereich = 0,1 ... 1,0)." }
+    probe: null
+    status: verified
+    note: "The value is the preset the manual names; the program computes with 0,12 (default tool_tip_land_limit). The importer passes a value of the file on to the limit (stplus_tool_factors)."
+  max_shaper_root_form_circle:
+    quantity: null
+    input_key: "GRENZE_MAX_FUSSFORMKR_SR"
+    value: 0.2
+    unit: "-"
+    rule: "control of shaper cutters: (d_Fa0 - d_Ff0) / (2 m_n0)"
+    applies_to: "both"
+    manual: { page: 224, text: "Der auf den Modul bezogene max. Fußformkreis am Schneidrad = (d_Fa0 - d_Ff0) / (2 • m_n0) ist mit 0,2 vorbelegt und kann zwischen 0 und 1,5 variiert werden." }
+    probe: null
+    status: verified
+    note: "Shaper cutters are an extension point."
+  max_protuberance_height:
+    quantity: null
+    input_key: "GRENZE_MAX_PROTUBERANZ"
+    value: 0.75
+    unit: "-"
+    rule: "control: h_pr0* = h_pr0 / (h_aP0 + h_Ff0)"
+    applies_to: "both"
+    manual: { page: 224, text: "Die max. Protuberanz wird über den max. Werkzeug-Protuberanzhöhenfaktor h_pr0* = h_pr0 / (h_aP0 + h_Ff0) erfasst. Er ist mit 0,75 vorbelegt und kann zwischen 0 und 1,0 eingestellt werden." }
+    probe: null
+    status: verified
+    note: "Protuberance tools are an extension point."
+  pitch_difference_of_tool_and_gear:
+    quantity: tool_normal_module
+    input_key: "ZUL_TEILUNGSDIFFERENZ_O"
+    value: 1000000.0
+    unit: "-"
+    rule: "admitted difference of the normal base pitches of tool and gear |p_bn0 - p_bn|: m_n / 10^6 at most; the lower limit ZUL_TEILUNGSDIFFERENZ_U is preset with 3,4e-5"
+    applies_to: "both"
+    manual: { page: 224, text: "Die zulässige Teilungsdifferenz Δp ist definiert als |p_bn0 - p_bn|. Die max. Teilungsdifferenz ist modulabhängig (= m_n / Δp) und mit 10^6 vorbelegt (Einstellbereich = 2•10^5 ...5•10^6) Die min. Teilungsdifferenz ist mit 3,4•10^-5 vorbelegt und kann zwischen 0,7•10^-5 und 7•10^-5 variiert werden." }
+    probe: null
+    status: verified
+    note: "gearcore takes a tool module equal to the gear's within 1e-6 relative as the gear's (generation.SAME_TOOL_TOLERANCE); a tool with another module is an extension point."
+  angle_difference_of_tool_and_gear:
+    quantity: tool_profile_angle
+    input_key: "ZUL_WINKELDIFFERENZ_ALFA"
+    value: 0.25
+    unit: "-"
+    rule: "admitted (|alpha_n0 - alpha_n|) / alpha_n; ZUL_WINKELDIFFERENZ_BETA = |beta - beta_0| is preset with 0,0001"
+    applies_to: "both"
+    manual: { page: 224, text: "Die auf den Normaleingriffswinkel bezogene zulässige Winkeldifferenz Δα = (|α_n0 - α_n|) / α_n ist mit 0,25 vorbelegt und kann zwischen 0 und 0,75 eingestellt werden. Die zulässige Winkeldifferenz Δβ = |β - β_0| ist mit 0,0001 vorbelegt und kann zwischen 0 und 0,01 variiert werden." }
+    probe: null
+    status: verified
+    note: "A tool with another profile angle is an extension point."
+  max_distance_of_datum_and_measuring_line:
+    quantity: null
+    input_key: "MAX_ABSTAND_PBML"
+    value: 5.0
+    unit: "-"
+    rule: "control: largest distance of the tool datum line from the measuring line, in modules"
+    applies_to: "both"
+    manual: { page: 224, text: "Der auf den Normalmodul bezogene max. Abstand der Werkzeug-Profilbezugslinie von der Messlinie ist mit 5 vorbelegt und kann zwischen 0 und 25 variiert werden." }
+    probe: null
+    status: verified
+    note: "Tools dimensioned from a measuring line are not imported (extension point)."
+  tool_form_height:
+    quantity: null
+    input_key: "MAX_WKZ_FORMHOEHE_HFP0*"
+    value: 0.2
+    unit: "-"
+    rule: "control: tool form height factor h_FP0*"
+    applies_to: "both"
+    manual: { page: 224, text: "Der Werkzeug-Formhöhenfaktor h_FP0* ist mit 0,2 vorbelegt. Er kann zwischen 0,1 und 4,0 variiert werden." }
+    probe: null
+    status: verified
+    note: "What the control limits is not explained on the page."
+  min_tip_thickness:
+    quantity: normal_tip_tooth_thickness
+    input_key: "MIN_ZAHNKOPFDICKE*"
+    value: 0.01
+    unit: "-"
+    rule: "control: smallest tip thickness factor s_an* of the gear"
+    applies_to: "both"
+    manual: { page: 225, text: "Der min. Zahnkopfdickenfaktor s_an* ist mit 0,01 vorbelegt und kann zwischen 0 und 1 eingestellt werden." }
+    probe: "tip_circle_cut_by_tool: a tip thickness of 0.263 mm at m_n = 2 is run with the remark 'Zahnkopfdicke an Rad 1 kleiner als 0.2 * m_n'"
+    status: verified
+    note: "The remark of the listing uses 0,2 m_n, the control 0,01. DIN ISO 21771 §7.9 gives the limits of the norm."
+  notch_limit:
+    quantity: null
+    input_key: "GRENZE_MIN_KERBEN"
+    value: 2590.0
+    unit: "-"
+    rule: "notches (negative Fussfreischnitt FS_n) shallower than m_n / 2590 are neglected: GRKE = -m_n / FS_n"
+    applies_to: "both"
+    manual: { page: 225, text: "Kerben, d.h. negativer Fußfreischnitt FS_n, die für die Praxis bedeutungslos sind, werden vernachlässigt. Die Grenze, ab der diese Kerben nicht beachtet werden, kann mittels des Grenzfaktors für das Unterdrücken minimaler Kerben GRKE eingestellt werden. Er ist definiert als GRKE = -m_n / FS_n und mit 2590 vorbelegt. GRKE kann zwischen 500 und 5000 variiert werden." }
+    probe: null
+    status: verified
+    note: "gearcore reports undercut by Eq. (135) of DIN ISO 21771 without such a limit; the Fussfreischnitt is not computed (GEN-08)."
+  grinding_diameter_factor:
+    quantity: null
+    input_key: "GRENZE_SCHLEIFDM"
+    value: 0.04
+    unit: "-"
+    rule: "control of the 0-degree grinding wheel: (d_Fa - d_gri) / (2 m_n)"
+    applies_to: "both"
+    manual: { page: 225, text: "Der Faktor für Schleifdurchmesser d_gri für 0-Grad-Schliff (= (d_Fa - d_gri) / (2 • m_n)) ist mit 0,04 vorbelegt und kann zwischen 0,01 und 0,5 eingestellt werden." }
+    probe: null
+    status: verified
+    note: "0-degree grinding wheels are an extension point."
+  relief_min_length:
+    quantity: null
+    input_key: "KR_MINDESTLAENGE"
+    value: 0.01
+    unit: "-"
+    rule: "controls KR_MINDESTLAENGE and FR_MINDESTLAENGE: smallest radial length factors of tip and root relief"
+    applies_to: "both"
+    manual: { page: 225, text: "Die radialen Mindestlängenfaktoren für Kopf- bzw. Fußrücknahme sind mit 0,01 vorbelegt. Die Einstellbereiche sind 0,1 bis 0,5 (Kopf) bzw. 0,05 bis 0,5 (Fuß)." }
+    probe: null
+    status: verified
+    note: "Profile modifications are not part of stage 1. The preset 0,01 lies outside the ranges the same sentence gives."
+  chip_thickness_ratio:
+    quantity: null
+    input_key: "SPANDICKENVERHAELTNIS"
+    value: 2.5
+    unit: "-"
+    rule: "control: largest chip thickness over machining allowance"
+    applies_to: "both"
+    manual: { page: 225, text: "Für Kommaspanwerkzeuge kann das Verhältnis max. Spandicke / Bearbeitungszugabe zwischen 0,5 und 5 variiert werden. Die Vorbelegung ist 2,5." }
+    probe: null
+    status: verified
+    note: null
+  internal_gear_tip_shortening_step:
+    quantity: null
+    input_key: "HOHLRAD_KOPFK_SCHRITT"
+    value: 0.025
+    unit: "-"
+    rule: "tip shortening of an internal gear in steps of 0,025 m_n"
+    applies_to: "both"
+    manual: { page: 226, text: "Eine eventuelle Hohlrad-Kopfkürzung für Freikommen Ritzelkopf erfolgt in Δh • m_n Schritten. Δh ist mit 0,025 vorbelegt und kann zwischen 0,01 und 0.1 variiert werden." }
+    probe: null
+    status: verified
+    note: "Internal gears are an extension point."
+  min_tip_clearance:
+    quantity: min_tip_clearance
+    input_key: "MINDESTKOPFSPIEL"
+    value: 0.13
+    unit: "-"
+    rule: "smallest tip clearance c_min in modules; a given tip clearance factor c* is accepted below c_max = 0,75 (MAX_KOPFSPIEL); a remark is printed below 0,2 m_n (VERMERK_KOPFSPIEL)"
+    applies_to: "both"
+    manual: { page: 226, text: "Das auf m_n bezogene Mindestkopfspiel c_min ist mit 0,13 vorbelegt. Der Einstellbereich ist 0,001 bis 0,99. Wurde bei den \"Geometriedaten\" der Kopfspielfaktor c* vorgegeben, wird dieser nur akzeptiert, wenn dieser kleiner als das auf m_n bezogene maximale Kopfspiel c_max (Vorbelegung = 0,75) ist. c_max kann zwischen 0,00001 und 1,0 variiert werden. Ein Vermerk für kleines Kopfspiel erfolgt, wenn das auf m_n bezogene Istkopfspiel kleiner als 0,2 ist. Der Wert kann zwischen 0,05 und 0,5 variiert werden." }
+    probe: null
+    status: verified
+    note: "Whether and how STplus shortens a tip for the clearance is not probed; gearcore reports the tip clearance and warns where it is not positive."
+  circle_difference:
+    quantity: null
+    input_key: "KREISDIFFERENZ"
+    value: 1000.0
+    unit: "-"
+    rule: "two circles count as equal where their radii differ by less than m_n / DIFFGR (iteration limit)"
+    applies_to: "both"
+    manual: { page: 227, text: "Die Differenz der Radien zweier Kreise, die als gleich groß angesehen werden (Iterationsgrenze), ist als m_n / DIFFGR definiert. Die bezogene Kreisdifferenz DIFFGR ist mit 1000 vorbelegt und kann zwischen 250 und 5000 variiert werden." }
+    probe: null
+    status: verified
+    note: null
+  arc_difference:
+    quantity: root_form_diameter
+    input_key: "BOGENDIFFERENZ"
+    value: 10000.0
+    unit: "-"
+    rule: "two tooth thickness arcs count as equal where they differ by less than m_n / DESTGR (iteration limit of the form circles)"
+    applies_to: "both"
+    manual: { page: 227, text: "Die Differenz zweier Kreisdickenbögen, die als gleich groß angesehen werden (Iterationsgrenze für Formkreise), ist als m_n / DESTGR definiert. Die bezogene Differenz zweier Zahndickenbögen DESTGR ist mit 10000 vorbelegt, der mögliche Einstellbereich beträgt 5000 bis 100000." }
+    probe: "defaults_minimal: 'Geometrieberechnungs-Genauigkeitsgrenzwert DESTGR ... In aktueller Rechnung verwendeter Wert: 0.0002000000. Bis STplus 8.1F verwendeter Grenzwert: 0.0004000000.' (m_n = 2: 2 / 10000)"
+    status: verified
+    note: "Why the form circles of STplus are numerical: at its printed root form diameters of the four undercut pinions the tooth thickness arcs of fillet and involute differ by 1,0 to 4,0 times m_n / 10000 (2026-10-03), which explains the order of the accuracy parity.FORM_CIRCLE_ACCURACY_MM allows. Confirmed by experiment: with BOGENDIFFERENZ = 20000 and 50000 the root form diameter of the undercut pinion of fzg_c moves from 67.68506 to 67.68128 and 67.67939, onto the intersection of fillet and involute gearcore computes (67.67870): 6,4 um, 2,6 um, 0,7 um (probes form_circle_limit_twenty_thousand, form_circle_limit_fifty_thousand). The upper bound 100000 of the range is not accepted (the preset stays)."
+  helix_angle_iteration_limit:
+    quantity: helix_angle
+    input_key: "GRENZE_BETA_ITERATION"
+    value: 0.000001
+    unit: "-"
+    rule: "limit of the iteration of the helix angle"
+    applies_to: "both"
+    manual: { page: 227, text: "Die Grenze für β-Iteration ist mit 10^-6 vorbelegt und kann zwischen 10^-8 und 10^-6 variiert werden." }
+    probe: null
+    status: verified
+    note: "gearcore solves the helix angle to the precision of binary64 (stplus_helix_angle_deg). The probe helix_angle_from_centre_distance lists 12.13130 where the equation gives 12.13222 degrees; at the listed angle the sum of the profile shift coefficients that belongs to the centre distance is 0.60012 (interface file), so the iteration of STplus ends before the equation is met. This control does not end it: at its lower bound 1E-8 the listing is the same (probe helix_angle_iteration_limit_tightened), and so it is with BOGENDIFFERENZ, KREISDIFFERENZ and MAX_ITERATIONSSCHRITTE (exploratory runs). For 18 pairs (m_n 1 to 8, with and without profile shift; probe helix_angle_without_profile_shift: 16.25980 where arccos(60 / 62.5) is 16.26020 degrees) the centre distance that belongs to the listed angle lies 0,05 to 0,43 um below the given one, never above: the iteration ends when the centre distance is met within about 0,5 um, and STplus adds the remainder to x_2 (SUMME_X 0.60012, 0.00006)."
+  rolling_angle_step:
+    quantity: null
+    input_key: "WAELZWINKELDIFF_MIN"
+    value: 0.01
+    unit: "-"
+    rule: "smallest difference of the rolling angle between neighbouring positions of tool and gear; VERKLEIN_WAELZWINKEL = 80 is the step by which the rolling angle is reduced for the Fussfreischnitt"
+    applies_to: "both"
+    manual: { page: 227, text: "Die Mindest-Wälzwinkeldifferenz für benachbarte Stellungen Werkzeug-Stirnrad im Erzeugungsgetriebe Δγ_min ist mit 0,01 vorbelegt und kann zwischen 0,0005 und 0,1 eingestellt werden. Die Schrittweite für Verkleinerung des Wälzwinkels, für den der Werkzeugkopf vor der Vorevolvente steht, ist mit 80 vorbelegt und kann zwischen 20 und 500 variiert werden. Er wird für die Fußfreischnittberechnung benötigt." }
+    probe: null
+    status: verified
+    note: null
+  max_iterations:
+    quantity: null
+    input_key: "MAX_ITERATIONSSCHRITTE"
+    value: 1.0
+    unit: "-"
+    rule: "largest number of iteration steps, normalised to 100"
+    applies_to: "both"
+    manual: { page: 227, text: "Die max. Anzahl Iterationsschritte ist normiert auf 100 und mit 1 vorbelegt. Sie kann zwischen 0,05 und 100 eingestellt werden." }
+    probe: null
+    status: verified
+    note: null
+  elliptic_tool_tip_rounding:
+    quantity: tool_tip_radius
+    input_key: "ABSCHALTEN_KORRGLIED"
+    value: 0.0
+    unit: "-"
+    rule: "0: the tip rounding of a rack tool is an ellipse in the transverse section; 1: it is taken as a circle"
+    applies_to: "both"
+    manual: { page: 227, text: "Die im Stirnschnitt elliptische Werkzeugkopfabrundung von zahnstangenförmigen Werkzeugen wird über das Korrekturglied Δρ erfasst. Statt der elliptischen Werkzeugkopfabrundung wird eine kreisförmige angenommen, wenn die Korrekturgliedabschaltung mit 1 belegt wird. Die Vorbelegung ist 0 (elliptische Wkz-Kopfabrundung)." }
+    probe: null
+    status: verified
+    note: "The sentence runs from p. 227 to p. 228. gearcore rolls the ellipse (trochoid.tip_rounding); the contours of STplus agree with it within 0,6 um, with the circle of FVA 604 I within 176 um (ADR-113)."
+  pairing_checks:
+    quantity: null
+    input_key: "PAARUNGSKONTR_ZU_RAD_1"
+    value: "ja"
+    unit: "-"
+    rule: "the check of the pairing with the mating gear and the check for interference are on (PAARUNGSKONTR_ZU_RAD_1/2, EINGR_STOERUNG_KONTR_R_1/2)"
+    applies_to: "both"
+    manual: { page: 228, text: "Die Gegenrad-Paarungskontrolle sowie die Kontrolle auf Eingriffstörung können durch Setzen der entsprechenden Listbuttons auf Nein deaktiviert werden." }
+    probe: null
+    status: verified
+    note: "Bild 4.232 (p. 230) marks the four keys with 'VB = ja'."
   geometry_accuracy_limit:
     quantity: null
     input_key: null
     value: 0.0002
-    unit: "-"
-    rule: "limit DESTGR of the geometry computation"
+    unit: "mm"
+    rule: "limit DESTGR of the geometry computation as the listing prints it: m_n / 10000 at m_n = 2"
     applies_to: "both"
-    manual: null
+    manual: { page: 227, text: "Die Differenz zweier Kreisdickenbögen, die als gleich groß angesehen werden (Iterationsgrenze für Formkreise), ist als m_n / DESTGR definiert." }
     probe: "defaults_minimal: 'Geometrieberechnungs-Genauigkeitsgrenzwert DESTGR ... In aktueller Rechnung verwendeter Wert: 0.0002000000. Bis STplus 8.1F verwendeter Grenzwert: 0.0004000000.'"
     status: verified
-    note: "Program-internal iteration limit; its unit and meaning are not documented on the pages read."
+    note: "See arc_difference: the printed value is m_n / DESTGR in mm (the listing calls the quotient DESTGR)."
   register_default_sty:
     quantity: null
     input_key: null

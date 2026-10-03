@@ -64,8 +64,13 @@ def test_adv0_02_x_distribution_modes_are_not_silently_accepted() -> None:
         text = base().replace("AUFTEILUNG_X1X2 = 0", f"AUFTEILUNG_X1X2 = {mode}")
         with pytest.raises(NotSupportedError, match="AUFTEILUNG_X1X2"):
             pair_input_from_ste(parse_ste(text))
+    # ADR-114 (2026-10-03): with the coefficient of one gear the sum gives the other, as STplus
+    # computes it (probe profile_shift_sum); the distribution of a sum alone stays not supported
+    result = pair_input_from_ste(parse_ste(base(extra="PR.VERSCH.SUMME = 0.35")))
+    assert any(note.startswith("PR.VERSCH.SUMME = 0.35") for note in result.notes)
+    alone = base(extra="PR.VERSCH.SUMME = 0.35").replace("PROFILVERSCHIEBUNG_N = 0.1818\n", "")
     with pytest.raises(NotSupportedError, match="PR.VERSCH.SUMME"):
-        pair_input_from_ste(parse_ste(base(extra="PR.VERSCH.SUMME = 0.35")))
+        pair_input_from_ste(parse_ste(alone))
 
 
 @pytest.mark.parametrize(

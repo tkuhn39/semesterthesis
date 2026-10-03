@@ -77,6 +77,11 @@
       "title": "Input Tolerance",
       "type": "number"
     },
+    "solver_tolerance": {
+      "default": 0.0,
+      "title": "Solver Tolerance",
+      "type": "number"
+    },
     "verdict": {
       "$ref": "#/$defs/ParityVerdict"
     }

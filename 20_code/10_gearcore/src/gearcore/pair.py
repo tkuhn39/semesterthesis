@@ -63,6 +63,7 @@ from gearcore.errors import GeometryInfeasibleError, InputRangeError, NotSupport
 from gearcore.models.common import PROFILE_SHIFT_RANGE, InputWarning, Pair
 from gearcore.models.inputs import GearKind, PairInput
 from gearcore.models.results import BasicGearGeometry, PairGeometry
+from gearcore.rack import has_edge_break_flank
 from gearcore.trace import eq
 
 SOURCE = "ISO21771:2014"
@@ -680,7 +681,12 @@ def _tip_form_diameters(
         tips.append(d_a)
         if given is None:
             forms.append(tip_form_diameter(d_a, gear.tip_chamfer_radial_mm))
-            if gear.tool.edge_break_angle_deg is not None:
+            tool = gear.tool
+            # (an angle without the height at which the flank starts cannot be judged here;
+            # the generation rejects such a tool)
+            if has_edge_break_flank(tool) or (
+                tool.edge_break_angle_deg is not None and tool.root_form_height_factor is None
+            ):
                 warnings.append(
                     _warning(
                         "tip_form_diameter_not_generated",

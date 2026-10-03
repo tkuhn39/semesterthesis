@@ -59,6 +59,11 @@ Rules are numbered so ADRs and reviews can cite them.
    evidence (page of the manual, probe run). It is no norm and is never applied silently: a
    caller asks for a record or a default by name. A value that is not entered is either a named
    value of a norm table or missing; falling back on an old STplus default is an explicit choice.
+   The `.ste` importer is such a caller (user decision 2026-10-03, ADR-114): it reads a file as
+   STplus computes it and records every preset and every correction in its notes; where the
+   manual and the program disagree, the program is followed and both are documented. Before an
+   increment is implemented, the complete sections of the STplus manual that touch it are read
+   and unclear behaviour is probed with the program.
 
 ## B. Code
 6. **One equation = one function**; models are data, computations are module-level functions. No

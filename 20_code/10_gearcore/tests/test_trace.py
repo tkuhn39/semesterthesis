@@ -18,6 +18,7 @@ COMPUTATIONAL_MODULES = [
     "gearcore.pair",
     "gearcore.generation",
     "gearcore.trochoid",
+    "gearcore.contour",
     "gearcore.inspection",
     "gearcore.tolerances.din3967",
     "gearcore.tolerances.din3964",

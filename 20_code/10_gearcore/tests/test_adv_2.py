@@ -1105,7 +1105,7 @@ def test_g2v07_orchestrator_returns_a_consistent_result_or_a_typed_error(
         (STE.format(lines=ANGLES + "ACHSABSTAND = 52.4\nPROFILVERSCHIEBUNG_N = 0.3\n"
                     "ZAHNWEITE = % 27.8\nMESSZAEHNEZAHL = % 1"), "number_of_teeth_spanned"),
         (STE.format(lines=ANGLES + "PROFILVERSCHIEBUNG_N = 0.3 -0.1").replace(
-            "KOPFHOEHENFAKTOR = 1.25", "KOPFHOEHENFAKTOR = 5", 1), "addendum_factor"),
+            "KOPFHOEHENFAKTOR = 1.25", "KOPFHOEHENFAKTOR = -1", 1), "addendum_factor"),
         (STE.format(lines=ANGLES + "PROFILVERSCHIEBUNG_N = 0.3 -0.1\n"
                     "OBERES_ZAHNW_ABMASS = -80 -80\nUNTERES_ZAHNW_ABMASS = -40 -40"),
          "span_allowance_um"),
@@ -1123,12 +1123,20 @@ def test_g2w06_public_section_importers_raise_parse_errors() -> None:
     """``tool_from_section`` and ``material_from_section`` are public: the verdict of their
     contracts is a ``ParseError`` there as well."""
     tool_text = STE.format(lines=ANGLES + "PROFILVERSCHIEBUNG_N = 0.3 -0.1").replace(
-        "KOPFHOEHENFAKTOR = 1.25", "KOPFHOEHENFAKTOR = 5", 1
+        "KOPFHOEHENFAKTOR = 1.25", "KOPFHOEHENFAKTOR = -1", 1
     )
     section = parse_ste(tool_text).section("WKZ_1")
     assert section is not None
     with pytest.raises(ParseError, match="tool 'WKZ_1' is no valid input: addendum_factor"):
-        tool_from_section(section)
+        tool_from_section(section, [], normal_pressure_angle_deg=20.0)
+    # (an addendum beyond the limit of STplus is reduced, not rejected: ADR-114)
+    assert tool_from_section(
+        parse_ste(tool_text.replace("KOPFHOEHENFAKTOR = -1", "KOPFHOEHENFAKTOR = 5")).section(  # type: ignore[arg-type]
+            "WKZ_1"
+        ),
+        [],
+        normal_pressure_angle_deg=20.0,
+    ).addendum_factor == pytest.approx(1.993, abs=5e-4)
     material_text = (
         "$ Anfang\n\n$ WST_X\nELASTIZITAETSMODUL = -1\nQUERKONTRAKTIONSZAHL = 0.3\n\n$ Ende\n"
     )
@@ -1208,11 +1216,9 @@ def test_user_decision_no_default_for_helix_chamfer_protuberance_allowance() -> 
 def test_user_decision_the_importer_states_every_zero_in_its_notes() -> None:
     """A blanket zero only together with a note: a ``.ste`` file without the key means that the
     feature is absent; the importer says so for each value."""
-    bare = STE.format(lines="EINGRIFFSWINKEL = 20\nPROFILVERSCHIEBUNG_N = 0.3 -0.1")
+    bare = STE.format(lines=ANGLES + "PROFILVERSCHIEBUNG_N = 0.3 -0.1")
     result = pair_input_from_ste(parse_ste(bare))
-    assert result.pair.helix_angle_deg == 0.0
-    expected = [
-        "SCHRAEGUNGSWINKEL not given → 0 (spur gears)",
+    zeros = [
         "tool 'WKZ_1': PROTUBERANZBETRAG not given → 0 (no protuberance)",
         "tool 'WKZ_1': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
         "tool 'WKZ_2': PROTUBERANZBETRAG not given → 0 (no protuberance)",
@@ -1220,8 +1226,14 @@ def test_user_decision_the_importer_states_every_zero_in_its_notes() -> None:
         "gear 1: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
         "gear 2: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
     ]
-    assert list(result.notes) == expected
-    # given values are taken without a note
+    assert [note for note in result.notes if "→ 0 (" in note] == zeros
+    # a helix angle is no such zero: STplus computes it or rejects the input (ADR-114, probes
+    # helix_angle_from_centre_distance and no_helix_angle_no_centre_distance)
+    with pytest.raises(ParseError, match="SCHRAEGUNGSWINKEL missing"):
+        pair_input_from_ste(
+            parse_ste(STE.format(lines="EINGRIFFSWINKEL = 20\nPROFILVERSCHIEBUNG_N = 0.3 -0.1"))
+        )
+    # given values are taken without such a note
     given = STE.format(
         lines=ANGLES + "PROFILVERSCHIEBUNG_N = 0.3 -0.1\nKOPFKANTENBRUCH = 0 0.2"
     ).replace(
@@ -1229,15 +1241,19 @@ def test_user_decision_the_importer_states_every_zero_in_its_notes() -> None:
         "KOPFABRUNDUNGSFAKTOR = 0.25\nPROTUBERANZBETRAG = 0\nBEARB_ZUGABE_WKZ = 0.1",
     )
     result = pair_input_from_ste(parse_ste(given))
-    assert result.notes == ()
+    assert not [note for note in result.notes if "→ 0 (" in note]
     assert result.pair.gears.wheel.tip_chamfer_radial_mm == 0.2
     assert result.pair.gears.pinion.tool.machining_allowance_mm == 0.1
-    # the public tool importer reports the zeros only if a list is passed
+    # every other note of the file is a default of STplus the importer applied (ADR-114)
+    assert all("STplus" in note or "not determined" in note for note in result.notes), result.notes
+    # the public tool importer records the zeros and the presets in the list it is given
     section = parse_ste(bare).section("WKZ_1")
     assert section is not None
     notes: list[str] = []
-    assert tool_from_section(section, notes) == tool_from_section(section)
-    assert len(notes) == 2
+    assert tool_from_section(section, notes, normal_pressure_angle_deg=20.0) == tool_from_section(
+        section, [], normal_pressure_angle_deg=20.0
+    )
+    assert len(notes) == 4  # root form height, dedendum, protuberance, allowance
 
 
 def test_user_decision_tools_of_the_package_state_their_zeros() -> None:

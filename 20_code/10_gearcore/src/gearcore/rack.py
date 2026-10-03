@@ -27,7 +27,7 @@ from gearcore.models.inputs import ToolKind, ToolProfile
 from gearcore.models.profiles import BasicRackProfile
 from gearcore.trace import eq
 
-EQ_EXEMPT = ("validate_basic_rack",)
+EQ_EXEMPT = ("validate_basic_rack", "has_edge_break_flank")
 
 TABLE_MATCH_RELATIVE = 1e-9
 """Relative tolerance for matching a module to a tabulated one (float noise such as 0.07 * 100)."""
@@ -416,3 +416,16 @@ def check_module(module_mm: float) -> InputWarning | None:
             "(the norm covers modules 1 … 50 for general and heavy engineering)"
         ),
     )
+
+
+def has_edge_break_flank(tool: ToolProfile) -> bool:
+    """The tool has an edge break flank where it gives the angle and the height at which the
+    flank starts, and its dedendum lies above that height (or is not given: the flank is then
+    as long as the gear needs). A dedendum equal to the root form height is a sharp corner
+    between the straight flank and the root line of the tool: no flank, whatever angle the
+    contract states (DIN 3960:1987-03 Bild A.2; STplus manual p. 186)."""
+    if tool.edge_break_angle_deg is None or tool.root_form_height_factor is None:
+        return False
+    if tool.dedendum_factor is None:
+        return True
+    return tool.dedendum_factor > tool.root_form_height_factor * (1.0 + EPS)

@@ -23,7 +23,7 @@
   "stplus_version": "11.1F",
   "trust": "generated",
   "typed_import": {
-    "error": "ParseError: WERKZEUG_VORVERZ. must name a tool block for both gears (STplus would use a default hob; gearcore requires the tool explicitly)",
+    "error": "ParseError: EINGRIFFSWINKEL missing (STplus rejects a batch input without it)",
     "ok": false
   }
 }

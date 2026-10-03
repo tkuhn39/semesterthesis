@@ -789,7 +789,7 @@ quantities:
     stplus: { symbol: "h_fP0*", label: "Fuss-Hoehenfaktor (Wkz-Bezugspr.)", input_key: "FUSSHOEHENFAKTOR", interface_key: "WKZ_FUSSHOEHENF" }
     replaced:
       - { symbol: "h_fP0", description: "Fußhöhe des Werkzeug-Bezugsprofils", source: "DIN3960:1987", location: "§2.1, p. 2" }
-    note: "STplus manual Bild 4.174 (p. 185): 'Fußhöhenfaktor d. Wkz-Bez.profils h_fP0*'."
+    note: "STplus manual Bild 4.174 (p. 185): 'Fußhöhenfaktor d. Wkz-Bez.profils h_fP0*'. STplus presets the factor with 1,3, sets a value below the root form height equal to it and limits it where the edge break flanks close the tool space; a tip circle above the root line of the tool is cut to d + 2 (x_E m_n + h_fP0) (ADR-114)."
     since: 0
     status: verified
   machining_allowance:
@@ -824,33 +824,32 @@ quantities:
   tool_root_form_height:
     symbol: "h_FfP0"
     unit: "mm"
-    description: null
-    source: null
-    location: null
+    description: "(lettering of Bild 36 a), without designation: height of the straight part of the tool flank above the datum line, where an edge break flank starts)"
+    source: "ISO21771:2014"
+    location: "§7.1 Bild 36 a), p. 64"
     english: null
-    also:
-      - { symbol: "h_FfP0", description: "(lettering of Bild 36 a), without designation)", source: "ISO21771:2014", location: "§7.1 Bild 36 a), p. 64" }
+    also: []
     stplus: { symbol: "h_FfP0*", label: "Fussform-Hoehenf.(Wkz-Bezugspr.)", input_key: "FUSSFORMHOEHENFAKTOR", interface_key: "WKZ_FUSSFORMHOEHENF" }
     replaced:
-      - { symbol: "h_FfP0", description: "Fuß-Formhöhe des Werkzeug-Bezugsprofils", source: "DIN3960:1987", location: "§2.1, p. 2" }
-    note: "Designation of the current norm to be verified with the generation (increment 3)."
+      - { symbol: "h_FfP0", description: "Fuß-Formhöhe des Werkzeug-Bezugsprofils", source: "DIN3960:1987", location: "§2.1, p. 2; Anhang A Eq. (A.3.03), p. 52" }
+    note: "DIN ISO 21771 letters the height in Bild 36 a) and names it nowhere; the designation is that of DIN 3960. The edge break flank of the tool starts at this height above the datum line (DIN 3960 Eq. (A.3.03)). STplus manual Bild 4.174 (p. 185): 'Fußformhöhenfaktor d. Wkz-Bez.profils h_FfP0*'. STplus presets the factor with 1,3 where it is missing; its tool has an edge break flank only where h_fP0 > h_FfP0 (manual p. 186), and the program sets a dedendum below this height equal to it (ADR-114)."
     since: 0
-    status: pending
+    status: verified
   tool_edge_break_angle:
-    symbol: "alpha_KP"
+    symbol: "alpha_kP"
     unit: "deg"
-    description: null
-    source: null
-    location: null
+    description: "(lettering of Bild 36 a), without designation: profile angle of the edge break flank of the tool)"
+    source: "ISO21771:2014"
+    location: "§7.1 Bild 36 a), p. 64"
     english: null
-    also:
-      - { symbol: "alpha_KP", description: "(lettering of Bild 36 a), without designation)", source: "ISO21771:2014", location: "§7.1 Bild 36 a), p. 64" }
+    also: []
     stplus: { symbol: null, label: null, input_key: "KANTENBRECHWINKEL", interface_key: null }
     replaced:
       - { symbol: "alpha_K", description: "Profilwinkel der Kantenbruchflanke", source: "DIN3960:1987", location: "§2.1, p. 4" }
-    note: "STplus manual Bild 4.174 (p. 185): 'Kantenbrechwinkel d. Wkz-Bez.profils alfa_Kn0'. To be verified with the generation (increment 3)."
+      - { symbol: "alpha_KP0", description: "Kantenbrechflanken-Profilwinkel am Werkzeug-Bezugsprofil", source: "DIN3960:1987", location: "Anhang A, p. 51; Bild A.2, p. 53" }
+    note: "Bild 36 a) letters the angle alpha_kP with a lower-case k (rendered at 600 dpi, 2026-09-30); DIN 3960 writes alpha_K in §2.1 and alpha_KP0 in Anhang A. The angle is given in the normal section of the tool; the transverse angle follows like the pressure angle (Eq. (14)). STplus manual Bild 4.174 (p. 185): 'Kantenbrechwinkel d. Wkz-Bez.profils alfa_Kn0'; STplus presets it with alpha_n0 + 10 degrees (manual p. 186)."
     since: 0
-    status: pending
+    status: verified
   tool_protuberance:
     symbol: "pr"
     unit: "mm"
@@ -1345,22 +1344,232 @@ quantities:
     since: 2
     status: verified
 
+  # ---- tool-based generation and tooth contour (increment 3) -------------------------------------
+  tool_tip_form_height:
+    symbol: "h_FaP0"
+    unit: "mm"
+    description: "gerader Teil der Kopfflanke des Werkzeug-Erzeugungsprofils"
+    source: "ISO21771:2014"
+    location: "§7.6 Bild 39 legend, p. 69; §7.7 Eq. (135), p. 70"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "h_FaP0", description: "Kopf-Formhöhe des Werkzeug-Bezugsprofils", source: "DIN3960:1987", location: "§2.1, p. 2; §3.6.6 Eq. (3.6.06), p. 14" }
+    note: "Height of the straight part of the tool addendum, h_FaP0 = h_aP0 - rho_aP0 (1 - sin alpha_n): the bracket of Eq. (128) in Anhang NB (p. 6). DIN ISO 21771 letters it in Bild 36 a) (p. 64) and names it in the legend of Bild 39 only."
+    since: 3
+    status: verified
+  upper_generating_profile_shift_coefficient:
+    symbol: "x_Es"
+    unit: "-"
+    description: "(Erzeugungs-Profilverschiebungsfaktor am oberen Zahndickenabmaß; lettered in Bild 38 and Eq. (123), index s of §3.2)"
+    source: "ISO21771:2014"
+    location: "§7.4 Eq. (123) and Bild 38, p. 67; §3.2 index s, p. 17"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "x_Ee", description: "(Erzeugungs-Profilverschiebungsfaktor der Fertigverzahnung am oberen Zahndickenabmaß; index e as in A_se)", source: "DIN3960:1987", location: "§3.6.3 after Eq. (3.6.03), p. 14" }
+    note: "x_Es = x + E_sns / (2 m_n tan alpha_n) for a finished gear (q = 0). The generation of a gear is evaluated at this value (maximum material); the lower value is reported alongside. DIN 3960 writes the index e for the upper limit (x_Ee, A_se), DIN ISO 21771 the index s (§3.2, p. 17)."
+    since: 3
+    status: verified
+  lower_generating_profile_shift_coefficient:
+    symbol: "x_Ei"
+    unit: "-"
+    description: "(Erzeugungs-Profilverschiebungsfaktor am unteren Zahndickenabmaß; lettered in Bild 38 and Eq. (124), index i of §3.2)"
+    source: "ISO21771:2014"
+    location: "§7.4 Eq. (124) and Bild 38, p. 67; §3.2 index i, p. 17"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "x_Ei", description: "(Erzeugungs-Profilverschiebungsfaktor der Fertigverzahnung am unteren Zahndickenabmaß)", source: "DIN3960:1987", location: "§3.6.3 after Eq. (3.6.03), p. 14" }
+    note: "x_Ei = x + E_sni / (2 m_n tan alpha_n) for a finished gear (q = 0)."
+    since: 3
+    status: verified
+  min_generating_profile_shift_coefficient:
+    symbol: "x_Emin"
+    unit: "-"
+    description: "Erzeugungs-Profilverschiebungsfaktor bei Unterschnittgrenze"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13; §7.7 Eq. (135), p. 70"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "x_Emin", description: "Erzeugungs-Profilverschiebungsfaktor bei Unterschnittgrenze", source: "DIN3960:1987", location: "§2.1, p. 3; §3.6.6 Eq. (3.6.06), p. 14" }
+    note: "For a rack-type tool without protuberance: x_Emin = h_FaP0 / m_n - z sin^2(alpha_t) / (2 cos beta). A gear generated with x_E < x_Emin is undercut; its root form diameter then follows from the intersection of the fillet with the involute (§7.6, p. 70)."
+    since: 3
+    status: verified
+  lower_generated_root_diameter:
+    symbol: "d_fEi"
+    unit: "mm"
+    description: "(erzeugter Fußkreisdurchmesser am unteren Zahndickenabmaß; lettered in Bild 38, index i of §3.2)"
+    source: "ISO21771:2014"
+    location: "§7.4 Bild 38, p. 67; §7.5 Eq. (125), p. 68"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Eq. (125) with x_Ei. Bild 38 letters d_fEs for the upper allowance, which the program reports as the generated root diameter d_fE."
+    since: 3
+    status: verified
+  tip_clearance:
+    symbol: "c"
+    unit: "mm"
+    description: "Kopfspiel"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11; §5.2.7 Eq. (60), p. 41"
+    english: null
+    also: []
+    stplus: { symbol: "c", label: "Kopfspiel (Istwert)", input_key: null, interface_key: "KOPFSPIEL" }
+    replaced:
+      - { symbol: "c", description: "Kopfspiel", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "Per gear: the clearance of its tip against the generated root of the mating gear, c_1 = a_w - d_a1 / 2 - d_fE2 / 2. STplus also prints c* = c / m_n ('bezogenes Kopfspiel', BEZOGENES_KOPFSPIEL)."
+    since: 3
+    status: verified
+  form_over_dimension:
+    symbol: "c_F"
+    unit: "mm"
+    description: "Formübermaß"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 11; §5.4.4 Eq. (76), p. 45"
+    english: null
+    also: []
+    stplus: { symbol: "c_n", label: "Formuebermass", input_key: null, interface_key: "FORMUEBERMASS" }
+    replaced:
+      - { symbol: "c_F", description: "Formübermaß", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "Radial distance between the start of the active profile and the root form circle, c_F = (d_Nf - d_Ff) / 2. STplus prints the symbol c_n for it. The program name translates the German designation."
+    since: 3
+    status: verified
+  tooth_depth:
+    symbol: "h"
+    unit: "mm"
+    description: "Zahnhöhe (zwischen Kopf- und Fußkreis)"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12; §4.6.1 Eq. (35), p. 34"
+    english: null
+    also: []
+    stplus: { symbol: "h", label: "Zahnhoehe", input_key: null, interface_key: "ZAHNHOEHE" }
+    replaced:
+      - { symbol: "h", description: "Zahnhöhe (zwischen Kopf- und Fußlinie)", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "Eq. (35) writes the nominal root diameter d_f and an absolute value; the generation evaluates the first form of the equation with the generated root diameter d_fE, as STplus prints it, and raises where the root does not lie below the tip."
+    since: 3
+    status: verified
+  addendum:
+    symbol: "h_a"
+    unit: "mm"
+    description: "Zahnkopfhöhe"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12; §4.6.2 Eq. (36), p. 34"
+    english: null
+    also: []
+    stplus: { symbol: "h_a", label: "Kopfhoehe (bezogen auf Teilkreis)", input_key: null, interface_key: "KOPFHOEHE" }
+    replaced:
+      - { symbol: "h_a", description: "Zahnkopfhöhe", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "First form of Eq. (36) without its absolute value, h_a = (d_a - d) / 2, with the given tip diameter: signed, negative for a tip circle below the reference circle."
+    since: 3
+    status: verified
+  dedendum:
+    symbol: "h_f"
+    unit: "mm"
+    description: "Zahnfußhöhe"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 12; §4.6.2 Eq. (37), p. 34"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "h_f", description: "Zahnfußhöhe", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "Eq. (37) writes the nominal root diameter d_f and an absolute value; the generation evaluates the first form without the absolute value with the generated root diameter d_fE: signed, negative where x_E m_n exceeds the tool addendum (root circle above the reference circle). STplus prints no dedendum."
+    since: 3
+    status: verified
+  normal_tooth_thickness_limit:
+    symbol: "s_ns/s_ni"
+    unit: "mm"
+    description: "Zahndicke auf dem Teilzylinder im Normalschnitt - Höchstmaß / Zahndicke auf dem Teilzylinder im Normalschnitt - Mindestmaß"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13; §7.3 Eq. (118), (119), p. 65"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Pair (upper, lower): s_ns = s_n + E_sns, s_ni = s_n + E_sni. Returned by generation.tooth_thickness_limit; no contract field yet."
+    since: 3
+    status: verified
+  pre_machining_generating_profile_shift_coefficient:
+    symbol: "x_EsV/x_EiV"
+    unit: "-"
+    description: "(Erzeugungs-Profilverschiebungsfaktor einer Vorverzahnung mit Bearbeitungszugabe q; lettered in Eq. (120), (121), index V)"
+    source: "ISO21771:2014"
+    location: "§7.4 Eq. (120), (121), p. 67"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "x_EV/x_EiV", description: "(Profilverschiebungsfaktoren der Vorverzahnung, q > 0)", source: "DIN3960:1987", location: "§3.6.3 after Eq. (3.6.03), p. 14" }
+    note: "x_EsV m_n = x_Ei m_n + q_max / sin alpha_n, x_EiV m_n = x_Es m_n + q_min / sin alpha_n. Returned by generation.pre_machining_generating_profile_shift_coefficient with one allowance q; the finished gear of a pre-machining tool is an extension point (GEN-01)."
+    since: 3
+    status: verified
+  transverse_tip_tooth_thickness:
+    symbol: "s_at"
+    unit: "mm"
+    description: "(Kopfzahndicke im Stirnschnitt: s_yt of Eq. (38) on the tip cylinder, index a of §3.2; §7.9 names the 'Kopfzahndicke' without a symbol)"
+    source: "ISO21771:2014"
+    location: "§7.9, p. 70; §4.7.1 Eq. (38), p. 35; §3.2 index a, p. 17"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "s_a", description: "Zahndicke auf dem Kopfzylinder", source: "DIN3960:1987", location: "§2.1, p. 3" }
+      - { symbol: "s_ta", description: "Kopfzahndicke in der Stirnebene ohne Kantenbruch", source: "DIN3960:1987", location: "Anhang A, p. 51" }
+    note: "Arc thickness on the tip circle, evaluated with the generating profile shift coefficient x_E (§4.7, p. 35: with x_E the equations give the generated values). The program name follows the wording 'Kopfzahndicke' of §7.9."
+    since: 3
+    status: verified
+  normal_tip_tooth_thickness:
+    symbol: "s_an"
+    unit: "mm"
+    description: "(Kopfzahndicke im Normalschnitt: s_yn of Eq. (48) on the tip cylinder, index a of §3.2)"
+    source: "ISO21771:2014"
+    location: "§7.9, p. 70; §4.7.5 Eq. (48), p. 37; §3.2 index a, p. 17"
+    english: null
+    also: []
+    stplus: { symbol: "s_an", label: "Zahndicke am Kopfkreis fuer A_We", input_key: null, interface_key: "ZAHNDICKE_KOPF" }
+    replaced: []
+    note: "s_an = s_at cos(beta_a) with the helix angle on the tip cylinder (Eq. (8)). STplus prints it 'fuer A_We', i.e. with the upper allowance (the generating profile shift coefficient x_E)."
+    since: 3
+    status: verified
+  residual_tip_thickness:
+    symbol: "s_aK"
+    unit: "mm"
+    description: "Restzahndicke am Zahnkopf bei Kopfkantenbruch oder Kopfkantenrundung"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 13; §6.1.2 and Bild 24, p. 55"
+    english: null
+    also: []
+    stplus: { symbol: null, label: null, input_key: null, interface_key: "RESTDICKE" }
+    replaced:
+      - { symbol: "s_aK", description: "Restzahndicke am Zahnkopf bei Kopfkantenbruch oder Kopfkantenrundung", source: "DIN3960:1987", location: "§2.1, p. 3" }
+      - { symbol: "s_taK", description: "Rest-Kopfzahndicke in der Stirnebene bei Kantenbruch", source: "DIN3960:1987", location: "Anhang A, p. 51; Eq. (A.3.05), p. 52" }
+    note: "In the transverse section (DIN 3960 Eq. (A.3.05)). With a chamfer generated by the edge break flank of the tool it follows from DIN 3960 A.3.1; with a chamfer given by its radial height h_K it is an input (Bild 24 defines a chamfer by h_K and s_aK). The listing prints it without a symbol ('Restdicke bei Kantenbruch/Kopfruecknahme') and prints the tip tooth thickness where there is no chamfer. For a chamfer given by h_K STplus forms the residual thickness in the normal section (s_an - 2 * 0,7 h_K, at least 0,2 s_an); the .ste importer converts it onto the transverse arc of this field and records it (ADR-114)."
+    since: 3
+    status: verified
+
   # ---- contract fields of later increments -------------------------------------------------------
   tooth_thickness_allowance:
     symbol: "E_sns/E_sni"
     unit: "µm"
-    description: null
-    source: null
-    location: null
+    description: "oberes Zahndickengrenzabmaß / unteres Zahndickengrenzabmaß"
+    source: "ISO21771:2014"
+    location: "§3.1 symbol list, p. 14; §7.3 Eq. (118), (119), p. 65; §7.4 Eq. (123), (124), p. 67"
     english: null
     also:
-      - { symbol: "E_sns", description: "oberes Zahndickengrenzabmaß", source: "ISO21771:2014", location: "§3.1 symbol list, p. 14" }
-      - { symbol: "E_sni", description: "unteres Zahndickengrenzabmaß", source: "ISO21771:2014", location: "§3.1 symbol list, p. 14" }
-    stplus: null
+      - { symbol: "A_sne/A_sni", description: "oberes Abmaß der Zahndicke im Normalschnitt / unteres Abmaß der Zahndicke im Normalschnitt", source: "DIN3967:1978", location: "Anhang A symbol list, p. 7" }
+    stplus: { symbol: "A_ste", label: "oberes Zahndickenabmass", input_key: null, interface_key: "OBERES_ZAHNDICKENABM" }
     replaced: []
-    note: "Pair of upper and lower allowance; governed by DIN 3967:1978-08 and DIN 21773:2014-08, verified in increment 5."
+    note: "Pair (upper, lower) of the normal tooth thickness allowance on the reference cylinder (DIN 3967 §1, p. 1: the fit system is defined in the normal section). STplus prints A_ste/A_sti (DIN 3967 Anhang A: 'oberes/unteres Abmaß der Zahndicke im Stirnschnitt', p. 7), the transverse value E_sns / cos beta: helix30_z25_40 prints -0.098 for the pinion where the series value is -0.085 (own comparison 2026-09-30); its lower value stands under UNTERES_ZAHNDICKENABM / A_sti. The values of the series (DIN 3967 Table 1) are verified in increment 5; STplus has no input key for the allowance itself, only ABMASS_TOL_REIHE."
     since: 0
-    status: pending
+    status: verified
   span_allowance:
     symbol: "A_We/A_Wi"
     unit: "µm"

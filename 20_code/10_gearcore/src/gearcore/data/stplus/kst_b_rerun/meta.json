@@ -52,8 +52,12 @@
   "trust": "generated",
   "typed_import": {
     "notes": [
+      "tool 'WKZ_Profil_B_Ritzel': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
+      "tool 'WKZ_Profil_B_Ritzel': h_fP0* = 1.3 set to the root form height h_FfP0* = 1.75 as STplus does (no edge break flank)",
       "tool 'WKZ_Profil_B_Ritzel': PROTUBERANZBETRAG not given → 0 (no protuberance)",
       "tool 'WKZ_Profil_B_Ritzel': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "tool 'WKZ_Profil_B_Rad': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
+      "tool 'WKZ_Profil_B_Rad': h_fP0* = 1.3 reduced to h_f0max* = 1.244377847293592 as STplus does (the edge break flanks close the tool space there)",
       "tool 'WKZ_Profil_B_Rad': PROTUBERANZBETRAG not given → 0 (no protuberance)",
       "tool 'WKZ_Profil_B_Rad': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)"
     ],

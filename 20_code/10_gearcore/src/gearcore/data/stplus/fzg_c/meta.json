@@ -43,8 +43,12 @@
   "trust": "generated",
   "typed_import": {
     "notes": [
+      "tool 'Fraes_WKZ': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'Fraes_WKZ': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
       "tool 'Fraes_WKZ': PROTUBERANZBETRAG not given → 0 (no protuberance)",
       "tool 'Fraes_WKZ': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "tool 'Fraes_WKZ': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'Fraes_WKZ': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
       "tool 'Fraes_WKZ': PROTUBERANZBETRAG not given → 0 (no protuberance)",
       "tool 'Fraes_WKZ': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
       "gear 1: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",

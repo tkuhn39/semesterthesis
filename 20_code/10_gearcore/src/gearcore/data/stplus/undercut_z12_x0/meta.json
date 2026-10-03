@@ -36,12 +36,18 @@
   "trust": "generated",
   "typed_import": {
     "notes": [
+      "tool 'WKZ_1': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'WKZ_1': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
       "tool 'WKZ_1': PROTUBERANZBETRAG not given → 0 (no protuberance)",
       "tool 'WKZ_1': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "tool 'WKZ_2': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'WKZ_2': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
       "tool 'WKZ_2': PROTUBERANZBETRAG not given → 0 (no protuberance)",
       "tool 'WKZ_2': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
       "gear 1: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
-      "gear 2: KOPFKANTENBRUCH not given → 0 (no tip chamfer)"
+      "gear 2: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
+      "gear 1: KOPFKREISDM not given → d_a = 28.0 mm = d + 2 m_n (1 + x), the default of STplus without tip alteration (STplus shortens it afterwards where the tool, the tip tooth thickness or the mating gear require it; gearcore applies the cut by the tool only)",
+      "gear 2: KOPFKREISDM not given → d_a = 84.0 mm = d + 2 m_n (1 + x), the default of STplus without tip alteration (STplus shortens it afterwards where the tool, the tip tooth thickness or the mating gear require it; gearcore applies the cut by the tool only)"
     ],
     "ok": true,
     "unmapped_keys": []

@@ -163,6 +163,188 @@ labelled with the program version.
   dedendum silently.
 - Project rule 5a; `scripts/import_stplus_program.py` reproduces import and probes.
 
+### Added (increment 3 - tool-based generation and transverse tooth contour, 2026-09-30, ADR-113)
+- `generation.py`: what a rack-type tool generates on an external gear (DIN ISO 21771:2014-08
+  §7, §4.6, §4.7, §7.9): tooth thickness limits (118), (119), generating profile shift
+  coefficient at the upper and the lower allowance (123), (124), pre-machining shift (120), (121),
+  straight part of the tool addendum h_FaP0 (bracket of (128) NB; FVA 604 I (4.36), (4.37)),
+  generated root diameter (125), root form diameter (128) in the corrected form of Anhang NB and
+  (129)/(130) as printed as a cross-check, undercut limit (135), tip chamfer height (127), tooth
+  depth, addendum, dedendum (35)-(37) with d_fE, tip tooth thickness (38)/(48) with x_E, and the
+  tip form circle of an edge break flank of the tool with the residual tip thickness (DIN 3960
+  Anhang A.3.1 Eq. (A.3.03), (A.3.05), (A.3.06), which the current norm lacks). Orchestrator
+  `compute_generation`: both gears at x_Es, the pair geometry with the generated form circles,
+  tip clearance (60) and form over-dimension (76) per gear; typed errors for protuberance tools,
+  machining allowance, deviating tool module or angle; warnings for undercut, a missing allowance,
+  an edge break flank that does not reach the tip, a chamfer without its shape, a topping tool.
+- `trochoid.py`: the tool rolls on the gear by the law of gearing (Linke 2010 §1.3, FVA 604 I
+  §3.1); the envelope of the tool tip rounding, an ellipse in the transverse section of a helical
+  gear (FVA 604 I p. 29), is the fillet; the straight flank reproduces the involute and the tip
+  line the root circle (tests); the root form circle of an undercut gear is the intersection of
+  fillet and involute, found with `brentq`.
+- `contour.py`: transverse tooth contour (fillet, involute, edge break involute or chamfer, tip
+  circle), whole-gear polygon, `compare` (normal distance per region), STplus export loader.
+  On the 14 own STplus runs (28 gears, four with undercut, beta up to 30 deg) the export lies
+  within 0,6 um (fillet), 0,25 um (involute), 0,01 um (tip) of the gearcore contour (gate of the
+  plan: 10 and 5 um).
+- Contracts `GearGeneration`, `GenerationResult`, `ToothContour`, `ContourDiff`;
+  `GearInput.residual_tip_thickness_mm` (a chamfer given by h_K and s_aK, DIN ISO 21771 §6.1.2).
+- Comparison with STplus of the generation (`parity.compare_generation`): 537 comparisons over
+  the 18 cases, 368 identical, 169 within the accuracy of STplus, none different. Findings: STplus
+  prints the transverse allowance A_ste = E_sns / cos beta; its root form diameter is the numerical
+  junction of its curves (doubled contour vertex), accuracy measured up to 6,4 um, allowed as
+  `FORM_CIRCLE_ACCURACY_MM` = 0,007 mm; its residual thickness of a chamfer given by h_K follows
+  the rule 0,7 h_K (labelled program rule `stplus_program.stplus_residual_tip_thickness`).
+- Quantity registry: 13 quantities (h_FaP0, x_Es, x_Ei, x_Emin, d_fEi, c, c_F, h, h_a, h_f, s_at,
+  s_an, s_aK) added, `tool_root_form_height`, `tool_edge_break_angle` (alpha_kP as Bild 36 a)
+  letters it) and `tooth_thickness_allowance` verified; with the two entries of the gate (s_ns/s_ni,
+  x_EsV/x_EiV) 108 quantities, 6 pending.
+- `.ste` importer: a tool with `KANTENBRECHWINKEL` and without `FUSSFORMHOEHENFAKTOR` gets the
+  STplus default h_FfP0* = 1,3 with a note (helix20_z25_65 lists it).
+- Decimal reference generator `scripts/decimal_reference_generation.py` (45-digit arithmetic;
+  the helical example 1 of ISO/TR 6336-30 gives d_Ff1 = 132,248 mm with Eq. (128) NB and
+  132,243 mm with Eq. (130) as printed). Worked example: d_fE and d_Ff of example 1 reproduced
+  from the printed x_E.
+- Notebook `03_werkzeug_erzeugung_zahnkontur.ipynb` (23 cells, 26 after the fourth round): equations, fillet plots, contour
+  overlays and deviation plots against STplus, whole gear, parity tables, limits.
+- **Adversarial gate 3 passed** (two read-only reviewers, one round of fixes, verification review;
+  `gate_reports/increment_3.md`, regression tests `tests/test_adv_3.py`): the numerical intersection
+  of fillet and involute now covers the band just below the undercut limit (P0: the base circle is
+  the root form circle where the cut is below resolution, `undercut_expected`), a pointed tooth at
+  the tip circle is a typed error, tool feasibility (straight flank exists, roundings do not
+  overlap) is checked on every path, a sharp tool corner (rho_aP0 = 0) rolls as the limit of the
+  rounding, the dedendum is signed like Eq. (37) admits, the tool root rounding is a named extension
+  point, one page number and the old-norm symbol x_Ee corrected, `contour.distances` public and
+  junction points no longer doubled, `tooth_contour(generation, role)`, `tool_from_section` requires
+  its notes list and raises a dedendum below the default root form height as STplus does, the
+  fixture records refreshed (`refresh-import`), the STplus allowance for numerically found form
+  circles reported as `ParityRow.solver_tolerance` and rows that echo inputs or cannot fail named
+  (`rows_without_evidence`; 537 comparisons, 368 identical, 169 within the accuracy of STplus), the
+  circle approximation of FVA 604 I measured reproducibly (`scripts/circle_approximation_fva604.py`:
+  176 µm at β = 30°), two undetected mutations now detected, registry entries for s_ns/s_ni and
+  x_EsV/x_EiV (108 quantities). The verification review (third read-only agent) confirmed the 29
+  resolutions and named eight further items (G3V-01 to G3V-08), resolved in a second round: the
+  fillet of the band below the undercut limit ends on the base circle itself and contour elements
+  are joined with a tolerance relative to the size of the gear (`contour.JOIN_TOLERANCE`; no
+  zero-length segment at any module), `fillet_curve`, `gear_polygon` and `tool_from_section` raise
+  typed errors for the remaining wrong argument types, an equal dedendum is not reported as raised,
+  the three mutations no test detected (resolution of a shallow cut, unit of `distances`, tolerance
+  of the tangent end) are detected, known limit GEN-12 (root form circle on the base circle and the
+  band of the pair module). A second verification review confirmed these eight and named eight
+  more (G3W-01 to G3W-08), resolved in a third round: a hypothesis test that failed in 3 of 180
+  runs draws feasible tools only; `root_form_diameter_by_intersection` checks a caller's
+  `undercut_expected` against the fillet (it must end on the mirrored branch of the involute, else
+  `SolverError`) instead of returning the base circle for a gear free of undercut; numbers and
+  arrays of the rolling functions, the `TipRounding`, the reference contour and the `.ste` section
+  are validated (`InputRangeError`, 36 untyped paths closed); `fillet_curve` takes numpy integers;
+  `gear_polygon` handles a full-radius tool (no root arc, shared point placed once, no crowded arc
+  points); the join tolerance is pinned from both sides. 1125 tests.
+
+### Changed (increment 3, fourth round - reading a file as STplus computes it, 2026-10-03, ADR-114)
+Review by the user after a talk with his supervisor at the FZG: the complete STplus manual was
+studied (ch. 1 to 3, 4.1, 4.2, 4.14 to 4.17, 5 to 8, 10) and unclear behaviour probed with the
+program (34 new probes). User decisions: the `.ste` importer reads a file as STplus computes it;
+a tip circle above the root line of the tool is cut with a warning; where manual and program
+disagree (known at the FZG), the program is followed and both are documented.
+- `gearcore.stplus_program`: the labelled rules of STplus 11.1F: `stplus_tool_factors` (presets
+  1,25 / 0,25 / 1,3 / 1,3; a dedendum below the root form height is set equal to it; edge break
+  angle alpha_n0 + 10 deg for the flank between root form height and dedendum; limits of
+  addendum, tip rounding, root form height and dedendum, `stplus_max_tool_*`),
+  `stplus_helix_angle_deg` (helix angle from centre distance and sum of the profile shift
+  coefficients), `stplus_tip_chamfer_height` (limit 0,20 m_n),
+  `stplus_residual_tip_thickness` (now in the normal section, at least 0,2 s_an) and
+  `stplus_transverse_residual_tip_thickness`.
+- `io.ste`: an incomplete file is completed as STplus does and every step is recorded in
+  `SteImport.notes`: default hob for a gear without tool, tool factors, absolute tool heights,
+  helix angle, the second profile shift coefficient from `PR.VERSCH.SUMME`, tip diameters
+  (`SteImport.preset_tip_diameters`), lower span allowance, residual thickness of a chamfer
+  given by h_K. Typed errors for what is not translated (controls that move the tool limits,
+  tools dimensioned from a measuring line, protuberance heights).
+- `generation.compute_generation`: a tip circle above the root line of the tool is cut to
+  d + 2 (x_E m_n + h_fP0) (warning `tip_circle_cut_by_tool`); the pair geometry is computed with
+  the generated tip diameters; a tool has an edge break flank only where its dedendum lies above
+  its root form height (warning `edge_break_angle_without_flank` otherwise); a tooth pointed by
+  the edge break flanks is `GeometryInfeasibleError`.
+- `data/stplus_program`: 58 defaults (24 before) with the controls and limits of manual §4.17.2
+  and the four places where manual and program disagree; 39 probes (5 before); the tool records
+  are read as STplus computes with them.
+- Evidence: `tests/test_stplus_reading.py` (tool factors of the probes the importer reads and
+  of the 18 cases equal the listings in three decimals; cut tip circles, chamfers, residual thicknesses, helix
+  angle; example 1 of the manual reproduced: d_Fa 144,535 against 144,536 printed). The
+  comparison of the generation is unchanged (537 / 368 / 169 / 0). Notebook 03: new section on
+  how STplus reads an incomplete input. Known limits GEN-05 and GEN-07 resolved, GEN-06, GEN-10
+  and GEN-11 revised, GEN-13 to GEN-15 added. 1231 tests.
+
+### Fixed (increment 3, fifth round - verification review of the fourth round, 2026-10-03)
+A read-only verification review confirmed the rules of STplus against every listing (110 tools,
+110 tip circles) and found twelve items around them (G3X-01 to G3X-12: 1 P0, 4 P1, 5 P2, 2 P3).
+- `contour.tooth_contour` drew an edge break involute for a tool that states an edge break
+  angle but has no flank (dedendum = root form height) where the gear has a given chamfer (P0):
+  `GearGeneration.tool_edge_break_angle_deg` is now the angle of the flank the tool has, `None`
+  otherwise. The comparison with STplus loses four rows that echoed an input: 533 comparisons,
+  364 identical, 169 within the accuracy of STplus, none different.
+- `stplus_tool_factors`: the limits apply to presets as to given values (default hob at 28 and
+  30 degrees), the rule requires the pressure angle, an edge break angle of 90 degrees is a tool
+  without flank, every value is a finite number or an `InputRangeError`; a module or an angle
+  of zero is a typed error instead of a `ZeroDivisionError`.
+- `io.ste`: the five other definitions of the tip circle (`BEZ_KOPFDICKE`, `DA_DURCH_WKZ`,
+  `DA_NACH_DIN3960`, `KOPFSPIELFAKTOR`, `K_HOEHENF_VERZ_BEZ_PR`) are `NotSupportedError` for a
+  gear without `KOPFKREISDM`; a control of `$ KONFIGURATIONSDATEN` is one value for the stage,
+  its use is recorded, controls not evaluated are named, `ABSCHALTEN_KORRGLIED = 1` is refused;
+  with centre distance and helix angle given `PR.VERSCH.SUMME` is not used (as STplus).
+- `stplus_tool(name, normal_module_mm=..., normal_pressure_angle_deg=..., notes=...)` completes a
+  record of the tool databases with the data of the gear; ten of the fourteen records are
+  contracts by themselves, two need the pressure angle of the gear, two exceed the contract.
+- Twelve further probes (51 in all), 60 defaults, import records of all probes current
+  (`import_stplus_program.py refresh-import`), known limit GEN-16 (a preset tip circle that
+  STplus shortens for the tip thickness or the mating gear). 79 further tests, 39 mutations of
+  the corrected code detected. 1310 tests.
+
+### Fixed (increment 3, sixth round - second verification review, 2026-10-03)
+The verification review of the fifth round confirmed its resolutions and named ten items at the
+edges of the new code (G3Y-01 to G3Y-10: 2 P1, 5 P2, 3 P3).
+- Edge break angle of a tool as STplus reads it: below the profile angle it is replaced by
+  alpha_n0 + 10 deg, equal to it or 90 deg it is a tool without flank; STplus computes 85 deg and
+  aborts at 88 deg, so the importer refuses an angle in between (`NotSupportedError`). The
+  generation refuses a flank steeper than 89,9 deg (`InputRangeError`): beyond it DIN 3960
+  (A.3.05) is not resolved numerically (values wrong by micrometres, then by metres).
+- `rack.has_edge_break_flank`: one predicate for generation, contour, comparison and pair
+  geometry (the pair geometry announced a flank for every tool that states an angle).
+- `io.ste`: the placeholder `%` is "not given" for every key; keys of a tool block that are not
+  read and further values of a line are named in notes, junk tokens are `ParseError`; a tool name
+  must point to a tool block; `MINDESTKOPFSPIEL` and `ABSCHALTEN_KORRGLIED` follow the rules of a
+  control; a control outside its range keeps the preset with a note (as STplus, before:
+  `ParseError`); tip circle keys beside `KOPFKREISDM` of both gears are named as without effect.
+- Eight further probes (59 in all), 62 defaults; the limit functions return finite values or
+  typed errors. 26 further tests, 36 mutations of the corrected code detected. 1336 tests.
+
+### Documented (increment 3 - causes of the deviations from STplus, 2026-10-03)
+Question of the user: are the deviations stated as "not known" errors of gearcore? They are
+not; the causes lie in STplus and are shown by experiment (four further probes, 63 in all).
+- Helix angle iterated by STplus where the file gives none: its iteration ends when the centre
+  distance is met within about 0,5 um (18 pairs), so its angle is up to 0,002 deg too small
+  (16,25980 for arccos(60 / 62,5) = 16,26020 deg); no documented control changes that.
+- Form circles: the root form diameter STplus prints for the undercut pinion of fzg_c moves
+  onto gearcore's intersection as BOGENDIFFERENZ is tightened (6,4 / 2,6 / 0,7 um at 10 000 /
+  20 000 / 50 000): the accuracy the comparison allows is that of this iteration (GEN-06).
+- Residual thickness at an 85 deg edge break flank (0,0200 against 0,0205 mm): single precision
+  of STplus; gearcore's value is confirmed by the envelope of the rolling tool flank.
+- Gate report: every deviation of the comparison by cause (pair geometry 786 / 25 / 44 / 0,
+  generation 364 / 71 / 5 / 93 / 0). 13 further tests. 1349 tests.
+
+### Changed (increment 3 - controls of the tool limits, 2026-10-03)
+Question of the user: how do the presets 0,2 and 0,4 the manual names relate to the limits
+0,120 and 0,110 the listings show? They do not: the program has other presets.
+- With `MIN_WKZ_ZAHNKOPFDICKE*`, `MIN_LUECKENWEITE_EFF0*` and `MIN_LUECKENWEITE_EF0*` varied in
+  STplus the limits follow the controls exactly (tip land = s_a0*, tool space = e_Ff0*, root
+  space = 2 e_f0* tan alpha_n); the program presets 0,12, 0,11 and e_f0* = 0,03 where the manual
+  says 0,2, 0,4 and 0,06. The limits of gearcore are no fit any more (GEN-11).
+- The importer reads the three controls (before: `NotSupportedError`); `stplus_max_tool_*` and
+  `stplus_tool_factors` take them as keyword arguments.
+- Fixed: the range of a control is an open interval in STplus (the ends are not accepted);
+  importer and rule functions took the ends as valid.
+- Seven further probes (70 in all), 16 further tests, 12 mutations detected. 1365 tests.
+
 ### Added (increment 2 - pair geometry, 2026-09-30, ADR-107, ADR-110)
 - `gearcore.pair`: mating quantities of an external gear pair per DIN ISO 21771:2014-08 §4.4, §4.5,
   §5.2 to §5.4, §5.6 and Eq. (127) of §7.6 (pitches, tip and tip form diameter, working pressure

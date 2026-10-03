@@ -1,0 +1,138 @@
+ 
+       *********************************************************************
+       *           Forschungsvereinigung Antriebstechnik e.V. (FVA)        *
+       *                          Lyoner Str. 18                           *
+       *                         60528  Frankfurt                          *
+       *********************************************************************
+ 
+ 
+ 
+       Angaben zum Programm
+       --------------------
+       Programmname:           STplus
+       Version:                11.1F
+       Freigabe:               01.12.2025
+       Berechnungsumfang:      Geometrieberechnung von Stirnraedern sowie
+                               Tragfaehigkeitsberechnung nach den unter-
+                               schiedlichsten Verfahren
+ 
+ 
+       Angaben zur Erstellung
+       ----------------------
+       Erstellung:             Das Programm wurde im Rahmen des FVA-
+                               Forschungsvorhabens Nr. 241 erstellt.
+       Forschungsstelle:       FZG, TU Muenchen
+                               Prof. Dr.-Ing. K. Stahl
+ 
+ 
+       Angaben zum Anwender
+       --------------------
+       Firmenname:             FZG
+       Sachbearbeiter:         gearcore oracle
+ 
+ 
+       Angaben zur Berechnung
+       ----------------------
+       Datum:                  03.10.26
+       Uhrzeit:                18:03:23 Uhr
+       Eingabedatei:           ...break_angle_eighty_eight_degrees\eingabe.ste
+       Ausgabedatei:           ...break_angle_eighty_eight_degrees\ausgabe.sta
+ 
+ 
+       Firmenspezifische Angaben
+       -------------------------
+ 
+ 
+ 
+       Angaben zum Berechnungsinhalt
+       -----------------------------
+ 
+ 
+ 
+ Berechnung Datensatz   1 (EV=A) abgebrochen, siehe Vermerk oben ! (2091)
+ Fuer Fehlersuche ggf. signifikante Groessen (Laengen in mm, Winkel in
+ Radiant; DEZ.Grad = Radiant * 57.29).  "*******" = unsinnig gross !
+ RAD     Z       X     MN     ASNE    Q    QTDEQ    ALN    BETA
+ 1:    20.00     0.40   2.0000  -0.065   0.000  0.000  0.000
+      0.3491  0.00000
+ a =    61.125  alfa_t =  0.34907  alfa_tw =  0.39656
+ a =    61.125  alfa_t =  0.34907  alfa_tw =  0.39656
+1      *********************************************************************
+       * Stirnradprogramm STplus 11.1F     FZG             Blatt  2 von 3  *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 03.10.26  18:03:23 *****
+ 
+ 
+ 
+ 
+ 
+                              Echoprint der Datensaetze
+ 
+               =========== Ausgabe des ersten Datensatzes ===========
+ 
+       $ Geometriedaten
+       ZAHNBREITE = 20 20
+       NORMALMODUL = 2
+       ZAEHNEZAHL = 20 40
+       PROFILVERSCHIEBUNG_N = 0.4 0.2
+       SCHRAEGUNGSWINKEL = 0
+       EINGRIFFSWINKEL = 20
+       KOPFKREISDM = 46.4 85.6
+       WERKZEUG_VORVERZ. = T1 T2
+ 
+       $ T1
+       KOPFHOEHENFAKTOR = 1.6
+       KOPFABRUNDUNGSFAKTOR = 0.25
+       FUSSFORMHOEHENFAKTOR = 0.9
+       FUSSHOEHENFAKTOR = 1.5
+       KANTENBRECHWINKEL = 88
+ 
+       $ T2
+       KOPFHOEHENFAKTOR = 1.6
+       KOPFABRUNDUNGSFAKTOR = 0.25
+ 
+       $ AUSDRUCKSTEUERUNG
+       AUSDRUCK_IN_DEUTSCH = ja
+       LANGAUSDR_GEOMETRIE = ja
+       LANGAUSDR_TRAGFAEHIGKEIT = ja
+       AUSDRUCK_DECKBLATT = ja
+       ECHODRUCK_EINGABEDATEI = ja
+       AUSDRUCK_ERZEUGUNGSGETR = nein
+ 
+       $ PLOTSTEUERUNG
+       PLOTFORMAT = A4h A4h
+       PLOTGENAUIGKEIT = 0.005 0.005
+       PLOT_TEILKREIS = ja ja
+       PLOT_VERZAHNUNG_W1 = ja ja
+       PLOT_VERZAHNUNG_W2 = nein nein
+       PLOT_FERTIGVERZAHNUNG = nein nein
+       PLOT_WERKZEUG1 = nein nein
+       PLOT_WERKZEUG2 = nein nein
+       PLOT_EINGRIFF = ja
+       STIRNKOORD_EIN_WKZ = ja
+ 
+ 
+ 
+       Daten zu RAD 1 bezueglich WERKZEUG_VORVERZ.: T1
+            -> Daten sind bereits in der Eingabedatei enthalten.
+ 
+ 
+       Daten zu RAD 2 bezueglich WERKZEUG_VORVERZ.: T2
+            -> Daten sind bereits in der Eingabedatei enthalten.
+ 
+                                 Ende des Echoprints
+1      *********************************************************************
+       * Stirnradprogramm STplus 11.1F     FZG             Blatt  3 von 3  *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 03.10.26  18:03:23 *****
+ 
+ 
+ 
+ 
+ 
+       Hinweis: Geometrieberechnungs-Genauigkeitsgrenzwert DESTGR
+           wird fuer diesen Datensatz feiner (kl.) als bis
+           STplus 8.1F vorgesehen belegt.
+            In aktueller Rechnung verwendeter Wert:     0.0002000000.
+            Bis STplus 8.1F verwendeter Grenzwert:      0.0004000000.
+       Iteration IREG =  10 fuer Rad  1 nach   100 Schritten abgebrochen !

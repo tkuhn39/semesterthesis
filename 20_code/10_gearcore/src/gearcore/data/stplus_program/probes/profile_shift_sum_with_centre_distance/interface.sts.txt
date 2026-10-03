@@ -1,0 +1,143 @@
+$ ANFANG
+
+  
+  
+$ GEOMETRIEDATEN
+ 
+NORMALEINGRIFFSWINKEL   =         20.00000
+STIRNEINGRIFFSWINKEL    =         20.00000
+BETRIEBSEINGRIFFSWINKEL =         22.43879
+SCHRAEGUNGSWINKEL_TEILK =          0.00000          0.00000
+SCHRAEGUNGSWINKEL_GRUND =          0.00000          0.00000
+ZAEHNEZAHL              =              20              40
+VIRTUELLE_ZAEHNEZAHL    =         20.00000         40.00000
+ZAEHNEZAHLVERHAELTNIS   =          2.00000
+STANDUEBERSETZUNG_OZ    =          0.00000
+STANDUEBERSETZUNG_OH    =          0.00000
+UEBERSETZUNG_SONNE_STEG =          0.00000
+  UMLAUFUEBERSETZUNG    =          0.00000          0.00000
+ACHSABSTAND             =         61.00000
+NORMALMODUL             =          2.00000
+STIRNMODUL              =          2.00000          2.00000
+NORMAL_DIAMETRAL_PITCH  =         12.70000
+DIAMETRAL_PITCH         =         12.70000
+SUMME_X                 =          0.52977
+PROFILVERSCHIEBFAKTOR   =          0.40000          0.12977
+PROFILVERSCHIEBUNG      =          0.80000          0.25954
+ 
+# TEILUNGEN, UEBERDECKUNGEN ETC.
+STIRNTEILUNG            =          6.28319
+NORMALTEILUNG           =          6.28319
+AXIALTEILUNG            =          0.00000
+STIRNEINGRTEILUNG       =          5.90426
+NORMALEINGRTEILUNG      =          5.90426
+EINGRIFFSSTRECKE        =          8.93917
+GEMEINS_ZAHNHOEHENF     =          2.02977
+PROFILUEBERDECKUNG      =          1.51402
+SPRUNGUEBERDECKUNG      =          0.00000
+GESAMTUEBERDECKUNG      =          1.51402
+ 
+# BREITEN, DURCHMESSER ETC.
+ZAHNBREITE              =         20.00000         20.00000
+FASE_JE_ZAHNENDE        =          0.00000          0.00000
+GEMEINSAME_BREITE       =         20.00000
+MITTENVERSATZ           =          0.00000
+WAELZKREISDURCHM        =         40.66666         81.33333
+TEILKREISDURCHM         =         40.00000         80.00000
+GRUNDKREISDURCHM        =         37.58770         75.17541
+KOPFKREISDURCHM         =         45.60000         84.51908
+KOPFFORMKREISDURCHM     =         45.60000         84.51908
+KOPFKANTENBRUCH         =          0.00000          0.00000
+NUTZKREISDURCHM_KOPF    =         45.60000         84.51908
+NUTZKREISDURCHM_FUSS    =         38.41692         77.98651
+FUSSFORMKREISDURCHM     =         37.60291         76.03719
+FORMUEBERMASS           =          0.40700          0.97466
+FUSSFREISCHNITT         =          0.00000          0.00000
+DURCHM_FUSSFREISCHNITT  =         37.60291         76.03719
+FUSSKREISDURCHM         =         35.02141         73.88554
+ 
+# ZAHNHOEHEN, GLEITFAKTOREN ETC.
+BEZPR_KOPFHOEHENFAKTOR  =          1.00000          1.00000
+ZAHNHOEHE               =          5.28929          5.31677
+GEMEINSAME_ZAHNHOEHE    =          4.05954
+KOPFHOEHE               =          2.80000          2.25954
+KOPFSPIEL               =          1.25723          1.22976
+BEZOGENES_KOPFSPIEL     =          0.62861          0.61488
+KOPFEINGRSTRECKE        =          5.14741          3.79176
+GLEITFAKTOR_KOPF        =          0.37973          0.27972
+SPEZ_GLEITEN_KOPF       =          0.59814          0.58896
+SPEZ_GLEITEN_FUSS       =         -1.43287         -1.48842
+ 
+# ABMASSE, ZAHNDICKEN ETC.
+VERZAHNUNGSQUALITAET    = N7  N7 
+ABMASSREIHE             = C  C 
+TOLERANZREIHE           =              25              25
+ZAHNDICKE_STIRNSCHNITT  =          3.72395          3.33052
+OBERES_ZAHNDICKENABM    =         -0.06500         -0.08500
+UNTERES_ZAHNDICKENABM   =         -0.09500         -0.12500
+ZAHNDICKE_NORMAL        =          3.72395          3.33052
+ZAHNLUECKE_NORMAL       =          2.55924          2.95266
+ZAHNDICKE_KOPF          =          0.97464          1.37695
+RESTDICKE               =          0.97464          1.37695
+ 
+# ANGABEN ZU PRUEFMASSEN (VORVERZAHNUNG)
+ZAHNWEITE_V             =          0.00000          0.00000
+MESSZAEHNEZAHL_V        =               0               0
+DIAMETR_ZWEIKUGELMASS_V =          0.00000          0.00000
+DIAMETR_ZWEIROLLENMAS_V =          0.00000          0.00000
+MESSSTUECKDURCHM_V      =          0.00000          0.00000
+ 
+# ANGABEN ZU PRUEFMASSEN (FERTIGVERZAHNUNG)
+ZAHNDICKENSEHNE         =          3.18265          3.23832
+HOEHE_UEBER_ZAHNSEHNE   =          2.06023          2.15314
+OBERES_ABM_ZAHNSEHNE    =         -0.06500         -0.08500
+UNTERES_ABM_ZAHNSEHNE   =         -0.09500         -0.12500
+BERUEHRKREISDURCHM      =         41.60146         80.27814
+ZAHNWEITE               =         15.86811         27.86716
+MESSZAEHNEZAHL          =               3               5
+OBERES_ZAHNWEITENABM    =         -0.06108         -0.07987
+UNTERES_ZAHNWEITENABM   =         -0.08927         -0.11746
+ZAHNWEITENABMASSFAKTOR  =          0.93969          0.93969
+BERUEHRKREISDM_ZAHNW    =         40.77619         80.14658
+DIAMETR_ZWEIKUGELMASS   =         46.15223         85.45432
+BERUEHRKREISDM_ZWEIK    =         41.00268         80.44143
+DIAMETR_ZWEIROLLENMASS  =         46.15223         85.45432
+MESSSTUECKDURCHM        =          3.50000          3.50000
+OBERES_DIAMETR_ABMASS   =         -0.12993         -0.20190
+UNTERES_DIAMETR_ABMASS  =         -0.19037         -0.29785
+DIAMETR_ABMASSFAKTOR    =          1.99890          2.37525
+OBERES_ACHSABSTANDSABM  =          0.01500
+UNTERES_ACHSABSTANDSABM =         -0.01500
+TOLERANZFELD_JS         =               7
+ 
+# Flankenspiele
+VERDREHFLSPIEL_OB_ZABM  =          0.15250
+NORMALFLSPIEL_OB_ZABM   =          0.14095
+VERDREHFLSPIEL_UNT_ZABM =          0.22367
+NORMALFLSPIEL_UNT_ZABM  =          0.20673
+VERDREHFLSP_AEND_A_AE   =          0.01239
+NORMALFLSP_AEND_A_AE    =          0.01145
+VERDREHFLSP_AEND_A_AI   =         -0.01239
+NORMALFLSP_AEND_A_AI    =         -0.01145
+ 
+# WERKZEUGANGABEN
+BLOCKBEZEICHNUNG_WKZ    = T1                         T2                        
+WKZ_NORMALMODUL         =          2.00000          2.00000
+WKZ_NORMALEINGRWINKEL   =         20.00000         20.00000
+WKZ_KOPFHOEHENFAKTOR    =          1.60000          1.60000
+WKZ_KOPFABRUNDUNGSF     =          0.25000          0.25000
+WKZ_FUSSFORMHOEHENF     =          1.30000          1.30000
+WKZ_FUSSHOEHENF         =          1.30000          1.30000
+SR_ZAEHNEZAHL           =               0               0
+SR_PROFILVERSCHFAKTOR   =          0.00000          0.00000
+SR_KOPFKREISDURCHM      =          0.00000          0.00000
+SR_RADIALBETRAG         =          0.00000          0.00000
+SR_FUSSFORMKREISDM      =          0.00000          0.00000
+PROTUBERANZBETRAG       =          0.00000          0.00000
+PROTUBERANZHOEHENF      =          0.00000          0.00000
+PROTUBERANZWINKEL       =         20.00000         20.00000
+SR_PROTUBERANZHOEHENF   =          0.00000          0.00000
+BEARBEITUNGSZUGABE      =          0.00000          0.00000
+ERZ_PROFILVERSCHFAKTOR  =          0.35535          0.07139
+ 
+$ ENDE

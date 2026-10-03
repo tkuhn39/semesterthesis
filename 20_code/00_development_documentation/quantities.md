@@ -27,7 +27,14 @@ die aktuelle Norm.
 | `tool_tip_radius` | rho_aP0 | rho_a0 | Kopfkanten-Rundungshalbmesser am Werkzeug | DIN3960:1987, §2.1, p. 4 |
 | `tool_tip_radius` | rho_aP0 | r_1 | Rundung am Zahnkopf des Werkzeugs | DIN3972:1952, p. 1, table column r_1 (= r_2) |
 | `machining_allowance` | q | p | Bearbeitungszugabe je Flanke | DIN3972:1952, p. 1 legend; p. 2 |
+| `tool_edge_break_angle` | alpha_kP | alpha_K | Profilwinkel der Kantenbruchflanke | DIN3960:1987, §2.1, p. 4 |
+| `tool_edge_break_angle` | alpha_kP | alpha_KP0 | Kantenbrechflanken-Profilwinkel am Werkzeug-Bezugsprofil | DIN3960:1987, Anhang A, p. 51; Bild A.2, p. 53 |
 | `tip_alteration_coefficient` | k | k* | Kopfhöhenänderungsfaktor | DIN3960:1987, §4.3.6 Eq. (4.3.08), p. 32 |
+| `upper_generating_profile_shift_coefficient` | x_Es | x_Ee | (Erzeugungs-Profilverschiebungsfaktor der Fertigverzahnung am oberen Zahndickenabmaß; index e as in A_se) | DIN3960:1987, §3.6.3 after Eq. (3.6.03), p. 14 |
+| `pre_machining_generating_profile_shift_coefficient` | x_EsV/x_EiV | x_EV/x_EiV | (Profilverschiebungsfaktoren der Vorverzahnung, q > 0) | DIN3960:1987, §3.6.3 after Eq. (3.6.03), p. 14 |
+| `transverse_tip_tooth_thickness` | s_at | s_a | Zahndicke auf dem Kopfzylinder | DIN3960:1987, §2.1, p. 3 |
+| `transverse_tip_tooth_thickness` | s_at | s_ta | Kopfzahndicke in der Stirnebene ohne Kantenbruch | DIN3960:1987, Anhang A, p. 51 |
+| `residual_tip_thickness` | s_aK | s_taK | Rest-Kopfzahndicke in der Stirnebene bei Kantenbruch | DIN3960:1987, Anhang A, p. 51; Eq. (A.3.05), p. 52 |
 
 ### Abweichende Formelzeichen in STplus 11.1F
 
@@ -44,6 +51,8 @@ Der Stern am Zeichen (Modulfaktor) ist keine Abweichung.
 | `sum_of_profile_shift_coefficients` | Sigma x | x_1+x_2 | Summe Profilversch.faktoren |
 | `common_tooth_depth` | h_w | h_gem | gemeinsame Zahnhoehe |
 | `length_of_addendum_path_of_contact` | g_a | g_alfa-a | Kopfeingriffsstrecke |
+| `form_over_dimension` | c_F | c_n | Formuebermass |
+| `tooth_thickness_allowance` | E_sns/E_sni | A_ste | oberes Zahndickenabmass |
 
 Nur andere Schreibweise griechischer Buchstaben: alfa_n = alpha_n, alfa_t = alpha_t, alfa_wt = alpha_wt, eps_alfa = epsilon_alpha, eps_beta = epsilon_beta, eps_gamma = epsilon_gamma.
 
@@ -65,6 +74,7 @@ Nur andere Schreibweise griechischer Buchstaben: alfa_n = alpha_n, alfa_t = alph
 | `tip_relief` | C_a | C_alpha_a | Betrag der Kopfrücknahme | ISO21771:2014, §3.1 symbol list, p. 14 |
 | `root_relief` | C_f | C_alpha_f | Betrag der Fußrücknahme | ISO21771:2014, §3.1 symbol list, p. 14 |
 | `rotation_speed` | n | n_1 | Pinion speed | ISOTR6336-30:2022, Table A.5, p. 45 |
+| `tooth_thickness_allowance` | E_sns/E_sni | A_sne/A_sni | oberes Abmaß der Zahndicke im Normalschnitt / unteres Abmaß der Zahndicke im Normalschnitt | DIN3967:1978, Anhang A symbol list, p. 7 |
 
 ### Gleiches Formelzeichen, andere Benennung in der ersetzten Norm
 
@@ -94,6 +104,7 @@ Nur andere Schreibweise griechischer Buchstaben: alfa_n = alpha_n, alfa_t = alph
 | `basic_rack_fillet_radius` | rho_fP | Zahnfußradius am Bezugsprofil | Zahnfußradius am Stirnrad-Bezugsprofil | DIN3960:1987, §2.1, p. 4 |
 | `basic_rack_root_form_height` | h_FfP | Fuß-Formhöhe des Bezugsprofils | Fuß-Formhöhe des Stirnrad-Bezugsprofils | DIN3960:1987, §2.1, p. 2 |
 | `machining_allowance` | q | Bearbeitungszugabe auf der Zahnflanke | Bearbeitungszugabe auf den Stirnrad-Zahnflanken | DIN3960:1987, §2.1, p. 3 |
+| `tool_root_form_height` | h_FfP0 | (lettering of Bild 36 a), without designation: height of the straight part of the tool flank above the datum line, where an edge break flank starts) | Fuß-Formhöhe des Werkzeug-Bezugsprofils | DIN3960:1987, §2.1, p. 2; Anhang A Eq. (A.3.03), p. 52 |
 | `transverse_working_pressure_angle` | alpha_wt | Betriebseingriffswinkel des Radpaares | Betriebseingriffswinkel | DIN3960:1987, §2.1, p. 4 |
 | `transverse_pitch` | p_t | Stirnteilung | Stirnteilung, Teilkreisteilung | DIN3960:1987, §2.1, p. 3 |
 | `transverse_base_pitch` | p_bt | Teilung auf dem Grundzylinder im Stirnschnitt | Grundkreisteilung | DIN3960:1987, §3.4.5.1, Eq. (3.4.10), p. 10; §2.1, p. 3 lists p_b 'Teilung auf dem Grundzylinder' |
@@ -103,8 +114,10 @@ Nur andere Schreibweise griechischer Buchstaben: alfa_n = alpha_n, alfa_t = alph
 | `common_tooth_depth` | h_w | Gemeinsame Zahnhöhe eines Radpaares | Gemeinsame Zahnhöhe eines Stirnradpaares | DIN3960:1987, §4.2.6 Eq. (4.2.08), p. 31; §2.1, p. 2 |
 | `length_of_addendum_path_of_contact` | g_a | Länge der Kopfeingriffsstrecke | Länge der Austritt-Eingriffsstrecke | DIN3960:1987, Eq. (4.4.13), p. 35 ('Austritt-Eingriffsstrecke gleich Kopfeingriffsstrecke des Rades 1'); §2.1, p. 2 lists g_a under this designation and g_alpha_a 'Länge der Kopfeingriffsstrecke' |
 | `specific_sliding_at_end_points` | zeta_f | Spezifisches Gleiten in den Endpunkten der Eingriffsstrecke | Spezifisches Gleiten im Endpunkt der Eingriffsstrecke | DIN3960:1987, §4.5.3 Eq. (4.5.11), (4.5.12), p. 38; §2.1, p. 4 |
+| `tool_tip_form_height` | h_FaP0 | gerader Teil der Kopfflanke des Werkzeug-Erzeugungsprofils | Kopf-Formhöhe des Werkzeug-Bezugsprofils | DIN3960:1987, §2.1, p. 2; §3.6.6 Eq. (3.6.06), p. 14 |
+| `tooth_depth` | h | Zahnhöhe (zwischen Kopf- und Fußkreis) | Zahnhöhe (zwischen Kopf- und Fußlinie) | DIN3960:1987, §2.1, p. 2 |
 
-Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: `tool_edge_break_angle`: alpha_K (DIN3960:1987) statt alpha_KP; `tool_protuberance_angle`: alfa_pr0 (STplus 11.1F) statt alpha_pr; `tooth_thickness_allowance`: E_sns (ISO21771:2014) statt E_sns/E_sni; `tooth_thickness_allowance`: E_sni (ISO21771:2014) statt E_sns/E_sni; `span_allowance`: A_We (STplus 11.1F) statt A_We/A_Wi; `quality_grade`: A (ISOTR6336-30:2022) statt Q; `min_tip_clearance`: c (ISO21771:2014) statt c_min.
+Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: `tool_protuberance_angle`: alfa_pr0 (STplus 11.1F) statt alpha_pr; `span_allowance`: A_We (STplus 11.1F) statt A_We/A_Wi; `quality_grade`: A (ISOTR6336-30:2022) statt Q; `min_tip_clearance`: c (ISO21771:2014) statt c_min.
 
 ## Aktuelle Norm
 
@@ -163,8 +176,8 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `tool_dedendum` | h_fP0 | mm | Fußhöhe des Werkzeug-Bezugsprofils | ISO21771:2014, §3.1 symbol list, p. 12 | – | Inkrement 0 | verified |
 | `machining_allowance` | q | mm | Bearbeitungszugabe auf der Zahnflanke | ISO21771:2014, §3.1 symbol list, p. 13; §7.1 Bild 36 b), p. 64 | Material allowance for finishing (ISOTR6336-30:2022, Table 2, p. 4; Table A.1, p. 43) | Inkrement 0 | verified |
 | `tool_normal_module` | m_n0 | mm | – | – | – | Inkrement 0 | pending |
-| `tool_root_form_height` | h_FfP0 | mm | – | – | – | Inkrement 0 | pending |
-| `tool_edge_break_angle` | alpha_KP | deg | – | – | – | Inkrement 0 | pending |
+| `tool_root_form_height` | h_FfP0 | mm | (lettering of Bild 36 a), without designation: height of the straight part of the tool flank above the datum line, where an edge break flank starts) | ISO21771:2014, §7.1 Bild 36 a), p. 64 | – | Inkrement 0 | verified |
+| `tool_edge_break_angle` | alpha_kP | deg | (lettering of Bild 36 a), without designation: profile angle of the edge break flank of the tool) | ISO21771:2014, §7.1 Bild 36 a), p. 64 | – | Inkrement 0 | verified |
 | `tool_protuberance` | pr | mm | – | – | – | Inkrement 0 | pending |
 | `tool_protuberance_angle` | alpha_pr | deg | – | – | – | Inkrement 0 | pending |
 | `gear_ratio` | u | - | Zähnezahlverhältnis | ISO21771:2014, §3.1 symbol list, p. 13 | gear ratio (z_2 / z_1) ≥ 1 (ISO6336-1:2019, Table 2, p. 9) | Inkrement 1 | verified |
@@ -199,7 +212,22 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `length_of_addendum_path_of_contact` | g_a | mm | Länge der Kopfeingriffsstrecke | ISO21771:2014, §3.1 symbol list, p. 12; §5.4.5.2 Eq. (79), (80), p. 46 | – | Inkrement 2 | verified |
 | `sliding_factor_at_tip` | K_ga | - | Gleitfaktor am Zahnkopf | ISO21771:2014, §3.1 symbol list, p. 14; §5.6.2 Eq. (113), p. 54 | – | Inkrement 2 | verified |
 | `specific_sliding_at_end_points` | zeta_f | - | Spezifisches Gleiten in den Endpunkten der Eingriffsstrecke | ISO21771:2014, §3.1 symbol list, p. 16; §5.6.3 Eq. (116), (117), p. 54 | – | Inkrement 2 | verified |
-| `tooth_thickness_allowance` | E_sns/E_sni | µm | – | – | – | Inkrement 0 | pending |
+| `tool_tip_form_height` | h_FaP0 | mm | gerader Teil der Kopfflanke des Werkzeug-Erzeugungsprofils | ISO21771:2014, §7.6 Bild 39 legend, p. 69; §7.7 Eq. (135), p. 70 | – | Inkrement 3 | verified |
+| `upper_generating_profile_shift_coefficient` | x_Es | - | (Erzeugungs-Profilverschiebungsfaktor am oberen Zahndickenabmaß; lettered in Bild 38 and Eq. (123), index s of §3.2) | ISO21771:2014, §7.4 Eq. (123) and Bild 38, p. 67; §3.2 index s, p. 17 | – | Inkrement 3 | verified |
+| `lower_generating_profile_shift_coefficient` | x_Ei | - | (Erzeugungs-Profilverschiebungsfaktor am unteren Zahndickenabmaß; lettered in Bild 38 and Eq. (124), index i of §3.2) | ISO21771:2014, §7.4 Eq. (124) and Bild 38, p. 67; §3.2 index i, p. 17 | – | Inkrement 3 | verified |
+| `min_generating_profile_shift_coefficient` | x_Emin | - | Erzeugungs-Profilverschiebungsfaktor bei Unterschnittgrenze | ISO21771:2014, §3.1 symbol list, p. 13; §7.7 Eq. (135), p. 70 | – | Inkrement 3 | verified |
+| `lower_generated_root_diameter` | d_fEi | mm | (erzeugter Fußkreisdurchmesser am unteren Zahndickenabmaß; lettered in Bild 38, index i of §3.2) | ISO21771:2014, §7.4 Bild 38, p. 67; §7.5 Eq. (125), p. 68 | – | Inkrement 3 | verified |
+| `tip_clearance` | c | mm | Kopfspiel | ISO21771:2014, §3.1 symbol list, p. 11; §5.2.7 Eq. (60), p. 41 | – | Inkrement 3 | verified |
+| `form_over_dimension` | c_F | mm | Formübermaß | ISO21771:2014, §3.1 symbol list, p. 11; §5.4.4 Eq. (76), p. 45 | – | Inkrement 3 | verified |
+| `tooth_depth` | h | mm | Zahnhöhe (zwischen Kopf- und Fußkreis) | ISO21771:2014, §3.1 symbol list, p. 12; §4.6.1 Eq. (35), p. 34 | – | Inkrement 3 | verified |
+| `addendum` | h_a | mm | Zahnkopfhöhe | ISO21771:2014, §3.1 symbol list, p. 12; §4.6.2 Eq. (36), p. 34 | – | Inkrement 3 | verified |
+| `dedendum` | h_f | mm | Zahnfußhöhe | ISO21771:2014, §3.1 symbol list, p. 12; §4.6.2 Eq. (37), p. 34 | – | Inkrement 3 | verified |
+| `normal_tooth_thickness_limit` | s_ns/s_ni | mm | Zahndicke auf dem Teilzylinder im Normalschnitt - Höchstmaß / Zahndicke auf dem Teilzylinder im Normalschnitt - Mindestmaß | ISO21771:2014, §3.1 symbol list, p. 13; §7.3 Eq. (118), (119), p. 65 | – | Inkrement 3 | verified |
+| `pre_machining_generating_profile_shift_coefficient` | x_EsV/x_EiV | - | (Erzeugungs-Profilverschiebungsfaktor einer Vorverzahnung mit Bearbeitungszugabe q; lettered in Eq. (120), (121), index V) | ISO21771:2014, §7.4 Eq. (120), (121), p. 67 | – | Inkrement 3 | verified |
+| `transverse_tip_tooth_thickness` | s_at | mm | (Kopfzahndicke im Stirnschnitt: s_yt of Eq. (38) on the tip cylinder, index a of §3.2; §7.9 names the 'Kopfzahndicke' without a symbol) | ISO21771:2014, §7.9, p. 70; §4.7.1 Eq. (38), p. 35; §3.2 index a, p. 17 | – | Inkrement 3 | verified |
+| `normal_tip_tooth_thickness` | s_an | mm | (Kopfzahndicke im Normalschnitt: s_yn of Eq. (48) on the tip cylinder, index a of §3.2) | ISO21771:2014, §7.9, p. 70; §4.7.5 Eq. (48), p. 37; §3.2 index a, p. 17 | – | Inkrement 3 | verified |
+| `residual_tip_thickness` | s_aK | mm | Restzahndicke am Zahnkopf bei Kopfkantenbruch oder Kopfkantenrundung | ISO21771:2014, §3.1 symbol list, p. 13; §6.1.2 and Bild 24, p. 55 | – | Inkrement 3 | verified |
+| `tooth_thickness_allowance` | E_sns/E_sni | µm | oberes Zahndickengrenzabmaß / unteres Zahndickengrenzabmaß | ISO21771:2014, §3.1 symbol list, p. 14; §7.3 Eq. (118), (119), p. 65; §7.4 Eq. (123), (124), p. 67 | – | Inkrement 0 | verified |
 | `span_allowance` | A_We/A_Wi | µm | – | – | – | Inkrement 0 | pending |
 | `quality_grade` | Q | - | – | – | – | Inkrement 0 | pending |
 | `min_tip_clearance` | c_min | mm | – | – | – | Inkrement 0 | pending |
@@ -236,7 +264,7 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `machining_allowance` | q | q | Gesamt-Bearbeitungszugabe | BEARB_ZUGABE_WKZ | BEARBEITUNGSZUGABE |
 | `tool_normal_module` | m_n0 | m_n0 | Wkz-Normalmodul | WKZ_NORMALMODUL | WKZ_NORMALMODUL |
 | `tool_root_form_height` | h_FfP0 | h_FfP0* | Fussform-Hoehenf.(Wkz-Bezugspr.) | FUSSFORMHOEHENFAKTOR | WKZ_FUSSFORMHOEHENF |
-| `tool_edge_break_angle` | alpha_KP | – | – | KANTENBRECHWINKEL | – |
+| `tool_edge_break_angle` | alpha_kP | – | – | KANTENBRECHWINKEL | – |
 | `tool_protuberance` | pr | – | – | PROTUBERANZBETRAG | PROTUBERANZBETRAG |
 | `tool_protuberance_angle` | alpha_pr | alfa_pr0 | Protuberanzwinkel | PROTUBERANZWINKEL | PROTUBERANZWINKEL |
 | `gear_ratio` | u | z2/z1 | Zaehnezahlverhaeltnis | ZAEHNEZAHLVERHAELTNIS | ZAEHNEZAHLVERHAELTNIS |
@@ -260,6 +288,13 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `length_of_addendum_path_of_contact` | g_a | g_alfa-a | Kopfeingriffsstrecke | – | KOPFEINGRSTRECKE |
 | `sliding_factor_at_tip` | K_ga | K_ga | Gleitfaktor am Zahnkopf | – | GLEITFAKTOR_KOPF |
 | `specific_sliding_at_end_points` | zeta_f | zeta_f | Spezifisches Gleiten (Zahnfuss) | – | SPEZ_GLEITEN_FUSS |
+| `tip_clearance` | c | c | Kopfspiel (Istwert) | – | KOPFSPIEL |
+| `form_over_dimension` | c_F | c_n | Formuebermass | – | FORMUEBERMASS |
+| `tooth_depth` | h | h | Zahnhoehe | – | ZAHNHOEHE |
+| `addendum` | h_a | h_a | Kopfhoehe (bezogen auf Teilkreis) | – | KOPFHOEHE |
+| `normal_tip_tooth_thickness` | s_an | s_an | Zahndicke am Kopfkreis fuer A_We | – | ZAHNDICKE_KOPF |
+| `residual_tip_thickness` | s_aK | – | – | – | RESTDICKE |
+| `tooth_thickness_allowance` | E_sns/E_sni | A_ste | oberes Zahndickenabmass | – | OBERES_ZAHNDICKENABM |
 | `span_allowance` | A_We/A_Wi | A_We | – | OBERES_ZAHNW_ABMASS | OBERES_ZAHNWEITENABM |
 | `quality_grade` | Q | – | – | DIN_QUALITAET | – |
 
@@ -323,8 +358,9 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `tool_dedendum` | h_fP0 | h_fP0 | Fußhöhe des Werkzeug-Bezugsprofils | DIN3960:1987, §2.1, p. 2 |
 | `machining_allowance` | q | q | Bearbeitungszugabe auf den Stirnrad-Zahnflanken | DIN3960:1987, §2.1, p. 3 |
 | `machining_allowance` | q | p | Bearbeitungszugabe je Flanke | DIN3972:1952, p. 1 legend; p. 2 |
-| `tool_root_form_height` | h_FfP0 | h_FfP0 | Fuß-Formhöhe des Werkzeug-Bezugsprofils | DIN3960:1987, §2.1, p. 2 |
-| `tool_edge_break_angle` | alpha_KP | alpha_K | Profilwinkel der Kantenbruchflanke | DIN3960:1987, §2.1, p. 4 |
+| `tool_root_form_height` | h_FfP0 | h_FfP0 | Fuß-Formhöhe des Werkzeug-Bezugsprofils | DIN3960:1987, §2.1, p. 2; Anhang A Eq. (A.3.03), p. 52 |
+| `tool_edge_break_angle` | alpha_kP | alpha_K | Profilwinkel der Kantenbruchflanke | DIN3960:1987, §2.1, p. 4 |
+| `tool_edge_break_angle` | alpha_kP | alpha_KP0 | Kantenbrechflanken-Profilwinkel am Werkzeug-Bezugsprofil | DIN3960:1987, Anhang A, p. 51; Bild A.2, p. 53 |
 | `tool_protuberance` | pr | pr | Protuberanzbetrag | DIN3960:1987, §2.1, p. 3 |
 | `tool_protuberance_angle` | alpha_pr | alpha_pr | Protuberanz-Profilwinkel | DIN3960:1987, §2.1, p. 4 |
 | `gear_ratio` | u | u | Zähnezahlverhältnis | DIN3960:1987, §2.1, p. 3 |
@@ -350,6 +386,20 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `length_of_addendum_path_of_contact` | g_a | g_a | Länge der Austritt-Eingriffsstrecke | DIN3960:1987, Eq. (4.4.13), p. 35 ('Austritt-Eingriffsstrecke gleich Kopfeingriffsstrecke des Rades 1'); §2.1, p. 2 lists g_a under this designation and g_alpha_a 'Länge der Kopfeingriffsstrecke' |
 | `sliding_factor_at_tip` | K_ga | K_ga | Gleitfaktor am Zahnkopf | DIN3960:1987, §4.5.2 Eq. (4.5.08), p. 38; §2.1, p. 4 |
 | `specific_sliding_at_end_points` | zeta_f | zeta_f | Spezifisches Gleiten im Endpunkt der Eingriffsstrecke | DIN3960:1987, §4.5.3 Eq. (4.5.11), (4.5.12), p. 38; §2.1, p. 4 |
+| `tool_tip_form_height` | h_FaP0 | h_FaP0 | Kopf-Formhöhe des Werkzeug-Bezugsprofils | DIN3960:1987, §2.1, p. 2; §3.6.6 Eq. (3.6.06), p. 14 |
+| `upper_generating_profile_shift_coefficient` | x_Es | x_Ee | (Erzeugungs-Profilverschiebungsfaktor der Fertigverzahnung am oberen Zahndickenabmaß; index e as in A_se) | DIN3960:1987, §3.6.3 after Eq. (3.6.03), p. 14 |
+| `lower_generating_profile_shift_coefficient` | x_Ei | x_Ei | (Erzeugungs-Profilverschiebungsfaktor der Fertigverzahnung am unteren Zahndickenabmaß) | DIN3960:1987, §3.6.3 after Eq. (3.6.03), p. 14 |
+| `min_generating_profile_shift_coefficient` | x_Emin | x_Emin | Erzeugungs-Profilverschiebungsfaktor bei Unterschnittgrenze | DIN3960:1987, §2.1, p. 3; §3.6.6 Eq. (3.6.06), p. 14 |
+| `tip_clearance` | c | c | Kopfspiel | DIN3960:1987, §2.1, p. 2 |
+| `form_over_dimension` | c_F | c_F | Formübermaß | DIN3960:1987, §2.1, p. 2 |
+| `tooth_depth` | h | h | Zahnhöhe (zwischen Kopf- und Fußlinie) | DIN3960:1987, §2.1, p. 2 |
+| `addendum` | h_a | h_a | Zahnkopfhöhe | DIN3960:1987, §2.1, p. 2 |
+| `dedendum` | h_f | h_f | Zahnfußhöhe | DIN3960:1987, §2.1, p. 2 |
+| `pre_machining_generating_profile_shift_coefficient` | x_EsV/x_EiV | x_EV/x_EiV | (Profilverschiebungsfaktoren der Vorverzahnung, q > 0) | DIN3960:1987, §3.6.3 after Eq. (3.6.03), p. 14 |
+| `transverse_tip_tooth_thickness` | s_at | s_a | Zahndicke auf dem Kopfzylinder | DIN3960:1987, §2.1, p. 3 |
+| `transverse_tip_tooth_thickness` | s_at | s_ta | Kopfzahndicke in der Stirnebene ohne Kantenbruch | DIN3960:1987, Anhang A, p. 51 |
+| `residual_tip_thickness` | s_aK | s_aK | Restzahndicke am Zahnkopf bei Kopfkantenbruch oder Kopfkantenrundung | DIN3960:1987, §2.1, p. 3 |
+| `residual_tip_thickness` | s_aK | s_taK | Rest-Kopfzahndicke in der Stirnebene bei Kantenbruch | DIN3960:1987, Anhang A, p. 51; Eq. (A.3.05), p. 52 |
 
 ## Andere aktuelle Dokumente
 
@@ -384,8 +434,6 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `tool_tip_radius` | rho_aP0 | rho_a0 | tool tip corner rounding | ISO6336-3:2019, Table 2, p. 7 |
 | `tool_tip_radius` | rho_aP0 | rho_a0 | (Wälzfräsergeometrie) | VDI2736-2:2014, Abschnitt 4, p. 21 |
 | `machining_allowance` | q | q | material allowance for finish machining per flank | ISO6336-3:2019, Table 2, p. 4 |
-| `tool_root_form_height` | h_FfP0 | h_FfP0 | (lettering of Bild 36 a), without designation) | ISO21771:2014, §7.1 Bild 36 a), p. 64 |
-| `tool_edge_break_angle` | alpha_KP | alpha_KP | (lettering of Bild 36 a), without designation) | ISO21771:2014, §7.1 Bild 36 a), p. 64 |
 | `tool_protuberance` | pr | pr | As cut basic rack undercut | ISOTR6336-30:2022, Table 2, p. 4 |
 | `gear_ratio` | u | u | Gear ratio | ISOTR6336-30:2022, A.6, p. 45 |
 | `transverse_working_pressure_angle` | alpha_wt | alpha_wt | working transverse pressure angle at the pitch cylinder | ISO6336-1:2019, Table 2, p. 10 |
@@ -405,8 +453,7 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `rotation_speed` | n | n_1 | Pinion speed | ISOTR6336-30:2022, Table A.5, p. 45 |
 | `rotation_speed` | n | n | rotational speed | ISO6336-1:2019, Table 2, p. 8 |
 | `active_tip_diameter` | d_Na | d_Na | Effective tip diameter | ISOTS6336-21:2022, Table 2, p. 2 |
-| `tooth_thickness_allowance` | E_sns/E_sni | E_sns | oberes Zahndickengrenzabmaß | ISO21771:2014, §3.1 symbol list, p. 14 |
-| `tooth_thickness_allowance` | E_sns/E_sni | E_sni | unteres Zahndickengrenzabmaß | ISO21771:2014, §3.1 symbol list, p. 14 |
+| `tooth_thickness_allowance` | E_sns/E_sni | A_sne/A_sni | oberes Abmaß der Zahndicke im Normalschnitt / unteres Abmaß der Zahndicke im Normalschnitt | DIN3967:1978, Anhang A symbol list, p. 7 |
 | `quality_grade` | Q | A | Flank tolerance class | ISOTR6336-30:2022, Table 2, p. 2; Table A.2, p. 43 |
 | `min_tip_clearance` | c_min | c | Kopfspiel | ISO21771:2014, §3.1 symbol list, p. 11; §5.2.7, p. 41 |
 
@@ -437,11 +484,11 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 - `tool_profile_angle` (alpha_P0): None in the contract = profile angle of the gear.
 - `tool_addendum` (h_aP0): The contract holds the module factor h_aP0* (Anhang NB of DIN ISO 21771, p. 6: * marks a module factor). STplus manual Bild 4.174 (p. 185): 'Kopfhöhenfaktor d. Wkz-Bez-profils h_aP0*'.
 - `tool_tip_radius` (rho_aP0): DIN ISO 21771 uses rho_aP0 in its equations but names it nowhere; the designation comes from DIN 867. ISO 6336-3:2019 lists the quantity as rho_a0. ISO/TR 6336-30:2022 uses the symbol in two senses: as this length in the formula of d_Ff (A.6, p. 45) and as the dimensionless 'Pinion cutter tip radius coefficient' (Table 2, p. 5; input of example 6, Table 13, p. 30). The program name translates the German designation. The STplus manual writes ro_aP0* (Bild 4.174, p. 185), the listing rho_aP0*.
-- `tool_dedendum` (h_fP0): STplus manual Bild 4.174 (p. 185): 'Fußhöhenfaktor d. Wkz-Bez.profils h_fP0*'.
+- `tool_dedendum` (h_fP0): STplus manual Bild 4.174 (p. 185): 'Fußhöhenfaktor d. Wkz-Bez.profils h_fP0*'. STplus presets the factor with 1,3, sets a value below the root form height equal to it and limits it where the edge break flanks close the tool space; a tip circle above the root line of the tool is cut to d + 2 (x_E m_n + h_fP0) (ADR-114).
 - `machining_allowance` (q): The program name translates 'Bearbeitungszugabe'; ISO/TR 6336-30 words it differently. STplus has two inputs: BEARBEITUNGSZUGABE ('Bearbeitungzugabe q', geometry data, manual Bild 4.8, p. 20), applied in addition to the allowance contained in the tool (p. 184), and BEARB_ZUGABE_WKZ ('Werkzeuginterne Bearbeitungszugabe', tool data, Bild 4.174, p. 185); the listing prints the total. The contract field of the tool reads BEARB_ZUGABE_WKZ; BEARBEITUNGSZUGABE is reported as unmapped key until the generation (increment 3) implements q. No fixture contains either key, the listed total is 0 in all 15 listings.
 - `tool_normal_module` (m_n0): Symbol as STplus prints it; no symbol of a current norm verified yet. None in the contract = normal module of the gear.
-- `tool_root_form_height` (h_FfP0): Designation of the current norm to be verified with the generation (increment 3).
-- `tool_edge_break_angle` (alpha_KP): STplus manual Bild 4.174 (p. 185): 'Kantenbrechwinkel d. Wkz-Bez.profils alfa_Kn0'. To be verified with the generation (increment 3).
+- `tool_root_form_height` (h_FfP0): DIN ISO 21771 letters the height in Bild 36 a) and names it nowhere; the designation is that of DIN 3960. The edge break flank of the tool starts at this height above the datum line (DIN 3960 Eq. (A.3.03)). STplus manual Bild 4.174 (p. 185): 'Fußformhöhenfaktor d. Wkz-Bez.profils h_FfP0*'. STplus presets the factor with 1,3 where it is missing; its tool has an edge break flank only where h_fP0 > h_FfP0 (manual p. 186), and the program sets a dedendum below this height equal to it (ADR-114).
+- `tool_edge_break_angle` (alpha_kP): Bild 36 a) letters the angle alpha_kP with a lower-case k (rendered at 600 dpi, 2026-09-30); DIN 3960 writes alpha_K in §2.1 and alpha_KP0 in Anhang A. The angle is given in the normal section of the tool; the transverse angle follows like the pressure angle (Eq. (14)). STplus manual Bild 4.174 (p. 185): 'Kantenbrechwinkel d. Wkz-Bez.profils alfa_Kn0'; STplus presets it with alpha_n0 + 10 degrees (manual p. 186).
 - `tool_protuberance` (pr): Extension point (protuberance flank). STplus manual Bild 4.174 (p. 185): 'Protuberanzbetrag pr_n0'.
 - `tool_protuberance_angle` (alpha_pr): Extension point (protuberance flank); symbol of DIN 3960 until a current norm is verified.
 - `gear_ratio` (u): Implemented in increment 2. The input key is documented in the STplus manual (Bild 4.3, p. 15; Bild 4.12, p. 25) and occurs in no fixture.
@@ -475,7 +522,22 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 - `length_of_addendum_path_of_contact` (g_a): Same symbol as in the equations of DIN 3960; only its list §2.1 has a second symbol g_alpha_a, which the STplus listing uses (g_alfa-a). Per gear: g_a1 (Eq. (80)) and g_a2 = g_f1 (Eq. (79)). The program name translates the German designation.
 - `sliding_factor_at_tip` (K_ga): The norm gives K_ga at point E (Eq. (113), with g_a) and K_gf 'Gleitfaktor am Zahnfuß' at point A (Eq. (112), with g_f) for the driving pinion. Per gear the value at the tip of the wheel is the norm's K_gf (g_a2 = g_f1); STplus prints both as K_ga of each gear. The program name translates the German designation.
 - `specific_sliding_at_end_points` (zeta_f): zeta_f1 at point A (Eq. (116)) and zeta_f2 at point E (Eq. (117)): the values at the root of each gear. The program name shortens the designation.
-- `tooth_thickness_allowance` (E_sns/E_sni): Pair of upper and lower allowance; governed by DIN 3967:1978-08 and DIN 21773:2014-08, verified in increment 5.
+- `tool_tip_form_height` (h_FaP0): Height of the straight part of the tool addendum, h_FaP0 = h_aP0 - rho_aP0 (1 - sin alpha_n): the bracket of Eq. (128) in Anhang NB (p. 6). DIN ISO 21771 letters it in Bild 36 a) (p. 64) and names it in the legend of Bild 39 only.
+- `upper_generating_profile_shift_coefficient` (x_Es): x_Es = x + E_sns / (2 m_n tan alpha_n) for a finished gear (q = 0). The generation of a gear is evaluated at this value (maximum material); the lower value is reported alongside. DIN 3960 writes the index e for the upper limit (x_Ee, A_se), DIN ISO 21771 the index s (§3.2, p. 17).
+- `lower_generating_profile_shift_coefficient` (x_Ei): x_Ei = x + E_sni / (2 m_n tan alpha_n) for a finished gear (q = 0).
+- `min_generating_profile_shift_coefficient` (x_Emin): For a rack-type tool without protuberance: x_Emin = h_FaP0 / m_n - z sin^2(alpha_t) / (2 cos beta). A gear generated with x_E < x_Emin is undercut; its root form diameter then follows from the intersection of the fillet with the involute (§7.6, p. 70).
+- `lower_generated_root_diameter` (d_fEi): Eq. (125) with x_Ei. Bild 38 letters d_fEs for the upper allowance, which the program reports as the generated root diameter d_fE.
+- `tip_clearance` (c): Per gear: the clearance of its tip against the generated root of the mating gear, c_1 = a_w - d_a1 / 2 - d_fE2 / 2. STplus also prints c* = c / m_n ('bezogenes Kopfspiel', BEZOGENES_KOPFSPIEL).
+- `form_over_dimension` (c_F): Radial distance between the start of the active profile and the root form circle, c_F = (d_Nf - d_Ff) / 2. STplus prints the symbol c_n for it. The program name translates the German designation.
+- `tooth_depth` (h): Eq. (35) writes the nominal root diameter d_f and an absolute value; the generation evaluates the first form of the equation with the generated root diameter d_fE, as STplus prints it, and raises where the root does not lie below the tip.
+- `addendum` (h_a): First form of Eq. (36) without its absolute value, h_a = (d_a - d) / 2, with the given tip diameter: signed, negative for a tip circle below the reference circle.
+- `dedendum` (h_f): Eq. (37) writes the nominal root diameter d_f and an absolute value; the generation evaluates the first form without the absolute value with the generated root diameter d_fE: signed, negative where x_E m_n exceeds the tool addendum (root circle above the reference circle). STplus prints no dedendum.
+- `normal_tooth_thickness_limit` (s_ns/s_ni): Pair (upper, lower): s_ns = s_n + E_sns, s_ni = s_n + E_sni. Returned by generation.tooth_thickness_limit; no contract field yet.
+- `pre_machining_generating_profile_shift_coefficient` (x_EsV/x_EiV): x_EsV m_n = x_Ei m_n + q_max / sin alpha_n, x_EiV m_n = x_Es m_n + q_min / sin alpha_n. Returned by generation.pre_machining_generating_profile_shift_coefficient with one allowance q; the finished gear of a pre-machining tool is an extension point (GEN-01).
+- `transverse_tip_tooth_thickness` (s_at): Arc thickness on the tip circle, evaluated with the generating profile shift coefficient x_E (§4.7, p. 35: with x_E the equations give the generated values). The program name follows the wording 'Kopfzahndicke' of §7.9.
+- `normal_tip_tooth_thickness` (s_an): s_an = s_at cos(beta_a) with the helix angle on the tip cylinder (Eq. (8)). STplus prints it 'fuer A_We', i.e. with the upper allowance (the generating profile shift coefficient x_E).
+- `residual_tip_thickness` (s_aK): In the transverse section (DIN 3960 Eq. (A.3.05)). With a chamfer generated by the edge break flank of the tool it follows from DIN 3960 A.3.1; with a chamfer given by its radial height h_K it is an input (Bild 24 defines a chamfer by h_K and s_aK). The listing prints it without a symbol ('Restdicke bei Kantenbruch/Kopfruecknahme') and prints the tip tooth thickness where there is no chamfer. For a chamfer given by h_K STplus forms the residual thickness in the normal section (s_an - 2 * 0,7 h_K, at least 0,2 s_an); the .ste importer converts it onto the transverse arc of this field and records it (ADR-114).
+- `tooth_thickness_allowance` (E_sns/E_sni): Pair (upper, lower) of the normal tooth thickness allowance on the reference cylinder (DIN 3967 §1, p. 1: the fit system is defined in the normal section). STplus prints A_ste/A_sti (DIN 3967 Anhang A: 'oberes/unteres Abmaß der Zahndicke im Stirnschnitt', p. 7), the transverse value E_sns / cos beta: helix30_z25_40 prints -0.098 for the pinion where the series value is -0.085 (own comparison 2026-09-30); its lower value stands under UNTERES_ZAHNDICKENABM / A_sti. The values of the series (DIN 3967 Table 1) are verified in increment 5; STplus has no input key for the allowance itself, only ABMASS_TOL_REIHE.
 - `span_allowance` (A_We/A_Wi): Symbols as STplus prints them (DIN 3967 notation); the current symbols are verified in increment 5.
 - `quality_grade` (Q): Verified in increment 5 (DIN ISO 1328-1:2018-03).
 - `min_tip_clearance` (c_min): Input of a tip diameter check (STplus MINDESTKOPFSPIEL). The tip clearance of Eq. (60) needs the generated root diameter of the mating gear; verified with the generation (increment 3).

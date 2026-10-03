@@ -26,7 +26,12 @@ from gearcore.involute import compute_basic_gear_geometry
 from gearcore.io.ste import load_ste, pair_input_from_ste
 from gearcore.models.common import FrozenModel, Pair
 from gearcore.models.inputs import PairInput
-from gearcore.models.results import BasicGearGeometry, PairGeometry
+from gearcore.models.results import (
+    BasicGearGeometry,
+    GearGeneration,
+    GenerationResult,
+    PairGeometry,
+)
 from gearcore.pair import compute_pair_geometry
 from gearcore.quantities import quantity_of_field
 
@@ -99,6 +104,9 @@ class ParityRow(FrozenModel):
     print_tolerance: float
     arithmetic_tolerance: float
     input_tolerance: float
+    solver_tolerance: float = 0.0
+    """Accuracy of a value STplus determines numerically (the form circles of the generation,
+    ``FORM_CIRCLE_ACCURACY_MM``); zero for every closed formula."""
     verdict: ParityVerdict
 
 
@@ -336,7 +344,8 @@ def pair_data(case: str) -> PairData:
 
     How STplus arrives at the nominal x_1 of a file with spans is not reproduced here; it
     belongs to the inspection dimensions (DIN 21773, increment 4)."""
-    pair = pair_input_from_ste(load_ste(stplus_input_path(case))).pair
+    imported = pair_input_from_ste(load_ste(stplus_input_path(case)))
+    pair = imported.pair
     origin: Origin = "interface" if has_stplus(case, "interface") else "listing"
     document = load_stplus(case, "interface" if origin == "interface" else "geometry")
     values: dict[str, float] = {
@@ -362,9 +371,10 @@ def pair_data(case: str) -> PairData:
                 values[f"x_{number}"], printed[f"x_{number}"] = _printed(
                     document, origin, PROFILE_SHIFT_FIELD, index
                 )
-        if gear.tip_diameter_mm is not None:
+        if gear.tip_diameter_mm is not None and not imported.preset_tip_diameters[index]:
             values[f"d_a{number}"] = gear.tip_diameter_mm
         else:
+            # no KOPFKREISDM in the file: STplus presets the tip circle and may shorten it
             values[f"d_a{number}"], printed[f"d_a{number}"] = _printed(
                 document, origin, "tip_diameter_mm", index
             )
@@ -518,7 +528,12 @@ def detection_limits(rows: Iterable[ParityRow]) -> dict[tuple[str, Origin], floa
     for row in rows:
         if row.stplus_value == 0.0:
             continue
-        tolerance = row.print_tolerance + row.arithmetic_tolerance + row.input_tolerance
+        tolerance = (
+            row.print_tolerance
+            + row.arithmetic_tolerance
+            + row.input_tolerance
+            + row.solver_tolerance
+        )
         key = (row.field, row.origin)
         limits[key] = max(limits.get(key, 0.0), tolerance / abs(row.stplus_value))
     return limits
@@ -531,3 +546,306 @@ def rows_repeating_an_input(case: str) -> tuple[ParityRow, ...]:
     decision, not a formula."""
     given = {*pair_data(case).values.values(), 0.0}
     return tuple(row for row in compare_pair_geometry(case) if row.gearcore_value in given)
+
+
+def rows_without_evidence(rows: Iterable[ParityRow]) -> tuple[ParityRow, ...]:
+    """Rows whose tolerance is at least the magnitude of the STplus value: they can never be
+    ``different`` and count as identical or within the accuracy of STplus without saying anything
+    about the formula (a form over-dimension of a few micrometres against the accuracy of the
+    STplus form circles)."""
+    return tuple(
+        row
+        for row in rows
+        if row.print_tolerance
+        + row.arithmetic_tolerance
+        + row.input_tolerance
+        + row.solver_tolerance
+        >= abs(row.stplus_value)
+    )
+
+
+# --- tool-based generation (increment 3) ------------------------------------------------------------
+#
+# The generation is computed from the pair of ``input.ste`` with the tooth thickness allowances
+# STplus printed (it takes them from a DIN 3967 series, increment 5): STplus prints the transverse
+# allowance A_ste = E_sns / cos(beta) (registry note of ``tooth_thickness_allowance``), so the
+# normal allowance of the contract is the printed value times cos(beta). The tip diameters follow
+# ``pair_data``. Tip form and root form diameters are results here, not inputs.
+#
+# Tolerances as for the pair geometry: half a unit of the last printed digit, the error
+# propagation of every number STplus holds (inputs of the file and the tool factors shifted by
+# ``ARITHMETIC_STEPS`` binary32 steps), the rounding of printed inputs. One more part for the
+# form circles: STplus determines the root form diameter (and the tip form diameter of an edge
+# break) as the junction of two curves found numerically, not by a closed formula. Evidence
+# (2026-09-30, ``test_stplus_parity``): the junction is a dedicated vertex of its contour export
+# (d_Ff / 2 equals a vertex radius within 4e-5 mm on all 14 own runs, the vertex is doubled),
+# while its curves agree with gearcore's within 0,6 um. A tangential junction found with a normal
+# tolerance e lies within sqrt(2 e / delta kappa) along the curves, so a tolerance of a tenth of
+# a micrometre moves the junction by micrometres. Measured against Eq. (128) and the exact
+# intersection: up to 6,4 um (diametral) over the 36 gears of the 18 cases. The comparison
+# therefore allows ``FORM_CIRCLE_ACCURACY_MM`` for d_Ff and d_Fa as the accuracy of the STplus
+# value and half of it for c_F and h_K, their radial halves; the measured maxima are pinned.
+# The manual documents the iteration limit behind it (p. 227, control BOGENDIFFERENZ): STplus
+# takes two tooth thickness arcs as equal where they differ by less than m_n / 10 000. At its
+# printed d_Ff of the four undercut pinions the arcs of fillet and involute differ by 1,0 to
+# 4,0 times that limit. Confirmed by experiment (2026-10-03): with the limit tightened to
+# m_n / 20 000 and m_n / 50 000 the d_Ff STplus prints for the undercut pinion of fzg_c moves
+# from 6,4 um to 2,6 um and 0,7 um above gearcore's intersection (probes form_circle_limit_*,
+# GEN-06).
+
+GENERATION_FIELDS: tuple[str, ...] = (
+    "generating_profile_shift_coefficient",
+    "generated_root_diameter_mm",
+    "root_form_diameter_mm",
+    "tip_form_diameter_mm",
+    "tip_chamfer_radial_mm",
+    "residual_tip_thickness_mm",
+    "normal_tip_tooth_thickness_mm",
+    "tooth_depth_mm",
+    "addendum_mm",
+)
+GENERATION_PAIR_FIELDS: tuple[str, ...] = ("tip_clearance_mm", "form_over_dimension_mm")
+ALLOWANCE_KEYS = (("A_ste", "OBERES_ZAHNDICKENABM"), ("A_sti", "UNTERES_ZAHNDICKENABM"))
+"""Listing symbol and interface key of the upper and the lower tooth thickness allowance."""
+FORM_CIRCLE_ACCURACY_MM = 0.007
+"""Accuracy of a form diameter STplus finds as the numerical junction of two curves (measured:
+up to 0,0064 mm, see the module comment above and ``test_stplus_parity``)."""
+NUMERICAL_FORM_CIRCLES: dict[str, float] = {
+    "root_form_diameter_mm": 1.0,
+    "tip_form_diameter_mm": 1.0,
+    "form_over_dimension_mm": 0.5,
+    "tip_chamfer_radial_mm": 0.5,
+}
+"""Fields STplus determines numerically, with the factor of ``FORM_CIRCLE_ACCURACY_MM`` that enters."""
+
+
+class GenerationData(FrozenModel):
+    """The numbers of one comparison of the generation (see ``PairData``).
+
+    ``values`` holds m_n, alpha_n, beta, a_w or x_1/x_2, d_a1, d_a2, the normal allowances E_sns1,
+    E_sni1, E_sns2, E_sni2 in micrometres and the tool factors h_aP0*, rho_aP0*, h_FfP0*,
+    h_fP0*, alpha_kP per gear as the importer completed them like STplus; ``printed`` the
+    rounding of values taken from an STplus output.
+    """
+
+    pair: PairInput
+    values: dict[str, float]
+    printed: dict[str, float]
+
+
+def _allowance(
+    document: dict[str, Any], origin: Origin, gear: int
+) -> tuple[tuple[float, float], tuple[float, float]]:
+    """((E_sns, E_sni) in mm as printed (transverse), (half units))."""
+    values, roundings = [], []
+    for symbol, key in ALLOWANCE_KEYS:
+        entry = document[symbol if origin == "listing" else f"GEOMETRIEDATEN/{key}"]
+        token = _per_gear(entry["tokens" if origin == "listing" else "values"], gear)
+        values.append(float(_per_gear(entry["numbers"], gear)))
+        roundings.append(printed_tolerance(printed_decimals(token)))
+    return (values[0], values[1]), (roundings[0], roundings[1])
+
+
+def generation_data(case: str) -> GenerationData:
+    """The pair as STplus generated it: the file's values where STplus used them, the printed
+    allowances (transverse, converted to the normal allowance of the contract), the printed tip
+    diameters where STplus chose them."""
+    base = pair_data(case)
+    pair = base.pair
+    origin: Origin = "interface" if has_stplus(case, "interface") else "listing"
+    document = load_stplus(case, "interface" if origin == "interface" else "geometry")
+    values = {k: v for k, v in base.values.items() if not k.startswith(("d_Fa", "d_Ff"))}
+    printed = {k: v for k, v in base.printed.items() if not k.startswith(("d_Fa", "d_Ff"))}
+    cos_beta = math.cos(math.radians(pair.helix_angle_deg))
+    for index, gear in enumerate(pair.gears.as_tuple()):
+        number = index + 1
+        (upper, lower), (upper_half, lower_half) = _allowance(document, origin, index)
+        values[f"E_sns{number}"] = 1.0e3 * upper * cos_beta
+        values[f"E_sni{number}"] = 1.0e3 * lower * cos_beta
+        printed[f"E_sns{number}"] = 1.0e3 * upper_half * cos_beta
+        printed[f"E_sni{number}"] = 1.0e3 * lower_half * cos_beta
+        tool = gear.tool
+        values[f"h_aP0*{number}"] = tool.addendum_factor
+        values[f"rho_aP0*{number}"] = tool.tip_radius_factor
+        if tool.root_form_height_factor is not None:
+            values[f"h_FfP0*{number}"] = tool.root_form_height_factor
+        if tool.dedendum_factor is not None:
+            values[f"h_fP0*{number}"] = tool.dedendum_factor
+        if tool.edge_break_angle_deg is not None:
+            values[f"alpha_kP{number}"] = tool.edge_break_angle_deg
+    return GenerationData(pair=pair, values=values, printed=printed)
+
+
+def compute_generation_from_data(data: GenerationData, values: dict[str, float]) -> Any:
+    """``compute_generation`` for one set of numbers (``values`` replaces ``data.values``).
+
+    A shifted lower allowance may exceed the upper one (equal allowances in a listing); the
+    contract orders them, so the lower is clipped to the upper. Only d_fEi depends on it, which
+    is not compared. A tool module or angle equal to the gear's is passed as ``None`` so that a
+    shifted gear module stays "the same as the gear".
+    """
+    from gearcore.generation import compute_generation
+
+    gears = []
+    for index, gear in enumerate(data.pair.gears.as_tuple()):
+        number = index + 1
+        tool_update: dict[str, Any] = {
+            "addendum_factor": values[f"h_aP0*{number}"],
+            "tip_radius_factor": values[f"rho_aP0*{number}"],
+        }
+        if f"h_FfP0*{number}" in values:
+            tool_update["root_form_height_factor"] = values[f"h_FfP0*{number}"]
+        if f"h_fP0*{number}" in values:
+            # a tool without edge break flank keeps its dedendum on the root form height when
+            # the latter is shifted (the corner of the tool, not two independent numbers)
+            dedendum = values[f"h_fP0*{number}"]
+            form = values.get(f"h_FfP0*{number}", dedendum)
+            sharp = gear.tool.dedendum_factor == gear.tool.root_form_height_factor
+            tool_update["dedendum_factor"] = form if sharp else max(dedendum, form)
+        if f"alpha_kP{number}" in values:
+            tool_update["edge_break_angle_deg"] = values[f"alpha_kP{number}"]
+        if gear.tool.normal_module_mm == data.pair.normal_module_mm:
+            tool_update["normal_module_mm"] = None
+        if gear.tool.profile_angle_deg == data.pair.normal_pressure_angle_deg:
+            tool_update["profile_angle_deg"] = None
+        upper, lower = values[f"E_sns{number}"], values[f"E_sni{number}"]
+        gears.append(
+            gear.model_copy(
+                update={
+                    "span": None,
+                    "profile_shift_coefficient": values.get(f"x_{number}"),
+                    "tip_diameter_mm": values[f"d_a{number}"],
+                    "face_width_mm": values[f"b_{number}"],
+                    "tooth_thickness_allowance_um": (upper, min(upper, lower)),
+                    # the residual thickness the importer set belongs to the gear without
+                    # allowance; with the allowances of STplus it is the caller's to state
+                    "residual_tip_thickness_mm": None,
+                    "tool": gear.tool.model_copy(update=tool_update),
+                }
+            )
+        )
+    pair = data.pair.model_copy(
+        update={
+            "normal_module_mm": values["m_n"],
+            "normal_pressure_angle_deg": values["alpha_n"],
+            "helix_angle_deg": values["beta"],
+            "centre_distance_mm": values.get("a_w"),
+            "gears": Pair(pinion=gears[0], wheel=gears[1]),
+        }
+    )
+    return compute_generation(pair)
+
+
+def _generation_value(result: Any, field: str, gear: int) -> float | None:
+    if field in GENERATION_PAIR_FIELDS:
+        return float(getattr(result, field).as_tuple()[gear])
+    value = getattr(result.gears.as_tuple()[gear], field)
+    return None if value is None else float(value)
+
+
+def _stplus_keys(field: str) -> tuple[str | None, str | None]:
+    entry, _ = quantity_of_field(field)
+    names = entry.stplus
+    if names is None:
+        return None, None
+    return names.symbol, names.interface_key
+
+
+def compare_generation(case: str) -> tuple[ParityRow, ...]:
+    """Compare the tool-based generation of a packaged STplus case, value by value.
+
+    The residual tip thickness is compared with RESTDICKE where gearcore reports one (a chamfer
+    generated by the tool); STplus prints the tip tooth thickness there without a chamfer, which
+    ``test_stplus_parity`` checks separately. A chamfer given as an input has its residual
+    thickness from the rule of STplus (0,7 h_K tangential in the normal section), which is no
+    result of the generation; ``tests/test_stplus_reading.py`` checks that rule on its own.
+    """
+    trust = str(load_stplus(case, "meta")["trust"])
+    data = generation_data(case)
+    ours = compute_generation_from_data(data, data.values)
+    by_rounding = [
+        compute_generation_from_data(data, {**data.values, name: data.values[name] + half_unit})
+        for name, half_unit in data.printed.items()
+    ]
+    by_arithmetic = [
+        compute_generation_from_data(
+            data, {**data.values, name: value + ARITHMETIC_STEPS * binary32_step(value)}
+        )
+        for name, value in data.values.items()
+        if value != 0.0
+    ]
+    if "a_w" not in data.values:
+        teeth = sum(gear.number_of_teeth for gear in data.pair.gears.as_tuple())
+        tangent = math.tan(math.radians(ours.pair_geometry.transverse_working_pressure_angle_deg))
+        involute = ARITHMETIC_STEPS * binary32_step(tangent)
+        shift = teeth * involute / (2.0 * math.tan(math.radians(data.values["alpha_n"])))
+        by_arithmetic.append(
+            compute_generation_from_data(data, {**data.values, "x_1": data.values["x_1"] + shift})
+        )
+    outputs: list[tuple[Origin, dict[str, Any], str]] = [
+        ("listing", load_stplus(case, "geometry"), "tokens")
+    ]
+    if has_stplus(case, "interface"):
+        outputs.append(("interface", load_stplus(case, "interface"), "values"))
+
+    rows: list[ParityRow] = []
+    for field in (*GENERATION_FIELDS, *GENERATION_PAIR_FIELDS):
+        symbol, key = _stplus_keys(field)
+        model = GenerationResult if field in GENERATION_PAIR_FIELDS else GearGeneration
+        field_symbol, field_unit = _symbol_and_unit(model, field)
+        for gear in range(2):
+            generated = ours.gears.as_tuple()[gear]
+            if (
+                field in ("tip_chamfer_radial_mm", "tip_form_diameter_mm")
+                and generated.tool_edge_break_angle_deg is None
+            ):
+                continue  # an input, or Eq. (127) of an input chamfer (an echo of d_a and h_K)
+            if field == "residual_tip_thickness_mm" and (
+                generated.residual_tip_thickness_mm is None
+                or generated.tool_edge_break_angle_deg is None
+            ):
+                continue  # no chamfer, or the shape of a given chamfer (STplus default)
+            value = _generation_value(ours, field, gear)
+            if value is None:
+                continue
+            rounding = sum(
+                abs((_generation_value(o, field, gear) or 0.0) - value) for o in by_rounding
+            )
+            propagated = sum(
+                abs((_generation_value(o, field, gear) or 0.0) - value) for o in by_arithmetic
+            )
+            solver = NUMERICAL_FORM_CIRCLES.get(field, 0.0) * FORM_CIRCLE_ACCURACY_MM
+            for origin, document, tokens in outputs:
+                name = symbol if origin == "listing" else key
+                if name is None:
+                    continue
+                entry = document.get(name if origin == "listing" else f"GEOMETRIEDATEN/{name}")
+                if entry is None:
+                    continue
+                reference = _per_gear(entry["numbers"], gear)
+                token = _per_gear(entry[tokens], gear)
+                print_tol = printed_tolerance(printed_decimals(token))
+                arithmetic_tol = propagated + ARITHMETIC_STEPS * binary32_step(reference)
+                rows.append(
+                    ParityRow(
+                        case=case,
+                        trust=trust,
+                        origin=origin,
+                        field=field,
+                        symbol=field_symbol,
+                        unit=field_unit,
+                        gear=ROLES[gear],
+                        gearcore_value=value,
+                        stplus_value=reference,
+                        stplus_token=token,
+                        difference=value - reference,
+                        print_tolerance=print_tol,
+                        arithmetic_tolerance=arithmetic_tol,
+                        input_tolerance=rounding,
+                        solver_tolerance=solver,
+                        verdict=_verdict(
+                            value - reference, print_tol, arithmetic_tol + rounding + solver
+                        ),
+                    )
+                )
+    return tuple(rows)

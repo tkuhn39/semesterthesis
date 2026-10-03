@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from gearcore import involute, pair, rack
+from gearcore import contour, generation, involute, pair, rack, trochoid
 from gearcore.data import (
     has_stplus,
     load_stplus,
@@ -30,7 +30,12 @@ from gearcore.models import results as results_module
 from gearcore.models.common import FrozenModel, Pair
 from gearcore.models.inputs import GearInput, PairInput, SpanMeasurement, ToolProfile
 from gearcore.models.profiles import BasicRackProfile
-from gearcore.models.results import BasicGearGeometry, PairGeometry
+from gearcore.models.results import (
+    BasicGearGeometry,
+    GearGeneration,
+    GenerationResult,
+    PairGeometry,
+)
 from gearcore.parity import COMPARED_FIELDS, PROFILE_SHIFT_FIELD, stplus_names
 from gearcore.quantities import (
     GREEK,
@@ -57,9 +62,18 @@ CONTRACTS: tuple[type[FrozenModel], ...] = (
     PairInput,
     BasicGearGeometry,
     BasicRackProfile,
+    GearGeneration,
+    GenerationResult,
 )
-RESULTS: tuple[type[FrozenModel], ...] = (BasicGearGeometry, BasicRackProfile, PairGeometry)
-"""Contracts of implemented computations: every quantity must be verified."""
+RESULTS: tuple[type[FrozenModel], ...] = (
+    BasicGearGeometry,
+    BasicRackProfile,
+    PairGeometry,
+    GearGeneration,
+    GenerationResult,
+)
+"""Contracts of implemented computations: every quantity must be verified. ``ToothContour``
+holds coordinates, which are no quantities; its landmark diameters use the registry."""
 
 OLDER_NOTATION = {"DIN3972:1952"}
 """Valid norms that print an older notation; their symbols stand under ``replaced``."""
@@ -79,11 +93,68 @@ NOT_A_QUANTITY = {
     ("din3972_machining_allowance_mm", "profile"): "reference profile I to IV of DIN 3972",
     ("din3972_tool", "profile"): "reference profile I to IV of DIN 3972",
     ("validate_basic_rack", "rack"): "a contract",
+    ("has_edge_break_flank", "tool"): "a contract",
     ("check_basic_rack", "rack"): "a contract",
     ("tool_from_basic_rack", "rack"): "a contract",
     ("compute_pair_geometry", "pair"): "a contract",
     ("resolve_profile_shift", "pair"): "a contract",
     ("with_nominal_tip_diameters", "pair"): "a contract",
+    ("compute_generation", "pair"): "a contract",
+    # DIN 3960 Anhang A names the edge break involute with symbols the current norm lacks
+    ("edge_break_base_diameter", "alpha_tK_rad"): "transverse angle of the edge break flank",
+    ("edge_break_transverse_tooth_thickness", "alpha_tK_rad"): "transverse edge break angle",
+    ("edge_break_base_half_angle", "s_tK_mm"): "tooth thickness of the edge break involute",
+    ("edge_break_base_half_angle", "alpha_tK_rad"): "transverse edge break angle",
+    ("tip_form_diameter_from_edge_break", "d_bK_mm"): "base diameter of the edge break involute",
+    (
+        "tip_form_diameter_from_edge_break",
+        "psi_bK_rad",
+    ): "base half angle of the edge break involute",
+    ("tip_form_diameter_from_edge_break", "psi_b_rad"): "base half angle (symbol psi_b, registry)",
+    ("residual_tip_thickness", "d_bK_mm"): "base diameter of the edge break involute",
+    ("residual_tip_thickness", "psi_bK_rad"): "base half angle of the edge break involute",
+    ("tip_tooth_thickness", "psi_rad"): "tooth thickness half angle (symbol psi, registry)",
+    # rolling: coordinates, parameters and geometry objects
+    ("tip_rounding", "rho_aP0_mm"): "symbol of the registry (tool tip radius)",
+    ("pitch_point_position", "xi_mm"): "rack coordinate",
+    ("pitch_point_position", "eta_mm"): "rack coordinate",
+    ("pitch_point_position", "tangent_xi"): "tangent component",
+    ("pitch_point_position", "tangent_eta"): "tangent component",
+    ("generated_point", "xi_mm"): "rack coordinate",
+    ("generated_point", "eta_mm"): "rack coordinate",
+    ("generated_point", "c_mm"): "position of the pitch point on the rack",
+    ("generated_point", "r_mm"): "reference radius (DIN 3960 r; d / 2)",
+    ("fillet_point", "rounding"): "the tool tip rounding",
+    ("fillet_point", "theta_rad"): "parameter of the ellipse",
+    ("fillet_curve", "rounding"): "the tool tip rounding",
+    ("fillet_curve", "theta_end_rad"): "parameter of the ellipse",
+    ("fillet_curve", "n"): "number of points",
+    ("involute_half_angle", "radius_mm"): "a radius",
+    ("involute_half_angle", "psi_b_rad"): "base half angle (symbol psi_b, registry)",
+    ("root_form_diameter_by_intersection", "rounding"): "the tool tip rounding",
+    ("root_form_diameter_by_intersection", "psi_b_rad"): "base half angle (symbol psi_b, registry)",
+    ("root_form_diameter_by_intersection", "undercut_expected"): "a flag of the caller",
+    ("distances", "contour"): "a contract",
+    ("distances", "reference"): "reference points",
+    # contour sampling and measurement
+    ("involute_flank", "psi_b_rad"): "base half angle (symbol psi_b, registry)",
+    ("involute_flank", "d_start_mm"): "a diameter",
+    ("involute_flank", "d_end_mm"): "a diameter",
+    ("involute_flank", "n"): "number of points",
+    ("chamfer_flank", "r_Fa_mm"): "tip form radius",
+    ("chamfer_flank", "psi_Fa_rad"): "half angle at the tip form circle",
+    ("chamfer_flank", "r_a_mm"): "tip radius",
+    ("chamfer_flank", "n"): "number of points",
+    ("tooth_contour", "pair"): "a contract",
+    ("tooth_contour", "generation"): "a contract",
+    ("tooth_contour", "role"): "pinion or wheel",
+    ("tooth_contour", "points"): "number of points",
+    ("gear_polygon", "contour"): "a contract",
+    ("gear_polygon", "arc_points"): "number of points",
+    ("compare", "contour"): "a contract",
+    ("compare", "reference"): "reference points",
+    ("stplus_contour", "case"): "a fixture case",
+    ("stplus_contour", "gear"): "gear number",
 }
 ARGUMENT_SUFFIXES = ("_mm", "_rad", "_deg", "_um")
 
@@ -103,7 +174,7 @@ def _is_numeric(annotation: Any) -> bool:
 def test_registry_is_well_formed() -> None:
     sources = load_sources()
     registry = quantities()
-    assert len(registry) == 93
+    assert len(registry) == 108
     symbols: dict[str, str] = {}
     for name, entry in registry.items():
         current = [entry.source] if entry.source else []
@@ -128,7 +199,7 @@ def test_registry_is_well_formed() -> None:
             )
             symbols[entry.symbol] = name
         assert entry.unit in UNIT_SUFFIX
-        assert 0 <= entry.since <= 2, f"{name}: increment {entry.since} has not started"
+        assert 0 <= entry.since <= 3, f"{name}: increment {entry.since} has not started"
     for symbol, names in HOMONYMS.items():
         assert {name for name, entry in registry.items() if entry.symbol == symbol} == names
 
@@ -140,12 +211,9 @@ def test_verified_and_pending_quantities() -> None:
         "min_tip_clearance",
         "quality_grade",
         "span_allowance",
-        "tool_edge_break_angle",
         "tool_normal_module",
         "tool_protuberance",
         "tool_protuberance_angle",
-        "tool_root_form_height",
-        "tooth_thickness_allowance",
     ]
     for name in pending:
         entry = registry[name]
@@ -253,7 +321,9 @@ def _names_a_quantity(argument: str) -> bool:
     return False
 
 
-@pytest.mark.parametrize("module", [involute, rack, pair], ids=lambda m: m.__name__)
+@pytest.mark.parametrize(
+    "module", [involute, rack, pair, generation, trochoid, contour], ids=lambda m: m.__name__
+)
 def test_arguments_are_named_by_symbol_or_registry_name(module: Any) -> None:
     checked = 0
     for function_name, function in _public_functions(module):
@@ -265,7 +335,8 @@ def test_arguments_are_named_by_symbol_or_registry_name(module: Any) -> None:
                 "of the registry"
             )
             checked += 1
-    assert checked >= 10
+    # rolling and contour work with coordinates and parameters; the norm modules with quantities
+    assert checked >= (2 if module in (trochoid, contour) else 10), module.__name__
     assert not _names_a_quantity("teeth") and not _names_a_quantity("pressure_angle_deg")
 
 
@@ -342,7 +413,11 @@ def test_review_symbols_that_changed_since_din_3960() -> None:
         "centre_distance": ["a"],
         "tip_alteration_coefficient": ["k*"],
         "tool_tip_radius": ["rho_a0"],
-        "tool_edge_break_angle": ["alpha_K"],
+        "tool_edge_break_angle": ["alpha_K", "alpha_KP0"],
+        "transverse_tip_tooth_thickness": ["s_a", "s_ta"],
+        "residual_tip_thickness": ["s_taK"],
+        "upper_generating_profile_shift_coefficient": ["x_Ee"],
+        "pre_machining_generating_profile_shift_coefficient": ["x_EV/x_EiV"],
     }
     for name in (
         "transverse_tooth_thickness",
@@ -456,6 +531,13 @@ def test_symbol_differences_list_exactly_what_changed() -> None:
         ("centre_distance", "a", "DIN3960:1987"),
         ("tool_tip_radius", "rho_a0", "DIN3960:1987"),
         ("tip_alteration_coefficient", "k*", "DIN3960:1987"),
+        ("tool_edge_break_angle", "alpha_K", "DIN3960:1987"),
+        ("tool_edge_break_angle", "alpha_KP0", "DIN3960:1987"),
+        ("transverse_tip_tooth_thickness", "s_a", "DIN3960:1987"),
+        ("transverse_tip_tooth_thickness", "s_ta", "DIN3960:1987"),
+        ("residual_tip_thickness", "s_taK", "DIN3960:1987"),
+        ("upper_generating_profile_shift_coefficient", "x_Ee", "DIN3960:1987"),
+        ("pre_machining_generating_profile_shift_coefficient", "x_EV/x_EiV", "DIN3960:1987"),
         ("pitch", "t_0", "DIN3972:1952"),
         ("basic_rack_dedendum", "h_fr", "DIN3972:1952"),
         ("tool_profile_angle", "alpha_0", "DIN3972:1952"),
@@ -474,6 +556,8 @@ def test_symbol_differences_list_exactly_what_changed() -> None:
         "sum_of_profile_shift_coefficients": "x_1+x_2",
         "common_tooth_depth": "h_gem",
         "length_of_addendum_path_of_contact": "g_alfa-a",
+        "form_over_dimension": "c_n",
+        "tooth_thickness_allowance": "A_ste",
     }
     spelled = {d.other for d in verified if d.kind == "stplus" and d.spelling_only}
     assert spelled == {"alfa_n", "alfa_t", "alfa_wt", "eps_alfa", "eps_beta", "eps_gamma"}
@@ -483,7 +567,8 @@ def test_symbol_differences_list_exactly_what_changed() -> None:
     assert [(d.quantity, d.kind) for d in starred] == [("tip_alteration_coefficient", "replaced")]
     assert not [d for d in verified if d.quantity == "involute_function"]
     pending = {d.quantity for d in symbol_differences() if d.status == "pending"}
-    assert "tool_edge_break_angle" in pending
+    assert "tool_edge_break_angle" not in pending, "verified in increment 3 (alpha_kP, Bild 36 a))"
+    assert "tool_protuberance_angle" in pending
 
 
 def test_stplus_spelling_of_greek_letters() -> None:
