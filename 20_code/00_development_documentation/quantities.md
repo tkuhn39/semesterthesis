@@ -35,6 +35,16 @@ die aktuelle Norm.
 | `transverse_tip_tooth_thickness` | s_at | s_a | Zahndicke auf dem Kopfzylinder | DIN3960:1987, §2.1, p. 3 |
 | `transverse_tip_tooth_thickness` | s_at | s_ta | Kopfzahndicke in der Stirnebene ohne Kantenbruch | DIN3960:1987, Anhang A, p. 51 |
 | `residual_tip_thickness` | s_aK | s_taK | Rest-Kopfzahndicke in der Stirnebene bei Kantenbruch | DIN3960:1987, Anhang A, p. 51; Eq. (A.3.05), p. 52 |
+| `profile_angle_at_v_circle` | alpha_vt | alpha_v | Profilwinkel am V-Zylinder | DIN3960:1987, §2.1, p. 4 |
+| `normal_base_tooth_thickness` | s_bn | s_b | Grundzahndicke (auf dem Grundzylinder) | DIN3960:1987, §2.1, p. 3 |
+| `chordal_tooth_thickness` | s_c | s-bar | Zahndickensehne | DIN3960:1987, §2.1, p. 3 |
+| `height_above_chord` | h_c | h-bar_a | Höhe über der Sehne s-bar_n | DIN3960:1987, §2.1, p. 3 |
+| `constant_chord` | s_cc | s-bar_c | Konstante Sehne | DIN3960:1987, §2.1, p. 3 |
+| `height_above_constant_chord` | h_cc | h-bar_c | Höhe über der konstanten Sehne s-bar_c | DIN3960:1987, §2.1, p. 3 |
+| `radial_single_roller_dimension` | M_rZ | M_rR | Radiales Einrollenmaß | DIN3960:1987, §2.1, p. 4 |
+| `diametral_two_roller_dimension` | M_dZ | M_dR | Diametrales Zweirollenmaß | DIN3960:1987, §2.1, p. 4 |
+| `tooth_thickness_tolerance` | T_sn | T_s | Zahndickentoleranz | DIN3960:1987, §2.1, p. 4 |
+| `span_allowance` | E_Ws/E_Wi | A_W | Zahnweitenabmaß | DIN3960:1987, §2.1, p. 3 |
 
 ### Abweichende Formelzeichen in STplus 11.1F
 
@@ -52,7 +62,13 @@ Der Stern am Zeichen (Modulfaktor) ist keine Abweichung.
 | `common_tooth_depth` | h_w | h_gem | gemeinsame Zahnhoehe |
 | `length_of_addendum_path_of_contact` | g_a | g_alfa-a | Kopfeingriffsstrecke |
 | `form_over_dimension` | c_F | c_n | Formuebermass |
+| `chordal_tooth_thickness_at_y` | s_cy | s_n- | Zahndickensehne (Nennmass) |
+| `height_above_chord_at_y` | h_cy | h_a- | Hoehe ueber der Zahndickensehne |
+| `diametral_two_roller_dimension` | M_dZ | M_dR | Diam. Zweirollenmass (Nennmass) |
+| `span_allowance_factor` | E_W* | A_W/A_Sn | Zahnweitenabmassfaktor |
+| `diametral_ball_dimension_allowance_factor` | E_MdK* | A_Md/A_sn | Abmassfaktor |
 | `tooth_thickness_allowance` | E_sns/E_sni | A_ste | oberes Zahndickenabmass |
+| `span_allowance` | E_Ws/E_Wi | A_We | oberes Zahnweitenabmass |
 
 Nur andere Schreibweise griechischer Buchstaben: alfa_n = alpha_n, alfa_t = alpha_t, alfa_wt = alpha_wt, eps_alfa = epsilon_alpha, eps_beta = epsilon_beta, eps_gamma = epsilon_gamma.
 
@@ -74,6 +90,7 @@ Nur andere Schreibweise griechischer Buchstaben: alfa_n = alpha_n, alfa_t = alph
 | `tip_relief` | C_a | C_alpha_a | Betrag der Kopfrücknahme | ISO21771:2014, §3.1 symbol list, p. 14 |
 | `root_relief` | C_f | C_alpha_f | Betrag der Fußrücknahme | ISO21771:2014, §3.1 symbol list, p. 14 |
 | `rotation_speed` | n | n_1 | Pinion speed | ISOTR6336-30:2022, Table A.5, p. 45 |
+| `radial_single_roller_dimension` | M_rZ | M_rR | Radiales Einrollenmaß | DIN3977:1981, Abschnitt 3, p. 1 |
 | `tooth_thickness_allowance` | E_sns/E_sni | A_sne/A_sni | oberes Abmaß der Zahndicke im Normalschnitt / unteres Abmaß der Zahndicke im Normalschnitt | DIN3967:1978, Anhang A symbol list, p. 7 |
 
 ### Gleiches Formelzeichen, andere Benennung in der ersetzten Norm
@@ -116,8 +133,15 @@ Nur andere Schreibweise griechischer Buchstaben: alfa_n = alpha_n, alfa_t = alph
 | `specific_sliding_at_end_points` | zeta_f | Spezifisches Gleiten in den Endpunkten der Eingriffsstrecke | Spezifisches Gleiten im Endpunkt der Eingriffsstrecke | DIN3960:1987, §4.5.3 Eq. (4.5.11), (4.5.12), p. 38; §2.1, p. 4 |
 | `tool_tip_form_height` | h_FaP0 | gerader Teil der Kopfflanke des Werkzeug-Erzeugungsprofils | Kopf-Formhöhe des Werkzeug-Bezugsprofils | DIN3960:1987, §2.1, p. 2; §3.6.6 Eq. (3.6.06), p. 14 |
 | `tooth_depth` | h | Zahnhöhe (zwischen Kopf- und Fußkreis) | Zahnhöhe (zwischen Kopf- und Fußlinie) | DIN3960:1987, §2.1, p. 2 |
+| `contact_line_overlap` | b_M | Berührgeraden-Überdeckung | Berührgeraden-Überdeckung (bei Zahnweitenmessungen) | DIN3960:1987, §2.1, p. 2 |
+| `span_measuring_circle_diameter` | d_M | Messkreisdurchmesser | Meßkreisdurchmesser (an Berührstelle mit Meßgerät) | DIN3960:1987, §2.1, p. 2 |
+| `measuring_ball_diameter` | D_M | Messkugeldurchmesser | Meßkugel- oder Meßrollendurchmesser | DIN3960:1987, §2.1, p. 3 |
+| `ball_centre_profile_angle` | alpha_Kt | Profilwinkel am Kreis durch den Mittelpunkt der Messkugel | Profilwinkel im Stirnschnitt am Kugelmittelpunkt-Kreis | DIN3960:1987, §2.1, p. 4 |
+| `ball_centre_circle_diameter` | d_K | Kreisdurchmesser der Messkugelmittelpunkte | Durchmesser des Kugelmittelpunkt-Kreises | DIN3960:1987, §2.1, p. 2 |
+| `measuring_circle_profile_angle` | alpha_Mt | Profilwinkel am Kreis mit dem Durchmesser d_M | Profilwinkel im Stirnschnitt am Meßkreis | DIN3960:1987, §2.1, p. 4 |
+| `overcut_tip_diameter` | d_aM | Durchmesser des überschnittenen Kopfzylinders | Kopfkreisdurchmesser bei überschnittenen Stirnrädern | DIN3960:1987, §2.1, p. 2 |
 
-Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: `tool_protuberance_angle`: alfa_pr0 (STplus 11.1F) statt alpha_pr; `span_allowance`: A_We (STplus 11.1F) statt A_We/A_Wi; `quality_grade`: A (ISOTR6336-30:2022) statt Q; `min_tip_clearance`: c (ISO21771:2014) statt c_min.
+Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: `tool_protuberance_angle`: alfa_pr0 (STplus 11.1F) statt alpha_pr; `quality_grade`: A (ISOTR6336-30:2022) statt Q; `min_tip_clearance`: c (ISO21771:2014) statt c_min.
 
 ## Aktuelle Norm
 
@@ -227,8 +251,42 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `transverse_tip_tooth_thickness` | s_at | mm | (Kopfzahndicke im Stirnschnitt: s_yt of Eq. (38) on the tip cylinder, index a of §3.2; §7.9 names the 'Kopfzahndicke' without a symbol) | ISO21771:2014, §7.9, p. 70; §4.7.1 Eq. (38), p. 35; §3.2 index a, p. 17 | – | Inkrement 3 | verified |
 | `normal_tip_tooth_thickness` | s_an | mm | (Kopfzahndicke im Normalschnitt: s_yn of Eq. (48) on the tip cylinder, index a of §3.2) | ISO21771:2014, §7.9, p. 70; §4.7.5 Eq. (48), p. 37; §3.2 index a, p. 17 | – | Inkrement 3 | verified |
 | `residual_tip_thickness` | s_aK | mm | Restzahndicke am Zahnkopf bei Kopfkantenbruch oder Kopfkantenrundung | ISO21771:2014, §3.1 symbol list, p. 13; §6.1.2 and Bild 24, p. 55 | – | Inkrement 3 | verified |
+| `v_circle_diameter` | d_v | mm | V-Kreis-Durchmesser | DIN21773:2014, §3.1 symbol list, p. 5 | V-circle diameter (DIN3977:1981, English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1) | Inkrement 4 | verified |
+| `profile_angle_at_v_circle` | alpha_vt | deg | Eingriffswinkel am V-Kreis | DIN21773:2014, §3.1 symbol list, p. 7 (alpha_v); Eq. (9), p. 12 (alpha_vt) | – | Inkrement 4 | verified |
+| `normal_base_pitch` | p_bn | mm | Normal-Grundkreisteilung | DIN21773:2014, §3.1 symbol list, p. 6 | – | Inkrement 4 | verified |
+| `normal_base_tooth_thickness` | s_bn | mm | Normalzahndicke am Grundzylinder | DIN21773:2014, §3.1 symbol list, p. 6 | – | Inkrement 4 | verified |
+| `chordal_tooth_thickness` | s_c | mm | Zahndickensehne | DIN21773:2014, §3.1 symbol list, p. 6; §5 Eq. (3), (4), p. 9 | – | Inkrement 4 | verified |
+| `height_above_chord` | h_c | mm | Höhe über der Zahndickensehne | DIN21773:2014, §3.1 symbol list, p. 6; §5 Eq. (6), p. 10 | – | Inkrement 4 | verified |
+| `chordal_tooth_thickness_at_y` | s_cy | mm | Zahndickensehne am Y-Zylinder | DIN21773:2014, §3.1 symbol list, p. 6; §5 Eq. (1), (2), p. 9 | – | Inkrement 4 | verified |
+| `height_above_chord_at_y` | h_cy | mm | Höhe über der Zahndickensehne am Y-Zylinder | DIN21773:2014, §3.1 symbol list, p. 6; §5 Eq. (5), p. 10 | – | Inkrement 4 | verified |
+| `constant_chord` | s_cc | mm | Konstante Sehne | DIN21773:2014, §3.1 symbol list, p. 6; §6 Eq. (7), p. 11 | – | Inkrement 4 | verified |
+| `height_above_constant_chord` | h_cc | mm | Höhe über der konstanten Sehne | DIN21773:2014, §3.1 symbol list, p. 6; §6 Eq. (8), p. 11 | – | Inkrement 4 | verified |
+| `min_number_of_teeth_spanned` | k_min | - | (kleinste Messzähnezahl des nutzbaren Zahlenbereichs, durch den Fußformkreis begrenzt) | DIN21773:2014, §7.2 Eq. (12), p. 12 | – | Inkrement 4 | verified |
+| `max_number_of_teeth_spanned` | k_max | - | (größte Messzähnezahl des nutzbaren Zahlenbereichs, durch den Kopfformkreis begrenzt) | DIN21773:2014, §7.2 Eq. (13), p. 12 | – | Inkrement 4 | verified |
+| `contact_line_overlap` | b_M | mm | Berührgeraden-Überdeckung | DIN21773:2014, §3.1 symbol list, p. 5; §7.2 Eq. (16), p. 13 | – | Inkrement 4 | verified |
+| `min_usable_face_width` | b_Fmin | mm | Mindestwert der nutzbaren Zahnbreite | DIN21773:2014, §3.1 symbol list, p. 5; §7.2 Eq. (15), p. 13 | – | Inkrement 4 | verified |
+| `span_measuring_circle_diameter` | d_M | mm | Messkreisdurchmesser | DIN21773:2014, §3.1 symbol list, p. 6; §7.2 Eq. (17), p. 14 | – | Inkrement 4 | verified |
+| `measuring_ball_diameter` | D_M | mm | Messkugeldurchmesser | DIN21773:2014, §3.1 symbol list, p. 6; §8, p. 18 | diameter of measuring ball or measuring roller (measuring element diameter) (DIN3977:1981, English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1) | Inkrement 4 | verified |
+| `ideal_measuring_ball_diameter` | D_M | mm | (Messkugeldurchmesser, bei dem die Berührpunkte auf dem V-Zylinder liegen) | DIN21773:2014, §8 Eq. (26), (27), p. 18 | – | Inkrement 4 | verified |
+| `ball_centre_profile_angle` | alpha_Kt | deg | Profilwinkel am Kreis durch den Mittelpunkt der Messkugel | DIN21773:2014, §3.1 symbol list, p. 7 (alpha_K); §8 Eq. (27), (30), p. 18, 20 (alpha_Kt) | transverse pressure angle on circle through centres of measuring balls (DIN3977:1981, English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1) | Inkrement 4 | verified |
+| `ball_centre_circle_diameter` | d_K | mm | Kreisdurchmesser der Messkugelmittelpunkte | DIN21773:2014, §3.1 symbol list, p. 6; §8 Eq. (31), p. 20 | diameter of circle through centres of measuring balls (DIN3977:1981, English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1) | Inkrement 4 | verified |
+| `measuring_circle_profile_angle` | alpha_Mt | deg | Profilwinkel am Kreis mit dem Durchmesser d_M | DIN21773:2014, §3.1 symbol list, p. 7 (alpha_M); §8 Eq. (33), (34), p. 20 (alpha_Mt) | pressure angle on measuring circle (DIN3977:1981, English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1) | Inkrement 4 | verified |
+| `ball_measuring_circle_diameter` | d_M | mm | Messkreisdurchmesser | DIN21773:2014, §3.1 symbol list, p. 6; §8 Eq. (33), p. 20 | measuring circle diameter (at point of contact of tooth flanks with measuring ball or measuring roller) (DIN3977:1981, English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1) | Inkrement 4 | verified |
+| `measuring_circle_offset` | – | mm | (radialer Abstand zwischen Meßkreis und V-Zylinder) | DIN3977:1981, Abschnitt 6, p. 2 | – | Inkrement 4 | verified |
+| `radial_single_ball_dimension` | M_rK | mm | Radiales Einkugelmaß | DIN21773:2014, §3.1 symbol list, p. 7; §8 Eq. (32), p. 20 | radial single-ball dimension (DIN3977:1981, English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1) | Inkrement 4 | verified |
+| `radial_single_roller_dimension` | M_rZ | mm | Radiales Einrollenmaß | DIN21773:2014, §3.1 symbol list, p. 7; §9, p. 20 | – | Inkrement 4 | verified |
+| `diametral_two_ball_dimension` | M_dK | mm | Diametrales Zweikugelmaß | DIN21773:2014, §3.1 symbol list, p. 6; §10 Eq. (35), (36), p. 21 | – | Inkrement 4 | verified |
+| `diametral_two_roller_dimension` | M_dZ | mm | Diametrales Zweirollenmaß | DIN21773:2014, §3.1 symbol list, p. 6; §11, p. 22 | – | Inkrement 4 | verified |
+| `overcut_tip_diameter` | d_aM | mm | Durchmesser des überschnittenen Kopfzylinders | DIN21773:2014, §3.1 symbol list, p. 5; §13 Eq. (40), p. 23 | – | Inkrement 4 | verified |
+| `tooth_thickness_tolerance` | T_sn | µm | Zahndickentoleranz | DIN21773:2014, §14.1, p. 24 ('halben Zahndickentoleranz (1/2 T_sn)'); §14.2 Eq. (45), p. 24 | – | Inkrement 4 | verified |
+| `mean_tooth_thickness_allowance` | E_snm | µm | mittleres Zahndickenabmaß | DIN21773:2014, §14.1 Eq. (43), p. 24 | – | Inkrement 4 | verified |
+| `mean_generating_profile_shift_coefficient` | x_Em | - | mittlerer Erzeugungs-Profilverschiebungsfaktor | DIN21773:2014, §14.1 Eq. (44), p. 24 | – | Inkrement 4 | verified |
+| `span_allowance_factor` | E_W* | - | Abmaßfaktor der Zahnweite | DIN21773:2014, §14.4 Eq. (54), p. 25 | – | Inkrement 4 | verified |
+| `chordal_tooth_thickness_allowance_factor` | E_scny* | - | (Abmaßfaktor der Zahndickensehne am Durchmesser d_y) | DIN21773:2014, §14.3 Eq. (48), (51), p. 25 | – | Inkrement 4 | verified |
+| `radial_ball_dimension_allowance_factor` | E_MrK* | - | Abmaßfaktor des radialen Einkugel- oder Einrollenmaßes | DIN21773:2014, §14.5 Eq. (57), p. 25 | – | Inkrement 4 | verified |
+| `diametral_ball_dimension_allowance_factor` | E_MdK* | - | Abmaßfaktor des diametralen Zweikugel- bzw. Zweirollenmaßes | DIN21773:2014, §14.6 Eq. (60), (61), p. 26 | – | Inkrement 4 | verified |
 | `tooth_thickness_allowance` | E_sns/E_sni | µm | oberes Zahndickengrenzabmaß / unteres Zahndickengrenzabmaß | ISO21771:2014, §3.1 symbol list, p. 14; §7.3 Eq. (118), (119), p. 65; §7.4 Eq. (123), (124), p. 67 | – | Inkrement 0 | verified |
-| `span_allowance` | A_We/A_Wi | µm | – | – | – | Inkrement 0 | pending |
+| `span_allowance` | E_Ws/E_Wi | µm | (oberes Abmaß der Zahnweite / unteres Abmaß der Zahnweite; E_W in §14.1, indices s and i of §3.2) | DIN21773:2014, §14.1, p. 23; §3.2, p. 8; §14.4 Eq. (54) to (56), p. 25 | – | Inkrement 0 | verified |
 | `quality_grade` | Q | - | – | – | – | Inkrement 0 | pending |
 | `min_tip_clearance` | c_min | mm | – | – | – | Inkrement 0 | pending |
 
@@ -294,8 +352,17 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `addendum` | h_a | h_a | Kopfhoehe (bezogen auf Teilkreis) | – | KOPFHOEHE |
 | `normal_tip_tooth_thickness` | s_an | s_an | Zahndicke am Kopfkreis fuer A_We | – | ZAHNDICKE_KOPF |
 | `residual_tip_thickness` | s_aK | – | – | – | RESTDICKE |
+| `chordal_tooth_thickness_at_y` | s_cy | s_n- | Zahndickensehne (Nennmass) | – | ZAHNDICKENSEHNE |
+| `height_above_chord_at_y` | h_cy | h_a- | Hoehe ueber der Zahndickensehne | – | HOEHE_UEBER_ZAHNSEHNE |
+| `span_measuring_circle_diameter` | d_M | – | – | – | BERUEHRKREISDM_ZAHNW |
+| `measuring_ball_diameter` | D_M | D_M | Messtueckdurchmesser | MESSTUECKDM_D_M | MESSSTUECKDURCHM |
+| `ball_measuring_circle_diameter` | d_M | – | – | – | BERUEHRKREISDM_ZWEIK |
+| `diametral_two_ball_dimension` | M_dK | M_dK | Diam. Zweikugelmass (Nennmass) | DIAMETRALES_MASS | DIAMETR_ZWEIKUGELMASS |
+| `diametral_two_roller_dimension` | M_dZ | M_dR | Diam. Zweirollenmass (Nennmass) | – | – |
+| `span_allowance_factor` | E_W* | A_W/A_Sn | Zahnweitenabmassfaktor | – | ZAHNWEITENABMASSFAKTOR |
+| `diametral_ball_dimension_allowance_factor` | E_MdK* | A_Md/A_sn | Abmassfaktor | – | DIAMETR_ABMASSFAKTOR |
 | `tooth_thickness_allowance` | E_sns/E_sni | A_ste | oberes Zahndickenabmass | – | OBERES_ZAHNDICKENABM |
-| `span_allowance` | A_We/A_Wi | A_We | – | OBERES_ZAHNW_ABMASS | OBERES_ZAHNWEITENABM |
+| `span_allowance` | E_Ws/E_Wi | A_We | oberes Zahnweitenabmass | OBERES_ZAHNW_ABMASS | OBERES_ZAHNWEITENABM |
 | `quality_grade` | Q | – | – | DIN_QUALITAET | – |
 
 ## Ersetzte und ältere Normen
@@ -400,6 +467,27 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `transverse_tip_tooth_thickness` | s_at | s_ta | Kopfzahndicke in der Stirnebene ohne Kantenbruch | DIN3960:1987, Anhang A, p. 51 |
 | `residual_tip_thickness` | s_aK | s_aK | Restzahndicke am Zahnkopf bei Kopfkantenbruch oder Kopfkantenrundung | DIN3960:1987, §2.1, p. 3 |
 | `residual_tip_thickness` | s_aK | s_taK | Rest-Kopfzahndicke in der Stirnebene bei Kantenbruch | DIN3960:1987, Anhang A, p. 51; Eq. (A.3.05), p. 52 |
+| `v_circle_diameter` | d_v | d_v | V-Kreis-Durchmesser | DIN3960:1987, §2.1, p. 2 |
+| `profile_angle_at_v_circle` | alpha_vt | alpha_v | Profilwinkel am V-Zylinder | DIN3960:1987, §2.1, p. 4 |
+| `normal_base_tooth_thickness` | s_bn | s_b | Grundzahndicke (auf dem Grundzylinder) | DIN3960:1987, §2.1, p. 3 |
+| `chordal_tooth_thickness` | s_c | s-bar | Zahndickensehne | DIN3960:1987, §2.1, p. 3 |
+| `height_above_chord` | h_c | h-bar_a | Höhe über der Sehne s-bar_n | DIN3960:1987, §2.1, p. 3 |
+| `constant_chord` | s_cc | s-bar_c | Konstante Sehne | DIN3960:1987, §2.1, p. 3 |
+| `height_above_constant_chord` | h_cc | h-bar_c | Höhe über der konstanten Sehne s-bar_c | DIN3960:1987, §2.1, p. 3 |
+| `contact_line_overlap` | b_M | b_M | Berührgeraden-Überdeckung (bei Zahnweitenmessungen) | DIN3960:1987, §2.1, p. 2 |
+| `span_measuring_circle_diameter` | d_M | d_M | Meßkreisdurchmesser (an Berührstelle mit Meßgerät) | DIN3960:1987, §2.1, p. 2 |
+| `measuring_ball_diameter` | D_M | D_M | Meßkugel- oder Meßrollendurchmesser | DIN3960:1987, §2.1, p. 3 |
+| `ball_centre_profile_angle` | alpha_Kt | alpha_Kt | Profilwinkel im Stirnschnitt am Kugelmittelpunkt-Kreis | DIN3960:1987, §2.1, p. 4 |
+| `ball_centre_circle_diameter` | d_K | d_K | Durchmesser des Kugelmittelpunkt-Kreises | DIN3960:1987, §2.1, p. 2 |
+| `measuring_circle_profile_angle` | alpha_Mt | alpha_Mt | Profilwinkel im Stirnschnitt am Meßkreis | DIN3960:1987, §2.1, p. 4 |
+| `radial_single_ball_dimension` | M_rK | M_rK | Radiales Einkugelmaß | DIN3960:1987, §2.1, p. 4 |
+| `radial_single_roller_dimension` | M_rZ | M_rR | Radiales Einrollenmaß | DIN3960:1987, §2.1, p. 4 |
+| `diametral_two_ball_dimension` | M_dK | M_dK | Diametrales Zweikugelmaß | DIN3960:1987, §2.1, p. 4 |
+| `diametral_two_roller_dimension` | M_dZ | M_dR | Diametrales Zweirollenmaß | DIN3960:1987, §2.1, p. 4 |
+| `overcut_tip_diameter` | d_aM | d_aM | Kopfkreisdurchmesser bei überschnittenen Stirnrädern | DIN3960:1987, §2.1, p. 2 |
+| `tooth_thickness_tolerance` | T_sn | T_s | Zahndickentoleranz | DIN3960:1987, §2.1, p. 4 |
+| `mean_generating_profile_shift_coefficient` | x_Em | x_Em | Mittlerer Erzeugungs-Profilverschiebungsfaktor | DIN3960:1987, §2.1, p. 3 |
+| `span_allowance` | E_Ws/E_Wi | A_W | Zahnweitenabmaß | DIN3960:1987, §2.1, p. 3 |
 
 ## Andere aktuelle Dokumente
 
@@ -453,6 +541,11 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `rotation_speed` | n | n_1 | Pinion speed | ISOTR6336-30:2022, Table A.5, p. 45 |
 | `rotation_speed` | n | n | rotational speed | ISO6336-1:2019, Table 2, p. 8 |
 | `active_tip_diameter` | d_Na | d_Na | Effective tip diameter | ISOTS6336-21:2022, Table 2, p. 2 |
+| `v_circle_diameter` | d_v | d_v | V-Kreis-Durchmesser | ISO21771:2014, §4.5.1 Eq. (32), p. 33 |
+| `normal_base_pitch` | p_bn | p_bn | Normalgrundkreisteilung | ISO21771:2014, §4.4.5 Eq. (29), p. 33 |
+| `measuring_ball_diameter` | D_M | D_M | Meßkugel- oder Meßrollendurchmesser (Meßstückdurchmesser) | DIN3977:1981, Abschnitt 3, p. 1; Tabelle 1, p. 1 |
+| `radial_single_roller_dimension` | M_rZ | M_rR | Radiales Einrollenmaß | DIN3977:1981, Abschnitt 3, p. 1 |
+| `tooth_thickness_tolerance` | T_sn | T_sn | Zahndickentoleranz im Normalschnitt | DIN3967:1978, Anhang A.1.1, p. 7 |
 | `tooth_thickness_allowance` | E_sns/E_sni | A_sne/A_sni | oberes Abmaß der Zahndicke im Normalschnitt / unteres Abmaß der Zahndicke im Normalschnitt | DIN3967:1978, Anhang A symbol list, p. 7 |
 | `quality_grade` | Q | A | Flank tolerance class | ISOTR6336-30:2022, Table 2, p. 2; Table A.2, p. 43 |
 | `min_tip_clearance` | c_min | c | Kopfspiel | ISO21771:2014, §3.1 symbol list, p. 11; §5.2.7, p. 41 |
@@ -464,7 +557,7 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 - `profile_shift_coefficient` (x): ISO/TR 6336-30:2022 names the same quantity differently in Table 2 and in Table A.1. Table A.1 prints x_1 in parentheses; clause 4.2.18 (p. 9): 'Values in the input table (e.g. nominal profile shift coefficient x) are put in parenthesis when they are calculated and for reference only.' x_2 = 0 and the centre distance are given, x_1 follows from them (ADR-107).
 - `contact_face_width` (b_w): ISO/TR 6336-30:2022 lists b_eff in Table 2 and prints b in Table A.1. Used from increment 2 on.
 - `tip_chamfer_radial` (h_K): The program name keeps 'radial' of the German designation; ISO/TR 6336-30 says 'Tip chamfer' only.
-- `span_measurement` (W_k): Inspection dimensions are governed by DIN 21773:2014-08 (increment 4); the entry is reviewed there.
+- `span_measurement` (W_k): Governed by DIN 21773:2014-08 §7 (symbol list p. 7: 'Zahnweite'; Eq. (14), p. 13). A contract field of this quantity holds nominal dimension and limits (§4, p. 8): the equation gives the nominal span with x and the upper limit, the mean and the lower limit with x_Es, x_Em and x_Ei.
 - `number_of_teeth_spanned` (k): STplus has a second key MESSZAEHNEZAHL_K for the span used as a check dimension.
 - `hand_of_helix` (–): No symbol. gearcore carries the hand in the sign of beta; it enters with the pair geometry (increment 2).
 - `base_helix_angle` (beta_b): The listing prints the magnitude, the interface file the sign of each gear.
@@ -537,7 +630,32 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 - `transverse_tip_tooth_thickness` (s_at): Arc thickness on the tip circle, evaluated with the generating profile shift coefficient x_E (§4.7, p. 35: with x_E the equations give the generated values). The program name follows the wording 'Kopfzahndicke' of §7.9.
 - `normal_tip_tooth_thickness` (s_an): s_an = s_at cos(beta_a) with the helix angle on the tip cylinder (Eq. (8)). STplus prints it 'fuer A_We', i.e. with the upper allowance (the generating profile shift coefficient x_E).
 - `residual_tip_thickness` (s_aK): In the transverse section (DIN 3960 Eq. (A.3.05)). With a chamfer generated by the edge break flank of the tool it follows from DIN 3960 A.3.1; with a chamfer given by its radial height h_K it is an input (Bild 24 defines a chamfer by h_K and s_aK). The listing prints it without a symbol ('Restdicke bei Kantenbruch/Kopfruecknahme') and prints the tip tooth thickness where there is no chamfer. For a chamfer given by h_K STplus forms the residual thickness in the normal section (s_an - 2 * 0,7 h_K, at least 0,2 s_an); the .ste importer converts it onto the transverse arc of this field and records it (ADR-114).
+- `v_circle_diameter` (d_v): d_v = d + 2 x m_n (DIN ISO 21771 Eq. (32)). The measuring planes and the measuring balls are to touch next to the V-cylinder (DIN 21773 §7.2, §8). With x_E in place of x it is the V-circle of the generated gear (DIN 3977 Bild 1).
+- `profile_angle_at_v_circle` (alpha_vt): The symbol list prints alpha_v, Eq. (9), (26) and (27) the transverse angle alpha_vt: cos(alpha_vt) = d_b / d_v. Argument of functions only.
+- `normal_base_pitch` (p_bn): p_bn = p_n cos(alpha_n) (DIN ISO 21771 Eq. (29)); third form of DIN 21773 Eq. (14): W_k = (k - 1) p_bn + s_bn.
+- `normal_base_tooth_thickness` (s_bn): s_bn = d_b psi_b cos(beta_b) (DIN ISO 21771 Eq. (38), (48) on the base cylinder).
+- `chordal_tooth_thickness` (s_c): Normal chordal tooth thickness on the reference cylinder. DIN 3960 prints s with a bar above it, written 's-bar' here. A contract field of this quantity holds nominal dimension and limits (DIN 21773 §4).
+- `height_above_chord` (h_c): Measured from the tip circle (Eq. (6)); 'Sehnenkopfhöhe' (Anmerkung, p. 10).
+- `chordal_tooth_thickness_at_y` (s_cy): STplus prints the chord on the cylinder (d_Ff + d_Fa) / 2, the middle of the form circles (its 'Beruehrkreisdurchm. (oberes Abmass)'; 76 gears of the stored listings within 0,0005 mm); DIN 21773 §5 names d_a - 2 m_n as a diameter often used.
+- `min_number_of_teeth_spanned` (k_min): First form of Eq. (12); the second form (with s_bn and p_bn) is smaller by 0,5 inside INT as printed.
+- `max_number_of_teeth_spanned` (k_max): First form of Eq. (13); the second form (with s_bn and p_bn) is smaller by 0,5 inside INT as printed.
+- `contact_line_overlap` (b_M): DIN 21773 gives b_M = 1,2 + 0,018 W_k and derives the smallest usable face width from it; DIN 3960 Eq. (3.8.23) computed b_M from the face width.
+- `min_usable_face_width` (b_Fmin): For the span measurement of a helical gear. STplus prints a message 'Mindestbreite zum Zahnweitenmessen' where the face width is too small.
+- `span_measuring_circle_diameter` (d_M): Circle on which the measuring planes of the span touch the flanks. Eq. (17) is printed for a spur gear; for a helical gear d_M = sqrt(d_b^2 + (W_k cos beta_b)^2) (DIN 3960 Eq. (3.8.15), p. 21). STplus prints it at the upper allowance ('Beruehrkreisdurchm. (Zahnweitenmessg.)').
+- `measuring_ball_diameter` (D_M): The diameter that is used: every dimension is computed with the actual diameter of the chosen ball (DIN 21773 p. 20). Nominal diameters: DIN 3977 Tabelle 1. The module factor D_M* is the 'Messkugeldurchmesserfaktor' of Eq. (28).
+- `ideal_measuring_ball_diameter` (D_M): Not a ball that exists: the diameter Eq. (26) gives; the ball that is used is selected from DIN 3977 Tabelle 1 after it.
+- `ball_centre_profile_angle` (alpha_Kt): The symbol list prints alpha_K, the equations the transverse angle alpha_Kt.
+- `ball_measuring_circle_diameter` (d_M): Cylinder on which the contact points of the measuring ball with the two flanks lie. STplus prints it at the upper allowance ('Beruehrkreisdurchmesser (Kugel/Flanke)').
+- `measuring_circle_offset` (–): 0,5 (d_M - d_v); DIN 3977 admits +0,5 m_n to -0,1 m_n for an external gear. Carried as a module factor.
+- `radial_single_roller_dimension` (M_rZ): Index Z (Messzylinder) in DIN 21773, R (Meßrolle) in DIN 3960 and DIN 3977. Equal to the radial single-ball dimension (§9).
+- `diametral_two_ball_dimension` (M_dK): A contract field of this quantity holds nominal dimension and limits (DIN 21773 §4). STplus reads DIAMETRALES_MASS with MESSTUECKDM_KUGEL as the dimension of the finished gear.
+- `diametral_two_roller_dimension` (M_dZ): Index Z in DIN 21773, R in DIN 3960 and in STplus; Eq. (37) of DIN 21773 itself prints M_dR. On a helical gear with an odd number of teeth it is twice the radial single-roller dimension.
+- `overcut_tip_diameter` (d_aM): d_aM = d + 2 x_Es m_n + 2 h_fP0: the tip circle a tool with a root line generates (the cut of ADR-114).
+- `tooth_thickness_tolerance` (T_sn): T_sn = E_sns - E_sni.
+- `span_allowance_factor` (E_W*): E_W* = cos(alpha_n). The star belongs to the symbol (Abmaßfaktor E*, §3.1, p. 6); it is no module factor.
+- `chordal_tooth_thickness_allowance_factor` (E_scny*): 1 on the reference cylinder (Eq. (48)), which the norm sets 'bei Zähnezahlen über z = 12 im Allgemeinen' (p. 25). STplus prints the tooth thickness allowance itself as the allowance of its chord ('oberes Abmass der Z.dickensehne').
+- `diametral_ball_dimension_allowance_factor` (E_MdK*): The norm's factor is the derivative at alpha_Kt. STplus prints the ratio of its upper diametral allowance to the upper tooth thickness allowance, A_Mde / A_sne (85 stored listings), which differs from the derivative where the allowance is large. The factor belongs to the two-ball dimension; rollers on a helical gear with an odd number of teeth lie opposite each other (§11) and have twice E_MrK*.
 - `tooth_thickness_allowance` (E_sns/E_sni): Pair (upper, lower) of the normal tooth thickness allowance on the reference cylinder (DIN 3967 §1, p. 1: the fit system is defined in the normal section). STplus prints A_ste/A_sti (DIN 3967 Anhang A: 'oberes/unteres Abmaß der Zahndicke im Stirnschnitt', p. 7), the transverse value E_sns / cos beta: helix30_z25_40 prints -0.098 for the pinion where the series value is -0.085 (own comparison 2026-09-30); its lower value stands under UNTERES_ZAHNDICKENABM / A_sti. The values of the series (DIN 3967 Table 1) are verified in increment 5; STplus has no input key for the allowance itself, only ABMASS_TOL_REIHE.
-- `span_allowance` (A_We/A_Wi): Symbols as STplus prints them (DIN 3967 notation); the current symbols are verified in increment 5.
+- `span_allowance` (E_Ws/E_Wi): Pair (upper, lower). E_W = E_sn cos(alpha_n) (Eq. (54)); the generation converts a span allowance into the tooth thickness allowance. STplus writes A_We / A_Wi (index e for the upper, i for the lower allowance, as DIN 3967 writes A_sne / A_sni).
 - `quality_grade` (Q): Verified in increment 5 (DIN ISO 1328-1:2018-03).
 - `min_tip_clearance` (c_min): Input of a tip diameter check (STplus MINDESTKOPFSPIEL). The tip clearance of Eq. (60) needs the generated root diameter of the mating gear; verified with the generation (increment 3).

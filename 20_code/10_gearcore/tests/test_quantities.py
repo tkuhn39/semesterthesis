@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from gearcore import contour, generation, involute, pair, rack, trochoid
+from gearcore import contour, generation, inspection, involute, pair, rack, trochoid
 from gearcore.data import (
     has_stplus,
     load_stplus,
@@ -27,13 +27,21 @@ from gearcore.io import ste
 from gearcore.models import inputs as inputs_module
 from gearcore.models import profiles as profiles_module
 from gearcore.models import results as results_module
-from gearcore.models.common import FrozenModel, Pair
-from gearcore.models.inputs import GearInput, PairInput, SpanMeasurement, ToolProfile
+from gearcore.models.common import DimensionLimits, FrozenModel, Pair
+from gearcore.models.inputs import (
+    BallMeasurement,
+    GearInput,
+    PairInput,
+    SpanMeasurement,
+    ToolProfile,
+)
 from gearcore.models.profiles import BasicRackProfile
 from gearcore.models.results import (
     BasicGearGeometry,
     GearGeneration,
+    GearInspection,
     GenerationResult,
+    InspectionResult,
     PairGeometry,
 )
 from gearcore.parity import COMPARED_FIELDS, PROFILE_SHIFT_FIELD, stplus_names
@@ -58,12 +66,14 @@ NOTEBOOKS = REPO / "40_jupyter-notebooks"
 CONTRACTS: tuple[type[FrozenModel], ...] = (
     ToolProfile,
     SpanMeasurement,
+    BallMeasurement,
     GearInput,
     PairInput,
     BasicGearGeometry,
     BasicRackProfile,
     GearGeneration,
     GenerationResult,
+    GearInspection,
 )
 RESULTS: tuple[type[FrozenModel], ...] = (
     BasicGearGeometry,
@@ -71,6 +81,8 @@ RESULTS: tuple[type[FrozenModel], ...] = (
     PairGeometry,
     GearGeneration,
     GenerationResult,
+    GearInspection,
+    InspectionResult,
 )
 """Contracts of implemented computations: every quantity must be verified. ``ToothContour``
 holds coordinates, which are no quantities; its landmark diameters use the registry."""
@@ -79,8 +91,14 @@ OLDER_NOTATION = {"DIN3972:1952"}
 """Valid norms that print an older notation; their symbols stand under ``replaced``."""
 
 STPLUS_REFERENCE_CASE = "helix30_z25_40"
-HOMONYMS = {"k": {"number_of_teeth_spanned", "tip_alteration_coefficient"}}
-"""One letter for two quantities in the symbol list of DIN ISO 21771:2014-08 (§3.1, p. 12)."""
+HOMONYMS = {
+    "k": {"number_of_teeth_spanned", "tip_alteration_coefficient"},
+    "d_M": {"span_measuring_circle_diameter", "ball_measuring_circle_diameter"},
+    "D_M": {"measuring_ball_diameter", "ideal_measuring_ball_diameter"},
+}
+"""One symbol for two quantities: k in the symbol list of DIN ISO 21771:2014-08 (§3.1, p. 12);
+d_M in DIN 21773:2014-08 for the measuring circle of the span (§7.2) and of the ball (§8); D_M
+for the ball that is used and for the diameter Eq. (26) gives."""
 MANUAL_INPUT_KEYS = {"ZAEHNEZAHLVERHAELTNIS", "PR.VERSCH.SUMME"}
 """Input keys of the STplus manual (Bild 4.12, p. 25) that the importer does not map."""
 
@@ -98,6 +116,7 @@ NOT_A_QUANTITY = {
     ("tool_from_basic_rack", "rack"): "a contract",
     ("compute_pair_geometry", "pair"): "a contract",
     ("resolve_profile_shift", "pair"): "a contract",
+    ("resolve_tooth_thickness", "pair"): "a contract",
     ("with_nominal_tip_diameters", "pair"): "a contract",
     ("compute_generation", "pair"): "a contract",
     # DIN 3960 Anhang A names the edge break involute with symbols the current norm lacks
@@ -155,12 +174,24 @@ NOT_A_QUANTITY = {
     ("compare", "reference"): "reference points",
     ("stplus_contour", "case"): "a fixture case",
     ("stplus_contour", "gear"): "gear number",
+    # inspection dimensions
+    ("compute_inspection", "generation"): "a contract",
+    ("compute_inspection", "chord_diameter_mm"): "cylinders d_y of the chord, one per gear",
+    ("upper_limit_dimension", "mean_mm"): "mean of any inspection dimension",
+    ("lower_limit_dimension", "mean_mm"): "mean of any inspection dimension",
+    ("upper_limit_dimension", "allowance_factor"): "allowance factor of any inspection dimension",
+    ("lower_limit_dimension", "allowance_factor"): "allowance factor of any inspection dimension",
+    ("tooth_thickness_tolerance", "E_sns_um"): "upper allowance (registry: E_sns/E_sni)",
+    ("tooth_thickness_tolerance", "E_sni_um"): "lower allowance (registry: E_sns/E_sni)",
+    ("mean_tooth_thickness_allowance", "E_sns_um"): "upper allowance (registry: E_sns/E_sni)",
+    ("overcut_tip_diameter", "x_Es"): "symbol of the registry (upper generating coefficient)",
+    ("number_of_teeth_spanned", "d_v_mm"): "symbol of the registry (V-circle diameter)",
 }
 ARGUMENT_SUFFIXES = ("_mm", "_rad", "_deg", "_um")
 
 
 def _is_numeric(annotation: Any) -> bool:
-    if annotation in (int, float):
+    if annotation in (int, float, DimensionLimits):  # (nominal dimension and limits: numbers)
         return True
     generic = getattr(annotation, "__pydantic_generic_metadata__", None)
     if generic and generic["origin"] is Pair:  # Pair[float]: one number per gear
@@ -174,7 +205,7 @@ def _is_numeric(annotation: Any) -> bool:
 def test_registry_is_well_formed() -> None:
     sources = load_sources()
     registry = quantities()
-    assert len(registry) == 108
+    assert len(registry) == 142
     symbols: dict[str, str] = {}
     for name, entry in registry.items():
         current = [entry.source] if entry.source else []
@@ -199,7 +230,7 @@ def test_registry_is_well_formed() -> None:
             )
             symbols[entry.symbol] = name
         assert entry.unit in UNIT_SUFFIX
-        assert 0 <= entry.since <= 3, f"{name}: increment {entry.since} has not started"
+        assert 0 <= entry.since <= 4, f"{name}: increment {entry.since} has not started"
     for symbol, names in HOMONYMS.items():
         assert {name for name, entry in registry.items() if entry.symbol == symbol} == names
 
@@ -210,7 +241,6 @@ def test_verified_and_pending_quantities() -> None:
     assert pending == [
         "min_tip_clearance",
         "quality_grade",
-        "span_allowance",
         "tool_normal_module",
         "tool_protuberance",
         "tool_protuberance_angle",
@@ -322,7 +352,9 @@ def _names_a_quantity(argument: str) -> bool:
 
 
 @pytest.mark.parametrize(
-    "module", [involute, rack, pair, generation, trochoid, contour], ids=lambda m: m.__name__
+    "module",
+    [involute, rack, pair, generation, trochoid, contour, inspection],
+    ids=lambda m: m.__name__,
 )
 def test_arguments_are_named_by_symbol_or_registry_name(module: Any) -> None:
     checked = 0
@@ -418,6 +450,18 @@ def test_review_symbols_that_changed_since_din_3960() -> None:
         "residual_tip_thickness": ["s_taK"],
         "upper_generating_profile_shift_coefficient": ["x_Ee"],
         "pre_machining_generating_profile_shift_coefficient": ["x_EV/x_EiV"],
+        # inspection dimensions (increment 4): DIN 3960 sets a bar above s and h for chords
+        # ('s-bar'), writes R for rollers where DIN 21773 writes Z, and A for allowances
+        "profile_angle_at_v_circle": ["alpha_v"],
+        "normal_base_tooth_thickness": ["s_b"],
+        "chordal_tooth_thickness": ["s-bar"],
+        "height_above_chord": ["h-bar_a"],
+        "constant_chord": ["s-bar_c"],
+        "height_above_constant_chord": ["h-bar_c"],
+        "radial_single_roller_dimension": ["M_rR"],
+        "diametral_two_roller_dimension": ["M_dR"],
+        "tooth_thickness_tolerance": ["T_s"],
+        "span_allowance": ["A_W"],
     }
     for name in (
         "transverse_tooth_thickness",
@@ -538,6 +582,16 @@ def test_symbol_differences_list_exactly_what_changed() -> None:
         ("residual_tip_thickness", "s_taK", "DIN3960:1987"),
         ("upper_generating_profile_shift_coefficient", "x_Ee", "DIN3960:1987"),
         ("pre_machining_generating_profile_shift_coefficient", "x_EV/x_EiV", "DIN3960:1987"),
+        ("profile_angle_at_v_circle", "alpha_v", "DIN3960:1987"),
+        ("normal_base_tooth_thickness", "s_b", "DIN3960:1987"),
+        ("chordal_tooth_thickness", "s-bar", "DIN3960:1987"),
+        ("height_above_chord", "h-bar_a", "DIN3960:1987"),
+        ("constant_chord", "s-bar_c", "DIN3960:1987"),
+        ("height_above_constant_chord", "h-bar_c", "DIN3960:1987"),
+        ("radial_single_roller_dimension", "M_rR", "DIN3960:1987"),
+        ("diametral_two_roller_dimension", "M_dR", "DIN3960:1987"),
+        ("tooth_thickness_tolerance", "T_s", "DIN3960:1987"),
+        ("span_allowance", "A_W", "DIN3960:1987"),
         ("pitch", "t_0", "DIN3972:1952"),
         ("basic_rack_dedendum", "h_fr", "DIN3972:1952"),
         ("tool_profile_angle", "alpha_0", "DIN3972:1952"),
@@ -558,6 +612,12 @@ def test_symbol_differences_list_exactly_what_changed() -> None:
         "length_of_addendum_path_of_contact": "g_alfa-a",
         "form_over_dimension": "c_n",
         "tooth_thickness_allowance": "A_ste",
+        "span_allowance": "A_We",
+        "chordal_tooth_thickness_at_y": "s_n-",
+        "height_above_chord_at_y": "h_a-",
+        "diametral_two_roller_dimension": "M_dR",
+        "span_allowance_factor": "A_W/A_Sn",
+        "diametral_ball_dimension_allowance_factor": "A_Md/A_sn",
     }
     spelled = {d.other for d in verified if d.kind == "stplus" and d.spelling_only}
     assert spelled == {"alfa_n", "alfa_t", "alfa_wt", "eps_alfa", "eps_beta", "eps_gamma"}

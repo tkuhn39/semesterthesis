@@ -14,8 +14,10 @@ from gearcore.errors import (
     ParseError,
     SolverError,
 )
-from gearcore.models.common import FrozenModel, InputWarning, Pair
+from gearcore.models.common import DimensionLimits, FrozenModel, InputWarning, Pair
 from gearcore.models.inputs import (
+    BallMeasurement,
+    DimensionKind,
     GearInput,
     GearKind,
     MaterialKind,
@@ -29,6 +31,9 @@ from gearcore.models.inputs import (
 __version__ = "2.0.0a0"
 
 __all__ = [
+    "BallMeasurement",
+    "DimensionKind",
+    "DimensionLimits",
     "FrozenModel",
     "GearCoreError",
     "GearInput",

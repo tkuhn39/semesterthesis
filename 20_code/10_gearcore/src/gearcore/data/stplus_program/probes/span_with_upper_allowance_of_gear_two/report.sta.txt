@@ -1,0 +1,262 @@
+ 
+       *********************************************************************
+       *           Forschungsvereinigung Antriebstechnik e.V. (FVA)        *
+       *                          Lyoner Str. 18                           *
+       *                         60528  Frankfurt                          *
+       *********************************************************************
+ 
+ 
+ 
+       Angaben zum Programm
+       --------------------
+       Programmname:           STplus
+       Version:                11.1F
+       Freigabe:               01.12.2025
+       Berechnungsumfang:      Geometrieberechnung von Stirnraedern sowie
+                               Tragfaehigkeitsberechnung nach den unter-
+                               schiedlichsten Verfahren
+ 
+ 
+       Angaben zur Erstellung
+       ----------------------
+       Erstellung:             Das Programm wurde im Rahmen des FVA-
+                               Forschungsvorhabens Nr. 241 erstellt.
+       Forschungsstelle:       FZG, TU Muenchen
+                               Prof. Dr.-Ing. K. Stahl
+ 
+ 
+       Angaben zum Anwender
+       --------------------
+       Firmenname:             FZG
+       Sachbearbeiter:         gearcore oracle
+ 
+ 
+       Angaben zur Berechnung
+       ----------------------
+       Datum:                  04.10.26
+       Uhrzeit:                15:34:51 Uhr
+       Eingabedatei:           ...with_upper_allowance_of_gear_two\eingabe.ste
+       Ausgabedatei:           ...with_upper_allowance_of_gear_two\ausgabe.sta
+ 
+ 
+       Firmenspezifische Angaben
+       -------------------------
+ 
+ 
+ 
+       Angaben zum Berechnungsinhalt
+       -----------------------------
+ 
+ 
+ 
+1      *********************************************************************
+       * Stirnradprogramm STplus 11.1F     FZG             Blatt  2 von 6  *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 04.10.26  15:34:51 *****
+ 
+ 
+ 
+ 
+ 
+                              Echoprint der Datensaetze
+ 
+               =========== Ausgabe des ersten Datensatzes ===========
+ 
+       $ Geometriedaten
+       ZAHNBREITE = 22 20
+       NORMALMODUL = 2.0
+       ZAEHNEZAHL = 36 54
+       EINGRIFFSWINKEL = 20
+       SCHRAEGUNGSWINKEL = 0 0
+       KOPFKREISDM = 76.46 112.95
+       ACHSABSTAND = 91.5
+       ZAHNWEITE = 27.827 46.21
+       MESSZAEHNEZAHL = 5 8
+       OBERES_ZAHNW_ABMASS = % -50
+ 
+       $ AUSDRUCKSTEUERUNG
+       AUSDRUCK_IN_DEUTSCH = ja
+       LANGAUSDR_GEOMETRIE = ja
+       LANGAUSDR_TRAGFAEHIGKEIT = ja
+       AUSDRUCK_DECKBLATT = ja
+       ECHODRUCK_EINGABEDATEI = ja
+       AUSDRUCK_ERZEUGUNGSGETR = nein
+ 
+       $ PLOTSTEUERUNG
+       PLOTFORMAT = A4h A4h
+       PLOTGENAUIGKEIT = 0.005 0.005
+       PLOT_TEILKREIS = ja ja
+       PLOT_VERZAHNUNG_W1 = ja ja
+       PLOT_VERZAHNUNG_W2 = nein nein
+       PLOT_FERTIGVERZAHNUNG = nein nein
+       PLOT_WERKZEUG1 = nein nein
+       PLOT_WERKZEUG2 = nein nein
+       PLOT_EINGRIFF = ja
+       STIRNKOORD_EIN_WKZ = ja
+ 
+ 
+                                 Ende des Echoprints
+ 
+       Hinweis: Geometrieberechnungs-Genauigkeitsgrenzwert DESTGR
+           wird fuer diesen Datensatz feiner (kl.) als bis
+           STplus 8.1F vorgesehen belegt.
+            In aktueller Rechnung verwendeter Wert:     0.0002000000.
+            Bis STplus 8.1F verwendeter Grenzwert:      0.0004000000.
+1      *********************************************************************
+       * Stirnradprogramm STplus 11.1F     FZG             Blatt  3 von 6  *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 04.10.26  15:34:51 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       Geometrieberechnung nach DIN 3960 (Maerz 1987)
+       ---------------------------------------------------------------------
+                                   (Treiber=1)  Ritzel=1        Rad=2
+       Normaleingriffswinkel . . . . . . alfa_n            20.00000     Grad
+         Stirneingriffswinkel  . . . . . alfa_t            20.00000     Grad
+         Betriebseingriffswinkel . . .  alfa_wt            22.43879     Grad
+       Schraegungswinkel am Teilkreis  . . beta             0.00000     Grad
+         Schraegungswinkel am Grundkreis beta_b             0.00000     Grad
+       Zaehnezahl  . . . . . . . . . . . . .  z        36          54   -
+         Zaehnezahlverhaeltnis . . . . .  z2/z1             1.500       -
+       Achsabstand . . . . . . . . . . . . .  a            91.500       mm
+       Normalmodul . . . . . . . . . . . .  m_n             2.00000     mm
+         Stirnmodul  . . . . . . . . . . .  m_t             2.00000     mm
+       Summe Profilversch.faktoren . .  x_1+x_2             0.7947      -
+       Profilverschiebungsfaktor (Nennw.)  .  x      0.4544      0.3402 -
+         Profilverschiebung (Nennw.) . .  x*m_n       0.909       0.680 mm
+ 
+       --- Teilungen, Ueberdeckungen etc. ----------------------------------
+       Stirnteilung  . . . . . . . . . . .  p_t             6.283       mm
+       Normalteilung . . . . . . . . . . .  p_n             6.283       mm
+       Stirneingriffsteilung . . . . . . . p_et             5.904       mm
+       Normaleingriffsteilung  . . . . . . p_en             5.904       mm
+       Eingriffsstrecke  . . . . . . . . . .  g             7.673       mm
+         Gemeins. Zahnhoehenfaktor . . . .  h_*             1.603       -
+       Profilueberdeckung  . . . . . . eps_alfa             1.300       -
+       Sprungueberdeckung  . . . . . . eps_beta             0.000       -
+       Gesamtueberdeckung  . . . . .  eps_gamma             1.300       -
+ 
+       --- Breiten, Durchmesser etc. ---------------------------------------
+       Zahnbreite (eine Pfeilhaelfte bei DSV) b      22.000      20.000 mm
+         Fase je Zahnende (Kantenbruch)  . . .        0.000       0.000 mm
+       Gemeinsame Breite . . . . . . . .  b_gem            20.000       mm
+         Mittenversatz . . . . . . . . . . . .              0.000       mm
+       Waelzkreisdurchmesser . . . . . . .  d_w      73.200     109.800 mm
+       Teilkreisdurchmesser  . . . . . . . .  d      72.000     108.000 mm
+       Grundkreisdurchmesser . . . . . . .  d_b      67.658     101.487 mm
+       Kopfkreisdurchmesser  . . . . . . .  d_a      76.460     112.950 mm
+       Kopf-Formkreisdurchmesser . . . . . d_Fa      76.460     112.950 mm
+         Kopfkantenbruch (Radialbetrag)  .  h_K       0.000       0.000 mm
+       Nutzkreisdurchmesser am Kopf  . . . d_Na      76.460     112.950 mm
+       Nutzkreisdurchmesser am Fuss  . . . d_Nf      70.629     107.105 mm
+       Fuss-Formkreisdurchmesser . . . . . d_Ff      69.103     105.227 mm
+         Formuebermass . . . . . . . . . .  c_n       0.763       0.939 mm
+       Fussfreischnitt (bei '-' Kerbtiefe) Fs_n       0.000       0.000 mm
+         gemessen normal zur Fl. am Dm.  d_Fs-n      69.103     105.227 mm
+       Fusskreisdurchmesser  . . . . . . .  d_f      67.729     104.215 mm
+ 
+       --- Zahnhoehen, Gleitfaktoren etc. ----------------------------------
+       Bezugspr.-Kopfhoehenfaktor (Istw.) h_aP*       0.661       0.897 -
+       Zahnhoehe . . . . . . . . . . . . . .  h       4.365       4.368 mm
+         gemeinsame Zahnhoehe  . . . . .  h_gem             3.205       mm
+       Kopfhoehe (bezogen auf Teilkreis) .  h_a       2.230       2.475 mm
+       Kopfspiel (Istwert) . . . . . . . . .  c       1.163       1.160 mm
+         bezogenes Kopfspiel . . . . . . .  c_*       0.581       0.580 -
+       Kopfeingriffsstrecke  . . . . . g_alfa-a       3.838       3.835 mm
+1      *********************************************************************
+       * Stirnradprogramm STplus 11.1F     FZG             Blatt  4 von 6  *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 04.10.26  15:34:51 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       Geometrieberechnung nach DIN 3960 (Maerz 1987)
+       ---------------------------------------------------------------------
+       Gleitfaktor am Zahnkopf . . . . . . K_ga       0.175       0.175 -
+       Spezifisches Gleiten (Zahnkopf) . zeta_a       0.359       0.387 -
+       Spezifisches Gleiten (Zahnfuss) . zeta_f      -0.631      -0.561 -
+ 
+       --- Abmasse, Zahndicken etc. ----------------------------------------
+       Verzahnungsqualitaet (DIN3961/63,Aug.78)        N 7         N 7  -
+       Abmassreihe (DIN 3967, Aug.78)  . . . .         C                -
+       Toleranzreihe (DIN 3967, Aug.78)  . . .         25           0   -
+       Zahndicke (Nennmass, Stirnschn.)  .  s_t       3.803       3.637 mm
+         oberes Zahndickenabmass . . . .  A_ste      -0.396      -0.053 mm
+         unteres Zahndickenabmass  . . .  A_sti      -0.436      -0.053 mm
+       Zahndicke (Nennmass, Normalschn.) .  s_n       3.803       3.637 mm
+       Zahnlueckenweite (Normalschnitt)  .  e_n       2.480       2.646 mm
+       Zahndicke am Kopfkreis fuer A_We  . s_an       1.557       1.580 mm
+ 
+       --- Angaben zu Pruefmassen ------------------------------------------
+       Zahndickensehne (Nennmass)  . . . . s_n-       3.544       3.258 mm
+       Hoehe ueber der Zahndickensehne . . h_a-       1.882       1.955 mm
+         oberes Abmass der Z.dickensehne  A_sne      -0.396      -0.053 mm
+         unteres Abmass der Z.dickensehne A_sni      -0.436      -0.053 mm
+         Beruehrkreisdurchm. (oberes Abmass) .       72.782     109.088 mm
+       Zahnweite (Nennmass)  . . . . . . .  W_k      28.199      40.356 mm
+       Messzaehnezahl  . . . . . . . . . . .  k         5           7   -
+         oberes Zahnweitenabmass . . . . . A_We      -0.372      -0.050 mm
+         unteres Zahnweitenabmass  . . . . A_Wi      -0.410      -0.050 mm
+         Zahnweitenabmassfaktor  . . . A_W/A_Sn       0.940       0.940 -
+         Beruehrkreisdurchm. (Zahnweitenmessg.)      73.157     109.198 mm
+       Diam. Zweikugelmass (Nennmass)  . . M_dK      78.503     114.224 mm
+         Beruehrkreisdurchmesser (Kugel/Flanke)      72.758     109.254 mm
+       Diam. Zweirollenmass (Nennmass) . . M_dR      78.503     114.224 mm
+       Messtueckdurchmesser  . . . . . . .  D_M       3.500       3.500 mm
+         oberes diametrales Abmass . . .  A_Mde      -0.886      -0.125 mm
+         unteres diametrales Abmass  . .  A_Mdi      -0.979      -0.125 mm
+         Abmassfaktor  . . . . . . .  A_Md/A_sn       2.237       2.357 -
+       Achsabstandsabmass  . . . . . . . . A_Ae           + 0.018       mm
+       Achsabstandsabmass  . . . . . . . . A_Ai           - 0.018       mm
+         nach DIN 3964 Toleranzfeld JS  7
+ 
+       --- Flankenspiele ---------------------------------------------------
+       Verdrehfl.spiel(Waelzkr.)/Normalfl.spiel       j_t    /    j_n
+         fuer Nennachsabstand u. obere Zahnabm.       0.457  /    0.422 mm
+         fuer Nennachsabstand u untere Zahnabm.       0.498  /    0.460 mm
+       Flankenspielaenderung durch Abmass  A_Ae       0.014  /    0.013 mm
+       Flankenspielaenderung durch Abmass  A_Ai      -0.014  /   -0.013 mm
+ 
+       --- Werkzeugangaben -------------------------------------------------
+       Zahnradfertigung mit Fraeser oder Hobelkamm
+       Wkz-Normalmodul . . . . . . . . . . m_n0      2.0000      2.0000 mm
+       Wkz-Normaleingriffswinkel . . .  alfa_n0     20.0000     20.0000 Grad
+       Kopfhoehenfaktor (Wkz_Bezugspr.)  h_aP0*       1.250       1.250 -
+       Wkz-Kopfabrundungsfaktor  . . . rho_aP0*       0.250       0.250 -
+       Fussform-Hoehenf.(Wkz-Bezugspr.) h_FfP0*       1.300       1.300 -
+       Fuss-Hoehenfaktor (Wkz-Bezugspr.) h_fP0*       1.300       1.300 -
+1      *********************************************************************
+       * Stirnradprogramm STplus 11.1F     FZG             Blatt  5 von 6  *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 04.10.26  15:34:51 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       Geometrieberechnung nach DIN 3960 (Maerz 1987)
+       ---------------------------------------------------------------------
+       Protuberanzbetrag am Wkz  . . . . . pr_0       0.000       0.000 mm
+       Protuberanzhoehenfaktor am Wkz  . h_pr0*       0.000       0.000 -
+       Protuberanzwinkel . . . . . . . alfa_pr0      20.000      20.000 Grad
+       Gesamt-Bearbeitungszugabe . . . . . .  q       0.000       0.000 mm
+       Erz.-Profilversch.faktor  . . . . .  x_E      0.1823      0.3037 -
+       Wkz-Profilbezugslinie Rad 1/2 gem. DIN 3972 fuer Wkz-Zahndicke=Luecke
+1      *********************************************************************
+       * Stirnradprogramm STplus 11.1F     FZG             Blatt  6 von 6  *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 04.10.26  15:34:51 *****
+ 
+ 
+ 
+ 
+       ---------------------------------------------------------------------
+       Besonderheiten der Radpaarung:
+       ---------------------------------------------------------------------
+       Kopfkreise 1/2: Eingabe von Durchmesser oder Mindest-Zahnkopfdicke
+       Zahnweitenabmasse Rad 2 wurden vorgegeben

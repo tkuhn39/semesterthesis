@@ -279,6 +279,11 @@ table passed on.
 cases 1 to 3 and answers a pair that gives span measurements in place of x with
 `NotSupportedError`.
 
+**Amendment (2026-10-04, ADR-115).** The question this ADR left open — how a span measurement of
+an input determines the profile shift — is decided: an inspection dimension states which dimension
+it is and determines x, x_Es, x_Em or x_Ei accordingly; with a centre distance and the dimensions of
+both gears the core demands one more statement. The rule "of a_w, x_1, x_2 exactly two" stands.
+
 ## ADR-108 — Quantity registry: one source of truth for names, symbols and designations (2026-09-29)
 
 **Context.** The user's review of the first worked-example fixture found five rows of the norm table
@@ -845,3 +850,62 @@ The same runs showed that the range of a control is an open interval: the ends t
 names are not accepted, the preset stays. The importer and the rule functions took the ends
 as valid until then; corrected (`controls_at_the_ends_of_their_ranges`).
 Nothing of the comparison with STplus rests on an unexplained number any more.
+
+## ADR-115 — Inspection dimensions: the input states which dimension it gives; k and D_M by the norm, the choices of STplus by name (2026-10-04)
+
+**Context.** Increment 4 implements DIN 21773:2014-08 (span, ball and roller dimensions, chordal
+tooth thickness, allowances) and DIN 3977:1981-02 (measuring ball diameters; still valid, confirmed
+by the user). Three questions needed decisions of the user: what a span of an input means
+(PAIR-06, ADR-107), who splits the sum of the profile shift coefficients when a file gives a centre
+distance and the spans of both gears (kst-A/B/C), and how k and D_M are chosen where the input names
+neither. STplus 11.1F reads every inspection dimension as the dimension of the finished gear at its
+upper allowance, lets gear 1 keep the preset allowance (series c25 of DIN 3967) and gives gear 2 the
+rest, and chooses k and D_M by rules the manual does not state (46 probe runs, 18 kept as probes).
+
+**Decision (user decisions 2026-10-04).**
+
+1. **An inspection dimension of an input states which dimension it is** (`DimensionKind`: nominal,
+   upper limit, mean, lower limit; DIN 21773 §4, p. 8) and determines x, x_Es, x_Em or x_Ei. The
+   `.ste` importer states "upper limit", as STplus reads the file, and notes it (ADR-114); a later
+   input mask asks for it.
+2. **The core demands the fourth statement.** Per gear two of {profile shift, inspection dimension,
+   allowances} determine the third; per pair two of {a_w, x_1, x_2} (ADR-107). A centre distance
+   with the dimensions of both gears fixes the sum of the allowances, not its split: the core raises
+   `InputRangeError` and presets nothing. Over-determination is an error as well. The split rule of
+   STplus needs its preset allowance series and comes with increment 5.
+3. **Limits are computed as §4 says**, with x_Es, x_Em and x_Ei in the equations of the nominal
+   dimension; the allowance factors of §14 are reported beside them (they are the derivatives:
+   exact for the span, of second order for the ball dimensions — kst-B pinion 0,07 µm).
+4. **gearcore chooses by the norm where the input names nothing.** k: DIN 21773 Eq. (9) (contact
+   next to the V-cylinder), moved into the range of Eq. (12), (13). D_M: the next larger value of
+   DIN 3977 Tabelle 1 above the ideal ball of DIN 21773 Eq. (26), (27), moved up until the ball
+   stands above the tip cylinder, rests on the usable flank and clears the root (reported as a
+   warning). A given k or D_M is used; what DIN 3977 section 6 or the usable range forbid is
+   reported, a ball that touches outside the involute is an error.
+5. **The choices of STplus are kept by name and never applied silently** (ADR-109). The rules were
+   found by experiment (switch points bisected to 0,0005 mm, then random gears):
+   k = min(INT((k_min + k_max) / 2) + 1, k_max); D_M from a table of the program (44 values, 1 to
+   110 mm, not DIN 3977 Tabelle 1) as the larger of (A) the smallest ball whose two-ball dimension
+   exceeds the tip diameter and (B) two table values below the first one above the ball that the
+   form of DIN 3960:1987 Eq. (3.8.24) to (3.8.27) names for the middle of the form circles (virtual
+   number of teeth z / cos^3(beta) for the factor and the profile angle, inv(alpha_t) and eta of
+   the real gear; exact for spur gears only). Evidence: `data/stplus_program/inspection_choices.json`
+   (540 random gears of STplus listings, written by `scripts/stplus_inspection_choices.py`).
+   The choice changes which dimension is printed, not the gear (question of the user, 2026-10-04):
+   no switch in the core; `stplus_program.with_stplus_inspection_choices` states the choices of
+   STplus as inputs for a caller who wants the dimensions of an STplus listing.
+6. **The comparison takes nothing from the listing but the chord cylinder.** k and D_M are computed
+   by the rules of STplus from the form circles gearcore generates and compared with the listing;
+   chord and height are compared on the cylinder STplus prints, the cylinder itself (the middle of
+   the form circles) within the accuracy of the form circles of STplus (GEN-06).
+7. **English designations** of the ball dimension quantities are those of the English copy of
+   DIN 3977 (no ISO document names them; consent of the user, 2026-10-04; rule 3b of ADR-108).
+
+**Consequences.** `SpanMeasurement.kind` is a required field (breaking for callers of increment 2);
+`BallMeasurement`, `DimensionLimits`, `GearInspection`, `InspectionResult` are new contracts;
+`GearGeneration.tooth_thickness_allowance_um` carries the allowance the generation used. Files
+that give a centre distance and inspection dimensions only (kst-A/B/C) are read but not computed
+until the preset allowance series exists (INS-01). The tip circle cut by the tool (ADR-114) has
+its norm home in DIN 21773 §13 Eq. (40). The double-flank centre distance (DIN 21773 §12) goes to
+increment 5 (user decision). For stage 2: check whether equations of the load capacity take the
+nominal x_1, x_2 separately — then the split of point 2 matters there.

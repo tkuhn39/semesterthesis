@@ -25,7 +25,10 @@
       "tool 'WKZ_Profil_A_Rad': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
       "tool 'WKZ_Profil_A_Rad': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
       "tool 'WKZ_Profil_A_Rad': PROTUBERANZBETRAG not given → 0 (no protuberance)",
-      "tool 'WKZ_Profil_A_Rad': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)"
+      "tool 'WKZ_Profil_A_Rad': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "gear 1: ZAHNWEITE = 29.358 over 10 teeth is read as the upper limit of the finished gear, as STplus reads it (it determines x_E, not the nominal x); where the upper allowance of the gear follows from it, gearcore sets the lower allowance equal to the upper one and reports it, STplus takes the tolerance of its preset series (DIN 3967, increment 5)",
+      "gear 2: ZAHNWEITE = 41.834 over 14 teeth is read as the upper limit of the finished gear, as STplus reads it (it determines x_E, not the nominal x); where the upper allowance of the gear follows from it, gearcore sets the lower allowance equal to the upper one and reports it, STplus takes the tolerance of its preset series (DIN 3967, increment 5)",
+      "ACHSABSTAND and the dimensions of both gears without an allowance: STplus presets the upper allowance of gear 1 by the series c25 of DIN 3967 and gives gear 2 the rest (increment 5); until then the pair lacks that statement and is not computed"
     ],
     "ok": true,
     "unmapped_keys": [

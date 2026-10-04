@@ -345,6 +345,42 @@ Question of the user: how do the presets 0,2 and 0,4 the manual names relate to 
   importer and rule functions took the ends as valid.
 - Seven further probes (70 in all), 16 further tests, 12 mutations detected. 1365 tests.
 
+### Added (increment 4 - inspection dimensions, 2026-10-04, ADR-115)
+User decisions of 2026-10-04: an inspection dimension of an input states which dimension it is;
+the core demands the split of the sum of the allowances; k and D_M by the norm, the choices of
+STplus as named functions; DIN 3977:1981-02 is still valid.
+- **`gearcore.inspection`** (new): DIN 21773:2014-08 as traced functions - chordal tooth thickness
+  and constant chord (Eq. (1) to (8)), span measurement with its usable range and measuring
+  circle (Eq. (9), (12) to (17)), ball and roller dimensions (Eq. (26), (27), (29) to (37)),
+  overcut tip diameter (Eq. (40)), allowances and allowance factors (Eq. (43) to (63)); DIN
+  3977:1981-02 Tabelle 1 (`data/din3977_table_1.yaml`) and section 6. `compute_inspection`
+  returns `InspectionResult` with nominal dimension and upper, mean and lower limit
+  (`DimensionLimits`, computed as §4 says), the choices made and warnings.
+- **Contracts**: `DimensionKind`, `SpanMeasurement.kind` (required; breaking), `BallMeasurement`,
+  `GearInput.ball_dimension` / `measuring_ball_diameter_mm`, `GearInspection`, `InspectionResult`;
+  `GearGeneration.tooth_thickness_allowance_um`.
+- **Resolution** (`pair.resolve_tooth_thickness`): per gear two of {x, inspection dimension,
+  allowances}, per pair two of {a_w, x_1, x_2}; over- and under-determination are
+  `InputRangeError`. The generation rejects an input dimension that does not touch the involute
+  it determines.
+- **`.ste` importer**: `ZAHNWEITE` / `DIAMETRALES_MASS` read as the upper limit of the finished
+  gear, as STplus reads them; `MESSTUECKDM_D_M`, `MESSZAEHNEZAHL_K`; pair-level rules of STplus
+  as typed errors or notes. 18 new probes (88 in all).
+- **How STplus chooses k and D_M** (found by experiment): `stplus_number_of_teeth_spanned`,
+  `stplus_measuring_ball_diameter` (table of the program, 44 values, not DIN 3977 Tabelle 1),
+  `stplus_inspection_choices`, `with_stplus_inspection_choices`; evidence
+  `data/stplus_program/inspection_choices.json` (540 gears), `scripts/stplus_inspection_choices.py`.
+- **Comparison** (`parity.compare_inspection`): 876 rows over the 18 cases, 675 identical, 201
+  within the accuracy of STplus, none different; k and D_M computed by the rules of STplus, chord
+  on the printed cylinder.
+- **Findings**: DIN 21773 Eq. (10) and the second forms of Eq. (12), (13) are smaller by 0,5
+  inside INT than Eq. (9); DIN 3977 Bild 2 names a 6 mm ball its own limit excludes
+  (`norm_map.md`).
+- Notebook `04_pruefmasse_din21773`; notebook 02 adapted (a span states its kind). Registry: 142
+  quantities (34 new). Gate: `gate_reports/increment_4.md` (three reviewers, no P0; includes the
+  independent review of the last rounds of increment 3: nine findings, causes of two deviations
+  reworded, GEN-17 and GEN-18 opened).
+
 ### Added (increment 2 - pair geometry, 2026-09-30, ADR-107, ADR-110)
 - `gearcore.pair`: mating quantities of an external gear pair per DIN ISO 21771:2014-08 §4.4, §4.5,
   §5.2 to §5.4, §5.6 and Eq. (127) of §7.6 (pitches, tip and tip form diameter, working pressure

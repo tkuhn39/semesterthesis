@@ -7,6 +7,7 @@ from pydantic import ValidationError
 
 from gearcore.models.common import FrozenModel, Pair
 from gearcore.models.inputs import (
+    DimensionKind,
     GearInput,
     GearKind,
     MaterialKind,
@@ -147,7 +148,11 @@ def test_profile_shift_must_be_determinable() -> None:
         gears=Pair(
             pinion=gear(
                 profile_shift_coefficient=None,
-                span=SpanMeasurement(span_measurement_mm=27.827, number_of_teeth_spanned=5),
+                span=SpanMeasurement(
+                    kind=DimensionKind.UPPER_LIMIT,
+                    span_measurement_mm=27.827,
+                    number_of_teeth_spanned=5,
+                ),
             ),
             wheel=gear(profile_shift_coefficient=0.2),
         ),

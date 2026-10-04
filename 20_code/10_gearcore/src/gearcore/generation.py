@@ -42,6 +42,7 @@ import math
 
 from scipy.optimize import brentq
 
+from gearcore import inspection as ins
 from gearcore import involute as iv
 from gearcore import pair as pr
 from gearcore import trochoid as tr
@@ -84,6 +85,7 @@ def tooth_thickness_limit(s_n_mm: float, tooth_thickness_allowance_um: float) ->
 
 @eq(SOURCE, "(123)", section="7.4", page=67)
 @eq(SOURCE, "(124)", section="7.4", page=67)
+@eq("DIN21773:2014", "(44)", section="14.1", page=24, note="with the mean allowance E_snm")
 @eq(OLD, "(3.6.03)", section="3.6.3", page=14, note="with q = 0; A_s of DIN 3960 is E_sn")
 def generating_profile_shift_coefficient(
     x: float, m_n_mm: float, alpha_n_rad: float, tooth_thickness_allowance_um: float
@@ -630,7 +632,13 @@ def _involute_diameter_at_height(
     return 2.0 * math.hypot(0.5 * d_b_mm, reach)
 
 
-def _gear_generation(role: str, gear: GearInput, pair: PairInput, x: float) -> GearGeneration:
+def _gear_generation(
+    role: str,
+    gear: GearInput,
+    pair: PairInput,
+    x: float,
+    allowance: tuple[float, float] | None,
+) -> GearGeneration:
     tool = _supported_tool(role, gear, pair)
     z = gear.number_of_teeth
     m_n = pair.normal_module_mm
@@ -638,8 +646,8 @@ def _gear_generation(role: str, gear: GearInput, pair: PairInput, x: float) -> G
     beta = math.radians(pair.helix_angle_deg if role == "pinion" else -pair.helix_angle_deg)
     warnings: list[InputWarning] = []
 
-    # generating profile shift: Eq. (123), (124)
-    allowance = gear.tooth_thickness_allowance_um
+    # generating profile shift: Eq. (123), (124), with the allowances the inputs determine
+    # (given as tooth thickness or span allowances, or following from an inspection dimension)
     if allowance is None:
         x_Es = x_Ei = generating_profile_shift_coefficient(x, m_n, alpha_n, 0.0)
         warnings.append(
@@ -703,11 +711,11 @@ def _gear_generation(role: str, gear: GearInput, pair: PairInput, x: float) -> G
         )
     cut = False
     if h_fP0 is not None:
-        topping = d + 2.0 * (x_E * m_n + h_fP0)
+        topping = ins.overcut_tip_diameter(d, x_E, m_n, h_fP0)
         if topping < d_a * (1.0 - EPS):
             # the root line of the tool lies on the circle of the diameter d + 2 (x_E m_n + h_fP0)
-            # while the gear is generated (Eq. (125) with the root line in place of the tip
-            # line); what lies beyond it is cut away (user decision 2026-10-03, ADR-114: as
+            # while the gear is generated: the tip cylinder cut by the tool of DIN 21773
+            # Eq. (40); what lies beyond it is cut away (user decision 2026-10-03, ADR-114: as
             # STplus, "Kopfkreis ... von Wkz mit Fusshoehenfaktor geschnitten")
             warnings.append(
                 _warning(
@@ -818,6 +826,7 @@ def _gear_generation(role: str, gear: GearInput, pair: PairInput, x: float) -> G
             tool.edge_break_angle_deg if has_edge_break_flank(tool) else None
         ),
         machining_allowance_mm=tool.machining_allowance_mm,
+        tooth_thickness_allowance_um=allowance,
         upper_generating_profile_shift_coefficient=x_Es,
         lower_generating_profile_shift_coefficient=x_Ei,
         generating_profile_shift_coefficient=x_E,
@@ -839,6 +848,50 @@ def _gear_generation(role: str, gear: GearInput, pair: PairInput, x: float) -> G
     )
 
 
+def _input_dimension_on_the_flank(
+    role: str, gear: GearInput, generated: GearGeneration, pair: PairInput
+) -> None:
+    """An inspection dimension of the input determined the profile shift or the allowance of the
+    gear. It is a measurement of this gear only if its measuring pieces touch the involute
+    between the form circles (DIN 21773 Eq. (12), (13); DIN 3977 section 6); checked for the
+    gear at its upper allowance."""
+    z, m_n = generated.number_of_teeth, pair.normal_module_mm
+    alpha_n = math.radians(pair.normal_pressure_angle_deg)
+    beta = math.radians(pair.helix_angle_deg) * (1.0 if role == "pinion" else -1.0)
+    x_E = generated.generating_profile_shift_coefficient
+    d_Ff, d_Fa = generated.root_form_diameter_mm, generated.tip_form_diameter_mm
+    if gear.span is not None:
+        k = gear.span.number_of_teeth_spanned
+        k_min = ins.min_number_of_teeth_spanned(z, m_n, x_E, alpha_n, beta, d_Ff)
+        k_max = ins.max_number_of_teeth_spanned(z, m_n, x_E, alpha_n, beta, d_Fa)
+        if not k_min <= k <= k_max:
+            raise GeometryInfeasibleError(
+                f"{role}: the given span over k = {k} teeth is no measurement of the gear it "
+                "determines: at the upper allowance of the gear its measuring planes do not touch "
+                "the involute between the form "
+                f"circles {d_Ff!r} mm and {d_Fa!r} mm (usable range k = {k_min} to {k_max}, "
+                "DIN 21773 Eq. (12), (13))"
+            )
+    if gear.ball_dimension is not None:
+        D_M = gear.ball_dimension.measuring_ball_diameter_mm
+        alpha_t = iv.transverse_pressure_angle(alpha_n, beta)
+        d_b = iv.base_diameter(z, m_n, alpha_n, beta)
+        alpha_Kt = ins.ball_centre_profile_angle(
+            D_M, z, m_n, alpha_n, iv.space_width_half_angle(z, x_E, alpha_n), alpha_t
+        )
+        alpha_Mt = ins.ball_contact_profile_angle(
+            alpha_Kt, D_M, d_b, iv.base_helix_angle(beta, alpha_n)
+        )
+        d_M = ins.ball_measuring_circle_diameter(d_b, alpha_Mt)
+        if not d_Ff * (1.0 - EPS) <= d_M <= d_Fa * (1.0 + EPS):
+            raise GeometryInfeasibleError(
+                f"{role}: the given ball dimension over D_M = {D_M!r} mm is no measurement of the "
+                "gear it determines: at the upper allowance of the gear the ball touches on the "
+                f"circle {d_M!r} mm, outside the "
+                f"involute between the form circles {d_Ff!r} mm and {d_Fa!r} mm"
+            )
+
+
 def compute_generation(pair: PairInput) -> GenerationResult:
     """Tool-based generation of both gears and the pair geometry that follows (DIN ISO 21771 §7).
 
@@ -855,10 +908,12 @@ def compute_generation(pair: PairInput) -> GenerationResult:
     with it, while ``inputs`` keeps the pair as given.
     """
     pair = pr._checked(pair)
-    x_1, x_2, _, _ = pr._resolve(pair)
+    resolved = pr._resolve_tooth_thickness(pair)
+    x_1, x_2 = resolved.profile_shift_coefficient
+    allowance_1, allowance_2 = resolved.tooth_thickness_allowance_um
     gears: Pair[GearGeneration] = Pair(
-        pinion=_gear_generation("pinion", pair.gears.pinion, pair, x_1),
-        wheel=_gear_generation("wheel", pair.gears.wheel, pair, x_2),
+        pinion=_gear_generation("pinion", pair.gears.pinion, pair, x_1, allowance_1),
+        wheel=_gear_generation("wheel", pair.gears.wheel, pair, x_2, allowance_2),
     )
     # the pair meshes with the tip circles the tools leave (a tool cuts a tip circle that lies
     # above its root line); ``inputs`` of the result stays the pair as given
@@ -874,6 +929,8 @@ def compute_generation(pair: PairInput) -> GenerationResult:
             )
         }
     )
+    for role, gear, generated in zip(ROLES, pair.gears.as_tuple(), gears.as_tuple(), strict=True):
+        _input_dimension_on_the_flank(role, gear, generated, pair)
     geometry = pr.compute_pair_geometry(
         generated_pair,
         root_form_diameter_mm=Pair(

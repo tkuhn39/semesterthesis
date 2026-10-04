@@ -19,6 +19,7 @@ from hypothesis import strategies as st
 from pydantic import ValidationError
 from test_pair import CASES, REFERENCE, base_diameters, close, make_pair, working_angle
 
+from gearcore import inspection as ins
 from gearcore import involute as iv
 from gearcore import pair as pr
 from gearcore._safe import EPS
@@ -39,6 +40,7 @@ from gearcore.io.ste import (
 )
 from gearcore.models.common import Pair
 from gearcore.models.inputs import (
+    DimensionKind,
     GearInput,
     GearKind,
     MaterialKind,
@@ -412,31 +414,73 @@ def test_g2a12_sum_of_profile_shift_guards_its_angles() -> None:
     assert pr.form_over_dimension(22.6, 22.8) == pytest.approx(-0.1), "signed"
 
 
-# --- G2A-05, G2B-06: span measurements are not evaluated in increment 2 (open in ADR-107) --------------
+# --- G2A-05, G2B-06: span measurements (not evaluated in increment 2, evaluated since increment 4) ------
 
 
-def test_g2a05_span_measurements_are_reported_and_not_evaluated() -> None:
-    """Behaviour of increment 2. How a span determines the profile shift is decided with
-    increments 4 and 5 (user decision 2026-09-30, ADR-107)."""
-    span = SpanMeasurement(span_measurement_mm=9.5, number_of_teeth_spanned=2)
+def _span(case: dict[str, Any], gear: int, x: float, kind: DimensionKind) -> SpanMeasurement:
+    """The span over two teeth of a gear of ``case`` with the coefficient ``x``."""
+    alpha_n, beta = math.radians(case["alpha_n"]), math.radians(case["beta"])
+    width = ins.span_measurement(case["z"][gear], case["m_n"], x, alpha_n, beta, 2)
+    return SpanMeasurement(kind=kind, span_measurement_mm=width, number_of_teeth_spanned=2)
+
+
+def test_g2a05_span_measurements_determine_what_their_kind_says() -> None:
+    """Increment 2 reported a span and did not use it. Since increment 4 the input states which
+    dimension a span is (DIN 21773 §4) and the pair is resolved from it (user decisions
+    2026-10-04, ADR-107)."""
     case = CASES["B"]
     a_w = REFERENCE["B"]["a_w"]
-    # a_w + x_2 + W_k1 (the data of ISO/TR 6336-30 Table A.1): x_1 follows from a_w and x_2
-    pair = forced(make_pair({**case, "a_w": a_w, "x": (None, -0.1)}), "pinion", span=span)
-    result = pr.compute_pair_geometry(pair)
-    assert result.profile_shift_coefficient.pinion == pytest.approx(0.3, abs=1e-13)
-    assert [w.code for w in result.warnings if w.field == "span"] == ["span_measurement_not_used"]
-    # x and span on the same gear: the span is reported, not used
-    both = forced(make_pair(case), "wheel", span=span)
-    assert "span_measurement_not_used" in [w.code for w in pr.compute_pair_geometry(both).warnings]
-    # only spans: the profile shift would have to follow from them (not evaluated yet)
+    upper = _span(case, 0, 0.25, DimensionKind.UPPER_LIMIT)
+    # a_w + x_2 + the upper limit of W_k1 (the data of ISO/TR 6336-30 Table A.1): x_1 follows
+    # from a_w and x_2, the upper allowance of the pinion from x_1 and the span
+    pair = forced(make_pair({**case, "a_w": a_w, "x": (None, -0.1)}), "pinion", span=upper)
+    resolved = pr.resolve_tooth_thickness(pair)
+    assert resolved.profile_shift_coefficient[0] == pytest.approx(0.3, abs=1e-13)
+    allowance = resolved.tooth_thickness_allowance_um[0]
+    assert allowance is not None
+    assert allowance[0] == pytest.approx(
+        1.0e3 * 2.0 * case["m_n"] * math.tan(math.radians(20.0)) * (0.25 - 0.3), rel=1e-12
+    )
+    assert allowance[0] == allowance[1]
+    codes = [w.code for w in pr.compute_pair_geometry(pair).warnings]
+    assert "upper_allowance_from_inspection_dimension" in codes
+    assert "span_measurement_not_used" not in codes
+    # x and the upper limit on the same gear: the allowance follows as well
+    both = forced(make_pair(case), "wheel", span=_span(case, 1, -0.15, DimensionKind.UPPER_LIMIT))
+    wheel = pr.resolve_tooth_thickness(both).tooth_thickness_allowance_um[1]
+    assert wheel is not None and wheel[0] < 0.0
+    # x and a nominal span on the same gear state the same value twice
+    twice = forced(make_pair(case), "wheel", span=_span(case, 1, -0.1, DimensionKind.NOMINAL))
+    with pytest.raises(InputRangeError, match="over-determined"):
+        pr.compute_pair_geometry(twice)
+    # a nominal span stands in for x
+    nominal = forced(
+        make_pair(case),
+        "wheel",
+        profile_shift_coefficient=None,
+        span=_span(case, 1, -0.1, DimensionKind.NOMINAL),
+    )
+    assert pr.resolve_tooth_thickness(nominal).profile_shift_coefficient[1] == pytest.approx(
+        -0.1, abs=1e-13
+    )
+    # the centre distance and the upper limits of both gears: the sum of the allowances is
+    # fixed, its split is not (the importer applies the rule of STplus, the core demands it)
     only_spans = forced(
         forced(make_pair({**case, "a_w": a_w, "x": (0.3, None)}), "pinion",
-               profile_shift_coefficient=None, span=span),
-        "wheel", span=span,
+               profile_shift_coefficient=None, span=upper),
+        "wheel", span=_span(case, 1, -0.15, DimensionKind.UPPER_LIMIT),
     )  # fmt: skip
-    with pytest.raises(NotSupportedError, match="span measurement"):
+    with pytest.raises(InputRangeError, match="not its split between the gears"):
         pr.compute_pair_geometry(only_spans)
+    # ... one allowance settles it
+    settled = forced(only_spans, "pinion", tooth_thickness_allowance_um=(-70.0, -110.0))
+    x_1, x_2, _, _ = pr.resolve_profile_shift(settled)
+    assert x_1 == pytest.approx(0.25 + 0.07 / (2.0 * case["m_n"] * math.tan(math.radians(20.0))))
+    assert x_1 + x_2 == pytest.approx(REFERENCE["B"]["sum_x"], abs=1e-12)
+    # a mean or a lower limit needs the allowances to reach the upper limit
+    mean = forced(make_pair(case), "wheel", span=_span(case, 1, -0.15, DimensionKind.MEAN))
+    with pytest.raises(InputRangeError, match="only together with the allowances"):
+        pr.compute_pair_geometry(mean)
     # only the centre distance, no span: the contract rejects it (the importer names the
     # distribution of the sum as the extension point)
     nothing = forced(
@@ -852,7 +896,9 @@ def test_g2v04_the_validated_pair_is_what_is_computed_and_returned() -> None:
 
 
 def test_g2v04_a_pair_with_every_optional_field_passes_the_second_validation() -> None:
-    span = SpanMeasurement(span_measurement_mm=9.5, number_of_teeth_spanned=2)
+    """Every optional field at once, as far as the inputs do not state the same thing twice:
+    the pinion gives the upper limit of its span beside x, the wheel its allowances."""
+    span = _span(CASES["B"], 0, 0.25, DimensionKind.UPPER_LIMIT)
     full_tool = ToolProfile(
         name="WKZ_1",
         normal_module_mm=2.0,
@@ -869,17 +915,17 @@ def test_g2v04_a_pair_with_every_optional_field_passes_the_second_validation() -
     dump = make_pair(CASES["B"]).model_dump()
     for gear in ("pinion", "wheel"):
         dump["gears"][gear].update(
-            span=span.model_dump(),
             tool=full_tool.model_dump(),
             finishing_tool=full_tool.model_dump(),
             material={"kind": "plastic", "name": "WST_PA66"},
             number_of_teeth_spanned=3,
-            tooth_thickness_allowance_um=(-50.0, -90.0),
-            span_allowance_um=(-40, -80),
+            measuring_ball_diameter_mm=3.5,
             allowance_series="cd25",
             quality_grade=7,
             quality_system="ISO1328",
         )
+    dump["gears"]["pinion"].update(span=span.model_dump())
+    dump["gears"]["wheel"].update(span_allowance_um=(-40, -80))
     dump["min_tip_clearance_factor"] = 0.2
     pair = PairInput.model_validate(dump)
     result = pr.compute_pair_geometry(pair)
@@ -971,7 +1017,6 @@ KNOWN_WARNINGS = {
     "active_profile_limited_by_root_form_circle",
     "tip_form_diameter_not_generated",
     "tip_chamfer_input_not_used",
-    "span_measurement_not_used",
     "transverse_contact_ratio_below_one",
     "common_tooth_depth_with_tip_form_circles",
 }
@@ -1109,6 +1154,8 @@ def test_g2v07_orchestrator_returns_a_consistent_result_or_a_typed_error(
         (STE.format(lines=ANGLES + "PROFILVERSCHIEBUNG_N = 0.3 -0.1\n"
                     "OBERES_ZAHNW_ABMASS = -80 -80\nUNTERES_ZAHNW_ABMASS = -40 -40"),
          "span_allowance_um"),
+        (STE.format(lines=ANGLES + "PROFILVERSCHIEBUNG_N = 0.3 -0.1\nMESSTUECKDM_D_M = -3 3"),
+         "measuring_ball_diameter_mm"),
     ],
 )  # fmt: skip
 def test_g2v03_whatever_a_contract_rejects_is_a_parse_error(text: str, model_field: str) -> None:

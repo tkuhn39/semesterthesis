@@ -62,6 +62,16 @@ def load_expected_differences() -> dict[str, dict[str, Any]]:
     return loaded
 
 
+def load_not_compared() -> dict[str, dict[str, Any]]:
+    """Quantities STplus defines or chooses differently from the norm and that are therefore not
+    compared value by value, by name."""
+    path = data_path("stplus", "expected_differences.yaml")
+    loaded: dict[str, dict[str, Any]] = yaml.safe_load(path.read_text(encoding="utf-8"))[
+        "not_compared"
+    ]
+    return loaded
+
+
 def load_norm_deviations() -> dict[str, dict[str, Any]]:
     """Deliberate deviations of gearcore from the letter of the current norm (decisions of the
     user with an ADR), by name."""

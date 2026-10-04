@@ -569,6 +569,139 @@ PROBE_INPUTS.update(
         ),
     }
 )
+# --- probes of 2026-10-04: inspection dimensions as inputs and as choices of the program ---------
+#
+# The pair of kst-B without its tools (z 36/54, m_n 2, a 91,5, default hob): spans 27,827 over 5
+# and 46,21 over 8 teeth. A second pair (z 12/40, m_n 2, x 0/0) shows how the program chooses the
+# measuring ball.
+
+
+def _span_pair(geometry: str) -> str:
+    return (
+        "$ Anfang\n\n$ Geometriedaten\nZAHNBREITE = 22 20\nNORMALMODUL = 2.0\nZAEHNEZAHL = 36 54\n"
+        "EINGRIFFSWINKEL = 20\nSCHRAEGUNGSWINKEL = 0 0\nKOPFKREISDM = 76.46 112.95\n"
+        + geometry
+        + "\n$ Ende\n"
+    )
+
+
+def _ball_pair(tip: float, extra: str = "") -> str:
+    return (
+        "$ Anfang\n\n$ Geometriedaten\nZAHNBREITE = 20 20\nNORMALMODUL = 2.0\nEINGRIFFSWINKEL = 20\n"
+        "SCHRAEGUNGSWINKEL = 0\nZAEHNEZAHL = 12 40\nPROFILVERSCHIEBUNG_N = 0.0 0.0\n"
+        f"KOPFKREISDM = {tip} %\nWERKZEUG_VORVERZ. = WKZ_1 WKZ_2\n{extra}"
+        "\n$ WKZ_1\nKOPFHOEHENFAKTOR = 1.25\nKOPFABRUNDUNGSFAKTOR = 0.25\n"
+        "\n$ WKZ_2\nKOPFHOEHENFAKTOR = 1.25\nKOPFABRUNDUNGSFAKTOR = 0.25\n\n$ Ende\n"
+    )
+
+
+_A = "ACHSABSTAND = 91.5\n"
+_SPANS = "ZAHNWEITE = 27.827 46.21\nMESSZAEHNEZAHL = 5 8\n"
+PROBE_INPUTS.update(
+    {
+        "span_of_both_gears": (
+            "centre distance and the spans of both gears, no allowance: the spans give x_E "
+            "0.1823 / 0.3037, gear 1 gets the preset upper allowance (series c25, A_sne -0.085), "
+            "x_1 = 0.2407, x_2 = 0.5540 from the centre distance, gear 2 the rest A_sne -0.364; "
+            "the listing prints the span of gear 2 over the program's own k = 7",
+            _span_pair(_A + _SPANS),
+        ),
+        "span_with_upper_allowance_of_gear_one": (
+            "as span_of_both_gears with OBERES_ZAHNW_ABMASS of gear 1 (-50 um): gear 1 keeps it "
+            "(x_1 = 0.2189), gear 2 gets the rest (A_We -0.372)",
+            _span_pair(_A + _SPANS + "OBERES_ZAHNW_ABMASS = -50 %\n"),
+        ),
+        "span_with_upper_allowance_of_gear_two": (
+            "as span_of_both_gears with OBERES_ZAHNW_ABMASS of gear 2 only (-50 um): gear 2 "
+            "keeps it (x_2 = 0.3402), gear 1 gets the rest (A_We -0.372, x_1 = 0.4544)",
+            _span_pair(_A + _SPANS + "OBERES_ZAHNW_ABMASS = % -50\n"),
+        ),
+        "span_with_upper_allowances_of_both_gears": (
+            "as span_of_both_gears with OBERES_ZAHNW_ABMASS of both gears (-50, -60 um): the "
+            "allowance of gear 1 is kept, that of gear 2 replaced by the rest (-0.372) without "
+            "a message",
+            _span_pair(_A + _SPANS + "OBERES_ZAHNW_ABMASS = -50 -60\n"),
+        ),
+        "span_with_allowance_series": (
+            "as span_of_both_gears with ABMASS_TOL_REIHE = e26 e26: gear 1 gets the series "
+            "(A_sne -0.040, tolerance 0.060), gear 2 the rest (A_sne -0.409) with the tolerance "
+            "of the series; the listing prints series E for both",
+            _span_pair(_A + _SPANS + "ABMASS_TOL_REIHE = e26 e26\n"),
+        ),
+        "span_of_gear_one_beside_x_of_gear_two": (
+            "centre distance, the span of gear 1 and PROFILVERSCHIEBUNG_N of gear 2 (0.50): x_1 "
+            "= 0.2407 from the span and the preset allowance, x_2 = 0.5540 from the centre "
+            "distance; the given x_2 only forms x_E2 = 0.4416 with the preset allowance",
+            _span_pair(
+                _A + "ZAHNWEITE = 27.827 %\nMESSZAEHNEZAHL = 5 %\nPROFILVERSCHIEBUNG_N = % 0.50\n"
+            ),
+        ),
+        "span_of_gear_two_beside_x_of_gear_one": (
+            "centre distance, PROFILVERSCHIEBUNG_N of gear 1 (0.30) and the span of gear 2: x_1 "
+            "kept, x_2 = 0.4947 from the centre distance, x_E2 = 0.3037 from the span, gear 2 "
+            "gets the allowance that follows (A_sne -0.278)",
+            _span_pair(
+                _A + "ZAHNWEITE = % 46.21\nMESSZAEHNEZAHL = % 8\nPROFILVERSCHIEBUNG_N = 0.30 %\n"
+            ),
+        ),
+        "span_beside_x_of_the_same_gear": (
+            "centre distance, PROFILVERSCHIEBUNG_N and the span of gear 1: the span is ignored "
+            "without a message (x_1 = 0.30, nominal span 27.988)",
+            _span_pair(
+                _A + "ZAHNWEITE = 27.827 %\nMESSZAEHNEZAHL = 5 %\nPROFILVERSCHIEBUNG_N = 0.30 %\n"
+            ),
+        ),
+        "span_without_centre_distance": (
+            "the spans of both gears without ACHSABSTAND: the input is rejected",
+            _span_pair(_SPANS),
+        ),
+        "span_of_one_gear_only": (
+            "centre distance and the span of gear 1, nothing for gear 2: the input is rejected",
+            _span_pair(_A + "ZAHNWEITE = 27.827 %\nMESSZAEHNEZAHL = 5 %\n"),
+        ),
+        "spans_too_thick_for_the_centre_distance": (
+            "spans 28.200 / 46.80, thicker than the centre distance allows: rejected with "
+            "'eingegebener Achsabstand a < spielfreier Achsabstand'",
+            _span_pair(_A + "ZAHNWEITE = 28.200 46.80\nMESSZAEHNEZAHL = 5 8\n"),
+        ),
+        "generating_profile_shift_given": (
+            "PROFILVERSCHIEBUNG_F = 0.1823 0.3037 with the centre distance: the same listing as "
+            "span_of_both_gears, x_F is the generating profile shift coefficient at the upper "
+            "allowance",
+            _span_pair(_A + "PROFILVERSCHIEBUNG_F = 0.1823 0.3037\n"),
+        ),
+        "ball_dimension_given": (
+            "DIAMETRALES_MASS = 77.60 114.10 with MESSTUECKDM_KUGEL = 3.5 3.5 and the centre "
+            "distance: read like a span, x_E 0.1772 / 0.3042",
+            _span_pair(_A + "MESSTUECKDM_KUGEL = 3.5 3.5\nDIAMETRALES_MASS = 77.60 114.10\n"),
+        ),
+        "number_of_teeth_spanned_for_the_listing": (
+            "as span_of_both_gears with MESSZAEHNEZAHL_K = 5 8: the listing prints the span of "
+            "gear 2 over 8 teeth (46.552) in place of the program's own 7",
+            _span_pair(_A + _SPANS + "MESSZAEHNEZAHL_K = 5 8\n"),
+        ),
+        "measuring_ball_of_the_program": (
+            "z 12, m_n 2, x 0, tip circle 27.2: the program takes D_M = 3.5 although the "
+            "smaller table values 3.25 (not in its table) and 3.0 are excluded only by the tip",
+            _ball_pair(27.2),
+        ),
+        "measuring_ball_of_the_program_larger_tip": (
+            "as measuring_ball_of_the_program with the tip circle 27.3: D_M = 4.0, although the "
+            "ball 3.5 stands 0.71 mm above the tip circle: the choice follows the tip circle",
+            _ball_pair(27.3),
+        ),
+        "measuring_ball_given_above_the_tip": (
+            "z 12, tip circle 27.4, MESSTUECKDM_D_M = 3.25: accepted (the ball stands above the "
+            "tip circle), although 3.25 is none of the values the program chooses itself",
+            _ball_pair(27.4, "MESSTUECKDM_D_M = 3.25 %\n"),
+        ),
+        "measuring_ball_given_below_the_tip": (
+            "z 12, tip circle 27.4, MESSTUECKDM_D_M = 3.0: not accepted (the ball does not "
+            "reach the tip circle), the program's own D_M = 4.0 is used without a message",
+            _ball_pair(27.4, "MESSTUECKDM_D_M = 3.0 %\n"),
+        ),
+    }
+)
 PROBE_FILES = ("input.ste", "report.sta.txt", "interface.sts.txt", "meta.json")
 
 

@@ -50,9 +50,9 @@
       "tool 'WKZ_Profil_B_Ritzel': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
       "tool 'WKZ_Profil_B_Rad': PROTUBERANZBETRAG not given → 0 (no protuberance)",
       "tool 'WKZ_Profil_B_Rad': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
-      "gear 1: ZAHNWEITE 17.09 is not used for x (the file gives x by PROFILVERSCHIEBUNG_N or PR.VERSCH.SUMME); it is an inspection dimension",
+      "gear 1: ZAHNWEITE 17.09 is not used for x (the file gives x by PROFILVERSCHIEBUNG_N or PR.VERSCH.SUMME); STplus ignores it",
       "gear 1: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
-      "gear 2: ZAHNWEITE 17.18 is not used for x (the file gives x by PROFILVERSCHIEBUNG_N or PR.VERSCH.SUMME); it is an inspection dimension",
+      "gear 2: ZAHNWEITE 17.18 is not used for x (the file gives x by PROFILVERSCHIEBUNG_N or PR.VERSCH.SUMME); STplus ignores it",
       "gear 2: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
       "$ KONFIGURATIONSDATEN: MINDESTKOPFSPIEL = 0.1 is used in place of the preset"
     ],

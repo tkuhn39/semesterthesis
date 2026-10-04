@@ -19,6 +19,7 @@ say why. Absolute values that contradict the factors are reported as issues. ``W
 kept as written; the manual does not explain the key.
 """
 
+import json
 import math
 import sys
 from functools import lru_cache
@@ -29,9 +30,11 @@ import yaml
 from pydantic import Field, ValidationError
 from scipy.optimize import brentq
 
+from gearcore import inspection as ins
+from gearcore import involute as iv
 from gearcore import pair as pr
-from gearcore._guards import HALF_PI, pressure_angle
-from gearcore._safe import EPS, finite_input, finite_result, positive_input
+from gearcore._guards import HALF_PI, helix, pressure_angle, teeth
+from gearcore._safe import EPS, finite_input, finite_result, integer_input, positive_input
 from gearcore.data import data_path
 from gearcore.errors import (
     GeometryInfeasibleError,
@@ -40,8 +43,9 @@ from gearcore.errors import (
     ParseError,
 )
 from gearcore.io.ste import SteSection, parse_ste, tool_from_section
-from gearcore.models.common import HELIX_ANGLE_RANGE_DEG, FrozenModel
+from gearcore.models.common import HELIX_ANGLE_RANGE_DEG, FrozenModel, Pair
 from gearcore.models.inputs import ToolProfile
+from gearcore.models.results import GenerationResult
 
 DIRECTORY = "stplus_program"
 ABSOLUTE_VALUES: MappingProxyType[str, str] = MappingProxyType(
@@ -813,3 +817,277 @@ def probe_listing(name: str) -> str:
     if not isinstance(name, str) or name not in known:
         raise InputRangeError(f"unknown STplus probe {name!r}; packaged: {known}")
     return (base / name / "report.sta.txt").read_text(encoding="latin-1")
+
+
+def stplus_chord_diameter(d_Ff_mm: float, d_Fa_mm: float) -> float:
+    """Cylinder on which STplus 11.1F gives the chordal tooth thickness: the middle of the root
+    form and the tip form circle, (d_Ff + d_Fa) / 2.
+
+    Evidence: the listing prints it as 'Beruehrkreisdurchm. (oberes Abmass)'; it equals this
+    value within 0,0005 mm on all 76 distinct gears of the stored listings (2026-10-04). The
+    norm leaves the cylinder to the user and names d_a - 2 m_n as a diameter often used
+    (DIN 21773:2014-08 §5, p. 8). A rule of the program, applied only where a caller asks.
+    """
+    d_Ff = positive_input(d_Ff_mm, "root form diameter d_Ff")
+    d_Fa = positive_input(d_Fa_mm, "tip form diameter d_Fa")
+    if d_Ff >= d_Fa:
+        raise InputRangeError(
+            f"root form diameter {d_Ff!r} must lie below the tip form diameter {d_Fa!r}"
+        )
+    return 0.5 * (d_Ff + d_Fa)
+
+
+# --- choices of the program for the inspection dimensions ------------------------------------------
+#
+# Where the input gives neither, STplus 11.1F chooses the number of teeth spanned and the measuring
+# ball itself. The manual does not say how. The rules below were found by experiment on 2026-10-04:
+# the switch points of k and D_M were bisected over the tip diameter and the profile shift
+# (conditions met within 0,0005 mm), then the rules were checked on random gears. The evidence is
+# packaged (``inspection_choices.json``, written by ``scripts/stplus_inspection_choices.py``) and
+# ``tests/test_stplus_program.py`` holds the rules against every gear of it. Rules of the program,
+# not of a norm, applied only where a caller asks (ADR-109).
+
+INSPECTION_CHOICES = "inspection_choices.json"
+
+
+@lru_cache(maxsize=1)
+def stplus_inspection_evidence() -> MappingProxyType[str, Any]:
+    """Printed values of STplus listings the rules for k and D_M rest on: the measuring ball
+    diameters the program chose over a sweep of the module (``table_mm``) and random gears with
+    the k and D_M of their listings (``groups``)."""
+    text = data_path(DIRECTORY, INSPECTION_CHOICES).read_text(encoding="utf-8")
+    return MappingProxyType(json.loads(text))
+
+
+def stplus_measuring_ball_diameters() -> tuple[float, ...]:
+    """Diameters in mm from which STplus 11.1F chooses its measuring ball: 44 values from 1 to
+    110 mm, every value the program printed while the module ran from 0,3 to 70 mm.
+
+    Not DIN 3977:1981-02 Tabelle 1: the program has no value below 1 mm and none of 1,4, 3,25,
+    3,75, 4,25, 5,25, 30 and 35 mm, and it has 32, 36 and 60 to 110 mm, which the norm does
+    not list. Beyond 110 mm it prints D_M = 0.
+    """
+    return tuple(float(value) for value in stplus_inspection_evidence()["table_mm"])
+
+
+def stplus_number_of_teeth_spanned(k_min: int, k_max: int) -> int:
+    """Number of teeth spanned STplus 11.1F chooses where the input names none:
+    k = min(INT((k_min + k_max) / 2) + 1, k_max), the middle of the usable range rounded up to
+    the next number, with k_min and k_max of DIN 21773:2014-08 Eq. (12), (13) for the gear at
+    its upper allowance (first forms: the planes touch between the form circles).
+
+    Evidence: k changes exactly where the span over a whole number of teeth touches the root
+    form or the tip form circle, and all 540 gears of ``inspection_choices.json`` follow the
+    rule (as did the 1400 random gears of the exploratory runs, with wide and with narrow
+    faces: the face width does not enter). The norm chooses the k that touches next to the
+    V-cylinder (Eq. (9)).
+    """
+    lowest = integer_input(k_min, "smallest number of teeth spanned k_min")
+    highest = integer_input(k_max, "largest number of teeth spanned k_max")
+    if highest < ins.MIN_TEETH_SPANNED:
+        raise GeometryInfeasibleError(
+            f"no span touches below the tip form circle (k_max = {highest}); the evidence for the "
+            "rule of STplus holds no such gear"
+        )
+    return min(math.floor((lowest + highest) / 2) + 1, highest)
+
+
+def stplus_ideal_measuring_ball_diameter(
+    z: int, m_n_mm: float, x: float, alpha_n_rad: float, beta_rad: float, d_y_mm: float
+) -> float:
+    """Diameter STplus 11.1F takes for the ball that touches the flanks on the circle d_y:
+    D = abs(z_n m_n cos(alpha_n) (tan(alpha_K) - tan(alpha_y))) with z_n = z / cos^3(beta),
+    cos(alpha_y) = z_n m_n cos(alpha_n) / (z_n m_n + d_y - d) and
+    alpha_K = tan(alpha_y) - inv(alpha_t) + eta, eta = (pi / 2 - 2 x tan(alpha_n)) / z.
+
+    The form of DIN 3960:1987 Eq. (3.8.24) to (3.8.27), which gives the ball that touches on the
+    V-cylinder. The norm computes on the virtual spur gear throughout (z_nM = z / cos^3,3(beta),
+    inv(alpha_n), eta with z_nM); the program takes the virtual number of teeth z / cos^3(beta)
+    for the factor and for alpha_y, and the real gear for inv and eta. For a spur gear the result
+    is the exact ball; for a helical gear it is not the ball that touches on d_y (z 40,
+    beta 30 degrees: the ball it names touches about 0,95 m_n higher), and for many teeth at
+    large helix angles the bracket turns negative, of which the program takes the amount.
+    """
+    number = teeth(z)
+    m_n = positive_input(m_n_mm, "normal module m_n")
+    alpha_n = pressure_angle(alpha_n_rad, "normal pressure angle alpha_n")
+    beta = helix(beta_rad)
+    d_y = positive_input(d_y_mm, "diameter d_y")
+    d = iv.reference_diameter(number, m_n, beta)
+    z_n = number / math.cos(beta) ** 3
+    base = z_n * m_n * math.cos(alpha_n)
+    circle = z_n * m_n + d_y - d
+    if circle < base:
+        raise GeometryInfeasibleError(
+            f"d_y = {d_y!r} mm lies below the base circle of the virtual spur gear "
+            f"(z_n = {z_n!r}): no profile angle there"
+        )
+    tangent = math.tan(math.acos(min(1.0, base / circle)))
+    alpha_t = iv.transverse_pressure_angle(alpha_n, beta)
+    alpha_K = tangent - iv.inv(alpha_t) + iv.space_width_half_angle(number, x, alpha_n)
+    if not -HALF_PI < alpha_K < HALF_PI:
+        raise GeometryInfeasibleError(
+            f"alpha_K = {alpha_K!r} rad of the rule of STplus is no profile angle"
+        )
+    return finite_result(
+        abs(base * (math.tan(alpha_K) - tangent)), "ball diameter of the rule of STplus"
+    )
+
+
+def _two_ball_dimension(
+    D_M: float, z: int, m_n: float, x: float, alpha_n: float, beta: float
+) -> float | None:
+    """M_dK of the ball D_M (DIN 21773 Eq. (30), (31), (35), (36)); None where the ball does not
+    rest on the involutes of the tooth space."""
+    alpha_t = iv.transverse_pressure_angle(alpha_n, beta)
+    eta = iv.space_width_half_angle(z, x, alpha_n)
+    try:
+        alpha_Kt = ins.ball_centre_profile_angle(D_M, z, m_n, alpha_n, eta, alpha_t)
+    except GeometryInfeasibleError:
+        return None
+    d_K = ins.ball_centre_circle_diameter(iv.base_diameter(z, m_n, alpha_n, beta), alpha_Kt)
+    return ins.diametral_two_ball_dimension(d_K, D_M, z)
+
+
+def stplus_measuring_ball_diameter(
+    z: int,
+    m_n_mm: float,
+    x: float,
+    alpha_n_rad: float,
+    beta_rad: float,
+    d_a_mm: float,
+    d_Ff_mm: float,
+    d_Fa_mm: float,
+    *,
+    given_mm: float | None = None,
+) -> float:
+    """Measuring ball STplus 11.1F computes with, for the gear at its upper allowance (x = x_E).
+
+    A given ball (``MESSTUECKDM_D_M``) is taken if its diametral two-ball dimension exceeds the
+    tip diameter, whatever its diameter; a given ball that does not stand above the tip is
+    replaced by the ball the program chooses, without a message (probes
+    ``measuring_ball_given_above_the_tip``, ``measuring_ball_given_below_the_tip``).
+
+    The ball the program chooses is the larger of two values of
+    ``stplus_measuring_ball_diameters``:
+
+    A  the smallest whose diametral two-ball dimension M_dK exceeds the tip diameter d_a
+       (odd numbers of teeth with the factor cos(pi / 2z) of DIN 21773 Eq. (36));
+    B  two values below the first one above D, the ball of
+       ``stplus_ideal_measuring_ball_diameter`` for the middle of the form circles
+       (d_Ff + d_Fa) / 2; where the table has no value two below, that first one above D.
+
+    Evidence: the switch points over the tip diameter meet A and B within 0,0005 mm (spur and
+    helical gears, modules 0,5 to 4 mm), and all 540 gears of ``inspection_choices.json`` follow
+    the rule (as did the 2000 random gears of the exploratory runs). Neither DIN 3977 nor
+    DIN 21773 chooses like this: they name the ball that touches next to the V-cylinder.
+    """
+    number = teeth(z)
+    m_n = positive_input(m_n_mm, "normal module m_n")
+    alpha_n = pressure_angle(alpha_n_rad, "normal pressure angle alpha_n")
+    beta = helix(beta_rad)
+    d_a = positive_input(d_a_mm, "tip diameter d_a")
+    middle = stplus_chord_diameter(d_Ff_mm, d_Fa_mm)
+    shift = finite_input(x, "profile shift coefficient x")
+
+    def stands_above_the_tip(D_M: float) -> bool:
+        dimension = _two_ball_dimension(D_M, number, m_n, shift, alpha_n, beta)
+        return dimension is not None and dimension > d_a
+
+    if given_mm is not None and stands_above_the_tip(
+        positive_input(given_mm, "measuring ball diameter D_M")
+    ):
+        return float(given_mm)
+    table = stplus_measuring_ball_diameters()
+    above_tip = next((D_M for D_M in table if stands_above_the_tip(D_M)), None)
+    if above_tip is None:
+        raise GeometryInfeasibleError(
+            f"no ball of the table of STplus (up to {table[-1]:g} mm) stands above the tip "
+            f"diameter {d_a!r} mm; the program prints D_M = 0"
+        )
+    ideal = stplus_ideal_measuring_ball_diameter(number, m_n, shift, alpha_n, beta, middle)
+    first_above = next((i for i, value in enumerate(table) if value > ideal), len(table))
+    on_flank = table[first_above - 2] if first_above >= 2 else table[first_above]
+    return max(above_tip, on_flank)
+
+
+InspectionChoices = tuple[tuple[int, int], tuple[float, float]]
+"""(k of pinion and wheel, D_M of pinion and wheel in mm)."""
+
+
+def stplus_inspection_choices(generation: GenerationResult) -> InspectionChoices:
+    """Number of teeth spanned and measuring ball STplus 11.1F prints the inspection dimensions
+    of the generated pair with: the values of the input where it names them
+    (``number_of_teeth_spanned``, ``measuring_ball_diameter_mm``), else the rules of the program
+    (``stplus_number_of_teeth_spanned``, ``stplus_measuring_ball_diameter``) for the gears at
+    their upper allowance.
+
+    The choice changes which dimension is printed, not the gear: profile shift, tooth thickness
+    and allowances do not depend on it. gearcore itself chooses by the norm (DIN 21773 Eq. (9),
+    DIN 3977 Tabelle 1); ``with_stplus_inspection_choices`` states the choices of STplus as
+    inputs for a caller who wants the dimensions of an STplus listing.
+    """
+    if not isinstance(generation, GenerationResult):
+        raise InputRangeError(
+            f"generation must be a GenerationResult, got {type(generation).__name__}"
+        )
+    pair = generation.inputs
+    m_n = pair.normal_module_mm
+    alpha_n = math.radians(pair.normal_pressure_angle_deg)
+    numbers: list[int] = []
+    balls: list[float] = []
+    for index, (gear, generated) in enumerate(
+        zip(pair.gears.as_tuple(), generation.gears.as_tuple(), strict=True)
+    ):
+        beta = math.radians(pair.helix_angle_deg) * (1.0 if index == 0 else -1.0)
+        z, x_E = generated.number_of_teeth, generated.generating_profile_shift_coefficient
+        d_Ff, d_Fa = generated.root_form_diameter_mm, generated.tip_form_diameter_mm
+        if gear.number_of_teeth_spanned is not None:
+            numbers.append(gear.number_of_teeth_spanned)
+        else:
+            numbers.append(
+                stplus_number_of_teeth_spanned(
+                    ins.min_number_of_teeth_spanned(z, m_n, x_E, alpha_n, beta, d_Ff),
+                    ins.max_number_of_teeth_spanned(z, m_n, x_E, alpha_n, beta, d_Fa),
+                )
+            )
+        balls.append(
+            stplus_measuring_ball_diameter(
+                z,
+                m_n,
+                x_E,
+                alpha_n,
+                beta,
+                generated.tip_diameter_mm,
+                d_Ff,
+                d_Fa,
+                given_mm=gear.measuring_ball_diameter_mm,
+            )
+        )
+    return (numbers[0], numbers[1]), (balls[0], balls[1])
+
+
+def with_stplus_inspection_choices(
+    generation: GenerationResult, choices: InspectionChoices | None = None
+) -> GenerationResult:
+    """The generation with k and D_M stated as inputs of its gears: ``choices``, or without them
+    the choices of STplus (``stplus_inspection_choices``). ``compute_inspection`` of the result
+    gives the inspection dimensions as an STplus listing prints them; nothing else changes.
+
+    Where a choice of STplus does not touch the involute between the form circles (extreme
+    gears: the rule for the ball is not exact on helical gears), ``compute_inspection`` raises
+    ``GeometryInfeasibleError`` for it as for any such input.
+    """
+    k, D_M = stplus_inspection_choices(generation) if choices is None else choices
+    if not (isinstance(k, tuple) and isinstance(D_M, tuple) and len(k) == 2 and len(D_M) == 2):
+        raise InputRangeError(f"choices must be ((k_1, k_2), (D_M1, D_M2)), got {choices!r}")
+    k = (integer_input(k[0], "k of the pinion"), integer_input(k[1], "k of the wheel"))
+    D_M = (positive_input(D_M[0], "D_M of the pinion"), positive_input(D_M[1], "D_M of the wheel"))
+    gears = [
+        gear.model_copy(
+            update={"number_of_teeth_spanned": k[index], "measuring_ball_diameter_mm": D_M[index]}
+        )
+        for index, gear in enumerate(generation.inputs.gears.as_tuple())
+    ]
+    inputs = generation.inputs.model_copy(update={"gears": Pair(pinion=gears[0], wheel=gears[1])})
+    return generation.model_copy(update={"inputs": inputs})

@@ -37,8 +37,8 @@
       "tool 'T2': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
       "$ KONFIGURATIONSDATEN: TANG_BETRAG_ZU_H_KGF has 2 values; the first holds for both gears, as in STplus (a second one belongs to a third gear)",
       "$ KONFIGURATIONSDATEN: TANG_BETRAG_ZU_H_KGF = 1 is used in place of the preset",
-      "gear 1: residual tip thickness of the chamfer → s_aK = 0.2979217651820827 mm in the normal section (0.2979217651820827 mm transverse) by the STplus rule s_an - 2 (1 h_K), at least 0,2 s_an, with s_an = 0.4979217651820827 mm of the gear without tooth thickness allowance (STplus presets the series c25, increment 5)",
-      "gear 2: residual tip thickness of the chamfer → s_aK = 0.4191479098860412 mm in the normal section (0.4191479098860412 mm transverse) by the STplus rule s_an - 2 (1 h_K), at least 0,2 s_an, with s_an = 1.0191479098860412 mm of the gear without tooth thickness allowance (STplus presets the series c25, increment 5)"
+      "gear 1: residual tip thickness of the chamfer → s_aK = 0.2979217651820827 mm in the normal section (0.2979217651820827 mm transverse) by the STplus rule s_an - 2 (1 h_K), at least 0,2 s_an, with s_an = 0.4979217651820827 mm of the gear at the upper allowance the file states (without one: no allowance; STplus presets the series c25, increment 5)",
+      "gear 2: residual tip thickness of the chamfer → s_aK = 0.4191479098860412 mm in the normal section (0.4191479098860412 mm transverse) by the STplus rule s_an - 2 (1 h_K), at least 0,2 s_an, with s_an = 1.0191479098860412 mm of the gear at the upper allowance the file states (without one: no allowance; STplus presets the series c25, increment 5)"
     ],
     "ok": true,
     "unmapped_keys": []

@@ -79,6 +79,15 @@ sources:
     file: "00_literatur/05_normen_und_richtlinien/DIN_3964_1980-11-00_DE_1103233.pdf"
     verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
     confirmed_by_user: true
+  DIN3977:1981:
+    type: norm
+    title: "DIN 3977:1981-02 Meßstückdurchmesser für das radiale oder diametrale Prüfmaß der Zahndicke an Stirnrädern (Zylinderrädern)"
+    edition: "1981-02"
+    file: "00_literatur/05_normen_und_richtlinien/DIN_3977_1981-02-00_DE_1103519.pdf"
+    verified:
+      { method: pdf-header, by: "claude/rendered page", date: "2026-10-04" }
+    confirmed_by_user: true
+    notes: "Supplied by the user on 2026-10-04 for the measuring ball diameters (increment 4). Title page: 'Februar 1981', English title 'Cylindrical gears; diameters of balls or pins for ball or pin measurements'; no 'zurückgezogen' watermark on its pages. Still valid (user, 2026-10-04), although DIN 21773:2014-08 does not cite it. EN copy: DIN_3977_1981-02-00_EN_1103528.pdf, titled 'Measuring element diameters for the radial or diametral dimension for testing tooth thickness of cylindrical gears'. Content: Tabelle 1 (p. 1) 55 nominal diameters D_M of measuring balls and rollers from 0,17 mm to 50 mm; section 6 (p. 2) admissible radial distance between measuring circle and V-cylinder (external gears +0,5 m_n to -0,1 m_n, internal gears +0,1 m_n to -0,3 m_n); Bild 1 to 3 (p. 3 to 5) diagrams for alpha_n = 20 deg; Anhang A (p. 6, 7) Eq. (1) to (7): actual tooth thickness allowance from a measured radial ball dimension and its sensitivities. Refers to DIN 3960 for the equations; their current home is DIN 21773:2014-08 Eq. (26) to (34), which does not cite DIN 3977."
   DINISO1328-1:2018:
     type: norm
     title: "DIN ISO 1328-1:2018-03 Zylinderräder – ISO-Toleranzsystem – Teil 1: Definitionen und zulässige Werte für Abweichungen an Zahnflanken (ISO 1328-1:2013)"

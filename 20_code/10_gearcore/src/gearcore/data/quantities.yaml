@@ -196,7 +196,7 @@ quantities:
     stplus: { symbol: "W_k", label: "Zahnweite (Nennmass)", input_key: "ZAHNWEITE", interface_key: "ZAHNWEITE" }
     replaced:
       - { symbol: "W_k", description: "Zahnweite über k Meßzähne oder Meßlücken", source: "DIN3960:1987", location: "§2.1, p. 4" }
-    note: "Inspection dimensions are governed by DIN 21773:2014-08 (increment 4); the entry is reviewed there."
+    note: "Governed by DIN 21773:2014-08 §7 (symbol list p. 7: 'Zahnweite'; Eq. (14), p. 13). A contract field of this quantity holds nominal dimension and limits (§4, p. 8): the equation gives the nominal span with x and the upper limit, the mean and the lower limit with x_Es, x_Em and x_Ei."
     since: 0
     status: verified
   number_of_teeth_spanned:
@@ -1556,6 +1556,474 @@ quantities:
     status: verified
 
   # ---- contract fields of later increments -------------------------------------------------------
+  # ---- inspection dimensions (increment 4): DIN 21773:2014-08, DIN 3977:1981-02 ------------------
+  v_circle_diameter:
+    symbol: "d_v"
+    unit: "mm"
+    description: "V-Kreis-Durchmesser"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 5"
+    english: { text: "V-circle diameter", source: "DIN3977:1981", location: "English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1" }
+    also:
+      - { symbol: "d_v", description: "V-Kreis-Durchmesser", source: "ISO21771:2014", location: "§4.5.1 Eq. (32), p. 33" }
+    stplus: null
+    replaced:
+      - { symbol: "d_v", description: "V-Kreis-Durchmesser", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "d_v = d + 2 x m_n (DIN ISO 21771 Eq. (32)). The measuring planes and the measuring balls are to touch next to the V-cylinder (DIN 21773 §7.2, §8). With x_E in place of x it is the V-circle of the generated gear (DIN 3977 Bild 1)."
+    since: 4
+    status: verified
+  profile_angle_at_v_circle:
+    symbol: "alpha_vt"
+    unit: "deg"
+    description: "Eingriffswinkel am V-Kreis"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 7 (alpha_v); Eq. (9), p. 12 (alpha_vt)"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "alpha_v", description: "Profilwinkel am V-Zylinder", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "The symbol list prints alpha_v, Eq. (9), (26) and (27) the transverse angle alpha_vt: cos(alpha_vt) = d_b / d_v. Argument of functions only."
+    since: 4
+    status: verified
+  normal_base_pitch:
+    symbol: "p_bn"
+    unit: "mm"
+    description: "Normal-Grundkreisteilung"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6"
+    english: null
+    also:
+      - { symbol: "p_bn", description: "Normalgrundkreisteilung", source: "ISO21771:2014", location: "§4.4.5 Eq. (29), p. 33" }
+    stplus: null
+    replaced: []
+    note: "p_bn = p_n cos(alpha_n) (DIN ISO 21771 Eq. (29)); third form of DIN 21773 Eq. (14): W_k = (k - 1) p_bn + s_bn."
+    since: 4
+    status: verified
+  normal_base_tooth_thickness:
+    symbol: "s_bn"
+    unit: "mm"
+    description: "Normalzahndicke am Grundzylinder"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "s_b", description: "Grundzahndicke (auf dem Grundzylinder)", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "s_bn = d_b psi_b cos(beta_b) (DIN ISO 21771 Eq. (38), (48) on the base cylinder)."
+    since: 4
+    status: verified
+  chordal_tooth_thickness:
+    symbol: "s_c"
+    unit: "mm"
+    description: "Zahndickensehne"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6; §5 Eq. (3), (4), p. 9"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "s-bar", description: "Zahndickensehne", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "Normal chordal tooth thickness on the reference cylinder. DIN 3960 prints s with a bar above it, written 's-bar' here. A contract field of this quantity holds nominal dimension and limits (DIN 21773 §4)."
+    since: 4
+    status: verified
+  height_above_chord:
+    symbol: "h_c"
+    unit: "mm"
+    description: "Höhe über der Zahndickensehne"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6; §5 Eq. (6), p. 10"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "h-bar_a", description: "Höhe über der Sehne s-bar_n", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "Measured from the tip circle (Eq. (6)); 'Sehnenkopfhöhe' (Anmerkung, p. 10)."
+    since: 4
+    status: verified
+  chordal_tooth_thickness_at_y:
+    symbol: "s_cy"
+    unit: "mm"
+    description: "Zahndickensehne am Y-Zylinder"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6; §5 Eq. (1), (2), p. 9"
+    english: null
+    also: []
+    stplus: { symbol: "s_n-", label: "Zahndickensehne (Nennmass)", input_key: null, interface_key: "ZAHNDICKENSEHNE" }
+    replaced: []
+    note: "STplus prints the chord on the cylinder (d_Ff + d_Fa) / 2, the middle of the form circles (its 'Beruehrkreisdurchm. (oberes Abmass)'; 76 gears of the stored listings within 0,0005 mm); DIN 21773 §5 names d_a - 2 m_n as a diameter often used."
+    since: 4
+    status: verified
+  height_above_chord_at_y:
+    symbol: "h_cy"
+    unit: "mm"
+    description: "Höhe über der Zahndickensehne am Y-Zylinder"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6; §5 Eq. (5), p. 10"
+    english: null
+    also: []
+    stplus: { symbol: "h_a-", label: "Hoehe ueber der Zahndickensehne", input_key: null, interface_key: "HOEHE_UEBER_ZAHNSEHNE" }
+    replaced: []
+    note: null
+    since: 4
+    status: verified
+  constant_chord:
+    symbol: "s_cc"
+    unit: "mm"
+    description: "Konstante Sehne"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6; §6 Eq. (7), p. 11"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "s-bar_c", description: "Konstante Sehne", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: null
+    since: 4
+    status: verified
+  height_above_constant_chord:
+    symbol: "h_cc"
+    unit: "mm"
+    description: "Höhe über der konstanten Sehne"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6; §6 Eq. (8), p. 11"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "h-bar_c", description: "Höhe über der konstanten Sehne s-bar_c", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: null
+    since: 4
+    status: verified
+  min_number_of_teeth_spanned:
+    symbol: "k_min"
+    unit: "-"
+    description: "(kleinste Messzähnezahl des nutzbaren Zahlenbereichs, durch den Fußformkreis begrenzt)"
+    source: "DIN21773:2014"
+    location: "§7.2 Eq. (12), p. 12"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "First form of Eq. (12); the second form (with s_bn and p_bn) is smaller by 0,5 inside INT as printed."
+    since: 4
+    status: verified
+  max_number_of_teeth_spanned:
+    symbol: "k_max"
+    unit: "-"
+    description: "(größte Messzähnezahl des nutzbaren Zahlenbereichs, durch den Kopfformkreis begrenzt)"
+    source: "DIN21773:2014"
+    location: "§7.2 Eq. (13), p. 12"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "First form of Eq. (13); the second form (with s_bn and p_bn) is smaller by 0,5 inside INT as printed."
+    since: 4
+    status: verified
+  contact_line_overlap:
+    symbol: "b_M"
+    unit: "mm"
+    description: "Berührgeraden-Überdeckung"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 5; §7.2 Eq. (16), p. 13"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "b_M", description: "Berührgeraden-Überdeckung (bei Zahnweitenmessungen)", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "DIN 21773 gives b_M = 1,2 + 0,018 W_k and derives the smallest usable face width from it; DIN 3960 Eq. (3.8.23) computed b_M from the face width."
+    since: 4
+    status: verified
+  min_usable_face_width:
+    symbol: "b_Fmin"
+    unit: "mm"
+    description: "Mindestwert der nutzbaren Zahnbreite"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 5; §7.2 Eq. (15), p. 13"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "For the span measurement of a helical gear. STplus prints a message 'Mindestbreite zum Zahnweitenmessen' where the face width is too small."
+    since: 4
+    status: verified
+  span_measuring_circle_diameter:
+    symbol: "d_M"
+    unit: "mm"
+    description: "Messkreisdurchmesser"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6; §7.2 Eq. (17), p. 14"
+    english: null
+    also: []
+    stplus: { symbol: null, label: null, input_key: null, interface_key: "BERUEHRKREISDM_ZAHNW" }
+    replaced:
+      - { symbol: "d_M", description: "Meßkreisdurchmesser (an Berührstelle mit Meßgerät)", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "Circle on which the measuring planes of the span touch the flanks. Eq. (17) is printed for a spur gear; for a helical gear d_M = sqrt(d_b^2 + (W_k cos beta_b)^2) (DIN 3960 Eq. (3.8.15), p. 21). STplus prints it at the upper allowance ('Beruehrkreisdurchm. (Zahnweitenmessg.)')."
+    since: 4
+    status: verified
+  measuring_ball_diameter:
+    symbol: "D_M"
+    unit: "mm"
+    description: "Messkugeldurchmesser"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6; §8, p. 18"
+    english: { text: "diameter of measuring ball or measuring roller (measuring element diameter)", source: "DIN3977:1981", location: "English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1" }
+    also:
+      - { symbol: "D_M", description: "Meßkugel- oder Meßrollendurchmesser (Meßstückdurchmesser)", source: "DIN3977:1981", location: "Abschnitt 3, p. 1; Tabelle 1, p. 1" }
+    stplus: { symbol: "D_M", label: "Messtueckdurchmesser", input_key: "MESSTUECKDM_D_M", interface_key: "MESSSTUECKDURCHM" }
+    replaced:
+      - { symbol: "D_M", description: "Meßkugel- oder Meßrollendurchmesser", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "The diameter that is used: every dimension is computed with the actual diameter of the chosen ball (DIN 21773 p. 20). Nominal diameters: DIN 3977 Tabelle 1. The module factor D_M* is the 'Messkugeldurchmesserfaktor' of Eq. (28)."
+    since: 4
+    status: verified
+  ideal_measuring_ball_diameter:
+    symbol: "D_M"
+    unit: "mm"
+    description: "(Messkugeldurchmesser, bei dem die Berührpunkte auf dem V-Zylinder liegen)"
+    source: "DIN21773:2014"
+    location: "§8 Eq. (26), (27), p. 18"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Not a ball that exists: the diameter Eq. (26) gives; the ball that is used is selected from DIN 3977 Tabelle 1 after it."
+    since: 4
+    status: verified
+  ball_centre_profile_angle:
+    symbol: "alpha_Kt"
+    unit: "deg"
+    description: "Profilwinkel am Kreis durch den Mittelpunkt der Messkugel"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 7 (alpha_K); §8 Eq. (27), (30), p. 18, 20 (alpha_Kt)"
+    english: { text: "transverse pressure angle on circle through centres of measuring balls", source: "DIN3977:1981", location: "English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1" }
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "alpha_Kt", description: "Profilwinkel im Stirnschnitt am Kugelmittelpunkt-Kreis", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "The symbol list prints alpha_K, the equations the transverse angle alpha_Kt."
+    since: 4
+    status: verified
+  ball_centre_circle_diameter:
+    symbol: "d_K"
+    unit: "mm"
+    description: "Kreisdurchmesser der Messkugelmittelpunkte"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6; §8 Eq. (31), p. 20"
+    english: { text: "diameter of circle through centres of measuring balls", source: "DIN3977:1981", location: "English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1" }
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "d_K", description: "Durchmesser des Kugelmittelpunkt-Kreises", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: null
+    since: 4
+    status: verified
+  measuring_circle_profile_angle:
+    symbol: "alpha_Mt"
+    unit: "deg"
+    description: "Profilwinkel am Kreis mit dem Durchmesser d_M"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 7 (alpha_M); §8 Eq. (33), (34), p. 20 (alpha_Mt)"
+    english: { text: "pressure angle on measuring circle", source: "DIN3977:1981", location: "English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1" }
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "alpha_Mt", description: "Profilwinkel im Stirnschnitt am Meßkreis", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: null
+    since: 4
+    status: verified
+  ball_measuring_circle_diameter:
+    symbol: "d_M"
+    unit: "mm"
+    description: "Messkreisdurchmesser"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6; §8 Eq. (33), p. 20"
+    english: { text: "measuring circle diameter (at point of contact of tooth flanks with measuring ball or measuring roller)", source: "DIN3977:1981", location: "English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1" }
+    also: []
+    stplus: { symbol: null, label: null, input_key: null, interface_key: "BERUEHRKREISDM_ZWEIK" }
+    replaced: []
+    note: "Cylinder on which the contact points of the measuring ball with the two flanks lie. STplus prints it at the upper allowance ('Beruehrkreisdurchmesser (Kugel/Flanke)')."
+    since: 4
+    status: verified
+  measuring_circle_offset:
+    symbol: null
+    unit: "mm"
+    description: "(radialer Abstand zwischen Meßkreis und V-Zylinder)"
+    source: "DIN3977:1981"
+    location: "Abschnitt 6, p. 2"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "0,5 (d_M - d_v); DIN 3977 admits +0,5 m_n to -0,1 m_n for an external gear. Carried as a module factor."
+    since: 4
+    status: verified
+  radial_single_ball_dimension:
+    symbol: "M_rK"
+    unit: "mm"
+    description: "Radiales Einkugelmaß"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 7; §8 Eq. (32), p. 20"
+    english: { text: "radial single-ball dimension", source: "DIN3977:1981", location: "English translation of the norm (DIN_3977_1981-02-00_EN), section 3, p. 1" }
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "M_rK", description: "Radiales Einkugelmaß", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: null
+    since: 4
+    status: verified
+  radial_single_roller_dimension:
+    symbol: "M_rZ"
+    unit: "mm"
+    description: "Radiales Einrollenmaß"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 7; §9, p. 20"
+    english: null
+    also:
+      - { symbol: "M_rR", description: "Radiales Einrollenmaß", source: "DIN3977:1981", location: "Abschnitt 3, p. 1" }
+    stplus: null
+    replaced:
+      - { symbol: "M_rR", description: "Radiales Einrollenmaß", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "Index Z (Messzylinder) in DIN 21773, R (Meßrolle) in DIN 3960 and DIN 3977. Equal to the radial single-ball dimension (§9)."
+    since: 4
+    status: verified
+  diametral_two_ball_dimension:
+    symbol: "M_dK"
+    unit: "mm"
+    description: "Diametrales Zweikugelmaß"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6; §10 Eq. (35), (36), p. 21"
+    english: null
+    also: []
+    stplus: { symbol: "M_dK", label: "Diam. Zweikugelmass (Nennmass)", input_key: "DIAMETRALES_MASS", interface_key: "DIAMETR_ZWEIKUGELMASS" }
+    replaced:
+      - { symbol: "M_dK", description: "Diametrales Zweikugelmaß", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "A contract field of this quantity holds nominal dimension and limits (DIN 21773 §4). STplus reads DIAMETRALES_MASS with MESSTUECKDM_KUGEL as the dimension of the finished gear."
+    since: 4
+    status: verified
+  diametral_two_roller_dimension:
+    symbol: "M_dZ"
+    unit: "mm"
+    description: "Diametrales Zweirollenmaß"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 6; §11, p. 22"
+    english: null
+    also: []
+    stplus: { symbol: "M_dR", label: "Diam. Zweirollenmass (Nennmass)", input_key: null, interface_key: null }
+    replaced:
+      - { symbol: "M_dR", description: "Diametrales Zweirollenmaß", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "Index Z in DIN 21773, R in DIN 3960 and in STplus; Eq. (37) of DIN 21773 itself prints M_dR. On a helical gear with an odd number of teeth it is twice the radial single-roller dimension."
+    since: 4
+    status: verified
+  overcut_tip_diameter:
+    symbol: "d_aM"
+    unit: "mm"
+    description: "Durchmesser des überschnittenen Kopfzylinders"
+    source: "DIN21773:2014"
+    location: "§3.1 symbol list, p. 5; §13 Eq. (40), p. 23"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "d_aM", description: "Kopfkreisdurchmesser bei überschnittenen Stirnrädern", source: "DIN3960:1987", location: "§2.1, p. 2" }
+    note: "d_aM = d + 2 x_Es m_n + 2 h_fP0: the tip circle a tool with a root line generates (the cut of ADR-114)."
+    since: 4
+    status: verified
+  tooth_thickness_tolerance:
+    symbol: "T_sn"
+    unit: "µm"
+    description: "Zahndickentoleranz"
+    source: "DIN21773:2014"
+    location: "§14.1, p. 24 ('halben Zahndickentoleranz (1/2 T_sn)'); §14.2 Eq. (45), p. 24"
+    english: null
+    also:
+      - { symbol: "T_sn", description: "Zahndickentoleranz im Normalschnitt", source: "DIN3967:1978", location: "Anhang A.1.1, p. 7" }
+    stplus: null
+    replaced:
+      - { symbol: "T_s", description: "Zahndickentoleranz", source: "DIN3960:1987", location: "§2.1, p. 4" }
+    note: "T_sn = E_sns - E_sni."
+    since: 4
+    status: verified
+  mean_tooth_thickness_allowance:
+    symbol: "E_snm"
+    unit: "µm"
+    description: "mittleres Zahndickenabmaß"
+    source: "DIN21773:2014"
+    location: "§14.1 Eq. (43), p. 24"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: null
+    since: 4
+    status: verified
+  mean_generating_profile_shift_coefficient:
+    symbol: "x_Em"
+    unit: "-"
+    description: "mittlerer Erzeugungs-Profilverschiebungsfaktor"
+    source: "DIN21773:2014"
+    location: "§14.1 Eq. (44), p. 24"
+    english: null
+    also: []
+    stplus: null
+    replaced:
+      - { symbol: "x_Em", description: "Mittlerer Erzeugungs-Profilverschiebungsfaktor", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: null
+    since: 4
+    status: verified
+  span_allowance_factor:
+    symbol: "E_W*"
+    unit: "-"
+    description: "Abmaßfaktor der Zahnweite"
+    source: "DIN21773:2014"
+    location: "§14.4 Eq. (54), p. 25"
+    english: null
+    also: []
+    stplus: { symbol: "A_W/A_Sn", label: "Zahnweitenabmassfaktor", input_key: null, interface_key: "ZAHNWEITENABMASSFAKTOR" }
+    replaced: []
+    note: "E_W* = cos(alpha_n). The star belongs to the symbol (Abmaßfaktor E*, §3.1, p. 6); it is no module factor."
+    since: 4
+    status: verified
+  chordal_tooth_thickness_allowance_factor:
+    symbol: "E_scny*"
+    unit: "-"
+    description: "(Abmaßfaktor der Zahndickensehne am Durchmesser d_y)"
+    source: "DIN21773:2014"
+    location: "§14.3 Eq. (48), (51), p. 25"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "1 on the reference cylinder (Eq. (48)), which the norm sets 'bei Zähnezahlen über z = 12 im Allgemeinen' (p. 25). STplus prints the tooth thickness allowance itself as the allowance of its chord ('oberes Abmass der Z.dickensehne')."
+    since: 4
+    status: verified
+  radial_ball_dimension_allowance_factor:
+    symbol: "E_MrK*"
+    unit: "-"
+    description: "Abmaßfaktor des radialen Einkugel- oder Einrollenmaßes"
+    source: "DIN21773:2014"
+    location: "§14.5 Eq. (57), p. 25"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: null
+    since: 4
+    status: verified
+  diametral_ball_dimension_allowance_factor:
+    symbol: "E_MdK*"
+    unit: "-"
+    description: "Abmaßfaktor des diametralen Zweikugel- bzw. Zweirollenmaßes"
+    source: "DIN21773:2014"
+    location: "§14.6 Eq. (60), (61), p. 26"
+    english: null
+    also: []
+    stplus: { symbol: "A_Md/A_sn", label: "Abmassfaktor", input_key: null, interface_key: "DIAMETR_ABMASSFAKTOR" }
+    replaced: []
+    note: "The norm's factor is the derivative at alpha_Kt. STplus prints the ratio of its upper diametral allowance to the upper tooth thickness allowance, A_Mde / A_sne (85 stored listings), which differs from the derivative where the allowance is large. The factor belongs to the two-ball dimension; rollers on a helical gear with an odd number of teeth lie opposite each other (§11) and have twice E_MrK*."
+    since: 4
+    status: verified
   tooth_thickness_allowance:
     symbol: "E_sns/E_sni"
     unit: "µm"
@@ -1571,18 +2039,19 @@ quantities:
     since: 0
     status: verified
   span_allowance:
-    symbol: "A_We/A_Wi"
+    symbol: "E_Ws/E_Wi"
     unit: "µm"
-    description: null
-    source: null
-    location: null
+    description: "(oberes Abmaß der Zahnweite / unteres Abmaß der Zahnweite; E_W in §14.1, indices s and i of §3.2)"
+    source: "DIN21773:2014"
+    location: "§14.1, p. 23; §3.2, p. 8; §14.4 Eq. (54) to (56), p. 25"
     english: null
     also: []
-    stplus: { symbol: "A_We", label: null, input_key: "OBERES_ZAHNW_ABMASS", interface_key: "OBERES_ZAHNWEITENABM" }
-    replaced: []
-    note: "Symbols as STplus prints them (DIN 3967 notation); the current symbols are verified in increment 5."
+    stplus: { symbol: "A_We", label: "oberes Zahnweitenabmass", input_key: "OBERES_ZAHNW_ABMASS", interface_key: "OBERES_ZAHNWEITENABM" }
+    replaced:
+      - { symbol: "A_W", description: "Zahnweitenabmaß", source: "DIN3960:1987", location: "§2.1, p. 3" }
+    note: "Pair (upper, lower). E_W = E_sn cos(alpha_n) (Eq. (54)); the generation converts a span allowance into the tooth thickness allowance. STplus writes A_We / A_Wi (index e for the upper, i for the lower allowance, as DIN 3967 writes A_sne / A_sni)."
     since: 0
-    status: pending
+    status: verified
   quality_grade:
     symbol: "Q"
     unit: "-"

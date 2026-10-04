@@ -1,7 +1,23 @@
 {
+  "$defs": {
+    "DimensionKind": {
+      "description": "Which dimension a given inspection dimension is (DIN 21773:2014-08 §4, p. 8).\n\nThe same equation gives the nominal dimension with the profile shift coefficient x and the\nlimits of the finished gear with the generating profile shift coefficients: a number alone\ndoes not say which of the four it is, so an input states it (user decision 2026-10-04,\nADR-107). STplus reads a given dimension as the upper limit (manual p. 16: \"gilt für die\nFertigverzahnung (Ist-Prüfmaß)\"); the ``.ste`` importer states that.",
+      "enum": [
+        "nominal",
+        "upper_limit",
+        "mean",
+        "lower_limit"
+      ],
+      "title": "DimensionKind",
+      "type": "string"
+    }
+  },
   "additionalProperties": false,
-  "description": "Base tangent length W_k over k teeth (DIN 21773:2014-08 §7, Eq. (14)).\n\nCarried as given and not evaluated yet. A span and a profile shift coefficient determine\neach other; whether a given span stands for the nominal x or, with the tooth thickness\nallowance, for x_E is settled with increments 4 and 5 (open in ADR-107).",
+  "description": "Span measurement W_k over k teeth given as an input (DIN 21773:2014-08 §7, Eq. (14)).\n\n``kind`` says which dimension the value is; it determines x (nominal) or one of the\ngenerating profile shift coefficients x_Es, x_Em, x_Ei of the gear (§4, p. 8).",
   "properties": {
+    "kind": {
+      "$ref": "#/$defs/DimensionKind"
+    },
     "span_measurement_mm": {
       "description": "Span measurement",
       "designation": "Zahnweite über k Messzähne oder Messlücken",
@@ -36,6 +52,7 @@
     }
   },
   "required": [
+    "kind",
     "span_measurement_mm",
     "number_of_teeth_spanned"
   ],

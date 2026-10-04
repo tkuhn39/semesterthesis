@@ -1,0 +1,16 @@
+# DIN 3977:1981-02, Tabelle 1 (p. 1): "Nennmaße der Durchmesser D_M der Meßkugeln und Meßrollen
+# (Meßdrähte, Prüfstifte) = Meßstückdurchmesser D_M in mm". Transcribed column by column from the
+# rendered page on 2026-10-04 (five columns of eleven values); the English copy prints the same
+# numbers. "Die Werte unter 1 mm sind gleich den Meßdrahtdurchmessern, die auch für
+# Gewindemessungen nach der Dreidrahtmethode benutzt werden."
+source: "DIN3977:1981"
+location: "Tabelle 1, p. 1"
+transcribed: { by: "claude/rendered page", date: "2026-10-04" }
+diameters_mm:
+  [
+    0.17, 0.195, 0.22, 0.25, 0.29, 0.335, 0.39, 0.455, 0.53, 0.62, 0.725,
+    0.895, 1, 1.1, 1.25, 1.4, 1.5, 1.75, 2, 2.25, 2.5, 2.75,
+    3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 5, 5.25, 5.5, 6,
+    6.5, 7, 7.5, 8, 9, 10, 10.5, 11, 12, 14, 15,
+    16, 18, 20, 22, 25, 28, 30, 35, 40, 45, 50,
+  ]

@@ -8,9 +8,12 @@ gear pairs (``z_2 / |z_2| = +1``); internal pairs are a prepared extension point
 
 Which values are given (ADR-107). Of the centre distance a_w and the nominal profile shift
 coefficients x_1, x_2 exactly two are given; the third follows from Eq. (54), (55) and (62). A
-given centre distance is fixed. All three given is an input error. A span measurement is not
-evaluated yet: how a given span determines the profile shift (DIN 21773:2014-08 Eq. (14)) is
-settled with the inspection dimensions and allowances (increments 4 and 5, open in ADR-107).
+given centre distance is fixed. All three given is an input error. An inspection dimension
+(span, two-ball dimension) of an input states which dimension it is (DIN 21773:2014-08 §4): a
+nominal one determines x, a limit of the finished gear one of x_Es, x_Em, x_Ei, and x, the
+generating profile shift coefficient and the tooth thickness allowance determine each other
+(DIN ISO 21771 Eq. (123), (124)). ``resolve_tooth_thickness`` works out what the inputs of a
+pair determine and raises where they say too much or too little (user decisions 2026-10-04).
 
 Tip diameters. The mesh needs the tip diameters. They are an input; the nominal value of
 Eq. (33) is available through ``with_nominal_tip_diameters`` as an explicit choice (it needs the
@@ -53,22 +56,29 @@ same pair behaves the same at every module:
 """
 
 import math
+from dataclasses import dataclass
 
 from pydantic import ValidationError
 
+from gearcore import inspection as ins
 from gearcore import involute as iv
 from gearcore._guards import HALF_PI, helix, pressure_angle, teeth
 from gearcore._safe import EPS, finite_input, finite_result, positive_input, safe_acos, safe_div
 from gearcore.errors import GeometryInfeasibleError, InputRangeError, NotSupportedError
 from gearcore.models.common import PROFILE_SHIFT_RANGE, InputWarning, Pair
-from gearcore.models.inputs import GearKind, PairInput
+from gearcore.models.inputs import DimensionKind, GearInput, GearKind, PairInput
 from gearcore.models.results import BasicGearGeometry, PairGeometry
 from gearcore.rack import has_edge_break_flank
 from gearcore.trace import eq
 
 SOURCE = "ISO21771:2014"
 
-EQ_EXEMPT = ("compute_pair_geometry", "resolve_profile_shift", "with_nominal_tip_diameters")
+EQ_EXEMPT = (
+    "compute_pair_geometry",
+    "resolve_profile_shift",
+    "resolve_tooth_thickness",
+    "with_nominal_tip_diameters",
+)
 """Orchestrators assemble results from traced functions and carry no equation of their own."""
 
 
@@ -537,6 +547,10 @@ def specific_sliding_of_wheel(rho_y1_mm: float, rho_y2_mm: float, u: float) -> f
 ROLES = ("pinion", "wheel")
 
 
+def _warning(code: str, field: str, message: str) -> InputWarning:
+    return InputWarning(code=code, field=field, message=message)
+
+
 def _checked(pair: PairInput) -> PairInput:
     """The pair as the contract validates it.
 
@@ -570,58 +584,251 @@ def _pair_of_numbers(value: Pair[float] | None, what: str) -> tuple[float, float
     )
 
 
-def _derived_shift(x: float, role: str) -> float:
-    """A profile shift coefficient that follows from the centre distance, within the range the
-    contract admits for a given one (rounding noise within ``EPS`` beyond a limit is the limit)."""
+def _derived_shift(x: float, role: str, origin: str = "the centre distance") -> float:
+    """A profile shift coefficient that follows from ``origin``, within the range the contract
+    admits for a given one (rounding noise within ``EPS`` beyond a limit is the limit)."""
     low, high = PROFILE_SHIFT_RANGE
     if low <= x <= high:
         return x
     if low - EPS <= x <= high + EPS:
         return low if x < low else high
     raise GeometryInfeasibleError(
-        f"{role}: the profile shift coefficient that follows from the centre distance, "
+        f"{role}: the profile shift coefficient that follows from {origin}, "
         f"x = {x!r}, lies outside the verified range {PROFILE_SHIFT_RANGE}"
     )
 
 
-def _resolve(pair: PairInput) -> tuple[float, float, float, float]:
-    """``resolve_profile_shift`` for a pair that the contract has validated."""
+@dataclass(frozen=True, slots=True)
+class ToothThickness:
+    """What the inputs of a pair determine: the nominal profile shift coefficients, the centre
+    distance with its working pressure angle (radians), and the tooth thickness allowances
+    (upper, lower) in micrometres per gear, ``None`` where a gear states none."""
+
+    profile_shift_coefficient: tuple[float, float]
+    centre_distance_mm: float
+    transverse_working_pressure_angle_rad: float
+    tooth_thickness_allowance_um: tuple[tuple[float, float] | None, tuple[float, float] | None]
+    warnings: tuple[InputWarning, ...]
+
+
+_Measured = tuple[DimensionKind, float]
+"""Kind of a given inspection dimension and the coefficient it corresponds to."""
+
+
+def _measured(gear: GearInput, m_n: float, alpha_n: float, beta: float) -> _Measured | None:
+    """The coefficient a given inspection dimension corresponds to (DIN 21773 Eq. (14), or
+    Eq. (30), (31), (35), (36), each solved for it)."""
+    z = gear.number_of_teeth
+    if gear.span is not None:
+        span = gear.span
+        return span.kind, ins.profile_shift_coefficient_from_span(
+            span.span_measurement_mm, span.number_of_teeth_spanned, z, m_n, alpha_n, beta
+        )
+    if gear.ball_dimension is not None:
+        balls = gear.ball_dimension
+        return balls.kind, ins.profile_shift_coefficient_from_ball_dimension(
+            balls.diametral_two_ball_dimension_mm,
+            balls.measuring_ball_diameter_mm,
+            z,
+            m_n,
+            alpha_n,
+            beta,
+        )
+    return None
+
+
+def _given_allowance(gear: GearInput, alpha_n: float) -> tuple[float, float] | None:
+    """Tooth thickness allowances (upper, lower) the gear states, a span allowance converted
+    by DIN 21773 Eq. (54)."""
+    if gear.tooth_thickness_allowance_um is not None:
+        return gear.tooth_thickness_allowance_um
+    if gear.span_allowance_um is not None:
+        upper, lower = gear.span_allowance_um
+        return (
+            ins.tooth_thickness_allowance_from_span_allowance(upper, alpha_n),
+            ins.tooth_thickness_allowance_from_span_allowance(lower, alpha_n),
+        )
+    return None
+
+
+def _of_kind(kind: DimensionKind, allowance: tuple[float, float]) -> float:
+    """The allowance that belongs to a dimension of ``kind``: E_sns, E_snm (DIN 21773
+    Eq. (43)) or E_sni."""
+    upper, lower = allowance
+    if kind is DimensionKind.UPPER_LIMIT:
+        return upper
+    if kind is DimensionKind.LOWER_LIMIT:
+        return lower
+    return ins.mean_tooth_thickness_allowance(upper, ins.tooth_thickness_tolerance(upper, lower))
+
+
+def _local(
+    role: str, gear: GearInput, m_n: float, alpha_n: float, beta: float
+) -> tuple[float | None, tuple[float, float] | None, _Measured | None]:
+    """What a gear determines on its own: (x, allowances, dimension still to be used).
+
+    Of the nominal x, an inspection dimension and the allowances two determine the third; all
+    three are over-determined. A dimension that is left over needs x from the pair.
+    """
+    x = gear.profile_shift_coefficient
+    allowance = _given_allowance(gear, alpha_n)
+    try:
+        measured = _measured(gear, m_n, alpha_n, beta)
+    except GeometryInfeasibleError as error:
+        raise GeometryInfeasibleError(f"{role}: {error}") from error
+    if measured is None:
+        return x, allowance, None
+    kind, coefficient = measured
+    if kind is DimensionKind.NOMINAL:
+        if x is not None:
+            raise InputRangeError(
+                f"{role}: over-determined: the profile shift coefficient and a nominal "
+                "inspection dimension are given; they state the same value (ADR-107)"
+            )
+        return _derived_shift(coefficient, role, "the inspection dimension"), allowance, None
+    if allowance is None:
+        return x, None, measured
+    if x is not None:
+        raise InputRangeError(
+            f"{role}: over-determined: the profile shift coefficient, an inspection dimension of "
+            "the finished gear and the allowances are given; two of the three determine the "
+            "third (DIN ISO 21771 Eq. (123), (124); ADR-107)"
+        )
+    nominal = ins.profile_shift_coefficient_from_generating(
+        coefficient, m_n, alpha_n, _of_kind(kind, allowance)
+    )
+    return _derived_shift(nominal, role, "the inspection dimension"), allowance, None
+
+
+def _allowance_of(
+    role: str,
+    measured: _Measured,
+    x: float,
+    m_n: float,
+    alpha_n: float,
+    warnings: list[InputWarning],
+) -> tuple[float, float]:
+    """Allowances of a gear whose nominal x is known and whose finished dimension is given."""
+    kind, coefficient = measured
+    if kind is not DimensionKind.UPPER_LIMIT:
+        raise InputRangeError(
+            f"{role}: an inspection dimension given as {kind.value} determines the upper limit, "
+            "with which the gear is generated, only together with the allowances; give the "
+            "allowances of this gear, or give the upper limit"
+        )
+    upper = ins.tooth_thickness_allowance_from_generating(coefficient, x, m_n, alpha_n)
+    warnings.append(
+        _warning(
+            "upper_allowance_from_inspection_dimension",
+            "tooth_thickness_allowance_um",
+            f"{role}: the upper tooth thickness allowance E_sns = {upper!r} um follows from the "
+            "given upper limit and the nominal profile shift coefficient; no tolerance is "
+            "given, the lower allowance equals the upper one",
+        )
+    )
+    return upper, upper
+
+
+def _resolve_tooth_thickness(pair: PairInput) -> ToothThickness:
+    """``resolve_tooth_thickness`` for a pair that the contract has validated."""
     pinion, wheel = pair.gears.pinion, pair.gears.wheel
     z_1, z_2 = pinion.number_of_teeth, wheel.number_of_teeth
     m_n = pair.normal_module_mm
     alpha_n = math.radians(pair.normal_pressure_angle_deg)
     beta = math.radians(pair.helix_angle_deg)
-    x_1, x_2 = pinion.profile_shift_coefficient, wheel.profile_shift_coefficient
-    # what the contract leaves open: a gear without x carries a span measurement, or a_w and the
-    # x of the mating gear are given
-    from_span = NotSupportedError(
-        "the nominal profile shift coefficient is not given and does not follow from the centre "
-        "distance and the mating gear; a span measurement is not evaluated yet (DIN 21773, "
-        "increments 4 and 5; open in ADR-107)"
-    )
+    warnings: list[InputWarning] = []
+    x_1, allowance_1, open_1 = _local("pinion", pinion, m_n, alpha_n, beta)
+    x_2, allowance_2, open_2 = _local("wheel", wheel, m_n, alpha_n, -beta)
     a_w = pair.centre_distance_mm
     if a_w is None:
         if x_1 is None or x_2 is None:
-            raise from_span
+            raise InputRangeError(
+                "the nominal profile shift coefficient of a gear is not determined: without a "
+                "centre distance each gear needs its x, a nominal inspection dimension, or an "
+                "inspection dimension of the finished gear with its allowances (ADR-107)"
+            )
         alpha_wt = working_pressure_angle_without_backlash(z_1, z_2, alpha_n, beta, x_1 + x_2)
-        return x_1, x_2, centre_distance(z_1, z_2, m_n, alpha_n, beta, alpha_wt), alpha_wt
-    alpha_wt = transverse_working_pressure_angle(z_1, z_2, m_n, alpha_n, beta, a_w)
-    total = sum_of_profile_shift_coefficients(z_1, z_2, alpha_n, beta, alpha_wt)
-    if x_1 is not None:
-        return x_1, _derived_shift(total - x_1, "wheel"), a_w, alpha_wt
-    if x_2 is not None:
-        return _derived_shift(total - x_2, "pinion"), x_2, a_w, alpha_wt
-    raise from_span
+        a_w = centre_distance(z_1, z_2, m_n, alpha_n, beta, alpha_wt)
+    else:
+        alpha_wt = transverse_working_pressure_angle(z_1, z_2, m_n, alpha_n, beta, a_w)
+        total = sum_of_profile_shift_coefficients(z_1, z_2, alpha_n, beta, alpha_wt)
+        if x_1 is not None and x_2 is not None:
+            raise InputRangeError(
+                "over-determined: the centre distance is given and the inputs of both gears "
+                "determine their profile shift coefficients; with a given centre distance one "
+                "gear leaves its profile shift coefficient and its allowances open (ADR-107)"
+            )
+        if x_1 is not None:
+            x_2 = _derived_shift(total - x_1, "wheel")
+        elif x_2 is not None:
+            x_1 = _derived_shift(total - x_2, "pinion")
+        elif open_1 is None or open_2 is None:
+            raise InputRangeError(
+                "with the centre distance the profile shift coefficient of neither gear is "
+                "determined: give the profile shift coefficient of one gear, a nominal "
+                "inspection dimension, or an inspection dimension of the finished gear with its "
+                "allowances (ADR-107)"
+            )
+        else:
+            raise InputRangeError(
+                "the centre distance and the inspection dimensions of both gears fix the sum of "
+                "the upper tooth thickness allowances, not its split between the gears: give "
+                "the profile shift coefficient or the allowances of one gear (ADR-107; STplus "
+                "presets the allowance of gear 1 and gives gear 2 the rest)"
+            )
+    if open_1 is not None:
+        allowance_1 = _allowance_of("pinion", open_1, x_1, m_n, alpha_n, warnings)
+    if open_2 is not None:
+        allowance_2 = _allowance_of("wheel", open_2, x_2, m_n, alpha_n, warnings)
+    if (
+        allowance_1 is not None
+        and allowance_2 is not None
+        and allowance_1[0] + allowance_2[0] > 0.0
+    ):
+        warnings.append(
+            _warning(
+                "no_backlash_at_upper_allowances",
+                "tooth_thickness_allowance_um",
+                "the upper tooth thickness allowances add up to "
+                f"{allowance_1[0] + allowance_2[0]!r} um > 0: at the centre distance of the "
+                "pair the teeth at their upper limits have no backlash",
+            )
+        )
+    return ToothThickness(
+        profile_shift_coefficient=(x_1, x_2),
+        centre_distance_mm=a_w,
+        transverse_working_pressure_angle_rad=alpha_wt,
+        tooth_thickness_allowance_um=(allowance_1, allowance_2),
+        warnings=tuple(warnings),
+    )
+
+
+def resolve_tooth_thickness(pair: PairInput) -> ToothThickness:
+    """What the inputs of a pair determine (ADR-107, user decisions 2026-10-04).
+
+    Per gear, of the nominal profile shift coefficient, an inspection dimension and the
+    allowances two determine the third: a nominal dimension is x (DIN 21773 §4); a dimension
+    of the finished gear is x_Es, x_Em or x_Ei and gives x with the allowances, or the upper
+    allowance with x. For the pair, of a_w, x_1 and x_2 two determine the third; a gear
+    without x gets it from the centre distance and the mating gear. Inputs that say too much
+    or too little raise ``InputRangeError``; nothing is preset and nothing is dropped.
+    """
+    return _resolve_tooth_thickness(_checked(pair))
+
+
+def _resolve(pair: PairInput) -> tuple[float, float, float, float]:
+    """``resolve_profile_shift`` for a pair that the contract has validated."""
+    resolved = _resolve_tooth_thickness(pair)
+    x_1, x_2 = resolved.profile_shift_coefficient
+    return x_1, x_2, resolved.centre_distance_mm, resolved.transverse_working_pressure_angle_rad
 
 
 def resolve_profile_shift(pair: PairInput) -> tuple[float, float, float, float]:
     """(x_1, x_2, a_w in mm, alpha_wt in rad) of a pair by the rule of ADR-107.
 
-    Exactly two of a_w, x_1 and x_2 are given. With a_w given, the other coefficient follows from
-    Eq. (54) and (62); with both coefficients given, a_w follows from Eq. (55) and (54). A span
-    measurement is not evaluated yet (open in ADR-107): a gear that carries only a span gets its
-    coefficient from the centre distance and the mating gear; where that is not possible, the
-    pair is not supported (``NotSupportedError``).
+    Exactly two of a_w, x_1 and x_2 are given, or follow from inspection dimensions
+    (``resolve_tooth_thickness``). With a_w given, the other coefficient follows from Eq. (54)
+    and (62); with both coefficients known, a_w follows from Eq. (55) and (54).
     """
     return _resolve(_checked(pair))
 
@@ -657,10 +864,6 @@ def with_nominal_tip_diameters(
         d_a = tip_diameter(d, shift, pair.normal_module_mm, h_aP, coefficient)
         gears.append(gear.model_copy(update={"tip_diameter_mm": d_a}))
     return pair.model_copy(update={"gears": Pair(pinion=gears[0], wheel=gears[1])})
-
-
-def _warning(code: str, field: str, message: str) -> InputWarning:
-    return InputWarning(code=code, field=field, message=message)
 
 
 def _tip_form_diameters(
@@ -765,23 +968,14 @@ def compute_pair_geometry(
     without an active profile, d_Nf >= d_Na (1 - ``EPS``) on a gear.
     """
     pair = _checked(pair)
-    x_1, x_2, a_w, alpha_wt = _resolve(pair)
+    resolved = _resolve_tooth_thickness(pair)
+    x_1, x_2 = resolved.profile_shift_coefficient
+    a_w, alpha_wt = resolved.centre_distance_mm, resolved.transverse_working_pressure_angle_rad
     root_forms = _pair_of_numbers(root_form_diameter_mm, "root form diameter d_Ff")
     tip_forms = _pair_of_numbers(tip_form_diameter_mm, "tip form diameter d_Fa")
     pinion, wheel = pair.gears.pinion, pair.gears.wheel
-    warnings: list[InputWarning] = []
+    warnings: list[InputWarning] = list(resolved.warnings)
     d_a1, d_a2, d_Fa1, d_Fa2 = _tip_form_diameters(pair, tip_forms, warnings)
-    for role, gear in zip(ROLES, pair.gears.as_tuple(), strict=True):
-        if gear.span is not None:
-            warnings.append(
-                _warning(
-                    "span_measurement_not_used",
-                    "span",
-                    f"{role}: the span measurement is not evaluated yet (DIN 21773, increment "
-                    "4); the pair geometry is computed from the centre distance and the "
-                    "profile shift coefficients",
-                )
-            )
     m_n = pair.normal_module_mm
     alpha_n = math.radians(pair.normal_pressure_angle_deg)
     beta = math.radians(pair.helix_angle_deg)

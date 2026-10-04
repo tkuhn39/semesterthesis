@@ -6,6 +6,7 @@ from gearcore.models.common import (
     PRESSURE_ANGLE_RANGE_DEG,
     PROFILE_SHIFT_RANGE,
     TEETH_RANGE,
+    DimensionLimits,
     FrozenModel,
     InputWarning,
     Pair,
@@ -174,6 +175,11 @@ class GearGeneration(FrozenModel):
         "tool_edge_break_angle", default=None, gt=0.0, lt=90.0
     )
     machining_allowance_mm: float = Q("machining_allowance", ge=0.0)
+    # the allowances (upper, lower) the gear is generated with: given, converted from span
+    # allowances, or following from an inspection dimension (``pair.resolve_tooth_thickness``)
+    tooth_thickness_allowance_um: tuple[float, float] | None = Q(
+        "tooth_thickness_allowance", default=None
+    )
     upper_generating_profile_shift_coefficient: float = Q(
         "upper_generating_profile_shift_coefficient", equation=f"{_SRC} (123)"
     )
@@ -232,4 +238,139 @@ class GenerationResult(FrozenModel):
     pair_geometry: PairGeometry
     tip_clearance_mm: Pair[float] = Q("tip_clearance", equation=f"{_SRC} (60)")
     form_over_dimension_mm: Pair[float] = Q("form_over_dimension", equation=f"{_SRC} (76)")
+    warnings: tuple[InputWarning, ...] = ()
+
+
+_INS = "DIN21773:2014"
+
+
+class GearInspection(FrozenModel):
+    """Inspection dimensions of the tooth thickness of one external gear (DIN 21773:2014-08;
+    measuring ball diameters per DIN 3977:1981-02).
+
+    A field of type ``DimensionLimits`` holds the nominal dimension (with x) and the upper
+    limit, the mean and the lower limit of the finished gear (with x_Es, x_Em, x_Ei; §4, p. 8).
+    Without allowances all four are the nominal dimension. Circles and allowance factors that
+    belong to a measurement are given for the gear at its upper limit (the state the gear is
+    generated with), the allowance factors of §14 at the mean.
+
+    ``number_of_teeth_spanned`` is the k the span is computed with: the one of the input, else
+    Eq. (9), moved into the usable range of Eq. (12), (13) where it lies outside. The span
+    fields are ``None`` where no number of teeth spanned touches the usable flank.
+    ``measuring_ball_diameter_mm`` is the ball the ball dimensions are computed with: the one
+    of the input, else the next larger diameter of DIN 3977 Tabelle 1 above the ideal diameter
+    of Eq. (26). The chord on the reference cylinder is ``None`` where that cylinder lies
+    outside the usable flank; the chord on a Y-cylinder is given where the caller names one.
+    """
+
+    number_of_teeth: int = Q("number_of_teeth", ge=TEETH_RANGE[0], le=TEETH_RANGE[1], strict=True)
+    profile_shift_coefficient: float = Q(
+        "profile_shift_coefficient", ge=PROFILE_SHIFT_RANGE[0], le=PROFILE_SHIFT_RANGE[1]
+    )
+    upper_generating_profile_shift_coefficient: float = Q(
+        "upper_generating_profile_shift_coefficient", equation=f"{_SRC} (123)"
+    )
+    mean_generating_profile_shift_coefficient: float = Q(
+        "mean_generating_profile_shift_coefficient", equation=f"{_INS} (44)"
+    )
+    lower_generating_profile_shift_coefficient: float = Q(
+        "lower_generating_profile_shift_coefficient", equation=f"{_SRC} (124)"
+    )
+    tooth_thickness_allowance_um: tuple[float, float] | None = Q(
+        "tooth_thickness_allowance", default=None
+    )
+    tooth_thickness_tolerance_um: float | None = Q(
+        "tooth_thickness_tolerance", equation=f"{_INS} (45)", default=None, ge=0.0
+    )
+    span_allowance_um: tuple[float, float] | None = Q(
+        "span_allowance", equation=f"{_INS} (54)", default=None
+    )
+    v_circle_diameter_mm: float = Q("v_circle_diameter", equation=f"{_SRC} (32) with x_Es", gt=0.0)
+    # span measurement
+    number_of_teeth_spanned: int | None = Q(
+        "number_of_teeth_spanned", equation=f"{_INS} (9)", default=None, ge=2, strict=True
+    )
+    min_number_of_teeth_spanned: int = Q(
+        "min_number_of_teeth_spanned", equation=f"{_INS} (12)", strict=True
+    )
+    max_number_of_teeth_spanned: int = Q(
+        "max_number_of_teeth_spanned", equation=f"{_INS} (13)", strict=True
+    )
+    span_measurement_mm: DimensionLimits | None = Q(
+        "span_measurement", equation=f"{_INS} (14)", default=None
+    )
+    span_measuring_circle_diameter_mm: float | None = Q(
+        "span_measuring_circle_diameter",
+        equation=f"{_INS} (17); DIN3960:1987 (3.8.15)",
+        default=None,
+        gt=0.0,
+    )
+    span_allowance_factor: float = Q("span_allowance_factor", equation=f"{_INS} (54)", gt=0.0)
+    min_usable_face_width_mm: float | None = Q(
+        "min_usable_face_width", equation=f"{_INS} (15), (16)", default=None, gt=0.0
+    )
+    # chords
+    chordal_tooth_thickness_mm: DimensionLimits | None = Q(
+        "chordal_tooth_thickness", equation=f"{_INS} (4)", default=None
+    )
+    height_above_chord_mm: float | None = Q(
+        "height_above_chord", equation=f"{_INS} (6)", default=None, ge=0.0
+    )
+    y_diameter_mm: float | None = Q("y_diameter", default=None, gt=0.0)
+    chordal_tooth_thickness_at_y_mm: DimensionLimits | None = Q(
+        "chordal_tooth_thickness_at_y", equation=f"{_INS} (2)", default=None
+    )
+    height_above_chord_at_y_mm: float | None = Q(
+        "height_above_chord_at_y", equation=f"{_INS} (5)", default=None, ge=0.0
+    )
+    chordal_tooth_thickness_allowance_factor: float | None = Q(
+        "chordal_tooth_thickness_allowance_factor", equation=f"{_INS} (51)", default=None, gt=0.0
+    )
+    constant_chord_mm: DimensionLimits | None = Q(
+        "constant_chord", equation=f"{_INS} (7)", default=None
+    )
+    height_above_constant_chord_mm: float | None = Q(
+        "height_above_constant_chord", equation=f"{_INS} (8)", default=None
+    )
+    # balls and rollers
+    ideal_measuring_ball_diameter_mm: float | None = Q(
+        "ideal_measuring_ball_diameter", equation=f"{_INS} (26), (27)", default=None, gt=0.0
+    )
+    measuring_ball_diameter_mm: float = Q("measuring_ball_diameter", gt=0.0)
+    ball_centre_circle_diameter_mm: float = Q(
+        "ball_centre_circle_diameter", equation=f"{_INS} (31)", gt=0.0
+    )
+    ball_measuring_circle_diameter_mm: float = Q(
+        "ball_measuring_circle_diameter", equation=f"{_INS} (33)", gt=0.0
+    )
+    measuring_circle_offset_factor: float = Q(
+        "measuring_circle_offset", factor=True, equation="DIN3977:1981 Abschnitt 6"
+    )
+    radial_single_ball_dimension_mm: DimensionLimits = Q(
+        "radial_single_ball_dimension", equation=f"{_INS} (32)"
+    )
+    diametral_two_ball_dimension_mm: DimensionLimits = Q(
+        "diametral_two_ball_dimension", equation=f"{_INS} (35), (36)"
+    )
+    diametral_two_roller_dimension_mm: DimensionLimits = Q(
+        "diametral_two_roller_dimension", equation=f"{_INS} §11"
+    )
+    radial_ball_dimension_allowance_factor: float = Q(
+        "radial_ball_dimension_allowance_factor", equation=f"{_INS} (57)", gt=0.0
+    )
+    diametral_ball_dimension_allowance_factor: float = Q(
+        "diametral_ball_dimension_allowance_factor", equation=f"{_INS} (60), (61)", gt=0.0
+    )
+    overcut_tip_diameter_mm: float | None = Q(
+        "overcut_tip_diameter", equation=f"{_INS} (40)", default=None, gt=0.0
+    )
+    warnings: tuple[InputWarning, ...] = ()
+
+
+class InspectionResult(FrozenModel):
+    """Inspection dimensions of both gears of a generated pair. ``inputs`` is the pair as the
+    contract validated it."""
+
+    inputs: PairInput
+    gears: Pair[GearInspection]
     warnings: tuple[InputWarning, ...] = ()

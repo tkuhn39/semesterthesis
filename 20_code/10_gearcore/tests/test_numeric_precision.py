@@ -100,14 +100,56 @@ def violations(source: str) -> list[str]:
     return found
 
 
+INTEGER_OF_THE_NORM: dict[str, set[str]] = {
+    "inspection.py": {
+        "number_of_teeth_spanned",
+        "min_number_of_teeth_spanned",
+        "max_number_of_teeth_spanned",
+    },
+    "stplus_program.py": {"stplus_number_of_teeth_spanned"},
+}
+"""Functions whose result is an integer by the norm itself: DIN 21773:2014-08 Eq. (9), (12)
+and (13) take INT, "die nächste ganze Zahl, die kleiner oder gleich dem Wert in der Klammer
+ist" (footnote 1, p. 12). A number of teeth is a count, not a length that loses digits. The
+rule of STplus for k halves the sum of two such counts."""
+
+
+def _without_the_integers_of_the_norm(name: str, source: str, found: list[str]) -> list[str]:
+    allowed = INTEGER_OF_THE_NORM.get(name, set())
+    lines: set[int] = set()
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.FunctionDef) and node.name in allowed:
+            assert node.end_lineno is not None
+            lines.update(range(node.lineno, node.end_lineno + 1))
+    return [
+        entry
+        for entry in found
+        if not (
+            entry.endswith(": .floor") and int(entry.split(":")[0].removeprefix("line ")) in lines
+        )
+    ]
+
+
 def _python_files() -> list[Path]:
     return sorted(SRC.rglob("*.py"))
 
 
 @pytest.mark.parametrize("path", _python_files(), ids=lambda p: p.relative_to(SRC).as_posix())
 def test_source_uses_neither_reduced_precision_nor_rounding(path: Path) -> None:
-    found = violations(path.read_text(encoding="utf-8"))
-    assert not found, f"{path.relative_to(SRC).as_posix()}: {found}"
+    name = path.relative_to(SRC).as_posix()
+    source = path.read_text(encoding="utf-8")
+    found = _without_the_integers_of_the_norm(name, source, violations(source))
+    assert not found, f"{name}: {found}"
+
+
+def test_the_integers_of_the_norm_are_the_only_exception() -> None:
+    """The exception names three functions; a floor anywhere else in the module is found."""
+    source = (SRC / "inspection.py").read_text(encoding="utf-8")
+    kept = _without_the_integers_of_the_norm("inspection.py", source, violations(source))
+    assert kept == [] and len(violations(source)) == 3
+    elsewhere = source + "\n\ndef other(y: float) -> int:\n    return math.floor(y)\n"
+    found = _without_the_integers_of_the_norm("inspection.py", elsewhere, violations(elsewhere))
+    assert len(found) == 1 and found[0].endswith(": .floor")
 
 
 def test_the_package_is_scanned() -> None:

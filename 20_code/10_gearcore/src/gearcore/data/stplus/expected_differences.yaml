@@ -18,6 +18,32 @@
 # two differ.
 differences: {}
 
+# `not_compared`: quantities STplus prints under a name of the norm but defines differently, and
+# choices the program makes by rules of its own. They are left out of the comparison (or compared
+# by the rule of the program) and listed here with both definitions.
+not_compared:
+  diametral_ball_dimension_allowance_factor:
+    field: "diametral_ball_dimension_allowance_factor"
+    new: { source: "DIN21773:2014", eq: "(60)", section: "14.6", page: 26, formula: "derivative of M_dK with respect to the tooth thickness" }
+    stplus: { label: "Abmassfaktor A_Md/A_sn", formula: "A_Mde / A_sne, the ratio of the upper allowances", evidence: "listings of the 18 cases" }
+    example: { case: "kst_b_rerun", gear: "pinion", gearcore_value: 2.3087, stplus_value: 2.287 }
+    effect: "The two agree to the second order of the allowance; the limits themselves are compared (diametral_two_ball_dimension_mm)."
+  chordal_tooth_thickness_allowance:
+    field: "chordal_tooth_thickness_at_y_mm"
+    new: { source: "DIN21773:2014", eq: "(48) to (53)", section: "14.3", page: 25, formula: "limits of the chord from its allowance factor" }
+    stplus: { label: "oberes / unteres Abmass der Z.dickensehne", formula: "the tooth thickness allowances A_sne, A_sni themselves", evidence: "listings of the 18 cases" }
+    effect: "The nominal chord and its height are compared; the limits of the chord are not."
+  number_of_teeth_spanned:
+    field: "number_of_teeth_spanned"
+    new: { source: "DIN21773:2014", eq: "(9)", section: "7.2", page: 12, formula: "contact next to the V-cylinder, within Eq. (12), (13)" }
+    stplus: { label: "Messzaehnezahl k", formula: "min(INT((k_min + k_max) / 2) + 1, k_max)", evidence: "stplus_program/inspection_choices.json" }
+    effect: "Another k is another span over another number of teeth of the same gear. The comparison computes k by the rule of STplus."
+  measuring_ball_diameter:
+    field: "measuring_ball_diameter_mm"
+    new: { source: "DIN3977:1981", eq: "Tabelle 1", section: "4", page: 1, formula: "next larger table value above the ideal ball of DIN 21773 Eq. (26), (27)" }
+    stplus: { label: "Messtueckdurchmesser D_M", formula: "table of the program; max(smallest ball above the tip, two values below the ball for the middle of the form circles)", evidence: "stplus_program/inspection_choices.json" }
+    effect: "Another ball is another dimension of the same gear. The comparison computes D_M by the rule of STplus."
+
 deviations_from_the_norm:
   common_tooth_depth_with_tip_form_circles:
     field: "common_tooth_depth_mm"

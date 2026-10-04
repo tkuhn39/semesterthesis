@@ -247,6 +247,48 @@ Inkrement 6 erzeugt.
   und A_ste2 = −0,220; Gl. (123) gibt 0,0121. Die Differenz ist die Rundung des gedruckten Abmaßes
   (−0,2203 mm erklärt 0,0117); der Vergleich führt sie als Eingaberundung.
 
+## Befunde aus Inkrement 4 (2026-10-04)
+
+**Norm.**
+
+- **DIN 21773 Gl. (10) und die zweiten Formen von Gl. (12), (13)** (S. 12) sind, wie gedruckt,
+  innerhalb von INT um 0,5 kleiner als Gl. (9) und die ersten Formen: sie enthalten s_bn / p_bn und
+  damit die halbe Teilung. Die ersten Formen sind die geometrisch richtigen (Berührung der Meßflächen
+  am genannten Zylinder); `gearcore` implementiert sie. Beispiel kst-B, Ritzel: Gl. (9) ergibt k = 5
+  (wie STplus), Gl. (10) wie gedruckt k = 4.
+- **Grenzmaße.** §4 (S. 8) rechnet die Grenzmaße mit x_Es, x_Em, x_Ei in den Gleichungen des
+  Nennmaßes; §14 gibt Abmaßfaktoren (Ableitungen). Für die Zahnweite ist beides gleich, für das
+  Kugelmaß bis auf die zweite Ordnung (kst-B, Ritzel, T_sn = 40 µm: 0,07 µm). `gearcore` rechnet
+  nach §4 und gibt die Faktoren des §14 zusätzlich aus.
+- **Kopfüberschnitt.** DIN 21773 §13 Gl. (40), S. 23, d_aM = d + 2 x_Es m_n + 2 h_fP0, ist die
+  Normgleichung für den vom Werkzeug überschnittenen Kopfzylinder (ADR-114); die Aussage aus
+  Inkrement 3, die Norm kenne dafür keine Gleichung, galt nur für DIN ISO 21771 §7.
+- **DIN 3977 Bild 2** (S. 4) nennt für z = 22, β = 30°, x = +0,5, m_n = 3,5 mm die Meßstücke 6 bis
+  8 mm als verwendbar; die eigene Grenze der Norm (1,73 m_n = 6,055 mm) schließt 6 mm aus.
+  `gearcore` hält sich an die Grenzen des Abschnitts 6 und meldet 6 mm
+  (`measuring_circle_outside_din3977_range`, Meßkreis 0,113 m_n unter dem V-Zylinder).
+- **DIN 3977:1981-02** ist weiterhin gültig (Nutzer, 2026-10-04); DIN 21773 verweist für den
+  Meßstückdurchmesser nicht mehr auf sie, nennt aber nur den idealen Durchmesser (Gl. (26), (27)).
+
+**STplus 11.1F** (Regeln des Programms, `gearcore.stplus_program`, nie stillschweigend angewendet):
+
+| Gegenstand | Norm / gearcore | STplus | Beleg |
+|---|---|---|---|
+| Prüfmaß einer Eingabe | sagt, welches Maß es ist (DIN 21773 §4) | immer Maß der Fertigverzahnung beim oberen Abmaß (x_E) | Proben `span_*`, kst-A/B/C |
+| Aufteilung bei a_w + zwei Prüfmaßen | Kern verlangt vierte Angabe | Rad 1 behält das vorbelegte Abmaß (c25), Rad 2 den Rest; Überbestimmung wird ohne Meldung aufgelöst | Proben `span_with_upper_allowance_*` |
+| Meßzähnezahl k | Gl. (9): Berührung am V-Zylinder, im Bereich Gl. (12), (13) | k = min(INT((k_min + k_max)/2) + 1, k_max) | `inspection_choices.json` (540 Räder), 18 Listings |
+| Meßstückdurchmesser D_M | nächstgrößerer Wert DIN 3977 Tabelle 1 über dem idealen (V-Zylinder) | eigene Tabelle 1 … 110 mm (ohne Werte < 1 mm, 1,4, 3,25, 3,75, 4,25, 5,25, 30, 35; mit 32, 36, 60 … 110); max(kleinste Kugel über dem Kopf, zwei Tabellenwerte unter der Kugel für die Mitte der Formkreise nach der Form von DIN 3960 Gl. (3.8.24)–(3.8.27)) | wie oben; Umschaltpunkte auf 0,0005 mm |
+| Zylinder der Zahndickensehne | dem Anwender überlassen (§5) | (d_Ff + d_Fa) / 2 | 76 Räder innerhalb 0,0005 mm |
+| „Abmassfaktor A_Md/A_sn“ | Ableitung, Gl. (60) (kst-B Ritzel 2,309) | Verhältnis A_Mde / A_sne (gedruckt 2,287) | kst_b_rerun |
+| Abmaß der Zahndickensehne | Gl. (48)–(53) | druckt das Zahndickenabmaß selbst | Listings |
+| Paar ohne Flankenspiel bei den oberen Abmaßen | Hinweis `no_backlash_at_upper_allowances` | Abbruch („eingegebener Achsabstand a < spielfreier Achsabstand“) | Probe `spans_too_thick_for_the_centre_distance` |
+
+Auf den 36 Rädern der 18 Vergleichsfälle wählt die Normregel bei 20 dasselbe k (bei 6 davon nennt
+die Eingabe k) und bei 18 dasselbe D_M wie STplus; auf den 540 Zufallsrädern des Belegs liegt der
+Meßkreis der STplus-Kugel bei 416 von 538 im Bereich der DIN 3977 Abschnitt 6, der der Normregel
+bei 537 von 538. Für Schrägverzahnung ist die Kugel, die STplus für die Flankenmitte ansetzt, nicht
+die dort berührende (z = 40, β = 30°: 6,0 mm statt 4,69 mm).
+
 ## Tabellenwerte und Vorbelegungen (Stand 2026-10-03)
 
 Werte, die nicht eingegeben werden müssen, stammen aus zwei verschiedenen Quellen: aus

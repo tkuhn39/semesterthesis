@@ -26,9 +26,16 @@ from typing import Any
 from pydantic import ValidationError
 
 from gearcore._safe import finite_input, positive_input
-from gearcore.errors import InputRangeError, NotSupportedError, ParseError
+from gearcore.errors import (
+    GeometryInfeasibleError,
+    InputRangeError,
+    NotSupportedError,
+    ParseError,
+)
 from gearcore.models.common import FrozenModel, Pair
 from gearcore.models.inputs import (
+    BallMeasurement,
+    DimensionKind,
     GearInput,
     GearKind,
     MaterialKind,
@@ -234,6 +241,9 @@ GEOMETRY_KEYS_MAPPED = {
     "MESSZAEHNEZAHL_K",
     "MESSZAEHNEZAHL",
     "ZAHNWEITE",
+    "MESSTUECKDM_KUGEL",
+    "DIAMETRALES_MASS",
+    "MESSTUECKDM_D_M",
     "OBERES_ZAHNW_ABMASS",
     "UNTERES_ZAHNW_ABMASS",
     "ABMASS_TOL_REIHE",
@@ -244,6 +254,16 @@ GEOMETRY_KEYS_MAPPED = {
     "WERKZEUG_FERTIGVERZ.",
 }
 
+
+INSPECTION_KEYS_NOT_TRANSLATED: tuple[str, ...] = (
+    "PROFILVERSCHIEBUNG_F",
+    "ZAHNDICKENSEHNE",
+    "ZAHNHOEHE_BEI_SEHNE",
+)
+"""Keys that give the tooth thickness of a gear in place of ``PROFILVERSCHIEBUNG_N`` and that the
+importer does not translate (manual Bild 4.4, p. 16, and Bild 4.12, p. 25): the generating
+profile shift coefficient of the finished gear and the chordal tooth thickness with its height.
+A file that sets one is not imported; ignoring it would compute another gear."""
 
 TIP_CIRCLE_KEYS: tuple[str, ...] = (
     "BEZ_KOPFDICKE",
@@ -411,7 +431,8 @@ def tool_from_section(
                 "from a measuring line, protuberance heights and a machining allowance given "
                 "as a factor are extension points)"
             )
-        if section.entries and not keys & {*TOOL_KEYS, *TOOL_ABSOLUTE_KEYS}:
+        named = {entry.key for entry in section.entries}
+        if section.entries and not named & {*TOOL_KEYS, *TOOL_ABSOLUTE_KEYS}:
             raise ParseError(
                 f"block '$ {label}' is no tool block: it carries none of the keys of a rack tool"
             )
@@ -472,8 +493,8 @@ def tool_from_section(
                     "the factor"
                 )
         factors[factor_key] = factor
-    fields.update(
-        stplus_tool_factors(
+    try:
+        completed = stplus_tool_factors(
             str(label),
             addendum=factors["KOPFHOEHENFAKTOR"],
             tip_radius=factors["KOPFABRUNDUNGSFAKTOR"],
@@ -484,7 +505,12 @@ def tool_from_section(
             notes=notes,
             **(limit_controls or {}),
         )
-    )
+    except GeometryInfeasibleError as error:
+        raise NotSupportedError(
+            f"tool {label!r}: the limits of STplus leave no tool for these factors and controls "
+            f"({error}); what STplus computes there is not probed"
+        ) from error
+    fields.update(completed)
     for key, meaning in ABSENT_MEANS_NONE.items():
         if TOOL_KEYS[key] not in fields:
             fields[TOOL_KEYS[key]] = 0.0
@@ -723,9 +749,25 @@ def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] |
                 "only (no SCHRAEGUNGSWINKEL) is not probed"
             )
         x = (x[0], None)
+    untranslated = sorted(
+        key
+        for key in INSPECTION_KEYS_NOT_TRANSLATED
+        if (entry_of_key := geo.get(key)) is not None
+        and any(v != PLACEHOLDER for v in entry_of_key.values)
+    )
+    if untranslated:
+        raise NotSupportedError(
+            f"{', '.join(untranslated)} gives the tooth thickness of a gear by the generating "
+            "profile shift coefficient of the finished gear or by a chordal tooth thickness "
+            "(manual Bild 4.4, p. 16): extension points; give PROFILVERSCHIEBUNG_N, ZAHNWEITE "
+            "with MESSZAEHNEZAHL, or DIAMETRALES_MASS with MESSTUECKDM_KUGEL"
+        )
     span_w = _values(geo, "ZAHNWEITE")
     span_k = _values(geo, "MESSZAEHNEZAHL")
     span_k_check = _values(geo, "MESSZAEHNEZAHL_K")
+    ball_m = _values(geo, "DIAMETRALES_MASS")
+    ball_d = _values(geo, "MESSTUECKDM_KUGEL")
+    ball_check = _values(geo, "MESSTUECKDM_D_M")
     width = _values(geo, "ZAHNBREITE")
     tip = _values(geo, "KOPFKREISDM")
     active = sorted(
@@ -801,7 +843,7 @@ def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] |
                 limit_controls=limit_controls,
             )
         )
-    if geo.get("WERKZEUG_FERTIGVERZ.") is not None:
+    if _given(geo, "WERKZEUG_FERTIGVERZ."):
         raise NotSupportedError("WERKZEUG_FERTIGVERZ. (second tool) is an extension point")
 
     materials: list[MaterialRecord] = []
@@ -833,20 +875,69 @@ def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] |
     for i in range(2):
         gear_no = i + 1
         span = None
+        balls = None
         w = span_w[i]
+        m_d = ball_m[i]
+        if w is None and span_k[i] is not None:
+            notes.append(
+                f"gear {gear_no}: MESSZAEHNEZAHL {span_k[i]} without ZAHNWEITE is not used (it "
+                "belongs to a span given in place of x; MESSZAEHNEZAHL_K names the k of the "
+                "printed span)"
+            )
+        if m_d is None and ball_d[i] is not None:
+            notes.append(
+                f"gear {gear_no}: MESSTUECKDM_KUGEL {ball_d[i]} without DIAMETRALES_MASS is not "
+                "used (it belongs to a ball dimension given in place of x; MESSTUECKDM_D_M names "
+                "the ball of the printed dimension)"
+            )
+        if w is not None and m_d is not None and x_in_file[i] is None:
+            raise NotSupportedError(
+                f"gear {gear_no}: ZAHNWEITE and DIAMETRALES_MASS both given in place of the "
+                "profile shift coefficient: which of the two STplus takes is not probed"
+            )
         if w is not None and x_in_file[i] is None:
-            # STplus takes ZAHNWEITE with MESSZAEHNEZAHL in place of x (manual Bild 4.12). For
-            # gearcore the span is an inspection dimension that is passed on as such (ADR-107).
+            # STplus takes ZAHNWEITE with MESSZAEHNEZAHL in place of x (manual Bild 4.12) and
+            # reads it as the dimension of the finished gear at its upper allowance (manual
+            # p. 16: "gilt fuer die Fertigverzahnung (Ist-Pruefmass)"; kst-A, kst-B, kst-C).
             # MESSZAEHNEZAHL_K is the check-dimension tooth count and must NOT stand in for
             # MESSZAEHNEZAHL (gate ADV0-11)
             k = _integer(span_k[i], "MESSZAEHNEZAHL", gear_no)
             if k is None:
                 raise ParseError(f"gear {gear_no}: ZAHNWEITE given without MESSZAEHNEZAHL")
-            span = SpanMeasurement(span_measurement_mm=w, number_of_teeth_spanned=k)
+            span = SpanMeasurement(
+                kind=DimensionKind.UPPER_LIMIT, span_measurement_mm=w, number_of_teeth_spanned=k
+            )
+            notes.append(
+                f"gear {gear_no}: ZAHNWEITE = {w:g} over {k} teeth is read as the upper limit of "
+                "the finished gear, as STplus reads it (it determines x_E, not the nominal x); "
+                "where the upper allowance of the gear follows from it, gearcore sets the lower "
+                "allowance equal to the upper one and reports it, STplus takes the tolerance of "
+                "its preset series (DIN 3967, increment 5)"
+            )
         elif w is not None:
             notes.append(
                 f"gear {gear_no}: ZAHNWEITE {w} is not used for x (the file gives x by "
-                "PROFILVERSCHIEBUNG_N or PR.VERSCH.SUMME); it is an inspection dimension"
+                "PROFILVERSCHIEBUNG_N or PR.VERSCH.SUMME); STplus ignores it"
+            )
+        if m_d is not None and x_in_file[i] is None:
+            diameter = ball_d[i]
+            if diameter is None:
+                raise ParseError(
+                    f"gear {gear_no}: DIAMETRALES_MASS given without MESSTUECKDM_KUGEL"
+                )
+            balls = BallMeasurement(
+                kind=DimensionKind.UPPER_LIMIT,
+                diametral_two_ball_dimension_mm=m_d,
+                measuring_ball_diameter_mm=diameter,
+            )
+            notes.append(
+                f"gear {gear_no}: DIAMETRALES_MASS = {m_d:g} with D_M = {diameter:g} is read as "
+                "the upper limit of the finished gear, as STplus reads it"
+            )
+        elif m_d is not None:
+            notes.append(
+                f"gear {gear_no}: DIAMETRALES_MASS {m_d} is not used for x (the file gives x); "
+                "STplus ignores it"
             )
         b = width[i]
         if b is None:
@@ -880,16 +971,20 @@ def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] |
                 number_of_teeth=teeth[i],
                 profile_shift_coefficient=x[i],
                 span=span,
+                ball_dimension=balls,
                 face_width_mm=b,
                 tip_diameter_mm=tip[i],
                 tip_chamfer_radial_mm=h_k,
                 tool=tools[i],
                 material=refs[i],
                 number_of_teeth_spanned=_integer(span_k_check[i], "MESSZAEHNEZAHL_K", gear_no),
+                measuring_ball_diameter_mm=ball_check[i],
                 span_allowance_um=allowance,
                 allowance_series=(
                     None
-                    if series_entry is None or i >= len(series_entry.values)
+                    if series_entry is None
+                    or i >= len(series_entry.values)
+                    or series_entry.values[i] == PLACEHOLDER
                     else series_entry.values[i]
                 ),
                 quality_grade=q,
@@ -899,17 +994,55 @@ def _pair_input_from_ste(ste: SteFile, material_kinds: dict[str, MaterialKind] |
 
     c_min = _control(config, "MINDESTKOPFSPIEL", MIN_TIP_CLEARANCE_RANGE, notes)
 
-    determined = [g.profile_shift_coefficient is not None or g.span is not None for g in gears]
+    measured = [g.span is not None or g.ball_dimension is not None for g in gears]
+    determined = [
+        g.profile_shift_coefficient is not None or m for g, m in zip(gears, measured, strict=True)
+    ]
     if a is not None and not any(determined):
         raise NotSupportedError(
             "ACHSABSTAND without PROFILVERSCHIEBUNG_N and without ZAHNWEITE: the distribution of "
             "the sum of the profile shift coefficients (AUFTEILUNG_X1X2) is an extension point"
         )
-    if a is None and not all(determined):
+    if a is None and any(measured):
         raise ParseError(
-            "without ACHSABSTAND both gears need PROFILVERSCHIEBUNG_N (a gear with ZAHNWEITE "
-            "and MESSZAEHNEZAHL instead is imported, but its nominal x stays open)"
+            "ZAHNWEITE or DIAMETRALES_MASS in place of the profile shift coefficient needs "
+            "ACHSABSTAND: STplus rejects the input without it (run of 2026-10-04)"
         )
+    if a is None and not all(determined):
+        raise ParseError("without ACHSABSTAND both gears need PROFILVERSCHIEBUNG_N")
+    if any(measured) and not all(determined):
+        raise ParseError(
+            "ACHSABSTAND with an inspection dimension of one gear and nothing for the other: "
+            "STplus rejects the input (run of 2026-10-04)"
+        )
+    if measured[0] and gears[1].profile_shift_coefficient is not None:
+        # STplus keeps the tooth thickness of gear 1 (its dimension with the given or preset
+        # allowance), derives x_2 from the centre distance and forms x_E2 from the x_2 of the
+        # file with the preset allowance (run a_w1_x2_050 of 2026-10-04)
+        raise NotSupportedError(
+            "an inspection dimension of gear 1 beside PROFILVERSCHIEBUNG_N of gear 2 and "
+            "ACHSABSTAND: STplus replaces that x_2 and forms the tooth thickness of gear 2 with "
+            "the preset allowance of DIN 3967 (increment 5)"
+        )
+    if all(measured):
+        given = [g.span_allowance_um is not None for g in gears]
+        if all(given):
+            # STplus keeps the allowance of gear 1 and gives gear 2 the rest of the sum, without
+            # a message (run a_w1_w2_awe_both of 2026-10-04)
+            dropped = gears[1].span_allowance_um
+            gears[1] = gears[1].model_copy(update={"span_allowance_um": None})
+            notes.append(
+                f"gear 2: the span allowances {dropped} of the file are not passed on: with "
+                "ACHSABSTAND and the dimensions of both gears STplus keeps the allowance of gear "
+                "1 and gives gear 2 the rest of the sum of the upper allowances"
+            )
+        elif not any(given):
+            notes.append(
+                "ACHSABSTAND and the dimensions of both gears without an allowance: STplus "
+                "presets the upper allowance of gear 1 by the series c25 of DIN 3967 and gives "
+                "gear 2 the rest (increment 5); until then the pair lacks that statement and "
+                "is not computed"
+            )
     pair = PairInput(
         normal_module_mm=module,
         normal_pressure_angle_deg=alpha,
@@ -974,7 +1107,8 @@ def _control(
     if not bounds[0] < value < bounds[1]:
         notes.append(
             f"$ KONFIGURATIONSDATEN: {key} = {value:g} does not lie between {bounds[0]:g} and "
-            f"{bounds[1]:g}: STplus does not accept it and keeps the preset"
+            f"{bounds[1]:g}: STplus does not accept it and keeps the preset (it takes a range "
+            "as an open interval: probed at one end of five controls, assumed for the rest)"
         )
         return None
     notes.append(f"$ KONFIGURATIONSDATEN: {key} = {value:g} is used in place of the preset")
@@ -1077,7 +1211,9 @@ def _completed_like_stplus(
         for index in without_tip:
             notes.append(
                 f"gear {index + 1}: KOPFKREISDM not given; the default of STplus needs the profile "
-                "shift coefficient, which a span measurement determines (increments 4 and 5)"
+                "shift coefficient, which an inspection dimension of this file determines "
+                "together with the other inputs; the importer does not resolve that: give "
+                "KOPFKREISDM (INS-08)"
             )
 
     open_chamfers = [
@@ -1123,8 +1259,9 @@ def _completed_like_stplus(
         notes.append(
             f"gear {index + 1}: residual tip thickness of the chamfer → s_aK = {residual!r} mm in "
             f"the normal section ({transverse!r} mm transverse) by the STplus rule s_an - 2 "
-            f"({amount:g} h_K), at least 0,2 s_an, with s_an = {s_an!r} mm of the gear without "
-            "tooth thickness allowance (STplus presets the series c25, increment 5)"
+            f"({amount:g} h_K), at least 0,2 s_an, with s_an = {s_an!r} mm of the gear at the "
+            "upper allowance the file states (without one: no allowance; STplus presets the "
+            "series c25, increment 5)"
         )
         gears[index] = gear.model_copy(update={"residual_tip_thickness_mm": transverse})
     return pair.model_copy(update={"gears": Pair(pinion=gears[0], wheel=gears[1])})

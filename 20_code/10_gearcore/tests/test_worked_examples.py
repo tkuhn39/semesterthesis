@@ -25,7 +25,13 @@ from gearcore.data import (
 )
 from gearcore.errors import ParseError
 from gearcore.models.common import Pair
-from gearcore.models.inputs import GearInput, PairInput, SpanMeasurement, ToolProfile
+from gearcore.models.inputs import (
+    DimensionKind,
+    GearInput,
+    PairInput,
+    SpanMeasurement,
+    ToolProfile,
+)
 from gearcore.models.results import BasicGearGeometry, PairGeometry
 from gearcore.trace import load_sources
 
@@ -87,7 +93,9 @@ def _base_helix_deg(inputs: dict[str, Any], role: str | None) -> float:
 def pair_of_example(inputs: dict[str, Any]) -> PairInput:
     """The pair as the norm gives it: values in parentheses are calculated (clause 4.2.18) and
     therefore not passed on. The centre distance and x_2 lead, x_1 follows (ADR-107). The span
-    measurements of Table A.1 are passed on; gearcore does not evaluate spans yet (ADR-107)."""
+    measurements of Table A.1 are dimensions of the finished gears: A.6 (p. 45) computes the
+    generating profile shift coefficients from them, so they are passed on as upper limits
+    (DIN 21773 §4; the gear is generated with x_Es)."""
     shift = inputs["profile_shift_coefficient"]
     hand = {"left": -1.0, "right": 1.0}[inputs["hand_of_helix"]["pinion"]]
     # Table A.1: h_fP = 1,4 m_n, rho_fP = 0,39 m_n, q = 0, s_pr = 0. The protuberance follows from
@@ -109,6 +117,7 @@ def pair_of_example(inputs: dict[str, Any]) -> PairInput:
             number_of_teeth=inputs["number_of_teeth"][role],
             profile_shift_coefficient=None if role in shift.get("derived", []) else shift[role],
             span=SpanMeasurement(
+                kind=DimensionKind.UPPER_LIMIT,
                 span_measurement_mm=inputs["span_measurement_mm"][role],
                 number_of_teeth_spanned=inputs["number_of_teeth_spanned"][role],
             ),
@@ -140,39 +149,13 @@ def _of_pair(field: str) -> Evaluator:
     return evaluate
 
 
-def _generation_with_printed_x_E(inputs: dict[str, Any], role: str) -> float:
-    """x_E of the example follows from the span measurements (p. 45), which gearcore does not
-    evaluate yet (ADR-107). The printed x_E is therefore given as the generating value: the
-    allowance that reproduces it, E_sn = 2 m_n tan(alpha_n) (x_E - x), is passed to the
-    contract, so that Eq. (125) and (128) are checked with the norm's x_E."""
-    example = load_worked_example(EXAMPLE_1)
-    pair = pair_of_example(inputs)
-    x_1, x_2, _, _ = pr.resolve_profile_shift(pair)
-    x_E = example["expected"]["generating_profile_shift_coefficient"][role]
-    x = x_1 if role == "pinion" else x_2
-    allowance_um = 1.0e3 * 2.0 * _module(inputs) * math.tan(_angles(inputs)[0]) * (x_E - x)
-    gears = {
-        r: g.model_copy(
-            update={"span": None, "tooth_thickness_allowance_um": (allowance_um, allowance_um)}
-        )
-        if r == role
-        else g.model_copy(update={"span": None})
-        for r, g in zip(ROLES, pair.gears.as_tuple(), strict=True)
-    }
-    if role == "pinion":
-        gears["pinion"] = gears["pinion"].model_copy(update={"profile_shift_coefficient": x_1})
-        pair = pair.model_copy(update={"centre_distance_mm": None})
-        gears["wheel"] = gears["wheel"].model_copy(update={"profile_shift_coefficient": x_2})
-    generated = gn.compute_generation(
-        pair.model_copy(update={"gears": Pair(pinion=gears["pinion"], wheel=gears["wheel"])})
-    )
-    return generated
-
-
 def _generated(field: str) -> Evaluator:
+    """A result of the generation. x_E of the example follows from the span measurements
+    (p. 45); since increment 4 gearcore evaluates them itself (DIN 21773 Eq. (14))."""
+
     def evaluate(inputs: dict[str, Any], role: str | None) -> float:
         assert role is not None
-        result = _generation_with_printed_x_E(inputs, role)
+        result = gn.compute_generation(pair_of_example(inputs))
         return float(getattr(getattr(result.gears, role), field))
 
     return evaluate
@@ -199,15 +182,14 @@ IMPLEMENTED: dict[str, Evaluator] = {
     "transverse_contact_ratio": _of_pair("transverse_contact_ratio"),
     "overlap_ratio": _of_pair("overlap_ratio"),
     "total_contact_ratio": _of_pair("total_contact_ratio"),
-    # generation (increment 3), with the printed x_E as the generating value (spans: increment 4)
+    # generation (increment 3) with x_E from the span measurements (increment 4, DIN 21773 Eq. (14))
+    "generating_profile_shift_coefficient": _generated("generating_profile_shift_coefficient"),
     "generated_root_diameter_mm": _generated("generated_root_diameter_mm"),
     "root_form_diameter_mm": _generated("root_form_diameter_mm"),
 }
 
-SPANS = "increment 4 (inspection dimensions: x_E from the span measurement)"
 LOAD_CAPACITY = "stage 2 (load capacity)"
 PENDING: dict[str, str] = {
-    "generating_profile_shift_coefficient": SPANS,
     "transverse_base_pitch_deviation_um": LOAD_CAPACITY,
     "pitch_line_velocity_m_s": LOAD_CAPACITY,
     "circumferential_velocity_m_s": LOAD_CAPACITY,
@@ -350,10 +332,14 @@ def test_example_1_pair_reproduces_the_value_in_parentheses() -> None:
     assert abs(result.profile_shift_coefficient.pinion - printed) <= printed_tolerance(decimals)
     assert result.profile_shift_coefficient.wheel == 0.0
     assert result.centre_distance_mm == 500.0, "a given centre distance is fixed"
-    # the spans of Table A.1 give x_E1 = 0,117 79 (printed p. 45; spans with allowance). Spans
-    # are not evaluated yet: they are reported and not used (gate finding G2A-05, ADR-107)
-    not_used = ["span_measurement_not_used"] * 2
-    assert [w.code for w in result.warnings] == [*not_used, "root_form_diameter_not_checked"]
+    # the spans of Table A.1 give x_E1 = 0,117 79 (printed p. 45): they are dimensions of the
+    # finished gears, so the upper allowance of each gear follows from its span and its x
+    resolved = pr.resolve_tooth_thickness(pair)
+    for index, role in enumerate(ROLES):
+        allowance = resolved.tooth_thickness_allowance_um[index]
+        assert allowance is not None and allowance[0] == allowance[1] < 0.0, role
+    followed = ["upper_allowance_from_inspection_dimension"] * 2
+    assert [w.code for w in result.warnings] == [*followed, "root_form_diameter_not_checked"]
     # the root form diameters the norm prints (p. 45) lie below the start of the active profile,
     # so the limit of Eq. (66), (67) does not change the mesh of this example
     d_Ff = load_worked_example(EXAMPLE_1)["expected"]["root_form_diameter_mm"]
@@ -361,7 +347,7 @@ def test_example_1_pair_reproduces_the_value_in_parentheses() -> None:
         pair, root_form_diameter_mm=Pair(pinion=d_Ff["pinion"], wheel=d_Ff["wheel"])
     )
     assert limited.sap_diameter_mm == result.sap_diameter_mm
-    assert [w.code for w in limited.warnings] == not_used
+    assert [w.code for w in limited.warnings] == followed
 
 
 def test_symbols_of_the_example_are_the_symbols_of_the_contract() -> None:

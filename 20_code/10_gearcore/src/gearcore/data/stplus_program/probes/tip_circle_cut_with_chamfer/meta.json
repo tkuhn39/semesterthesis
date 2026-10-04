@@ -35,8 +35,8 @@
       "tool 'T2': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
       "tool 'T2': PROTUBERANZBETRAG not given → 0 (no protuberance)",
       "tool 'T2': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
-      "gear 1: residual tip thickness of the chamfer → s_aK = 0.06783705135215051 mm in the normal section (0.06783705135215051 mm transverse) by the STplus rule s_an - 2 (0.7 h_K), at least 0,2 s_an, with s_an = 0.2078370513521505 mm of the gear without tooth thickness allowance (STplus presets the series c25, increment 5)",
-      "gear 2: residual tip thickness of the chamfer → s_aK = 0.8791479098860412 mm in the normal section (0.8791479098860412 mm transverse) by the STplus rule s_an - 2 (0.7 h_K), at least 0,2 s_an, with s_an = 1.0191479098860412 mm of the gear without tooth thickness allowance (STplus presets the series c25, increment 5)"
+      "gear 1: residual tip thickness of the chamfer → s_aK = 0.06783705135215051 mm in the normal section (0.06783705135215051 mm transverse) by the STplus rule s_an - 2 (0.7 h_K), at least 0,2 s_an, with s_an = 0.2078370513521505 mm of the gear at the upper allowance the file states (without one: no allowance; STplus presets the series c25, increment 5)",
+      "gear 2: residual tip thickness of the chamfer → s_aK = 0.8791479098860412 mm in the normal section (0.8791479098860412 mm transverse) by the STplus rule s_an - 2 (0.7 h_K), at least 0,2 s_an, with s_an = 1.0191479098860412 mm of the gear at the upper allowance the file states (without one: no allowance; STplus presets the series c25, increment 5)"
     ],
     "ok": true,
     "unmapped_keys": []

@@ -27,8 +27,8 @@
   "trust": "generated",
   "typed_import": {
     "notes": [
-      "$ KONFIGURATIONSDATEN: MIN_WKZ_ZAHNKOPFDICKE* = 0.1 does not lie between 0.1 and 1: STplus does not accept it and keeps the preset",
-      "$ KONFIGURATIONSDATEN: MIN_LUECKENWEITE_EFF0* = 0.6 does not lie between 0.1 and 0.6: STplus does not accept it and keeps the preset",
+      "$ KONFIGURATIONSDATEN: MIN_WKZ_ZAHNKOPFDICKE* = 0.1 does not lie between 0.1 and 1: STplus does not accept it and keeps the preset (it takes a range as an open interval: probed at one end of five controls, assumed for the rest)",
+      "$ KONFIGURATIONSDATEN: MIN_LUECKENWEITE_EFF0* = 0.6 does not lie between 0.1 and 0.6: STplus does not accept it and keeps the preset (it takes a range as an open interval: probed at one end of five controls, assumed for the rest)",
       "tool 'T1': KOPFHOEHENFAKTOR = 2.1 reduced to h_aP0* = 1.9930150740483437 as STplus does (the tip of the tool tooth narrows to 0.12 m_n there)",
       "tool 'T1': KOPFABRUNDUNGSFAKTOR = 0.25 reduced to the full radius rho_aP0* = 0.08568888040452695 as STplus does",
       "tool 'T1': FUSSFORMHOEHENFAKTOR = 2.5 reduced to h_FfP0* = 2.006752461145617 as STplus does (the tool space narrows to 0.11 m_n there)",

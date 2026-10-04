@@ -1,0 +1,45 @@
+{
+  "case": "measuring_ball_of_the_program_larger_tip",
+  "cfg": "Firmenname = FZG\nSachbearbeiter = gearcore oracle\nEingabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\measuring_ball_of_the_program_larger_tip\\eingabe.ste\nAusgabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\measuring_ball_of_the_program_larger_tip\\ausgabe.sta\nGraphikdatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\measuring_ball_of_the_program_larger_tip\\grafik1.stz\nGraphikdatei_2 = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\measuring_ball_of_the_program_larger_tip\\grafik2.stz\nZuordnungsdatei = qelesed.stq\nWerkzeugdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wkz\\wkz.dat\nWerkzeugdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wkz_glob.dat\nWerkzeugdatei_3 = %\nWerkzeugdatei_4 = %\nWerkzeugdatei_5 = %\nWerkzeugdatei_6 = %\nWerkzeugdatei_7 = %\nWerkzeugdatei_8 = %\nWerkzeugdatei_9 = %\nWerkzeugdatei_10 = %\nWerkstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wst\\WST.dat\nWerkstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wst_glob.dat\nSchmierstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\oel\\Oel.dat\nSchmierstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\oel_glob.dat\nPfad_Maskendateien = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\zubeh\\\nSchnittstellendatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\measuring_ball_of_the_program_larger_tip\\ausgabe.sts\nSTEP_Konfiguration = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\measuring_ball_of_the_program_larger_tip\\config.dat\nPfad_Meldungsausgabe = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\measuring_ball_of_the_program_larger_tip\\\n",
+  "exe": "30_references_and_examples/33_STplus/STplus11-1F/bin/STplus.exe",
+  "exit_code": 0,
+  "interface_file": "interface.sts.txt",
+  "kept_files": [
+    "input.ste",
+    "report.sta.txt",
+    "interface.sts.txt",
+    "meta.json"
+  ],
+  "material_kinds": {},
+  "notes": "as measuring_ball_of_the_program with the tip circle 27.3: D_M = 4.0, although the ball 3.5 stands 0.71 mm above the tip circle: the choice follows the tip circle",
+  "origin": "run",
+  "plot_accuracy": 0.005,
+  "run_date": "2026-10-04T15:35:09+02:00",
+  "scratch": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\measuring_ball_of_the_program_larger_tip",
+  "sections": [
+    "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "Besonderheiten der Radpaarung:"
+  ],
+  "source_ste": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_probe_x_rmg1y_\\measuring_ball_of_the_program_larger_tip.ste",
+  "stdout": " Config file path C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\measuring_ba\n ll_of_the_program_larger_tip\\stplus.cfg passed as CLI parameter. Found file.\n ... Eingabedatenverarbeitung wird durchgefuehrt ...\n ... Geometrieberechnung wird durchgefuehrt ...\n ... Geometrieplots werden gezeichnet ...\nRuntime:  0.269s\n",
+  "ste_sha256": "0fa3927e16cdef475024348910eee08030392690413bc29c41e6d7cdc158c6cb",
+  "stplus_version": "11.1F",
+  "trust": "generated",
+  "typed_import": {
+    "notes": [
+      "tool 'WKZ_1': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'WKZ_1': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
+      "tool 'WKZ_1': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'WKZ_1': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "tool 'WKZ_2': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'WKZ_2': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
+      "tool 'WKZ_2': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'WKZ_2': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "gear 1: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
+      "gear 2: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
+      "gear 2: KOPFKREISDM not given → d_a = 84.0 mm = d + 2 m_n (1 + x), the default of STplus without tip alteration (STplus shortens it afterwards where the tool, the tip tooth thickness or the mating gear require it; gearcore applies the cut by the tool only)"
+    ],
+    "ok": true,
+    "unmapped_keys": []
+  }
+}

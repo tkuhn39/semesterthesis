@@ -51,8 +51,17 @@ TOOL_ROWS = (
     ("Fussform-Hoehenf.(Wkz-Bezugspr.)", "root_form_height_factor"),
     ("Fuss-Hoehenfaktor (Wkz-Bezugspr.)", "dedendum_factor"),
 )
-REJECTED = {"no_pressure_angle", "no_helix_angle_no_centre_distance"}
+REJECTED = {
+    "no_pressure_angle",
+    "no_helix_angle_no_centre_distance",
+    "span_without_centre_distance",
+    "span_of_one_gear_only",
+}
 """Probes whose input STplus rejects; the importer raises ``ParseError`` for them."""
+REJECTED_BY_THE_COMPUTATION = {"spans_too_thick_for_the_centre_distance"}
+"""A probe STplus rejects while computing (the finished gears leave no backlash at the given
+centre distance); the importer reads the file, the missing split of the allowances stops the
+computation of gearcore before that (``test_inspection``)."""
 DATABASE_TOOLS = {
     "tool_consistent_record",
     "tool_contradicting_record",
@@ -69,9 +78,12 @@ NOT_TRANSLATED = {
     "tip_circle_from_reference_profile_addendum",
     "tip_circle_per_din3960",
     "tool_edge_break_angle_eighty_eight_degrees",
+    "generating_profile_shift_given",
+    "span_of_gear_one_beside_x_of_gear_two",
 }
-"""Probes whose tip circle is defined by a key the importer does not translate, and the run
-STplus aborted (``NotSupportedError``)."""
+"""Probes whose tip circle or tooth thickness is defined by a key the importer does not
+translate, the run STplus aborted, and the combination that needs the preset allowance of
+DIN 3967 (``NotSupportedError``)."""
 
 
 def _row(listing: str, label: str) -> list[float]:
@@ -118,6 +130,7 @@ def _generated(folder: Path, pair: PairInput) -> GenerationResult:
             gear.model_copy(
                 update={
                     "tooth_thickness_allowance_um": (e_s, min(e_s, e_i)),
+                    "span_allowance_um": None,  # (the same statement, DIN 21773 Eq. (54))
                     "residual_tip_thickness_mm": None,
                 }
             )
@@ -135,7 +148,12 @@ def _generated(folder: Path, pair: PairInput) -> GenerationResult:
     [
         _probe(n)
         for n in _probes()
-        if n not in REJECTED | DATABASE_TOOLS | BEYOND_THE_CONTRACT | NOT_TRANSLATED
+        if n
+        not in REJECTED
+        | REJECTED_BY_THE_COMPUTATION
+        | DATABASE_TOOLS
+        | BEYOND_THE_CONTRACT
+        | NOT_TRANSLATED
     ]
     + list(stplus_case_dirs()),
     ids=lambda path: path.name,
@@ -1142,7 +1160,7 @@ def test_g3y02_steep_edge_break_flanks() -> None:
         _interface(folder, "KOPFKANTENBRUCH")[0], abs=2e-5
     )
     # the residual thickness of so flat a flank changes by 2 tan(85 deg) = 23 um per um of radius;
-    # STplus takes arcs as equal within m_n / 10 000 = 0,2 um (BOGENDIFFERENZ) and prints 0,02051
+    # STplus prints 0,02051: single precision of the formula it evaluates (defaults.yaml)
     assert gear.residual_tip_thickness_mm == pytest.approx(0.020019, abs=1e-6)
     assert gear.residual_tip_thickness_mm == pytest.approx(
         _interface(folder, "RESTDICKE")[0], abs=6e-4

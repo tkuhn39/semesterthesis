@@ -482,3 +482,29 @@ the comparison of the generation unchanged (533 / 364 / 169 / 0).
 - Invariants: ±β symmetry, continuity β → 0 (also with undercut), fillet end = Eq. (128) = numerical
   intersection free of undercut, (A.3.06) residual strictly decreasing (unique root), h = h_a + h_f,
   s_an = s_at cos β_a; 20 of 22 mutations detected before the fixes, 22 of 22 after.
+
+## Independent review of the sixth round, the causes and the controls (2026-10-04, gate of increment 4)
+
+The sixth round, the section on the causes and the controls of the tool limits had been checked
+by the implementer alone. A read-only reviewer examined them on 2026-10-04 (user decision; 62
+tool runs, 12 evidence scripts, 16 mutations, no run of STplus). **No P0, no P1.** G3Y-01 to
+G3Y-03, G3Y-05 to G3Y-08 and G3Y-10 are confirmed, as are the counts 855 = 786 / 25 / 44 and
+533 = 364 / 71 / 5 / 93, the presets and ranges of the manual (p. 223 to 229, rendered) and the
+three tool controls at the kept probes. Findings:
+
+| ID | Sev. | Finding | Resolution |
+|---|---|---|---|
+| G3Z-01 | P2 | The cause "limit of the arc iteration" is shown for one gear (undercut pinion of fzg_c). Of the 93 rows, 12 belong to undercut gears, 78 to gears without undercut, 3 to d_Fa / h_K of the kst_c_rerun wheel; the fzg_c wheel (no undercut) deviates by 3,8 um at every `BOGENDIFFERENZ` | statement narrowed (`defaults.yaml`); two further runs on 2026-10-04: `KREISDIFFERENZ` 300, 2000, 4000 leave the wheel unchanged. Cause for gears without undercut open: **GEN-17** |
+| G3Z-02 | P3 | "5 within single precision (largest 0,5 um)": one of the five is d_Ff of the helix30 pinion in a listing with three decimals | corrected here: 4 within single precision (largest 0,035 um), 94 within the accuracy of the form circles |
+| G3Z-03 | P2 | The probe for `GRENZE_BETA_ITERATION` sets the end of the range, which STplus does not accept; "18 pairs" rest on runs that are not kept | run of 2026-10-04 with 1E-7 (inside the range): same listing. `defaults.yaml` says so and names the 18 runs as exploratory; the kept probes show 0,21 and 0,13 um |
+| G3Z-04 | P2 | The placeholder was not "not given" for `WERKZEUG_FERTIGVERZ.`, `ABMASS_TOL_REIHE` and a tool block with placeholders only | fixed; `test_g3z04_*` |
+| G3Z-05 | P2 | Tool limits that leave no tool raised `GeometryInfeasibleError` from the importer; what STplus does is not probed | `NotSupportedError`; `test_g3z05_*` |
+| G3Z-06 | P2 | One end per control is probed; `MINDESTKOPFSPIEL` unprobed; a mutation "controls for gear 1 only" passed | `test_g3z06_*`; note of the importer says what is probed; **GEN-18** |
+| G3Z-07 | P3 | Note of the residual tip thickness still said "without tooth thickness allowance" | reworded (the allowance of the file enters since increment 4) |
+| G3Z-08 | P3 | "0,01960 or 0,02051" holds for one order of evaluation (seven values for sixteen orders); stale comment in a test | reworded, comment corrected |
+| G3Z-09 | P3 | Stale notes in `defaults.yaml` (controls as `NotSupportedError`; 0,1099 to 0,1103 from three decimals) | updated |
+
+Not reproduced suspicions of the reviewer, recorded for increment 5: `KANTENBRECHWINKEL = 87`
+without a flank and `DA_NACH_DIN3960 = n n` are refused although STplus probably computes them;
+`STRUCTURAL_BLOCKS` lacks two block names.
+

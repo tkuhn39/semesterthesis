@@ -58,6 +58,37 @@ class Pair[T](FrozenModel):
         return cls(pinion=value, wheel=value)
 
 
+class DimensionLimits(FrozenModel):
+    """Nominal dimension and limits of an inspection dimension of the tooth thickness.
+
+    DIN 21773:2014-08 §4 (p. 8): an equation of §5 to §13 gives the nominal dimension with the
+    profile shift coefficient x, and the upper limit, the mean and the lower limit of the
+    finished gear with x_Es, x_Em and x_Ei. For an external gear a thicker tooth has the larger
+    dimension, so ``upper >= mean >= lower``; the nominal dimension lies above the upper limit
+    where the upper allowance is negative.
+    """
+
+    nominal: float
+    upper: float
+    mean: float
+    lower: float
+
+    @model_validator(mode="after")
+    def _ordered(self) -> Self:
+        slack = 1.0e-12 * max(abs(self.upper), abs(self.lower), 1.0)
+        if not self.upper + slack >= self.mean >= self.lower - slack:
+            raise ValueError(
+                f"limits must be ordered upper >= mean >= lower, got {self.upper!r}, "
+                f"{self.mean!r}, {self.lower!r}"
+            )
+        return self
+
+    @classmethod
+    def same(cls, value: float) -> "DimensionLimits":
+        """A dimension without allowance: all four values are the nominal one."""
+        return cls(nominal=value, upper=value, mean=value, lower=value)
+
+
 class InputWarning(FrozenModel):
     """A soft finding about an input that is valid but unusual (never raised, always returned)."""
 

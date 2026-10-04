@@ -1,0 +1,29 @@
+{
+  "case": "span_of_one_gear_only",
+  "cfg": "Firmenname = FZG\nSachbearbeiter = gearcore oracle\nEingabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_one_gear_only\\eingabe.ste\nAusgabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_one_gear_only\\ausgabe.sta\nGraphikdatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_one_gear_only\\grafik1.stz\nGraphikdatei_2 = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_one_gear_only\\grafik2.stz\nZuordnungsdatei = qelesed.stq\nWerkzeugdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wkz\\wkz.dat\nWerkzeugdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wkz_glob.dat\nWerkzeugdatei_3 = %\nWerkzeugdatei_4 = %\nWerkzeugdatei_5 = %\nWerkzeugdatei_6 = %\nWerkzeugdatei_7 = %\nWerkzeugdatei_8 = %\nWerkzeugdatei_9 = %\nWerkzeugdatei_10 = %\nWerkstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wst\\WST.dat\nWerkstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wst_glob.dat\nSchmierstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\oel\\Oel.dat\nSchmierstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\oel_glob.dat\nPfad_Maskendateien = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\zubeh\\\nSchnittstellendatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_one_gear_only\\ausgabe.sts\nSTEP_Konfiguration = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_one_gear_only\\config.dat\nPfad_Meldungsausgabe = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_one_gear_only\\\n",
+  "exe": "30_references_and_examples/33_STplus/STplus11-1F/bin/STplus.exe",
+  "exit_code": 0,
+  "interface_file": "interface.sts.txt",
+  "kept_files": [
+    "input.ste",
+    "report.sta.txt",
+    "interface.sts.txt",
+    "meta.json"
+  ],
+  "material_kinds": {},
+  "notes": "centre distance and the span of gear 1, nothing for gear 2: the input is rejected",
+  "origin": "run",
+  "plot_accuracy": 0.005,
+  "run_date": "2026-10-04T15:35:01+02:00",
+  "scratch": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_one_gear_only",
+  "sections": [],
+  "source_ste": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_probe_23ysdzwf\\span_of_one_gear_only.ste",
+  "stdout": " Config file path C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_one_\n gear_only\\stplus.cfg passed as CLI parameter. Found file.\n ... Eingabedatenverarbeitung wird durchgefuehrt ...\n ... Geometrieberechnung wird durchgefuehrt ...\nRuntime:  0.193s\n",
+  "ste_sha256": "9154e2e5038bbec466011449c69cea0f3b2de9472196d098774443b7c2d711c2",
+  "stplus_version": "11.1F",
+  "trust": "generated",
+  "typed_import": {
+    "error": "ParseError: ACHSABSTAND with an inspection dimension of one gear and nothing for the other: STplus rejects the input (run of 2026-10-04)",
+    "ok": false
+  }
+}

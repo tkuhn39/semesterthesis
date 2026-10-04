@@ -1,0 +1,53 @@
+{
+  "case": "ball_dimension_given",
+  "cfg": "Firmenname = FZG\nSachbearbeiter = gearcore oracle\nEingabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\ball_dimension_given\\eingabe.ste\nAusgabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\ball_dimension_given\\ausgabe.sta\nGraphikdatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\ball_dimension_given\\grafik1.stz\nGraphikdatei_2 = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\ball_dimension_given\\grafik2.stz\nZuordnungsdatei = qelesed.stq\nWerkzeugdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wkz\\wkz.dat\nWerkzeugdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wkz_glob.dat\nWerkzeugdatei_3 = %\nWerkzeugdatei_4 = %\nWerkzeugdatei_5 = %\nWerkzeugdatei_6 = %\nWerkzeugdatei_7 = %\nWerkzeugdatei_8 = %\nWerkzeugdatei_9 = %\nWerkzeugdatei_10 = %\nWerkstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wst\\WST.dat\nWerkstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wst_glob.dat\nSchmierstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\oel\\Oel.dat\nSchmierstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\oel_glob.dat\nPfad_Maskendateien = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\zubeh\\\nSchnittstellendatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\ball_dimension_given\\ausgabe.sts\nSTEP_Konfiguration = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\ball_dimension_given\\config.dat\nPfad_Meldungsausgabe = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\ball_dimension_given\\\n",
+  "exe": "30_references_and_examples/33_STplus/STplus11-1F/bin/STplus.exe",
+  "exit_code": 0,
+  "interface_file": "interface.sts.txt",
+  "kept_files": [
+    "input.ste",
+    "report.sta.txt",
+    "interface.sts.txt",
+    "meta.json"
+  ],
+  "material_kinds": {},
+  "notes": "DIAMETRALES_MASS = 77.60 114.10 with MESSTUECKDM_KUGEL = 3.5 3.5 and the centre distance: read like a span, x_E 0.1772 / 0.3042",
+  "origin": "run",
+  "plot_accuracy": 0.005,
+  "run_date": "2026-10-04T15:35:05+02:00",
+  "scratch": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\ball_dimension_given",
+  "sections": [
+    "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "Besonderheiten der Radpaarung:"
+  ],
+  "source_ste": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_probe_p8cn61uq\\ball_dimension_given.ste",
+  "stdout": " Config file path C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\ball_dimensi\n on_given\\stplus.cfg passed as CLI parameter. Found file.\n ... Eingabedatenverarbeitung wird durchgefuehrt ...\n ... Geometrieberechnung wird durchgefuehrt ...\n ... Geometrieplots werden gezeichnet ...\nRuntime:  0.236s\n",
+  "ste_sha256": "9de13e0134f28fb1fb83cfa3033c9cea73bd2f9b5464e9cb5ea355044fa4551e",
+  "stplus_version": "11.1F",
+  "trust": "generated",
+  "typed_import": {
+    "notes": [
+      "tool 'STplus default hob of gear 1': no tool block named → the hob STplus uses where none is given",
+      "tool 'STplus default hob of gear 1': KOPFHOEHENFAKTOR not given → h_aP0* = 1.25 (STplus default)",
+      "tool 'STplus default hob of gear 1': KOPFABRUNDUNGSFAKTOR not given → rho_aP0* = 0.25 (STplus default)",
+      "tool 'STplus default hob of gear 1': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'STplus default hob of gear 1': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
+      "tool 'STplus default hob of gear 1': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'STplus default hob of gear 1': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "tool 'STplus default hob of gear 2': no tool block named → the hob STplus uses where none is given",
+      "tool 'STplus default hob of gear 2': KOPFHOEHENFAKTOR not given → h_aP0* = 1.25 (STplus default)",
+      "tool 'STplus default hob of gear 2': KOPFABRUNDUNGSFAKTOR not given → rho_aP0* = 0.25 (STplus default)",
+      "tool 'STplus default hob of gear 2': FUSSFORMHOEHENFAKTOR not given → h_FfP0* = 1.3 (STplus default)",
+      "tool 'STplus default hob of gear 2': FUSSHOEHENFAKTOR not given → h_fP0* = 1.3 (STplus default)",
+      "tool 'STplus default hob of gear 2': PROTUBERANZBETRAG not given → 0 (no protuberance)",
+      "tool 'STplus default hob of gear 2': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",
+      "gear 1: DIAMETRALES_MASS = 77.6 with D_M = 3.5 is read as the upper limit of the finished gear, as STplus reads it",
+      "gear 1: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
+      "gear 2: DIAMETRALES_MASS = 114.1 with D_M = 3.5 is read as the upper limit of the finished gear, as STplus reads it",
+      "gear 2: KOPFKANTENBRUCH not given → 0 (no tip chamfer)",
+      "ACHSABSTAND and the dimensions of both gears without an allowance: STplus presets the upper allowance of gear 1 by the series c25 of DIN 3967 and gives gear 2 the rest (increment 5); until then the pair lacks that statement and is not computed"
+    ],
+    "ok": true,
+    "unmapped_keys": []
+  }
+}

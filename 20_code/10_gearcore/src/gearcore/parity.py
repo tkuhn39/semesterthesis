@@ -398,6 +398,8 @@ def compute_pair_from_data(data: PairData, values: dict[str, float]) -> PairGeom
             gear.model_copy(
                 update={
                     "span": None,
+                    "ball_dimension": None,
+                    "span_allowance_um": None,
                     "profile_shift_coefficient": values.get(f"x_{number}"),
                     "tip_diameter_mm": values[f"d_a{number}"],
                     "face_width_mm": values[f"b_{number}"],
@@ -713,6 +715,8 @@ def compute_generation_from_data(data: GenerationData, values: dict[str, float])
             gear.model_copy(
                 update={
                     "span": None,
+                    "ball_dimension": None,
+                    "span_allowance_um": None,
                     "profile_shift_coefficient": values.get(f"x_{number}"),
                     "tip_diameter_mm": values[f"d_a{number}"],
                     "face_width_mm": values[f"b_{number}"],
@@ -833,6 +837,280 @@ def compare_generation(case: str) -> tuple[ParityRow, ...]:
                         origin=origin,
                         field=field,
                         symbol=field_symbol,
+                        unit=field_unit,
+                        gear=ROLES[gear],
+                        gearcore_value=value,
+                        stplus_value=reference,
+                        stplus_token=token,
+                        difference=value - reference,
+                        print_tolerance=print_tol,
+                        arithmetic_tolerance=arithmetic_tol,
+                        input_tolerance=rounding,
+                        solver_tolerance=solver,
+                        verdict=_verdict(
+                            value - reference, print_tol, arithmetic_tol + rounding + solver
+                        ),
+                    )
+                )
+    return tuple(rows)
+
+
+# --- inspection dimensions (increment 4) ------------------------------------------------------------
+#
+# STplus prints the inspection dimensions of the nominal gear ("Nennmass") with their allowances,
+# and the circles on which the measuring pieces touch for the gear at its upper allowance. The
+# number of teeth spanned and the diameter of the measuring ball are choices of the program by
+# rules that are not those of the norm (``stplus_program.stplus_number_of_teeth_spanned``,
+# ``stplus_measuring_ball_diameter``, see ``norm_map.md``): the comparison computes both by these
+# rules, compares them with the listing and computes the dimensions with them. STplus measures
+# the chord on the middle of the form circles
+# (``stplus_program.stplus_chord_diameter``), which it finds numerically: the diameter of that
+# cylinder is compared within the accuracy of the form circles, the chord and its height on the
+# cylinder the listing prints, so that both are compared as sharply as every other dimension.
+
+INSPECTION_ROWS: tuple[tuple[str, str, str | None, str | None], ...] = (
+    # (row name, contract field, listing symbol or label, interface key)
+    ("number_of_teeth_spanned", "number_of_teeth_spanned", "k", None),
+    ("measuring_ball_diameter_mm", "measuring_ball_diameter_mm", "D_M", None),
+    ("span_measurement_mm", "span_measurement_mm", "W_k", "ZAHNWEITE"),
+    ("span_measurement_mm: upper - nominal", "span_measurement_mm", "A_We", "OBERES_ZAHNWEITENABM"),
+    (
+        "span_measurement_mm: lower - nominal",
+        "span_measurement_mm",
+        "A_Wi",
+        "UNTERES_ZAHNWEITENABM",
+    ),
+    (
+        "span_measuring_circle_diameter_mm",
+        "span_measuring_circle_diameter_mm",
+        "Beruehrkreisdurchm. (Zahnweitenmessg.)",
+        "BERUEHRKREISDM_ZAHNW",
+    ),
+    ("span_allowance_factor", "span_allowance_factor", "A_W/A_Sn", "ZAHNWEITENABMASSFAKTOR"),
+    (
+        "diametral_two_ball_dimension_mm",
+        "diametral_two_ball_dimension_mm",
+        "M_dK",
+        "DIAMETR_ZWEIKUGELMASS",
+    ),
+    (
+        "diametral_two_ball_dimension_mm: upper - nominal",
+        "diametral_two_ball_dimension_mm",
+        "A_Mde",
+        "OBERES_DIAMETR_ABMASS",
+    ),
+    (
+        "diametral_two_ball_dimension_mm: lower - nominal",
+        "diametral_two_ball_dimension_mm",
+        "A_Mdi",
+        "UNTERES_DIAMETR_ABMASS",
+    ),
+    (
+        "ball_measuring_circle_diameter_mm",
+        "ball_measuring_circle_diameter_mm",
+        "Beruehrkreisdurchmesser (Kugel/Flanke)",
+        "BERUEHRKREISDM_ZWEIK",
+    ),
+    ("diametral_two_roller_dimension_mm", "diametral_two_roller_dimension_mm", "M_dR", None),
+    ("y_diameter_mm", "y_diameter_mm", "Beruehrkreisdurchm. (oberes Abmass)", "BERUEHRKREISDURCHM"),
+    (
+        "chordal_tooth_thickness_at_y_mm",
+        "chordal_tooth_thickness_at_y_mm",
+        "s_n-",
+        "ZAHNDICKENSEHNE",
+    ),
+    ("height_above_chord_at_y_mm", "height_above_chord_at_y_mm", "h_a-", "HOEHE_UEBER_ZAHNSEHNE"),
+)
+"""What is compared: name of the row, the contract field it belongs to, and where STplus prints
+it (key of the listing document, key of the interface file)."""
+
+INSPECTION_FORM_CIRCLES: dict[str, float] = {"y_diameter_mm": 1.0}
+"""Rows that depend on the form circles STplus finds numerically, with the factor of
+``FORM_CIRCLE_ACCURACY_MM`` that enters: the chord cylinder is the middle of d_Ff and d_Fa (both
+may be numerical: factor 1 for the diameter)."""
+CHORD_CYLINDER = "Beruehrkreisdurchm. (oberes Abmass)"
+"""Listing label of the cylinder on which STplus measures the chord."""
+INSPECTION_ON_PRINTED_CYLINDER: tuple[str, ...] = (
+    "chordal_tooth_thickness_at_y_mm",
+    "height_above_chord_at_y_mm",
+)
+"""Rows computed on the chord cylinder the listing prints (its printed rounding enters)."""
+
+
+def printed_chord_cylinders(case: str) -> tuple[tuple[float, float], tuple[float, float]]:
+    """(d_y per gear, half a unit of its last printed digit per gear) of the cylinder on which
+    the listing of the case gives the chord."""
+    entry = load_stplus(case, "geometry")[CHORD_CYLINDER]
+    return (
+        (float(_per_gear(entry["numbers"], 0)), float(_per_gear(entry["numbers"], 1))),
+        (
+            printed_tolerance(printed_decimals(_per_gear(entry["tokens"], 0))),
+            printed_tolerance(printed_decimals(_per_gear(entry["tokens"], 1))),
+        ),
+    )
+
+
+def compute_inspection_from_data(
+    data: GenerationData,
+    values: dict[str, float],
+    choices: tuple[tuple[int, int], tuple[float, float]] | None = None,
+    chord_diameter_mm: tuple[float, float] | None = None,
+) -> Any:
+    """``compute_inspection`` for one set of numbers, with the k and D_M of ``choices`` (without
+    them: as STplus chooses for these numbers) and the chord on the given cylinders (without
+    them: on the cylinder of the rule of STplus)."""
+    from gearcore.inspection import compute_inspection
+    from gearcore.stplus_program import stplus_chord_diameter, with_stplus_inspection_choices
+
+    generation = with_stplus_inspection_choices(compute_generation_from_data(data, values), choices)
+    chords: Pair[float] = (
+        Pair(pinion=chord_diameter_mm[0], wheel=chord_diameter_mm[1])
+        if chord_diameter_mm is not None
+        else Pair(
+            pinion=stplus_chord_diameter(
+                generation.gears.pinion.root_form_diameter_mm,
+                generation.gears.pinion.tip_form_diameter_mm,
+            ),
+            wheel=stplus_chord_diameter(
+                generation.gears.wheel.root_form_diameter_mm,
+                generation.gears.wheel.tip_form_diameter_mm,
+            ),
+        )
+    )
+    return compute_inspection(generation, chord_diameter_mm=chords)
+
+
+def _inspection_value(result: Any, row: str, gear: int) -> float | None:
+    inspected = result.gears.as_tuple()[gear]
+    field, _, part = row.partition(": ")
+    value = getattr(inspected, field)
+    if value is None:
+        return None
+    if isinstance(value, int | float):
+        return float(value)
+    if part == "upper - nominal":
+        return float(value.upper - value.nominal)
+    if part == "lower - nominal":
+        return float(value.lower - value.nominal)
+    return float(value.nominal)
+
+
+def _shifted_inspection_value(result: Any, row: str, gear: int) -> float:
+    """The value of a run with a shifted input; a run that loses the value would turn the whole
+    value into a tolerance."""
+    value = _inspection_value(result, row, gear)
+    if value is None:
+        raise ParseError(f"{row}: a shifted input leaves the value of gear {gear + 1} undefined")
+    return value
+
+
+def compare_inspection(case: str) -> tuple[ParityRow, ...]:
+    """Compare the inspection dimensions of a packaged STplus case, value by value.
+
+    Not compared, because STplus defines them differently (``expected_differences.yaml``): the
+    allowance factor of the ball dimension (STplus prints the ratio of its upper allowances,
+    the norm the derivative) and the allowance of the chord (STplus prints the tooth thickness
+    allowance itself).
+    """
+    from gearcore.models.results import GearInspection
+
+    trust = str(load_stplus(case, "meta")["trust"])
+    data = generation_data(case)
+
+    def shifted(name: str, amount: float) -> dict[str, float]:
+        # a lower allowance is shifted downwards: shifted upwards it would pass an equal upper
+        # allowance and be clipped to it, and the lower limits would not move at all
+        sign = -1.0 if name.startswith("E_sni") else 1.0
+        return {**data.values, name: data.values[name] + sign * amount}
+
+    # (k and D_M are whole choices: they are made once, for the numbers as printed, and held
+    # while the numbers are shifted)
+    from gearcore.stplus_program import stplus_inspection_choices
+
+    choices = stplus_inspection_choices(compute_generation_from_data(data, data.values))
+
+    def computed(chords: tuple[float, float] | None) -> tuple[Any, list[Any], list[Any]]:
+        """The result, and the results with each number shifted by its printed rounding and by
+        the single-precision steps of STplus."""
+        return (
+            compute_inspection_from_data(data, data.values, choices, chords),
+            [
+                compute_inspection_from_data(data, shifted(name, half_unit), choices, chords)
+                for name, half_unit in data.printed.items()
+            ],
+            [
+                compute_inspection_from_data(
+                    data, shifted(name, ARITHMETIC_STEPS * binary32_step(value)), choices, chords
+                )
+                for name, value in data.values.items()
+                if value != 0.0
+            ],
+        )
+
+    by_rule = computed(None)
+    cylinders, half_units = printed_chord_cylinders(case)
+    on_printed = computed(cylinders)
+    for gear in range(2):
+        for results, amount in (
+            (on_printed[1], half_units[gear]),
+            (on_printed[2], ARITHMETIC_STEPS * binary32_step(cylinders[gear])),
+        ):
+            moved = [cylinders[0], cylinders[1]]
+            moved[gear] += amount
+            results.append(
+                compute_inspection_from_data(data, data.values, choices, (moved[0], moved[1]))
+            )
+    outputs: list[tuple[Origin, dict[str, Any], str]] = [
+        ("listing", load_stplus(case, "geometry"), "tokens")
+    ]
+    if has_stplus(case, "interface"):
+        outputs.append(("interface", load_stplus(case, "interface"), "values"))
+
+    rows: list[ParityRow] = []
+    for row, field, symbol, key in INSPECTION_ROWS:
+        field_symbol, field_unit = _symbol_and_unit(GearInspection, field)
+        _, _, part = row.partition(": ")
+        shown = f"{field_symbol} ({part})" if part else field_symbol
+        ours, by_rounding, by_arithmetic = (
+            on_printed if row in INSPECTION_ON_PRINTED_CYLINDER else by_rule
+        )
+        for gear in range(2):
+            value = _inspection_value(ours, row, gear)
+            if value is None:
+                continue
+            rounding = sum(
+                abs(_shifted_inspection_value(o, row, gear) - value) for o in by_rounding
+            )
+            propagated = sum(
+                abs(_shifted_inspection_value(o, row, gear) - value) for o in by_arithmetic
+            )
+            solver = INSPECTION_FORM_CIRCLES.get(row, 0.0) * FORM_CIRCLE_ACCURACY_MM
+            if part:
+                # an allowance is the difference of two dimensions STplus holds in single
+                # precision: the spacing of both enters, not that of the small difference
+                limits = getattr(ours.gears.as_tuple()[gear], field)
+                limit = limits.upper if part.startswith("upper") else limits.lower
+                propagated += ARITHMETIC_STEPS * (
+                    binary32_step(limits.nominal) + binary32_step(limit)
+                )
+            for origin, document, tokens in outputs:
+                name = symbol if origin == "listing" else key
+                if name is None:
+                    continue
+                entry = document.get(name if origin == "listing" else f"GEOMETRIEDATEN/{name}")
+                if entry is None:
+                    continue
+                reference = _per_gear(entry["numbers"], gear)
+                token = _per_gear(entry[tokens], gear)
+                print_tol = printed_tolerance(printed_decimals(token))
+                arithmetic_tol = propagated + ARITHMETIC_STEPS * binary32_step(reference)
+                rows.append(
+                    ParityRow(
+                        case=case,
+                        trust=trust,
+                        origin=origin,
+                        field=row,
+                        symbol=shown,
                         unit=field_unit,
                         gear=ROLES[gear],
                         gearcore_value=value,

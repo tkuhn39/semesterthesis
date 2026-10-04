@@ -1,0 +1,103 @@
+ 
+       *********************************************************************
+       *           Forschungsvereinigung Antriebstechnik e.V. (FVA)        *
+       *                          Lyoner Str. 18                           *
+       *                         60528  Frankfurt                          *
+       *********************************************************************
+ 
+ 
+ 
+       Angaben zum Programm
+       --------------------
+       Programmname:           STplus
+       Version:                11.1F
+       Freigabe:               01.12.2025
+       Berechnungsumfang:      Geometrieberechnung von Stirnraedern sowie
+                               Tragfaehigkeitsberechnung nach den unter-
+                               schiedlichsten Verfahren
+ 
+ 
+       Angaben zur Erstellung
+       ----------------------
+       Erstellung:             Das Programm wurde im Rahmen des FVA-
+                               Forschungsvorhabens Nr. 241 erstellt.
+       Forschungsstelle:       FZG, TU Muenchen
+                               Prof. Dr.-Ing. K. Stahl
+ 
+ 
+       Angaben zum Anwender
+       --------------------
+       Firmenname:             FZG
+       Sachbearbeiter:         gearcore oracle
+ 
+ 
+       Angaben zur Berechnung
+       ----------------------
+       Datum:                  04.10.26
+       Uhrzeit:                15:35:00 Uhr
+       Eingabedatei:           ...lus\span_without_centre_distance\eingabe.ste
+       Ausgabedatei:           ...lus\span_without_centre_distance\ausgabe.sta
+ 
+ 
+       Firmenspezifische Angaben
+       -------------------------
+ 
+ 
+ 
+       Angaben zum Berechnungsinhalt
+       -----------------------------
+ 
+ 
+ 
+1      *********************************************************************
+       * Stirnradprogramm STplus 11.1F     FZG             Blatt  2 von 2  *
+       * Ein Programm der FVA:     Forschungssoftware erstellt von der FZG *
+       ******************************************** 04.10.26  15:35:00 *****
+ 
+ 
+ 
+ 
+ 
+                              Echoprint der Datensaetze
+ 
+               =========== Ausgabe des ersten Datensatzes ===========
+ 
+       $ Geometriedaten
+       ZAHNBREITE = 22 20
+       NORMALMODUL = 2.0
+       ZAEHNEZAHL = 36 54
+       EINGRIFFSWINKEL = 20
+       SCHRAEGUNGSWINKEL = 0 0
+       KOPFKREISDM = 76.46 112.95
+       ZAHNWEITE = 27.827 46.21
+       MESSZAEHNEZAHL = 5 8
+ 
+       $ AUSDRUCKSTEUERUNG
+       AUSDRUCK_IN_DEUTSCH = ja
+       LANGAUSDR_GEOMETRIE = ja
+       LANGAUSDR_TRAGFAEHIGKEIT = ja
+       AUSDRUCK_DECKBLATT = ja
+       ECHODRUCK_EINGABEDATEI = ja
+       AUSDRUCK_ERZEUGUNGSGETR = nein
+ 
+       $ PLOTSTEUERUNG
+       PLOTFORMAT = A4h A4h
+       PLOTGENAUIGKEIT = 0.005 0.005
+       PLOT_TEILKREIS = ja ja
+       PLOT_VERZAHNUNG_W1 = ja ja
+       PLOT_VERZAHNUNG_W2 = nein nein
+       PLOT_FERTIGVERZAHNUNG = nein nein
+       PLOT_WERKZEUG1 = nein nein
+       PLOT_WERKZEUG2 = nein nein
+       PLOT_EINGRIFF = ja
+       STIRNKOORD_EIN_WKZ = ja
+ 
+ 
+                                 Ende des Echoprints
+ 
+       Eingaben im Datensatz mit lfd. Nr.  1 sind unvollstaendig oder unzulaessig:
+       MN =  2.00 ALN = 20.00  Z-1 =   36.0 Z-2 =   54.0  U =  0.000
+       (NOZJ=0)  B-1 =  22.00
+       A =    0.00  BETA = 5729.5 X1+X2 =   -1.E  X1 =  27.827 X-2 =  46.210 K = 23
+       Beachte: Wert "100." in BETA...X2 sowie ggf. A=0.00 ---> keine Eingabe !
+       EV=R nur nach EV=A; Eingabe U > 0 bzw. U <  0 nur mit EV=B

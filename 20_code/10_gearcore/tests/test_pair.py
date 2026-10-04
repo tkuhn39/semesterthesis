@@ -18,7 +18,13 @@ from gearcore import involute as iv
 from gearcore import pair as pr
 from gearcore.errors import GeometryInfeasibleError, InputRangeError, NotSupportedError
 from gearcore.models.common import Pair
-from gearcore.models.inputs import GearInput, PairInput, SpanMeasurement, ToolProfile
+from gearcore.models.inputs import (
+    DimensionKind,
+    GearInput,
+    PairInput,
+    SpanMeasurement,
+    ToolProfile,
+)
 from gearcore.models.results import PairGeometry
 
 SRC = "ISO21771:2014"
@@ -401,10 +407,14 @@ def test_inputs_the_pair_geometry_cannot_resolve_are_typed_errors() -> None:
     with pytest.raises(InputRangeError, match="wheel: the mesh needs the tip diameter"):
         pr.compute_pair_geometry(missing_tip)
     valid = make_pair(case)
-    span = SpanMeasurement(span_measurement_mm=9.5, number_of_teeth_spanned=2)
+    # the upper limit of a span without the allowances and without a centre distance leaves
+    # the nominal profile shift coefficient open (DIN 21773 §4; ADR-107)
+    span = SpanMeasurement(
+        kind=DimensionKind.UPPER_LIMIT, span_measurement_mm=9.5, number_of_teeth_spanned=2
+    )
     pinion = valid.gears.pinion.model_copy(update={"profile_shift_coefficient": None, "span": span})
     from_span = valid.model_copy(update={"gears": Pair(pinion=pinion, wheel=valid.gears.wheel)})
-    with pytest.raises(NotSupportedError, match="span measurement"):
+    with pytest.raises(InputRangeError, match="is not determined"):
         pr.compute_pair_geometry(from_span)
     # a centre distance below the sum of the base radii has no involute mesh
     with pytest.raises(GeometryInfeasibleError, match="cos alpha_wt"):

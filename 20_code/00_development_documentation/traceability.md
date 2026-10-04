@@ -17,9 +17,10 @@ Tests are linked through `@pytest.mark.eq(source, eq)` markers and, as a fallbac
 | DIN3960:1987 | (A.3.03) | §A.3.1 p.52 | generation.edge_break_transverse_tooth_thickness | test_edge_break_of_the_tool[K], test_edge_break_of_the_tool[L] | – | ✓ tested |
 | ISO21771:2014 | (125) | §7.5 p.68 | generation.generated_root_diameter | test_generated_root_diameter[H], test_generated_root_diameter[K], test_generated_root_diameter[L], test_generated_root_diameter[S] | 03_werkzeug_erzeugung_zahnkontur.ipynb | ✓ tested |
 | DIN3960:1987 | (3.6.04) | §3.6.4 p.14 | generation.generated_root_diameter | test_generation.py, test_quantities.py, test_trochoid.py | 03_werkzeug_erzeugung_zahnkontur.ipynb | ✓ tested |
-| ISO21771:2014 | (123) | §7.4 p.67 | generation.generating_profile_shift_coefficient | test_generating_profile_shift_coefficient[H], test_generating_profile_shift_coefficient[K], test_generating_profile_shift_coefficient[L], test_generating_profile_shift_coefficient[S] | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb | ✓ tested |
-| ISO21771:2014 | (124) | §7.4 p.67 | generation.generating_profile_shift_coefficient | test_generating_profile_shift_coefficient[H], test_generating_profile_shift_coefficient[K], test_generating_profile_shift_coefficient[L], test_generating_profile_shift_coefficient[S] | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb | ✓ tested |
-| DIN3960:1987 | (3.6.03) | §3.6.3 p.14 | generation.generating_profile_shift_coefficient | test_generation.py, test_stplus_parity.py, test_stplus_reading.py, test_worked_examples.py | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb | ✓ tested |
+| ISO21771:2014 | (123) | §7.4 p.67 | generation.generating_profile_shift_coefficient | test_generating_profile_shift_coefficient[H], test_generating_profile_shift_coefficient[K], test_generating_profile_shift_coefficient[L], test_generating_profile_shift_coefficient[S] | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
+| ISO21771:2014 | (124) | §7.4 p.67 | generation.generating_profile_shift_coefficient | test_generating_profile_shift_coefficient[H], test_generating_profile_shift_coefficient[K], test_generating_profile_shift_coefficient[L], test_generating_profile_shift_coefficient[S] | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (44) | §14.1 p.24 | generation.generating_profile_shift_coefficient | test_generation.py, test_inspection.py, test_stplus_parity.py, test_stplus_reading.py, test_worked_examples.py | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN3960:1987 | (3.6.03) | §3.6.3 p.14 | generation.generating_profile_shift_coefficient | test_generation.py, test_inspection.py, test_stplus_parity.py, test_stplus_reading.py, test_worked_examples.py | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
 | ISO21771:2014 | (135) | §7.7 p.70 | generation.min_generating_profile_shift_coefficient | test_min_generating_profile_shift_coefficient[H], test_min_generating_profile_shift_coefficient[K], test_min_generating_profile_shift_coefficient[L], test_min_generating_profile_shift_coefficient[S], test_undercut_limit_of_the_norm_agrees_with_the_fillet | 03_werkzeug_erzeugung_zahnkontur.ipynb | ✓ tested |
 | DIN3960:1987 | (3.6.06) | §3.6.6 p.14 | generation.min_generating_profile_shift_coefficient | test_adv_3.py, test_generation.py, test_stplus_parity.py, test_trochoid.py | 03_werkzeug_erzeugung_zahnkontur.ipynb | ✓ tested |
 | ISO21771:2014 | (48) | §4.7.5 p.37 | generation.normal_tip_tooth_thickness | test_tip_tooth_thickness[H], test_tip_tooth_thickness[K], test_tip_tooth_thickness[L], test_tip_tooth_thickness[S], test_half_angles_and_arc_thickness_at_any_diameter | – | ✓ tested |
@@ -48,7 +49,77 @@ Tests are linked through `@pytest.mark.eq(source, eq)` markers and, as a fallbac
 | ISO21771:2014 | (35) | §4.6.1 p.34 | generation.tooth_depth | test_heights[H], test_heights[K], test_heights[L], test_heights[S] | – | ✓ tested |
 | ISO21771:2014 | (118) | §7.3 p.65 | generation.tooth_thickness_limit | test_tooth_thickness_limits | – | ✓ tested |
 | ISO21771:2014 | (119) | §7.3 p.65 | generation.tooth_thickness_limit | test_tooth_thickness_limits | – | ✓ tested |
-| ISO21771:2014 | (19) | §4.3.10 p.31 | involute.base_diameter | test_base_diameter_matches_worked_example[pinion], test_base_diameter_matches_worked_example[wheel], test_basic_geometry_against_decimal_references[A], test_basic_geometry_against_decimal_references[B] | 03_werkzeug_erzeugung_zahnkontur.ipynb | ✓ tested |
+| DIN21773:2014 | (31) | §8 p.20 | inspection.ball_centre_circle_diameter | test_adv_4.py, test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (35) | §10 p.21 | inspection.ball_centre_circle_diameter_from_dimension | test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (36) | §10 p.21 | inspection.ball_centre_circle_diameter_from_dimension | test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (30) | §8 p.20 | inspection.ball_centre_profile_angle | test_adv_4.py, test_inspection.py, test_stplus_choices.py | – | ✓ tested |
+| DIN21773:2014 | (34) | §8 p.20 | inspection.ball_contact_profile_angle | test_inspection.py, test_stplus_choices.py | – | ✓ tested |
+| DIN21773:2014 | (33) | §8 p.20 | inspection.ball_measuring_circle_diameter | test_inspection.py, test_quantities.py, test_stplus_choices.py | – | ✓ tested |
+| DIN21773:2014 | (5) | §5 p.10 | inspection.chordal_height | test_adv_4.py, test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (6) | §5 p.10 | inspection.chordal_height | test_adv_4.py, test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (2) | §5 p.9 | inspection.chordal_tooth_thickness | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (4) | §5 p.9 | inspection.chordal_tooth_thickness | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (1) | §5 p.9 | inspection.chordal_tooth_thickness | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (3) | §5 p.9 | inspection.chordal_tooth_thickness | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (51) | §14.3 p.25 | inspection.chordal_tooth_thickness_allowance_factor | test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (48) | §14.3 p.25 | inspection.chordal_tooth_thickness_allowance_factor | test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (7) | §6 p.11 | inspection.constant_chord | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (16) | §7.2 p.13 | inspection.contact_line_overlap | test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (60) | §14.6 p.26 | inspection.diametral_ball_dimension_allowance_factor | test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (61) | §14.6 p.26 | inspection.diametral_ball_dimension_allowance_factor | test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (35) | §10 p.21 | inspection.diametral_two_ball_dimension | test_adv_4.py, test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (36) | §10 p.21 | inspection.diametral_two_ball_dimension | test_adv_4.py, test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (35) | §10 p.21 | inspection.diametral_two_roller_dimension | test_adv_4.py, test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (36) | §10 p.21 | inspection.diametral_two_roller_dimension | test_adv_4.py, test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (37) | §11 p.22 | inspection.diametral_two_roller_dimension | test_adv_4.py, test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (8) | §6 p.11 | inspection.height_above_constant_chord | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (27) | §8 p.18 | inspection.ideal_ball_centre_profile_angle | test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (29) | §8 p.20 | inspection.ideal_ball_centre_profile_angle | test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (26) | §8 p.18 | inspection.ideal_measuring_ball_diameter | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (50) | §14.3 p.25 | inspection.lower_limit_dimension | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (53) | §14.3 p.25 | inspection.lower_limit_dimension | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (56) | §14.4 p.25 | inspection.lower_limit_dimension | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (59) | §14.5 p.25 | inspection.lower_limit_dimension | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (63) | §14.6 p.26 | inspection.lower_limit_dimension | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (13) | §7.2 p.12 | inspection.max_number_of_teeth_spanned | test_inspection.py, test_numeric_precision.py, test_stplus_choices.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (43) | §14.1 p.24 | inspection.mean_tooth_thickness_allowance | test_quantities.py | – | ✓ tested |
+| DIN3977:1981 | Abschnitt 6 | §6 p.2 | inspection.measuring_circle_offset_factor | test_inspection.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (12) | §7.2 p.12 | inspection.min_number_of_teeth_spanned | test_inspection.py, test_numeric_precision.py, test_stplus_choices.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (15) | §7.2 p.13 | inspection.min_usable_face_width | test_inspection.py | – | ✓ tested |
+| DIN3977:1981 | Tab. 1 | §4 p.1 | inspection.next_larger_measuring_ball_diameter | test_inspection.py | – | ✓ tested |
+| ISO21771:2014 | (29) | §4.4.5 p.33 | inspection.normal_base_pitch | test_inspection.py | – | ✓ tested |
+| ISO21771:2014 | (38) | §4.7.1 p.35 | inspection.normal_base_tooth_thickness | test_tip_tooth_thickness[H], test_tip_tooth_thickness[K], test_tip_tooth_thickness[L], test_tip_tooth_thickness[S], test_half_angles_and_arc_thickness_at_any_diameter, test_quantities_at_a_diameter_against_decimal_references[A], test_quantities_at_a_diameter_against_decimal_references[B] | – | ✓ tested |
+| ISO21771:2014 | (48) | §4.7.5 p.37 | inspection.normal_base_tooth_thickness | test_tip_tooth_thickness[H], test_tip_tooth_thickness[K], test_tip_tooth_thickness[L], test_tip_tooth_thickness[S], test_half_angles_and_arc_thickness_at_any_diameter | – | ✓ tested |
+| DIN21773:2014 | (9) | §7.2 p.12 | inspection.number_of_teeth_spanned | test_adv_2.py, test_adv_4.py, test_inspection.py, test_io_ste.py, test_models.py, test_numeric_precision.py, test_pair.py, test_quantities.py, test_stplus_choices.py, test_worked_examples.py | 02_paarungsgeometrie_iso21771.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN3960:1987 | (3.8.13) | §3.8.2 p.21 | inspection.number_of_teeth_spanned | test_adv_2.py, test_adv_4.py, test_inspection.py, test_io_ste.py, test_models.py, test_numeric_precision.py, test_pair.py, test_quantities.py, test_stplus_choices.py, test_worked_examples.py | 02_paarungsgeometrie_iso21771.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (40) | §13 p.23 | inspection.overcut_tip_diameter | test_quantities.py | – | ✓ tested |
+| ISO21771:2014 | (123) | §7.4 p.67 | inspection.profile_shift_coefficient_from_generating | test_generating_profile_shift_coefficient[H], test_generating_profile_shift_coefficient[K], test_generating_profile_shift_coefficient[L], test_generating_profile_shift_coefficient[S] | – | ✓ tested |
+| ISO21771:2014 | (124) | §7.4 p.67 | inspection.profile_shift_coefficient_from_generating | test_generating_profile_shift_coefficient[H], test_generating_profile_shift_coefficient[K], test_generating_profile_shift_coefficient[L], test_generating_profile_shift_coefficient[S] | – | ✓ tested |
+| DIN21773:2014 | (44) | §14.1 p.24 | inspection.profile_shift_coefficient_from_generating | – | – | ⚠ untested |
+| ISO21771:2014 | (46) | §4.7.4 p.36 | inspection.profile_shift_coefficient_from_space_half_angle | test_basic_geometry_against_decimal_references[A], test_basic_geometry_against_decimal_references[B], test_half_angles_and_arc_thickness_at_any_diameter | – | ✓ tested |
+| DIN21773:2014 | (14) | §7.2 p.13 | inspection.profile_shift_coefficient_from_span | test_inspection.py | – | ✓ tested |
+| ISOTR6336-30:2022 | x_E1 | §A.6 p.45 | inspection.profile_shift_coefficient_from_span | test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (57) | §14.5 p.25 | inspection.radial_ball_dimension_allowance_factor | test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (32) | §8 p.20 | inspection.radial_single_ball_dimension | test_inspection.py | – | ✓ tested |
+| DIN21773:2014 | (30) | §8 p.20 | inspection.space_width_half_angle_from_ball | – | – | ⚠ untested |
+| DIN3977:1981 | (3) | §Anhang A p.6 | inspection.space_width_half_angle_from_ball | – | – | ⚠ untested |
+| DIN21773:2014 | (54) | §14.4 p.25 | inspection.span_allowance | test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (54) | §14.4 p.25 | inspection.span_allowance_factor | test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (14) | §7.2 p.13 | inspection.span_measurement | test_adv_2.py, test_adv_4.py, test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN3960:1987 | (3.8.18) | §3.8.2 p.21 | inspection.span_measurement | test_adv_2.py, test_adv_4.py, test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (17) | §7.2 p.14 | inspection.span_measuring_circle_diameter | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN3960:1987 | (3.8.15) | §3.8.2 p.21 | inspection.span_measuring_circle_diameter | test_inspection.py, test_quantities.py | – | ✓ tested |
+| ISO21771:2014 | (123) | §7.4 p.67 | inspection.tooth_thickness_allowance_from_generating | test_generating_profile_shift_coefficient[H], test_generating_profile_shift_coefficient[K], test_generating_profile_shift_coefficient[L], test_generating_profile_shift_coefficient[S] | – | ✓ tested |
+| ISO21771:2014 | (124) | §7.4 p.67 | inspection.tooth_thickness_allowance_from_generating | test_generating_profile_shift_coefficient[H], test_generating_profile_shift_coefficient[K], test_generating_profile_shift_coefficient[L], test_generating_profile_shift_coefficient[S] | – | ✓ tested |
+| DIN21773:2014 | (54) | §14.4 p.25 | inspection.tooth_thickness_allowance_from_span_allowance | – | – | ⚠ untested |
+| DIN21773:2014 | (45) | §14.2 p.24 | inspection.tooth_thickness_tolerance | test_inspection.py, test_quantities.py | – | ✓ tested |
+| DIN21773:2014 | (49) | §14.3 p.25 | inspection.upper_limit_dimension | test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (52) | §14.3 p.25 | inspection.upper_limit_dimension | test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (55) | §14.4 p.25 | inspection.upper_limit_dimension | test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (58) | §14.5 p.25 | inspection.upper_limit_dimension | test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (62) | §14.6 p.26 | inspection.upper_limit_dimension | test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| ISO21771:2014 | (32) | §4.5.1 p.33 | inspection.v_circle_diameter | test_inspection.py, test_stplus_choices.py | – | ✓ tested |
+| ISO21771:2014 | (19) | §4.3.10 p.31 | involute.base_diameter | test_base_diameter_matches_worked_example[pinion], test_base_diameter_matches_worked_example[wheel], test_basic_geometry_against_decimal_references[A], test_basic_geometry_against_decimal_references[B] | 03_werkzeug_erzeugung_zahnkontur.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
 | ISO21771:2014 | (6) | §4.3.3 p.28 | involute.base_helix_angle | test_base_helix_angle_matches_worked_example, test_basic_geometry_against_decimal_references[A], test_basic_geometry_against_decimal_references[B] | 01_involute_bezugsprofil.ipynb | ✓ tested |
 | ISO21771:2014 | (47) | §4.7.4 p.36 | involute.base_space_width_half_angle | test_basic_geometry_against_decimal_references[A], test_basic_geometry_against_decimal_references[B], test_half_angles_and_arc_thickness_at_any_diameter | – | ✓ tested |
 | ISO21771:2014 | (42) | §4.7.2 p.35 | involute.base_tooth_thickness_half_angle | test_basic_geometry_against_decimal_references[A], test_basic_geometry_against_decimal_references[B], test_half_angles_and_arc_thickness_at_any_diameter | 03_werkzeug_erzeugung_zahnkontur.ipynb | ✓ tested |

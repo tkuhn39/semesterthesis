@@ -27,7 +27,7 @@
   "trust": "generated",
   "typed_import": {
     "notes": [
-      "$ KONFIGURATIONSDATEN: MIN_LUECKENWEITE_EF0* = 0.1 does not lie between 0.1 and 0.6: STplus does not accept it and keeps the preset",
+      "$ KONFIGURATIONSDATEN: MIN_LUECKENWEITE_EF0* = 0.1 does not lie between 0.1 and 0.6: STplus does not accept it and keeps the preset (it takes a range as an open interval: probed at one end of five controls, assumed for the rest)",
       "tool 'T1': h_fP0* = 1.5 reduced to h_f0max* = 1.3469058455298801 as STplus does (the edge break flanks close the tool space there)",
       "tool 'T1': PROTUBERANZBETRAG not given → 0 (no protuberance)",
       "tool 'T1': BEARB_ZUGABE_WKZ not given → 0 (no machining allowance of the tool)",

@@ -1,0 +1,32 @@
+{
+  "case": "span_of_gear_one_beside_x_of_gear_two",
+  "cfg": "Firmenname = FZG\nSachbearbeiter = gearcore oracle\nEingabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_gear_one_beside_x_of_gear_two\\eingabe.ste\nAusgabedatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_gear_one_beside_x_of_gear_two\\ausgabe.sta\nGraphikdatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_gear_one_beside_x_of_gear_two\\grafik1.stz\nGraphikdatei_2 = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_gear_one_beside_x_of_gear_two\\grafik2.stz\nZuordnungsdatei = qelesed.stq\nWerkzeugdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wkz\\wkz.dat\nWerkzeugdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wkz_glob.dat\nWerkzeugdatei_3 = %\nWerkzeugdatei_4 = %\nWerkzeugdatei_5 = %\nWerkzeugdatei_6 = %\nWerkzeugdatei_7 = %\nWerkzeugdatei_8 = %\nWerkzeugdatei_9 = %\nWerkzeugdatei_10 = %\nWerkstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\wst\\WST.dat\nWerkstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\wst_glob.dat\nSchmierstoffdatei_lokal = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\oel\\Oel.dat\nSchmierstoffdatei_global = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\global\\oel_glob.dat\nPfad_Maskendateien = C:\\GitHub-tkuhn39\\semesterthesis\\30_references_and_examples\\33_STplus\\STplus11-1F\\zubeh\\\nSchnittstellendatei = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_gear_one_beside_x_of_gear_two\\ausgabe.sts\nSTEP_Konfiguration = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_gear_one_beside_x_of_gear_two\\config.dat\nPfad_Meldungsausgabe = C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_gear_one_beside_x_of_gear_two\\\n",
+  "exe": "30_references_and_examples/33_STplus/STplus11-1F/bin/STplus.exe",
+  "exit_code": 0,
+  "interface_file": "interface.sts.txt",
+  "kept_files": [
+    "input.ste",
+    "report.sta.txt",
+    "interface.sts.txt",
+    "meta.json"
+  ],
+  "material_kinds": {},
+  "notes": "centre distance, the span of gear 1 and PROFILVERSCHIEBUNG_N of gear 2 (0.50): x_1 = 0.2407 from the span and the preset allowance, x_2 = 0.5540 from the centre distance; the given x_2 only forms x_E2 = 0.4416 with the preset allowance",
+  "origin": "run",
+  "plot_accuracy": 0.005,
+  "run_date": "2026-10-04T15:34:55+02:00",
+  "scratch": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_gear_one_beside_x_of_gear_two",
+  "sections": [
+    "Geometrieberechnung nach DIN 3960 (Maerz 1987)",
+    "Besonderheiten der Radpaarung:"
+  ],
+  "source_ste": "C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_probe_rbf6neix\\span_of_gear_one_beside_x_of_gear_two.ste",
+  "stdout": " Config file path C:\\Users\\kuhnt\\AppData\\Local\\Temp\\gearcore_stplus\\span_of_gear\n _one_beside_x_of_gear_two\\stplus.cfg passed as CLI parameter. Found file.\n ... Eingabedatenverarbeitung wird durchgefuehrt ...\n ... Geometrieberechnung wird durchgefuehrt ...\n ... Geometrieplots werden gezeichnet ...\nRuntime:  0.224s\n",
+  "ste_sha256": "cd7e4750b5bd456830c402f3fbf53bd2b3973e8d334dad677768c44e41feb85b",
+  "stplus_version": "11.1F",
+  "trust": "generated",
+  "typed_import": {
+    "error": "NotSupportedError: an inspection dimension of gear 1 beside PROFILVERSCHIEBUNG_N of gear 2 and ACHSABSTAND: STplus replaces that x_2 and forms the tooth thickness of gear 2 with the preset allowance of DIN 3967 (increment 5)",
+    "ok": false
+  }
+}
