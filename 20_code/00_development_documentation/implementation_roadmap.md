@@ -27,3 +27,24 @@ Every increment also inventories the tabulated values and defaults of its scope 
 4. Parameter studies, separately for steel and plastic pairs.
 5. 3D model + Abaqus `.inp` rolling simulation deck (reference contract from the legacy work).
 6. Python post-processing; API, UI, Docker.
+
+## Stage 5 pulled forward — finite element model of the pair (plan of 2026-10-05, ADR-116)
+
+The user moved the Abaqus model before increment 5, increment 6 and the fillet variants: solving
+needs wall-clock time in which the other work proceeds. Spur gears only, kst-E first (the gearing
+on the test rig), steel pinion and plastic wheel.
+
+| # | Step | Status |
+|---|---|---|
+| S1 | Inventory of the archived mesher and deck writer | done 2026-10-05 |
+| S2 | Position of the pair with the working flanks in contact, preview pictures (`fe/placement.py`) | done 2026-10-05: back flank distance 0,4850 mm = j_n of STplus |
+| S3 | Wheel mesh from the generated contour: template, any number of teeth, selectable rim rings, sweep, sets, mesh file (`fe/sector_template.py`, `sector_mesh.py`, `solid.py`, `abaqus.py`) | done 2026-10-05: 5 + 2 pitches, 301 239 nodes, 268 800 C3D8R at 80 layers; the user reviews mesh and sets before the mesh is frozen for CONVERSE |
+| S4 | Rigid tooth surface of the pinion (`fe/rigid_surface.py`) | done 2026-10-05: 7 teeth, 82 432 R3D4, 93 z-levels |
+| S5 | Deck writer with parts and instances, manifest, runner; pilot deck for one position; two tiny models in the Learning Edition; script that splits an orientation file | open |
+| S6 | Pilot run by the user (20 and 80 layers): solve time, equilibrium of the torques, check of the bore | open |
+| S7 | All positions as a batch | open |
+| S8 | Documentation, notebook, commit | open |
+| S9 | Rolling in one simulation as a cross-check with elastic material | open |
+
+Increment 5 (with GEN-17 and the helical worked example of DIN 21773 Eq. (9) to (13)), increment
+6, load capacity, fillet variants and parameter studies follow while the batches solve.

@@ -105,3 +105,6 @@ desktop.ini
 # Read-only references (STplus installation, licensed listings, the archived legacy
 # workbench 38_legacy_workbench/) stay local — never versioned.
 30_references_and_examples/
+
+# --- generated output (previews, FE decks) ---------------------------------------
+80_output/

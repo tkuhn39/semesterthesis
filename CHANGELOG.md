@@ -381,6 +381,37 @@ STplus as named functions; DIN 3977:1981-02 is still valid.
   independent review of the last rounds of increment 3: nine findings, causes of two deviations
   reworded, GEN-17 and GEN-18 opened).
 
+### Added (finite element model, steps S2 to S4 - position of the pair, wheel mesh, rigid surface, 2026-10-05, ADR-116)
+User decisions of 2026-10-05: one static analysis per mesh position instead of a rolling
+simulation; the steel gear of a steel-plastic pair is a rigid tooth surface; the working flanks
+touch in the start position; the wheel mesh keeps the reference topology; this stage comes
+before increment 5.
+- `gearcore.fe.placement`: position of a spur gear pair from one number, the radius of curvature
+  of the pinion flank at the contact point of the followed tooth pair; distance of any two
+  facing flanks, distance of the back flanks, the same relative position with the wheel at rest,
+  working flank and torque sign for the sense of rotation of the driving pinion. kst-E: working
+  flanks 1e-14 mm apart, back flanks 0,4850 mm (STplus prints j_n = 0,485, j_t = 0,521).
+- `gearcore.fe.sector_template`, `data/fe/sector_template.json`, `scripts/build_fe_template.py`:
+  one tooth block and one shoulder block derived from the mid slice of the FVA reference mesh of
+  the kst-E wheel, the tooth block exactly mirror symmetric, with the regular grid of the tooth
+  and the points that divide the contour.
+- `gearcore.fe.sector_mesh`: transverse mesh of any number of teeth between two toothless
+  shoulder pitches with a selectable number of rim rings; surface nodes placed piece by piece on
+  the generated contour, interior by harmonic continuation, tip region smoothed; depths scale
+  with the module; a mesh below the quality limit raises `GeometryInfeasibleError`.
+- `gearcore.fe.solid`: sweep along the face width, and the sets (halves, first layer, surface
+  parts, root per tooth space, head per tooth, fixed nodes).
+- `gearcore.fe.rigid_surface`: the swept tooth surface of the steel gear as R3D4, no volume and
+  no end faces; z-levels of the mating gear plus the overhang.
+- `gearcore.fe.abaqus`: text of the mesh file and of the surface file (keywords valid inside a
+  part and in a file without parts).
+- `scripts/build_fe_decks.py`: commands `preview`, `mesh`, `surface`; output and pictures in
+  `80_output/fe/` (git-ignored), a list of the sets read back from the written file.
+- Tests `test_fe_placement.py`, `test_fe_mesh.py`, `test_fe_rigid_surface.py` (50 tests);
+  19 mutations of the new code, 18 detected, the remaining one is equivalent for a mirror
+  symmetric tooth and exposed a doubled edge weight that is fixed.
+- ADR-116, roadmap (stage 5 pulled forward), known limits FE-01 to FE-08.
+
 ### Added (increment 2 - pair geometry, 2026-09-30, ADR-107, ADR-110)
 - `gearcore.pair`: mating quantities of an external gear pair per DIN ISO 21771:2014-08 §4.4, §4.5,
   §5.2 to §5.4, §5.6 and Eq. (127) of §7.6 (pitches, tip and tip form diameter, working pressure

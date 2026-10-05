@@ -909,3 +909,91 @@ until the preset allowance series exists (INS-01). The tip circle cut by the too
 its norm home in DIN 21773 §13 Eq. (40). The double-flank centre distance (DIN 21773 §12) goes to
 increment 5 (user decision). For stage 2: check whether equations of the load capacity take the
 nominal x_1, x_2 separately — then the split of point 2 matters there.
+
+---
+
+## ADR-116 — Finite element model of a steel-plastic pair: one static analysis per mesh position, rigid tooth surface, mesh from a template (2026-10-05)
+
+**Status.** Decided by the user on 2026-10-05; steps S2 to S4 of the plan are implemented, the
+deck writer (S5) and the runs follow. The stage is pulled forward before increment 5 and before the
+fillet variants, because solving needs wall-clock time in which other work proceeds.
+
+**Context.** The decks of the archived workbench were one quasi-static rolling simulation: torque
+on a freely turning steel pinion, the plastic wheel locked at the evaluation angles and turned on
+between them. Turning on overshot; load reduction, damping and mass did not help. Three faults of
+the set-up came on top: the steel pinion was a solid in the deck (the rigid shell was a switch
+that defaulted to off and included bore and cut faces), the flanks did not touch in the start
+position (the closing rotation stopped 15 um before contact on purpose), and the position series
+of the old code was never solved. The frozen FVA postprocessing no longer applies.
+
+**Decision (user decisions 2026-10-05).**
+
+1. **One static analysis per mesh position.** Nothing turns on inside an analysis. The wheel is
+   fixed in all degrees of freedom; the torque acts on the pinion, which turns about its axis
+   until equilibrium. Implicit, static, no stabilisation, no damping, no mass, no friction.
+   Torques at the wheel 8, 12 and 16 Nm, applied at the pinion as T_1 = T_2 z_1 / z_2, as
+   consecutive steps of the same analysis after a step that seats the contact.
+2. **Why not rolling in one simulation.** Stommel, Stojek, Korte, *FEM zur Berechnung von
+   Kunststoff- und Elastomerbauteilen*, 2nd edition, Hanser 2018, section 2.3.1.1 (p. 51 to 63):
+   elasto-plastic material models are sensible for plastics only under monotonic loading;
+   calibrated on a stress-strain curve they count viscoelastic strain as plastic, so the
+   permanent strain comes out too large. Rolling loads and unloads every tooth; the history it
+   would carry consists of exactly those strains. First loading per position is the loading the
+   model is valid for. For elastic material both ways give the same state; rolling in one
+   simulation is kept as a cross-check with elastic material only (step S9). The book is the
+   standing basis for material modelling and evaluation and is entered in `sources.yaml` before
+   code cites it.
+3. **Material steps.** W1 isotropic linear elastic, W2 isotropic elastic-plastic, W3 anisotropic
+   elastic (the CONVERSE orientation file without `*PLASTIC` and `*POTENTIAL`), W4 the complete
+   orientation file. W1 and W2 take their values from the isotropic row of the material card of
+   that file, so that all steps share one data basis; the deck is identical outside the section
+   and material blocks. The user builds one orientation file per test speed (three).
+4. **Steel gear of a steel-plastic pair: a rigid tooth surface.** Only the tooth surface as
+   4-node rigid elements (R3D4), bound to one point on the axis: no volume, no end faces, no cut
+   planes, no material. It follows from the pairing; there is no switch. Steel-steel and
+   plastic-plastic take solids for both gears (not built yet).
+5. **Working flanks in contact.** The position of the pair is set analytically from the involute
+   geometry (`gearcore.fe.placement`): one number, the radius of curvature of the pinion flank
+   at the contact point of the followed tooth pair, places both gears; the whole backlash lies
+   at the back flanks. Sense of rotation as on the test rig, seen with the pinion on the left:
+   the driving pinion turns clockwise, the torque on it is negative about +z, the right flanks
+   work. The sense is an input.
+6. **Parts and instances.** The Abaqus 2025 documentation (page 'Orientations', 'Defining a
+   Local Coordinate System in a Model That Contains an Assembly of Part Instances') states that
+   an orientation defined at part level is rotated with the positioning data of the instance,
+   also when it is defined by a distribution. So both gears keep fixed axes, every analysis
+   places them by two angles, and the fibre orientation follows the wheel. A function test in
+   the Abaqus Learning Edition precedes the pilot; if it fails, the wheel is kept at rest and
+   the pinion is placed around it (`placement.wheel_fixed`, the same relative position).
+7. **Wheel mesh from the reference topology.** The sector template is derived from the mid
+   z-slice of the wheel of the FVA reference deck of kst-E (`scripts/build_fe_template.py`,
+   `data/fe/sector_template.json`, provenance in the file). The reference sector cuts cleanly
+   along its gap centre lines into a shoulder block and congruent tooth blocks; a sector of any
+   number of teeth is the shoulder block, the tooth block once per tooth, and the mirrored
+   shoulder block. Five teeth and two toothless shoulder pitches; the middle tooth is the main
+   analysis. The number of rim rings is selectable (12: bore radius 18,10 mm for kst-E).
+8. **Geometry from the generated contour.** Surface nodes are placed piece by piece (root circle
+   with fillet, involute, tip edge break, tip circle) at the relative arc lengths of the
+   template, so the root form point, the tip form point and the tip corner are nodes. The
+   interior follows by a harmonic continuation of the surface displacement; the interior of the
+   tip region is smoothed (the reference has a row of cells 6,5 um thin there). Geometric values
+   come from gearcore only.
+9. **Sets.** Per tooth and half: surface with its parts up to the root form circle, to the tip
+   form circle and above, first element layer, the half down to the fan ring; root and head
+   divided along the mesh line through the root form points; the root of each tooth space and
+   the head of each tooth as unions; the fixed nodes (bore and both cut planes).
+10. **Checks without reviewer agents** (user, 2026-10-05): tests, mutations of the new code and
+    function tests in the Learning Edition replace the reviewer of the gate for this stage,
+    unless the user asks for one.
+
+**Deviations from the project rules, on purpose.** (a) Rule 11: the mesh algorithm and the
+topology of the template are taken over from the archived workbench; this concerns no formula of
+a norm. (b) Rule 8: meshes are frozen dataclasses with numpy arrays, because a mesh of 3 x 10^5
+nodes does not belong into a pydantic model; positions and placements are contracts.
+
+**Consequences.** `gearcore.fe` (placement, sector_template, sector_mesh, solid, rigid_surface,
+abaqus) builds data and text; `scripts/build_fe_decks.py` writes files to `80_output/fe/`.
+With four teeth and all 25 rim rings the mesher reproduces the topology of the reference (3329
+nodes, 3024 quads per slice); its nodes lie 0,3 um from those of the reference on average and up
+to 15 um at the tip edge break, where the reference has a larger chamfer than the STplus file
+gives. Smallest corner sine 0,554 against 0,249 of the reference. Limits: FE-01 to FE-08.
