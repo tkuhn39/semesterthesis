@@ -45,6 +45,7 @@ from gearcore.errors import InputRangeError, NotSupportedError
 from gearcore.models.common import FrozenModel, Pair
 from gearcore.models.results import GenerationResult
 from gearcore.quantities import Q
+from gearcore.trace import eq
 
 EQ_EXEMPT = (
     "working_flank_of_the_driving_pinion",
@@ -208,6 +209,28 @@ def path_of_contact_limits(generation: GenerationResult) -> tuple[float, float]:
     contact (mm): rho_A1 = T_1 T_2 - rho_A2 (Eq. (87), (83)) and rho_E1 (Eq. (84))."""
     mesh = _mesh(generation)
     return mesh.rho_a1, mesh.rho_e1
+
+
+@eq(
+    "ISO21771:2014",
+    "5.4.3 B, D",
+    section="5.4.3",
+    page=45,
+    note="eps_alpha < 2: B lies one transverse base pitch before E, D one after A",
+)
+def single_contact_points(generation: GenerationResult) -> tuple[float, float]:
+    """Radius of curvature of the pinion flank at the points B and D of the path of contact
+    (mm): B, the inner point of single pair tooth contact of the driving pinion and the outer
+    one of the driven wheel, lies one transverse base pitch p_et before the end E; D, the
+    outer point of the driving pinion and the inner one of the wheel, one transverse base
+    pitch after the start A. Defined for a transverse contact ratio below 2."""
+    mesh = _mesh(generation)
+    if generation.pair_geometry.transverse_contact_ratio >= 2.0:
+        raise NotSupportedError(
+            "the points B and D of single pair tooth contact exist only for a transverse "
+            f"contact ratio below 2, got {generation.pair_geometry.transverse_contact_ratio!r}"
+        )
+    return mesh.rho_e1 - mesh.p_bt, mesh.rho_a1 + mesh.p_bt
 
 
 def mesh_position(

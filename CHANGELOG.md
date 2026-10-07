@@ -412,6 +412,145 @@ before increment 5.
   symmetric tooth and exposed a doubled edge weight that is fixed.
 - ADR-116, roadmap (stage 5 pulled forward), known limits FE-01 to FE-08.
 
+### Added (finite element model, step S4a - mesh parameters and convergence study, 2026-10-06, ADR-116 amendment)
+- `gearcore.fe.refine`: the parameters of the FVA mesh dialog as integer factors on the
+  density of the template (elements over the tooth height, along the rounding of the tooth
+  root, over the tooth thickness; a uniform factor for convergence series), as conformal chord
+  splits that keep the teeth congruent and move new surface nodes onto the contour; effective
+  counts in the words of the dialog. `build_fe_decks.py mesh --height --root --thickness
+  --uniform`, folder suffix and the counts in the report.
+- `gearcore.fe.plane_solver`: plane strain solver with the four-node element in two
+  formulations, as Abaqus formulates CPE4 and C3D8 (volumetric strain at the centroid) and with
+  incompatible modes (counterpart of CPE4I and C3D8I, condensed per element); stresses at the
+  Gauss points and averaged at the nodes, principal and von Mises stresses, strain energy.
+- `gearcore.fe.convergence`: load case of point B of the wheel (Hertz pressure patch of the
+  line load, Fesselung), evaluation (surface stress of the loaded fillet, tip displacement,
+  strain energy), Richardson extrapolation.
+- `scripts/fe_mesh_convergence.py study` (series uniform, height, root, thickness;
+  sensitivities; tables, extrapolation, pictures in `80_output/fe/<case>/convergence/`, per
+  formulation), `verify` (one-tooth sector in the Abaqus Learning Edition with CPE4, CPE4R,
+  CPE4I; `.dat` parsing; agreement with the own solver to 7e-5 for CPE4 and 1e-5 for CPE4I),
+  `decks` (plane decks of five levels and three element types plus solid decks with 20, 40 and
+  80 layers for the full licence, batch file, manifest, instructions) and `compare` (reads the
+  `.dat` files back, Richardson over the Abaqus series, layers over the width).
+- Study text for the thesis (German): `00_development_documentation/fe_mesh_convergence.md`.
+  Result for kst-E: tip displacement converged at the template density; root surface stress
+  15 % low with C3D8, 23 % with C3D8R, 4,7 % with C3D8I and 0,7 % with C3D8I at thickness
+  factor 2; decision of the user pending (FE-10).
+- `gearcore.fe.resample` (step S4b): the numbers of elements of the FVA dialog as absolute
+  values (`MeshCounts`: over the tooth height, at the tip edge break, at the tooth root, over
+  the tooth thickness, root layers, rim rings, shoulder columns) by reading the block structure
+  of the template and rebuilding every block as a grid of the requested size with the
+  template's node distributions; `sector_mesh(..., counts=)`; `build_fe_decks.py mesh` takes
+  the numbers and `--bore-radius`. With the template's numbers the template results exactly.
+- `fe_mesh_convergence.py recommend`: ladder of thickness and root layers, least-squares
+  extrapolation (`convergence.richardson_fit`), coarsest mesh within the tolerances and a node
+  budget, then the other numbers coarsened one at a time with a contact floor for the flank;
+  the element type is named (kst-E at 2 % / 1 %: height 18 + 1, root 60, thickness 14, root
+  layers 4, rim rings 4, shoulder columns 2, C3D8I, 3 890 nodes per layer).
+- `convergence.hertz_line_contact` with `@eq` on Maschinenelemente 1 (Tab. 13.1, Eq. (13.5),
+  (13.6)) and VDI 2736 Blatt 2 Eq. (15). `sources.yaml`: Maschinenelemente 1 (Niemann, Winter,
+  Höhn, Stahl, 5th ed. 2019) and the book of Stommel, Stojek, Korte (2nd ed. 2018), confirmed by
+  the user; registered with confirmation pending: Bathe, Finite Element Procedures (1996) for
+  the a priori error order, Dahmen and Reusken, Numerik für Ingenieure und
+  Naturwissenschaftler (3rd ed. 2022) for the extrapolation (both cited with `@eq` on
+  `richardson` and `richardson_fit`), Erhard and Strickle, Maschinenelemente aus
+  thermoplastischen Kunststoffen, Band 2 (1978) for the Hertz pressure of plastic gears
+  (FE-12, FE-13).
+- Tests `test_fe_convergence.py` (26 tests: conformality, counts, contour, congruence, patch
+  test of both formulations, cantilevers, load case, evaluation, Richardson, least-squares
+  fit) and `test_fe_resample.py` (7 tests: counts, patches of the template, reproduction of
+  the template, other counts, bore and rings). Known limits FE-04 revised, FE-09 to FE-12.
+
+### Added (finite element model, step S5 - position files, manifest, runner, Learning Edition tests, 2026-10-06, ADR-116 amendment)
+- `gearcore.fe.deck`: one position file per mesh position with parts and instances (wheel
+  part with mesh include and section, pinion part with the rigid surface, placed instances,
+  reference points, rigid bodies, contact pair, material steps W1 to W4, seating step and one
+  static step per torque with `*BOUNDARY, OP=NEW`, output requests); reader of the isotropic
+  row of a CONVERSE material card; splitter of an orientation file into part and model pieces
+  (and the piece without plasticity for W3).
+- `gearcore.fe.placement.single_contact_points`: points B and D of the path of contact
+  (DIN ISO 21771:2014-08, 5.4.3).
+- `build_fe_decks.py decks` (grid of positions with A to E, `pilot`, or named points; manifest
+  with positions, torques, card, mesh counts and fillet node chains; `run_all.ps1`; README) and
+  `le-tests` (coarse pair and orientation test in the Learning Edition, with `--run`).
+- Steps geometrically linear by default (`PositionDeck.nlgeom`): the first pilot and the
+  coarse Learning Edition model broke off under NLGEOM=YES with negative eigenvalues, the
+  linear steps run through (FE-14). `*PREPRINT` keeps the model printout out of the .dat;
+  RF, RM, UR of both reference points and CSTRESS of the flank nodes are printed per step;
+  `run_all.ps1` logs the outcome of each job from its .sta. The support moment at the wheel
+  deviates from T_2 because the contact force is turned by Δψ against the line of action
+  while staying tangent to the pinion base circle, a_2 = a·cos(α_wt + Δψ) − r_b1 (FE-15);
+  `build_fe_decks.py report` evaluates a position folder (Δψ, lever arms, contact).
+- Solver and contact options of the position file (`nlgeom`, `contact`, `smoothing`,
+  `enforcement`, `line_search`) and `decks --variants` for the six diagnosis variants of a
+  broken-off run; pilot 2 (linear steps) broke off at 16 Nm by a contact oscillation
+  (FE-14), the variant folder goes to the full licence; the Learning Edition ran all six on
+  the coarse pair. Largest contact pressure against Hertz: FE-16.
+- Tests `test_fe_deck.py` (5 tests) and the point test in `test_fe_placement.py`. Known limits
+  FE-14, FE-15.
+
+### Changed (finite element model, step S6 - variant run and element test, 2026-10-07, ADR-116 amendment)
+- The six variants of `pilot_20layers_variants` ran on the full licence (2026-10-06): only
+  node-to-surface with NLGEOM=NO completes all steps; every NLGEOM=YES file breaks off in the
+  12 Nm step with negative eigenvalues of the system matrix from the first load increment on,
+  before any contact change and alike for all contact formulations. The element test in the
+  Learning Edition (coarse model, node-to-surface, otherwise identical) isolates the cause:
+  C3D8I with NLGEOM=YES alone; C3D8 and C3D8R run geometrically nonlinear without a warning
+  (FE-14, FE-10).
+- `PositionDeck.contact` defaults to `node_to_surface` with SMOOTH 0,2: the contact force
+  stays normal to the rigid flank (a_1 = r_b1), the support moment at the wheel lies 1,1 to
+  1,4 % below z_2/z_1·T_1 by the lever arm a_2 = a·cos(α_wt + Δψ) − r_b1 (FE-15), the largest
+  contact pressure lies below the Hertz value (59,0 / 67,8 / 74,9 against 60,6 / 74,5 /
+  85,7 MPa) instead of 34 % above it (FE-16). Every entry of `VARIANTS` names its contact
+  formulation itself; the README of a deck folder points to the `** steps` heading line.
+- W1 stays geometrically linear (NLGEOM=YES changes moment, rotation and pressure by at most
+  0,6 % at 8 Nm); the elastic-plastic steps are to be computed with NLGEOM=YES on a mesh
+  without C3D8I (Stommel, Stojek, Korte 2018, p. 2, 52, 474). Confirmation folder
+  `pilot_20layers_c3d8_variants` (pilot mesh with C3D8, linear and nonlinear) for the full
+  licence; the element type and density of the frozen mesh stay the user's decision (FE-10:
+  the C3D8 ladder of `recommend --formulation selectively_reduced` reaches −4,9 % at 286 000
+  nodes only).
+- Confirmation on the fine mesh (`pilot_20layers_c3d8_variants`, full licence, 2026-10-07):
+  with C3D8 the linear and the NLGEOM=YES file complete all steps without a negative
+  eigenvalue (140 s / 161 s); NLGEOM changes moment, rotation and contact pressure by at
+  most 0,7 %, C3D8 against C3D8I by less than 1 %.
+- Rule per material step in `gearcore.fe.deck` (`NLGEOM_OF_STEP`, `ELEMENT_TYPE_OF_STEP`):
+  W1 and W3 geometrically linear with C3D8I, W2 and W4 nonlinear with C3D8 on the same mesh;
+  `decks` presets the element type and the nonlinearity from the step (`--element-type`
+  overrides), the manifest records `nlgeom` and `contact`, the README states the rule. The
+  four pilot folders (20, 40, 80 layers, deep bore) are rewritten with it (FE-10, FE-14).
+- `test_fe_deck.py`: the variant test checks the node-to-surface default and the
+  surface-to-surface option; a test guards the rule per material step (7 tests).
+- Variants `n2s_smooth0` and `n2s_smooth0p01` (node-to-surface without or with the smallest
+  smoothing): SMOOTH 0 aborts inside Abaqus 2025, SMOOTH 0,01 runs through with the results
+  of SMOOTH 0,2, so the surface-to-surface break-off comes from that formulation itself, not
+  from the facet kinks of the rigid surface (FE-14); the keyword reference confirms that
+  SMOOTH affects node-to-surface only.
+
+### Added (finite element model, steps S6a and S6b - evaluation over the path of contact, mesh freeze, resolution study, 2026-10-07, ADR-116 amendment)
+- `scripts/fe_odb_extract.py`: extraction of one position from its `.odb` under the Python of
+  Abaqus (reference points, closed contact nodes with radius, width coordinate, tooth half,
+  pressure and normal force, nodal averaged principal stresses of every root fillet surface,
+  head displacements) into `<job>_fields.json`; copied into every deck folder as
+  `extract_odb.py` and called by `run_all.ps1` after each job; `build_fe_decks.py extract
+  --folder` for folders computed before (the Learning Edition's Python reads the full
+  licence's databases). `CFORCE` added to the field output request.
+- `gearcore.fe.evaluation`: reader of the fields files, maxima per tooth half and fillet,
+  curves over the path of contact, nested sub-grids of a position grid, resolution table
+  (location refined by the parabola through the three highest points, value the measured
+  maximum); `report` prints the maxima per step and writes `path_<step>.png` and
+  `path_report.md`; the manifest records the grid (positions per pitch, margin, base pitch).
+- Mesh freeze (user): 20 layers, bore 33 mm (inner diameter of the plastic region, steel
+  insert as the fixed Fesselung), recommended density, `frozen_mesh_20layers_bore33` for the
+  CONVERSE mapping; pilots at 40 and 80 layers, deep bore and positions A to E all complete
+  (FE-08, FE-14). Resolution study `study_20layers_bore33_60perpitch` (133 positions) written
+  and started. Findings: location of the contact maxima (FE-16), edge loading of the sharp
+  pinion tip at B and E (FE-17, model unchanged).
+- Mesh file header names the effective number of rim rings; `scripts/fe_mesh_convergence.py`
+  typed (mypy clean).
+- Tests `test_fe_evaluation.py` (3 tests); suite 1 600 tests.
+
 ### Added (increment 2 - pair geometry, 2026-09-30, ADR-107, ADR-110)
 - `gearcore.pair`: mating quantities of an external gear pair per DIN ISO 21771:2014-08 §4.4, §4.5,
   §5.2 to §5.4, §5.6 and Eq. (127) of §7.6 (pitches, tip and tip form diameter, working pressure

@@ -457,6 +457,100 @@ sources:
       }
     confirmed_by_user: true
     notes: "DOI supplied by the user; Crossref: title, authors Z. Roth / J. Opferkuch, container 'International Conference on Gears 2017', pages 719-732 match the PDF. No ORCIDs on the Crossref record."
+  # ---- books (finite element model, 2026-10-06) ------------------------------------------------
+  NiemannWinterHoehnStahl2019:
+    type: book
+    title: "Maschinenelemente 1 – Konstruktion und Berechnung von Verbindungen, Lagern, Wellen"
+    authors:
+      [
+        "Niemann, Gustav",
+        "Winter, Hans",
+        "Höhn, Bernd-Robert",
+        "Stahl, Karsten",
+      ]
+    edition: "5., vollständig überarbeitete Auflage"
+    publisher: "Springer Vieweg, Springer-Verlag GmbH Deutschland"
+    year: 2019
+    isbn13: "978-3-662-55481-4"
+    doi: "10.1007/978-3-662-55482-1"
+    file: "00_literatur/04_buecher/Maschinenelemente_1.pdf"
+    verified:
+      {
+        method: pdf-imprint,
+        by: "claude/pdftotext + rendered title pages",
+        date: "2026-10-06",
+      }
+    confirmed_by_user: true
+    notes: "PDF page = printed page + 6. Tab. 13.1 (p. 372): Hertz'sche Pressung p_H = sqrt(K E'/pi) with K = F_N / (D_1 l_eff), halbe Druckbreite b = 2 D_1 p_H / E', D_1 = D_1 D_2 / (D_1 + D_2) for line contact; Eq. (13.5) (p. 376): 1/E' = 1/2 ((1 - nu_1^2)/E_1 + (1 - nu_2^2)/E_2); Eq. (13.6) (p. 376): R = R_1 R_2 / (R_1 + R_2). Used by fe.convergence for the pressure patch of the mesh convergence study (rigid steel pinion: E' = 2 E / (1 - nu^2))."
+  Stommel2018:
+    type: book
+    title: "FEM zur Berechnung von Kunststoff- und Elastomerbauteilen"
+    authors: ["Stommel, Markus", "Stojek, Marcus", "Korte, Wolfgang"]
+    edition: "2., neu bearbeitete und erweiterte Auflage"
+    publisher: "Carl Hanser Verlag München"
+    year: 2018
+    isbn13: "978-3-446-44714-1"
+    file: "00_literatur/04_buecher/FEM_zur_Berechnung_von_Kunststoff-und_Elastomerbauteilen.pdf"
+    verified:
+      {
+        method: pdf-imprint,
+        by: "claude/pdftotext title pages",
+        date: "2026-10-05",
+      }
+    confirmed_by_user: true
+    notes: "PDF page = printed page + 18. Section 2.3.1.1 (p. 51-63): elasto-plastic models for plastics under monotonic loading (ADR-116 point 2); Section 7.7.1 Elementeigenschaften, p. 424: h-method (refine the mesh until the stress differences between adjacent elements are small enough), p. 427-428: hourglassing of reduced integration and the energy balance; section 7.7.3 Strukturelemente, p. 433: convergence study on a small model under comparable load with several element types against an analytical or continuum reference (stated for structural elements); section 8.2.2 Vernetzung, p. 465: element size as large as possible, limited by geometry details and stress gradients (fe.convergence, recommend). Rules of procedure, no formulas. PDF page = printed page + 18, the page number stands in the header. Standing basis of the material modelling and evaluation (user, 2026-10-05)."
+  Bathe1996:
+    type: book
+    title: "Finite Element Procedures"
+    authors: ["Bathe, Klaus-Jürgen"]
+    edition: "Revision of: Finite element procedures in engineering analysis, 1982"
+    publisher: "Prentice-Hall, Inc., Upper Saddle River, New Jersey"
+    year: 1996
+    isbn13: "978-0-13-301458-7"
+    file: "00_literatur/04_buecher/Finite-Element-Procedures-in-Engineering-Analysis-Bathe-KJ.pdf"
+    verified:
+      {
+        method: pdf-imprint,
+        by: "claude/rendered copyright page (scan, no text layer)",
+        date: "2026-10-06",
+      }
+    confirmed_by_user: true
+    notes: "The file name carries the title of the 1982 edition; the copyright page says Finite Element Procedures, 1996, ISBN 0-13-301458-4 (ISBN-13 computed from it). Scanned PDF without text layer: render pages. Section 4.3 Convergence of Analysis Results (p. 225 ff.), 4.3.5 Rate of Convergence (p. 244), 4.3.6 Calculation of Stresses and the Assessment of Error (p. 254), 4.4.1 Incompatible Displacement-Based Models (p. 262), 5.5.6 Reduced and Selective Integration (p. 476). Basis of the orders in the extrapolation of fe.convergence (FE-13)."
+  DahmenReusken2022:
+    type: book
+    title: "Numerik für Ingenieure und Naturwissenschaftler – Methoden, Konzepte, Matlab-Demos, E-Learning"
+    authors: ["Dahmen, Wolfgang", "Reusken, Arnold"]
+    edition: "3., vollständig überarbeitete Auflage"
+    publisher: "Springer-Verlag GmbH Deutschland, ein Teil von Springer Nature"
+    year: 2022
+    isbn13: "978-3-662-65180-3"
+    doi: "10.1007/978-3-662-65181-0"
+    file: "00_literatur/04_buecher/Numerik-fuer-Ingenieure-und-Naturwissenschaftler.pdf"
+    verified:
+      {
+        method: pdf-imprint,
+        by: "claude/pdftotext + rendered page",
+        date: "2026-10-06",
+      }
+    confirmed_by_user: true
+    notes: "PDF page = printed page + 14. Section 10.4 Extrapolation und Romberg-Quadratur, 'Extrapolation als allgemeines Konzept', p. 528: asymptotic expansion N(h) = J + c_1 h^q + c_2 h^2q + ... + c_p h^pq + R(h), R(h) = O(h^(p+1)q), Eq. (10.35); extrapolation as the value at 0 of the interpolation polynomial in y = h^q, Eq. (10.36); summary p. 537. fe.convergence uses the expansion with one term and the exponent fitted (richardson, richardson_fit)."
+  ErhardStrickle1978:
+    type: book
+    title: "Maschinenelemente aus thermoplastischen Kunststoffen – Band 2. Lager und Antriebselemente"
+    authors: ["Erhard, Gunter", "Strickle, Erich"]
+    edition: "Band 2"
+    publisher: "VDI-Verlag GmbH, Düsseldorf"
+    year: 1978
+    isbn13: "978-3-18-400369-2"
+    file: "00_literatur/04_buecher/Erhard, Strickle - Maschinenelemente aus thermoplastischen Kunststoffen.pdf"
+    verified:
+      {
+        method: pdf-imprint,
+        by: "claude/rendered imprint page (scan, no text layer)",
+        date: "2026-10-06",
+      }
+    confirmed_by_user: true
+    notes: "Imprint: © VDI-Verlag GmbH, Düsseldorf 1978, ISBN 3-18-400369-8 (ISBN-13 computed). Scanned excerpt, two book pages per landscape sheet: front matter, p. 1-5, then p. 126-177 (chapter 6 Zahnräder); the pages 22-40 of chapter 1.3.3/1.3.4 named by the user are not in the file. Section 6.6.2.3 Zahnflankenbeanspruchung, p. 168: Hertz pressure of plastic gears sigma_H = sqrt(F_U (z_1 + z_2) / (b d_01 z_2)) K_I Z_H Z_M Z_eps, Eq. (6-23), with the material factor Z_M for steel/plastic from Bild 6-29 (p. 170, temperature dependent); section 6.6.2.4 Zahnverformung, p. 172-173: tip displacement f_k = 3 F_U / (2 b cos alpha_0) phi (psi_1/E_1 + psi_2/E_2), Eq. (6-27); the modulus of plastics depends on temperature and on the rate of deformation, normally the dynamically measured modulus is used; creep under standing load. Cited in fe_mesh_convergence.md."
   CAMPUS-StanylTW200F6:2024:
     type: datasheet
     title: "CAMPUS Automobil OEM Datenblatt Stanyl TW200F6 – PA46-GF30 (Envalior)"

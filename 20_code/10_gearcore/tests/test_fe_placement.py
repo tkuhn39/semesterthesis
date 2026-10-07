@@ -333,3 +333,16 @@ def test_contact_holds_for_any_position_between_the_tangent_points(
 _GENERATIONS = {
     case: _generation(case) for case in ("kst_e", "fzg_c", "plastic_m05_z20", "small_z8_x05")
 }
+
+
+def test_single_pair_contact_points_lie_one_base_pitch_inside_the_path() -> None:
+    generation = _generation("kst_e")
+    rho_a, rho_e = pl.path_of_contact_limits(generation)
+    rho_b, rho_d = pl.single_contact_points(generation)
+    p_bt = generation.pair_geometry.transverse_base_pitch_mm
+    assert rho_b == pytest.approx(rho_e - p_bt) and rho_d == pytest.approx(rho_a + p_bt)
+    assert rho_a < rho_b < rho_d < rho_e  # eps_alpha = 1,154: B lies before D
+    # B is the outer point of single pair tooth contact of the wheel: the pair before it on the
+    # path has just left at E, the pair after it has not yet entered at A
+    position = pl.mesh_position(generation, rho_b, working_flank="right")
+    assert position.tooth_pairs_on_path == (-1, 0) or 0 in position.tooth_pairs_on_path

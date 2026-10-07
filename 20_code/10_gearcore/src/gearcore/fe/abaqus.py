@@ -15,6 +15,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from gearcore.errors import InputRangeError
+from gearcore.fe.refine import effective_counts
 from gearcore.fe.rigid_surface import RigidSurface
 from gearcore.fe.solid import GearSets, SolidMesh
 
@@ -51,8 +52,9 @@ def mesh_text(mesh: SolidMesh, sets: GearSets, *, element_type: str, title: str)
         f"** {title}",
         f"** {section.teeth} teeth + 2 shoulder pitches of a gear with {section.number_of_teeth} "
         f"teeth, {mesh.layers} layers, {len(mesh.nodes_mm)} nodes, {len(mesh.hexes)} elements",
-        f"** bore radius {section.bore_radius_mm:.6f} mm, {section.rim_rings} rim rings; "
-        "teeth numbered counter-clockwise seen from +z, LEFT = counter-clockwise half of a tooth",
+        f"** bore radius {section.bore_radius_mm:.6f} mm, {effective_counts(section).rim_rings} "
+        "rim rings; teeth numbered counter-clockwise seen from +z, LEFT = counter-clockwise half "
+        "of a tooth",
         f"*NODE, NSET={prefix}_NODES",
     ]
     lines.extend(

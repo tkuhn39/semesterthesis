@@ -38,6 +38,7 @@ from gearcore import contour as ct
 from gearcore._safe import integer_input, positive_input
 from gearcore.contour import Role
 from gearcore.errors import GeometryInfeasibleError, InputRangeError, NotSupportedError
+from gearcore.fe.resample import MeshCounts, resample_template
 from gearcore.fe.sector_template import Block, SectorTemplate, load_sector_template
 from gearcore.models.results import GenerationResult
 
@@ -99,6 +100,13 @@ class SectorMesh:
     tip_form_radius_mm: float
     tip_radius_mm: float
     pitch_angle_rad: float
+    height_factor: int = 1
+    root_factor: int = 1
+    thickness_factor: int = 1
+    uniform_factor: int = 1
+    """Refinement factors applied by ``fe.refine`` (1 = the density of the template)."""
+    counts: MeshCounts | None = None
+    """The numbers of elements the template was resampled to (None: the template's own)."""
 
 
 @dataclass(frozen=True)
@@ -393,12 +401,15 @@ def sector_mesh(
     rim_rings: int,
     bore_radius_mm: float | None = None,
     template: SectorTemplate | None = None,
+    counts: MeshCounts | None = None,
 ) -> SectorMesh:
     """The transverse mesh of ``teeth`` teeth of the gear ``role`` between two shoulder pitches.
 
-    ``rim_rings`` is the number of element rings of the rim below the fan ring (the template
-    has 25); fewer rings leave a larger bore. Without ``bore_radius_mm`` the rings keep the
-    thickness of the template, scaled with the module.
+    ``rim_rings`` is the number of element rings of the template's rim below the fan ring that
+    are kept (the template has 25); fewer rings leave a larger bore. Without ``bore_radius_mm``
+    the rings keep the thickness of the template, scaled with the module. With ``counts`` the
+    kept blocks of the template are resampled to those numbers of elements
+    (``fe.resample``); the rim then has ``counts.rim_rings`` rings over the kept depth.
     """
     if not isinstance(generation, GenerationResult):
         raise InputRangeError(
@@ -422,6 +433,32 @@ def sector_mesh(
         raise InputRangeError(f"rim rings must lie in 1 to {tpl.rim_rings}, got {rim_rings!r}")
     pitch = 2.0 * math.pi / z
     tooth, shoulder, lists, bore_line = _trimmed(tpl, rings)
+    features = tpl.tooth_surface_features
+    if counts is not None:
+        if not isinstance(counts, MeshCounts):
+            raise InputRangeError(f"a MeshCounts is required, got {type(counts).__name__}")
+        resampled = resample_template(
+            tooth,
+            shoulder,
+            lists.tooth_left,
+            lists.tooth_right,
+            lists.shoulder_interface,
+            lists.shoulder_cut,
+            features,
+            rings,
+            tpl.number_of_teeth,
+            counts,
+        )
+        tooth, shoulder = resampled.tooth, resampled.shoulder
+        features = resampled.tooth_surface_features
+        lists = _Lists(
+            resampled.tooth_left_interface,
+            resampled.tooth_right_interface,
+            resampled.tooth_partner,
+            resampled.shoulder_interface,
+            resampled.shoulder_cut,
+            resampled.tooth_grid,
+        )
 
     # circles of the gear the template is mapped onto
     depth_scale = pair.normal_module_mm / tpl.normal_module_mm
@@ -446,7 +483,7 @@ def sector_mesh(
         lists,
         tooth_radius_0,
         _half_contour(contour, pitch),
-        tpl.tooth_surface_features,
+        features,
         pitch,
         tpl.fan_ring_radius_mm,
         tpl.tip_radius_mm - TIP_REGION_DEPTH * tpl.normal_module_mm,
@@ -586,6 +623,7 @@ def sector_mesh(
         tip_form_radius_mm=0.5 * contour.tip_form_diameter_mm,
         tip_radius_mm=tip,
         pitch_angle_rad=pitch,
+        counts=counts,
     )
     for array in (
         mesh.points_mm,

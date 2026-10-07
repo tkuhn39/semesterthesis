@@ -997,3 +997,270 @@ With four teeth and all 25 rim rings the mesher reproduces the topology of the r
 nodes, 3024 quads per slice); its nodes lie 0,3 um from those of the reference on average and up
 to 15 um at the tip edge break, where the reference has a larger chamfer than the STplus file
 gives. Smallest corner sine 0,554 against 0,249 of the reference. Limits: FE-01 to FE-08.
+
+**Amendment 2026-10-06 — mesh parameters and convergence study (asked by the user before he
+freezes the wheel mesh; the FVA mesh dialog is the inventory of parameters, not a mesh to copy).**
+
+11. **Parameters of the mesh.** Number of teeth of the sector, one toothless shoulder pitch at
+    each end (fixed), number of rim rings (the bore), number of layers over the face width, and
+    integer factors on the density of the template for the three directions of the FVA dialog
+    (`fe.refine`): elements over the tooth height, elements along the rounding of the tooth
+    root, elements over the tooth thickness, plus a uniform factor for convergence series. A
+    factor splits every chord (band of topologically parallel edges) that holds a surface edge
+    of its band, so the mesh stays conformal and all teeth stay congruent; new surface nodes are
+    moved onto the contour. The chords of the tooth thickness run on through the layers below
+    the tooth and the rim, where they are the edges normal to the root surface: that factor also
+    refines the fillet layers normal to the surface. The written mesh reports the effective
+    counts in the words of the dialog (template: 20 over the height, 80 per gap at the root, 10
+    over the thickness). Coarser than the template is not provided (FE-04).
+12. **Convergence study on the transverse section** (Stommel, Stojek, Korte 2018, rules of
+    procedure without formulas: 7.7.1 p. 424 h-method, p. 427-428 hourglassing and energy
+    balance; 7.7.3 p. 433 small model under comparable load with several element types
+    against a reference, stated there for structural elements; 8.2.2 p. 465 element size as
+    large as possible within the gradients). `fe.plane_solver` solves
+    the sector in plane strain with the four-node element as Abaqus formulates CPE4 and C3D8
+    (selectively reduced integration: volumetric strain at the centroid; Abaqus 2025
+    documentation, 'Solid (continuum) elements'); `fe.convergence` builds the load of point B
+    of the wheel (outer point of single pair tooth contact, 16 Nm at the wheel, F' = F_bt / b,
+    Hertz pressure patch of half width b_H over the flank, normal to the surface, bore and cut
+    planes fixed) and evaluates the nodal averaged maximum principal stress on the surface of
+    the loaded fillet, the displacement of the tip centre node and of the loaded tip corner, and
+    the strain energy; Richardson extrapolation over the last three levels.
+    `scripts/fe_mesh_convergence.py study` writes tables and pictures to
+    `80_output/fe/<case>/convergence/`; `verify` runs the one-tooth sector (859 nodes) in the
+    Learning Edition with CPE4, CPE4R and CPE4I. Verification: with CPE4 the displacements of
+    all nodes and the stresses at all integration points agree with the own solver to the print
+    precision of the `.dat` file (7e-5 relative); the textbook element of full integration
+    differed by 2 % in displacement and 15 % in root stress, which is how the formulation was
+    found.
+13. **Findings (kst-E wheel, 5 + 2 pitches, 12 rim rings, E = 2282 MPa, nu = 0,30).** The tip
+    displacement is converged at the template density (203,8 um; all levels within 0,2 %, all
+    three element formulations within 1,2 %). The surface stress at the root converges with
+    first order (p = 0,84) and lies at the template density 15 % below the extrapolated limit
+    (125,4 against 148,2 MPa); only the direction normal to the root surface (the thickness
+    chords) moves it (x2: 135,1, x3: 138,9, x4: 140,9 MPa), height and root-tangential
+    factors change nothing (< 0,1 %). The element formulation matters as much as the density:
+    on the one-tooth sector CPE4R gives 114,2 MPa (9 % below CPE4, hourglass energy 0,01 % of
+    the strain energy), CPE4I 141,8 MPa. The solver therefore got a second formulation, the
+    incompatible modes of Wilson and Taylor (counterpart of CPE4I/C3D8I; agrees with CPE4I on
+    the one-tooth sector to 1e-5 in displacement and 0,01 % in the evaluated stress). With it
+    the root surface stress converges fast (p = 4,7): template density -4,7 %, thickness x2
+    -0,7 %, x3 -0,1 %; limit 148,7 MPa; tip displacement -0,8 % / -0,2 %. Three formulations
+    (full integration, selectively reduced, incompatible modes) point to the same limit of
+    148 to 149 MPa. The width of the pressure patch changes the absolute values by 5 % but not
+    the convergence behaviour. The study is written in German for the thesis:
+    `fe_mesh_convergence.md`; its recommendation is C3D8I with the thickness factor 2 if the
+    pilot's solve time allows, else C3D8I at the template density.
+14. **Open, the user decides before the freeze:** element type of the wheel (C3D8R as in the
+    reference, C3D8, or C3D8I, which the archived work had also chosen for the root) and the
+    thickness factor. The decks that `scripts/fe_mesh_convergence.py decks` writes for the
+    full licence ran there on 2026-10-06 (all 21): the plane decks reproduce the own solver
+    on every level (CPE4 to the printed digits, CPE4I to 0,01 MPa) and add the CPE4R series
+    (114,9 / 127,9 / 133,6 / 136,7 MPa, limit 150,5, order 0,7); the solid decks (20, 40, 80
+    layers, C3D8R and C3D8I) show that tip displacement and root stress at mid width and in
+    the worst layer change by less than 0,05 % between 20 and 80 layers, only the value at the
+    free face keeps falling (108 to 97 MPa), and that plane strain takes the wheel 1,4 %
+    stiffer than the solid at mid width. Recommendation: 40 layers for the batch. Limits
+    FE-09 (accepted) and FE-10. Deviation from rule 11 on purpose: the Hertz half width is the classical line
+    contact result and only shapes the load patch of the study (`EQ_EXEMPT`).
+15. **Absolute numbers of elements (user, 2026-10-06, built the same day as S4b).** The mesh
+    takes the numbers of the FVA dialog, not factors: `fe.resample` reads the logical block
+    structure of the template (separatrices from the fan node and the feature points give,
+    per tooth half, a root band 40 x 3, a dome 40 x 2, head blocks 18 x 3 and 18 x 2, edge
+    break blocks 2 x 3 and 2 x 2, rim 12 x 2; the shoulder one block 15 x 4), unites the
+    parallel sides into seven classes (height, chamfer, root, root_layers, centre, rim_rings,
+    shoulder) named by seed nodes, and rebuilds every block as a grid of the requested size:
+    side nodes at the relative arc lengths of the template's distribution (interpolated, so
+    the thin fillet layers stay thin in proportion), interior nodes by interpolation in the
+    template's index space, shared sides built once. With the template's own numbers the
+    template results exactly (test); `MeshCounts` holds the numbers, `sector_mesh(...,
+    counts=)` applies them before the geometry mapping, and `build_fe_decks.py mesh` takes
+    them as `--over-tooth-height`, `--at-tip-edge-break`, `--at-tooth-root`,
+    `--over-tooth-thickness`, `--root-layers`, `--rings`, `--shoulder-columns` with
+    `--bore-radius`. The factors of `fe.refine` stay for convergence series.
+    `fe_mesh_convergence.py recommend` runs a ladder of thickness and root layers (the only
+    direction that matters) with the incompatible-modes element, fits f_0 + C h^p over all
+    levels (`convergence.richardson_fit`) and names the coarsest mesh within the tolerances
+    and the node budget; a second phase coarsens the other numbers one at a time against the
+    same limits, with a floor for the tooth height from the contact (three elements per Hertz
+    half width along the active flank, which root stress and tip displacement would not
+    guard). For kst-E with 2 % / 1 %: height 18 + 1, root 60, thickness 14, root layers 4,
+    rim rings 4, shoulder columns 2, C3D8I: 3 890 nodes per layer (315 000 at 80 layers),
+    -1,9 % at the root surface; limits 148,7 MPa / 203,5 um. The recommendation names the
+    element type.
+17. **Step S5 (2026-10-06, released by the user with the element type and the tolerance
+    provisionally taken as recommended; the mesh is frozen after the pilot run).**
+    `fe.deck` writes one position file per mesh position with parts and instances: the wheel
+    part includes the mesh file and its section (W1, W2: a solid section with the isotropic
+    material; W3, W4: the part piece of the orientation file), the pinion part includes the
+    rigid surface; the instances are translated to their axes and turned about them by the
+    tooth centre angle of the position; the pinion surface is a rigid body on its reference
+    point, the Fesselung is tied to the wheel's reference point (`*RIGID BODY, TIE NSET`, as
+    the reference deck); the contact pair (hard, frictionless, surface to surface) stands at
+    model level, which the Learning Edition enforced. Steps: SEAT with a prescribed rotation
+    of the pinion by a small arc at its base circle, then one static step per torque with
+    `*BOUNDARY, OP=NEW` (the installed documentation: the removed condition becomes a
+    concentrated force that the step ramps to zero) and the torque as `*CLOAD` on the pinion's
+    rotation; no stabilisation, no amplitude, no damping. The steps are geometrically linear
+    (NLGEOM=NO): the user's first pilot with NLGEOM=YES broke off at the start of the 12 Nm
+    step with negative eigenvalues and cut-backs, as the coarse Learning Edition model did at
+    16 Nm; with NLGEOM=NO the coarse model runs through all steps without a negative
+    eigenvalue. The linear kinematics of the rigid pinion displace its surface outward by
+    r·θ²/2, i.e. θ·sin α_wt/2 of the approach θ·r_b1 along the line of action; the pilot
+    measured θ = 2,3e-3 rad at 8 Nm (approach 55 µm), so the share stays below 1e-3 up to
+    16 Nm (FE-14). The model section carries `*PREPRINT, ECHO=NO, MODEL=NO, HISTORY=NO,
+    CONTACT=NO` (the 20-layer pilot's .dat had 457 000 lines of model printout). Printed
+    per step: RF, RM, UR of both reference points and CSTRESS of the flank nodes, so that
+    the direction of the contact force against the line of action and the lever arms are
+    measurable without the ODB (FE-15). The deck carries the solver and contact options
+    `nlgeom`, `contact` (surface-to-surface, or node-to-surface with SMOOTH, for which
+    Abaqus/Standard smooths the normals of the facetted rigid main surface), `enforcement`
+    (Abaqus default, PENALTY=LINEAR, DIRECT, AUGMENTED LAGRANGE) and `line_search` (N_ls of
+    `*CONTROLS, PARAMETERS=LINE SEARCH`; keyword reference: default 0 for Newton steps,
+    suggested 5); `decks --variants` writes one position file per variant of `VARIANTS`
+    for the diagnosis of a broken-off run (FE-14). The reference deck of the pair
+    (`kst-E_8_DY2-0_WS30.inp`) uses NLGEOM=YES, node-to-surface contact (the keyword
+    default) and `*STATIC, STABILIZE=0.0002`; stabilisation stays excluded here. Output:
+    field S, E, PEEQ,
+    U, RF, CSTRESS, CDISP at the end of each step, history and `.dat` print of RM and UR at
+    both reference points. The material card reader takes the isotropic row (field variables
+    1/3, 1/3) of the CONVERSE card at the given temperature exactly as the file has it
+    (kst-E, 80 degC: E_1 = 2282,078 MPa, nu_12 = 0,2997) and the plastic and Hill rows for W2;
+    the splitter divides an orientation file into the part piece and the model piece (node
+    numbers of the field variables prefixed by the instance) and writes the W3 piece without
+    plasticity; both tested on the reference file. Points B and D of the path of contact come
+    from DIN ISO 21771:2014-08, 5.4.3, p. 45 (`placement.single_contact_points`). The two
+    Learning Edition models: the orientation test of section 2b gave the ratio 1,000, so an
+    orientation given as a distribution turns with the instance and the parts-and-instances
+    way stands; the coarse pair model (719 nodes) ran the seating step and the torques 8 and
+    12 Nm without stabilisation, the 16 Nm step did not converge on that coarse mesh (FE-14),
+    and its support moment lay 0,8 % below T_2 (FE-15). Pilot folders with the recommended
+    mesh (C3D8I, 18 + 1 / 60 / 14 / 4 / 4 / 2) at 20 and 80 layers and one with the
+    reference bore depth are written for the user's run.
+16. **Sources of the load patch (user, 2026-10-06):** Niemann, Winter, Höhn, Stahl,
+    Maschinenelemente 1, 5th ed. 2019, Tab. 13.1 (p. 372), Eq. (13.5) and (13.6) (p. 376) for
+    the Hertz line contact, VDI 2736 Blatt 2:2014-06 Eq. (14), (15) (p. 15) for the plastic
+    gear side (flank pressure after Hertz with the modulus at operating temperature), and
+    Erhard and Strickle 1978, Eq. (6-23) p. 168 (Hertz pressure of plastic gears with the
+    temperature-dependent material factor) and p. 173 (modulus depends on temperature and
+    rate of deformation; creep). Neither source gives a formula for the contact width of
+    plastic gears, so the study uses the Hertz line contact with the modulus at operating
+    temperature and states nothing beyond that (FE-12; the user's rule of 2026-10-06: no
+    assumption that is not founded on a formula). A statement of Maschinenelemente 2 (p. 94)
+    on steel tooth stiffness was first taken for the plastics side and dropped on the user's
+    objection. Both books are registered in
+    `sources.yaml` and confirmed by the user; `convergence.hertz_line_contact` carries the
+    `@eq` references. The error model f_0 + C h^p of the extrapolation is the first term of
+    the asymptotic expansion of Dahmen and Reusken 2022, Eq. (10.35)/(10.36), p. 528, with
+    the exponent fitted; the a priori order rests on Bathe 1996, Eq. (4.101)/(4.102), p. 247.
+    Both registered (`DahmenReusken2022`, `Bathe1996`) and cited with `@eq` on `richardson`
+    and `richardson_fit`; the user's confirmation is pending (FE-13).
+
+**Amendment 2026-10-07 — solver and contact settings after the variant run and the element
+test (step S6).**
+
+18. **What the runs showed.** Pilot 1 (NLGEOM=YES, surface-to-surface) and pilot 2
+    (NLGEOM=NO, same contact) on the 20-layer mesh and the six variants of `VARIANTS` on the
+    full licence (2026-10-06): only node-to-surface with NLGEOM=NO completes all four steps;
+    the surface-to-surface files break off at 16 Nm (line search changes nothing) or 12 Nm
+    (DIRECT), and every NLGEOM=YES file breaks off in the 12 Nm step with negative eigenvalues
+    of the system matrix from the first load increment on (1,6 Nm at the pinion), growing with
+    the load, before any contact change and alike for all contact formulations. The element
+    test in the Learning Edition (coarse model, node-to-surface, otherwise identical) isolates
+    the cause: C3D8I with NLGEOM=YES gives the warnings from the first load increment on, C3D8
+    and C3D8R with NLGEOM=YES none, and all six files complete. The Abaqus 2025 element guide
+    limits incompatible-mode elements to small compressive strains ('Solid (continuum)
+    elements', 'Using incompatible mode elements in large-strain applications'); the theory
+    guide ('Continuum elements with incompatible modes', geometrically nonlinear formulation)
+    describes the incremental formulation (FE-14).
+19. **Decisions.** (a) The contact pair is node-to-surface with SMOOTH 0,2 (the keyword
+    default of Abaqus/Standard, also the choice of the reference deck): the constraint takes
+    the smoothed normal of the rigid main surface, so the contact force stays normal to the
+    rigid flank (a_1 = r_b1 within 0,1 %; with surface-to-surface it followed the deformed
+    wheel flank, a_1/r_b1 = 0,996 / 0,989). The price is the lever arm at the wheel,
+    a_2 = a·cos(α_wt + Δψ) − r_b1 with Δψ = 0,67° to 0,82°, i.e. a support moment 1,1 to
+    1,4 % below z_2/z_1·T_1 (FE-15). The largest contact pressure then lies below the Hertz
+    value of a rigid counterpart (59,0 / 67,8 / 74,9 against 60,6 / 74,5 / 85,7 MPa), not
+    34 % above it as with surface-to-surface (FE-16). (b) The isotropic elastic step W1 is
+    computed geometrically linear: NLGEOM=YES against NO changes the support moment by 0,1 %,
+    the pinion rotation by 0,6 % and the contact pressure by 0,3 % at 8 Nm (pinion rotation
+    2,3e-3 rad, 55 µm at the base circle, largest strain about 2,6 %); Stommel, Stojek, Korte
+    2018, p. 474: a linear problem is computed linear. (c) The elastic-plastic steps W2 to W4
+    are computed with NLGEOM=YES (the plastic curve of the card starts at 6 MPa; the book,
+    p. 2: plastic deformation of plastics at comparatively low loads, so material and
+    geometric nonlinearity often both have to be considered; p. 52: geometric nonlinearity
+    grows with the strain; p. 474: contact and large deformation need the nonlinear solver),
+    which with (18) means a wheel mesh without C3D8I for those steps. (d) Stabilisation stays
+    excluded; the cause of a break-off is found, not damped. (e) No stabilisation of the
+    numbers by averaging either: every deviation is listed with size and cause.
+20. **Confirmation on the fine mesh (full licence, 2026-10-07).** The pilot mesh (20 layers,
+    81 690 nodes) with C3D8 instead of C3D8I, node-to-surface, once linear and once with
+    NLGEOM=YES: both files complete all four steps in 6 increments each without a negative
+    eigenvalue (140 s and 161 s wall against 173 s for C3D8I linear). NLGEOM changes the
+    support moment by 0,1 %, the pinion rotation by 0,5 % and the largest contact pressure by
+    0,7 % up to 16 Nm; C3D8 against C3D8I (linear) changes these three by less than 1 %. The
+    global quantities of the position file are insensitive to the element type; only the
+    root surface stress is (FE-10).
+21. **Rule per material step (`deck.NLGEOM_OF_STEP`, `deck.ELEMENT_TYPE_OF_STEP`; `decks`
+    presets the element type from it, `--element-type` overrides).** The elastic steps W1 and
+    W3 are computed geometrically linear with C3D8I (root surface stress within 2 % at the
+    recommended density); the elastic-plastic steps W2 and W4 geometrically nonlinear with
+    C3D8 on the same mesh (the element type is one line of the mesh file; element numbers
+    and the CONVERSE mapping stay). The C3D8 formulation converges at the root surface with
+    first order only (−12,0 % at the recommended 14 / 4, −8,8 % at 20 / 6, −4,9 % at 40 / 12
+    with 286 000 nodes at 20 layers; `recommend --formulation selectively_reduced`), so a
+    root stress of a C3D8 step is compared with a C3D8I step only on the same element type
+    or against the extrapolated limit. Open with the user (FE-10): the density, and whether
+    every step is computed with C3D8 and a finer root instead. The four pilot folders
+    (20, 40, 80 layers, deep bore) are rewritten with the rule; the 40- and 80-layer and the
+    deep-bore runs give solve time and bore check (step S6).
+22. **Mesh freeze (user, 2026-10-07 afternoon).** 20 layers over the face width (the pilots:
+    40 and 80 layers leave moments and rotation unchanged to four digits and raise the
+    largest contact pressure by 1 %; 170 / 416 / 1 258 s wall), bore radius 16,5 mm = the
+    inner diameter of the plastic region of the real wheel (33 mm; a steel insert sits
+    inside and is modelled as the fixed Fesselung, which is what the bore nodes already are),
+    the recommended density 18 + 1 / 60 / 14 / 4 with 5 rim rings: `frozen_mesh_20layers_bore33`,
+    82 425 nodes, the file the user maps in CONVERSE. The running pilots keep the bore of
+    18,10 mm so that they stay comparable with each other; the deep bore of 12,38 mm had made
+    the pinion rotation 2 % larger (stiffness of the rim), moments and pressure equal. The
+    exact tooth-body cross-section (web, hub, insert seat) is a later stage from a dimensioned
+    drawing of the user; the tooth profile always comes from STplus, never from the CAD.
+23. **Evaluation over the path of contact (released by the user 2026-10-07).**
+    `scripts/fe_odb_extract.py` runs under the Python of Abaqus after every job
+    (`run_all.ps1`; `build_fe_decks.py extract` for folders computed before, the Learning
+    Edition's Python reads the output databases of the full licence) and writes
+    `<job>_fields.json`: the reference points, every closed contact node of the wheel flank
+    with radius, width coordinate, tooth half, pressure and normal force (`CFORCE` is in the
+    field request now), the nodal averaged principal stresses of every root fillet surface
+    (all nodes, the mid-width row, per layer the largest tensile and the most compressive
+    value) and the largest head displacement per tooth. `gearcore.fe.evaluation` condenses a
+    position into its maxima per tooth half and fillet, lines the positions up along the path
+    (`path_points`, `curve`), forms the nested sub-grids of a grid (`grid_subset`) and compares
+    location and value of every maximum between them (`resolution_rows`; the location refined
+    by the vertex of the parabola through the three highest points, the value the measured
+    maximum). `report` prints the maxima per step and writes `path_<step>.png` and
+    `path_report.md` for a folder with three or more extracted positions. The output databases
+    are never deleted: the user wants later evaluations (3D views over path × width with the
+    torque and the tooth as sliders), and every further quantity can be extracted afterwards.
+24. **Resolution study of the mesh positions (user, 2026-10-07).** His earlier analysis showed
+    that the location of the stress maximum along the path shifts between about 10 and 30
+    positions per base pitch because of the deformation (extended contact), so the batch
+    needs a resolution found by a study, not assumed: one grid of 60 positions per pitch from
+    half a pitch before A to half a pitch after E (133 positions, 20 layers, W1, 8 / 12 / 16 Nm,
+    `study_20layers_bore33_60perpitch`, about 6,5 h), evaluated on the nested sub-grids
+    60 / 30 / 20 / 15 / 12 / 10 for the rotation of the pinion (transmission error), the load
+    sharing between the tooth pairs, the largest contact pressure and the root stresses; the
+    batch takes the count from which the locations stop moving by a coarse step and the
+    values by 2 %, and the margin before A and after E from the measured extended contact.
+25. **Findings of the pilots of 2026-10-07.** (a) Positions A to E run on the fine mesh (all
+    complete, 162 to 180 s); in the double-contact zones the force stays within 0,2° of the
+    line of action and the moment within 0,4 %, at C the single contact gives −1,1 % and
+    +0,7° (FE-15). (b) Node-to-surface with SMOOTH 0,01 runs through with results equal to
+    SMOOTH 0,2 within 0,1 %, SMOOTH 0 aborts inside Abaqus: the facet kinks of the rigid
+    surface are not the cause of the surface-to-surface break-off, the formulation is
+    (FE-14). (c) The sharp pinion tip (no edge break, as the real part) loads the wheel flank
+    near the root at B and E with 160 MPa at 16 Nm against 75 MPa at C; the value at an edge
+    is mesh-dependent, the force per tooth and the root stresses are not; the model is not
+    changed for it (FE-17). (d) At C the tip of the following tooth carries from 8 Nm on and
+    the flank of the tooth ahead from 12 Nm on: the extended path of contact that the
+    resolution study measures.
