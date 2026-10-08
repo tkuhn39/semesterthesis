@@ -25,9 +25,12 @@ import json
 import math
 import re
 import subprocess
+from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 import matplotlib
+import yaml
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -41,8 +44,10 @@ from matplotlib.patches import Patch
 from gearcore import contour as ct
 from gearcore import data
 from gearcore import involute as iv
+from gearcore._safe import integer_input
 from gearcore.errors import InputRangeError
 from gearcore.fe import abaqus as ab
+from gearcore.fe import body as bd
 from gearcore.fe import convergence as cv
 from gearcore.fe import deck as dk
 from gearcore.fe import evaluation as ev
@@ -444,6 +449,94 @@ def _set_list(written: str, sets: so.GearSets) -> str:
     return "\n".join(lines)
 
 
+def _body_picture(built: bd.BodyMesh, out: Path) -> None:
+    """Meridional section (r, z) of the body mesh through the centre line of the middle tooth,
+    with the walls and the floor of the drawing in red."""
+    section, solid, body = built.section, built.solid, built.body
+    middle = rf.middle_tooth(section.teeth)
+    centre = 0.5 * math.pi + (middle - 0.5 * (section.teeth + 1)) * section.pitch_angle_rad
+    xy = solid.nodes_mm[:, :2]
+    offset = np.angle(np.exp(1j * (np.arctan2(xy[:, 1], xy[:, 0]) - centre)))
+    on_line = np.abs(offset) < 1.0e-7
+    radius = np.hypot(xy[:, 0], xy[:, 1])
+    z = solid.nodes_mm[:, 2]
+    mask = on_line[solid.hexes]
+    candidates = np.flatnonzero((mask[:, :4].sum(axis=1) == 2) & (mask[:, 4:].sum(axis=1) == 2))
+    polygons = []
+    for element in candidates.tolist():
+        corners = solid.hexes[element]
+        lower = sorted(corners[:4][mask[element, :4]].tolist(), key=lambda k: radius[k])
+        upper = sorted(corners[4:][mask[element, 4:]].tolist(), key=lambda k: -radius[k])
+        polygons.append([(radius[k], z[k]) for k in (*lower, *upper)])
+    figure, axes = plt.subplots(figsize=(11.0, 6.5), dpi=160)
+    axes.add_collection(
+        PolyCollection(polygons, facecolors="#e6e6e6", edgecolors="#3a3a3a", linewidths=0.3)
+    )
+    half, floor, depth = 0.5 * body.face_width_mm, body.bottom_z_mm, body.pocket_depth_mm
+    hub_face, hub_floor = body.hub_wall_radius_at(0.0), body.hub_wall_radius_at(depth)
+    rim_face, rim_floor = body.rim_wall_radius_at(0.0), body.rim_wall_radius_at(depth)
+    for sign in (1.0, -1.0):
+        axes.plot(
+            [hub_face, hub_floor, rim_floor, rim_face],
+            [sign * half, sign * floor, sign * floor, sign * half],
+            color="#c0392b",
+            linewidth=1.2,
+            label="Zeichnung" if sign > 0 else None,
+        )
+    axes.axvline(body.bore_radius_mm, color="#c0392b", linewidth=0.8, linestyle=":")
+    axes.axvline(body.tip_radius_mm, color="#c0392b", linewidth=0.8, linestyle=":")
+    axes.set_xlim(body.bore_radius_mm - 0.5, body.tip_radius_mm + 0.5)
+    axes.set_ylim(-half - 0.5, half + 0.5)
+    axes.set_aspect("equal")
+    axes.legend(loc="upper right", fontsize=8, frameon=False)
+    axes.set_title(
+        f"Radkörper im Meridianschnitt durch die Mitte von Zahn T{middle}: Nabe, Steg und Taschen "
+        f"nach Zeichnung; Ringe Nabe/Tasche/Felge {built.counts.hub_rings}/{built.counts.pocket_rings}/"
+        f"{built.counts.rim_rings}, Schichten Steg {built.counts.web_layers}, je Tasche "
+        f"{built.counts.flange_layers}; {len(solid.nodes_mm)} Knoten, {len(solid.hexes)} Elemente",
+        fontsize=9,
+    )
+    axes.set_xlabel("r in mm", fontsize=8)
+    axes.set_ylabel("z in mm", fontsize=8)
+    axes.tick_params(labelsize=7)
+    figure.tight_layout()
+    figure.savefig(out / "mesh_body.png")
+    plt.close(figure)
+
+
+def _body_lines(built: bd.BodyMesh) -> list[str]:
+    """Report lines of a body with pockets."""
+    body, counts = built.body, built.counts
+    depth = body.pocket_depth_mm
+    return [
+        f"body: pockets after the drawing ({body.source}); hub r {body.bore_radius_mm:.3f} to "
+        f"{body.hub_wall_radius_at(0.0):.3f} mm at the face, pocket to r {body.rim_wall_radius_at(0.0):.3f} "
+        f"mm, {depth:g} mm deep, walls {body.wall_angle_deg:g} deg (floor r "
+        f"{body.hub_wall_radius_at(depth):.3f} to {body.rim_wall_radius_at(depth):.3f} mm), web "
+        f"{body.web_thickness_mm:g} mm, rim from r {body.rim_wall_radius_at(0.0):.3f} mm; corner radii "
+        f"R {body.corner_radius_mm:g} not meshed",
+        f"body mesh: rings hub/pocket/rim {counts.hub_rings}/{counts.pocket_rings}/{counts.rim_rings}, "
+        f"layers web {counts.web_layers} x {body.web_thickness_mm / counts.web_layers:.4f} mm, each pocket "
+        f"{counts.flange_layers} x {depth / counts.flange_layers:.4f} mm; {len(built.removed_elements)} "
+        f"elements removed, {len(built.sets.surfaces[built.sets.prefix + '_POCKET_SURF'])} faces on "
+        f"the pocket surfaces; the element numbering differs from the ring body (new CONVERSE mapping)",
+    ]
+
+
+@dataclass(frozen=True)
+class MeshResult:
+    """What ``mesh`` built and wrote: the report lines and the mesh for the deck writer."""
+
+    lines: list[str]
+    file_name: str
+    """Name of the written mesh file: ``<role>_mesh.inp`` for the ring body,
+    ``<role>-pocket_mesh.inp`` for the body with pockets (naming of the user)."""
+    section: sm.SectorMesh
+    solid: so.SolidMesh
+    sets: so.GearSets
+    body: bd.BodyMesh | None
+
+
 def mesh(
     case: str,
     role: ct.Role,
@@ -454,8 +547,14 @@ def mesh(
     out: Path,
     counts: rs.MeshCounts | None = None,
     bore_radius_mm: float | None = None,
-) -> list[str]:
-    """Write the mesh file of one gear sector and its pictures; returns the lines of the report."""
+    body: bd.BodyShape = "ring",
+    body_counts: bd.BodyCounts | None = None,
+) -> MeshResult:
+    """Write the mesh file of one gear sector and its pictures. ``body`` ``pocket`` meshes the
+    body of the drawing (``fe.body``) with ``body_counts`` (rings hub / pocket / rim, layers
+    web / flange) instead of ``layers`` equal layers of the full ring."""
+    if body not in bd.BODY_SHAPES:
+        raise InputRangeError(f"body must be one of {bd.BODY_SHAPES}, got {body!r}")
     generation = _generation(case)
     gear = generation.inputs.gears.pinion if role == "pinion" else generation.inputs.gears.wheel
     section = sm.sector_mesh(
@@ -467,19 +566,35 @@ def mesh(
         counts=counts,
     )
     effective = rf.effective_counts(section)
-    solid = so.extrude(section, face_width_mm=gear.face_width_mm, layers=layers)
     prefix = role.upper()
-    sets = so.gear_sets(solid, prefix)
+    built: bd.BodyMesh | None = None
+    if body == "pocket":
+        shape = bd.body_section(case, role)
+        if abs(shape.face_width_mm - gear.face_width_mm) > 1.0e-6:
+            raise InputRangeError(
+                f"the drawing has the face width {shape.face_width_mm:g} mm, the STplus file "
+                f"{gear.face_width_mm:g} mm"
+            )
+        built = bd.body_mesh(section, shape, body_counts or bd.BodyCounts(), prefix)
+        section, solid, sets = built.section, built.solid, built.sets
+    else:
+        solid = so.extrude(section, face_width_mm=gear.face_width_mm, layers=layers)
+        sets = so.gear_sets(solid, prefix)
     out.mkdir(parents=True, exist_ok=True)
-    target = out / f"{role}_mesh.inp"
+    file_name = f"{role}-pocket_mesh.inp" if body == "pocket" else f"{role}_mesh.inp"
+    target = out / file_name
     written = ab.mesh_text(
         solid,
         sets,
         element_type=element_type,
-        title=f"{case}: {role}, face width {gear.face_width_mm:g} mm, built by gearcore",
+        title=f"{case}: {role}, face width {gear.face_width_mm:g} mm, body {body}, built by gearcore",
     )
     target.write_text(written, encoding="ascii")
-    _mesh_pictures(section, solid, sets, out)
+    if built is not None:
+        _mesh_pictures(section, built.full, built.full_sets, out)
+        _body_picture(built, out)
+    else:
+        _mesh_pictures(section, solid, sets, out)
     (out / "sets.txt").write_text(_set_list(written, sets), encoding="utf-8")
     quality = sm.scaled_jacobians(section.points_mm, section.quads)
     edges = np.concatenate(
@@ -493,14 +608,19 @@ def mesh(
             for k in range(4)
         ]
     )
-    return [
+    thickness = (
+        f"layer thickness {gear.face_width_mm / solid.layers:.4f} mm"
+        if built is None
+        else "layers of the web and of the pockets differ (see body mesh)"
+    )
+    lines = [
         target.as_posix(),
         f"nodes {len(solid.nodes_mm)}, elements {len(solid.hexes)} ({element_type}), "
-        f"layers {layers}, layer thickness {gear.face_width_mm / layers:.4f} mm",
+        f"layers {solid.layers}, {thickness}",
         f"mesh parameters: {teeth} teeth + {effective.shoulder_pitches} shoulder pitches, "
         f"elements over the tooth height {effective.over_tooth_height}, at the tooth root (one "
         f"gap) {effective.at_tooth_root}, over the tooth thickness "
-        f"{effective.over_tooth_thickness}, over the face width {layers}, rim rings "
+        f"{effective.over_tooth_thickness}, over the face width {solid.layers}, rim rings "
         f"{counts.rim_rings if counts is not None else rim_rings}, layers normal to the root "
         f"surface {counts.root_layers if counts is not None else 'template (3)'}; "
         f"{'counts ' + counts.label() if counts is not None else 'density of the template'}",
@@ -512,6 +632,11 @@ def mesh(
         f"sets: {len(sets.node_sets)} node sets, {len(sets.element_sets)} element sets, "
         f"{len(sets.surfaces)} surfaces; fixed nodes {len(sets.node_sets[prefix + '_FESSELUNG'])}",
     ]
+    if built is not None:
+        lines.extend(_body_lines(built))
+    return MeshResult(
+        lines=lines, file_name=file_name, section=section, solid=solid, sets=sets, body=built
+    )
 
 
 def surface(
@@ -652,6 +777,16 @@ VARIANTS: dict[str, tuple[dict[str, object], str]] = {
 position file per variant, same mesh files, same position. Every variant names its contact
 formulation itself, so a change of the ``PositionDeck`` defaults does not move it."""
 """Coarse numbers for the function test in the Learning Edition (1000 nodes)."""
+LE_POCKET_COUNTS = rs.MeshCounts(
+    over_tooth_height=4,
+    at_tip_edge_break=1,
+    at_tooth_root=12,
+    over_tooth_thickness=4,
+    root_layers=1,
+    rim_rings=3,
+    shoulder_columns=2,
+)
+"""Coarser numbers for the pocket body in the Learning Edition: five levels instead of three."""
 
 
 def _positions(
@@ -777,6 +912,72 @@ def _fillet_chains(section: sm.SectorMesh) -> dict[str, list[int]]:
     return chains
 
 
+def _body_manifest(built: bd.BodyMesh | None) -> dict[str, object]:
+    """The body block of the manifest: the shape, and for pockets the drawing and the mesh."""
+    if built is None:
+        return {"shape": "ring"}
+    body, counts = built.body, built.counts
+    return {
+        "shape": "pocket",
+        "source": body.source,
+        "section_mm": {
+            name: getattr(body, name)
+            for name in (
+                "face_width_mm",
+                "tip_radius_mm",
+                "bore_radius_mm",
+                "hub_wall_radius_mm",
+                "hub_wall_height_mm",
+                "rim_wall_radius_mm",
+                "rim_wall_height_mm",
+                "pocket_depth_mm",
+                "wall_angle_deg",
+                "corner_radius_mm",
+            )
+        },
+        "web_thickness_mm": body.web_thickness_mm,
+        "hub_wall_radius_at_floor_mm": body.hub_wall_radius_at(body.pocket_depth_mm),
+        "rim_wall_radius_at_floor_mm": body.rim_wall_radius_at(body.pocket_depth_mm),
+        "counts": {
+            "hub_rings": counts.hub_rings,
+            "pocket_rings": counts.pocket_rings,
+            "rim_rings": counts.rim_rings,
+            "web_layers": counts.web_layers,
+            "flange_layers": counts.flange_layers,
+        },
+        "z_levels_mm": built.solid.z_levels_mm.tolist(),
+        "elements_removed": int(len(built.removed_elements)),
+        "pocket_surface_faces": int(len(built.sets.surfaces[built.sets.prefix + "_POCKET_SURF"])),
+        "corner_radii_meshed": False,
+    }
+
+
+def _body_readme(built: bd.BodyMesh | None) -> str:
+    """The paragraph of the README that names the body of the wheel."""
+    if built is None:
+        return (
+            "Radkörper: voller Ring von der Bohrung bis zu den Zähnen (Vergleichsvariante `ring`; "
+            "der Stahleinsatz in der Bohrung ist die feste Fesselung)."
+        )
+    body, counts = built.body, built.counts
+    depth = body.pocket_depth_mm
+    return (
+        f"Radkörper nach Zeichnung ({body.source}): Nabe r {body.bore_radius_mm:g} bis "
+        f"{body.hub_wall_radius_mm:g} mm in voller Breite, von beiden Stirnseiten je eine Tasche bis "
+        f"r {body.rim_wall_radius_at(0.0):.3f} mm an der Stirnseite ({depth:g} mm tief, Wände "
+        f"{body.wall_angle_deg:g}° zur Stirnseite, am Taschengrund r {body.hub_wall_radius_at(depth):.3f} "
+        f"bis {body.rim_wall_radius_at(depth):.3f} mm), Steg {body.web_thickness_mm:g} mm, Felge ab "
+        f"r {body.rim_wall_radius_at(0.0):.3f} mm in voller Breite; die Rundungen R {body.corner_radius_mm:g} "
+        f"der Zeichnung sind nicht vernetzt (FE-18). Ringe Nabe/Tasche/Felge "
+        f"{counts.hub_rings}/{counts.pocket_rings}/{counts.rim_rings}, Schichten Steg {counts.web_layers}, "
+        f"je Tasche {counts.flange_layers}; {len(built.removed_elements)} Elemente der Taschen entfernt, "
+        f"Elementsets `WHEEL_BODY_HUB`, `WHEEL_BODY_WEB`, `WHEEL_BODY_RIM`, Fläche `WHEEL_POCKET_SURF`. "
+        "Die Elementnummern unterscheiden sich vom Ringkörper: das CONVERSE-Mapping wird auf dieser "
+        "`wheel-pocket_mesh.inp` neu erzeugt (Variante `pocket`; der Ringkörper bleibt als Variante "
+        "`ring` mit `wheel_mesh.inp`)."
+    )
+
+
 def decks(
     case: str,
     *,
@@ -787,8 +988,9 @@ def decks(
     counts: rs.MeshCounts | None,
     bore_radius_mm: float | None,
     rotation: pl.Rotation,
-    material_step: dk.MaterialStep,
-    cof: Path,
+    material_steps: list[dk.MaterialStep],
+    cofs: list[Path],
+    rates: list[str],
     temperature_c: float,
     torques_wheel_nm: list[float],
     positions: list[str],
@@ -798,48 +1000,105 @@ def decks(
     max_edge_mm: float,
     out: Path,
     variants: list[str] | None = None,
+    body: bd.BodyShape = "ring",
+    body_counts: bd.BodyCounts | None = None,
 ) -> list[str]:
-    """Write the wheel mesh, the pinion surface, one position file per position, the
-    manifest and the runner into ``out``; returns the lines of the report. With ``variants``
-    every position gets one file per variant of ``VARIANTS`` (``pos_NNN_<variant>.inp``).
-    ``element_type`` None takes the element type of the material step
-    (``deck.ELEMENT_TYPE_OF_STEP``); the steps are geometrically nonlinear where
-    ``deck.NLGEOM_OF_STEP`` says so, unless a variant sets ``nlgeom`` itself."""
+    """Write the wheel mesh, the pinion surface, one position file per position and
+    combination, the manifest and the runner into ``out``; returns the lines of the report.
+
+    The material steps and the strain rates are variant axes: one CONVERSE file per rate
+    (``cofs`` and ``rates`` in the same order; the same mesh, the material card of that rate),
+    and every position gets one file per step and rate, ``pos_NNN_<step>_<rate>.inp``; one
+    step and one rate keep ``pos_NNN.inp``. With ``variants`` every such file comes once per
+    variant of ``VARIANTS`` (``..._<variant>.inp``). The orientation pieces are written per
+    rate (``wheel_orientation_<rate>_part.inp``, ``_model.inp`` for W4, ``_model_elastic.inp``
+    for W3). ``element_type`` None takes the element type of each step
+    (``deck.ELEMENT_TYPE_OF_STEP``), and the mesh is written once per element type needed
+    (the second one as ``<mesh>_<type>.inp``, same nodes and elements, so the CONVERSE mapping
+    holds for both); the steps are geometrically nonlinear where ``deck.NLGEOM_OF_STEP`` says
+    so, unless a variant sets ``nlgeom`` itself. ``body`` ``pocket`` meshes the wheel body of
+    the drawing (``fe.body``) with ``body_counts``."""
     for variant in variants or ():
         if variant not in VARIANTS:
             raise InputRangeError(f"variant {variant!r} is not one of {tuple(VARIANTS)}")
-    if element_type is None:
-        element_type = dk.ELEMENT_TYPE_OF_STEP[material_step]
-    nlgeom = dk.NLGEOM_OF_STEP[material_step]
+    if not material_steps or any(s not in dk.MATERIAL_STEPS for s in material_steps):
+        raise InputRangeError(
+            f"material steps must be among {dk.MATERIAL_STEPS}, got {material_steps!r}"
+        )
+    if len(dict.fromkeys(material_steps)) != len(material_steps):
+        raise InputRangeError(f"material steps repeat: {material_steps!r}")
+    if not rates or len(cofs) != len(rates) or len(set(rates)) != len(rates):
+        raise InputRangeError("one CONVERSE file per rate is required, rate names distinct")
+    for rate in rates:
+        if not rate.isidentifier():
+            raise InputRangeError(f"a rate name must be an identifier, got {rate!r}")
+    types_of_step: dict[str, str] = {
+        s: element_type if element_type is not None else dk.ELEMENT_TYPE_OF_STEP[s]
+        for s in material_steps
+    }
+    main_type = types_of_step[material_steps[0]]
     generation = _generation(case)
     gears = generation.gears
     flank = pl.working_flank_of_the_driving_pinion(rotation)
     sign = pl.pinion_torque_sign(flank)
     out.mkdir(parents=True, exist_ok=True)
-    report = mesh(
-        case, "wheel", teeth, rim_rings, layers, element_type, out, counts, bore_radius_mm
-    )
-    report += surface(case, "pinion", teeth, layers, max_edge_mm, rotation, out)
-    section = sm.sector_mesh(
-        generation,
+    built = mesh(
+        case,
         "wheel",
-        teeth=teeth,
-        rim_rings=rim_rings,
-        bore_radius_mm=bore_radius_mm,
-        counts=counts,
+        teeth,
+        rim_rings,
+        layers,
+        main_type,
+        out,
+        counts,
+        bore_radius_mm,
+        body=body,
+        body_counts=body_counts,
     )
+    report = list(built.lines)
+    report += surface(case, "pinion", teeth, layers, max_edge_mm, rotation, out)
+    section = built.section
+    layers = built.solid.layers
     effective = rf.effective_counts(section)
-    cof_text = cof.read_text(encoding="utf-8", errors="replace")
-    card = dk.read_material_card(cof_text, temperature_c)
-    part_file = model_file = None
-    if material_step in ("W3", "W4"):
-        pieces = dk.split_orientation_file(cof_text, dk.WHEEL_INSTANCE)
-        part_file, model_file = "wheel_orientation_part.inp", "wheel_orientation_model.inp"
-        (out / part_file).write_text(pieces.part, encoding="utf-8")
-        (out / model_file).write_text(
-            pieces.model if material_step == "W4" else pieces.model_without_plasticity,
-            encoding="utf-8",
+    face_width = generation.inputs.gears.wheel.face_width_mm
+    mesh_files: dict[str, str] = {main_type: built.file_name}
+    for other in sorted(set(types_of_step.values()) - {main_type}):
+        name = built.file_name.removesuffix(".inp") + f"_{other}.inp"
+        (out / name).write_text(
+            ab.mesh_text(
+                built.solid,
+                built.sets,
+                element_type=other,
+                title=f"{case}: wheel, face width {face_width:g} mm, body {body}, built by gearcore",
+            ),
+            encoding="ascii",
         )
+        mesh_files[other] = name
+        report.append(f"{(out / name).as_posix()}: the same mesh with {other}")
+    cards: dict[str, dk.MaterialCard] = {}
+    pieces_of: dict[str, tuple[str, str | None, str | None]] = {}
+    orientation_files: list[str] = []
+    needs_orientation = any(s in ("W3", "W4") for s in material_steps)
+    for rate, cof in zip(rates, cofs, strict=True):
+        cof_text = cof.read_text(encoding="utf-8", errors="replace")
+        cards[rate] = dk.read_material_card(cof_text, temperature_c)
+        if not needs_orientation:
+            continue
+        pieces = dk.split_orientation_file(cof_text, dk.WHEEL_INSTANCE, dk.WHEEL)
+        part_file = f"wheel_orientation_{rate}_part.inp"
+        (out / part_file).write_text(pieces.part, encoding="utf-8")
+        orientation_files.append(part_file)
+        model_file = elastic_file = None
+        if "W4" in material_steps:
+            model_file = f"wheel_orientation_{rate}_model.inp"
+            (out / model_file).write_text(pieces.model, encoding="utf-8")
+            orientation_files.append(model_file)
+        if "W3" in material_steps:
+            elastic_file = f"wheel_orientation_{rate}_model_elastic.inp"
+            (out / elastic_file).write_text(pieces.model_without_plasticity, encoding="utf-8")
+            orientation_files.append(elastic_file)
+        pieces_of[rate] = (part_file, model_file, elastic_file)
+    known_rates = data.load_converse_rates()
     z1, z2 = gears.pinion.number_of_teeth, gears.wheel.number_of_teeth
     torques_pinion = tuple(1000.0 * t * z1 / z2 for t in torques_wheel_nm)
     pair = generation.inputs
@@ -851,49 +1110,68 @@ def decks(
     chosen = _positions(generation, positions, steps_per_pitch, margin)
     rho_a, _ = pl.path_of_contact_limits(generation)
     entries = []
-    settings_of = (
-        {v: {"nlgeom": nlgeom, **VARIANTS[v][0]} for v in variants}
-        if variants
-        else {"": {"nlgeom": nlgeom}}
-    )
+    single = len(material_steps) == 1 and len(rates) == 1
+
+    def settings_of(step: dk.MaterialStep) -> dict[str, dict[str, object]]:
+        nlgeom = dk.NLGEOM_OF_STEP[step]
+        if variants:
+            return {v: {"nlgeom": nlgeom, **VARIANTS[v][0]} for v in variants}
+        return {"": {"nlgeom": nlgeom}}
+
     for k, (label, rho) in enumerate(chosen, start=1):
         position = pl.mesh_position(generation, rho, working_flank=flank)
         place = pl.fixed_axes(position)
-        for variant, settings in settings_of.items():
-            name = f"pos_{k:03d}" + (f"_{variant}" if variant else "")
-            deck = dk.PositionDeck(
-                wheel_mesh_file="wheel_mesh.inp",
-                pinion_surface_file="pinion_surface.inp",
-                placement=place,
-                torques_pinion_nmm=torques_pinion,
-                torque_sign=sign,
-                seating_angle_rad=seating,
-                temperature_c=temperature_c,
-                material_step=material_step,
-                card=card,
-                orientation_part_file=part_file,
-                orientation_model_file=model_file,
-                title=f"{case}: position {k} of {len(chosen)}"
-                f"{' (' + label + ')' if label else ''}, rho_1 = {rho:.6f} mm"
-                f"{', variant ' + variant if variant else ''}, built by gearcore",
-                step_names=step_names,
-                **settings,
-            )
-            (out / f"{name}.inp").write_text(dk.position_deck_text(deck), encoding="ascii")
-            entries.append(
-                {
-                    "index": k,
-                    "file": f"{name}.inp",
-                    "variant": variant,
-                    "point": label,
-                    "rho_1_mm": rho,
-                    "rho_2_mm": position.radius_of_curvature_mm.wheel,
-                    "from_A_mm": rho - rho_a,
-                    "pinion_tooth_centre_angle_deg": place.tooth_centre_angle_deg.pinion,
-                    "wheel_tooth_centre_angle_deg": place.tooth_centre_angle_deg.wheel,
-                    "tooth_pairs_on_path": list(position.tooth_pairs_on_path),
-                }
-            )
+        for step in material_steps:
+            for rate in rates:
+                for variant, settings in settings_of(step).items():
+                    name = (
+                        f"pos_{k:03d}"
+                        + ("" if single else f"_{step}_{rate}")
+                        + (f"_{variant}" if variant else "")
+                    )
+                    part_file, model_file, elastic_file = pieces_of.get(rate, ("", None, None))
+                    with_orientation = step in ("W3", "W4")
+                    deck = dk.PositionDeck(
+                        wheel_mesh_file=mesh_files[types_of_step[step]],
+                        pinion_surface_file="pinion_surface.inp",
+                        placement=place,
+                        torques_pinion_nmm=torques_pinion,
+                        torque_sign=sign,
+                        seating_angle_rad=seating,
+                        temperature_c=temperature_c,
+                        material_step=step,
+                        card=cards[rate],
+                        orientation_part_file=part_file if with_orientation else None,
+                        orientation_model_file=(
+                            model_file if step == "W4" else elastic_file if step == "W3" else None
+                        ),
+                        title=f"{case}: position {k} of {len(chosen)}"
+                        f"{' (' + label + ')' if label else ''}, rho_1 = {rho:.6f} mm, "
+                        f"{step} {rate}{', variant ' + variant if variant else ''}, built by gearcore",
+                        step_names=step_names,
+                        rate=rate,
+                        **settings,  # type: ignore[arg-type]
+                    )
+                    (out / f"{name}.inp").write_text(dk.position_deck_text(deck), encoding="ascii")
+                    entries.append(
+                        {
+                            "index": k,
+                            "file": f"{name}.inp",
+                            "material_step": step,
+                            "rate": rate,
+                            "element_type": types_of_step[step],
+                            "nlgeom": bool(settings["nlgeom"]),
+                            "variant": variant,
+                            "point": label,
+                            "rho_1_mm": rho,
+                            "rho_2_mm": position.radius_of_curvature_mm.wheel,
+                            "from_A_mm": rho - rho_a,
+                            "pinion_tooth_centre_angle_deg": place.tooth_centre_angle_deg.pinion,
+                            "wheel_tooth_centre_angle_deg": place.tooth_centre_angle_deg.wheel,
+                            "tooth_pairs_on_path": list(position.tooth_pairs_on_path),
+                        }
+                    )
+    first_card = cards[rates[0]]
     manifest = {
         "case": case,
         "pinion_rotation": rotation,
@@ -904,8 +1182,22 @@ def decks(
         "step_names": ["SEAT", *step_names],
         "seating_arc_mm": seating_arc_mm,
         "seating_angle_rad": seating,
-        "material_step": material_step,
-        "nlgeom": nlgeom,
+        "material_step": material_steps[0],
+        "material_steps": list(material_steps),
+        "nlgeom": dk.NLGEOM_OF_STEP[material_steps[0]],
+        "nlgeom_of_step": {s: dk.NLGEOM_OF_STEP[s] for s in material_steps},
+        "rates": {
+            rate: {
+                "file": cof.as_posix(),
+                "name": cards[rate].name,
+                "temperature_c": cards[rate].temperature_c,
+                "youngs_modulus_mpa": cards[rate].youngs_modulus_mpa,
+                "poisson_ratio": cards[rate].poisson_ratio,
+                "orientation_files": list(pieces_of.get(rate, ())),
+                **known_rates.get(rate, {}),
+            }
+            for rate, cof in zip(rates, cofs, strict=True)
+        },
         "contact": "node_to_surface",
         "grid": {
             "positions": positions,
@@ -915,24 +1207,26 @@ def decks(
             "path_of_contact_mm": pl.path_of_contact_limits(generation)[1] - rho_a,
         },
         "material_card": {
-            "file": cof.as_posix(),
-            "name": card.name,
-            "temperature_c": card.temperature_c,
-            "engineering_constants": list(card.engineering_constants),
-            "youngs_modulus_mpa": card.youngs_modulus_mpa,
-            "poisson_ratio": card.poisson_ratio,
+            "file": cofs[0].as_posix(),
+            "name": first_card.name,
+            "temperature_c": first_card.temperature_c,
+            "engineering_constants": list(first_card.engineering_constants),
+            "youngs_modulus_mpa": first_card.youngs_modulus_mpa,
+            "poisson_ratio": first_card.poisson_ratio,
         },
-        "orientation_files": [f for f in (part_file, model_file) if f],
+        "orientation_files": orientation_files,
         "wheel_mesh": {
-            "file": "wheel_mesh.inp",
+            "file": built.file_name,
+            "files": mesh_files,
             "teeth": teeth,
             "shoulder_pitches": 2,
             "layers": layers,
-            "element_type": element_type,
+            "element_type": main_type,
+            "element_type_of_step": types_of_step,
             "nodes_per_level": len(section.points_mm),
             "elements_per_layer": len(section.quads),
-            "nodes": len(section.points_mm) * (layers + 1),
-            "elements": len(section.quads) * layers,
+            "nodes": len(built.solid.nodes_mm),
+            "elements": len(built.solid.hexes),
             "bore_radius_mm": section.bore_radius_mm,
             "counts": {
                 "over_tooth_height": effective.over_tooth_height,
@@ -942,6 +1236,7 @@ def decks(
                 "root_layers": counts.root_layers if counts is not None else 3,
                 "shoulder_columns": counts.shoulder_columns if counts is not None else 4,
             },
+            "body": _body_manifest(built.body),
             "fillet_chains_transverse": _fillet_chains(section),
         },
         "pinion_surface": {"file": "pinion_surface.inp", "teeth": teeth + 2},
@@ -957,15 +1252,50 @@ def decks(
     (out / "README.md").write_text(
         "\n".join(
             [
-                f"# Stellungsrechnungen {case}, Werkstoffstufe {material_step}",
+                f"# Stellungsrechnungen {case}, Werkstoffstufe{'n' if len(material_steps) > 1 else ''} "
+                f"{', '.join(material_steps)}, Rate{'n' if len(rates) > 1 else ''} {', '.join(rates)}",
                 "",
-                f"Radsektor {teeth} Zähne + 2 zahnlose Segmente, {layers} Schichten, {element_type}, "
-                f"{len(section.points_mm) * (layers + 1)} Knoten; starre Ritzelfläche mit {teeth + 2} Zähnen. "
-                f"Je Stellung eine Datei `pos_NNN.inp` (Schritte: SEAT, dann {', '.join(step_names)}); "
+                f"Radsektor {teeth} Zähne + 2 zahnlose Segmente, {layers} Schichten, "
+                f"{', '.join(f'{t} ({f})' for t, f in mesh_files.items())}, "
+                f"{len(built.solid.nodes_mm)} Knoten; starre Ritzelfläche mit {teeth + 2} Zähnen. "
+                + (
+                    "Je Stellung eine Datei `pos_NNN.inp`"
+                    if single
+                    else "Je Stellung, Werkstoffstufe und Rate eine Datei `pos_NNN_<Stufe>_<Rate>.inp`"
+                )
+                + f" (Schritte: SEAT, dann {', '.join(step_names)}); "
                 "Momente am Rad " + ", ".join(f"{t:g}" for t in torques_wheel_nm) + " Nm.",
                 "",
-                f"Schritte geometrisch {'nichtlinear (NLGEOM=YES)' if nlgeom else 'linear (NLGEOM=NO)'}, "
-                "Kontakt Knoten-zu-Fläche mit Glättung der starren Facetten (SMOOTH 0,2), keine "
+                _body_readme(built.body),
+                "",
+                "Raten (CONVERSE-Karten des Nutzers, dieselbe Faserorientierung, Werkstofftabellen je "
+                "Prüfgeschwindigkeit): "
+                + "; ".join(
+                    f"`{rate}` = `{Path(cof).name}` ({cards[rate].name}, isotrope Zeile E = "
+                    f"{cards[rate].youngs_modulus_mpa:g} MPa, ν = {cards[rate].poisson_ratio:g} bei "
+                    f"{cards[rate].temperature_c:g} °C"
+                    + (
+                        f", Dehnrate {known_rates[rate].get('strain_rate_1_s')} 1/s"
+                        if rate in known_rates
+                        else ""
+                    )
+                    + ")"
+                    for rate, cof in zip(rates, cofs, strict=True)
+                )
+                + ". W1 und W2 nehmen die isotrope Zeile der Karte, W3 und W4 die Orientierungsdatei "
+                "der Rate (`wheel_orientation_<Rate>_*.inp`; das Elset der Section ist auf `WHEEL` "
+                "umgeschrieben). In W3 und W4 schreibt die Ausgabe die Feldvariablen (FV) der Knoten "
+                "und die lokalen Materialrichtungen (DIRECTIONS=YES) in die .odb; `report` prüft "
+                "daraus, dass die Faserorientierung mit der Instanz mitgedreht wurde und die "
+                "Feldvariablen die der Datei sind.",
+                "",
+                "Schritte geometrisch "
+                + ", ".join(
+                    f"{s}: {'nichtlinear (NLGEOM=YES)' if dk.NLGEOM_OF_STEP[s] else 'linear (NLGEOM=NO)'} "
+                    f"mit {types_of_step[s]}"
+                    for s in material_steps
+                )
+                + "; Kontakt Knoten-zu-Fläche mit Glättung der starren Facetten (SMOOTH 0,2), keine "
                 "Stabilisierung. Regel je Werkstoffstufe (`deck.NLGEOM_OF_STEP`, "
                 "`deck.ELEMENT_TYPE_OF_STEP`): W1 und W3 linear mit C3D8I, W2 und W4 nichtlinear "
                 "mit C3D8 auf demselben Netz, weil C3D8I mit NLGEOM=YES negative Eigenwerte erzeugt "
@@ -987,7 +1317,7 @@ def decks(
                 ),
                 "## Rechnen auf der Vollversion",
                 "",
-                "1. Diesen Ordner kopieren (die Stellungsdateien binden `wheel_mesh.inp` und "
+                f"1. Diesen Ordner kopieren (die Stellungsdateien binden `{built.file_name}` und "
                 "`pinion_surface.inp` ein, sie müssen daneben liegen).",
                 "2. Abaqus-Eingabeaufforderung im Ordner öffnen, Datenprüfung einer Datei: "
                 "`abaqus job=pos_001 datacheck interactive`.",
@@ -1028,13 +1358,53 @@ def decks(
         encoding="utf-8",
     )
     report.append(
-        f"{len(entries)} position files ({', '.join(str(e['point'] or e['index']) for e in entries)}), "
-        f"material step {material_step}, E = {card.youngs_modulus_mpa:g} MPa, nu = {card.poisson_ratio:g} "
-        f"at {card.temperature_c:g} degC, torques at the pinion "
+        f"{len(entries)} position files ({len(chosen)} positions: "
+        f"{', '.join(str(label or k) for k, (label, _) in enumerate(chosen, start=1))}), "
+        f"material steps {', '.join(material_steps)}, rates "
+        + ", ".join(
+            f"{rate} (E = {cards[rate].youngs_modulus_mpa:g} MPa, nu = {cards[rate].poisson_ratio:g} "
+            f"at {cards[rate].temperature_c:g} degC)"
+            for rate in rates
+        )
+        + ", torques at the pinion "
         + ", ".join(f"{t:.2f}" for t in torques_pinion)
         + f" N mm (sign {sign:+g}), seating angle {seating:.3e} rad; manifest.json, run_all.ps1"
     )
     return report
+
+
+def synthetic_orientation_text(elements: int, nodes: int, card_text: str) -> str:
+    """A CONVERSE-like orientation file for a function test: every element's local
+    1-direction along +x and 2-direction along +y of the part, the field variables 0,6 and 0,1
+    at every node, and the material blocks of ``card_text`` (a real CONVERSE card) unchanged.
+    After the run the directions in the output database must be +x turned by the rotation of
+    the wheel instance."""
+    count = integer_input(elements, "number of elements")
+    node_count = integer_input(nodes, "number of nodes")
+    if count < 1 or node_count < 1:
+        raise InputRangeError("a synthetic orientation file needs elements and nodes")
+    start = card_text.find("*MATERIAL")
+    end = card_text.find("*INITIAL CONDITIONS")
+    if start < 0 or end < 0 or end < start:
+        raise InputRangeError("the card text must hold *MATERIAL before *INITIAL CONDITIONS")
+    name = dk.read_material_card(card_text, 80.0).name
+    lines = [
+        "** synthetic orientation file of gearcore for the function test of the orientation",
+        "*DISTRIBUTION TABLE, NAME=DIS_TAB_COORD",
+        " COORD3D, COORD3D",
+        "*DISTRIBUTION, NAME=DIS_SYNTHETIC, LOCATION=ELEMENT, TABLE=DIS_TAB_COORD",
+        " , 1.0, 0.0, 0.0, 0.0, 1.0, 0.0",
+        *(f" {e}, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0" for e in range(1, count + 1)),
+        "*ORIENTATION, NAME=ORI_SYNTHETIC, DEFINITION=COORDINATES",
+        " DIS_SYNTHETIC",
+        f"*SOLID SECTION, ELSET=CONVERSE_AUTO_SOLID, MATERIAL={name}, ORIENTATION=ORI_SYNTHETIC",
+        card_text[start:end].rstrip(),
+        "*INITIAL CONDITIONS, TYPE=FIELD, VARIABLE=1",
+        *(f" {n}, 0.6" for n in range(1, node_count + 1)),
+        "*INITIAL CONDITIONS, TYPE=FIELD, VARIABLE=2",
+        *(f" {n}, 0.1" for n in range(1, node_count + 1)),
+    ]
+    return "\n".join(lines) + "\n"
 
 
 ORIENTATION_TEST = """*HEADING
@@ -1157,6 +1527,18 @@ def _instance_axes(deck_text: str) -> dict[str, tuple[float, float]]:
     return axes
 
 
+def _instance_turns(deck_text: str) -> dict[str, float]:
+    """Rotation of each instance about its own axis in degrees (the last item of the rotation
+    line of ``*INSTANCE``: axis through two points, then the angle)."""
+    turns: dict[str, float] = {}
+    lines = deck_text.splitlines()
+    for i, line in enumerate(lines):
+        if line.upper().startswith("*INSTANCE"):
+            name = line.split("NAME=")[1].split(",")[0].strip()
+            turns[name] = float(lines[i + 2].split(",")[-1])
+    return turns
+
+
 def report(folder: Path) -> list[str]:
     """Evaluation of a position folder after the run, without ODB access: status and
     increments per step, support moment and rotation, the direction of the contact force
@@ -1173,13 +1555,29 @@ def report(folder: Path) -> list[str]:
     out = [
         f"{folder.as_posix()}: r_b1 {r_b1:.4f} mm, r_b2 {r_b2:.4f} mm, steps {', '.join(step_names)}"
     ]
+    rates = manifest.get("rates") if isinstance(manifest.get("rates"), dict) else {}
+    distributions: dict[str, dict[int, tuple[dk.Vector, dk.Vector]]] = {}
+    field_variables: dict[str, dict[int, tuple[float, float]]] = {}
+
+    def orientation_source(rate: str) -> str | None:
+        """Path of the CONVERSE file of a rate (older manifests name one card only)."""
+        if rate in rates and isinstance(rates[rate], dict):
+            return str(rates[rate].get("file"))
+        card = manifest.get("material_card")
+        return str(card["file"]) if isinstance(card, dict) and "file" in card else None
+
     for entry in manifest["positions"]:
         job = Path(entry["file"]).stem
         label = entry["point"] or f"rho_1 {entry['rho_1_mm']:.4f} mm"
+        step_of_entry = str(entry.get("material_step") or manifest.get("material_step") or "")
+        rate_of_entry = str(entry.get("rate") or "")
+        if step_of_entry:
+            label += f", {step_of_entry}" + (f" {rate_of_entry}" if rate_of_entry else "")
         if entry.get("variant"):
             label += f", variant {entry['variant']}"
         deck_text = (folder / entry["file"]).read_text(encoding="utf-8")
         axes = _instance_axes(deck_text)
+        wheel_turn = _instance_turns(deck_text).get(dk.WHEEL_INSTANCE, 0.0)
         o1, o2 = axes[dk.PINION_INSTANCE], axes[dk.WHEEL_INSTANCE]
         a = math.hypot(o2[0] - o1[0], o2[1] - o1[1])
         e = ((o2[0] - o1[0]) / a, (o2[1] - o1[1]) / a)
@@ -1213,8 +1611,33 @@ def report(folder: Path) -> list[str]:
         tables = _dat_tables(text)
         fields_file = folder / f"{job}_fields.json"
         summaries: dict[str, ev.StepSummary] = {}
+        steps_fields: dict[str, ev.StepFields] = {}
         if fields_file.exists():
-            summaries = {s.name: ev.step_summary(s) for s in ev.read_fields(fields_file).steps}
+            steps_fields = {s.name: s for s in ev.read_fields(fields_file).steps}
+            summaries = {name: ev.step_summary(s) for name, s in steps_fields.items()}
+        checks: dict[str, list[str]] = {}
+        if step_of_entry in ("W3", "W4") and steps_fields:
+            source = orientation_source(rate_of_entry)
+            if source and rate_of_entry not in distributions:
+                cof_path = Path(source)
+                if cof_path.exists():
+                    cof_text = cof_path.read_text(encoding="utf-8", errors="replace")
+                    distributions[rate_of_entry] = dk.read_distribution(cof_text)
+                    field_variables[rate_of_entry] = dk.read_field_variables(cof_text)
+            if rate_of_entry in distributions:
+                for name, step_fields in steps_fields.items():
+                    if not step_fields.orientation:
+                        continue
+                    check = ev.orientation_check(
+                        step_fields, distributions[rate_of_entry], wheel_turn
+                    )
+                    fv_check = ev.field_variable_check(step_fields, field_variables[rate_of_entry])
+                    checks[name] = ev.format_orientation(check, fv_check)
+            else:
+                checks = {
+                    name: [f"    orientation: CONVERSE file {source!r} not found, check skipped"]
+                    for name in steps_fields
+                }
         wheel = [(h, r[-1]) for h, r in tables if r and r[-1][0] == float(dk.WHEEL_REFERENCE_NODE)]
         pinion = [
             (h, r[-1]) for h, r in tables if r and r[-1][0] == float(dk.PINION_REFERENCE_NODE)
@@ -1269,6 +1692,7 @@ def report(folder: Path) -> list[str]:
             out.append("".join(parts))
             if name in summaries:
                 out.extend(ev.format_summary(summaries[name]))
+            out.extend(checks.get(name, []))
     out.extend(_path_report(folder, manifest))
     return out
 
@@ -1277,12 +1701,32 @@ PATH_QUANTITIES = ("pinion_rotation_rad", "p_max", "s1_max", "s3_min", "u_head_m
 
 
 def _path_report(folder: Path, manifest: dict[str, object]) -> list[str]:
-    """Curves over the path of contact (one picture per load step) and the resolution table
-    of the sub-grids (``path_report.md``) for a folder with extracted fields of three or more
-    positions."""
-    points = [p for p in ev.path_points(manifest, folder) if p.summaries]
-    if len(points) < 3:
-        return []
+    """Curves over the path of contact (one picture per load step and series) and the
+    resolution table of the sub-grids (``path_report.md``) for a folder with extracted fields
+    of three or more positions; a series is one material step, rate and variant."""
+    lines: list[str] = []
+    document = ["# Auswertung über dem Eingriffsweg", ""]
+    series = ev.series_names(manifest)
+    for name in series:
+        points = [p for p in ev.path_points(manifest, folder, name) if p.summaries]
+        if len(points) < 3:
+            continue
+        lines.extend(
+            _path_series(folder, manifest, name if len(series) > 1 else "", points, document)
+        )
+    if len(document) > 2:
+        (folder / "path_report.md").write_text("\n".join(document) + "\n", encoding="utf-8")
+    return lines
+
+
+def _path_series(
+    folder: Path,
+    manifest: dict[str, object],
+    series: str,
+    points: list[ev.PathPoint],
+    document: list[str],
+) -> list[str]:
+    """The pictures and the resolution rows of one series (``series`` empty: the only one)."""
     r_b1 = float(manifest["seating_arc_mm"]) / float(manifest["seating_angle_rad"])  # type: ignore[arg-type]
     names = manifest["step_names"]
     step_names = [str(s) for s in names if s != "SEAT"] if isinstance(names, list) else []
@@ -1292,8 +1736,8 @@ def _path_report(folder: Path, manifest: dict[str, object]) -> list[str]:
         {f"{t.tooth}_{t.side}" for p in points for s in p.summaries.values() for t in s.teeth}
     )
     named = [(p.from_a_mm, p.label) for p in points if p.label]
-    lines = [f"path of contact: {len(points)} positions with extracted fields"]
-    document = ["# Auswertung über dem Eingriffsweg", ""]
+    tag = f"{series}: " if series else ""
+    lines = [f"{tag}path of contact: {len(points)} positions with extracted fields"]
     for step in step_names:
         fig, axes = plt.subplots(4, 1, figsize=(8.0, 11.0), sharex=True)
         rotation = ev.curve(points, step, "pinion_rotation_rad")
@@ -1328,12 +1772,12 @@ def _path_report(folder: Path, manifest: dict[str, object]) -> list[str]:
             ax.grid(True, linewidth=0.4)
         for x, label in named:
             axes[0].text(x, axes[0].get_ylim()[1], label, ha="center", va="bottom", fontsize=8)
-        fig.suptitle(f"{Path(folder).name}: {step}")
+        fig.suptitle(f"{Path(folder).name}: {tag}{step}")
         fig.tight_layout()
-        picture = folder / f"path_{step}.png"
+        picture = folder / (f"path_{series}_{step}.png" if series else f"path_{step}.png")
         fig.savefig(picture, dpi=150)
         plt.close(fig)
-        lines.append(f"  {step}: {picture.name}")
+        lines.append(f"  {tag}{step}: {picture.name}")
         steps_per_pitch = grid.get("steps_per_pitch")
         base_pitch = grid.get("transverse_base_pitch_mm")
         margin = grid.get("margin_pitches")
@@ -1349,24 +1793,29 @@ def _path_report(folder: Path, manifest: dict[str, object]) -> list[str]:
             points, step, quantities, steps_per_pitch, base_pitch, float(margin or 0.0), factors
         )
         table = ev.format_resolution(rows)
-        document.extend([f"## {step}", "", *table, ""])
+        document.extend([f"## {tag}{step}", "", *table, ""])
         coarse = [r for r in rows if r.steps_per_pitch == rows[-1].steps_per_pitch]
         lines.append(
-            f"  {step}: resolution table with {len(factors)} sub-grids in path_report.md; coarsest "
-            f"({rows[-1].steps_per_pitch} per pitch) shifts the maxima by up to "
+            f"  {tag}{step}: resolution table with {len(factors)} sub-grids in path_report.md; "
+            f"coarsest ({rows[-1].steps_per_pitch} per pitch) shifts the maxima by up to "
             f"{max(abs(r.shift_mm) for r in coarse):.3f} mm and changes them by up to "
             f"{max(abs(r.change) for r in coarse) * 100:.2f} %"
             if rows
-            else f"  {step}: no resolution table (no curves)"
+            else f"  {tag}{step}: no resolution table (no curves)"
         )
-    (folder / "path_report.md").write_text("\n".join(document) + "\n", encoding="utf-8")
     return lines
 
 
+report_folder = report
+"""``report`` under a name the local report list of ``le_tests`` does not shadow."""
+
+
 def le_tests(out: Path, run: bool) -> list[str]:
-    """The two small models of the Learning Edition: the coarse pair with the complete
-    structure of a position file (parts, instances, rigid bodies, contact, seating and load
-    steps), and the orientation test of section 2b of the plan."""
+    """The small models of the Learning Edition: the coarse pair with the complete structure
+    of a position file (parts, instances, rigid bodies, contact, seating and load steps), the
+    same pair on the body with pockets, the pair in W3 with a synthetic orientation file
+    (orientation and field variables read back from the output database), and the
+    orientation test of section 2b of the plan."""
     report: list[str] = []
     pair_dir = out / "pair_coarse"
     report.extend(
@@ -1379,8 +1828,9 @@ def le_tests(out: Path, run: bool) -> list[str]:
             counts=LE_COUNTS,
             bore_radius_mm=None,
             rotation="clockwise",
-            material_step="W1",
-            cof=REFERENCE_COF,
+            material_steps=["W1"],
+            cofs=[REFERENCE_COF],
+            rates=["QS"],
             temperature_c=80.0,
             torques_wheel_nm=[8.0, 12.0, 16.0],
             positions=["pilot"],
@@ -1392,13 +1842,91 @@ def le_tests(out: Path, run: bool) -> list[str]:
         )
     )
     report.append(f"pair_coarse written to {pair_dir.as_posix()}")
+    # the same coarse pair on the body with pockets: hub, web and rim one ring each, one layer
+    # per pocket depth and two over the web (the smallest body the carving allows); the tooth
+    # and the rigid profile coarser than above so that the five levels stay below 1000 nodes
+    pocket_dir = out / "pair_coarse_pocket"
+    report.extend(
+        decks(
+            "kst_e",
+            teeth=1,
+            rim_rings=12,
+            layers=4,
+            element_type="C3D8I",
+            counts=LE_POCKET_COUNTS,
+            bore_radius_mm=bd.body_section("kst_e", "wheel").bore_radius_mm,
+            rotation="clockwise",
+            material_steps=["W1"],
+            cofs=[REFERENCE_COF],
+            rates=["QS"],
+            temperature_c=80.0,
+            torques_wheel_nm=[8.0, 12.0, 16.0],
+            positions=["pilot"],
+            steps_per_pitch=12,
+            margin=0.5,
+            seating_arc_mm=0.01,
+            max_edge_mm=0.6,
+            out=pocket_dir,
+            body="pocket",
+            body_counts=bd.BodyCounts(
+                hub_rings=1, pocket_rings=1, rim_rings=1, web_layers=2, flange_layers=1
+            ),
+        )
+    )
+    report.append(f"pair_coarse_pocket written to {pocket_dir.as_posix()}")
+    # the coarse pair in the material step W3 with a synthetic orientation file: every
+    # element's 1-direction along +x of the part, the field variables 0,6 / 0,1 at every node,
+    # the material tables of the reference card; after the run the extraction reads the
+    # material directions and the field variables back and the report checks that the
+    # directions are +x turned by the rotation of the wheel instance (orientation turned with
+    # the instance) and the field variables those of the file
+    w3_dir = out / "pair_coarse_w3"
+    coarse = mesh("kst_e", "wheel", 1, 12, 2, "C3D8I", w3_dir, LE_COUNTS, None)
+    synthetic = w3_dir / "synthetic_orientation.cof"
+    synthetic.write_text(
+        synthetic_orientation_text(
+            len(coarse.solid.hexes),
+            len(coarse.solid.nodes_mm),
+            REFERENCE_COF.read_text(encoding="utf-8", errors="replace"),
+        ),
+        encoding="ascii",
+    )
+    report.extend(
+        decks(
+            "kst_e",
+            teeth=1,
+            rim_rings=12,
+            layers=2,
+            element_type="C3D8I",
+            counts=LE_COUNTS,
+            bore_radius_mm=None,
+            rotation="clockwise",
+            material_steps=["W3"],
+            cofs=[synthetic],
+            rates=["SYN"],
+            temperature_c=80.0,
+            torques_wheel_nm=[8.0, 12.0, 16.0],
+            positions=["pilot"],
+            steps_per_pitch=12,
+            margin=0.5,
+            seating_arc_mm=0.01,
+            max_edge_mm=0.4,
+            out=w3_dir,
+        )
+    )
+    report.append(f"pair_coarse_w3 (synthetic orientation file) written to {w3_dir.as_posix()}")
     orientation_dir = out / "orientation"
     orientation_dir.mkdir(parents=True, exist_ok=True)
     (orientation_dir / "orientation.inp").write_text(ORIENTATION_TEST, encoding="ascii")
     report.append(f"orientation test written to {orientation_dir.as_posix()}")
     if not run:
         return report
-    for folder, job in ((orientation_dir, "orientation"), (pair_dir, "pos_001")):
+    for folder, job in (
+        (orientation_dir, "orientation"),
+        (pair_dir, "pos_001"),
+        (pocket_dir, "pos_001"),
+        (w3_dir, "pos_001"),
+    ):
         command = f'"{LEARNING_EDITION}" job={job} input={job}.inp interactive ask_delete=OFF'
         completed = subprocess.run(
             command, cwd=folder, shell=True, capture_output=True, text=True, timeout=1800
@@ -1414,7 +1942,7 @@ def le_tests(out: Path, run: bool) -> list[str]:
                 if "COMPLETED SUCCESSFULLY" in sta.read_text(errors="replace")
                 else "NOT completed"
             )
-        report.append(f"{job}: {status}")
+        report.append(f"{folder.name} {job}: {status}")
         dat = folder / f"{job}.dat"
         if not dat.exists():
             continue
@@ -1435,11 +1963,574 @@ def le_tests(out: Path, run: bool) -> list[str]:
                 if "RM3" in header and rows and rows[-1][0] == 1.0
             ]
             report.append(
-                "pos_001: support moment RM3 at the wheel reference point per printed step: "
+                f"{folder.name} pos_001: support moment RM3 at the wheel reference point per "
+                "printed step: "
                 + ", ".join(f"{m:.2f}" for m in moments)
                 + " N mm (expected 8000, 12000, 16000 after the seating step)"
             )
+    # the orientation check of the W3 model: extraction with the Python of the Learning
+    # Edition, then the report lines of the check
+    if (w3_dir / "pos_001.odb").exists():
+        stale = w3_dir / "pos_001_fields.json"  # of an earlier run of this test
+        if stale.exists():
+            stale.unlink()
+        report.extend(extract(w3_dir, LEARNING_EDITION))
+        report.extend(
+            f"pair_coarse_w3 {line.strip()}"
+            for line in report_folder(w3_dir)
+            if "orientation:" in line or "field variables" in line
+        )
     return report
+
+
+# --- simulation diary ----------------------------------------------------------------------------
+
+LOG_NOTES = REPO_ROOT / "20_code" / "00_development_documentation" / "fe_simulation_notes.yaml"
+LOG_FILE = REPO_ROOT / "20_code" / "00_development_documentation" / "fe_simulation_log.md"
+RUN_LOG_LINE = re.compile(r"^(\S+) (start|end) (\S+)(?: exit (-?\d+), (.*))?$")
+STA_LINE = re.compile(r"^\s+(\d+)\s+(\d+)\s+(\d+)U?\s")
+
+
+def _sta_state(text: str) -> tuple[str, dict[int, int], str]:
+    """Status of a .sta file (``complete``, ``not completed``, ``open`` = no closing line, the
+    job is running or crashed), the increments per step and the last increment written."""
+    increments: dict[int, int] = {}
+    last = ""
+    for line in text.splitlines():
+        found = STA_LINE.match(line)
+        if found:
+            step = int(found.group(1))
+            increments[step] = increments.get(step, 0) + 1
+            last = f"step {step} inc {found.group(2)}"
+    if "COMPLETED SUCCESSFULLY" in text:
+        return "complete", increments, last
+    if "NOT BEEN COMPLETED" in text:
+        return "not completed", increments, last
+    return "open", increments, last
+
+
+def _text_of(path: Path) -> str:
+    """Text of a file the runner or Abaqus wrote: UTF-16 with a byte order mark (PowerShell's
+    ``Out-File`` default on Windows), else UTF-8."""
+    raw = path.read_bytes()
+    if raw.startswith(b"\xff\xfe") or raw.startswith(b"\xfe\xff"):
+        return raw.decode("utf-16", errors="replace")
+    return raw.decode("utf-8-sig", errors="replace")
+
+
+def _run_times(folder: Path) -> dict[str, tuple[str, float | None]]:
+    """job -> (time of the end line, wall-clock seconds) from ``run_log.txt`` of the runner."""
+    out: dict[str, tuple[str, float | None]] = {}
+    path = folder / "run_log.txt"
+    if not path.exists():
+        return out
+    starts: dict[str, datetime] = {}
+    for raw in _text_of(path).splitlines():
+        found = RUN_LOG_LINE.match(raw.strip())
+        if not found:
+            continue
+        stamp, kind, job = found.group(1), found.group(2), found.group(3)
+        try:
+            when = datetime.fromisoformat(stamp)
+        except ValueError:
+            continue
+        if kind == "start":
+            starts[job] = when
+        else:
+            wall = (when - starts[job]).total_seconds() if job in starts else None
+            out[job] = (stamp, wall)
+    return out
+
+
+def _deck_settings(deck_path: Path) -> dict[str, str]:
+    """Material step, rate, geometric nonlinearity, contact and solver options of a position
+    file, in short form: from its heading lines where they exist (since 2026-10-06), else
+    from the ``*STEP`` and ``*CONTACT PAIR`` lines (the first pilots)."""
+    out: dict[str, str] = {}
+    if not deck_path.exists():
+        return out
+    text = deck_path.read_text(encoding="utf-8", errors="replace")
+    for line in text.splitlines():
+        upper = line.upper()
+        if line.startswith("** material step"):
+            head = line[len("** material step") :].split(",")
+            out["step"] = head[0].strip()
+            for item in head[1:]:
+                if item.strip().startswith("rate "):
+                    out["rate"] = item.strip()[5:]
+        elif upper.startswith("*STEP") and "nlgeom" not in out:
+            out["nlgeom"] = "NLGEOM" if "NLGEOM=YES" in upper else "linear"
+        elif upper.startswith("*CONTACT PAIR"):
+            if "NODE TO SURFACE" in upper:
+                smooth = (
+                    upper.split("SMOOTH=")[1].split(",")[0].strip() if "SMOOTH=" in upper else "0.2"
+                )
+                out["contact"] = f"N2S {smooth}"
+            else:
+                out["contact"] = "S2S"
+        elif upper.startswith("*SURFACE BEHAVIOR") and "DIRECT" in upper:
+            out["enforcement"] = "DIRECT"
+        elif upper.startswith("*SURFACE BEHAVIOR") and "PENALTY" in upper:
+            out["enforcement"] = "PENALTY"
+        elif upper.startswith("*CONTROLS") and "LINE SEARCH" in upper:
+            out["line_search"] = "LS"
+    return out
+
+
+def _solver_label(settings: dict[str, str]) -> str:
+    """One cell: ``linear, N2S 0.2`` or ``NLGEOM, S2S, DIRECT, LS``."""
+    return ", ".join(
+        settings[k] for k in ("nlgeom", "contact", "enforcement", "line_search") if k in settings
+    )
+
+
+def _dat_wallclock(text: str) -> float | None:
+    """The wall-clock seconds of the job time summary at the end of a .dat file."""
+    found = re.search(r"WALLCLOCK TIME \(SEC\)\s*=\s*([\d.]+)", text)
+    return float(found.group(1)) if found else None
+
+
+def _dat_results(text: str, manifest: dict[str, object]) -> dict[str, str]:
+    """The key numbers of the last printed step of a .dat file (a run without a fields
+    file): deviation of the support moment, rotation of the pinion, largest contact pressure
+    of the closed nodes (without its place, which needs the output database)."""
+    names = manifest.get("step_names")
+    torques = manifest.get("torques_wheel_nm")
+    arc, angle = manifest.get("seating_arc_mm"), manifest.get("seating_angle_rad")
+    if not (isinstance(names, list) and isinstance(torques, list)):
+        return {}
+    r_b1 = arc / angle if isinstance(arc, float) and isinstance(angle, float) else None
+    tables = _dat_tables(text)
+    wheel = [(h, r[-1]) for h, r in tables if r and r[-1][0] == float(dk.WHEEL_REFERENCE_NODE)]
+    pinion = [(h, r[-1]) for h, r in tables if r and r[-1][0] == float(dk.PINION_REFERENCE_NODE)]
+    if not wheel or not pinion:
+        return {}
+    k = min(len(wheel), len(pinion)) - 1
+    out = {"step": str(names[k]) if k < len(names) else f"step {k + 1}"}
+
+    def value(header: str, row: list[float], name: str) -> float | None:
+        columns = header.split()
+        return row[columns.index(name) - 1] if name in columns else None
+
+    rm3 = value(wheel[k][0], wheel[k][1], "RM3")
+    if rm3 is not None and 1 <= k <= len(torques):
+        out["rm3"] = f"{(abs(rm3) / (1000.0 * float(torques[k - 1])) - 1.0) * 100:+.2f} %"
+    ur3 = value(pinion[k][0], pinion[k][1], "UR3")
+    if ur3 is not None and r_b1 is not None:
+        out["rotation"] = f"{abs(ur3) * r_b1 * 1000.0:.1f}"
+    contact = _contact_tables(text)
+    if k < len(contact):
+        closed = [p for _, status, p in contact[k] if status == "CL"]
+        if closed:
+            out["cpress"] = f"{max(closed):.1f}"
+            out["cpress_at"] = f"({len(closed)} geschlossene Knoten, Ort nur mit .odb)"
+    return out
+
+
+def _table(columns: tuple[str, ...], rows: list[list[str]]) -> list[str]:
+    """A markdown table whose columns are padded to equal width, so that the source reads as
+    a table too."""
+    widths = [max(len(c), *(len(r[i]) for r in rows)) for i, c in enumerate(columns)]
+    line = "| " + " | ".join(c.ljust(w) for c, w in zip(columns, widths, strict=True)) + " |"
+    rule = "|" + "|".join("-" * (w + 2) for w in widths) + "|"
+    body = [
+        "| " + " | ".join(c.ljust(w) for c, w in zip(r, widths, strict=True)) + " |" for r in rows
+    ]
+    return [line, rule, *body]
+
+
+def _key_results(
+    fields_path: Path, manifest: dict[str, object], entry: dict[str, object], teeth_z2: int | None
+) -> dict[str, str]:
+    """The key numbers of the last load step that has fields: deviation of the support
+    moment, rotation of the pinion, largest contact pressure with its place, largest root
+    stress with fillet, place and the tangent angle at that place, most compressive root
+    stress, largest head displacement."""
+    fields = ev.read_fields(fields_path)
+    loads = [s for s in fields.steps if s.name != "SEAT"]
+    if not loads:
+        return {}
+    # the last load step that reached its end; a broken-off step holds the state of its last
+    # converged increment only and is named with its step time
+    finished = [s for s in loads if abs(s.time - 1.0) < 1.0e-9]
+    step = finished[-1] if finished else loads[-1]
+    summary = ev.step_summary(step)
+    out = {"step": step.name if finished else f"{step.name} (abgebrochen bei t = {step.time:.3f})"}
+    names = manifest.get("step_names")
+    torques = manifest.get("torques_wheel_nm")
+    arc, angle = manifest.get("seating_arc_mm"), manifest.get("seating_angle_rad")
+    r_b1 = arc / angle if isinstance(arc, float) and isinstance(angle, float) else None
+    if (
+        summary.wheel_moment_nmm is not None
+        and isinstance(names, list)
+        and isinstance(torques, list)
+        and step.name in names
+        and names.index(step.name) - 1 < len(torques)
+    ):
+        expected = 1000.0 * float(torques[names.index(step.name) - 1])
+        out["rm3"] = f"{(abs(summary.wheel_moment_nmm) / expected - 1.0) * 100:+.2f} %"
+    if summary.pinion_rotation_rad is not None and r_b1 is not None:
+        out["rotation"] = f"{abs(summary.pinion_rotation_rad) * r_b1 * 1000.0:.1f}"
+    at = summary.p_max_at
+    if at is not None:
+        out["cpress"] = f"{summary.p_max:.1f}"
+        out["cpress_at"] = f"{at.tooth} {at.side}, r {at.r:.2f}, z {at.z:+.1f}"
+    extreme = summary.s1_max_fillet
+    if extreme is not None:
+        layer = extreme.s1_layer
+        fillet = step.fillets[extreme.name]
+        point = next((n for n in (*fillet.nodes, *fillet.mid_width) if n.n == layer.n_s1), None)
+        tangent = None
+        centre = entry.get("wheel_tooth_centre_angle_deg")
+        mesh = manifest.get("wheel_mesh")
+        teeth = mesh.get("teeth") if isinstance(mesh, dict) else None
+        if point is not None and teeth_z2 and isinstance(centre, float) and isinstance(teeth, int):
+            right = int(extreme.name.split("_")[1][1:])
+            pitch = 360.0 / teeth_z2
+            right_centre = centre + (right - rf.middle_tooth(teeth)) * pitch
+            tangent = ev.tangent_angle_deg(
+                fillet, (point.x, point.y), fields.wheel_axis, right_centre, pitch
+            )
+        out["s1"] = f"{extreme.s1_max:.1f}"
+        out["s1_at"] = f"{extreme.name}, r {layer.r_s1:.2f}, z {layer.z:+.1f}" + (
+            f", Tangente {tangent:.0f}°" if tangent is not None else ""
+        )
+    if summary.s3_min_fillet is not None:
+        out["s3"] = f"{summary.s3_min:.1f}"
+        out["s3_at"] = summary.s3_min_fillet.name
+    if summary.u_head_tooth:
+        out["head"] = f"{summary.u_head_max * 1000.0:.1f}"
+        out["head_at"] = summary.u_head_tooth
+    return out
+
+
+def _folder_stamp(folder: Path) -> datetime:
+    """When the folder was last worked on: the newest .sta, else the manifest, else any file."""
+    for pattern in ("*.sta", "manifest.json", "*"):
+        files = [p for p in folder.glob(pattern) if p.is_file()]
+        if files:
+            return datetime.fromtimestamp(max(p.stat().st_mtime for p in files))
+    return datetime.fromtimestamp(folder.stat().st_mtime)
+
+
+def _note_lines(note: dict[str, object]) -> list[str]:
+    if not note:
+        return ["(keine Notiz in fe_simulation_notes.yaml)"]
+    parts = []
+    if note.get("purpose"):
+        parts.append(f"**Zweck:** {note['purpose']}.")
+    if note.get("outcome"):
+        parts.append(f"**Ergebnis:** {note['outcome']}.")
+    if note.get("status"):
+        parts.append(f"**Stand:** {note['status']}.")
+    extras = []
+    if note.get("machine") and note["machine"] != "-":
+        extras.append(f"gerechnet: {note['machine']}")
+    findings = note.get("findings")
+    if isinstance(findings, list) and findings:
+        extras.append("Befunde " + ", ".join(str(f) for f in findings))
+    if extras:
+        parts.append("(" + "; ".join(extras) + ")")
+    return [" ".join(parts)]
+
+
+def _mesh_line(manifest: dict[str, object]) -> str:
+    mesh = manifest.get("wheel_mesh")
+    if not isinstance(mesh, dict):
+        return ""
+    body = mesh.get("body")
+    shape = body.get("shape") if isinstance(body, dict) else "ring"
+    types = mesh.get("files")
+    element = ", ".join(types) if isinstance(types, dict) else str(mesh.get("element_type", ""))
+    listed_steps = manifest.get("material_steps")
+    steps = listed_steps if isinstance(listed_steps, list) else [manifest.get("material_step", "")]
+    rates = manifest.get("rates")
+    rate_names = ", ".join(rates) if isinstance(rates, dict) else "QS (eine Karte)"
+    torques = manifest.get("torques_wheel_nm")
+    grid = manifest.get("grid")
+    entries = manifest.get("positions")
+    positions = len(entries) if isinstance(entries, list) else 0
+    chosen = grid.get("positions") if isinstance(grid, dict) else None
+    where = ", ".join(str(p) for p in chosen) if isinstance(chosen, list) else ""
+    bore = mesh.get("bore_radius_mm")
+    return (
+        f"Netz: {mesh.get('nodes')} Knoten, {mesh.get('elements')} Elemente ({element}), "
+        f"{mesh.get('layers')} Schichten, Bohrung r "
+        f"{bore:.3f} mm, Körper {shape}; "
+        if isinstance(bore, float)
+        else f"Netz: {mesh.get('nodes')} Knoten, {mesh.get('elements')} Elemente ({element}), "
+        f"{mesh.get('layers')} Schichten, Körper {shape}; "
+    ) + (
+        f"Werkstoffstufen {', '.join(str(s) for s in steps)}, Raten {rate_names}; Momente am Rad "
+        + (", ".join(f"{t:g}" for t in torques) if isinstance(torques, list) else "?")
+        + " Nm; "
+        + (
+            f"{positions} Stellungsdateien ({where}, {grid.get('steps_per_pitch')} je Teilung)"
+            if isinstance(grid, dict)
+            else f"{positions} Stellungsdateien"
+        )
+    )
+
+
+RUN_COLUMNS = (
+    "Datei",
+    "Stellung",
+    "Stufe",
+    "Rate",
+    "Variante",
+    "Löser",
+    "Status",
+    "Inkremente je Schritt",
+    "Wand s",
+    "neg. EW",
+    "Ende",
+)
+VALUE_COLUMNS = (
+    "Datei",
+    "Schritt",
+    "RM3 Abw.",
+    "Drehung µm",
+    "CPRESS max MPa",
+    "Ort",
+    "σ1 max MPa",
+    "Fußrundung, Ort, Tangente",
+    "σ3 min MPa",
+    "Fußrundung",
+    "Kopf µm",
+    "Zahn",
+)
+
+
+def simulation_log(root: Path, notes_path: Path, out: Path) -> list[str]:
+    """Write the simulation diary: every output folder below ``root`` with its purpose and
+    outcome (``notes_path``), its mesh and settings (manifest), and per position file the
+    status, increments, wall-clock time, negative-eigenvalue warnings and the key results of
+    the last load step (fields file, else the support moments of the .dat). Returns the
+    report lines."""
+    loaded = yaml.safe_load(notes_path.read_text(encoding="utf-8")) if notes_path.exists() else {}
+    notes = loaded.get("folders", {}) if isinstance(loaded, dict) else {}
+    if not isinstance(notes, dict):
+        raise InputRangeError(f"{notes_path}: expected a mapping 'folders'")
+    folders = sorted(
+        {
+            p.parent
+            for pattern in ("*.inp", "*.sta", "manifest.json")
+            for p in root.rglob(pattern)
+            if p.is_file()
+        },
+        key=lambda f: (_folder_stamp(f), f.as_posix()),
+    )
+    z2_of: dict[str, int] = {}
+    counts = {"complete": 0, "not completed": 0, "open": 0, "not run": 0}
+    blocks: list[str] = []
+    for folder in folders:
+        name = folder.relative_to(root).as_posix()
+        note = notes.get(name, {})
+        stamp = _folder_stamp(folder)
+        manifest_path = folder / "manifest.json"
+        loaded_manifest = (
+            json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {}
+        )
+        # the convergence folders carry a manifest of their own (a list of decks)
+        manifest: dict[str, object] = loaded_manifest if isinstance(loaded_manifest, dict) else {}
+        times = _run_times(folder)
+        lines = [
+            f"## {stamp:%Y-%m-%d %H:%M} `{name}`",
+            "",
+            *_note_lines(note if isinstance(note, dict) else {}),
+            "",
+        ]
+        mesh_line = _mesh_line(manifest)
+        if mesh_line:
+            lines.extend([mesh_line, ""])
+        listed = manifest.get("positions")
+        entries: list[object]
+        if isinstance(listed, list):
+            entries = list(listed)
+            plain = False
+        else:
+            jobs = sorted(p.stem for p in folder.glob("*.inp"))
+            entries = [{"file": f"{job}.inp", "point": ""} for job in jobs]
+            plain = True
+        case = str(manifest.get("case", ""))
+        if case and case not in z2_of:
+            z2_of[case] = _generation(case).gears.wheel.number_of_teeth
+        runs: list[list[str]] = []
+        values: list[list[str]] = []
+        not_run: list[str] = []
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            job = Path(str(entry["file"])).stem
+            sta = folder / f"{job}.sta"
+            if sta.exists():
+                status, increments, last = _sta_state(_text_of(sta))
+            elif (folder / f"{job}.odb").exists():
+                status, increments, last = "open", {}, "odb without .sta"
+            else:
+                counts["not run"] += 1
+                not_run.append(job)
+                continue
+            counts[status] += 1
+            msg = folder / f"{job}.msg"
+            negatives = _text_of(msg).count("NEGATIVE EIGENVALUES") if msg.exists() else 0
+            settings = _deck_settings(folder / str(entry["file"]))
+            step = str(
+                entry.get("material_step")
+                or settings.get("step")
+                or manifest.get("material_step")
+                or ""
+            )
+            rate = str(entry.get("rate") or settings.get("rate") or "")
+            if not rate:
+                # folders written before the rates were an axis: the rate is in the card name
+                card = manifest.get("material_card")
+                card_name = str(card.get("name", "")) if isinstance(card, dict) else ""
+                rate = next((r for r in ("QS", "DY1", "DY2") if f"_{r}_" in card_name), "")
+            variant = str(entry.get("variant") or "")
+            label = str(entry.get("point") or "")
+            rho = entry.get("rho_1_mm")
+            position = label or (f"ρ1 {rho:.3f}" if isinstance(rho, float) else "")
+            when, wall = times.get(job, ("", None))
+            dat = folder / f"{job}.dat"
+            dat_text = _text_of(dat) if dat.exists() else ""
+            if wall is None and dat_text and status == "complete":
+                # the time summary of a broken-off job covers the pre-processing only
+                wall = _dat_wallclock(dat_text)
+            if not when and sta.exists():
+                when = datetime.fromtimestamp(sta.stat().st_mtime).strftime("%Y-%m-%dT%H:%M")
+            fields_path = folder / f"{job}_fields.json"
+            results: dict[str, str] = {}
+            if fields_path.exists() and not plain:
+                results = _key_results(fields_path, manifest, entry, z2_of.get(case))
+            elif dat_text and not plain:
+                results = _dat_results(dat_text, manifest)
+            runs.append(
+                [
+                    f"`{job}`",
+                    position,
+                    step,
+                    rate,
+                    variant,
+                    _solver_label(settings),
+                    status + (f" ({last})" if status != "complete" and last else ""),
+                    ", ".join(str(increments[k]) for k in sorted(increments)),
+                    f"{wall:.0f}" if wall is not None else "",
+                    str(negatives),
+                    when[:16].replace("T", " "),
+                ]
+            )
+            if results:
+                values.append(
+                    [
+                        f"`{job}`",
+                        results.get("step", ""),
+                        results.get("rm3", ""),
+                        results.get("rotation", ""),
+                        results.get("cpress", ""),
+                        results.get("cpress_at", ""),
+                        results.get("s1", ""),
+                        results.get("s1_at", ""),
+                        results.get("s3", ""),
+                        results.get("s3_at", ""),
+                        results.get("head", ""),
+                        results.get("head_at", ""),
+                    ]
+                )
+        if runs:
+            lines.extend(["**Läufe**", "", *_table(RUN_COLUMNS, runs), ""])
+        if values:
+            lines.extend(
+                [
+                    "**Kennwerte des letzten gedruckten Lastschritts**",
+                    "",
+                    *_table(VALUE_COLUMNS, values),
+                    "",
+                ]
+            )
+        if not_run:
+            shown = ", ".join(f"`{j}`" for j in not_run[:6]) + (" …" if len(not_run) > 6 else "")
+            lines.extend([f"Nicht gerechnet: {len(not_run)} Dateien ({shown}).", ""])
+        blocks.extend(lines)
+    header = [
+        "# Simulationstagebuch (generiert)",
+        "",
+        f"Stand {datetime.now():%Y-%m-%d %H:%M}; Quelle `{root.as_posix()}`; Notizen "
+        f"`{notes_path.name}`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der "
+        "Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und "
+        "Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit "
+        "Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = "
+        "ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus "
+        "`run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus "
+        "`.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus "
+        "`<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis "
+        "in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, "
+        "Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte "
+        "Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, "
+        "Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = "
+        "Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.",
+        "",
+        f"Läufe: {counts['complete']} vollständig, {counts['not completed']} abgebrochen, "
+        f"{counts['open']} offen, {counts['not run']} Dateien nicht gerechnet; {len(folders)} Ordner.",
+        "",
+    ]
+    out.write_text("\n".join(header + blocks) + "\n", encoding="utf-8")
+    return [
+        f"{out.as_posix()}: {len(folders)} folders, {counts['complete']} complete, "
+        f"{counts['not completed']} not completed, {counts['open']} open, {counts['not run']} not run"
+    ]
+
+
+def _body_arguments(parser: argparse.ArgumentParser) -> None:
+    """The options of the wheel body (``mesh`` and ``decks``)."""
+    preset = bd.BodyCounts()
+    parser.add_argument(
+        "--body",
+        choices=bd.BODY_SHAPES,
+        default="ring",
+        help="ring: full body from the bore to the teeth (comparison variant); pocket: the body "
+        "of the drawing with hub, web and pockets (data/fe/body_sections.yaml)",
+    )
+    parser.add_argument(
+        "--hub-rings",
+        type=int,
+        default=preset.hub_rings,
+        help="pocket body: rings between the bore and the hub wall",
+    )
+    parser.add_argument(
+        "--pocket-rings",
+        type=int,
+        default=preset.pocket_rings,
+        help="pocket body: rings between the hub wall and the rim wall (the web); --rings then "
+        f"counts the rings between the rim wall and the fan ring (preset {preset.rim_rings})",
+    )
+    parser.add_argument(
+        "--web-layers",
+        type=int,
+        default=preset.web_layers,
+        help="pocket body: layers over the web (even); the rest of --layers goes to the pockets",
+    )
+
+
+def _body_counts(args: argparse.Namespace) -> bd.BodyCounts | None:
+    """The body counts of the command line for ``--body pocket``, else None."""
+    if args.body != "pocket":
+        return None
+    preset = bd.BodyCounts()
+    rim = args.rings if args.rings is not None else preset.rim_rings
+    outside = args.layers - args.web_layers
+    if outside < 2 or outside % 2:
+        raise InputRangeError(
+            f"--layers {args.layers} minus --web-layers {args.web_layers} must leave an even "
+            "number of pocket layers, at least 2"
+        )
+    return bd.BodyCounts(
+        hub_rings=args.hub_rings,
+        pocket_rings=args.pocket_rings,
+        rim_rings=rim,
+        web_layers=args.web_layers,
+        flange_layers=outside // 2,
+    )
 
 
 def main() -> None:
@@ -1474,6 +2565,7 @@ def main() -> None:
         ("shoulder-columns", "columns of each toothless shoulder pitch"),
     ):
         counts_group.add_argument(f"--{name}", type=int, default=None, help=text)
+    _body_arguments(mesh_parser)
     mesh_parser.add_argument("--out", type=Path, default=None)
     surface_parser = commands.add_parser("surface", help="write the rigid tooth surface")
     surface_parser.add_argument("--case", default="kst_e", help="packaged STplus case")
@@ -1517,15 +2609,30 @@ def main() -> None:
         ("shoulder-columns", "columns of each toothless shoulder pitch"),
     ):
         decks_parser.add_argument(f"--{name}", type=int, default=None, help=text)
+    _body_arguments(decks_parser)
     decks_parser.add_argument(
         "--pinion-rotation", choices=("clockwise", "counterclockwise"), default="clockwise"
     )
-    decks_parser.add_argument("--material", choices=dk.MATERIAL_STEPS, default="W1")
+    decks_parser.add_argument(
+        "--material",
+        nargs="+",
+        choices=dk.MATERIAL_STEPS,
+        default=["W1"],
+        help="material steps, one file per step and rate (W1 W2 W3 W4)",
+    )
     decks_parser.add_argument(
         "--cof",
         type=Path,
-        default=REFERENCE_COF,
-        help="CONVERSE orientation file: its material card for W1/W2, its pieces for W3/W4",
+        nargs="+",
+        default=[REFERENCE_COF],
+        help="CONVERSE orientation files, one per rate of --rates (same mesh, the material "
+        "card of that strain rate): the isotropic row for W1/W2, the pieces for W3/W4",
+    )
+    decks_parser.add_argument(
+        "--rates",
+        nargs="+",
+        default=["QS"],
+        help="names of the strain rates of the files of --cof, in the same order (QS DY1 DY2)",
     )
     decks_parser.add_argument("--temperature", type=float, default=80.0, help="degC, required")
     decks_parser.add_argument(
@@ -1566,18 +2673,26 @@ def main() -> None:
     extract_parser.add_argument(
         "--launcher", type=Path, default=LEARNING_EDITION, help="Abaqus command (abq2025le.bat)"
     )
-    le_parser = commands.add_parser("le-tests", help="the two small models of the Learning Edition")
+    le_parser = commands.add_parser("le-tests", help="the small models of the Learning Edition")
     le_parser.add_argument("--run", action="store_true", help="run them in the Learning Edition")
     le_parser.add_argument("--out", type=Path, default=None)
+    log_parser = commands.add_parser(
+        "log", help="the simulation diary of every output folder (fe_simulation_log.md)"
+    )
+    log_parser.add_argument("--case", default="kst_e")
+    log_parser.add_argument("--root", type=Path, default=None, help="preset 80_output/fe/<case>")
+    log_parser.add_argument("--notes", type=Path, default=LOG_NOTES)
+    log_parser.add_argument("--out", type=Path, default=LOG_FILE)
     args = parser.parse_args()
     if args.command == "mesh":
+        body_counts = _body_counts(args)
         given = {
             "over_tooth_height": args.over_tooth_height,
             "at_tip_edge_break": args.at_tip_edge_break,
             "at_tooth_root": args.at_tooth_root,
             "over_tooth_thickness": args.over_tooth_thickness,
             "root_layers": args.root_layers,
-            "rim_rings": args.rings,
+            "rim_rings": body_counts.rings if body_counts is not None else args.rings,
             "shoulder_columns": args.shoulder_columns,
         }
         counts = None
@@ -1586,6 +2701,8 @@ def main() -> None:
         folder = f"{args.role}_{args.teeth}teeth_{args.rim_rings}rings_{args.layers}layers"
         if counts is not None:
             folder += f"_{counts.label()}"
+        if body_counts is not None:
+            folder += f"_pocket_{body_counts.label()}"
         out = args.out if args.out is not None else OUTPUT / args.case / folder
         for line in mesh(
             args.case,
@@ -1597,7 +2714,9 @@ def main() -> None:
             out,
             counts,
             args.bore_radius,
-        ):
+            body=args.body,
+            body_counts=body_counts,
+        ).lines:
             print(line)
     if args.command == "surface":
         folder = f"{args.role}_surface_{args.mating_teeth + 2}teeth_{args.mating_layers}layers"
@@ -1617,19 +2736,25 @@ def main() -> None:
         for path in preview(args.case, args.pinion_rotation, out):
             print(path.as_posix())
     if args.command == "decks":
+        body_counts = _body_counts(args)
         given = {
             "over_tooth_height": args.over_tooth_height,
             "at_tip_edge_break": args.at_tip_edge_break,
             "at_tooth_root": args.at_tooth_root,
             "over_tooth_thickness": args.over_tooth_thickness,
             "root_layers": args.root_layers,
-            "rim_rings": args.rings,
+            "rim_rings": body_counts.rings if body_counts is not None else args.rings,
             "shoulder_columns": args.shoulder_columns,
         }
         counts = None
         if any(value is not None for value in given.values()):
             counts = rs.MeshCounts(**{k: v for k, v in given.items() if v is not None})
-        folder = f"decks_{args.material}_{args.layers}layers_{'_'.join(args.positions)}"
+        folder = (
+            f"decks_{'_'.join(args.material)}_{'_'.join(args.rates)}_{args.layers}layers_"
+            f"{'_'.join(args.positions)}"
+        )
+        if body_counts is not None:
+            folder += "_pocket"
         if args.variants:
             folder += "_variants"
         out = args.out if args.out is not None else OUTPUT / args.case / folder
@@ -1642,8 +2767,9 @@ def main() -> None:
             counts=counts,
             bore_radius_mm=args.bore_radius,
             rotation=args.pinion_rotation,
-            material_step=args.material,
-            cof=args.cof,
+            material_steps=args.material,
+            cofs=args.cof,
+            rates=args.rates,
             temperature_c=args.temperature,
             torques_wheel_nm=args.torques,
             positions=args.positions,
@@ -1653,6 +2779,8 @@ def main() -> None:
             max_edge_mm=args.max_edge,
             out=out,
             variants=args.variants,
+            body=args.body,
+            body_counts=body_counts,
         ):
             print(line)
     if args.command == "report":
@@ -1664,6 +2792,10 @@ def main() -> None:
     if args.command == "le-tests":
         out = args.out if args.out is not None else OUTPUT / "kst_e" / "le_tests"
         for line in le_tests(out, args.run):
+            print(line)
+    if args.command == "log":
+        root = args.root if args.root is not None else OUTPUT / args.case
+        for line in simulation_log(root, args.notes, args.out):
             print(line)
 
 

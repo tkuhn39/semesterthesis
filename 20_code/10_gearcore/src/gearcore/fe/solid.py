@@ -34,6 +34,7 @@ The root form point, the tip form point and the tip corner are nodes of the mesh
 of a surface end exactly on the form circles, and the surface of a head is its flanks and tip.
 """
 
+import math
 from dataclasses import dataclass
 
 import numpy as np
@@ -43,7 +44,15 @@ from gearcore._safe import finite_input, integer_input, positive_input
 from gearcore.errors import InputRangeError
 from gearcore.fe.sector_mesh import SectorMesh
 
-EQ_EXEMPT = ("sweep_levels", "extrude", "gear_sets", "hex_corner_volumes")
+EQ_EXEMPT = (
+    "sweep_levels",
+    "extrude",
+    "extrude_to_levels",
+    "gear_sets",
+    "hex_corner_volumes",
+    "hex_volumes",
+    "remove_elements",
+)
 """Mesh construction: no equation of a norm."""
 
 Array = NDArray[np.float64]
@@ -52,6 +61,31 @@ IntArray = NDArray[np.int64]
 SIDES = ((1, "LEFT"), (-1, "RIGHT"))
 FIRST_SIDE_FACE = 3
 """Face S3 of a C3D8 is the first edge of the swept quad; S4, S5, S6 follow."""
+FACE_NODES: dict[int, tuple[int, int, int, int]] = {
+    1: (0, 1, 2, 3),
+    2: (4, 5, 6, 7),
+    3: (0, 1, 5, 4),
+    4: (1, 2, 6, 5),
+    5: (2, 3, 7, 6),
+    6: (3, 0, 4, 7),
+}
+"""Corners (0-based) of the faces S1 to S6 of a C3D8 (Abaqus 2025, 'Three-dimensional solid
+element library': 1-2-3-4, 5-6-7-8, 1-2-6-5, 2-3-7-6, 3-4-8-7, 4-1-5-8)."""
+_GAUSS = (-1.0 / math.sqrt(3.0), 1.0 / math.sqrt(3.0))
+_CORNER_SIGNS = np.array(
+    [
+        [-1, -1, -1],
+        [1, -1, -1],
+        [1, 1, -1],
+        [-1, 1, -1],
+        [-1, -1, 1],
+        [1, -1, 1],
+        [1, 1, 1],
+        [-1, 1, 1],
+    ],
+    dtype=np.float64,
+)
+"""Natural coordinates of the eight corners of a C3D8 in its node order."""
 
 
 @dataclass(frozen=True)
@@ -99,7 +133,20 @@ def extrude(
     ``z_centre_mm``."""
     if not isinstance(section, SectorMesh):
         raise InputRangeError(f"a SectorMesh is required, got {type(section).__name__}")
-    z = sweep_levels(face_width_mm, layers, z_centre_mm)
+    return extrude_to_levels(section, sweep_levels(face_width_mm, layers, z_centre_mm))
+
+
+def extrude_to_levels(section: SectorMesh, z_levels_mm: Array) -> SolidMesh:
+    """Sweep the transverse mesh to the given z-levels (at least two, strictly increasing);
+    the layers may differ in thickness."""
+    if not isinstance(section, SectorMesh):
+        raise InputRangeError(f"a SectorMesh is required, got {type(section).__name__}")
+    z = np.array(
+        [finite_input(v, "z-level") for v in np.asarray(z_levels_mm, dtype=np.float64).ravel()],
+        dtype=np.float64,
+    )
+    if len(z) < 2 or not bool(np.all(np.diff(z) > 0.0)):
+        raise InputRangeError("the z-levels must be at least two strictly increasing values")
     count = len(z) - 1
     n = len(section.points_mm)
     nodes = np.empty(((count + 1) * n, 3), dtype=np.float64)
@@ -110,6 +157,93 @@ def extrude(
     for array in (nodes, hexes, z):
         array.setflags(write=False)
     return SolidMesh(nodes_mm=nodes, hexes=hexes, z_levels_mm=z, section=section)
+
+
+def hex_volumes(mesh: SolidMesh) -> Array:
+    """Volume of every element (mm^3): the Jacobian of the trilinear map summed over the eight
+    Gauss points of the 2 x 2 x 2 rule (weights 1), which integrates a trilinear hexahedron
+    exactly; negative for an inverted element."""
+    if not isinstance(mesh, SolidMesh):
+        raise InputRangeError(f"a SolidMesh is required, got {type(mesh).__name__}")
+    corners = mesh.nodes_mm[mesh.hexes]  # (elements, 8, 3)
+    signs = _CORNER_SIGNS
+    volume = np.zeros(len(mesh.hexes), dtype=np.float64)
+    for g_xi in _GAUSS:
+        for g_eta in _GAUSS:
+            for g_zeta in _GAUSS:
+                derivative = np.empty((8, 3), dtype=np.float64)
+                derivative[:, 0] = (
+                    signs[:, 0] * (1.0 + signs[:, 1] * g_eta) * (1.0 + signs[:, 2] * g_zeta)
+                )
+                derivative[:, 1] = (
+                    (1.0 + signs[:, 0] * g_xi) * signs[:, 1] * (1.0 + signs[:, 2] * g_zeta)
+                )
+                derivative[:, 2] = (
+                    (1.0 + signs[:, 0] * g_xi) * (1.0 + signs[:, 1] * g_eta) * signs[:, 2]
+                )
+                derivative /= 8.0
+                jacobian = np.einsum("eic,ik->eck", corners, derivative)
+                volume += np.linalg.det(jacobian)
+    return volume
+
+
+@dataclass(frozen=True)
+class Carved:
+    """A mesh with elements removed: the mesh and its sets in the new numbering, and the maps
+    from the old numbering (-1 for a removed node or element)."""
+
+    mesh: SolidMesh
+    sets: GearSets
+    node_map: IntArray
+    element_map: IntArray
+
+
+def remove_elements(mesh: SolidMesh, sets: GearSets, removed: IntArray) -> Carved:
+    """The mesh without the elements ``removed`` (0-based) and without the nodes no kept
+    element uses, both numbered compactly in the old order; every set and surface of ``sets``
+    without its removed members."""
+    if not isinstance(mesh, SolidMesh) or not isinstance(sets, GearSets):
+        raise InputRangeError("remove_elements needs a SolidMesh and its GearSets")
+    gone = np.unique(np.asarray(removed).ravel())
+    if len(gone) and (
+        not np.issubdtype(gone.dtype, np.integer) or gone[0] < 0 or gone[-1] >= len(mesh.hexes)
+    ):
+        raise InputRangeError("removed elements must be 0-based element numbers of the mesh")
+    keep = np.ones(len(mesh.hexes), dtype=bool)
+    keep[gone] = False
+    kept_hexes = mesh.hexes[keep]
+    used = np.zeros(len(mesh.nodes_mm), dtype=bool)
+    used[kept_hexes.ravel()] = True
+    node_map = np.full(len(mesh.nodes_mm), -1, dtype=np.int64)
+    node_map[used] = np.arange(int(used.sum()), dtype=np.int64)
+    element_map = np.full(len(mesh.hexes), -1, dtype=np.int64)
+    element_map[keep] = np.arange(int(keep.sum()), dtype=np.int64)
+    nodes = np.array(mesh.nodes_mm[used], dtype=np.float64)
+    hexes = node_map[kept_hexes]
+    for array in (nodes, hexes, node_map, element_map):
+        array.setflags(write=False)
+    carved = SolidMesh(
+        nodes_mm=nodes, hexes=hexes, z_levels_mm=mesh.z_levels_mm, section=mesh.section
+    )
+
+    def mapped(ids: IntArray, table: IntArray) -> IntArray:
+        new = table[ids]
+        return np.asarray(new[new >= 0], dtype=np.int64)
+
+    node_sets = {name: mapped(ids, node_map) for name, ids in sets.node_sets.items()}
+    element_sets = {name: mapped(ids, element_map) for name, ids in sets.element_sets.items()}
+    surfaces: dict[str, IntArray] = {}
+    for name, rows in sets.surfaces.items():
+        new = element_map[rows[:, 0]]
+        surfaces[name] = np.column_stack((new[new >= 0], rows[new >= 0, 1]))
+    return Carved(
+        mesh=carved,
+        sets=GearSets(
+            prefix=sets.prefix, node_sets=node_sets, element_sets=element_sets, surfaces=surfaces
+        ),
+        node_map=node_map,
+        element_map=element_map,
+    )
 
 
 def hex_corner_volumes(mesh: SolidMesh) -> Array:

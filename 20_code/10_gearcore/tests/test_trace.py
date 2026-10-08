@@ -24,6 +24,7 @@ COMPUTATIONAL_MODULES = [
     "gearcore.fe.sector_template",
     "gearcore.fe.sector_mesh",
     "gearcore.fe.solid",
+    "gearcore.fe.body",
     "gearcore.fe.rigid_surface",
     "gearcore.fe.abaqus",
     "gearcore.fe.refine",

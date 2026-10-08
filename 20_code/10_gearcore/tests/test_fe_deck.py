@@ -169,7 +169,8 @@ def test_material_steps_differ_only_in_section_and_material(
             if line.startswith("** material step"):
                 continue
             if not skip:
-                kept.append(line)
+                # the steps with an orientation file also write the field variables
+                kept.append("S, E, PEEQ" if line == "S, E, PEEQ, FV" else line)
         return kept
 
     base = outside(texts["W1"])
@@ -182,6 +183,54 @@ def test_material_steps_differ_only_in_section_and_material(
     assert "*INCLUDE, INPUT=wheel_orientation_part.inp" in "\n".join(texts["W3"])
     assert "*INCLUDE, INPUT=wheel_orientation_model.inp" in "\n".join(texts["W4"])
     assert "*SOLID SECTION" not in "\n".join(texts["W3"])
+
+
+def test_orientation_file_section_elset_is_rewritten_to_the_wheel() -> None:
+    # CONVERSE names a set of its own that no file defines; the part piece must name the
+    # element set of the wheel mesh
+    text = CARD.replace(
+        "*SOLID SECTION, ELSET=WHEEL,", "*SOLID SECTION, ELSET=CONVERSE_AUTO_SOLID,"
+    )
+    pieces = dk.split_orientation_file(text, "WHEEL-1")
+    assert "*SOLID SECTION, ELSET=WHEEL, MATERIAL=PA46_TEST, ORIENTATION=ORI_W" in pieces.part
+    assert "CONVERSE_AUTO_SOLID" not in pieces.part
+    assert "ELSET=RAD, MATERIAL=PA46_TEST" in dk.split_orientation_file(text, "WHEEL-1", "RAD").part
+    with pytest.raises(InputRangeError):
+        dk.split_orientation_file(text, "WHEEL-1", "not an identifier")
+    with pytest.raises(ParseError):
+        dk.split_orientation_file(
+            text.replace("*SOLID SECTION, ELSET=CONVERSE_AUTO_SOLID, ", "*SOLID SECTION, ")
+        )
+
+
+def test_distribution_and_field_variables_are_read() -> None:
+    assert dk.read_distribution(CARD) == {
+        1: ((-0.5, 0.8, 0.0), (-0.8, -0.5, 0.0)),
+        2: ((0.9, 0.1, 0.0), (0.1, -0.9, 0.0)),
+    }
+    assert dk.read_field_variables(CARD) == {1: (0.588719, 0.1), 2: (0.616998, 0.2)}
+    with pytest.raises(ParseError):
+        dk.read_distribution("*MATERIAL, NAME=X\n")
+    with pytest.raises(ParseError):
+        dk.read_distribution(CARD.replace(" 2, 0.9, 0.1, 0, 0.1, -0.9, 0", " 2, 0.9, 0.1"))
+    with pytest.raises(ParseError):
+        dk.read_field_variables(CARD.replace(" 2, 0.2\n", ""))
+    with pytest.raises(ParseError):
+        dk.read_field_variables(CARD.replace("VARIABLE=2", "VARIABLE=3"))
+
+
+def test_steps_with_orientation_write_the_field_variables(
+    card: dk.MaterialCard, placement: Placement
+) -> None:
+    for step in dk.MATERIAL_STEPS:
+        text = dk.position_deck_text(_deck(card, placement, step))
+        # FV is an element variable at the integration points (Abaqus 2025 output variable
+        # identifiers), not a nodal one: the Learning Edition rejected "U, RF, FV"
+        assert text.count("S, E, PEEQ, FV") == (4 if step in ("W3", "W4") else 0)
+        assert "U, RF, FV" not in text
+        assert text.count("DIRECTIONS=YES") == 4
+    text = dk.position_deck_text(dataclasses.replace(_deck(card, placement, "W3"), rate="DY1"))
+    assert "** material step W3, rate DY1, temperature 80 degC" in text
 
 
 def test_element_type_and_nlgeom_follow_the_material_step() -> None:

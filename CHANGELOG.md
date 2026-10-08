@@ -551,6 +551,75 @@ before increment 5.
   typed (mypy clean).
 - Tests `test_fe_evaluation.py` (3 tests); suite 1 600 tests.
 
+### Added (finite element model, step S6c - wheel body with pockets after the drawing, 2026-10-07, ADR-116 amendment)
+- `data/fe/body_sections.yaml`: the half section of the kst-E wheel body transcribed from the
+  user's drawing (hub of full width, pockets open to both faces with walls at 93°, web 4 mm,
+  rim, corner radii R 0,5), the drawing as the source; `data.load_body_sections`.
+- `gearcore.fe.body`: `BodySection` (wall radii at any depth, pocket volume), `BodyCounts`
+  (rings hub / pocket / rim, layers over the web and per pocket), `rim_ring_index`,
+  `body_levels`, `body_mesh` (rings of the rim on the stations of the drawing level by level
+  with the draft, sweep with levels on the floors and the mid plane, pocket elements removed,
+  compact renumbering, sets carried over, `WHEEL_BODY_HUB`, `WHEEL_BODY_WEB`,
+  `WHEEL_BODY_RIM`, `WHEEL_POCKET_SURF` with its node set).
+- `gearcore.fe.solid`: `extrude_to_levels`, `hex_volumes` (2 x 2 x 2 Gauss),
+  `remove_elements` (maps of nodes and elements, sets and surfaces filtered), `FACE_NODES`.
+- `build_fe_decks.py mesh` and `decks`: `--body ring|pocket`, `--hub-rings`,
+  `--pocket-rings`, `--web-layers` (`--rings` then counts the rings between the rim wall and
+  the fan ring, the rest of `--layers` goes to the pockets); `mesh` returns the built mesh to
+  the deck writer; manifest block `wheel_mesh.body`, README paragraph on the body, picture
+  `mesh_body.png` (meridional section through the middle tooth with the drawing in red);
+  `le-tests` with the third model `pair_coarse_pocket` (ran through in the Learning Edition,
+  all steps, support moment −7890 / −11830 / −15773 N mm). Folder
+  `frozen_mesh_20layers_bore33_pocket` (mesh file `wheel-pocket_mesh.inp`, the naming of the
+  user for a pocket body; 83 650 nodes, 72 932 C3D8I, 1 428 pocket elements removed,
+  position C) for the new CONVERSE mapping (delivered by the user the same evening as
+  `91_Converse/wheel-pocket_mesh_{QS,DY1,DY2}.cof`) and the pilot ring against pocket.
+- Both body shapes stay as variants (user): the ring body is investigated completely as
+  well. FE-17 closed (the real pinion has no edge break), FE-18 (corner radii not meshed).
+- Tests `test_fe_body.py` (10 tests).
+
+### Added (finite element model, step S6d - strain rates as a variant axis, orientation check, 2026-10-07, ADR-116 amendment)
+- `build_fe_decks.py decks --material W1 W3 ... --cof <file per rate> --rates QS DY1 DY2`:
+  one position file per position, material step and rate (`pos_NNN_<step>_<rate>.inp`),
+  orientation pieces per rate, the mesh once per element type needed (`<mesh>_C3D8.inp` for
+  the nonlinear steps, same numbering), manifest with `material_steps`, `rates` (file, card,
+  E, ν, strain rate from `data/fe/converse_rates.yaml`, the user's message of 2026-10-07)
+  and per file step / rate / element type / NLGEOM; README names the rates; `report` labels
+  by step and rate and draws the curves over the path of contact per series.
+- `gearcore.fe.deck`: `split_orientation_file` rewrites the ELSET of the CONVERSE section to
+  the wheel's element set (the file names `CONVERSE_AUTO_SOLID`, which nothing defines);
+  `read_distribution`, `read_field_variables`; the steps W3 and W4 request the predefined
+  field variables `FV` in the element output (an integration point variable, Abaqus 2025
+  output variable identifiers); `PositionDeck.rate` in the heading line.
+- `scripts/fe_odb_extract.py`: per step the local material directions of up to 300 sampled
+  elements of the rim and of the head of the middle tooth (rows of the local coordinate
+  system of the stress), their nodes and FV1/FV2 at their centroids. `gearcore.fe.evaluation`:
+  `orientation_check` (directions of the database against the CONVERSE distribution turned
+  by the rotation of the wheel instance; the angle against the file not turned as the
+  discriminating number), `field_variable_check`, `format_orientation`, series of a folder
+  (`series_of`, `series_names`, `path_points(..., series)`).
+- `le-tests`: fourth model `pair_coarse_w3` with a synthetic orientation file
+  (`synthetic_orientation_text`: +x in the part, field variables 0,6 / 0,1, the material
+  tables of the reference card), extracted and checked after the run: all steps complete,
+  108 sampled elements, instance turned by 91,53°, deviation from the turned file 0,0000°,
+  field variables within 3,6e-8 (the orientation turns with the instance, the values are
+  those of the file).
+- Tests: `test_fe_deck.py` +3 (ELSET rewrite, readers, FV output), `test_fe_evaluation.py`
+  +2 (orientation and field variable checks, series).
+
+### Added (finite element model, step S6d - simulation diary, 2026-10-07, ADR-116 amendment)
+- `build_fe_decks.py log`: `00_development_documentation/fe_simulation_log.md` generated from
+  every output folder (manifest, `.sta`, `.msg`, `run_log.txt`, fields files): per folder the
+  curated note of `fe_simulation_notes.yaml` (purpose, outcome, machine, findings), mesh and
+  settings, per position file status, increments, wall-clock time, negative-eigenvalue
+  warnings and the key numbers of the last load step (support moment deviation, pinion
+  rotation, largest contact pressure with place, largest root stress with fillet, place and
+  tangent angle, most compressive root stress, head displacement); files not run are counted.
+- `gearcore.fe.evaluation.tangent_angle_deg`: angle between the fillet surface at a point
+  and the centre line of the tooth the point lies on (from the mid-width contour of the
+  fillet); test added.
+- First diary: 38 folders, 66 complete, 11 broken-off, 1 open run, 183 files not run.
+
 ### Added (increment 2 - pair geometry, 2026-09-30, ADR-107, ADR-110)
 - `gearcore.pair`: mating quantities of an external gear pair per DIN ISO 21771:2014-08 §4.4, §4.5,
   §5.2 to §5.4, §5.6 and Eq. (127) of §7.6 (pitches, tip and tip form diameter, working pressure

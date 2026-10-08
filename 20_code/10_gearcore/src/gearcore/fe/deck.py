@@ -28,6 +28,7 @@ geometrically linear unless ``PositionDeck.nlgeom`` says otherwise; the solver a
 settings of a file stand in its ``** steps ...`` heading line.
 """
 
+import re
 from dataclasses import dataclass
 from typing import Literal
 
@@ -37,6 +38,8 @@ from gearcore.fe.placement import Placement
 
 EQ_EXEMPT = (
     "read_material_card",
+    "read_distribution",
+    "read_field_variables",
     "split_orientation_file",
     "position_deck_text",
     "seating_angle_rad",
@@ -216,16 +219,71 @@ class OrientationFilePieces:
     model_without_plasticity: str
 
 
-def split_orientation_file(text: str, instance: str = WHEEL_INSTANCE) -> OrientationFilePieces:
+Vector = tuple[float, float, float]
+
+
+def read_distribution(text: str) -> dict[int, tuple[Vector, Vector]]:
+    """The element orientations of the first ``*DISTRIBUTION, LOCATION=ELEMENT`` of a CONVERSE
+    orientation file: element label -> (local 1-direction, direction in the 1-2 plane), as the
+    file gives them in the coordinates of the part. The first row (no label) is the default
+    of the distribution and is skipped."""
+    for keyword, line, data in _blocks(text):
+        if keyword != "DISTRIBUTION" or "LOCATION=ELEMENT" not in line.upper():
+            continue
+        out: dict[int, tuple[Vector, Vector]] = {}
+        for row in data:
+            items = [item.strip() for item in row.split(",")]
+            if len(items) != 7:
+                raise ParseError(f"orientation file: distribution row {row!r} has not 7 items")
+            if not items[0]:
+                continue
+            values = [float(v) for v in items[1:]]
+            out[int(items[0])] = (
+                (values[0], values[1], values[2]),
+                (values[3], values[4], values[5]),
+            )
+        if not out:
+            raise ParseError("orientation file: the element distribution has no rows")
+        return out
+    raise ParseError("orientation file: no *DISTRIBUTION, LOCATION=ELEMENT")
+
+
+def read_field_variables(text: str) -> dict[int, tuple[float, float]]:
+    """The nodal field variables 1 and 2 of a CONVERSE orientation file (``*INITIAL
+    CONDITIONS, TYPE=FIELD, VARIABLE=k``): node label -> (variable 1, variable 2)."""
+    first: dict[int, float] = {}
+    second: dict[int, float] = {}
+    for keyword, line, data in _blocks(text):
+        if keyword != "INITIAL CONDITIONS" or "TYPE=FIELD" not in line.upper():
+            continue
+        variable = line.upper().split("VARIABLE=")[1].split(",")[0].strip()
+        target = first if variable == "1" else second if variable == "2" else None
+        if target is None:
+            raise ParseError(f"orientation file: field variable {variable!r} is not 1 or 2")
+        for row in data:
+            label, value = (item.strip() for item in row.split(",")[:2])
+            target[int(label)] = float(value)
+    if not first or set(first) != set(second):
+        raise ParseError("orientation file: field variables 1 and 2 must name the same nodes")
+    return {label: (first[label], second[label]) for label in first}
+
+
+def split_orientation_file(
+    text: str, instance: str = WHEEL_INSTANCE, elset: str = WHEEL
+) -> OrientationFilePieces:
     """Split an orientation file into the piece that belongs into the part of the wheel
-    (``*DISTRIBUTION``, ``*ORIENTATION``, ``*SOLID SECTION``) and the piece that belongs into
-    the model (``*DISTRIBUTION TABLE``, ``*MATERIAL`` with its data, ``*INITIAL CONDITIONS``
-    of the field variables with the node numbers prefixed by the instance name). The third
-    piece is the model piece without ``*PLASTIC`` and ``*POTENTIAL`` (step W3). A second
-    part in the file (the wheel body of the reference) is dropped: only the first
-    distribution, orientation and section are kept."""
+    (``*DISTRIBUTION``, ``*ORIENTATION``, ``*SOLID SECTION`` with its ``ELSET`` rewritten to
+    ``elset``, the element set of the wheel mesh, because CONVERSE names a set of its own,
+    ``CONVERSE_AUTO_SOLID``, that no file defines) and the piece that belongs into the model
+    (``*DISTRIBUTION TABLE``, ``*MATERIAL`` with its data, ``*INITIAL CONDITIONS`` of the
+    field variables with the node numbers prefixed by the instance name). The third piece is
+    the model piece without ``*PLASTIC`` and ``*POTENTIAL`` (step W3). A second part in the
+    file (the wheel body of the reference) is dropped: only the first distribution,
+    orientation and section are kept."""
     if not isinstance(instance, str) or not instance:
         raise InputRangeError("the instance name must be a non-empty string")
+    if not isinstance(elset, str) or not elset.isidentifier():
+        raise InputRangeError("the element set name must be an identifier")
     part: list[str] = []
     model: list[str] = []
     elastic_only: list[str] = []
@@ -234,6 +292,10 @@ def split_orientation_file(text: str, instance: str = WHEEL_INSTANCE) -> Orienta
         if keyword in seen:
             seen[keyword] += 1
             if seen[keyword] == 1:
+                if keyword == "SOLID SECTION":
+                    if "ELSET=" not in line.upper():
+                        raise ParseError("orientation file: the solid section names no ELSET")
+                    line = re.sub(r"(?i)ELSET=[^,]*", f"ELSET={elset}", line, count=1)
                 part.append(line)
                 part.extend(data)
             continue
@@ -273,6 +335,9 @@ class PositionDeck:
     title: str = ""
     step_names: tuple[str, ...] = ()
     """Names of the load steps (preset: ``step_name`` of the pinion torque)."""
+    rate: str = ""
+    """Name of the strain rate of the material card (QS, DY1, DY2 of the CONVERSE files of the
+    user), for the heading line only; the card and the orientation pieces carry the data."""
     nlgeom: bool = False
     """Geometrically nonlinear steps. Off by default for the isotropic elastic step W1, where
     the variant runs of 2026-10-06 (20 layers, 8 Nm) put the effect at 0,1 % of the moment,
@@ -383,7 +448,8 @@ def position_deck_text(deck: PositionDeck) -> str:
     lines = [
         "*HEADING",
         deck.title or "gearcore: one static analysis of one mesh position",
-        f"** material step {deck.material_step}, temperature {temperature:g} degC, "
+        f"** material step {deck.material_step}{', rate ' + deck.rate if deck.rate else ''}, "
+        f"temperature {temperature:g} degC, "
         f"torques at the pinion {', '.join(f'{t:g}' for t in torques)} N mm, sign {deck.torque_sign:+g} about +z",
         f"** steps geometrically {'nonlinear' if deck.nlgeom else 'linear'}, contact {deck.contact}"
         f"{'' if deck.contact == 'surface_to_surface' else f' (SMOOTH={smoothing:g})'}, "
@@ -486,7 +552,11 @@ def _output_lines(deck: PositionDeck) -> list[str]:
     plus the contact stresses of the wheel flank nodes printed to the .dat file, so that the
     acceptance (support moment at the wheel, direction of the contact force) needs no ODB
     access. ``*PREPRINT`` in the model section keeps the model printout out of the file."""
-    element_variables = "S, E, PEEQ"  # the same request in every material step
+    # FV: the predefined field variables of the orientation state, an element variable at
+    # the integration points (Abaqus 2025 output variable identifiers, 'State, field and
+    # user-defined output variables'), written to the ODB so that the extraction can compare
+    # them with the orientation file (steps W3 and W4 only; the isotropic steps define none)
+    element_variables = "S, E, PEEQ, FV" if deck.material_step in ("W3", "W4") else "S, E, PEEQ"
     return [
         "*OUTPUT, FIELD, NUMBER INTERVAL=1",
         f"*NODE OUTPUT, NSET={WHEEL_INSTANCE}.{WHEEL}_NODES",

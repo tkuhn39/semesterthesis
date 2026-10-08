@@ -1,0 +1,17 @@
+# Strain rates behind the CONVERSE material cards of the user (his message of 2026-10-07):
+# the test speed of the tensile tests each card was fitted to and the strain rate he assigns
+# to it. QS is quasi-static, DY1 and DY2 are the dynamic cards; the stiffness grows with the
+# rate (E_1 at 23 degC and a11 = 0,5: QS 5130 MPa, DY1 6345 MPa). The names are the suffixes
+# of his files in 30_references_and_examples/91_Converse (wheel_mesh_<rate>.cof for the ring
+# body, wheel-pocket_mesh_<rate>.cof for the body with pockets).
+rates:
+  QS:
+    test_speed_m_s: 1.67e-5
+    strain_rate_1_s: [0.00027, 0.00044]
+    note: "quasi-static"
+  DY1:
+    test_speed_m_s: 0.174
+    strain_rate_1_s: 3.0
+  DY2:
+    test_speed_m_s: 10.0
+    strain_rate_1_s: 60.0

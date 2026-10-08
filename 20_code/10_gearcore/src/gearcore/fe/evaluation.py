@@ -26,16 +26,23 @@ EQ_EXEMPT = (
     "read_fields",
     "step_summary",
     "path_points",
+    "series_of",
+    "series_names",
     "curve",
     "grid_subset",
     "extremum",
     "resolution_rows",
+    "orientation_check",
+    "field_variable_check",
+    "tangent_angle_deg",
     "format_summary",
     "format_resolution",
+    "format_orientation",
 )
 """Reading of files and bookkeeping of maxima: no equation of a norm."""
 
 FORMAT_VERSION = 1
+Vector = tuple[float, float, float]
 
 
 @dataclass(frozen=True)
@@ -62,6 +69,20 @@ class FilletNode:
     s1: float
     s3: float
     mises: float
+
+
+@dataclass(frozen=True)
+class OrientationSample:
+    """Local material directions of one element in global coordinates, as the stress field of
+    the output database carries them (rows of its local coordinate system); the element's
+    nodes and, when the step wrote them, the field variables 1 and 2 at its centroid."""
+
+    set_name: str
+    e: int
+    a: Vector
+    b: Vector
+    nodes: tuple[int, ...] = ()
+    fv: tuple[float, float] | None = None
 
 
 @dataclass(frozen=True)
@@ -104,6 +125,7 @@ class StepFields:
     contact: tuple[ContactNode, ...]
     fillets: Mapping[str, Fillet]
     heads: Mapping[str, Head]
+    orientation: tuple[OrientationSample, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -189,6 +211,29 @@ def _fillet_node(m: Mapping[str, object]) -> FilletNode:
     )
 
 
+def _vector(item: object, name: str) -> Vector:
+    if not isinstance(item, list) or len(item) != 3:
+        raise ParseError(f"{name}: expected three components, got {item!r}")
+    return (_float(item[0], name), _float(item[1], name), _float(item[2], name))
+
+
+def _orientation_sample(item: Mapping[str, object]) -> OrientationSample:
+    nodes = item.get("nodes", [])
+    fv = item.get("fv")
+    if not isinstance(nodes, list):
+        raise ParseError("orientation sample: nodes must be a list")
+    if fv is not None and (not isinstance(fv, list) or len(fv) != 2):
+        raise ParseError("orientation sample: fv must hold two values")
+    return OrientationSample(
+        set_name=str(item.get("set", "")),
+        e=int(_float(item["e"], "e")),
+        a=_vector(item["a"], "a"),
+        b=_vector(item["b"], "b"),
+        nodes=tuple(int(_float(n, "node")) for n in nodes),
+        fv=None if fv is None else (_float(fv[0], "fv1"), _float(fv[1], "fv2")),
+    )
+
+
 def _fillet(name: str, item: Mapping[str, object]) -> Fillet:
     mid = item.get("mid_width", [])
     layers = item.get("layers", [])
@@ -256,6 +301,7 @@ def read_fields(path: Path) -> PositionFields:
                     )
                     for k, v in raw.get("heads", {}).items()
                 },
+                orientation=tuple(_orientation_sample(o) for o in raw.get("orientation", [])),
             )
         )
     axis = document.get("wheel_axis", [0.0, 0.0])
@@ -334,15 +380,44 @@ class PathPoint:
     rho_1_mm: float
     job: str
     summaries: Mapping[str, StepSummary]
+    series: str = ""
+    """Material step, rate and variant of the file (``series_of``)."""
 
 
-def path_points(manifest: Mapping[str, object], folder: Path) -> tuple[PathPoint, ...]:
-    """The positions of a folder along the path of contact with their extracted results."""
+def series_of(entry: Mapping[str, object], manifest: Mapping[str, object]) -> str:
+    """The series a position file belongs to: ``<material step>[_<rate>][_<variant>]``. A
+    folder written before the rates were a variant axis names the step in the manifest only."""
+    step = str(entry.get("material_step") or manifest.get("material_step") or "")
+    parts = [step] + [str(entry[k]) for k in ("rate", "variant") if entry.get(k)]
+    return "_".join(p for p in parts if p)
+
+
+def series_names(manifest: Mapping[str, object]) -> tuple[str, ...]:
+    """The distinct series of a folder in the order of the manifest."""
+    positions = manifest.get("positions")
+    if not isinstance(positions, list):
+        raise ParseError("manifest without positions")
+    names: list[str] = []
+    for entry in positions:
+        name = series_of(entry, manifest)
+        if name not in names:
+            names.append(name)
+    return tuple(names)
+
+
+def path_points(
+    manifest: Mapping[str, object], folder: Path, series: str | None = None
+) -> tuple[PathPoint, ...]:
+    """The positions of a folder along the path of contact with their extracted results;
+    ``series`` keeps the files of one material step, rate and variant only."""
     positions = manifest.get("positions")
     if not isinstance(positions, list):
         raise ParseError("manifest without positions")
     points = []
     for entry in positions:
+        name = series_of(entry, manifest)
+        if series is not None and name != series:
+            continue
         job = Path(str(entry["file"])).stem
         fields_file = folder / f"{job}_fields.json"
         summaries: dict[str, StepSummary] = {}
@@ -357,10 +432,187 @@ def path_points(manifest: Mapping[str, object], folder: Path) -> tuple[PathPoint
                 rho_1_mm=_float(entry["rho_1_mm"], "rho_1_mm"),
                 job=job,
                 summaries=summaries,
+                series=name,
             )
         )
-    points.sort(key=lambda p: p.from_a_mm)
+    points.sort(key=lambda p: (p.from_a_mm, p.series))
     return tuple(points)
+
+
+@dataclass(frozen=True)
+class OrientationCheck:
+    """Whether the fibre orientation of the orientation file turned with the wheel instance:
+    for every sampled element the angle between the local 1-direction the output database
+    carries and the direction of the file turned by the instance rotation (expected 0), and
+    the angle against the direction of the file not turned (expected the instance rotation,
+    unless the instance was not rotated)."""
+
+    elements: int
+    turn_deg: float
+    max_deviation_deg: float
+    mean_deviation_deg: float
+    mean_if_not_turned_deg: float
+    missing: int
+    """Sampled elements the orientation file has no row for."""
+
+    @property
+    def turned(self) -> bool:
+        return self.elements > 0 and self.max_deviation_deg < ORIENTATION_TOLERANCE_DEG
+
+
+ORIENTATION_TOLERANCE_DEG = 0.5
+"""The directions of the output database are single precision; a deviation below this is
+none."""
+
+
+def _angle_deg(u: Vector, v: Vector) -> float:
+    dot = u[0] * v[0] + u[1] * v[1] + u[2] * v[2]
+    norm = math.sqrt(sum(c * c for c in u)) * math.sqrt(sum(c * c for c in v))
+    if norm == 0.0:
+        raise InputRangeError("a direction of zero length")
+    return math.degrees(math.acos(max(-1.0, min(1.0, dot / norm))))
+
+
+def orientation_check(
+    step: StepFields, distribution: Mapping[int, tuple[Vector, Vector]], turn_deg: float
+) -> OrientationCheck:
+    """Compare the material directions the output database carries for the sampled elements
+    with the orientation file turned by ``turn_deg`` about +z (the rotation of the wheel
+    instance in the position file)."""
+    turn = math.radians(turn_deg)
+    cos_t, sin_t = math.cos(turn), math.sin(turn)
+    deviations: list[float] = []
+    not_turned: list[float] = []
+    missing = 0
+    for sample in step.orientation:
+        row = distribution.get(sample.e)
+        if row is None:
+            missing += 1
+            continue
+        a = row[0]
+        expected = (cos_t * a[0] - sin_t * a[1], sin_t * a[0] + cos_t * a[1], a[2])
+        deviations.append(_angle_deg(sample.a, expected))
+        not_turned.append(_angle_deg(sample.a, a))
+    count = len(deviations)
+    return OrientationCheck(
+        elements=count,
+        turn_deg=turn_deg,
+        max_deviation_deg=max(deviations) if deviations else 0.0,
+        mean_deviation_deg=sum(deviations) / count if count else 0.0,
+        mean_if_not_turned_deg=sum(not_turned) / count if count else 0.0,
+        missing=missing,
+    )
+
+
+@dataclass(frozen=True)
+class FieldVariableCheck:
+    """The field variables at the centroids of the sampled elements in the output database
+    against the orientation file (the mean of the nodal values of the element, which is the
+    centroid value of a trilinear element): largest absolute difference of variable 1 and 2
+    (expected 0 up to the single precision of the database)."""
+
+    elements: int
+    max_difference_1: float
+    max_difference_2: float
+    missing: int
+    """Sampled elements without field variables in the database or with a node the file
+    does not name."""
+
+
+def field_variable_check(
+    step: StepFields, field_variables: Mapping[int, tuple[float, float]]
+) -> FieldVariableCheck:
+    """Compare the field variables the extraction stored at the centroids of the sampled
+    elements with the ``*INITIAL CONDITIONS, TYPE=FIELD`` of the orientation file."""
+    count = missing = 0
+    largest = [0.0, 0.0]
+    for sample in step.orientation:
+        if sample.fv is None or not sample.nodes:
+            missing += 1
+            continue
+        rows = [field_variables.get(n) for n in sample.nodes]
+        if any(row is None for row in rows):
+            missing += 1
+            continue
+        expected = [sum(row[k] for row in rows if row is not None) / len(rows) for k in (0, 1)]
+        count += 1
+        largest[0] = max(largest[0], abs(sample.fv[0] - expected[0]))
+        largest[1] = max(largest[1], abs(sample.fv[1] - expected[1]))
+    return FieldVariableCheck(count, largest[0], largest[1], missing)
+
+
+def _wrapped(angle_rad: float) -> float:
+    return math.atan2(math.sin(angle_rad), math.cos(angle_rad))
+
+
+def tangent_angle_deg(
+    fillet: Fillet,
+    point_xy: tuple[float, float],
+    wheel_axis: tuple[float, float],
+    right_tooth_centre_deg: float,
+    pitch_deg: float,
+) -> float | None:
+    """Angle between the tangent of the fillet surface at a point and the centre line of the
+    tooth the point lies on: 0 where the surface runs along the root circle, 90 where it runs
+    parallel to the centre line (the critical section of the root stress methods lies at the
+    30° tangent). The contour is the mid-width node row of the fillet ordered along the arc;
+    the point is taken at the nearest contour node by polar angle about the wheel axis, the
+    tangent from its two neighbours. ``right_tooth_centre_deg`` is the centre line of the
+    counter-clockwise tooth of the fillet's gap; the point belongs to that tooth when its
+    polar angle lies beyond the centre of the gap, else to the clockwise tooth. None when the
+    contour has fewer than three nodes."""
+    if len(fillet.mid_width) < 3:
+        return None
+    pitch = math.radians(_finite_angle(pitch_deg))
+    right = math.radians(_finite_angle(right_tooth_centre_deg))
+    gap = right - 0.5 * pitch
+
+    def along(x: float, y: float) -> float:
+        return _wrapped(math.atan2(y - wheel_axis[1], x - wheel_axis[0]) - gap)
+
+    contour = sorted(fillet.mid_width, key=lambda n: along(n.x, n.y))
+    target = along(point_xy[0], point_xy[1])
+    k = min(range(len(contour)), key=lambda i: abs(along(contour[i].x, contour[i].y) - target))
+    before, after = contour[max(k - 1, 0)], contour[min(k + 1, len(contour) - 1)]
+    tangent = (after.x - before.x, after.y - before.y)
+    norm = math.hypot(tangent[0], tangent[1])
+    if norm == 0.0:
+        return None
+    centre = right if target > 0.0 else right - pitch
+    cosine = abs(tangent[0] * math.cos(centre) + tangent[1] * math.sin(centre)) / norm
+    return math.degrees(math.acos(min(1.0, cosine)))
+
+
+def _finite_angle(value: float) -> float:
+    if isinstance(value, bool) or not isinstance(value, int | float) or not math.isfinite(value):
+        raise InputRangeError(f"an angle in degrees is required, got {value!r}")
+    return float(value)
+
+
+def format_orientation(check: OrientationCheck, fields: FieldVariableCheck | None) -> list[str]:
+    """Report lines of the orientation and field variable checks."""
+    if check.elements == 0:
+        return ["    orientation: no element with a local material system in the sample"]
+    verdict = (
+        "turned with the instance"
+        if check.turned
+        else f"NOT as expected (tolerance {ORIENTATION_TOLERANCE_DEG:g} deg)"
+    )
+    lines = [
+        f"    orientation: {check.elements} sampled elements, instance turned by {check.turn_deg:+.4f} deg; "
+        f"deviation from the turned file max {check.max_deviation_deg:.4f} deg, mean "
+        f"{check.mean_deviation_deg:.4f} deg; against the file not turned mean "
+        f"{check.mean_if_not_turned_deg:.4f} deg -> {verdict}"
+        + (f"; {check.missing} sampled elements not in the file" if check.missing else "")
+    ]
+    if fields is not None and fields.elements:
+        lines.append(
+            f"    field variables at the centroids of {fields.elements} sampled elements: largest "
+            f"difference to the mean of the file's nodal values {fields.max_difference_1:.2e} "
+            f"(variable 1), {fields.max_difference_2:.2e} (variable 2)"
+            + (f"; {fields.missing} elements without a comparison" if fields.missing else "")
+        )
+    return lines
 
 
 QUANTITIES = (

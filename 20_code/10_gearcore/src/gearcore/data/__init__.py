@@ -53,6 +53,28 @@ def has_stplus(case: str, name: str) -> bool:
     return (_stplus_case_dir(case) / f"{name}.json").is_file()
 
 
+def load_body_sections() -> dict[str, dict[str, dict[str, Any]]]:
+    """Meridional half sections of gear bodies transcribed from the user's drawings
+    (``fe/body_sections.yaml``): case -> role -> the dimensions of the drawing."""
+    path = data_path("fe", "body_sections.yaml")
+    loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, dict) or not isinstance(loaded.get("bodies"), dict):
+        raise ParseError("body_sections.yaml: expected a mapping 'bodies'")
+    bodies: dict[str, dict[str, dict[str, Any]]] = loaded["bodies"]
+    return bodies
+
+
+def load_converse_rates() -> dict[str, dict[str, Any]]:
+    """The strain rates behind the CONVERSE material cards of the user
+    (``fe/converse_rates.yaml``): rate name -> test speed and strain rate."""
+    path = data_path("fe", "converse_rates.yaml")
+    loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, dict) or not isinstance(loaded.get("rates"), dict):
+        raise ParseError("converse_rates.yaml: expected a mapping 'rates'")
+    rates: dict[str, dict[str, Any]] = loaded["rates"]
+    return rates
+
+
 def load_expected_differences() -> dict[str, dict[str, Any]]:
     """Documented differences between gearcore and the STplus oracle (ADR-105), by name."""
     path = data_path("stplus", "expected_differences.yaml")

@@ -1264,3 +1264,137 @@ test (step S6).**
     changed for it (FE-17). (d) At C the tip of the following tooth carries from 8 Nm on and
     the flank of the tooth ahead from 12 Nm on: the extended path of contact that the
     resolution study measures.
+
+**Amendment 2026-10-07 (evening) — the wheel body of the real part, released by the user
+("alles freigegeben") with the order body first, then the mapping, the rates and the diary.**
+
+26. **The drawing and its transcription.** The user placed the dimensioned half section of
+    the kst-E wheel body (`30_references_and_examples/90_CAD/Schnitt_Symmetrie_Zahnradkoerper_mit_Zahn.png`,
+    cut through a tooth, symmetric about the mid plane): a hub of full width from the bore
+    r 16,5 to r 19,107 mm, a pocket open to each face from r 19,107 to r 22,168 mm (the latter
+    measured 0,474 mm above the face, the tangent point of the R 0,5), 5,5 mm deep, walls at
+    93° to the face, a web of 4 mm, a rim of full width from r 22,168 mm under the teeth
+    (2,6 mm below the root circle), corner radii R 0,5. The numbers are transcribed into
+    `data/fe/body_sections.yaml` with the drawing as the source and nothing derived there (the
+    drawing is the primary source of the body; the tooth profile stays the one of the STplus
+    file, never the CAD). `fe.body.body_mesh` checks that the bore and the tip of the sector
+    are those of the drawing before it uses it.
+27. **How the body is meshed (`fe.body`).** The transverse mesh keeps its tooth zone; the
+    rings of its rim are moved onto the stations bore, hub wall, rim wall and fan ring (counts
+    hub / pocket / rim rings), level by level with the draft of the walls (the levels of the
+    web take the stations of the floor). The sweep gets a level on each pocket floor and on the
+    mid plane (`web_layers` even, `flange_layers` per pocket). The elements inside the pockets
+    are removed, nodes and elements renumbered compactly (`solid.remove_elements`); every set
+    of `fe.solid` is carried over without its removed members, the body adds the element sets
+    `WHEEL_BODY_HUB`, `WHEEL_BODY_WEB`, `WHEEL_BODY_RIM` and the surface `WHEEL_POCKET_SURF`
+    (walls and floors, with its node set). The corner radii are not meshed (FE-18): they are
+    below the element size and far from the tooth root. The extraction and the evaluation need
+    no change, they work on node sets and coordinates, not on the numbering of the layers.
+28. **Both bodies stay (user).** The full ring body (`--body ring`, the frozen mesh) is kept
+    as a variant and investigated completely as well, so that the influence of the body can be
+    presented cleanly; `--body pocket` is the real part. The element numbering of the pocket
+    body differs from the ring body, so the CONVERSE mapping is made anew on
+    `frozen_mesh_20layers_bore33_pocket/wheel-pocket_mesh.inp` (the mesh file of a pocket body
+    is named `<role>-pocket_mesh.inp`, the naming of the user; 83 650 nodes, 72 932 C3D8I, 1 428
+    pocket elements removed, rings 3 / 3 / 2, layers 6 over the web and 7 per pocket).
+29. **Why before the batch.** The rim under the root is 2,6 mm thick above a 4 mm web: the
+    body changes the compliance of the wheel and the root stresses over the face width, and
+    every batch on the ring body would have to be repeated. Order approved by the user: body,
+    his new mapping (three strain rates QS / DY1 / DY2, already delivered for the ring body in
+    `91_Converse`), a pilot at C ring against pocket, then the strain rates as a variant axis
+    of all four material steps and the simulation diary (`fe_simulation_log.md`, generated
+    from the output folders with curated notes: every pilot, test and batch with status,
+    cause of a break-off and the key results), the batch after the resolution study S6b.
+30. **FE-17 closed by the user:** the pinion has no edge break and engages like this in
+    reality; the edge loading at B and E is a property of the pair and stays reported as edge
+    contact with the force per tooth.
+31. **Checks.** `test_fe_body.py` (10 tests: the drawing, validation, the rings of the rim,
+    the levels, the carving with the removed volume against the pocket volume of the drawing
+    to 2e-3, the walls at the drawing's radii on every level, the pocket surface as walls and
+    floors only, the sets, the mesh file, the inputs; `hex_volumes` against the annulus); the
+    Learning Edition model `pair_coarse_pocket` (one tooth, hub / pocket / rim one ring each,
+    four layers, coarser tooth and profile to stay below the 1000 nodes of the Learning
+    Edition) ran the complete position file on a pocket body on 2026-10-07: seating and the
+    three torque steps complete, support moment −7890 / −11830 / −15773 N mm against
+    −7933 / −11881 / −15788 N mm of the coarse ring body (the pocket body is more compliant,
+    so Δψ of FE-15 grows); no warning about the carved mesh, its sets or its surfaces.
+
+**Amendment 2026-10-07 (night) — strain rates as a variant axis, and the check that the fibre
+orientation turned with the instance (released by the user: "Raten als Variantenachse mit dem
+Elset-Umschreiben, dann das Simulationstagebuch").**
+
+32. **Rates as a variant axis of every material step.** The user's CONVERSE cards exist at
+    three strain rates (QS 1,67e-5 m/s → 2,7e-4…4,4e-4 1/s, DY1 0,174 m/s → 3 1/s, DY2 10 m/s
+    → 60 1/s; recorded in `data/fe/converse_rates.yaml` from his message), with the same
+    fibre orientation and nodal fields in every file and only the material tables differing;
+    the plastic's stiffness grows with the rate (E_1 at 23 °C, a11 = 0,5: 5130 → 6345 MPa). He
+    wants all rates computed to compare them. Decision: `decks --material W1 W3 ... --cof <one
+    file per rate> --rates QS DY1 DY2` writes one position file per position, material step
+    and rate (`pos_NNN_<step>_<rate>[_<variant>].inp`; one step and one rate keep `pos_NNN`),
+    the orientation pieces per rate (`wheel_orientation_<rate>_part.inp`, `_model.inp` for W4,
+    `_model_elastic.inp` for W3) and the mesh once per element type needed (the C3D8 copy of
+    the mesh as `<mesh>_C3D8.inp`, same nodes and elements, so the mapping holds for both).
+    The isotropic steps W1 and W2 take the isotropic row of the card of their rate, so the
+    rate axis applies to all four steps. The manifest carries `material_steps`, `rates` (file,
+    card name, E, ν, strain rate) and per position file its step, rate, element type and
+    NLGEOM; the runner is unchanged; `report` labels every file by step and rate and the
+    curves over the path of contact are drawn per series (step, rate, variant).
+33. **ELSET of the CONVERSE section.** The `*SOLID SECTION` of a CONVERSE file names
+    `CONVERSE_AUTO_SOLID`, a set no file defines; the splitter rewrites it to the element set
+    of the wheel mesh (`WHEEL`) when it cuts the part piece. No other line of the file is
+    changed.
+34. **Does the fibre orientation turn with the instance, and are the values right?** (asked
+    by the user before the first run with fibres.) Two checks, both read back from the
+    output database of every W3/W4 file and printed by `report`: (a) the steps with an
+    orientation file request the predefined field variables `FV` in the element output (an
+    integration point variable per the Abaqus 2025 output variable identifiers; the first
+    attempt as a nodal variable was rejected by the preprocessor), and the stresses are
+    already written with `DIRECTIONS=YES`; the extraction stores, for a sample of up to 300
+    elements of the rim and 300 of the head of the middle tooth, the rows of the local
+    coordinate system of the stress at the first integration point (the local 1- and
+    2-direction in global coordinates), the element's nodes and FV1, FV2 at its centroid;
+    (b) `evaluation.orientation_check` turns the 1-direction of the CONVERSE distribution of
+    every sampled element by the rotation of the wheel instance (the last item of the
+    `*INSTANCE` rotation line of the position file) and reports the largest and the mean
+    angle against the direction of the database (expected 0, tolerance 0,5° for the single
+    precision of the database) and, as the discriminating number, the mean angle against the
+    direction not turned (expected the instance rotation; if the orientation had stayed in
+    the part system this angle would be 0 and the first one the instance rotation);
+    `evaluation.field_variable_check` compares FV1/FV2 at the centroid of every sampled
+    element with the mean of the nodal values of the `*INITIAL CONDITIONS, TYPE=FIELD` of
+    the file over the element's nodes (the centroid value of a trilinear element; expected 0
+    difference up to the single precision of the database). The Learning
+    Edition model `pair_coarse_w3` runs these checks on a synthetic orientation file (every
+    element's 1-direction +x of the part, field variables 0,6 / 0,1, the material tables of
+    the reference card), so that the chain splitter → part → instance → database → check is
+    proven before the first full-licence run with fibres. Result 2026-10-07: the W3 model
+    completes all steps (support moment −7935 / −11878 / −15823 N mm); 108 sampled elements,
+    wheel instance turned by +91,53°, deviation from the turned file 0,0000° (max and mean),
+    against the file not turned 91,53° → the orientation turned with the instance; field
+    variables at the centroids within 3,6e-8 of the file. The same two lines appear in
+    `report` for every W3/W4 file of the full licence, against the user's CONVERSE file of
+    the rate. The Learning Edition cannot solve his mapped meshes (1000 nodes), but its
+    Python opens the full-licence databases, so the check runs on his results as well.
+35. **Simulation diary (user: "ein Simulationstagebuch, in dem festgelegt ist, was schon alles
+    gelaufen ist, was noch läuft und die wichtigsten Parameter … auch alle Pilotläufe und
+    Tests").** Two files in `00_development_documentation`: `fe_simulation_notes.yaml`, curated
+    by hand, one entry per output folder with purpose, outcome in one sentence, where it ran
+    and the findings it belongs to (what the files cannot say); and `fe_simulation_log.md`,
+    generated by `build_fe_decks.py log` from every folder below `80_output/fe/<case>` that
+    holds input, status or manifest files: per folder the note, the mesh and the settings of
+    the manifest (nodes, elements, element types, layers, bore, body, material steps, rates,
+    torques, positions), per position file the status from the `.sta` (complete, not
+    completed with the last increment written, open = no closing line), the increments per
+    step, the wall-clock time from `run_log.txt` (UTF-16 as PowerShell writes it), the
+    negative-eigenvalue warnings of the `.msg`, and the key numbers of the last load step
+    from the fields file: deviation of the support moment, rotation of the pinion at the base
+    circle, largest contact pressure with tooth half and place, largest root stress with
+    fillet, place and the tangent angle at that place (`evaluation.tangent_angle_deg`: the
+    angle between the fillet surface and the centre line of the tooth the point lies on,
+    0 at the root circle, 90 along the centre line, the critical section of the root stress
+    methods at 30), most compressive root stress and largest head displacement; folders
+    without fields show the support moments of the `.dat`, files without a status are
+    counted as not run. The diary is regenerated before every commit and lives in the repo
+    (the output folders do not). First generation 2026-10-07: 38 folders, 66 complete, 11
+    broken-off and 1 open run, 183 files not run (the resolution study among them, running
+    on the full licence).

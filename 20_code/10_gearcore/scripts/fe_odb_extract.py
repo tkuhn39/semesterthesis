@@ -16,13 +16,19 @@ import math
 import sys
 from typing import Any
 
-from abaqusConstants import ELEMENT_NODAL  # type: ignore[import-not-found]
+from abaqusConstants import (  # type: ignore[import-not-found]
+    CENTROID,
+    ELEMENT_NODAL,
+    INTEGRATION_POINT,
+)
 from odbAccess import openOdb  # type: ignore[import-not-found]
 
 WHEEL_INSTANCE = "WHEEL-1"
 WHEEL_REFERENCE_NODE = 1
 PINION_REFERENCE_NODE = 2
 FORMAT_VERSION = 1
+ORIENTATION_SAMPLE = 300
+"""Elements per sampled set whose material directions are stored (the rim and one tooth head)."""
 
 Coordinates = dict[int, tuple[float, float, float]]
 
@@ -135,6 +141,65 @@ def _contact(
         )
     closed.sort(key=lambda item: (-item["p"], item["n"]))
     return closed
+
+
+def _centroid_values(frame: Any, name: str, element_set: Any) -> dict[int, float]:
+    """A scalar element field (FV1, FV2) at the centroid of every element of a set, when the
+    step requested it."""
+    field = _field(frame, name)
+    if field is None:
+        return {}
+    subset = field.getSubset(region=element_set, position=CENTROID)
+    return {value.elementLabel: float(value.data) for value in subset.values}
+
+
+def _orientation(frame: Any, instance: Any, heads: dict[str, list[int]]) -> list[dict[str, Any]]:
+    """Local material directions of a sample of elements (the rim and the head of the middle
+    tooth): the rows of ``localCoordSystem`` of the stress at the first integration point,
+    the local 1- and 2-directions in global coordinates; with the element's nodes and, when
+    the step wrote them, the field variables FV1 and FV2 at the centroid (the mean of the
+    nodal values of the orientation file for a trilinear element). Empty when the stresses
+    carry no local system (isotropic steps without orientation)."""
+    stress = _field(frame, "S")
+    if stress is None:
+        return []
+    names = ["WHEEL_RIM"]
+    teeth = sorted(heads, key=lambda t: int(t[1:]))
+    if teeth:
+        names.append("WHEEL_HEAD_" + teeth[(len(teeth) - 1) // 2])
+    out: list[dict[str, Any]] = []
+    present = list(instance.elementSets.keys())  # an Abaqus repository, not a dict
+    for name in names:
+        if name not in present:
+            continue
+        element_set = instance.elementSets[name]
+        connectivity = {e.label: [int(n) for n in e.connectivity] for e in element_set.elements}
+        labels = sorted(connectivity)
+        stride = max(1, len(labels) // ORIENTATION_SAMPLE)
+        chosen = set(labels[::stride])
+        first = _centroid_values(frame, "FV1", element_set)
+        second = _centroid_values(frame, "FV2", element_set)
+        subset = stress.getSubset(region=element_set, position=INTEGRATION_POINT)
+        seen: set[int] = set()
+        for value in subset.values:
+            label = value.elementLabel
+            if label not in chosen or label in seen:
+                continue
+            system = value.localCoordSystem
+            if system is None:
+                continue
+            seen.add(label)
+            sample: dict[str, Any] = {
+                "set": name,
+                "e": label,
+                "a": [float(c) for c in system[0]],
+                "b": [float(c) for c in system[1]],
+                "nodes": connectivity[label],
+            }
+            if label in first and label in second:
+                sample["fv"] = [first[label], second[label]]
+            out.append(sample)
+    return out
 
 
 def _fillets(
@@ -254,6 +319,7 @@ def extract(odb_path: str, out_path: str) -> dict[str, Any]:
                     "contact": _contact(frame, coordinates, membership, origin),
                     "fillets": _fillets(frame, instance, fillets, coordinates, origin, z_mid),
                     "heads": _heads(frame, heads, coordinates),
+                    "orientation": _orientation(frame, instance, heads),
                 }
             )
         document: dict[str, Any] = {

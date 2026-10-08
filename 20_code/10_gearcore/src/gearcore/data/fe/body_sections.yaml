@@ -1,0 +1,21 @@
+# Meridional half sections of gear bodies, transcribed from the dimensioned drawings the user
+# placed in 30_references_and_examples/90_CAD (ADR-116 amendment 2026-10-07). Every number is
+# copied from the drawing; nothing is derived here. The body is symmetric about the mid plane
+# of the face width; the drawing shows the half on one side of it, cut through the centre of a
+# tooth (which is why the outer radius is the tip radius). A pocket is open to the face, its
+# walls stand at wall_angle_deg to the face (93 deg = 3 deg draft, the pocket narrows with the
+# depth); a wall radius is measured at the given height above the face.
+bodies:
+  kst_e:
+    wheel:
+      source: "30_references_and_examples/90_CAD/Schnitt_Symmetrie_Zahnradkoerper_mit_Zahn.png, drawing of the user, 2026-10-07 (second version with the dimensions 22,168 and 0,474)"
+      face_width_mm: 15.0 # drawn: 7,5 from the face to the mid plane
+      tip_radius_mm: 27.011 # section through a tooth; d_a2 / 2 of the STplus file
+      bore_radius_mm: 16.5 # inner diameter of the plastic region 33 mm; a steel insert sits inside
+      hub_wall_radius_mm: 19.107 # pocket wall on the hub side, measured at the face
+      hub_wall_height_mm: 0.0
+      rim_wall_radius_mm: 22.168 # pocket wall on the rim side, measured at the tangent point of the R 0,5
+      rim_wall_height_mm: 0.474 # height of that tangent point above the face (= 0,5 (1 - sin 3 deg))
+      pocket_depth_mm: 5.5 # from the face to the pocket floor; leaves 7,5 - 5,5 = 2 mm web per half
+      wall_angle_deg: 93.0 # between the face and each pocket wall
+      corner_radius_mm: 0.5 # R 0,5 at both floor corners and at the rim-side corner at the face; not meshed (FE-18)
