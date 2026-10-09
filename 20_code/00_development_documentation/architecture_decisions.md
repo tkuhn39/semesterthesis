@@ -1398,3 +1398,93 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     (the output folders do not). First generation 2026-10-07: 38 folders, 66 complete, 11
     broken-off and 1 open run, 183 files not run (the resolution study among them, running
     on the full licence).
+
+### Amendment of 2026-10-09 (resolution study evaluated, break-offs explained, retries, nonlinear pilot)
+
+36. **Result of the resolution study** (`study_20layers_bore33_60perpitch_gerechnet`, 133
+    positions, W1, 122 complete in 181 to 415 s, mean 229 s, 11 broken off). The deformation
+    shifts the maxima as the user expected: at 16 Nm the next tooth engages 1,65 mm before A,
+    the sharp pinion tip stays 1,5 mm beyond E on the outgoing tooth, no single contact is
+    left (at C three pairs carry 89 / 477 / 88 N), and the largest root stress of the wheel
+    sits at C (1,62 to 1,64 mm from A), not at B. Sub-grids against 60 per pitch at 16 Nm for
+    the global maxima (rotation, pressure, σ1, |σ3|, head displacement): 30 per pitch within
+    0,02 mm and 0,15 %, 20 within 0,05 mm and 1,6 % (a cusp of |σ3|), 15 within 0,1 mm and
+    2,1 %, 12 within 0,3 % by the luck of its phase, 10 within 2,5 %. At 8 Nm the maxima are
+    cusps at the transitions of the number of loaded pairs (the elasticity smears every
+    transition over a path length that grows with the deflection, about √(2 ρ δ); at 8 Nm a
+    short window of single contact survives around C), there 30 per pitch misses up to 1,7 %
+    where the cusp is not on the grid, 20 hits them. Recommendation given: 20 per pitch plus
+    the named points A to E (47 positions over the window, about 3 h per W1 series). User
+    2026-10-09: sufficient for the linear elastic step; for the nonlinear steps the count and
+    the margin stay open until the nonlinear pilot (item 41) is evaluated; no commit of a
+    batch grid before that. Sector boundary: the neighbouring teeth T2 and T4 differ from the
+    middle tooth T3 by 1 to 2 % in load sharing and root stress (fixed cut planes), so the
+    batch evaluates the middle tooth (FE-20). Two evaluation corrections: the last converged
+    increment of a broken-off step belongs to a fraction of the load and stays out of the
+    curves (`StepFields.complete`, marked in the report), and the resolution table carries the
+    maxima per fillet (`s1:T2_T3` …), so that a maximum does not jump to the same point of
+    the neighbouring tooth one pitch away.
+37. **The 11 break-offs** lie at three path positions per pitch (0,59 to 0,64, 1,13 to 1,18
+    and 1,57 mm from A, alike for the pairs −1, 0 and +1): the sharp tip corner of the rigid
+    pinion then sits on a node row of the flank of the outgoing tooth beyond E (r 25,698,
+    25,800, 25,901 mm, the rows 0,1 mm apart, outer layers z ±6,75 and ±7,5 mm), the node on
+    the kink of the main surface reports "penetration error too large compared to
+    displacement increment" for 16 iterations, the increment is cut back to 1e-6 and the job
+    stops; the negative-eigenvalue warnings of these 11 runs accompany the chattering (0 in
+    the 122 complete runs, C3D8I linear). Reading the `.msg` of three break-offs: the
+    penetration error of the chattering node decays by a factor of 0,85 to 0,95 per
+    iteration, monotone or with alternating sign, so the solution converges, only too slowly
+    for the 16 equilibrium iterations Abaqus allows per increment (I_C); the cutback then
+    shrinks the displacement increment and with it the penetration tolerance. Retries on the
+    broken-off positions with controls (user, 2026-10-09): (a) `PENALTY=LINEAR` instead of
+    the direct Lagrange multipliers (the Abaqus default for node-to-surface, Interactions
+    guide, contact constraint enforcement) does not help (pos_003 breaks off alike, same
+    nodes; penalty compliance at the control: moment within 0,03 %, rotation +0,4 %, pressure
+    −2 %, root stress +0,1 %); (b) rounding the tip corners of the rigid surface with 0,05 mm
+    (`rigid_surface` `tip_rounding_mm`, arcs tangent to flank and tip land, at least four
+    facets) moves the problem, the radius being smaller than the 0,1 mm of the node rows (the
+    control pos_002 now breaks off, pos_003 completes); (c) raising the iteration limits of
+    every step to I_0/I_R/I_C = 20/30/100 (`*CONTROLS, PARAMETERS=TIME INCREMENTATION`,
+    keyword reference CONTROLS; `PositionDeck.iteration_limits`, `decks --iterations`)
+    changes nothing physical and is the setting under test (`retry_iter100`, first control in
+    3 min). The user rejected a surface-to-surface retry (that formulation broke off at the
+    same node column in pilot 2, FE-14) and a chamfer (two kinks instead of one) and keeps
+    the sharp corner of FE-17 unless the minimal rounding is needed (FE-19).
+38. **Retry folders.** `decks --grid-indices` writes a subset of a grid with the numbering of
+    the full grid (`pos_045.inp` of a retry is the position of the study), `--enforcement`,
+    `--tip-rounding` and `--iterations` set the setting under test; manifest (`enforcement`,
+    `iteration_limits`, `grid.indices`, `pinion_surface.tip_rounding_mm`) and README name it.
+    A variant of `VARIANTS` that names its own enforcement wins over the option.
+39. **Ring against pocket at C with the same bore 33** (`frozen_mesh_20layers_bore33_gerechnet`,
+    digit-identical to position 66 of the study, the same deck): the pocket body raises the
+    pinion rotation by 15,4 / 13,1 / 14,3 % and the head displacement by 15,8 / 13,5 / 14,4 %
+    at 8 / 12 / 16 Nm, σ1 of the loaded fillet by 5,9 / 3,2 / 3,8 %, |σ3| by 10,4 / 6,0 /
+    6,5 %, the pressure of the loaded tooth by 4,0 / 2,0 / 2,3 %; it moves the pressure
+    maximum from the outer layer (z ±6,75 mm) to mid-width over the web and gives the edge
+    contact of the outgoing tooth 121,5 instead of 88,4 N at 16 Nm. The old pilot bore
+    (r 18,10 against 16,5 mm, `pilot_20layers_gerechnet`) is a 1 % effect on the rotation.
+40. **Step W2 needs an orientation.** The Hill potential of the card's isotropic row (yield
+    ratios equal in the three normal and the three shear directions) is rejected by the
+    preprocessor without a local orientation ("anisotropic material properties must be
+    defined in a local orientation system", materials guide, Hill anisotropic yield); the W2
+    section now carries the part's own frame as `*ORIENTATION` (`deck._section_lines`); the
+    first W2 pilot of 2026-10-09 stopped after 11 s on this.
+41. **Nonlinear pilot** (`pilot_20layers_bore33_w2w4_qs`: W2 and W4, rate QS as the most
+    compliant, NLGEOM=YES, C3D8, ring body, the five positions margin −0,5 pitch, A, C, E,
+    margin +0,5 pitch). First W4 result at −0,5 pitch: 565 s (2,9 times W1), orientation check
+    0,002° at SEAT and up to 0,59° under load (the material directions co-rotate with the
+    deformation under NLGEOM=YES; the report says so instead of failing the check). Against
+    W1 at 16 Nm: rotation 88,6 instead of 77,5 µm (+14 %), head displacement +8 %, the
+    incoming tooth 1,48 mm before A carries 68 instead of 35 N, the edge pressure 96 instead
+    of 125 MPa (−24 %), σ1 of the loaded fillet 61,7 instead of 77,1 MPa (−20 %, maximum at
+    z +4,5 instead of −3,75 mm by the fibre orientation). The outer teeth still carry 10 and
+    30 % of the tooth force at the grid ends, so the margin of 0,5 pitch is too short for W4
+    (FE-21); the margin pilot `pilot_20layers_bore33_w4_qs_margin` (W4 QS at −1,0 and −0,75
+    pitch before A, +0,75 and +1,0 pitch after E) locates the real start and end of contact.
+    The batch grid (count and margin per material step) is decided after these pilots.
+42. **Root tangent.** The diary's tangent angle at the largest σ1 (item 35) is 45° at C in
+    every run; the 30° tangent is the critical section of ISO 6336-3 Method B, and the
+    example thesis MA-0296 (`00_literatur/01_beispielarbeiten`, printed p. 50, Fig. 37)
+    measured the fracture tangents of POM gears of kst-E with a template of 30° to 55° lines
+    over photographs (±5°), finding about 40°; the user wants the same comparison with
+    microscope images of his PA46 GF30 gears later.

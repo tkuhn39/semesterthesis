@@ -49,8 +49,13 @@ folders:
     findings: [FE-10, FE-14]
   pilot_20layers:
     purpose: "Pilot mit der Regel je Werkstoffstufe (W1 linear C3D8I, Knoten-zu-Fläche), 20 Schichten, Bohrung 18,10 (Vorlage)"
-    outcome: "Vorlage"
+    outcome: "Vorlage; gerechnet in pilot_20layers_gerechnet"
     machine: "-"
+  pilot_20layers_gerechnet:
+    purpose: "Ringkörper mit der alten Bohrung r 18,10 an C, W1 linear C3D8I, Knoten-zu-Fläche: Einfluss der Bohrungstiefe gegen den Ringkörper mit Bohrung 33 (frozen_mesh_20layers_bore33_gerechnet)"
+    outcome: "209 s, alle Schritte, keine negativen Eigenwerte; gegenüber Bohrung 33: Stützmoment gleich (0,03 %), Ritzeldrehung −0,9 bis −1,1 % (55,5/70,3/83,1 gegen 56,0/71,0/84,0 µm), CPRESS innerhalb 0,2 %, σ1 am Fuß +0,3 bis +0,6 %, Kopfverschiebung −0,9 %: die Bohrung 18,10 → 16,5 ist ein 1-%-Effekt"
+    machine: "Vollversion"
+    findings: [FE-08]
   pilot_40layers:
     purpose: "Pilot 40 Schichten (Vorlage)"
     outcome: "Vorlage; gerechnet in pilot_40layers_gerechnet"
@@ -107,22 +112,66 @@ folders:
     findings: [FE-14]
   frozen_mesh_20layers_bore33:
     purpose: "Eingefrorenes Netz des Ringkörpers (20 Schichten, Bohrung 33 mm) für das CONVERSE-Mapping; Stellung C, W1"
-    outcome: "Mapping des Nutzers erzeugt (91_Converse/wheel_mesh_QS/DY1/DY2.cof); der Ringkörper-Pilot an C auf diesem Netz ist noch nicht gerechnet (Vergleich zum Taschenkörper)"
+    outcome: "Mapping des Nutzers erzeugt (91_Converse/wheel_mesh_QS/DY1/DY2.cof); gerechnet in frozen_mesh_20layers_bore33_gerechnet (dasselbe Deck wie Stellung 66 der 60-je-Teilung-Studie)"
     machine: "-"
+  frozen_mesh_20layers_bore33_gerechnet:
+    purpose: "Ringkörper an C, Bohrung 33, W1 linear C3D8I, Knoten-zu-Fläche: Referenz für den Taschenkörper mit derselben Bohrung und Reproduzierbarkeitsprobe gegen Stellung 66 der Studie (gleiches Netz, gleiches Deck bis auf CFORCE im Feldrequest)"
+    outcome: "177 s, alle Schritte; auf alle ausgegebenen Stellen gleich Stellung 66 der Studie (RM3 −7910,43/−11835,99/−15800,93 N mm, Drehung 56,0/71,0/84,0 µm, CPRESS 59,09/67,68/74,80 MPa, σ1 max T2_T3 56,10/70,45/82,91 MPa, Kopf 66,9/84,5/99,8 µm). Taschenkörper gegen Ring (8/12/16 Nm): Ritzeldrehung +15,4/+13,1/+14,3 %, Kopfverschiebung +15,8/+13,5/+14,4 %, σ1 max T2_T3 +5,9/+3,2/+3,8 %, |σ3| max T3_T4 +10,4/+6,0/+6,5 %, CPRESS der Hauptkontaktzahn T3 +4,0/+2,0/+2,3 %; der Taschenkörper verlagert das Druckmaximum von z ±6,75 (Randschicht) auf z = 0 (Mitte, über dem Steg) und gibt bei 16 Nm dem Kantenkontakt des auslaufenden Zahns T4 121,5 statt 88,4 N (CPRESS 80,1 statt 56,3 MPa)"
+    machine: "Vollversion"
+    findings: [FE-15, FE-17, FE-18]
   frozen_mesh_20layers_bore33_pocket:
     purpose: "Eingefrorenes Netz des Taschenkörpers nach Zeichnung (Nabe, Steg, Taschen); Stellung C, W1 (Vorlage)"
     outcome: "Mapping des Nutzers erzeugt (91_Converse/wheel-pocket_mesh_QS/DY1/DY2.cof); gerechnet in frozen_mesh_20layers_bore33_pocket_gerechnet"
     machine: "-"
   frozen_mesh_20layers_bore33_pocket_gerechnet:
     purpose: "Taschenkörper an C, W1, linear, C3D8I, Knoten-zu-Fläche: erster Lauf des Radkörpers nach Zeichnung"
-    outcome: "215 s, alle Schritte, keine negativen Eigenwerte; Stützmoment −1,2 bis −1,0 % (Δψ, FE-15), Kopfverschiebung 77,5 / 95,9 / 114,2 µm; Vergleich zum Ringkörper mit derselben Bohrung steht aus"
+    outcome: "215 s, alle Schritte, keine negativen Eigenwerte; Stützmoment −1,2 bis −1,0 % (Δψ, FE-15), Kopfverschiebung 77,5 / 95,9 / 114,2 µm; Vergleich zum Ringkörper mit derselben Bohrung in frozen_mesh_20layers_bore33_gerechnet (Drehung und Kopfverschiebung +13 bis +16 %, Fußspannungen +3 bis +10 %, Druckmaximum in der Breitenmitte statt in der Randschicht)"
     machine: "Vollversion"
     findings: [FE-15, FE-18]
   study_20layers_bore33_60perpitch:
-    purpose: "Auflösungsstudie der Stellungen: 133 Stellungen, 60 je Teilung, W1, 20 Schichten; Teilgitter 60/30/20/15/12/10"
-    outcome: "läuft auf der Vollversion seit 2026-10-07 (etwa 6,5 h); liefert die Stellungen je Teilung und den Rand des Batches"
+    purpose: "Auflösungsstudie der Stellungen: 133 Stellungen, 60 je Teilung, W1, 20 Schichten; Teilgitter 60/30/20/15/12/10 (Vorlage)"
+    outcome: "Vorlage; gerechnet in study_20layers_bore33_60perpitch_gerechnet"
+    machine: "-"
+  study_20layers_bore33_60perpitch_gerechnet:
+    purpose: "Auflösungsstudie der Stellungen auf der Vollversion (2026-10-07, 12:46 bis 23:07): wie viele Stellungen je Teilung, damit Ort und Wert der Maxima über dem Eingriffsweg trotz Zahnbiegung (verlängerter Eingriff) nicht am Gitter hängen"
+    outcome: "122 von 133 durch (181 bis 415 s, Mittel 229 s), 11 abgebrochen (409 bis 819 s). Verlängerter Eingriff: bei 16 Nm setzt der nächste Zahn 1,65 mm vor A auf, der scharfe Ritzelkopf bleibt 1,5 mm hinter E auf dem auslaufenden Zahn, kein Einzeleingriff mehr (an C 89/477/88 N); Fußspannungsmaximum des Rads bei C (1,62 bis 1,64 mm ab A), nicht bei B. Teilgitter gegen 60 je Teilung bei 16 Nm (Drehung, CPRESS, σ1, |σ3|, Kopfverschiebung): 30 je Teilung Ort innerhalb 0,02 mm und Wert innerhalb 0,15 %; 20 je Teilung 0,05 mm und 1,6 % (|σ3|, Spitze); 15 je Teilung 0,1 mm und 2,1 %; 12 je Teilung 0,3 % (Lage); 10 je Teilung 2,5 %. Bei 8 Nm sind die Maxima Spitzen an den Übergängen der Paarzahl, dort 30 je Teilung bis 1,7 %, 20 je Teilung trifft die Spitzen des 60er-Gitters. Empfehlung 20 je Teilung plus A bis E (47 Stellungen über −0,5 bis +0,5 Teilung). Die 11 Abbrüche liegen periodisch an drei Bahnorten je Teilung (0,59 bis 0,64, 1,13 bis 1,18 und 1,57 mm ab A der Paare −1, 0, +1): die scharfe Kopfkante des Ritzels sitzt dann auf einer Knotenreihe der Flanke des auslaufenden Zahns (r 25,698/25,800/25,901 mm, Randschichten z ±6,75 und ±7,5) hinter E; der Knoten auf dem Knick der Masterfläche flattert (Penetrationsfehler, 16 Iterationen, Rückschnitt bis 1e-6), die negativen Eigenwerte dieser 11 Läufe sind Begleiterscheinung (0 in den 122 durchgelaufenen). Sektorrand: Lastaufteilung und Fußspannung der Nachbarzähne T2/T4 weichen 1 bis 2 % von T3 ab (feste Schnittflächen); Auswertung am mittleren Zahn T3"
     machine: "Vollversion"
-    status: "läuft"
+    findings: [FE-14, FE-15, FE-16, FE-17]
+  study_20layers_bore33_60perpitch_retry_penalty:
+    purpose: "Wiederholung der 11 abgebrochenen Stellungen der Studie (3, 44, 45, 55, 56, 64, 106, 107, 117, 118, 126) plus drei durchgelaufene Kontrollen (2, 46, 66 = C) mit Penalty-Durchsetzung der harten Kontaktbedingung (PENALTY=LINEAR statt direkter Lagrange-Multiplikatoren), sonst identisch (Vorlage, 2026-10-09)"
+    outcome: "Vorlage; Netz und Stellungen byteidentisch mit der Studie, nur die Zeile *SURFACE BEHAVIOR unterscheidet sich; gerechnet in study_20layers_bore33_60perpitch_retry_penalty_gerechnet (nach pos_003 abgebrochen)"
+    machine: "-"
+  study_20layers_bore33_60perpitch_retry_penalty_gerechnet:
+    purpose: "Penalty-Durchsetzung (PENALTY=LINEAR) gegen das Flattern der Kopfkante: Kontrolle pos_002 und die abgebrochene pos_003, vom Nutzer nach pos_003 gestoppt (2026-10-09)"
+    outcome: "Hilft nicht: pos_003 bricht wieder bei 16 Nm ab (Schrittzeit 0,160 statt 0,206, 10 min, 125 Warnungen negativer Eigenwerte) an denselben Knoten 7293/77943 (T5 rechte Flanke, r 25,901, z ±6,75), die Art der Kontaktbedingung ist nicht die Ursache, der Knick der Masterfläche ist es. Nachgiebigkeit der Penalty an der Kontrolle pos_002 gegen die Studie: Stützmoment innerhalb 0,03 %, Ritzeldrehung +0,4 % (50,7/65,0/77,2 gegen 50,5/64,7/76,9 µm), CPRESS am Hauptkontakt −2,4/−1,8/−1,8 %, am Kantenkontakt −0,9 %, Normalkräfte je Zahn innerhalb 0,5 N, σ1 am Fuß +0,1 %, Kopfverschiebung +0,2 %. pos_044 wurde im Schritt SEAT abgebrochen (kein Ergebnis); die path_*-Dateien des Ordners sind mit drei Stellungen ohne Aussage"
+    machine: "Vollversion"
+    findings: [FE-14, FE-17]
+  pilot_20layers_bore33_w2w4_qs:
+    purpose: "Pilot der nichtlinearen Werkstoffstufen W2 (isotrop elastisch-plastisch) und W4 (Orientierungsdatei mit Plastizität), Rate QS als nachgiebigster Fall, NLGEOM=YES, C3D8, Ringkörper Bohrung 33: fünf Stellungen des 60er-Gitters (Rand −0,5 Teilung, A, C, E, Rand +0,5 Teilung), um die Verformung und die Eingriffsverlängerung gegen W1 zu messen, bevor Schrittweite und Rand des Batches festgelegt werden (Nutzer 2026-10-09: 20 je Teilung reicht für W1, für die nichtlinearen Stufen offen; Vorlage)"
+    outcome: "Vorlage; Kontaktdurchsetzung wie in der Studie (Voreinstellung), bis die Wiederholungsläufe die Abhilfe gegen das Flattern entschieden haben. Erster Lauf in pilot_20layers_bore33_w2w4_qs_gerechnet: W2 vom Präprozessor abgewiesen; Ordner am 2026-10-09 mit der Orientierung für W2 neu geschrieben (W4-Decks bis auf die Kopfzeile unverändert)"
+    machine: "-"
+  pilot_20layers_bore33_w2w4_qs_gerechnet:
+    purpose: "Erster Lauf des nichtlinearen Piloten (W2 und W4, Rate QS, NLGEOM=YES, C3D8), vom Nutzer nach pos_031_W4 gestoppt (2026-10-09)"
+    outcome: "W2 bricht in 11 s im Präprozessor ab: 'Anisotropic material properties without a local orientation system have been defined for 72320 elements' (der Hill-Potential-Block der isotropen Zeile braucht eine lokale Orientierung, Materialhandbuch Hill anisotropic yield; behoben: *ORIENTATION WHEEL_ISO = Teilerahmen am Solid Section von W2, die Fließverhältnisse der isotropen Zeile sind in den drei Normal- und drei Schubrichtungen gleich, der Rahmen ist also belanglos). W4 pos_001 (Rand −0,5 Teilung) läuft durch: 565 s (2,9 × W1), 6 Inkremente je Schritt, keine negativen Eigenwerte, Orientierungsprüfung an SEAT 0,002°, unter Last bis 0,59° Mitdrehung mit der Verformung (NLGEOM). Gegen W1 (Studie pos_001) bei 16 Nm: Ritzeldrehung 88,6 statt 77,5 µm (+14 %), Kopfverschiebung 100,2 statt 93,0 µm (+8 %), einlaufender Zahn T3 (1,48 mm vor A) trägt 67,8 statt 34,5 N, auslaufender T5 194,8 statt 199,2 N, Kantendruck 96,0 statt 125,5 MPa (−24 %), σ1 am Fuß T3_T4 61,7 statt 77,1 MPa (−20 %, Maximum bei z +4,5 statt −3,75 durch die Faserorientierung), |σ3| T4_T5 68,0 statt 89,8 MPa. Am Gitterrand tragen die Randzähne noch 10 bzw. 30 % der Zahnkraft: der Rand von 0,5 Teilung reicht für W4 nicht, Randpilot pilot_20layers_bore33_w4_qs_margin geschrieben"
+    machine: "Vollversion"
+    findings: [FE-15, FE-17]
+  pilot_20layers_bore33_w4_qs_margin:
+    purpose: "Randpilot W4 QS: Stellungen bei −1,0 und −0,75 Teilung vor A und +0,75 und +1,0 Teilung hinter E (Gitter 60 je Teilung mit Rand 1,0 Teilung, Indizes 1, 16, 178, 193), um den Beginn und das Ende des verlängerten Eingriffs der nachgiebigsten Stufe zu finden und daraus den Rand des Batches (Vorlage, 2026-10-09)"
+    outcome: "Vorlage"
+    machine: "-"
+  study_20layers_bore33_60perpitch_retry_iter100:
+    purpose: "Dritte Abhilfe gegen das Flattern an der Ritzelkopfkante, ohne Änderung von Geometrie und Kontaktbedingung: Iterationsgrenzen je Inkrement I_0/I_R/I_C = 20/30/100 statt 4/8/16 (*CONTROLS, PARAMETERS=TIME INCREMENTATION), damit die langsam konvergierende Kontaktiteration (Faktor 0,85 bis 0,95 je Iteration in den .msg der Abbrüche) zu Ende läuft statt in den Rückschnitt; Stellungen 2 (Kontrolle), 3, 44, 45 der Studie (Abbrüche bei 16, 12 und 8 Nm), scharfe Kante, Lagrange (Vorlage, 2026-10-09)"
+    outcome: "Vorlage; Netz, Fläche und Decks identisch mit der Studie bis auf die vier *CONTROLS-Zeilen"
+    machine: "-"
+  study_20layers_bore33_60perpitch_retry_round0p05:
+    purpose: "Dieselben 14 Stellungen mit der Kopfkante des starren Ritzels auf 0,05 mm gerundet (Entgratung als Modellannahme der starren Fläche, mindestens vier Facetten je Bogen), Kontaktdurchsetzung wie in der Studie (Vorlage, 2026-10-09)"
+    outcome: "Vorlage; Radnetz und Decks identisch mit der Studie, nur pinion_surface.inp hat 932 statt 897 Profilknoten; gerechnet in study_20layers_bore33_60perpitch_retry_round0p05_gerechnet (nach pos_003 abgebrochen)"
+    machine: "-"
+  study_20layers_bore33_60perpitch_retry_round0p05_gerechnet:
+    purpose: "Kopfkante des starren Ritzels auf 0,05 mm gerundet (fünf Facetten je Bogen, 0,014 mm) gegen das Flattern: Kontrolle pos_002 und die abgebrochene pos_003, vom Nutzer nach pos_003 gestoppt (2026-10-09)"
+    outcome: "Verschiebt das Problem, löst es nicht: die in der Studie durchgelaufene Kontrolle pos_002 bricht jetzt bei 12 Nm ab (Schrittzeit 0,752, 8 min, dieselben Knoten 7293/77943 der rechten Flanke T5, r 25,901, z ±6,75), pos_003 läuft durch (252 s, 8 Inkremente mit zwei Rückschnitten bei 12 Nm). Die Rundung von 0,05 mm ist kleiner als der Reihenabstand der Flankenknoten (0,1 mm): die Kante trifft die Knotenreihe nur 0,05 mm früher auf der Bahn. Befund aus den .msg aller drei Abbrüche (Studie pos_045, Penalty pos_003, Rundung pos_002): der Penetrationsfehler des flatternden Knotens nimmt in der letzten Attempt monoton oder mit abklingender Oszillation ab (Faktor 0,85 bis 0,95 je Iteration), die Lösung konvergiert also, nur zu langsam für die 16 Gleichgewichtsiterationen (I_C) je Inkrement; der Rückschnitt verkleinert dann das Verschiebungsinkrement und damit die Penetrationstoleranz weiter. Abhilfe zu prüfen: höhere Iterationsgrenzen (*CONTROLS, PARAMETERS=TIME INCREMENTATION, I_0/I_R/I_C) ohne Änderung von Geometrie und Kontaktbedingung. pos_044 wurde bei 16 Nm gestoppt (kein Ergebnis)"
+    machine: "Vollversion"
+    findings: [FE-14, FE-17]
   pinion_surface_7teeth_80layers:
     purpose: "Starre Ritzelfläche, 7 Zähne, 80 Schichten (Netzdatei, kein Lauf)"
     outcome: "Netzdatei"

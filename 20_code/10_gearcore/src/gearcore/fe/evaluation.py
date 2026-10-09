@@ -119,6 +119,8 @@ class Head:
 class StepFields:
     name: str
     time: float
+    """Step time of the extracted frame: 1,0 for a completed step, less for the last converged
+    increment of a broken-off step (its load is only that fraction of the step's load)."""
     wheel: Mapping[str, tuple[float, ...]]
     pinion: Mapping[str, tuple[float, ...]]
     history: Mapping[str, Mapping[str, float]]
@@ -126,6 +128,7 @@ class StepFields:
     fillets: Mapping[str, Fillet]
     heads: Mapping[str, Head]
     orientation: tuple[OrientationSample, ...] = ()
+    complete: bool = True
 
 
 @dataclass(frozen=True)
@@ -174,6 +177,10 @@ class StepSummary:
     s3_min_fillet: FilletExtreme | None
     u_head_max: float
     u_head_tooth: str
+    time: float = 1.0
+    complete: bool = True
+    """False for the last converged increment of a broken-off step: its maxima belong to a
+    smaller load and stay out of the curves over the path of contact."""
 
 
 def _float(value: object, name: str) -> float:
@@ -281,10 +288,13 @@ def read_fields(path: Path) -> PositionFields:
             for k, v in raw.get("history", {}).items()
             if isinstance(v, dict)
         }
+        time = _float(raw.get("time", 0.0), "time")
+        complete = raw.get("complete")
         steps.append(
             StepFields(
                 name=str(raw["name"]),
-                time=_float(raw.get("time", 0.0), "time"),
+                time=time,
+                complete=bool(complete) if complete is not None else abs(time - 1.0) < 1.0e-9,
                 wheel=_vectors(reference.get("wheel")),
                 pinion=_vectors(reference.get("pinion")),
                 history=history,
@@ -366,6 +376,8 @@ def step_summary(step: StepFields) -> StepSummary:
         s3_min_fillet=s3_fillet,
         u_head_max=head.u if head else 0.0,
         u_head_tooth=head.tooth if head else "",
+        time=step.time,
+        complete=step.complete,
     )
 
 
@@ -623,40 +635,46 @@ QUANTITIES = (
     "u_head_max",
 )
 """Quantities of a step summary that ``curve`` lines up over the path of contact; a tooth
-half's force or pressure is addressed as ``force:T3_RIGHT`` / ``p:T3_RIGHT``."""
+half's force or pressure is addressed as ``force:T3_RIGHT`` / ``p:T3_RIGHT``, the principal
+stresses of one fillet as ``s1:T2_T3`` / ``s3:T2_T3`` (the maxima of the fillet over its
+surface; a fillet without data counts as zero, like a tooth half without contact)."""
 
 
 def _quantity(summary: StepSummary, quantity: str) -> float | None:
     if quantity in QUANTITIES:
         value = getattr(summary, quantity)
         return None if value is None else float(value)
-    kind, _, half = quantity.partition(":")
-    for tooth in summary.teeth:
-        if f"{tooth.tooth}_{tooth.side}" == half:
-            if kind == "force":
-                return tooth.force
-            if kind == "p":
-                return tooth.p_max
-            raise InputRangeError(f"unknown quantity kind {kind!r}")
-    if kind in ("force", "p") and half:
-        return 0.0
+    kind, _, name = quantity.partition(":")
+    if kind in ("force", "p"):
+        for tooth in summary.teeth:
+            if f"{tooth.tooth}_{tooth.side}" == name:
+                return tooth.force if kind == "force" else tooth.p_max
+        if name:
+            return 0.0
+    if kind in ("s1", "s3"):
+        for fillet in summary.fillets:
+            if fillet.name == name:
+                return fillet.s1_max if kind == "s1" else fillet.s3_min
+        if name:
+            return 0.0
     raise InputRangeError(f"unknown quantity {quantity!r}")
 
 
 def curve(
     points: Sequence[PathPoint], step_name: str, quantity: str
 ) -> tuple[tuple[float, float], ...]:
-    """(from_A, value) over the positions that have the step; rotations and moments are
-    taken by magnitude, so that every curve has a maximum to locate."""
+    """(from_A, value) over the positions whose step is complete (the last converged
+    increment of a broken-off step belongs to a smaller load and is left out); rotations and
+    compressive stresses are taken by magnitude, so that every curve has a maximum to locate."""
     out = []
     for point in points:
         summary = point.summaries.get(step_name)
-        if summary is None:
+        if summary is None or not summary.complete:
             continue
         value = _quantity(summary, quantity)
         if value is None:
             continue
-        if quantity in ("pinion_rotation_rad", "s3_min"):
+        if quantity == "pinion_rotation_rad" or quantity.startswith("s3"):
             value = abs(value)
         out.append((point.from_a_mm, value))
     return tuple(out)
@@ -762,6 +780,12 @@ def resolution_rows(
 def format_summary(summary: StepSummary) -> list[str]:
     """Lines of one step summary for the report."""
     lines = []
+    if not summary.complete:
+        lines.append(
+            f"    step NOT complete: last converged increment at step time {summary.time:.3f} "
+            "(the values below belong to that fraction of the step's load and stay out of the "
+            "curves over the path)"
+        )
     for tooth in summary.teeth:
         at = tooth.at
         force = f", normal force {tooth.force:.1f} N" if tooth.force is not None else ""

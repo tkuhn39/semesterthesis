@@ -9,7 +9,7 @@ from matplotlib.path import Path as PolygonPath
 
 from gearcore import contour as ct
 from gearcore import data
-from gearcore.errors import InputRangeError, NotSupportedError
+from gearcore.errors import GeometryInfeasibleError, InputRangeError, NotSupportedError
 from gearcore.fe import abaqus as ab
 from gearcore.fe import rigid_surface as rs
 from gearcore.generation import compute_generation
@@ -106,6 +106,67 @@ def test_profile_lies_on_the_contour_with_its_corners_as_nodes(
         )
         assert np.allclose(back, first, rtol=0.0, atol=1e-11)
     assert np.allclose(profile[::-1] * np.array([-1.0, 1.0]), profile, rtol=0.0, atol=1e-9)
+
+
+def _turning_angles_deg(surface: rs.RigidSurface) -> tuple[np.ndarray, np.ndarray]:
+    """Turning angle between consecutive facets of the profile and the radius of the node
+    between them."""
+    profile = surface.nodes_mm[: surface.profile_nodes, :2]
+    step = profile[1:] - profile[:-1]
+    heading = np.arctan2(step[:, 1], step[:, 0])
+    turn = np.degrees(np.abs(np.remainder(np.diff(heading) + np.pi, 2.0 * np.pi) - np.pi))
+    return turn, np.hypot(*profile[1:-1].T)
+
+
+def test_tip_rounding_replaces_the_tip_corners_by_tangent_arcs(kst_e: GenerationResult) -> None:
+    levels = rs.surface_z_levels(WHEEL_LEVELS, 17.0)
+    sharp = rs.rigid_surface(kst_e, "pinion", teeth=1, max_edge_mm=0.05, z_levels_mm=levels)
+    rounded = rs.rigid_surface(
+        kst_e, "pinion", teeth=1, max_edge_mm=0.05, z_levels_mm=levels, tip_rounding_mm=0.05
+    )
+    r_a = float(np.hypot(*sharp.nodes_mm[: sharp.profile_nodes, :2].T).max())
+    turn_sharp, radius_sharp = _turning_angles_deg(sharp)
+    turn_round, radius_round = _turning_angles_deg(rounded)
+    near_tip_sharp = radius_sharp > r_a - 0.2
+    near_tip_round = radius_round > r_a - 0.2
+    # the sharp corner turns by 90 deg minus the tip pressure angle in one node; the rounding
+    # spreads the turn over at least ROUNDING_FACETS facets
+    assert float(turn_sharp[near_tip_sharp].max()) > 45.0
+    assert float(turn_round[near_tip_round].max()) < float(turn_sharp[near_tip_sharp].max()) / 3.0
+    assert rounded.profile_nodes > sharp.profile_nodes
+    # the rounded profile stays on or inside the sharp one: no node beyond the tip circle, the
+    # arcs at most r (1 - cos 45 deg) = 0,015 mm inside the sharp profile and inside the gear
+    sharp_profile = sharp.nodes_mm[: sharp.profile_nodes, :2]
+    profile = rounded.nodes_mm[: rounded.profile_nodes, :2]
+    assert float(np.hypot(*profile.T).max()) <= r_a + 1e-5  # the arcs end on the tip circle
+    arcs = profile[np.hypot(*profile.T) > r_a - 0.06]
+    a, b = sharp_profile[:-1], sharp_profile[1:]
+    ab = b - a
+    along = np.clip(
+        ((arcs[:, None, :] - a[None, :, :]) * ab[None, :, :]).sum(axis=2)
+        / (ab * ab).sum(axis=1)[None, :],
+        0.0,
+        1.0,
+    )
+    foot = a[None, :, :] + along[:, :, None] * ab[None, :, :]
+    inside = np.hypot(*(arcs[:, None, :] - foot).transpose(2, 0, 1)).min(axis=1)
+    assert float(inside.max()) < 0.016 and float(inside.max()) > 0.005
+    # the interior points of the arcs lie inside the sharp tooth (closed through the axis),
+    # not outside it: the rounding removes material
+    tooth = PolygonPath(np.vstack((sharp_profile, [[0.0, 0.0]])))
+    assert tooth.contains_points(arcs[inside > 0.002]).all()
+    # the profile stays one counter-clockwise path and mirror symmetric
+    angle = np.arctan2(profile[:, 0], profile[:, 1])
+    assert bool(np.all(np.diff(angle) < 0.0))
+    assert np.allclose(profile[::-1] * np.array([-1.0, 1.0]), profile, rtol=0.0, atol=1e-9)
+    with pytest.raises(InputRangeError):
+        rs.rigid_surface(
+            kst_e, "pinion", teeth=1, max_edge_mm=0.05, z_levels_mm=levels, tip_rounding_mm=-0.1
+        )
+    with pytest.raises(GeometryInfeasibleError):
+        rs.rigid_surface(
+            kst_e, "pinion", teeth=1, max_edge_mm=0.05, z_levels_mm=levels, tip_rounding_mm=2.0
+        )
 
 
 def test_positive_side_of_the_elements_faces_out_of_the_gear(

@@ -620,6 +620,40 @@ before increment 5.
   fillet); test added.
 - First diary: 38 folders, 66 complete, 11 broken-off, 1 open run, 183 files not run.
 
+### Added (finite element model, steps S6b, S6e and S6f - resolution study evaluated, break-offs explained, retries, nonlinear pilot, 2026-10-09, ADR-116 amendment items 36 to 42)
+- Resolution study evaluated (133 positions, 60 per pitch, W1): 20 positions per pitch plus
+  A to E hold the global maxima within 0,05 mm and 1,6 % at 16 Nm (30 per pitch within
+  0,02 mm and 0,15 %); the extended contact under load (next tooth 1,65 mm before A, pinion
+  tip 1,5 mm beyond E, no single contact at 16 Nm, root stress maximum at C) measured;
+  recommendation 20 per pitch, accepted for W1, open for the nonlinear steps (roadmap S6f).
+- `fe.evaluation`: the last converged increment of a broken-off step (`StepFields.complete`,
+  `StepSummary.time`) is marked in the report and left out of the curves and the resolution
+  table; quantities per fillet (`s1:T2_T3`, `s3:T3_T4`) in `curve` and the resolution table.
+- Break-offs of the study explained (FE-19): the sharp pinion tip corner on a flank node row
+  of the outgoing tooth beyond E, a slowly converging contact iteration that exceeds the 16
+  equilibrium iterations per increment; retries built and run by the user: penalty
+  enforcement (no help), tip rounding 0,05 mm (moves the break-off), iteration limits
+  20/30/100 (under test).
+- `build_fe_decks.py decks`: `--grid-indices` (a subset of the grid with the numbering of the
+  full grid, retry folders), `--enforcement` (`PENALTY=LINEAR`, `DIRECT`, `AUGMENTED
+  LAGRANGE`), `--tip-rounding` (also on `surface`), `--iterations I0 IR IC`; manifest fields
+  `enforcement`, `iteration_limits`, `grid.indices`, `pinion_surface.max_edge_mm` and
+  `tip_rounding_mm`; README sentences; the report notes the co-rotation of the material
+  directions under NLGEOM=YES instead of failing the orientation check.
+- `fe.rigid_surface`: `tip_rounding_mm` rounds the two corners of the tip land with arcs
+  tangent to flank and tip land (at least four facets per arc, `ROUNDING_FACETS`).
+- `fe.deck`: `PositionDeck.iteration_limits` writes `*CONTROLS, PARAMETERS=TIME
+  INCREMENTATION` in every step; step W2 carries the part's frame as `*ORIENTATION` on its
+  section (the Hill potential of the isotropic row needs one; the first W2 pilot was rejected
+  by the preprocessor).
+- Ring against pocket body at C with the same bore 33 (ADR-116 item 39): rotation and head
+  displacement +13 to +16 %, root stresses +3 to +10 %, pressure maximum at mid-width.
+- Nonlinear pilot (W2, W4 QS) and margin pilot (W4 QS at ±0,75 and ±1,0 pitch) written;
+  first W4 position: +14 % rotation, −20 % root stress, −24 % edge pressure against W1,
+  outer teeth still loaded at ±0,5 pitch (FE-21). Sector boundary 1 to 2 % (FE-20).
+- Tests: `test_fe_decks_script.py` (retry options, loads the script via importlib), rounding
+  and iteration-limit tests; diary regenerated (49 folders).
+
 ### Added (increment 2 - pair geometry, 2026-09-30, ADR-107, ADR-110)
 - `gearcore.pair`: mating quantities of an external gear pair per DIN ISO 21771:2014-08 §4.4, §4.5,
   §5.2 to §5.4, §5.6 and Eq. (127) of §7.6 (pitches, tip and tip form diameter, working pressure

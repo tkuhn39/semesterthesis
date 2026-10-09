@@ -179,6 +179,13 @@ def test_material_steps_differ_only_in_section_and_material(
     assert "*PLASTIC" in "\n".join(texts["W2"]) and "*POTENTIAL, TYPE=HILL" in "\n".join(
         texts["W2"]
     )
+    # the Hill potential of the isotropic row needs a local orientation (the part's frame);
+    # the preprocessor rejects the section without one (W2 pilot 2026-10-09)
+    w2 = "\n".join(texts["W2"])
+    assert "*ORIENTATION, NAME=WHEEL_ISO, DEFINITION=COORDINATES\n1., 0., 0., 0., 1., 0.\n3, 0.\n" in w2
+    assert "*SOLID SECTION, ELSET=WHEEL, MATERIAL=WHEEL_PLASTIC, ORIENTATION=WHEEL_ISO" in w2
+    assert "*ORIENTATION" not in "\n".join(texts["W1"])
+    assert "*SOLID SECTION, ELSET=WHEEL, MATERIAL=WHEEL_PLASTIC\n" in "\n".join(texts["W1"]) + "\n"
     assert "PEEQ" in "\n".join(texts["W2"]) and "PEEQ" in "\n".join(texts["W4"])
     assert "*INCLUDE, INPUT=wheel_orientation_part.inp" in "\n".join(texts["W3"])
     assert "*INCLUDE, INPUT=wheel_orientation_model.inp" in "\n".join(texts["W4"])
@@ -263,10 +270,12 @@ def test_solver_and_contact_variants_change_only_their_keywords(
         "penalty": {"enforcement": "penalty"},
         "s2s": {"contact": "surface_to_surface"},
         "smooth": {"smoothing": 0.5},
+        "iterations": {"iteration_limits": (20, 30, 100)},
     }
     expected = {
         "nlgeom": ("NLGEOM=YES", 4),
         "line_search": ("*CONTROLS, PARAMETERS=LINE SEARCH\n5\n", 4),
+        "iterations": ("*CONTROLS, PARAMETERS=TIME INCREMENTATION\n20, 30, , 100\n", 4),
         "direct": ("*SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=HARD, DIRECT\n", 1),
         "augmented": ("*SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=HARD, AUGMENTED LAGRANGE\n", 1),
         "penalty": ("*SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=HARD, PENALTY=LINEAR\n", 1),
@@ -283,19 +292,22 @@ def test_solver_and_contact_variants_change_only_their_keywords(
         marker, count = expected[name]
         assert text.count(marker) == count, name
         # everything else is untouched: the same number of lines apart from the controls
-        delta = 8 if name == "line_search" else 0
+        delta = 8 if name in ("line_search", "iterations") else 0
         assert len(text.splitlines()) == len(base.splitlines()) + delta, name
         assert text.count("*NODE PRINT") == 8 and "WHEEL_FESSELUNG" in text
+        if name == "iterations":
+            assert "iterations I_0/I_R/I_C 20/30/100" in text
+    assert "iterations default" in base
     for bad in (
         {"contact": "general"},
         {"enforcement": "soft"},
         {"smoothing": 0.6},
         {"line_search": -1},
+        {"iteration_limits": (2, 30, 100)},
+        {"iteration_limits": (20, 30)},
     ):
         with pytest.raises(InputRangeError):
-            dk.position_deck_text(
-                dataclasses.replace(_deck(card, placement), **bad)  # type: ignore[arg-type]
-            )
+            dk.position_deck_text(dataclasses.replace(_deck(card, placement), **bad))
 
 
 def test_deck_rejects_wrong_inputs(card: dk.MaterialCard, placement: Placement) -> None:

@@ -647,9 +647,11 @@ def surface(
     max_edge_mm: float,
     rotation: pl.Rotation,
     out: Path,
+    tip_rounding_mm: float = 0.0,
 ) -> list[str]:
     """Write the rigid tooth surface of the gear ``role`` and a picture of it in mesh with the
-    sector of the mating gear; returns the lines of the report."""
+    sector of the mating gear; returns the lines of the report. ``tip_rounding_mm`` > 0 rounds
+    the corners of the tip land of the rigid surface (``rigid_surface``)."""
     generation = _generation(case)
     gears = generation.inputs.gears
     mating_role: ct.Role = "wheel" if role == "pinion" else "pinion"
@@ -658,15 +660,22 @@ def surface(
         so.sweep_levels(mating.face_width_mm, mating_layers), gear.face_width_mm
     )
     rigid = rsf.rigid_surface(
-        generation, role, teeth=mating_teeth + 2, max_edge_mm=max_edge_mm, z_levels_mm=levels
+        generation,
+        role,
+        teeth=mating_teeth + 2,
+        max_edge_mm=max_edge_mm,
+        z_levels_mm=levels,
+        tip_rounding_mm=tip_rounding_mm,
     )
     out.mkdir(parents=True, exist_ok=True)
     target = out / f"{role}_surface.inp"
+    rounding_note = f", tip rounding {tip_rounding_mm:g} mm" if tip_rounding_mm > 0.0 else ""
     target.write_text(
         ab.rigid_surface_text(
             rigid,
             role.upper(),
-            title=f"{case}: {role}, face width {gear.face_width_mm:g} mm, built by gearcore",
+            title=f"{case}: {role}, face width {gear.face_width_mm:g} mm{rounding_note}, "
+            "built by gearcore",
         ),
         encoding="ascii",
     )
@@ -713,6 +722,14 @@ def surface(
         f"{float(steps.max()):.4f} mm",
         f"z: {len(levels)} levels from {float(levels[0]):g} to {float(levels[-1]):g} mm, steps "
         f"{float(np.diff(levels).min()):.4f} to {float(np.diff(levels).max()):.4f} mm",
+        *(
+            [
+                f"tip corners rounded with {tip_rounding_mm:g} mm (at least "
+                f"{rsf.ROUNDING_FACETS} facets per arc); 0 = the sharp corner of the drawing"
+            ]
+            if tip_rounding_mm > 0.0
+            else []
+        ),
     ]
 
 
@@ -776,6 +793,17 @@ VARIANTS: dict[str, tuple[dict[str, object], str]] = {
 """Variants of the solver and contact settings for the diagnosis of a broken-off pilot: one
 position file per variant, same mesh files, same position. Every variant names its contact
 formulation itself, so a change of the ``PositionDeck`` defaults does not move it."""
+ENFORCEMENT_README: dict[str, str] = {
+    "default": "harte Kontaktbedingung mit der Abaqus-Voreinstellung der Durchsetzung (direkt "
+    "mit Lagrange-Multiplikatoren bei Knoten-zu-Fläche)",
+    "penalty": "harte Kontaktbedingung mit linearer Penalty-Durchsetzung (PENALTY=LINEAR, "
+    "Penalty-Steifigkeit 10 × repräsentative Elementsteifigkeit nach Abaqus-Voreinstellung; "
+    "Abhilfe gegen das Flattern eines Flankenknotens auf dem Knick der starren Fläche, "
+    "Abbrüche der 60-je-Teilung-Studie 2026-10-07)",
+    "direct": "harte Kontaktbedingung, direkt mit Lagrange-Multiplikatoren (DIRECT)",
+    "augmented_lagrange": "harte Kontaktbedingung mit Augmented-Lagrange-Durchsetzung",
+}
+"""Sentence of the README for the enforcement of the contact constraint."""
 """Coarse numbers for the function test in the Learning Edition (1000 nodes)."""
 LE_POCKET_COUNTS = rs.MeshCounts(
     over_tooth_height=4,
@@ -1002,9 +1030,24 @@ def decks(
     variants: list[str] | None = None,
     body: bd.BodyShape = "ring",
     body_counts: bd.BodyCounts | None = None,
+    enforcement: dk.Enforcement = "default",
+    grid_indices: list[int] | None = None,
+    tip_rounding_mm: float = 0.0,
+    iteration_limits: tuple[int, int, int] | None = None,
 ) -> list[str]:
     """Write the wheel mesh, the pinion surface, one position file per position and
     combination, the manifest and the runner into ``out``; returns the lines of the report.
+    ``tip_rounding_mm`` rounds the tip corners of the rigid pinion surface (``surface``);
+    ``iteration_limits`` (I_0, I_R, I_C) raises the equilibrium iteration limits of every step
+    (``deck.PositionDeck.iteration_limits``).
+
+    ``enforcement`` sets the enforcement of the hard contact of every file (a variant that
+    names its own enforcement wins): ``default`` leaves it to Abaqus (direct Lagrange
+    multipliers for node-to-surface), ``penalty`` writes ``PENALTY=LINEAR``, the remedy of the
+    Abaqus guide for chattering of a secondary node on a kink of the main surface (the 11
+    broken-off positions of the 60-per-pitch study, 2026-10-09). ``grid_indices`` keeps only
+    these positions of the grid (1-based, the numbering of the full grid is preserved, so
+    ``pos_045.inp`` of a retry folder is the same position as in the study folder).
 
     The material steps and the strain rates are variant axes: one CONVERSE file per rate
     (``cofs`` and ``rates`` in the same order; the same mesh, the material card of that rate),
@@ -1056,7 +1099,9 @@ def decks(
         body_counts=body_counts,
     )
     report = list(built.lines)
-    report += surface(case, "pinion", teeth, layers, max_edge_mm, rotation, out)
+    report += surface(
+        case, "pinion", teeth, layers, max_edge_mm, rotation, out, tip_rounding_mm=tip_rounding_mm
+    )
     section = built.section
     layers = built.solid.layers
     effective = rf.effective_counts(section)
@@ -1108,17 +1153,32 @@ def decks(
     seating = dk.seating_angle_rad(seating_arc_mm, r_b1)
     step_names = tuple(f"LOAD_{t:g}NM".replace(".", "P") for t in torques_wheel_nm)
     chosen = _positions(generation, positions, steps_per_pitch, margin)
+    if enforcement not in dk.ENFORCEMENT_KEYWORDS:
+        raise InputRangeError(f"enforcement {enforcement!r} is not known")
+    if grid_indices is not None:
+        bad = [k for k in grid_indices if not 1 <= k <= len(chosen)]
+        if bad or not grid_indices or len(set(grid_indices)) != len(grid_indices):
+            raise InputRangeError(
+                f"grid indices must be distinct and between 1 and {len(chosen)}, got {grid_indices!r}"
+            )
     rho_a, _ = pl.path_of_contact_limits(generation)
     entries = []
     single = len(material_steps) == 1 and len(rates) == 1
 
     def settings_of(step: dk.MaterialStep) -> dict[str, dict[str, object]]:
         nlgeom = dk.NLGEOM_OF_STEP[step]
+        common: dict[str, object] = {
+            "nlgeom": nlgeom,
+            "enforcement": enforcement,
+            "iteration_limits": iteration_limits,
+        }
         if variants:
-            return {v: {"nlgeom": nlgeom, **VARIANTS[v][0]} for v in variants}
-        return {"": {"nlgeom": nlgeom}}
+            return {v: {**common, **VARIANTS[v][0]} for v in variants}
+        return {"": common}
 
     for k, (label, rho) in enumerate(chosen, start=1):
+        if grid_indices is not None and k not in grid_indices:
+            continue
         position = pl.mesh_position(generation, rho, working_flank=flank)
         place = pl.fixed_axes(position)
         for step in material_steps:
@@ -1161,6 +1221,12 @@ def decks(
                             "rate": rate,
                             "element_type": types_of_step[step],
                             "nlgeom": bool(settings["nlgeom"]),
+                            "enforcement": str(settings["enforcement"]),
+                            "iteration_limits": (
+                                list(settings["iteration_limits"])  # type: ignore[call-overload]
+                                if settings.get("iteration_limits") is not None
+                                else None
+                            ),
                             "variant": variant,
                             "point": label,
                             "rho_1_mm": rho,
@@ -1199,8 +1265,11 @@ def decks(
             for rate, cof in zip(rates, cofs, strict=True)
         },
         "contact": "node_to_surface",
+        "enforcement": enforcement,
+        "iteration_limits": list(iteration_limits) if iteration_limits is not None else None,
         "grid": {
             "positions": positions,
+            "indices": grid_indices,
             "steps_per_pitch": steps_per_pitch,
             "margin_pitches": margin,
             "transverse_base_pitch_mm": generation.pair_geometry.transverse_base_pitch_mm,
@@ -1239,7 +1308,12 @@ def decks(
             "body": _body_manifest(built.body),
             "fillet_chains_transverse": _fillet_chains(section),
         },
-        "pinion_surface": {"file": "pinion_surface.inp", "teeth": teeth + 2},
+        "pinion_surface": {
+            "file": "pinion_surface.inp",
+            "teeth": teeth + 2,
+            "max_edge_mm": max_edge_mm,
+            "tip_rounding_mm": tip_rounding_mm,
+        },
         "positions": entries,
         "variants": {v: VARIANTS[v][1] for v in variants} if variants else {},
         "runner": "run_all.ps1",
@@ -1257,7 +1331,14 @@ def decks(
                 "",
                 f"Radsektor {teeth} Zähne + 2 zahnlose Segmente, {layers} Schichten, "
                 f"{', '.join(f'{t} ({f})' for t, f in mesh_files.items())}, "
-                f"{len(built.solid.nodes_mm)} Knoten; starre Ritzelfläche mit {teeth + 2} Zähnen. "
+                f"{len(built.solid.nodes_mm)} Knoten; starre Ritzelfläche mit {teeth + 2} Zähnen"
+                + (
+                    f", Kopfkanten mit {tip_rounding_mm:g} mm gerundet (Entgratung als "
+                    "Modellannahme der starren Fläche, nicht der Zeichnung; FE-17)"
+                    if tip_rounding_mm > 0.0
+                    else ", scharfe Kopfkanten wie das reale Ritzel (FE-17)"
+                )
+                + ". "
                 + (
                     "Je Stellung eine Datei `pos_NNN.inp`"
                     if single
@@ -1295,8 +1376,18 @@ def decks(
                     f"mit {types_of_step[s]}"
                     for s in material_steps
                 )
-                + "; Kontakt Knoten-zu-Fläche mit Glättung der starren Facetten (SMOOTH 0,2), keine "
-                "Stabilisierung. Regel je Werkstoffstufe (`deck.NLGEOM_OF_STEP`, "
+                + "; Kontakt Knoten-zu-Fläche mit Glättung der starren Facetten (SMOOTH 0,2), "
+                + ENFORCEMENT_README[enforcement]
+                + (
+                    f", Iterationsgrenzen je Inkrement I_0/I_R/I_C = {iteration_limits[0]}/"
+                    f"{iteration_limits[1]}/{iteration_limits[2]} statt 4/8/16 (*CONTROLS, "
+                    "PARAMETERS=TIME INCREMENTATION): der flatternde Flankenknoten an der "
+                    "Ritzelkopfkante konvergiert mit Faktor 0,85 bis 0,95 je Iteration und lief "
+                    "mit 16 Iterationen in den Rückschnitt (Wiederholungsläufe 2026-10-09)"
+                    if iteration_limits is not None
+                    else ""
+                )
+                + ", keine Stabilisierung. Regel je Werkstoffstufe (`deck.NLGEOM_OF_STEP`, "
                 "`deck.ELEMENT_TYPE_OF_STEP`): W1 und W3 linear mit C3D8I, W2 und W4 nichtlinear "
                 "mit C3D8 auf demselben Netz, weil C3D8I mit NLGEOM=YES negative Eigenwerte erzeugt "
                 "und abbricht (Elementtest 2026-10-07, FE-14); `--element-type` überschreibt.",
@@ -1633,6 +1724,12 @@ def report(folder: Path) -> list[str]:
                     )
                     fv_check = ev.field_variable_check(step_fields, field_variables[rate_of_entry])
                     checks[name] = ev.format_orientation(check, fv_check)
+                    if name != "SEAT" and bool(entry.get("nlgeom")) and not check.turned:
+                        checks[name].append(
+                            "    (geometrically nonlinear step: the material directions of the "
+                            "output database rotate with the deformation, so the deviation grows "
+                            "with the load; the placement check is the one at SEAT)"
+                        )
             else:
                 checks = {
                     name: [f"    orientation: CONVERSE file {source!r} not found, check skipped"]
@@ -1735,9 +1832,22 @@ def _path_series(
     halves = sorted(
         {f"{t.tooth}_{t.side}" for p in points for s in p.summaries.values() for t in s.teeth}
     )
+    fillets = sorted(
+        {f.name for p in points for s in p.summaries.values() for f in s.fillets}
+    )
     named = [(p.from_a_mm, p.label) for p in points if p.label]
     tag = f"{series}: " if series else ""
-    lines = [f"{tag}path of contact: {len(points)} positions with extracted fields"]
+    incomplete = sorted(
+        {p.job for p in points for s in p.summaries.values() if not s.complete}
+    )
+    lines = [
+        f"{tag}path of contact: {len(points)} positions with extracted fields"
+        + (
+            f"; broken-off steps left out of the curves at {', '.join(incomplete)}"
+            if incomplete
+            else ""
+        )
+    ]
     for step in step_names:
         fig, axes = plt.subplots(4, 1, figsize=(8.0, 11.0), sharex=True)
         rotation = ev.curve(points, step, "pinion_rotation_rad")
@@ -1788,19 +1898,31 @@ def _path_series(
             for f in (1, 2, 3, 4, 5, 6, 10, 12)
             if steps_per_pitch % f == 0 and steps_per_pitch / f >= 4
         ]
-        quantities = [*PATH_QUANTITIES, *(f"force:{h}" for h in halves if any_force)]
+        # the global maxima first, then per tooth half and per fillet (the maxima of one tooth
+        # over its own history, so that a maximum does not jump to the same point of the
+        # neighbouring tooth one pitch away)
+        quantities = [
+            *PATH_QUANTITIES,
+            *(f"force:{h}" for h in halves if any_force),
+            *(f"s1:{f}" for f in fillets),
+            *(f"s3:{f}" for f in fillets),
+        ]
         rows = ev.resolution_rows(
             points, step, quantities, steps_per_pitch, base_pitch, float(margin or 0.0), factors
         )
         table = ev.format_resolution(rows)
         document.extend([f"## {tag}{step}", "", *table, ""])
-        coarse = [r for r in rows if r.steps_per_pitch == rows[-1].steps_per_pitch]
+        coarse = [
+            r
+            for r in rows
+            if r.steps_per_pitch == rows[-1].steps_per_pitch and r.quantity in PATH_QUANTITIES
+        ]
         lines.append(
             f"  {tag}{step}: resolution table with {len(factors)} sub-grids in path_report.md; "
-            f"coarsest ({rows[-1].steps_per_pitch} per pitch) shifts the maxima by up to "
+            f"coarsest ({rows[-1].steps_per_pitch} per pitch) shifts the global maxima by up to "
             f"{max(abs(r.shift_mm) for r in coarse):.3f} mm and changes them by up to "
             f"{max(abs(r.change) for r in coarse) * 100:.2f} %"
-            if rows
+            if rows and coarse
             else f"  {tag}{step}: no resolution table (no curves)"
         )
     return lines
@@ -2576,6 +2698,13 @@ def main() -> None:
     surface_parser.add_argument(
         "--pinion-rotation", choices=("clockwise", "counterclockwise"), default="clockwise"
     )
+    surface_parser.add_argument(
+        "--tip-rounding",
+        type=float,
+        default=0.0,
+        help="mm; radius of the rounding of the tip corners of the rigid surface (deburring as "
+        "a modelling choice), 0 = sharp corners as the drawing",
+    )
     surface_parser.add_argument("--out", type=Path, default=None)
     preview_parser = commands.add_parser("preview", help="draw the pair in five positions")
     preview_parser.add_argument("--case", default="kst_e", help="packaged STplus case")
@@ -2655,11 +2784,44 @@ def main() -> None:
         "--max-edge", type=float, default=0.05, help="mm along the pinion profile"
     )
     decks_parser.add_argument(
+        "--tip-rounding",
+        type=float,
+        default=0.0,
+        help="mm; radius of the rounding of the tip corners of the rigid pinion surface, "
+        "0 = sharp corners as the drawing (FE-17)",
+    )
+    decks_parser.add_argument(
         "--variants",
         nargs="+",
         choices=tuple(VARIANTS),
         default=None,
         help="one position file per solver/contact variant (diagnosis of a broken-off run)",
+    )
+    decks_parser.add_argument(
+        "--enforcement",
+        choices=tuple(dk.ENFORCEMENT_KEYWORDS),
+        default="default",
+        help="enforcement of the hard contact in every file: 'default' (Abaqus: direct Lagrange "
+        "multipliers for node-to-surface), 'penalty' (PENALTY=LINEAR, against chattering of a "
+        "flank node on the kink of the rigid surface), 'direct', 'augmented_lagrange'",
+    )
+    decks_parser.add_argument(
+        "--grid-indices",
+        type=int,
+        nargs="+",
+        default=None,
+        help="write only these positions of the grid (1-based indices of the full grid, the "
+        "file names pos_NNN keep the numbering of the full grid): a retry folder",
+    )
+    decks_parser.add_argument(
+        "--iterations",
+        type=int,
+        nargs=3,
+        default=None,
+        metavar=("I0", "IR", "IC"),
+        help="equilibrium iteration limits of every step, *CONTROLS, PARAMETERS=TIME "
+        "INCREMENTATION (Abaqus defaults 4 8 16): more iterations before a cutback for the "
+        "slowly converging contact of a flank node on the pinion tip corner",
     )
     decks_parser.add_argument("--out", type=Path, default=None)
     report_parser = commands.add_parser(
@@ -2729,6 +2891,7 @@ def main() -> None:
             args.max_edge,
             args.pinion_rotation,
             out,
+            tip_rounding_mm=args.tip_rounding,
         ):
             print(line)
     if args.command == "preview":
@@ -2757,6 +2920,14 @@ def main() -> None:
             folder += "_pocket"
         if args.variants:
             folder += "_variants"
+        if args.enforcement != "default":
+            folder += f"_{args.enforcement}"
+        if args.tip_rounding > 0.0:
+            folder += f"_round{args.tip_rounding:g}"
+        if args.iterations:
+            folder += f"_iter{args.iterations[2]}"
+        if args.grid_indices:
+            folder += f"_retry{len(args.grid_indices)}"
         out = args.out if args.out is not None else OUTPUT / args.case / folder
         for line in decks(
             args.case,
@@ -2781,6 +2952,10 @@ def main() -> None:
             variants=args.variants,
             body=args.body,
             body_counts=body_counts,
+            enforcement=args.enforcement,
+            grid_indices=args.grid_indices,
+            tip_rounding_mm=args.tip_rounding,
+            iteration_limits=tuple(args.iterations) if args.iterations else None,
         ):
             print(line)
     if args.command == "report":

@@ -374,6 +374,15 @@ class PositionDeck:
     """N_ls of ``*CONTROLS, PARAMETERS=LINE SEARCH`` in every step: 0 = off (the Abaqus default
     for Newton steps), the documentation suggests 5 to activate the algorithm, which scales
     the Newton correction when the residual would otherwise grow (oscillating iterations)."""
+    iteration_limits: tuple[int, int, int] | None = None
+    """(I_0, I_R, I_C) of ``*CONTROLS, PARAMETERS=TIME INCREMENTATION`` in every step, None =
+    the Abaqus defaults (4, 8, 16): I_0 equilibrium iterations before the check whether the
+    residuals grow in two consecutive iterations, I_R consecutive equilibrium iterations before
+    the logarithmic rate-of-convergence check begins, I_C the upper limit of consecutive
+    equilibrium iterations in an increment (keyword reference CONTROLS, Abaqus 2025). Larger
+    limits let a slowly converging contact iteration finish instead of cutting the increment
+    back: the chattering flank node on the tip corner of the rigid pinion converged with a
+    factor of 0,85 to 0,95 per iteration and hit I_C = 16 (retries of 2026-10-09)."""
 
 
 def _format(value: float) -> str:
@@ -408,8 +417,20 @@ def _material_lines(deck: PositionDeck) -> list[str]:
 
 
 def _section_lines(deck: PositionDeck) -> list[str]:
-    if deck.material_step in ("W1", "W2"):
+    if deck.material_step == "W1":
         return [f"*SOLID SECTION, ELSET={WHEEL}, MATERIAL={WHEEL}_PLASTIC"]
+    if deck.material_step == "W2":
+        # the Hill potential of the card's isotropic row (yield ratios equal in the three
+        # normal and in the three shear directions, so the frame does not matter) needs a
+        # local orientation: "A local orientation must be used to define the direction of
+        # anisotropy" (materials guide, Hill anisotropic yield; the preprocessor rejects the
+        # section without one, W2 pilot 2026-10-09). The part's own frame is given.
+        return [
+            f"*ORIENTATION, NAME={WHEEL}_ISO, DEFINITION=COORDINATES",
+            "1., 0., 0., 0., 1., 0.",
+            "3, 0.",
+            f"*SOLID SECTION, ELSET={WHEEL}, MATERIAL={WHEEL}_PLASTIC, ORIENTATION={WHEEL}_ISO",
+        ]
     if deck.orientation_part_file is None:
         raise InputRangeError(
             f"step {deck.material_step} needs the part piece of the orientation file"
@@ -439,6 +460,20 @@ def position_deck_text(deck: PositionDeck) -> str:
     line_search = integer_input(deck.line_search, "line search iterations")
     if line_search < 0:
         raise InputRangeError(f"line search iterations must not be negative, got {line_search}")
+    limits: tuple[int, int, int] | None = None
+    if deck.iteration_limits is not None:
+        if len(deck.iteration_limits) != 3:
+            raise InputRangeError("iteration limits are (I_0, I_R, I_C)")
+        i_0, i_r, i_c = (
+            integer_input(v, name)
+            for v, name in zip(deck.iteration_limits, ("I_0", "I_R", "I_C"), strict=True)
+        )
+        if i_0 < 3 or i_r < 1 or i_c < 1:
+            raise InputRangeError(
+                f"iteration limits need I_0 >= 3 (Abaqus minimum) and I_R, I_C >= 1, got "
+                f"{deck.iteration_limits!r}"
+            )
+        limits = (i_0, i_r, i_c)
     temperature = finite_input(deck.temperature_c, "temperature")
     place = deck.placement
     wheel_axis = place.axis_mm.wheel
@@ -453,7 +488,8 @@ def position_deck_text(deck: PositionDeck) -> str:
         f"torques at the pinion {', '.join(f'{t:g}' for t in torques)} N mm, sign {deck.torque_sign:+g} about +z",
         f"** steps geometrically {'nonlinear' if deck.nlgeom else 'linear'}, contact {deck.contact}"
         f"{'' if deck.contact == 'surface_to_surface' else f' (SMOOTH={smoothing:g})'}, "
-        f"enforcement {deck.enforcement}, line search {line_search}",
+        f"enforcement {deck.enforcement}, line search {line_search}, iterations "
+        + ("default" if limits is None else f"I_0/I_R/I_C {limits[0]}/{limits[1]}/{limits[2]}"),
         "*PREPRINT, ECHO=NO, MODEL=NO, HISTORY=NO, CONTACT=NO",
         "** --- parts ---",
         f"*PART, NAME={WHEEL}",
@@ -513,7 +549,7 @@ def position_deck_text(deck: PositionDeck) -> str:
     lines.append(f"*STEP, NAME=SEAT, NLGEOM={nlgeom}, INC=200")
     lines.append("*STATIC")
     lines.append("0.1, 1., 1.e-6, 1.")
-    lines.extend(_controls_lines(line_search))
+    lines.extend(_controls_lines(line_search, limits))
     lines.append("*BOUNDARY")
     lines.append(f"{PINION}_RP, 6, 6, {_format(deck.torque_sign * seating)}")
     lines.extend(_output_lines(deck))
@@ -526,7 +562,7 @@ def position_deck_text(deck: PositionDeck) -> str:
         lines.append(f"*STEP, NAME={name}, NLGEOM={nlgeom}, INC=200")
         lines.append("*STATIC")
         lines.append("0.1, 1., 1.e-6, 1.")
-        lines.extend(_controls_lines(line_search))
+        lines.extend(_controls_lines(line_search, limits))
         lines.append("*BOUNDARY, OP=NEW")
         lines.append(f"{WHEEL}_RP, 1, 6")
         lines.append(f"{PINION}_RP, 1, 5")
@@ -537,11 +573,18 @@ def position_deck_text(deck: PositionDeck) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _controls_lines(line_search: int) -> list[str]:
-    """``*CONTROLS, PARAMETERS=LINE SEARCH`` with N_ls, or nothing when the line search is off."""
-    if line_search == 0:
-        return []
-    return ["*CONTROLS, PARAMETERS=LINE SEARCH", f"{line_search}"]
+def _controls_lines(line_search: int, limits: tuple[int, int, int] | None = None) -> list[str]:
+    """``*CONTROLS, PARAMETERS=LINE SEARCH`` with N_ls when the line search is on, and
+    ``*CONTROLS, PARAMETERS=TIME INCREMENTATION`` with I_0, I_R and I_C (the other fields of
+    the first data line blank = Abaqus defaults) when iteration limits are given."""
+    lines: list[str] = []
+    if line_search != 0:
+        lines.extend(["*CONTROLS, PARAMETERS=LINE SEARCH", f"{line_search}"])
+    if limits is not None:
+        lines.extend(
+            ["*CONTROLS, PARAMETERS=TIME INCREMENTATION", f"{limits[0]}, {limits[1]}, , {limits[2]}"]
+        )
+    return lines
 
 
 def _output_lines(deck: PositionDeck) -> list[str]:

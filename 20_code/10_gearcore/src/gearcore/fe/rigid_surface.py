@@ -14,6 +14,13 @@ Along the profile every element of the contour (fillet, involute, tip flank, tip
 is divided into equal steps no longer than ``max_edge_mm``; the corners between the elements are
 nodes. Along z the surface has the levels of the mating gear where both overlap, and steps of at
 most the same size beyond.
+
+``tip_rounding_mm`` replaces the two corners of the tip land by circular arcs tangent to the
+tip land and the flank (the deburring of a machined steel edge, a modelling choice of the rigid
+surface, not a datum of the gear): a flank node of the plastic gear that sits on the sharp
+corner sees two normals and chatters in node-to-surface contact (11 broken-off positions of
+the 60-per-pitch study, 2026-10-07); the arc gives it one continuous normal. Zero keeps the
+sharp corner of the drawing (FE-17).
 """
 
 import math
@@ -69,10 +76,81 @@ def _divided(points: Array, max_edge_mm: float) -> Array:
     return np.column_stack((np.interp(at, arc, points[:, 0]), np.interp(at, arc, points[:, 1])))
 
 
-def _tooth_profile(contour: ct.ToothContour, pitch: float, max_edge_mm: float) -> Array:
+ROUNDING_FACETS = 4
+"""Smallest number of facets along a rounding arc of the tip corners."""
+
+
+def _arc_lengths_from_the_end(points: Array) -> Array:
+    """Arc length of every point of a polyline measured from its last point."""
+    steps = np.hypot(*(points[1:] - points[:-1]).T)
+    return np.concatenate(([0.0], np.cumsum(steps[::-1])))[::-1]
+
+
+def _length(points: Array) -> float:
+    """Length of a polyline."""
+    return float(np.hypot(*(points[1:] - points[:-1]).T).sum())
+
+
+def _rounded_corner(
+    before: Array, after: Array, radius_mm: float, max_edge_mm: float
+) -> tuple[Array, Array, Array]:
+    """The corner where ``before`` ends and ``after`` begins (the first point of ``after``)
+    replaced by a circular arc of ``radius_mm`` tangent to both pieces: ``before`` and
+    ``after`` shortened by the tangent length t = r / tan(phi / 2) (phi the angle between the
+    pieces at the corner), and the arc between the two tangent points, sampled so that it gets
+    at least ``ROUNDING_FACETS`` facets."""
+    corner = after[0]
+    scale = float(np.hypot(*corner))
+    if float(np.hypot(*(before[-1] - corner))) > ct.JOIN_TOLERANCE * scale:
+        before = np.concatenate((before, corner[None, :]))
+    d_before = _arc_lengths_from_the_end(before)
+    d_after = _arc_lengths_from_the_end(after[::-1])[::-1]
+    # directions away from the corner, as chords over half the radius (the pieces are sampled
+    # about a micrometre apart; the curvature of a flank or a tip land is negligible over that)
+    reach = 0.5 * radius_mm
+    k_a = int(np.argmax(d_before <= reach))  # first point of ``before`` within reach
+    a = before[max(k_a - 1, 0)] - corner  # the point just outside the reach
+    k_b = int(np.argmax(d_after > reach)) if bool(np.any(d_after > reach)) else len(after) - 1
+    b = after[k_b] - corner
+    if float(np.hypot(*a)) == 0.0 or float(np.hypot(*b)) == 0.0:
+        raise GeometryInfeasibleError("a tip corner has a piece of zero length beside it")
+    a = a / float(np.hypot(*a))
+    b = b / float(np.hypot(*b))
+    phi = math.acos(min(1.0, max(-1.0, float(a @ b))))
+    if not math.radians(1.0) < phi < math.radians(179.0):
+        raise GeometryInfeasibleError(
+            f"the tip corner is no corner (angle {math.degrees(phi):.3f} deg between the pieces)"
+        )
+    tangent = radius_mm / math.tan(0.5 * phi)
+    if tangent >= float(d_before[0]) or tangent >= float(d_after[-1]):
+        raise GeometryInfeasibleError(
+            f"tip rounding {radius_mm:g} mm: the tangent length {tangent:.4f} mm exceeds the "
+            f"flank ({d_before[0]:.4f} mm) or the tip land ({d_after[-1]:.4f} mm) beside the corner"
+        )
+    bisector = a + b
+    bisector = bisector / float(np.hypot(*bisector))
+    centre = corner + bisector * radius_mm / math.sin(0.5 * phi)
+    t_before = corner + a * tangent
+    t_after = corner + b * tangent
+    kept_before = np.concatenate((before[d_before > tangent], t_before[None, :]))
+    kept_after = np.concatenate((t_after[None, :], after[d_after > tangent]))
+    theta_1 = math.atan2(*(t_before - centre)[::-1])
+    theta_2 = math.atan2(*(t_after - centre)[::-1])
+    sweep = math.remainder(theta_2 - theta_1, 2.0 * math.pi)
+    count = ROUNDING_FACETS  # no rounding function in the source: the step count by counting
+    while abs(sweep) * radius_mm > count * max_edge_mm:
+        count += 1
+    angles = theta_1 + sweep * np.arange(count + 1, dtype=np.float64) / count
+    arc = centre + radius_mm * np.column_stack((np.cos(angles), np.sin(angles)))
+    return kept_before, arc, kept_after
+
+
+def _tooth_profile(
+    contour: ct.ToothContour, pitch: float, max_edge_mm: float, tip_rounding_mm: float = 0.0
+) -> Array:
     """One pitch of the profile, counter-clockwise, the tooth centre on +y: from the centre line
     of the gap on the right (clockwise) to the centre line of the gap on the left, without the
-    last point."""
+    last point; with ``tip_rounding_mm`` the two corners of the tip land are rounded."""
     r_f = 0.5 * contour.generated_root_diameter_mm
     half = 0.5 * pitch
     tooth = contour.as_array()
@@ -82,31 +160,51 @@ def _tooth_profile(contour: ct.ToothContour, pitch: float, max_edge_mm: float) -
         raise GeometryInfeasibleError(
             "the fillets of neighbouring teeth overlap: no root circle between them"
         )
-    raw: list[Array] = []
+    raw: list[tuple[str, Array, float]] = []  # name, points, largest edge
     if last < half - ct.JOIN_TOLERANCE:
         # root circle from the gap centre line on the right to the right fillet
         angles = np.linspace(half, last, CONTOUR_POINTS)
-        raw.append(np.column_stack((r_f * np.sin(angles), r_f * np.cos(angles))))
+        raw.append(("root", np.column_stack((r_f * np.sin(angles), r_f * np.cos(angles))), max_edge_mm))
     for name in reversed(ct.SEGMENTS):  # right fillet ... left fillet: counter-clockwise
         segment = contour.segment(name)[::-1]
         if len(segment):
-            raw.append(segment)
+            raw.append((name, segment, max_edge_mm))
     if first > -half + ct.JOIN_TOLERANCE:
         angles = np.linspace(first, -half, CONTOUR_POINTS)
-        raw.append(np.column_stack((r_f * np.sin(angles), r_f * np.cos(angles))))
+        raw.append(("root", np.column_stack((r_f * np.sin(angles), r_f * np.cos(angles))), max_edge_mm))
+    if tip_rounding_mm > 0.0:
+        tip = [k for k, (name, _, _) in enumerate(raw) if name == "tip"]
+        if len(tip) != 1 or tip[0] == 0 or tip[0] == len(raw) - 1:
+            raise GeometryInfeasibleError("tip rounding needs a tip land between two flanks")
+        k = tip[0]
+        # the corner after the tip land first, so that the index of the tip stays valid
+        tip_points, arc_2, after = _rounded_corner(
+            raw[k][1], raw[k + 1][1], tip_rounding_mm, max_edge_mm
+        )
+        before, arc_1, tip_points = _rounded_corner(
+            raw[k - 1][1], tip_points, tip_rounding_mm, max_edge_mm
+        )
+        # the arcs keep at least ROUNDING_FACETS facets when the pieces are divided
+        raw[k - 1 : k + 2] = [
+            (raw[k - 1][0], before, max_edge_mm),
+            ("tip_rounding", arc_1, min(max_edge_mm, _length(arc_1) / ROUNDING_FACETS)),
+            ("tip", tip_points, max_edge_mm),
+            ("tip_rounding", arc_2, min(max_edge_mm, _length(arc_2) / ROUNDING_FACETS)),
+            (raw[k + 1][0], after, max_edge_mm),
+        ]
     # every piece runs up to the first point of the next one, so that the corners of the contour
     # are ends of pieces and thereby nodes
-    pieces: list[Array] = []
-    for index, segment in enumerate(raw):
+    pieces: list[tuple[Array, float]] = []
+    for index, (_, segment, edge) in enumerate(raw):
         piece = segment
         if index + 1 < len(raw):
-            corner = raw[index + 1][:1]
+            corner = raw[index + 1][1][:1]
             apart = float(np.hypot(*(segment[-1] - corner[0])))
             if apart > ct.JOIN_TOLERANCE * float(np.hypot(*corner[0])):
                 piece = np.concatenate((segment, corner))
         if len(piece) >= 2:
-            pieces.append(piece)
-    return np.concatenate([_divided(piece, max_edge_mm) for piece in pieces])
+            pieces.append((piece, edge))
+    return np.concatenate([_divided(piece, edge) for piece, edge in pieces])
 
 
 def surface_z_levels(
@@ -141,9 +239,11 @@ def rigid_surface(
     teeth: int,
     max_edge_mm: float,
     z_levels_mm: Array,
+    tip_rounding_mm: float = 0.0,
 ) -> RigidSurface:
     """The swept tooth surface of ``teeth`` teeth of the gear ``role`` on the z-levels
-    ``z_levels_mm`` (see ``surface_z_levels``)."""
+    ``z_levels_mm`` (see ``surface_z_levels``); ``tip_rounding_mm`` > 0 rounds the two corners
+    of the tip land (see the module)."""
     if not isinstance(generation, GenerationResult):
         raise InputRangeError(
             f"a GenerationResult of compute_generation is required, got {type(generation).__name__}"
@@ -154,6 +254,9 @@ def rigid_surface(
         )
     count = integer_input(teeth, "number of teeth of the surface")
     edge = positive_input(max_edge_mm, "largest edge along the profile")
+    rounding = finite_input(tip_rounding_mm, "tip rounding")
+    if rounding < 0.0:
+        raise InputRangeError(f"the tip rounding must not be negative, got {tip_rounding_mm!r}")
     levels = np.asarray(z_levels_mm, dtype=np.float64).ravel()
     if len(levels) < 2 or not bool(np.all(np.isfinite(levels)) and np.all(np.diff(levels) > 0.0)):
         raise InputRangeError("the z-levels must be at least two rising finite values")
@@ -164,7 +267,7 @@ def rigid_surface(
             f"a surface of a gear with {z} teeth holds 1 to {z - 1} teeth, got {teeth!r}"
         )
     pitch = 2.0 * math.pi / z
-    one = _tooth_profile(contour, pitch, edge)
+    one = _tooth_profile(contour, pitch, edge, rounding)
     pieces = []
     for j in range(count):
         turn = (j - 0.5 * (count - 1)) * pitch  # counter-clockwise from +y

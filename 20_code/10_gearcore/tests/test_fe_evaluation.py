@@ -135,6 +135,30 @@ def test_read_fields_and_step_summary(tmp_path: Path) -> None:
     lines = ev.format_summary(summary)
     assert any("T3 RIGHT: 2 closed nodes" in line for line in lines)
     assert any("fillet T2_T3" in line for line in lines)
+    assert summary.complete and summary.time == 1.0 and not lines[0].startswith("    step NOT")
+
+
+def test_broken_off_step_is_marked_and_left_out_of_the_curves(tmp_path: Path) -> None:
+    # the extraction stores the last converged frame of a broken-off step with its step time
+    # (and, since 2026-10-07, the flag ``complete``); older files carry the time only
+    document = _document(2.3e-3, 60.0, 4.0, 70.0)
+    document["steps"][1]["time"] = 0.206
+    document["steps"][1]["complete"] = False
+    path = tmp_path / "pos_001_fields.json"
+    path.write_text(json.dumps(document), encoding="utf-8")
+    step = ev.read_fields(path).steps[1]
+    assert not step.complete and step.time == pytest.approx(0.206)
+    summary = ev.step_summary(step)
+    assert not summary.complete and summary.time == pytest.approx(0.206)
+    assert ev.format_summary(summary)[0].startswith("    step NOT complete") and (
+        "0.206" in ev.format_summary(summary)[0]
+    )
+    del document["steps"][1]["complete"]
+    path.write_text(json.dumps(document), encoding="utf-8")
+    assert not ev.read_fields(path).steps[1].complete
+    document["steps"][1]["time"] = 1.0
+    path.write_text(json.dumps(document), encoding="utf-8")
+    assert ev.read_fields(path).steps[1].complete
 
 
 def test_read_fields_rejects_other_files(tmp_path: Path) -> None:
@@ -206,6 +230,25 @@ def test_path_points_grid_subsets_and_resolution(tmp_path: Path) -> None:
     force = ev.curve(points, "LOAD_8NM", "force:T3_RIGHT")
     assert force and force[0][1] == pytest.approx(8.0)
     assert ev.curve(points, "LOAD_8NM", "force:T9_LEFT")[0][1] == 0.0
+    # the principal stresses of one fillet: s1 of T2_T3 peaks at 1,5 mm with 70 MPa, s3 is
+    # taken by magnitude, a fillet without data counts as zero
+    s1 = ev.curve(points, "LOAD_8NM", "s1:T2_T3")
+    s1_peak = ev.extremum(s1)
+    assert s1_peak is not None and abs(s1_peak[0] - 1.5) < 0.13
+    assert s1_peak[1] == max(v for _, v in s1) and 69.0 < s1_peak[1] <= 70.0
+    assert ev.curve(points, "LOAD_8NM", "s1:T3_T4")[0][1] == pytest.approx(0.3 * s1[0][1])
+    assert all(v > 0.0 for _, v in ev.curve(points, "LOAD_8NM", "s3:T2_T3"))
+    assert ev.curve(points, "LOAD_8NM", "s3:T9_T9")[0][1] == 0.0
+    # a broken-off step (last converged increment at a fraction of the load) leaves the curves
+    broken = points[3]
+    document = json.loads((tmp_path / f"{broken.job}_fields.json").read_text(encoding="utf-8"))
+    document["steps"][1]["time"] = 0.4
+    document["steps"][1]["complete"] = False
+    (tmp_path / f"{broken.job}_fields.json").write_text(json.dumps(document), encoding="utf-8")
+    again = ev.path_points(manifest, tmp_path)
+    assert not again[3].summaries["LOAD_8NM"].complete
+    assert len(ev.curve(again, "LOAD_8NM", "p_max")) == len(pressure) - 1
+    assert all(x != broken.from_a_mm for x, _ in ev.curve(again, "LOAD_8NM", "p_max"))
     rows = ev.resolution_rows(
         points, "LOAD_8NM", ("p_max", "pinion_rotation_rad"), steps, p_bt, margin, factors=(1, 2, 3)
     )
