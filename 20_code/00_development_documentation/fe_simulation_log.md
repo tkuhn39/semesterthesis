@@ -1,8 +1,8 @@
 # Simulationstagebuch (generiert)
 
-Stand 2026-10-09 14:19; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
+Stand 2026-10-09 15:47; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
 
-Läufe: 204 vollständig, 27 abgebrochen, 8 offen, 282 Dateien nicht gerechnet; 57 Ordner.
+Läufe: 204 vollständig, 28 abgebrochen, 8 offen, 282 Dateien nicht gerechnet; 58 Ordner.
 
 ## 2026-10-05 16:43 `pinion_surface_7teeth_80layers`
 
@@ -1093,7 +1093,7 @@ Nicht gerechnet: 4 Dateien (`pos_001`, `pos_016`, `pos_178`, `pos_193`).
 
 ## 2026-10-09 13:35 `pilot_20layers_bore33_w4_qs_pos133_iter100`
 
-**Zweck:** Wiederholung der abgebrochenen pos_133_W4 des nichtlinearen Piloten mit den Iterationsgrenzen 20/30/100 (eine Datei): prüft, ob die Grenzen die langsam konvergierende Art abfangen (Vorlage, 2026-10-09). **Ergebnis:** Vorlage.
+**Zweck:** Wiederholung der abgebrochenen pos_133_W4 des nichtlinearen Piloten mit den Iterationsgrenzen 20/30/100 (eine Datei): prüft, ob die Grenzen die langsam konvergierende Art abfangen (Vorlage, 2026-10-09). **Ergebnis:** Vorlage; gerechnet in pilot_20layers_bore33_w4_qs_pos133_iter100_gerechnet.
 
 Netz: 82425 Knoten, 72320 Elemente (C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 1 Stellungsdateien (grid, 60 je Teilung)
 
@@ -1138,4 +1138,22 @@ Nicht gerechnet: 4 Dateien (`pos_002`, `pos_003`, `pos_044`, `pos_045`).
 Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
 
 Nicht gerechnet: 4 Dateien (`pos_002`, `pos_003`, `pos_044`, `pos_045`).
+
+## 2026-10-09 15:31 `pilot_20layers_bore33_w4_qs_pos133_iter100_gerechnet`
+
+**Zweck:** pos_133 W4 QS mit den Iterationsgrenzen 20/30/100 (2026-10-09, 72 min). **Ergebnis:** Bricht wieder bei Schrittzeit 0,856 (15,4 Nm) ab, nur später: die Grenzen bringen die Inkremente 12 bis 15 nach 11 bis 40 Iterationen durch (Penetrationsfehler abklingend, Faktor 0,975), Inkrement 17 divergiert dann aber an demselben Knoten 5742 (rechte Flanke T3, r 26,002, z −6,75): in den Attempts mit 100 Iterationen wächst der Fehler von 1e-7 auf 8e-6 bzw. 8e-7 mm (Faktor 1,04 bis 1,19 je Iteration), bei dt 1,1e-5 bis 1e-6 gleich. Die Einstufung 'langsam konvergierend' aus dem 16-Iterationen-Lauf galt nur für die Attempts davor; am kritischen Zustand divergiert auch W4. Damit ist für beide Werkstoffstufen belegt, dass Iterationsbudget und Line Search die Kopfkanten-Instabilität nicht beheben; es bleiben Versatz der Stellung, Rundung größer als die Knotenreihe oder ein weiches Kontaktgesetz. (gerechnet: Vollversion; Befunde FE-19, FE-21)
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 1 Stellungsdateien (grid, 60 je Teilung)
+
+**Läufe**
+
+| Datei     | Stellung  | Stufe | Rate | Variante | Löser           | Status                        | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|-----------|-----------|-------|------|----------|-----------------|-------------------------------|-----------------------|--------|---------|------------------|
+| `pos_133` | ρ1 12.657 | W4    | QS   |          | NLGEOM, N2S 0.2 | not completed (step 4 inc 17) | 6, 6, 6, 27           | 4329   | 32      | 2026-10-09 15:31 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei     | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|-----------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_133` | LOAD_12NM | -1.89 %  | 76.0       | 55.0           | T1 RIGHT, r 26.89, z +0.8 | 56.1       | T1_T2, r 24.79, z -6.8, Tangente 58° | -68.2      | T2_T3      | 85.0    | T2   |
 

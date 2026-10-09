@@ -157,8 +157,13 @@ folders:
     findings: [FE-03, FE-17, FE-19, FE-21]
   pilot_20layers_bore33_w4_qs_pos133_iter100:
     purpose: "Wiederholung der abgebrochenen pos_133_W4 des nichtlinearen Piloten mit den Iterationsgrenzen 20/30/100 (eine Datei): prüft, ob die Grenzen die langsam konvergierende Art abfangen (Vorlage, 2026-10-09)"
-    outcome: "Vorlage"
+    outcome: "Vorlage; gerechnet in pilot_20layers_bore33_w4_qs_pos133_iter100_gerechnet"
     machine: "-"
+  pilot_20layers_bore33_w4_qs_pos133_iter100_gerechnet:
+    purpose: "pos_133 W4 QS mit den Iterationsgrenzen 20/30/100 (2026-10-09, 72 min)"
+    outcome: "Bricht wieder bei Schrittzeit 0,856 (15,4 Nm) ab, nur später: die Grenzen bringen die Inkremente 12 bis 15 nach 11 bis 40 Iterationen durch (Penetrationsfehler abklingend, Faktor 0,975), Inkrement 17 divergiert dann aber an demselben Knoten 5742 (rechte Flanke T3, r 26,002, z −6,75): in den Attempts mit 100 Iterationen wächst der Fehler von 1e-7 auf 8e-6 bzw. 8e-7 mm (Faktor 1,04 bis 1,19 je Iteration), bei dt 1,1e-5 bis 1e-6 gleich. Die Einstufung 'langsam konvergierend' aus dem 16-Iterationen-Lauf galt nur für die Attempts davor; am kritischen Zustand divergiert auch W4. Damit ist für beide Werkstoffstufen belegt, dass Iterationsbudget und Line Search die Kopfkanten-Instabilität nicht beheben; es bleiben Versatz der Stellung, Rundung größer als die Knotenreihe oder ein weiches Kontaktgesetz"
+    machine: "Vollversion"
+    findings: [FE-19, FE-21]
   pilot_20layers_bore33_w2w4_qs_gerechnet:
     purpose: "Erster Lauf des nichtlinearen Piloten in der Fassung V1 (W2 ohne Orientierung am Section, W4, Rate QS, NLGEOM=YES, C3D8), vom Nutzer nach pos_031_W4 gestoppt (2026-10-09)"
     outcome: "W2 bricht in 11 s im Präprozessor ab: 'Anisotropic material properties without a local orientation system have been defined for 72320 elements' (der Hill-Potential-Block der isotropen Zeile braucht eine lokale Orientierung, Materialhandbuch Hill anisotropic yield; behoben: *ORIENTATION WHEEL_ISO = Teilerahmen am Solid Section von W2, die Fließverhältnisse der isotropen Zeile sind in den drei Normal- und drei Schubrichtungen gleich, der Rahmen ist also belanglos). W4 pos_001 (Rand −0,5 Teilung) läuft durch: 565 s (2,9 × W1), 6 Inkremente je Schritt, keine negativen Eigenwerte, Orientierungsprüfung an SEAT 0,002°, unter Last bis 0,59° Mitdrehung mit der Verformung (NLGEOM). Gegen W1 (Studie pos_001) bei 16 Nm: Ritzeldrehung 88,6 statt 77,5 µm (+14 %), Kopfverschiebung 100,2 statt 93,0 µm (+8 %), einlaufender Zahn T3 (1,48 mm vor A) trägt 67,8 statt 34,5 N, auslaufender T5 194,8 statt 199,2 N, Kantendruck 96,0 statt 125,5 MPa (−24 %), σ1 am Fuß T3_T4 61,7 statt 77,1 MPa (−20 %, Maximum bei z +4,5 statt −3,75 durch die Faserorientierung), |σ3| T4_T5 68,0 statt 89,8 MPa. Am Gitterrand tragen die Randzähne noch 10 bzw. 30 % der Zahnkraft: der Rand von 0,5 Teilung reicht für W4 nicht, Randpilot pilot_20layers_bore33_w4_qs_margin geschrieben"
