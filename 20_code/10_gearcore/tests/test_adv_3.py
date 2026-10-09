@@ -36,7 +36,7 @@ def _tool(**kwargs: object) -> ToolProfile:
         "machining_allowance_mm": 0.0,
     }
     fields.update(kwargs)
-    return ToolProfile(**fields)  # type: ignore[arg-type]
+    return ToolProfile(**fields)
 
 
 def _pair(
@@ -51,7 +51,7 @@ def _pair(
 ) -> PairInput:
     tool = tool or _tool()
     tool_2 = tool_2 or tool
-    gears = Pair(
+    gears: Pair[GearInput] = Pair(
         pinion=GearInput(
             number_of_teeth=z[0],
             profile_shift_coefficient=x[0],
@@ -405,13 +405,13 @@ def test_g3b05_tool_from_section_records_every_default() -> None:
         "$ Anfang\n$ T\nKOPFHOEHENFAKTOR = 1.25\nKOPFABRUNDUNGSFAKTOR = 0.25\nKANTENBRECHWINKEL = 45\n$ Ende\n"
     )
     notes: list[str] = []
-    tool = tool_from_section(ste.section("T"), notes, normal_pressure_angle_deg=20.0)  # type: ignore[arg-type]
+    tool = tool_from_section(ste.section("T"), notes, normal_pressure_angle_deg=20.0)
     assert tool.root_form_height_factor == 1.3 and tool.dedendum_factor == 1.3
     assert len(notes) == 4  # root form height, dedendum, protuberance, allowance
     with pytest.raises(TypeError):
         tool_from_section(ste.section("T"))  # type: ignore[call-arg]
     # G3V-02: anything that cannot take the records is a typed error
-    for bad in (None, (), "notes", deque()):
+    for bad in (None, (), "notes", deque[str]()):
         with pytest.raises(InputRangeError, match="notes must be a list"):
             tool_from_section(ste.section("T"), bad, normal_pressure_angle_deg=20.0)  # type: ignore[arg-type]
 
@@ -422,7 +422,7 @@ def test_g3v04_an_equal_dedendum_is_not_reported_as_raised() -> None:
         "KOPFABRUNDUNGSFAKTOR = 0.25\nKANTENBRECHWINKEL = 45\n$ Ende\n"
     )
     notes: list[str] = []
-    tool = tool_from_section(ste.section("T"), notes, normal_pressure_angle_deg=20.0)  # type: ignore[arg-type]
+    tool = tool_from_section(ste.section("T"), notes, normal_pressure_angle_deg=20.0)
     assert tool.dedendum_factor == 1.3 and tool.root_form_height_factor == 1.3
     assert not [note for note in notes if "set to the root form height" in note]
 
@@ -450,7 +450,7 @@ def test_g3b04_the_contour_takes_the_generation_only() -> None:
     contour = ct.tooth_contour(result, "pinion", points=32)
     assert contour.number_of_teeth == 16
     with pytest.raises(InputRangeError, match="GenerationResult"):
-        ct.tooth_contour(result.inputs, "pinion")  # type: ignore[arg-type]
+        ct.tooth_contour(result.inputs, "pinion")
     with pytest.raises(InputRangeError):
         ct.compare(contour, np.array([["a", "b"]]))
     with pytest.raises(InputRangeError):
@@ -460,7 +460,7 @@ def test_g3b04_the_contour_takes_the_generation_only() -> None:
     with pytest.raises(InputRangeError):
         ct.distances("contour", np.zeros((2, 2)))  # type: ignore[arg-type]
     with pytest.raises(InputRangeError, match="ToothContour"):
-        ct.gear_polygon(result.inputs)  # type: ignore[arg-type]
+        ct.gear_polygon(result.inputs)
     short = contour.model_dump()
     short["points"] = short["points"][:-3]
     with pytest.raises(ValueError, match="segments end"):
@@ -645,13 +645,16 @@ def test_g3w02_an_inconsistent_psi_b_is_not_covered_by_the_expectation() -> None
                 rounding, d_b, psi_b - offset, undercut_expected=True
             )
     # rounding of the last digits of psi_b is not an inconsistency
-    assert tr.root_form_diameter_by_intersection(
+    d_Ff, psi, undercut = tr.root_form_diameter_by_intersection(
         rounding, d_b, psi_b - 1e-11, undercut_expected=True
-    ) == (d_b, pytest.approx(rounding.flank_parameter_rad, abs=1e-3), True)
+    )
+    assert (d_Ff, undercut) == (d_b, True)
+    assert psi == pytest.approx(rounding.flank_parameter_rad, abs=1e-3)
 
 
 def test_g3w03_wrong_argument_types_are_typed_errors() -> None:
     d_b, psi_b, rounding = _direct(20, 0.2)
+    bad: object
     for bad in (None, "a", _pair()):
         with pytest.raises(InputRangeError, match="TipRounding"):
             tr.fillet_point(bad, -1.0)  # type: ignore[arg-type]
@@ -662,14 +665,14 @@ def test_g3w03_wrong_argument_types_are_typed_errors() -> None:
     for bad in (None, "a", 1j, True, np.array(["a"]), np.array([1j]), np.array([np.nan])):
         for position in range(4):
             arguments = [1.0, 1.0, 1.0, 1.0]
-            arguments[position] = bad  # type: ignore[call-overload]
+            arguments[position] = bad  # type: ignore[assignment]  # wrong type on purpose
             with pytest.raises(InputRangeError):
                 tr.pitch_point_position(*arguments)
         for position in range(3):
             arguments = [1.0, -1.0, 0.5]
-            arguments[position] = bad  # type: ignore[call-overload]
+            arguments[position] = bad  # type: ignore[assignment]  # wrong type on purpose
             with pytest.raises(InputRangeError):
-                tr.generated_point(*arguments, 20.0)
+                tr.generated_point(arguments[0], arguments[1], arguments[2], 20.0)
     with pytest.raises(InputRangeError, match="one shape"):
         tr.pitch_point_position(np.zeros(3), np.zeros(3), np.ones(2), np.ones(3))
     with pytest.raises(InputRangeError, match="one shape"):

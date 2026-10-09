@@ -681,6 +681,7 @@ def test_stplus_residual_thickness_without_a_chamfer_is_the_tip_tooth_thickness(
     from gearcore.stplus_program import stplus_default
 
     factor = stplus_default("tip_chamfer_tangential").value
+    assert isinstance(factor, float)
     checked = {"none": 0, "given": 0}
     for path in stplus_case_dirs():
         if not has_stplus(path.name, "interface"):

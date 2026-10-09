@@ -11,6 +11,7 @@ from gearcore import contour as ct
 from gearcore import data
 from gearcore.errors import GeometryInfeasibleError, InputRangeError
 from gearcore.fe import convergence as cv
+from gearcore.fe import placement as pl
 from gearcore.fe import plane_solver as ps
 from gearcore.fe import refine as rf
 from gearcore.fe import sector_mesh as sm
@@ -72,7 +73,7 @@ def test_refinement_factors_are_validated() -> None:
     with pytest.raises(InputRangeError):
         rf.Refinement(thickness=1.5)  # type: ignore[arg-type]
     with pytest.raises(InputRangeError):
-        rf.Refinement(root=True)  # type: ignore[arg-type]
+        rf.Refinement(root=True)
 
 
 def test_identity_refinement_returns_the_same_mesh(
@@ -386,7 +387,7 @@ def test_load_case_at_point_b(
     assert load.loaded_tooth == 2 and load.loaded_side == -1  # the right flanks work
     # the contact point lies on the flank of the middle tooth at the radius of point B:
     # rho_B2 = rho_E2 + p_bt, so r_B = sqrt(r_b2^2 + rho_B2^2)
-    rho_e1 = cv.pl.path_of_contact_limits(kst_e)[1]
+    rho_e1 = pl.path_of_contact_limits(kst_e)[1]
     t1_t2 = kst_e.pair_geometry.centre_distance_mm * math.sin(
         math.radians(geometry.transverse_working_pressure_angle_deg)
     )

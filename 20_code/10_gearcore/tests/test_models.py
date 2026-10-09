@@ -79,7 +79,7 @@ def test_frozen_forbids_mutation_extra_and_nan() -> None:
     with pytest.raises(ValidationError):
         p.normal_module_mm = 3.0  # type: ignore[misc]
     with pytest.raises(ValidationError):
-        PairInput(**p.model_dump(), bogus=1)  # type: ignore[arg-type]
+        PairInput(**p.model_dump(), bogus=1)  # type: ignore[call-arg]
     with pytest.raises(ValidationError):
         pair(normal_module_mm=math.nan)
     with pytest.raises(ValidationError):
@@ -162,7 +162,7 @@ def test_profile_shift_must_be_determinable() -> None:
 
 def test_only_two_of_centre_distance_and_profile_shifts_may_be_given() -> None:
     """User decision 2026-09-30 (ADR-107): a_w, x_1 and x_2 together are an input error."""
-    both = Pair(pinion=gear(number_of_teeth=16), wheel=gear(number_of_teeth=24))
+    both: Pair[GearInput] = Pair(pinion=gear(number_of_teeth=16), wheel=gear(number_of_teeth=24))
     with pytest.raises(ValidationError, match="only two of the three may be given"):
         pair(gears=both)
     assert pair(gears=both, centre_distance_mm=None).centre_distance_mm is None

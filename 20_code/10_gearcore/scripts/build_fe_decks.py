@@ -1832,14 +1832,10 @@ def _path_series(
     halves = sorted(
         {f"{t.tooth}_{t.side}" for p in points for s in p.summaries.values() for t in s.teeth}
     )
-    fillets = sorted(
-        {f.name for p in points for s in p.summaries.values() for f in s.fillets}
-    )
+    fillets = sorted({f.name for p in points for s in p.summaries.values() for f in s.fillets})
     named = [(p.from_a_mm, p.label) for p in points if p.label]
     tag = f"{series}: " if series else ""
-    incomplete = sorted(
-        {p.job for p in points for s in p.summaries.values() if not s.complete}
-    )
+    incomplete = sorted({p.job for p in points for s in p.summaries.values() if not s.complete})
     lines = [
         f"{tag}path of contact: {len(points)} positions with extracted fields"
         + (

@@ -62,7 +62,7 @@ def tool(**fields: Any) -> ToolProfile:
 def kst_b(**pinion: Any) -> PairInput:
     """The reference pair kst-B (verified by the user): centre distance and the spans of both
     finished gears; ``pinion`` adds what settles the split (STplus presets A_sne1 = -85 um)."""
-    gears = Pair(
+    gears: Pair[GearInput] = Pair(
         pinion=GearInput(
             number_of_teeth=36,
             span=SpanMeasurement(
@@ -457,6 +457,7 @@ def test_limits_follow_section_4_and_agree_with_the_allowance_factors_of_section
     assert span is not None and pinion.span_allowance_um is not None
     assert span.upper == pytest.approx(27.827, abs=1e-12)  # the given upper limit comes back
     half = pinion.tooth_thickness_tolerance_um
+    assert half is not None
     # the span is linear in x: Eq. (55), (56) are exact
     assert ins.upper_limit_dimension(
         span.mean, half, pinion.span_allowance_factor
@@ -520,7 +521,7 @@ def test_kst_b_follows_from_its_spans_and_one_allowance() -> None:
     assert 1e-3 * wheel_allowance[0] == pytest.approx(listing["A_sne"]["numbers"][1], abs=5e-4)
     assert wheel_allowance[0] == wheel_allowance[1]  # no tolerance follows from a span
     generation = gn.compute_generation(pair)
-    chords = Pair(
+    chords: Pair[float] = Pair(
         pinion=stplus_chord_diameter(
             generation.gears.pinion.root_form_diameter_mm,
             generation.gears.pinion.tip_form_diameter_mm,

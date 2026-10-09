@@ -435,9 +435,12 @@ def test_review_symbols_that_changed_since_din_3960() -> None:
     DIN ISO 21771 does; its list §2.1 only omits the index. These symbols did change."""
     changed = {
         name: sorted(
-            printed.symbol
-            for printed in entry.replaced
-            if printed.source == "DIN3960:1987" and printed.symbol != entry.symbol
+            (
+                printed.symbol
+                for printed in entry.replaced
+                if printed.source == "DIN3960:1987" and printed.symbol != entry.symbol
+            ),
+            key=lambda symbol: symbol or "",  # a symbol None stays in the list and fails below
         )
         for name, entry in quantities().items()
     }

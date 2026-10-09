@@ -94,7 +94,10 @@ LIMITED: dict[str, dict[str, float]] = {
         "zeta_f2": -1.32659469872301,
     },
 }
-ROOT_FORMS = {"D": Pair(pinion=22.9, wheel=78.4), "E": Pair(pinion=22.6, wheel=78.4)}
+ROOT_FORMS: dict[str, Pair[float]] = {
+    "D": Pair(pinion=22.9, wheel=78.4),
+    "E": Pair(pinion=22.6, wheel=78.4),
+}
 
 
 def forced(pair: PairInput, role: str, **update: Any) -> PairInput:
@@ -834,7 +837,7 @@ def test_g2w03_an_active_profile_without_length_is_no_mesh_at_any_module(m_n: fl
     d_b1, d_b2 = base_diameters(case)
     a_w = 0.5 * (d_b1 + d_b2) * (1.0 + 1e-6)
     pair = make_pair({**case, "a_w": a_w, "x": (0.3, None)})
-    forms = Pair(pinion=d_b1 * (1.0 + 1e-6), wheel=d_b2 * (1.0 + 1e-6))
+    forms: Pair[float] = Pair(pinion=d_b1 * (1.0 + 1e-6), wheel=d_b2 * (1.0 + 1e-6))
     with pytest.raises(GeometryInfeasibleError, match="the teeth do not mesh"):
         pr.compute_pair_geometry(pair, root_form_diameter_mm=forms)
 
@@ -846,7 +849,7 @@ def test_g2v02_centre_distance_just_above_the_base_radii_never_returns_garbage(m
     case = _at_module(m_n)
     d_b1, d_b2 = base_diameters(case)
     radii = 0.5 * (d_b1 + d_b2)
-    on_base = Pair(pinion=d_b1, wheel=d_b2)
+    on_base: Pair[float] = Pair(pinion=d_b1, wheel=d_b2)
     for exponent in range(-13, -1):
         for mantissa in (1.0, 1.7, 3.3, 6.1):
             a_w = radii * (1.0 + mantissa * 10.0**exponent)
@@ -863,7 +866,7 @@ def test_g2v07_original_repro_of_the_large_gear() -> None:
     for m_n in (100.0, 2.0, 0.05):
         scale = m_n / 100.0
         scaled = {**case, "m_n": m_n, "b": 5.0 * m_n, "d_a": (1240.0 * scale, 17360.0 * scale)}
-        forms = Pair(pinion=d_b1 * scale, wheel=1.01 * d_b2 * scale)
+        forms: Pair[float] = Pair(pinion=d_b1 * scale, wheel=1.01 * d_b2 * scale)
         with pytest.raises(GeometryInfeasibleError, match="starts on the base circle"):
             pr.compute_pair_geometry(make_pair(scaled), root_form_diameter_mm=forms)
 
@@ -973,7 +976,7 @@ def test_g2v12_noise_above_the_start_of_the_active_profile_limits_nothing() -> N
     pair = make_pair(CASES["B"])
     free = pr.compute_pair_geometry(pair)
     start = free.sap_diameter_mm
-    one_ulp_above = Pair(
+    one_ulp_above: Pair[float] = Pair(
         pinion=math.nextafter(start.pinion, math.inf), wheel=math.nextafter(start.wheel, math.inf)
     )
     result = pr.compute_pair_geometry(pair, root_form_diameter_mm=one_ulp_above)
@@ -1071,7 +1074,8 @@ def test_g2v07_orchestrator_returns_a_consistent_result_or_a_typed_error(
         helix_angle_deg=mesh["beta"],
         gears=Pair(pinion=gears[0], wheel=gears[1]),
     )
-    root_form = tip_form = None
+    root_form: Pair[float] | None = None
+    tip_form: Pair[float] | None = None
     try:
         if mesh["given_centre_distance"]:
             a_w = pr.resolve_profile_shift(pair)[2]
@@ -1178,7 +1182,7 @@ def test_g2w06_public_section_importers_raise_parse_errors() -> None:
         tool_from_section(section, [], normal_pressure_angle_deg=20.0)
     # (an addendum beyond the limit of STplus is reduced, not rejected: ADR-114)
     assert tool_from_section(
-        parse_ste(tool_text.replace("KOPFHOEHENFAKTOR = -1", "KOPFHOEHENFAKTOR = 5")).section(  # type: ignore[arg-type]
+        parse_ste(tool_text.replace("KOPFHOEHENFAKTOR = -1", "KOPFHOEHENFAKTOR = 5")).section(
             "WKZ_1"
         ),
         [],

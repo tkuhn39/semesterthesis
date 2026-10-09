@@ -4,6 +4,7 @@
 import json
 import math
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -11,7 +12,9 @@ from gearcore.errors import InputRangeError, ParseError
 from gearcore.fe import evaluation as ev
 
 
-def _node(n: int, r: float, z: float, p: float, f: float | None, tooth: str, side: str) -> dict:
+def _node(
+    n: int, r: float, z: float, p: float, f: float | None, tooth: str, side: str
+) -> dict[str, object]:
     return {
         "n": n,
         "x": r,
@@ -26,7 +29,7 @@ def _node(n: int, r: float, z: float, p: float, f: float | None, tooth: str, sid
     }
 
 
-def _fillet(z_levels: list[float], s1_peak: float) -> dict:
+def _fillet(z_levels: list[float], s1_peak: float) -> dict[str, object]:
     layers = [
         {
             "z": z,
@@ -56,9 +59,11 @@ def _fillet(z_levels: list[float], s1_peak: float) -> dict:
     return {"mid_width": mid, "layers": layers, "nodes": nodes}
 
 
-def _document(rotation: float, p_t3: float, force_t3: float | None, s1_t2_t3: float) -> dict:
+def _document(
+    rotation: float, p_t3: float, force_t3: float | None, s1_t2_t3: float
+) -> dict[str, Any]:
     z_levels = [-7.5, 0.0, 7.5]
-    step = {
+    step: dict[str, Any] = {
         "name": "LOAD_8NM",
         "frame": 6,
         "time": 1.0,
@@ -171,11 +176,11 @@ def test_read_fields_rejects_other_files(tmp_path: Path) -> None:
         ev.read_fields(bad)
 
 
-def _folder(tmp_path: Path, steps_per_pitch: int, p_bt: float, margin: float) -> dict:
+def _folder(tmp_path: Path, steps_per_pitch: int, p_bt: float, margin: float) -> dict[str, Any]:
     """A grid folder whose pressure peaks at 1,0 mm from A with a parabola, and whose
     rotation peaks at 2,0 mm."""
     count = round((3.4 + 2.0 * margin * p_bt) / (p_bt / steps_per_pitch))
-    positions = []
+    positions: list[dict[str, Any]] = []
     for k in range(count + 1):
         from_a = -margin * p_bt + k * p_bt / steps_per_pitch
         positions.append(

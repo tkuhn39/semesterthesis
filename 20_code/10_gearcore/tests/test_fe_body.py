@@ -134,7 +134,7 @@ def test_body_counts_are_validated() -> None:
     assert BODY_COUNTS.label() == "hub3_pocket3_rim2_web2_flange3"
     for changes in ({"web_layers": 3}, {"hub_rings": 0}, {"flange_layers": 1.5}):
         with pytest.raises(InputRangeError):
-            bd.BodyCounts(**changes)  # type: ignore[arg-type]
+            bd.BodyCounts(**changes)
 
 
 # --- rings and levels ---------------------------------------------------------------------------------
@@ -410,7 +410,7 @@ def test_hex_volumes_and_remove_elements(section: sm.SectorMesh) -> None:
     assert np.allclose(so.hex_volumes(carved.mesh).sum() + volume[removed].sum(), volume.sum())
     for bad in (np.array([-1]), np.array([len(solid.hexes)]), np.array([0.5])):
         with pytest.raises(InputRangeError):
-            so.remove_elements(solid, sets, bad)  # type: ignore[arg-type]
+            so.remove_elements(solid, sets, bad)
     with pytest.raises(InputRangeError):
         so.remove_elements(section, sets, removed)  # type: ignore[arg-type]
     with pytest.raises(InputRangeError):

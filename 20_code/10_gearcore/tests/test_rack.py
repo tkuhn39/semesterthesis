@@ -6,6 +6,7 @@ decimal arithmetic (marked "decimal reference").
 """
 
 import math
+from collections.abc import Callable
 
 import pytest
 from hypothesis import given
@@ -360,7 +361,7 @@ def test_din3972_worked_example_and_decimal_references() -> None:
     assert rack.din3972_tool_addendum_mm("IV", 4.5) == pytest.approx(6.615578174668388, rel=2 * ULP)
     assert rack.din3972_tool_addendum_mm("IV", 5.0) == pytest.approx(7.275985568006018, rel=2 * ULP)
     for finishing in ("I", "II"):
-        assert rack.din3972_machining_allowance_mm(finishing, 8.0) == 0.0  # type: ignore[arg-type]
+        assert rack.din3972_machining_allowance_mm(finishing, 8.0) == 0.0
 
 
 @pytest.mark.eq("DIN3972:1952", "Tabelle")
@@ -415,7 +416,7 @@ anything = st.one_of(
 def test_rack_functions_return_finite_numbers_or_typed_errors(
     a: object, b: object, c: object
 ) -> None:
-    calls = (
+    calls: tuple[Callable[[], float], ...] = (
         lambda: rack.rack_pitch(a),  # type: ignore[arg-type]
         lambda: rack.max_fillet_radius_factor(
             bottom_clearance_factor=a,  # type: ignore[arg-type]

@@ -32,9 +32,13 @@ CLOSE = 16 * ULP
 
 # Decimal references. Case A: z = 17, m_n = 8, alpha_n = 20°, beta = 15,8°, x = 0,14522 (pinion of
 # ISO/TR 6336-30 example 1). Case B: z = 25, m_n = 3, alpha_n = 20°, beta = 30°, x = 0,3.
-REFERENCE = {
+# ARGS holds (z, m_n, beta_deg, x) of each case, REFERENCE the values computed from them.
+ARGS: dict[str, tuple[int, float, float, float]] = {
+    "A": (17, 8.0, 15.8, 0.14522),
+    "B": (25, 3.0, 30.0, 0.3),
+}
+REFERENCE: dict[str, dict[str, float]] = {
     "A": {
-        "args": (17, 8.0, 15.8, 0.14522),
         "m_t": 8.3141242980263578,
         "d": 141.34011306644808,
         "d_b": 132.19856920126215,
@@ -56,7 +60,6 @@ REFERENCE = {
         "beta_y_deg": 16.547740169191937,
     },
     "B": {
-        "args": (25, 3.0, 30.0, 0.3),
         "m_t": 3.4641016151377546,
         "d": 86.602540378443865,
         "d_b": 79.83810541369732,
@@ -152,7 +155,7 @@ def test_base_helix_angle_matches_worked_example() -> None:
 @pytest.mark.parametrize("case", sorted(REFERENCE))
 def test_basic_geometry_against_decimal_references(case: str) -> None:
     reference = REFERENCE[case]
-    z, m_n, beta_deg, x = reference["args"]  # type: ignore[misc]
+    z, m_n, beta_deg, x = ARGS[case]
     result = iv.compute_basic_gear_geometry(
         number_of_teeth=z,
         normal_module_mm=m_n,
@@ -190,24 +193,24 @@ def test_basic_geometry_against_decimal_references(case: str) -> None:
 def test_quantities_at_a_diameter_against_decimal_references(case: str) -> None:
     """At d_y = 1,05 d: profile angle, helix angle, radius of curvature and tooth thickness."""
     reference = REFERENCE[case]
-    z, m_n, beta_deg, x = reference["args"]  # type: ignore[misc]
+    z, m_n, beta_deg, x = ARGS[case]
     beta = math.radians(beta_deg)
     d = iv.reference_diameter(z, m_n, beta)
     d_b = iv.base_diameter(z, m_n, ALPHA_N, beta)
     d_y = reference["d_y"]
     assert d_y == pytest.approx(1.05 * d, rel=4 * ULP)
     alpha_t = iv.transverse_pressure_angle(ALPHA_N, beta)
-    alpha_yt = iv.transverse_profile_angle_at(d_y, d_b)  # type: ignore[arg-type]
+    alpha_yt = iv.transverse_profile_angle_at(d_y, d_b)
     assert math.degrees(alpha_yt) == pytest.approx(reference["alpha_yt_deg"], rel=CLOSE)
     assert iv.inv(alpha_t) == pytest.approx(reference["inv_alpha_t"], rel=64 * ULP)
-    assert iv.radius_of_curvature(d_y, d_b) == pytest.approx(reference["rho_y"], rel=CLOSE)  # type: ignore[arg-type]
-    assert math.degrees(iv.helix_angle_at(d_y, d, beta)) == pytest.approx(  # type: ignore[arg-type]
+    assert iv.radius_of_curvature(d_y, d_b) == pytest.approx(reference["rho_y"], rel=CLOSE)
+    assert math.degrees(iv.helix_angle_at(d_y, d, beta)) == pytest.approx(
         reference["beta_y_deg"], rel=CLOSE
     )
     psi = iv.tooth_thickness_half_angle(z, x, ALPHA_N)
     psi_y = iv.tooth_thickness_half_angle_at(psi, alpha_t, alpha_yt)
     # psi_y is a difference of nearly equal terms: absolute accuracy of inv, relative 1e-14
-    assert iv.transverse_tooth_thickness_at(d_y, psi_y) == pytest.approx(  # type: ignore[arg-type]
+    assert iv.transverse_tooth_thickness_at(d_y, psi_y) == pytest.approx(
         reference["s_yt"], rel=1e-14
     )
 
@@ -365,8 +368,8 @@ def test_inverse_involute_agrees_with_brentq(deg: float) -> None:
 @pytest.mark.eq(SRC, "(18)")
 def test_inverse_involute_of_the_decimal_reference() -> None:
     assert iv.inv_inverse(INV_ALPHA_20_DEG) == pytest.approx(ALPHA_N, abs=4 * ULP)
-    assert iv.inv_inverse(REFERENCE["A"]["inv_alpha_t"]) == pytest.approx(  # type: ignore[arg-type]
-        math.radians(REFERENCE["A"]["alpha_t_deg"]),  # type: ignore[arg-type]
+    assert iv.inv_inverse(REFERENCE["A"]["inv_alpha_t"]) == pytest.approx(
+        math.radians(REFERENCE["A"]["alpha_t_deg"]),
         abs=4 * ULP,
     )
 

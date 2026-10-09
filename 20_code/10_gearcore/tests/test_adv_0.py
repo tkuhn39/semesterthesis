@@ -324,7 +324,7 @@ def test_adv0_32_strict_integers_and_stripped_names() -> None:
             tip_chamfer_radial_mm=0.0,
             face_width_mm=5.0,
             tool=tool,
-        )  # type: ignore[arg-type]
+        )
     with pytest.raises(ValidationError):
         GearInput(
             number_of_teeth=24.0,
@@ -332,7 +332,7 @@ def test_adv0_32_strict_integers_and_stripped_names() -> None:
             tip_chamfer_radial_mm=0.0,
             face_width_mm=5.0,
             tool=tool,
-        )  # type: ignore[arg-type]
+        )
     from gearcore.models.inputs import MaterialKind, MaterialRef
 
     with pytest.raises(ValidationError):

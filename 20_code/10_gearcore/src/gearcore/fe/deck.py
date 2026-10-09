@@ -582,7 +582,10 @@ def _controls_lines(line_search: int, limits: tuple[int, int, int] | None = None
         lines.extend(["*CONTROLS, PARAMETERS=LINE SEARCH", f"{line_search}"])
     if limits is not None:
         lines.extend(
-            ["*CONTROLS, PARAMETERS=TIME INCREMENTATION", f"{limits[0]}, {limits[1]}, , {limits[2]}"]
+            [
+                "*CONTROLS, PARAMETERS=TIME INCREMENTATION",
+                f"{limits[0]}, {limits[1]}, , {limits[2]}",
+            ]
         )
     return lines
 

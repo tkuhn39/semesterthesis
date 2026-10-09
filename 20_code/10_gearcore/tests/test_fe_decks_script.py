@@ -27,26 +27,26 @@ def script() -> ModuleType:
 
 
 def _decks(script: ModuleType, out: Path, **overrides: object) -> list[str]:
-    settings: dict[str, object] = dict(
-        teeth=1,
-        rim_rings=12,
-        layers=2,
-        element_type="C3D8I",
-        counts=script.LE_COUNTS,
-        bore_radius_mm=None,
-        rotation="clockwise",
-        material_steps=["W1"],
-        cofs=[script.REFERENCE_COF],
-        rates=["QS"],
-        temperature_c=80.0,
-        torques_wheel_nm=[8.0],
-        positions=["grid"],
-        steps_per_pitch=4,
-        margin=0.5,
-        seating_arc_mm=0.01,
-        max_edge_mm=0.4,
-        out=out,
-    )
+    settings: dict[str, object] = {
+        "teeth": 1,
+        "rim_rings": 12,
+        "layers": 2,
+        "element_type": "C3D8I",
+        "counts": script.LE_COUNTS,
+        "bore_radius_mm": None,
+        "rotation": "clockwise",
+        "material_steps": ["W1"],
+        "cofs": [script.REFERENCE_COF],
+        "rates": ["QS"],
+        "temperature_c": 80.0,
+        "torques_wheel_nm": [8.0],
+        "positions": ["grid"],
+        "steps_per_pitch": 4,
+        "margin": 0.5,
+        "seating_arc_mm": 0.01,
+        "max_edge_mm": 0.4,
+        "out": out,
+    }
     settings.update(overrides)
     lines: list[str] = script.decks("kst_e", **settings)
     return lines

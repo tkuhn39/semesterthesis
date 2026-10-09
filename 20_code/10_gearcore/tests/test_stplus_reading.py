@@ -507,6 +507,7 @@ def test_tip_circle_above_the_tool_root_line_is_cut(probe: str, cut: tuple[bool,
         assert gear.tip_diameter_mm == pytest.approx(listed[index], abs=2e-5), probe
         codes = [w.code for w in gear.warnings]
         assert ("tip_circle_cut_by_tool" in codes) == cut[index]
+        assert given.tip_diameter_mm is not None
         assert (gear.tip_diameter_mm < given.tip_diameter_mm) == cut[index]
     if any(cut):
         assert "geschnitten" in listing
@@ -606,8 +607,8 @@ def test_tip_chamfer_given_as_an_input(probe: str) -> None:
         )
     assert "Kopfkantenbrueche an Rad 1/2 durch getrennten Fertigungsgang" in listing
     # the importer states the residual thickness itself, for the gear without allowance
-    for gear in imported.pair.gears.as_tuple():
-        assert gear.residual_tip_thickness_mm is not None
+    for given in imported.pair.gears.as_tuple():
+        assert given.residual_tip_thickness_mm is not None
     assert sum("residual tip thickness of the chamfer → s_aK" in n for n in imported.notes) == 2
 
 
@@ -721,6 +722,7 @@ def test_g3x01_contour_of_a_tool_that_states_an_angle_but_has_no_flank() -> None
     assert gear.tool_edge_break_angle_deg is None, "the result names the flank the tool has"
     assert gear.tip_chamfer_radial_mm == 0.2
     s_aK, d_a = gear.residual_tip_thickness_mm, gear.tip_diameter_mm
+    assert s_aK is not None
     assert s_aK == pytest.approx(0.4979 - 2.0 * 0.7 * 0.2, abs=5e-5)
     assert s_aK < gear.transverse_tip_tooth_thickness_mm
     points = np.asarray(ct.tooth_contour(result, "pinion").points)
@@ -774,8 +776,12 @@ def test_g3x02_a_module_or_an_angle_of_zero_is_a_typed_error() -> None:
             continue
         with pytest.raises(InputRangeError):
             tool_from_section(
-                None, [], name="hob", normal_module_mm=module, normal_pressure_angle_deg=20.0
-            )  # type: ignore[arg-type]
+                None,
+                [],
+                name="hob",
+                normal_module_mm=module,  # type: ignore[arg-type]  # "a" is deliberately no number
+                normal_pressure_angle_deg=20.0,
+            )
     for angle in (0.0, 90.0, -20.0):
         with pytest.raises(ParseError, match="no rack tool"):
             tool_from_section(None, [], name="hob", normal_pressure_angle_deg=angle)
@@ -790,7 +796,7 @@ def test_g3x03_the_tool_rule_takes_finite_numbers_only() -> None:
         "edge_break_angle_deg": 45.0,
         "alpha_n_deg": 20.0,
     }
-    assert stplus_tool_factors("T", notes=[], **good)["dedendum_factor"] == 1.2  # type: ignore[arg-type]
+    assert stplus_tool_factors("T", notes=[], **good)["dedendum_factor"] == 1.2
     for key in good:
         for bad in (float("nan"), float("inf"), float("-inf"), "1.25", [1.0], 1.0j, True):
             with pytest.raises(InputRangeError):
@@ -800,12 +806,12 @@ def test_g3x03_the_tool_rule_takes_finite_numbers_only() -> None:
             stplus_tool_factors(name, notes=[], **good)  # type: ignore[arg-type]
     for angle in (0.0, -5.0, 90.5):
         with pytest.raises(InputRangeError, match="KANTENBRECHWINKEL"):
-            stplus_tool_factors("T", notes=[], **{**good, "edge_break_angle_deg": angle})  # type: ignore[arg-type]
+            stplus_tool_factors("T", notes=[], **{**good, "edge_break_angle_deg": angle})
     for angle in (0.0, 90.0, -20.0):
         with pytest.raises(InputRangeError, match="profile angle"):
-            stplus_tool_factors("T", notes=[], **{**good, "alpha_n_deg": angle})  # type: ignore[arg-type]
+            stplus_tool_factors("T", notes=[], **{**good, "alpha_n_deg": angle})
     # an addendum that is not positive is passed on for the contract to reject
-    negative = stplus_tool_factors("T", notes=[], **{**good, "addendum": -1.0})  # type: ignore[arg-type]
+    negative = stplus_tool_factors("T", notes=[], **{**good, "addendum": -1.0})
     assert negative["addendum_factor"] == -1.0
 
 
@@ -1017,6 +1023,7 @@ def test_g3x08_the_importer_stores_the_transverse_residual_thickness() -> None:
         s_an, s_at = gear.normal_tip_tooth_thickness_mm, gear.transverse_tip_tooth_thickness_mm
         normal = stplus_residual_tip_thickness(s_an, given.tip_chamfer_radial_mm)
         assert given.residual_tip_thickness_mm == pytest.approx(normal * s_at / s_an, rel=1e-12)
+        assert given.residual_tip_thickness_mm is not None
         assert given.residual_tip_thickness_mm > 1.05 * normal
         assert gear.residual_tip_thickness_mm == given.residual_tip_thickness_mm
 
@@ -1218,9 +1225,9 @@ def test_g3y02_steep_edge_break_flanks() -> None:
     assert gaps[-1] == pytest.approx(0.1 * gaps[2], rel=0.05), (
         "the gap closes with 90 deg - alpha_K"
     )
-    for angle in (89.91, 89.9999, 89.999999, 89.99999999):
+    for too_steep in (89.91, 89.9999, 89.999999, 89.99999999):
         with pytest.raises(InputRangeError, match="steeper than 89.9 deg"):
-            residual(angle)
+            residual(too_steep)
 
 
 def test_g3y02_edge_break_angle_at_or_below_the_pressure_angle() -> None:
@@ -1581,6 +1588,7 @@ def test_residual_thickness_of_a_flat_edge_break_flank_in_single_precision() -> 
 
     singles = {round(in_single_precision(shift), 5) for shift in range(-3, 4)}
     assert singles == {0.0196, 0.02051}, "two values, 0,9 um apart; STplus prints the upper one"
+    assert gear.residual_tip_thickness_mm is not None
     assert min(singles) < gear.residual_tip_thickness_mm < max(singles)
 
 
@@ -1625,6 +1633,7 @@ def test_controls_of_the_tool_limits_act_as_documented_with_other_presets() -> N
     root = _imported(_probe("tool_root_space_control")).pair.gears.pinion.tool
     assert _interface(_probe("tool_root_space_control"), "WKZ_FUSSHOEHENF")[0] == 1.28503
     assert root.dedendum_factor == pytest.approx(1.28503, abs=6e-6)
+    assert root.dedendum_factor is not None
     width = math.pi / 2.0 - 2.0 * 0.9 * math.tan(alpha) - 2.0 * (root.dedendum_factor - 0.9)
     assert width == pytest.approx(2.0 * 0.2 * math.tan(alpha), abs=1e-12)
     assert stplus_max_tool_dedendum_factor(

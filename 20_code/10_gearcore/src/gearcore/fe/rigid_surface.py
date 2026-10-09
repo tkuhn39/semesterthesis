@@ -164,14 +164,18 @@ def _tooth_profile(
     if last < half - ct.JOIN_TOLERANCE:
         # root circle from the gap centre line on the right to the right fillet
         angles = np.linspace(half, last, CONTOUR_POINTS)
-        raw.append(("root", np.column_stack((r_f * np.sin(angles), r_f * np.cos(angles))), max_edge_mm))
+        raw.append(
+            ("root", np.column_stack((r_f * np.sin(angles), r_f * np.cos(angles))), max_edge_mm)
+        )
     for name in reversed(ct.SEGMENTS):  # right fillet ... left fillet: counter-clockwise
         segment = contour.segment(name)[::-1]
         if len(segment):
             raw.append((name, segment, max_edge_mm))
     if first > -half + ct.JOIN_TOLERANCE:
         angles = np.linspace(first, -half, CONTOUR_POINTS)
-        raw.append(("root", np.column_stack((r_f * np.sin(angles), r_f * np.cos(angles))), max_edge_mm))
+        raw.append(
+            ("root", np.column_stack((r_f * np.sin(angles), r_f * np.cos(angles))), max_edge_mm)
+        )
     if tip_rounding_mm > 0.0:
         tip = [k for k, (name, _, _) in enumerate(raw) if name == "tip"]
         if len(tip) != 1 or tip[0] == 0 or tip[0] == len(raw) - 1:

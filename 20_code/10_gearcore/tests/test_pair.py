@@ -457,12 +457,12 @@ def test_root_form_diameter_limits_the_active_profile() -> None:
     pair = make_pair(case)
     free = pr.compute_pair_geometry(pair)
     # root form circles below the start of the active profile change nothing
-    below = Pair(pinion=ref["d_Nf1"] - 0.05, wheel=ref["d_Nf2"] - 0.05)
+    below: Pair[float] = Pair(pinion=ref["d_Nf1"] - 0.05, wheel=ref["d_Nf2"] - 0.05)
     unchanged = pr.compute_pair_geometry(pair, root_form_diameter_mm=below)
     assert unchanged.sap_diameter_mm == free.sap_diameter_mm and unchanged.warnings == ()
     assert unchanged.root_form_diameter_mm == below
     # a root form circle of the pinion above it: Eq. (66) and (68)
-    above = Pair(pinion=ref["d_Nf1"] + 0.2, wheel=ref["d_Nf2"] - 0.05)
+    above: Pair[float] = Pair(pinion=ref["d_Nf1"] + 0.2, wheel=ref["d_Nf2"] - 0.05)
     limited = pr.compute_pair_geometry(pair, root_form_diameter_mm=above)
     assert limited.sap_diameter_mm.pinion == above.pinion
     assert limited.active_tip_diameter_mm.wheel < case["d_a"][1]
@@ -567,7 +567,7 @@ def test_face_widths_and_hand_of_helix() -> None:
         lambda: pr.overlap_ratio(0.0, 0.2, 1.0),
         lambda: pr.transverse_contact_ratio(5.0, 0.0),
         lambda: pr.sliding_factor_at_tip(1.0, 0.0, 2.0),
-        lambda: pr.length_between_tangent_points(True, 0.3),  # type: ignore[arg-type]
+        lambda: pr.length_between_tangent_points(True, 0.3),
         lambda: pr.gear_ratio(17.0, 103),  # type: ignore[arg-type]
         lambda: pr.tip_clearance(100.0, "60", 139.0),  # type: ignore[arg-type]
     ],

@@ -7,6 +7,7 @@ fixtures (``test_stplus_parity.py``), and invariants.
 """
 
 import math
+from typing import Any, NotRequired, TypedDict
 
 import pytest
 from hypothesis import given, settings
@@ -30,7 +31,34 @@ CLOSE = 1.0e-12
 # -80 / -130 um. H: ISO/TR 6336-30 example 1 pinion (beta = 15,8, x_E = 0,117 79 as given).
 # K: kst-C wheel (z = 36, m_n = 3, x_E = 0,221 05, d_a = 114,69, tool 1,25 / 0,33, edge break
 # 45 deg from h_FfP0* = 0,6973). L: helical with an edge break (z = 25, m_n = 5, beta = 20).
-CASES: dict[str, dict[str, object]] = {
+
+
+class Case(TypedDict):
+    """Inputs of a decimal reference case (angles in degrees, factors per module)."""
+
+    z: int
+    m_n: float
+    alpha_n: float
+    beta: float
+    x: float
+    d_a: float
+    h: float
+    rho: float
+    E: tuple[float, float]
+    h_FfP0: NotRequired[float]
+    alpha_kP: NotRequired[float]
+
+
+class Setup(Case):
+    """A case with the angles in radians and the derived diameters of ``_setup``."""
+
+    alpha_t: float
+    d: float
+    d_b: float
+    x_E: float
+
+
+CASES: dict[str, Case] = {
     "S": {"z": 17, "m_n": 8.0, "alpha_n": 20.0, "beta": 0.0, "x": 0.3, "d_a": 158.0, "h": 1.4, "rho": 0.39,
           "E": (-80.0, -130.0)},
     "H": {"z": 17, "m_n": 8.0, "alpha_n": 20.0, "beta": 15.8, "x": 0.11779, "d_a": 159.66, "h": 1.4, "rho": 0.39,
@@ -110,7 +138,7 @@ REFERENCE: dict[str, dict[str, float]] = {
 }
 
 
-def _setup(name: str) -> dict[str, float]:
+def _setup(name: str) -> Setup:
     c = CASES[name]
     alpha_n, beta = math.radians(c["alpha_n"]), math.radians(c["beta"])
     alpha_t = iv.transverse_pressure_angle(alpha_n, beta)
@@ -408,22 +436,22 @@ def test_x_Emin_is_where_the_root_form_circle_reaches_the_base_circle(z: int, x:
 # --- orchestrator ---------------------------------------------------------------------------------
 
 
-def _tool(**kwargs: object) -> ToolProfile:
-    fields: dict[str, object] = {
+def _tool(**kwargs: Any) -> ToolProfile:
+    fields: dict[str, Any] = {
         "addendum_factor": 1.25,
         "tip_radius_factor": 0.25,
         "protuberance_mm": 0.0,
         "machining_allowance_mm": 0.0,
     }
     fields.update(kwargs)
-    return ToolProfile(**fields)  # type: ignore[arg-type]
+    return ToolProfile(**fields)
 
 
-def _pair(**kwargs: object) -> PairInput:
+def _pair(**kwargs: Any) -> PairInput:
     tool = kwargs.pop("tool", _tool())
     tool_2 = kwargs.pop("tool_2", tool)
     allowances = kwargs.pop("allowances", ((-80.0, -130.0), (-100.0, -160.0)))
-    gears = Pair(
+    gears: Pair[GearInput] = Pair(
         pinion=GearInput(
             number_of_teeth=20,
             profile_shift_coefficient=0.2,
@@ -444,14 +472,14 @@ def _pair(**kwargs: object) -> PairInput:
             tool=tool_2,
         ),
     )
-    base = {
+    base: dict[str, Any] = {
         "normal_module_mm": 2.0,
         "normal_pressure_angle_deg": 20.0,
         "helix_angle_deg": 0.0,
         "gears": gears,
     }
     base.update(kwargs)
-    return PairInput(**base)  # type: ignore[arg-type]
+    return PairInput(**base)
 
 
 def test_compute_generation_assembles_the_pair() -> None:

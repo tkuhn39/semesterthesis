@@ -7,6 +7,7 @@ properties of ``test_involute.py`` and ``test_properties_involute.py``.
 """
 
 import math
+from collections.abc import Callable
 from decimal import Decimal, getcontext
 
 import numpy as np
@@ -119,7 +120,7 @@ def test_adv1_02_huge_integers_are_input_errors(huge: int) -> None:
 
 
 def test_adv1_03_overflow_is_an_input_error_not_inf() -> None:
-    calls = (
+    calls: tuple[Callable[[], object], ...] = (
         lambda: iv.reference_diameter(2**53, 1e300, 0.0),
         lambda: iv.transverse_module(1e308, math.radians(89.99)),
         lambda: rack.rack_pitch(1e308),
@@ -141,8 +142,9 @@ def test_adv1_03_overflow_is_an_input_error_not_inf() -> None:
 
 def test_adv1_43_input_helpers() -> None:
     assert finite_input(3, "x") == 3.0 and isinstance(finite_input(3, "x"), float)
-    assert finite_input(np.float64(1.5), "x") == 1.5 and finite_input(np.int64(2), "x") == 2.0
-    assert finite_input(np.float32(0.1), "x") == float(np.float32(0.1)), "exact conversion"
+    # numpy scalars are passed on purpose (ADV1-43): the helpers accept them, the stubs say float
+    assert finite_input(np.float64(1.5), "x") == 1.5 and finite_input(np.int64(2), "x") == 2.0  # type: ignore[arg-type]
+    assert finite_input(np.float32(0.1), "x") == float(np.float32(0.1)), "exact conversion"  # type: ignore[arg-type]
     assert finite_input(-0.0, "x") == 0.0
     for bad in NOT_NUMBERS:
         with pytest.raises(InputRangeError, match="x must be"):
@@ -153,8 +155,8 @@ def test_adv1_43_input_helpers() -> None:
     for bad in (0.0, -0.0, -1.0, 0):
         with pytest.raises(InputRangeError, match="m must be > 0"):
             positive_input(bad, "m")
-    assert integer_input(17, "z") == 17 and integer_input(np.int64(17), "z") == 17
-    assert isinstance(integer_input(np.int64(17), "z"), int)
+    assert integer_input(17, "z") == 17 and integer_input(np.int64(17), "z") == 17  # type: ignore[arg-type]  # numpy integer on purpose
+    assert isinstance(integer_input(np.int64(17), "z"), int)  # type: ignore[arg-type]  # numpy integer on purpose
     for bad in (17.0, 17.5, True, "17", None, np.float64(17.0)):
         with pytest.raises(InputRangeError, match="z must be an integer"):
             integer_input(bad, "z")  # type: ignore[arg-type]
@@ -167,10 +169,11 @@ def test_adv1_43_input_helpers() -> None:
 
 
 def test_adv1_42_numpy_integers_are_numbers_of_teeth() -> None:
-    assert iv.reference_diameter(np.int64(17), 2.0, 0.0) == 34.0
+    # numpy integers are passed on purpose: the functions accept them, the stubs say int
+    assert iv.reference_diameter(np.int64(17), 2.0, 0.0) == 34.0  # type: ignore[arg-type]
     assert basic(number_of_teeth=np.int32(17)) == basic()
     with pytest.raises(NotSupportedError, match="internal"):
-        iv.reference_diameter(np.int64(-17), 2.0, 0.0)
+        iv.reference_diameter(np.int64(-17), 2.0, 0.0)  # type: ignore[arg-type]
 
 
 # --- ADV1-04, -06, -07, -24: guards of the rack functions -------------------------------------------
@@ -241,6 +244,7 @@ def test_adv1_07_max_fillet_radius_guards() -> None:
 
 
 def test_adv1_24_machining_allowance_checks_the_angle_for_every_profile() -> None:
+    bad: float | bool | str | None
     for profile in ("I", "II", "III", "IV"):
         for bad in (math.nan, None, True, -ALPHA, 0.0, 2.0):
             with pytest.raises(InputRangeError, match="profile angle"):

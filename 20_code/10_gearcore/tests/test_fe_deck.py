@@ -182,7 +182,10 @@ def test_material_steps_differ_only_in_section_and_material(
     # the Hill potential of the isotropic row needs a local orientation (the part's frame);
     # the preprocessor rejects the section without one (W2 pilot 2026-10-09)
     w2 = "\n".join(texts["W2"])
-    assert "*ORIENTATION, NAME=WHEEL_ISO, DEFINITION=COORDINATES\n1., 0., 0., 0., 1., 0.\n3, 0.\n" in w2
+    assert (
+        "*ORIENTATION, NAME=WHEEL_ISO, DEFINITION=COORDINATES\n1., 0., 0., 0., 1., 0.\n3, 0.\n"
+        in w2
+    )
     assert "*SOLID SECTION, ELSET=WHEEL, MATERIAL=WHEEL_PLASTIC, ORIENTATION=WHEEL_ISO" in w2
     assert "*ORIENTATION" not in "\n".join(texts["W1"])
     assert "*SOLID SECTION, ELSET=WHEEL, MATERIAL=WHEEL_PLASTIC\n" in "\n".join(texts["W1"]) + "\n"

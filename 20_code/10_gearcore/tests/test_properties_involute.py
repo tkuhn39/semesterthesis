@@ -5,12 +5,15 @@ operations involved, and a looser bound would hide a defect.
 """
 
 import math
+from collections.abc import Callable
+from typing import Any
 
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
 from gearcore import involute as iv
+from gearcore._safe import EPS
 from gearcore.errors import GearCoreError, GeometryInfeasibleError
 from gearcore.models.results import BasicGearGeometry
 
@@ -139,7 +142,7 @@ def test_tooth_and_space_half_angles_sum_to_the_pitch_angle(
         assert eta_y > pitch_angle, "beyond the pointed tooth the space is wider than the pitch"
         return
     assert psi_y >= 0.0
-    assert abs(psi_y + eta_y - pitch_angle) <= noise + iv.EPS * (psi_y == 0.0)
+    assert abs(psi_y + eta_y - pitch_angle) <= noise + EPS * (psi_y == 0.0)
 
 
 @given(teeth, module, alpha_n, beta)
@@ -155,7 +158,7 @@ def test_helix_angle_grows_with_the_diameter(z: int, m_n: float, a_n: float, b: 
 def test_base_circle_is_treated_alike_by_eq_12_and_eq_17(d_b: float, offset: float) -> None:
     """Both equations accept and reject the same diameters around the base circle."""
     for d_y in (d_b, d_b * (1.0 + offset), d_b * (1.0 - offset), math.nextafter(d_b, 0.0)):
-        outcomes = []
+        outcomes: list[bool | None] = []
         for function in (iv.transverse_profile_angle_at, iv.radius_of_curvature):
             try:
                 outcomes.append(function(d_y, d_b) >= 0.0)
@@ -185,7 +188,8 @@ def test_orchestrator_returns_a_valid_result_or_a_typed_error(
     assert abs(result.profile_shift_coefficient) <= 2.0
 
 
-SINGLE_FUNCTIONS = (
+# the guards are probed with arbitrary values, so the lambdas take anything
+SINGLE_FUNCTIONS: tuple[Callable[[Any, Any, Any], float], ...] = (
     lambda a, b, c: iv.transverse_module(a, b),
     lambda a, b, c: iv.reference_diameter(a, b, c),
     lambda a, b, c: iv.transverse_pressure_angle(a, b),

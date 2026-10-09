@@ -1469,7 +1469,10 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     defined in a local orientation system", materials guide, Hill anisotropic yield); the W2
     section now carries the part's own frame as `*ORIENTATION` (`deck._section_lines`); the
     first W2 pilot of 2026-10-09 stopped after 11 s on this.
-41. **Nonlinear pilot** (`pilot_20layers_bore33_w2w4_qs`: W2 and W4, rate QS as the most
+41. **Nonlinear pilot** (`pilot_20layers_bore33_w2w4_qs_V2`, the decks after the fix of item
+    40; the first run of the folder without `_V2` holds the rejected W2 and the first W4
+    position — user rule 2026-10-09: a regenerated folder gets `_V2`, `_V3` …, so that the
+    `_gerechnet` folder of the old version stays recognisable: W2 and W4, rate QS as the most
     compliant, NLGEOM=YES, C3D8, ring body, the five positions margin −0,5 pitch, A, C, E,
     margin +0,5 pitch). First W4 result at −0,5 pitch: 565 s (2,9 times W1), orientation check
     0,002° at SEAT and up to 0,59° under load (the material directions co-rotate with the

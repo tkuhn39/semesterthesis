@@ -29,7 +29,7 @@ def _setup(
     x_E: float,
     h_aP0_f: float,
     rho_f: float,
-):
+) -> tuple[float, float, float, float, float, float, tr.TipRounding]:
     alpha_n, beta = math.radians(alpha_n_deg), math.radians(beta_deg)
     alpha_t = iv.transverse_pressure_angle(alpha_n, beta)
     d = iv.reference_diameter(z, m_n, beta)
@@ -57,7 +57,7 @@ def test_the_straight_flank_generates_the_involute(beta_deg: float) -> None:
         xi = p_t / 4.0 + (eta - x_E * m_n) * math.tan(alpha_t)  # right flank of the tool tooth
         c = tr.pitch_point_position(xi, eta, math.tan(alpha_t), 1.0)
         radius, angle = tr.generated_point(xi, eta, c, r)
-        psi = math.pi / z - angle
+        psi = math.pi / z - float(angle)
         assert abs(psi - tr.involute_half_angle(float(radius), d_b, psi_b)) < 1e-12
     # the point on the pitch line generates on the reference circle
     xi_0 = p_t / 4.0 - x_E * m_n * math.tan(alpha_t)
@@ -102,7 +102,7 @@ def test_the_fillet_leaves_the_root_circle_and_meets_the_involute_tangentially(
     r_end, psi_end = tr.fillet_point(rounding, rounding.flank_parameter_rad)
     d_Ff = gn.root_form_diameter(d, alpha_t, h_FaP0, x_E, m_n, d_b)
     assert 2.0 * r_end == pytest.approx(d_Ff, rel=1e-13)
-    assert psi_end == pytest.approx(tr.involute_half_angle(r_end, d_b, psi_b), abs=1e-13)
+    assert psi_end == pytest.approx(tr.involute_half_angle(float(r_end), d_b, psi_b), abs=1e-13)
     # tangent continuity: the last fillet step points along the involute
     theta, radius, psi = tr.fillet_curve(rounding, n=2001)
     x, y = radius * np.sin(psi), radius * np.cos(psi)
@@ -132,16 +132,16 @@ def test_undercut_fillet_cuts_the_involute() -> None:
     assert undercut and d_b < d_Ff < d
     r_star, psi_star = tr.fillet_point(rounding, theta)
     assert 2.0 * r_star == pytest.approx(d_Ff, abs=1e-12)
-    assert psi_star == pytest.approx(tr.involute_half_angle(r_star, d_b, psi_b), abs=1e-12)
+    assert psi_star == pytest.approx(tr.involute_half_angle(float(r_star), d_b, psi_b), abs=1e-12)
     # below the crossing the fillet lies inside the involute, above it outside
     r_low, psi_low = tr.fillet_point(rounding, theta - 0.002)
     r_high, psi_high = tr.fillet_point(rounding, theta + 0.002)
     assert 0.5 * d_b < r_low < r_star < r_high
-    assert psi_low < tr.involute_half_angle(r_low, d_b, psi_b)
-    assert psi_high > tr.involute_half_angle(r_high, d_b, psi_b)
+    assert psi_low < tr.involute_half_angle(float(r_low), d_b, psi_b)
+    assert psi_high > tr.involute_half_angle(float(r_high), d_b, psi_b)
     # the end of the fillet (flank tangent point) lies beyond the crossing, outside the involute
     r_end, psi_end = tr.fillet_point(rounding, rounding.flank_parameter_rad)
-    assert r_end > r_star and psi_end > tr.involute_half_angle(r_end, d_b, psi_b)
+    assert r_end > r_star and psi_end > tr.involute_half_angle(float(r_end), d_b, psi_b)
 
 
 @pytest.mark.eq(SRC, "(135)")

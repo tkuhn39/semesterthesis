@@ -16,6 +16,8 @@ from gearcore import involute as iv
 from gearcore.data import has_stplus, stplus_case_dirs
 from gearcore.errors import GeometryInfeasibleError, InputRangeError
 from gearcore.models.common import Pair
+from gearcore.models.inputs import GearInput, PairInput
+from gearcore.models.results import GenerationResult
 from gearcore.parity import compute_generation_from_data, generation_data
 from gearcore.stplus_program import stplus_default, stplus_transverse_residual_tip_thickness
 
@@ -35,19 +37,21 @@ def _own_runs_with_contours() -> list[tuple[str, int]]:
     return cases
 
 
-def _generation(case: str):
+def _generation(case: str) -> tuple[PairInput, GenerationResult]:
     """The pair as STplus generated it (allowances of its output, its tip diameters) and the
     generation; ``result.inputs`` is that pair as the contract validated it."""
     data = generation_data(case)
-    result = compute_generation_from_data(data, data.values)
+    result: GenerationResult = compute_generation_from_data(data, data.values)
     return result.inputs, result
 
 
-def _with_stplus_chamfer(pair, result):
+def _with_stplus_chamfer(
+    pair: PairInput, result: GenerationResult
+) -> tuple[PairInput, GenerationResult]:
     """A chamfer given by h_K only takes its residual thickness from the STplus default
     (tangential 0,7 h_K, manual p. 19), applied explicitly here."""
     assert stplus_default("tip_chamfer_tangential").value == 0.7
-    gears = []
+    gears: list[GearInput] = []
     for gear, generated in zip(pair.gears.as_tuple(), result.gears.as_tuple(), strict=True):
         if gear.tip_chamfer_radial_mm > 0.0 and gear.residual_tip_thickness_mm is None:
             s_aK = stplus_transverse_residual_tip_thickness(
@@ -66,7 +70,7 @@ def _with_stplus_chamfer(pair, result):
 @pytest.mark.parametrize("case, gear", _own_runs_with_contours())
 def test_contour_matches_the_stplus_export(case: str, gear: int) -> None:
     pair, result = _with_stplus_chamfer(*_generation(case))
-    role = "pinion" if gear == 1 else "wheel"
+    role: ct.Role = "pinion" if gear == 1 else "wheel"
     ours = ct.tooth_contour(result, role)
     reference = ct.stplus_contour(case, gear)
     diff = ct.compare(ours, reference)

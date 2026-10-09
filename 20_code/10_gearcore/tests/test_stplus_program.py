@@ -439,5 +439,5 @@ def test_gearcore_applies_no_stplus_default_silently() -> None:
     assert sum("KOPFKREISDM not given" in note for note in imported.notes) == 2
     # the core: a tool is a contract with its factors, a generation needs its tip diameters
     with pytest.raises(Exception, match="addendum_factor"):
-        ToolProfile(protuberance_mm=0.0, machining_allowance_mm=0.0)  # type: ignore[call-arg]
+        ToolProfile(protuberance_mm=0.0, machining_allowance_mm=0.0)
     assert stplus_default_tool().addendum_factor == 1.25

@@ -13,13 +13,13 @@ from gearcore import involute as iv
 from gearcore import pair as pr
 from gearcore.errors import GeometryInfeasibleError, InputRangeError, NotSupportedError
 from gearcore.io.ste import pair_input_from_ste, parse_ste
-from gearcore.models.common import Pair
+from gearcore.models.common import InputWarning, Pair
 from gearcore.models.inputs import BallMeasurement, DimensionKind, SpanMeasurement
 from gearcore.stplus_program import with_stplus_inspection_choices
 from gearcore.trace import equations_of
 
 
-def codes(warnings: tuple) -> list[str]:
+def codes(warnings: tuple[InputWarning, ...]) -> list[str]:
     return [warning.code for warning in warnings]
 
 
