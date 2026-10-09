@@ -1,8 +1,8 @@
 # Simulationstagebuch (generiert)
 
-Stand 2026-10-09 13:36; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
+Stand 2026-10-09 13:42; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
 
-Läufe: 203 vollständig, 26 abgebrochen, 7 offen, 277 Dateien nicht gerechnet; 55 Ordner.
+Läufe: 203 vollständig, 26 abgebrochen, 7 offen, 273 Dateien nicht gerechnet; 54 Ordner.
 
 ## 2026-10-05 16:43 `pinion_surface_7teeth_80layers`
 
@@ -1016,14 +1016,6 @@ Netz: 82425 Knoten, 72320 Elemente (C3D8), 20 Schichten, Bohrung r 16.500 mm, K�
 
 Nicht gerechnet: 10 Dateien (`pos_001_W2_QS`, `pos_001_W4_QS`, `pos_031_W2_QS`, `pos_031_W4_QS`, `pos_066_W2_QS`, `pos_066_W4_QS` …).
 
-## 2026-10-09 11:13 `pilot_20layers_bore33_w4_qs_margin`
-
-**Zweck:** Randpilot W4 QS: Stellungen bei −1,0 und −0,75 Teilung vor A und +0,75 und +1,0 Teilung hinter E (Gitter 60 je Teilung mit Rand 1,0 Teilung, Indizes 1, 16, 178, 193), um den Beginn und das Ende des verlängerten Eingriffs der nachgiebigsten Stufe zu finden und daraus den Rand des Batches (Vorlage, 2026-10-09). **Ergebnis:** Vorlage.
-
-Netz: 82425 Knoten, 72320 Elemente (C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
-
-Nicht gerechnet: 4 Dateien (`pos_001`, `pos_016`, `pos_178`, `pos_193`).
-
 ## 2026-10-09 11:41 `study_20layers_bore33_60perpitch_retry_iter100_gerechnet`
 
 **Zweck:** Iterationsgrenzen I_0/I_R/I_C = 20/30/100: Kontrolle pos_002 und die abgebrochene pos_003, vom Nutzer nach pos_003 gestoppt (2026-10-09). **Ergebnis:** Hilft nur teilweise: die Inkremente 8 bis 10 des 16-Nm-Schritts, die mit 16 Iterationen zurückgeschnitten wurden, konvergieren jetzt nach 50, 51 und 40 Iterationen; Inkrement 13 (Schrittzeit 0,206, 12,8 Nm, dieselbe Stelle wie in der Studie) divergiert aber: der Penetrationsfehler des Knotens 7293 (rechte Flanke T5, r 25,901, z −6,75) wechselt je Iteration das Vorzeichen und wächst um 4 % je Iteration (2,5e-8 → 5,6e-8 mm in 20 Iterationen), bei Inkrementgrößen 1e-5 bis 1e-6 gleich; Abaqus meldet 'THE SOLUTION APPEARS TO BE DIVERGING', 20 min, 1 322 s. Also eine echte Instabilität der Newton-Iteration des harten Knoten-zu-Fläche-Kontakts an der facettierten Kopfkante, kein Iterationsbudget. Kontrolle pos_002 (186 s) ziffernidentisch mit der Studie, wie erwartet. Nächste physikneutrale Hebel: Line Search N_ls = 5 (dämpft oszillierende Newton-Korrekturen) und der Versatz der Stellung um 0,01 mm; darüber hinaus nur mit Eingriff in Kontaktgesetz (weiches Kontaktgesetz) oder Geometrie (Rundung größer als der Knotenreihenabstand 0,1 mm). (gerechnet: Vollversion; Befunde FE-14, FE-19)
@@ -1091,9 +1083,9 @@ Netz: 82425 Knoten, 72320 Elemente (C3D8), 20 Schichten, Bohrung r 16.500 mm, K�
 | `pos_133_W2_QS` | LOAD_16NM | -1.60 %  | 91.5       | 63.2           | T1 RIGHT, r 26.89, z +0.0 | 51.1       | T1_T2, r 24.90, z +0.0, Tangente 30° | -58.2      | T2_T3      | 106.1   | T2   |
 | `pos_133_W4_QS` | LOAD_12NM | -1.89 %  | 76.0       | 55.0           | T1 RIGHT, r 26.89, z +0.8 | 56.1       | T1_T2, r 24.79, z -6.8, Tangente 58° | -68.2      | T2_T3      | 85.0    | T2   |
 
-## 2026-10-09 13:35 `pilot_20layers_bore33_w4_qs_margin_V2`
+## 2026-10-09 13:35 `pilot_20layers_bore33_w4_qs_margin`
 
-**Zweck:** Randpilot W4 QS wie V1 (±0,75 und ±1,0 Teilung), aber mit den Iterationsgrenzen 20/30/100, weil die Kopfkante bei W4 hinter E auf weitere Knotenreihen trifft (pos_133_W4 des Piloten) und dort die langsam konvergierende Art des Flatterns auftritt (Vorlage, 2026-10-09). **Ergebnis:** Vorlage.
+**Zweck:** Randpilot W4 QS: Stellungen bei −1,0 und −0,75 Teilung vor A und +0,75 und +1,0 Teilung hinter E (Gitter 60 je Teilung mit Rand 1,0 Teilung, Indizes 1, 16, 178, 193), um den Beginn und das Ende des verlängerten Eingriffs der nachgiebigsten Stufe zu finden und daraus den Rand des Batches; mit den Iterationsgrenzen 20/30/100, weil die Kopfkante bei W4 hinter E auf weitere Knotenreihen trifft (pos_133_W4 des nichtlinearen Piloten) und dort die langsam konvergierende Art des Flatterns auftritt (Vorlage, 2026-10-09; die erste Fassung ohne Grenzen wurde nie gerechnet und ist ersetzt). **Ergebnis:** Vorlage.
 
 Netz: 82425 Knoten, 72320 Elemente (C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
 

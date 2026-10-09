@@ -1494,7 +1494,7 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     orientation makes the root stress asymmetric over the width), the edge pressure of the
     pinion tip at E falls from 160 to 93 MPa; the incoming tooth carries from earlier and the
     outgoing tooth longer (52 N still 1,46 mm beyond E), so the margin pilot gets the
-    iteration limits (`pilot_20layers_bore33_w4_qs_margin_V2`): pos_133_W4 broke off at
+    iteration limits (rewritten in place, its first version was never computed): pos_133_W4 broke off at
     15,4 Nm where the tip corner meets the fourth flank node row beyond E, with the slowly
     converging kind of FE-19 that the limits cure (`pilot_20layers_bore33_w4_qs_pos133_iter100`
     checks it on that one file).
