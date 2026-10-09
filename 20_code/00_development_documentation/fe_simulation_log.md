@@ -1,8 +1,8 @@
 # Simulationstagebuch (generiert)
 
-Stand 2026-10-09 11:52; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
+Stand 2026-10-09 13:36; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
 
-Läufe: 194 vollständig, 25 abgebrochen, 7 offen, 272 Dateien nicht gerechnet; 52 Ordner.
+Läufe: 203 vollständig, 26 abgebrochen, 7 offen, 277 Dateien nicht gerechnet; 55 Ordner.
 
 ## 2026-10-05 16:43 `pinion_surface_7teeth_80layers`
 
@@ -1010,7 +1010,7 @@ Nicht gerechnet: 6 Dateien (`pos_066_W2_QS`, `pos_066_W4_QS`, `pos_103_W2_QS`, `
 
 ## 2026-10-09 11:13 `pilot_20layers_bore33_w2w4_qs_V2`
 
-**Zweck:** Pilot der nichtlinearen Werkstoffstufen W2 (isotrop elastisch-plastisch) und W4 (Orientierungsdatei mit Plastizität), Rate QS als nachgiebigster Fall, NLGEOM=YES, C3D8, Ringkörper Bohrung 33: fünf Stellungen des 60er-Gitters (Rand −0,5 Teilung, A, C, E, Rand +0,5 Teilung), um die Verformung und die Eingriffsverlängerung gegen W1 zu messen, bevor Schrittweite und Rand des Batches festgelegt werden (Nutzer 2026-10-09: 20 je Teilung reicht für W1, für die nichtlinearen Stufen offen). V2 = Stand nach dem W2-Fix; die erste Fassung ohne Orientierung am W2-Section ist in pilot_20layers_bore33_w2w4_qs_gerechnet gerechnet (Vorlage). **Ergebnis:** Vorlage; Kontaktdurchsetzung wie in der Studie (Voreinstellung), bis die Wiederholungsläufe die Abhilfe gegen das Flattern entschieden haben; gegenüber V1 nur der W2-Section mit *ORIENTATION, die W4-Decks bis auf die Kopfzeile unverändert.
+**Zweck:** Pilot der nichtlinearen Werkstoffstufen W2 (isotrop elastisch-plastisch) und W4 (Orientierungsdatei mit Plastizität), Rate QS als nachgiebigster Fall, NLGEOM=YES, C3D8, Ringkörper Bohrung 33: fünf Stellungen des 60er-Gitters (Rand −0,5 Teilung, A, C, E, Rand +0,5 Teilung), um die Verformung und die Eingriffsverlängerung gegen W1 zu messen, bevor Schrittweite und Rand des Batches festgelegt werden (Nutzer 2026-10-09: 20 je Teilung reicht für W1, für die nichtlinearen Stufen offen). V2 = Stand nach dem W2-Fix; die erste Fassung ohne Orientierung am W2-Section ist in pilot_20layers_bore33_w2w4_qs_gerechnet gerechnet (Vorlage). **Ergebnis:** Vorlage; Kontaktdurchsetzung wie in der Studie (Voreinstellung), bis die Wiederholungsläufe die Abhilfe gegen das Flattern entschieden haben; gegenüber V1 nur der W2-Section mit *ORIENTATION, die W4-Decks bis auf die Kopfzeile unverändert; gerechnet in pilot_20layers_bore33_w2w4_qs_V2_gerechnet.
 
 Netz: 82425 Knoten, 72320 Elemente (C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W2, W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 10 Stellungsdateien (grid, 60 je Teilung)
 
@@ -1054,4 +1054,56 @@ Nicht gerechnet: 1 Dateien (`pos_045`).
 Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
 
 Nicht gerechnet: 4 Dateien (`pos_002`, `pos_003`, `pos_044`, `pos_045`).
+
+## 2026-10-09 13:24 `pilot_20layers_bore33_w2w4_qs_V2_gerechnet`
+
+**Zweck:** Nichtlinearer Pilot W2 und W4 (Rate QS, NLGEOM=YES, C3D8, Ringkörper Bohrung 33) an den fünf Stellungen Rand −0,5 Teilung (1), A (31), C (66), E (103), Rand +0,5 Teilung (133), gerechnet 2026-10-09 11:45 bis 13:24. **Ergebnis:** 9 von 10 durch: W2 in 212 bis 273 s (wie W1), W4 in 524 bis 652 s; pos_133_W4 bricht bei 16 Nm, Schrittzeit 0,856 (15,4 Nm) nach 37 min ab, Knoten 5742 (rechte Flanke T3, r 26,002, z −6,75): die Ritzelkopfkante 1,46 mm hinter E auf der vierten Knotenreihe, Penetrationsfehler monoton abklingend (Faktor 0,94 je Iteration), also die langsam konvergierende Art von FE-19, die die Iterationsgrenzen abfangen. Gegen W1 (Studie) bei 16 Nm: Ritzeldrehung W2/W4 +13 bis +27 % (C 84,0 → 94,8/95,5 µm, A 67,6 → 85,6/85,2, E 67,7 → 84,3/85,1), bei 8 Nm +6 bis +11 %; W2 und W4 in der Steifigkeit innerhalb 2 %. Fußspannung σ1 max bei C 16 Nm: W1 82,9, W2 48,9 (−41 %, Fließkurve bei 80 °C beginnt bei 4,3 MPa, die Spannung ist durch die Fließkurve begrenzt), W4 65,2 MPa (−21 %); mit W4 liegt das σ1-Maximum bei z +6 bis +6,75 mm statt in der Breitenmitte (Faserorientierung macht die Fußspannung über der Breite unsymmetrisch). Kantendruck des Ritzelkopfs an E: W1 159,6, W2 93,0, W4 94,0 MPa (−41 %). Lastaufteilung: der einlaufende Zahn trägt früher (pos_001 T3: 34,5 → 66/68 N), der auslaufende länger (pos_133 T3 1,46 mm hinter E: 8,3 → 54/52 N): die Ränder ±0,5 Teilung reichen für W2/W4 nicht (FE-21). Orientierungsprüfung W4 an SEAT 0,002°. (gerechnet: Vollversion; Befunde FE-03, FE-17, FE-19, FE-21)
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W2, W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 10 Stellungsdateien (grid, 60 je Teilung)
+
+**Läufe**
+
+| Datei           | Stellung  | Stufe | Rate | Variante | Löser           | Status                        | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|-----------------|-----------|-------|------|----------|-----------------|-------------------------------|-----------------------|--------|---------|------------------|
+| `pos_001_W2_QS` | ρ1 6.310  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 212    | 0       | 2026-10-09 11:48 |
+| `pos_001_W4_QS` | ρ1 6.310  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 564    | 0       | 2026-10-09 11:58 |
+| `pos_031_W2_QS` | A         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 210    | 0       | 2026-10-09 12:02 |
+| `pos_031_W4_QS` | A         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 524    | 0       | 2026-10-09 12:11 |
+| `pos_066_W2_QS` | C         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 227    | 0       | 2026-10-09 12:15 |
+| `pos_066_W4_QS` | C         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 604    | 0       | 2026-10-09 12:25 |
+| `pos_103_W2_QS` | E         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 273    | 0       | 2026-10-09 12:30 |
+| `pos_103_W4_QS` | E         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 652    | 0       | 2026-10-09 12:42 |
+| `pos_133_W2_QS` | ρ1 12.657 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 231    | 0       | 2026-10-09 12:46 |
+| `pos_133_W4_QS` | ρ1 12.657 | W4    | QS   |          | NLGEOM, N2S 0.2 | not completed (step 4 inc 18) | 6, 6, 6, 29           | 2251   | 17      | 2026-10-09 13:24 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei           | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|-----------------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_001_W2_QS` | LOAD_16NM | -0.36 %  | 88.1       | 93.2           | T5 RIGHT, r 25.90, z -6.0 | 48.5       | T3_T4, r 24.79, z -4.5, Tangente 58° | -56.0      | T4_T5      | 104.5   | T4   |
+| `pos_001_W4_QS` | LOAD_16NM | -0.42 %  | 88.6       | 96.0           | T5 RIGHT, r 25.90, z -7.5 | 61.7       | T3_T4, r 24.78, z +4.5, Tangente 63° | -68.0      | T4_T5      | 100.2   | T4   |
+| `pos_031_W2_QS` | LOAD_16NM | -0.24 %  | 85.6       | 84.7           | T4 RIGHT, r 25.70, z -6.0 | 44.6       | T3_T4, r 24.82, z -6.0, Tangente 49° | -54.5      | T4_T5      | 96.4    | T3   |
+| `pos_031_W4_QS` | LOAD_16NM | -0.21 %  | 85.2       | 88.8           | T4 RIGHT, r 25.70, z +7.5 | 57.3       | T3_T4, r 24.88, z +6.8, Tangente 33° | -69.9      | T4_T5      | 94.2    | T3   |
+| `pos_066_W2_QS` | LOAD_16NM | -1.21 %  | 94.8       | 73.1           | T4 RIGHT, r 26.00, z -6.0 | 48.9       | T2_T3, r 24.88, z +0.0, Tangente 33° | -55.6      | T3_T4      | 110.8   | T3   |
+| `pos_066_W4_QS` | LOAD_16NM | -1.21 %  | 95.5       | 78.3           | T4 RIGHT, r 26.00, z -7.5 | 65.2       | T2_T3, r 24.78, z +6.0, Tangente 63° | -71.9      | T3_T4      | 108.2   | T3   |
+| `pos_103_W2_QS` | LOAD_16NM | +0.14 %  | 84.3       | 93.0           | T3 RIGHT, r 25.70, z -6.0 | 44.7       | T1_T2, r 24.86, z -4.5, Tangente 37° | -51.2      | T3_T4      | 97.2    | T2   |
+| `pos_103_W4_QS` | LOAD_16NM | +0.19 %  | 85.1       | 94.0           | T3 RIGHT, r 25.70, z +6.8 | 57.8       | T1_T2, r 24.78, z +5.2, Tangente 63° | -65.3      | T3_T4      | 96.0    | T2   |
+| `pos_133_W2_QS` | LOAD_16NM | -1.60 %  | 91.5       | 63.2           | T1 RIGHT, r 26.89, z +0.0 | 51.1       | T1_T2, r 24.90, z +0.0, Tangente 30° | -58.2      | T2_T3      | 106.1   | T2   |
+| `pos_133_W4_QS` | LOAD_12NM | -1.89 %  | 76.0       | 55.0           | T1 RIGHT, r 26.89, z +0.8 | 56.1       | T1_T2, r 24.79, z -6.8, Tangente 58° | -68.2      | T2_T3      | 85.0    | T2   |
+
+## 2026-10-09 13:35 `pilot_20layers_bore33_w4_qs_margin_V2`
+
+**Zweck:** Randpilot W4 QS wie V1 (±0,75 und ±1,0 Teilung), aber mit den Iterationsgrenzen 20/30/100, weil die Kopfkante bei W4 hinter E auf weitere Knotenreihen trifft (pos_133_W4 des Piloten) und dort die langsam konvergierende Art des Flatterns auftritt (Vorlage, 2026-10-09). **Ergebnis:** Vorlage.
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
+
+Nicht gerechnet: 4 Dateien (`pos_001`, `pos_016`, `pos_178`, `pos_193`).
+
+## 2026-10-09 13:35 `pilot_20layers_bore33_w4_qs_pos133_iter100`
+
+**Zweck:** Wiederholung der abgebrochenen pos_133_W4 des nichtlinearen Piloten mit den Iterationsgrenzen 20/30/100 (eine Datei): prüft, ob die Grenzen die langsam konvergierende Art abfangen (Vorlage, 2026-10-09). **Ergebnis:** Vorlage.
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 1 Stellungsdateien (grid, 60 je Teilung)
+
+Nicht gerechnet: 1 Dateien (`pos_133`).
 

@@ -148,7 +148,20 @@ folders:
     findings: [FE-14, FE-17]
   pilot_20layers_bore33_w2w4_qs_V2:
     purpose: "Pilot der nichtlinearen Werkstoffstufen W2 (isotrop elastisch-plastisch) und W4 (Orientierungsdatei mit Plastizität), Rate QS als nachgiebigster Fall, NLGEOM=YES, C3D8, Ringkörper Bohrung 33: fünf Stellungen des 60er-Gitters (Rand −0,5 Teilung, A, C, E, Rand +0,5 Teilung), um die Verformung und die Eingriffsverlängerung gegen W1 zu messen, bevor Schrittweite und Rand des Batches festgelegt werden (Nutzer 2026-10-09: 20 je Teilung reicht für W1, für die nichtlinearen Stufen offen). V2 = Stand nach dem W2-Fix; die erste Fassung ohne Orientierung am W2-Section ist in pilot_20layers_bore33_w2w4_qs_gerechnet gerechnet (Vorlage)"
-    outcome: "Vorlage; Kontaktdurchsetzung wie in der Studie (Voreinstellung), bis die Wiederholungsläufe die Abhilfe gegen das Flattern entschieden haben; gegenüber V1 nur der W2-Section mit *ORIENTATION, die W4-Decks bis auf die Kopfzeile unverändert"
+    outcome: "Vorlage; Kontaktdurchsetzung wie in der Studie (Voreinstellung), bis die Wiederholungsläufe die Abhilfe gegen das Flattern entschieden haben; gegenüber V1 nur der W2-Section mit *ORIENTATION, die W4-Decks bis auf die Kopfzeile unverändert; gerechnet in pilot_20layers_bore33_w2w4_qs_V2_gerechnet"
+    machine: "-"
+  pilot_20layers_bore33_w2w4_qs_V2_gerechnet:
+    purpose: "Nichtlinearer Pilot W2 und W4 (Rate QS, NLGEOM=YES, C3D8, Ringkörper Bohrung 33) an den fünf Stellungen Rand −0,5 Teilung (1), A (31), C (66), E (103), Rand +0,5 Teilung (133), gerechnet 2026-10-09 11:45 bis 13:24"
+    outcome: "9 von 10 durch: W2 in 212 bis 273 s (wie W1), W4 in 524 bis 652 s; pos_133_W4 bricht bei 16 Nm, Schrittzeit 0,856 (15,4 Nm) nach 37 min ab, Knoten 5742 (rechte Flanke T3, r 26,002, z −6,75): die Ritzelkopfkante 1,46 mm hinter E auf der vierten Knotenreihe, Penetrationsfehler monoton abklingend (Faktor 0,94 je Iteration), also die langsam konvergierende Art von FE-19, die die Iterationsgrenzen abfangen. Gegen W1 (Studie) bei 16 Nm: Ritzeldrehung W2/W4 +13 bis +27 % (C 84,0 → 94,8/95,5 µm, A 67,6 → 85,6/85,2, E 67,7 → 84,3/85,1), bei 8 Nm +6 bis +11 %; W2 und W4 in der Steifigkeit innerhalb 2 %. Fußspannung σ1 max bei C 16 Nm: W1 82,9, W2 48,9 (−41 %, Fließkurve bei 80 °C beginnt bei 4,3 MPa, die Spannung ist durch die Fließkurve begrenzt), W4 65,2 MPa (−21 %); mit W4 liegt das σ1-Maximum bei z +6 bis +6,75 mm statt in der Breitenmitte (Faserorientierung macht die Fußspannung über der Breite unsymmetrisch). Kantendruck des Ritzelkopfs an E: W1 159,6, W2 93,0, W4 94,0 MPa (−41 %). Lastaufteilung: der einlaufende Zahn trägt früher (pos_001 T3: 34,5 → 66/68 N), der auslaufende länger (pos_133 T3 1,46 mm hinter E: 8,3 → 54/52 N): die Ränder ±0,5 Teilung reichen für W2/W4 nicht (FE-21). Orientierungsprüfung W4 an SEAT 0,002°"
+    machine: "Vollversion"
+    findings: [FE-03, FE-17, FE-19, FE-21]
+  pilot_20layers_bore33_w4_qs_margin_V2:
+    purpose: "Randpilot W4 QS wie V1 (±0,75 und ±1,0 Teilung), aber mit den Iterationsgrenzen 20/30/100, weil die Kopfkante bei W4 hinter E auf weitere Knotenreihen trifft (pos_133_W4 des Piloten) und dort die langsam konvergierende Art des Flatterns auftritt (Vorlage, 2026-10-09)"
+    outcome: "Vorlage"
+    machine: "-"
+  pilot_20layers_bore33_w4_qs_pos133_iter100:
+    purpose: "Wiederholung der abgebrochenen pos_133_W4 des nichtlinearen Piloten mit den Iterationsgrenzen 20/30/100 (eine Datei): prüft, ob die Grenzen die langsam konvergierende Art abfangen (Vorlage, 2026-10-09)"
+    outcome: "Vorlage"
     machine: "-"
   pilot_20layers_bore33_w2w4_qs_gerechnet:
     purpose: "Erster Lauf des nichtlinearen Piloten in der Fassung V1 (W2 ohne Orientierung am Section, W4, Rate QS, NLGEOM=YES, C3D8), vom Nutzer nach pos_031_W4 gestoppt (2026-10-09)"

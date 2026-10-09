@@ -1485,6 +1485,19 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     (FE-21); the margin pilot `pilot_20layers_bore33_w4_qs_margin` (W4 QS at −1,0 and −0,75
     pitch before A, +0,75 and +1,0 pitch after E) locates the real start and end of contact.
     The batch grid (count and margin per material step) is decided after these pilots.
+    Result of the V2 run (2026-10-09, 9 of 10 files): W2 takes 212 to 273 s like W1, W4 524
+    to 652 s; against W1 at 16 Nm the pinion rotation rises by 13 % at C and by 25 to 27 % at
+    A and E (W2 and W4 within 2 % of each other: the compliance is the plasticity, not the
+    anisotropy), the root stress σ1 at C falls from 82,9 to 48,9 MPa with W2 (the flow curve
+    of the card at 80 °C starts at 4,3 MPa, the surface stress is bounded by it) and to
+    65,2 MPa with W4, whose maximum sits at z +6 to +6,75 mm instead of mid-width (the fibre
+    orientation makes the root stress asymmetric over the width), the edge pressure of the
+    pinion tip at E falls from 160 to 93 MPa; the incoming tooth carries from earlier and the
+    outgoing tooth longer (52 N still 1,46 mm beyond E), so the margin pilot gets the
+    iteration limits (`pilot_20layers_bore33_w4_qs_margin_V2`): pos_133_W4 broke off at
+    15,4 Nm where the tip corner meets the fourth flank node row beyond E, with the slowly
+    converging kind of FE-19 that the limits cure (`pilot_20layers_bore33_w4_qs_pos133_iter100`
+    checks it on that one file).
 42. **Root tangent.** The diary's tangent angle at the largest σ1 (item 35) is 45° at C in
     every run; the 30° tangent is the critical section of ISO 6336-3 Method B, and the
     example thesis MA-0296 (`00_literatur/01_beispielarbeiten`, printed p. 50, Fig. 37)
