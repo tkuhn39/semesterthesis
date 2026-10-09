@@ -1,8 +1,8 @@
 # Simulationstagebuch (generiert)
 
-Stand 2026-10-09 13:42; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
+Stand 2026-10-09 14:19; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
 
-Läufe: 203 vollständig, 26 abgebrochen, 7 offen, 273 Dateien nicht gerechnet; 54 Ordner.
+Läufe: 204 vollständig, 27 abgebrochen, 8 offen, 282 Dateien nicht gerechnet; 57 Ordner.
 
 ## 2026-10-05 16:43 `pinion_surface_7teeth_80layers`
 
@@ -1041,7 +1041,7 @@ Nicht gerechnet: 1 Dateien (`pos_045`).
 
 ## 2026-10-09 11:50 `study_20layers_bore33_60perpitch_retry_ls5_iter100`
 
-**Zweck:** Vierte Abhilfe: Line Search N_ls = 5 (*CONTROLS, PARAMETERS=LINE SEARCH) zusammen mit den Iterationsgrenzen 20/30/100, gegen die mit 4 % je Iteration wachsende Oszillation des Flankenknotens an der Ritzelkopfkante (iter100-Lauf); Stellungen 2 (Kontrolle), 3, 44, 45, scharfe Kante, Lagrange (Vorlage, 2026-10-09). **Ergebnis:** Vorlage; Decks identisch mit der Studie bis auf die CONTROLS-Zeilen je Schritt; falls auch das nicht trägt, bleibt physikneutral nur der Versatz der Stellung (`decks --shift-mm`, 0,01 mm), sonst Kontaktgesetz oder Geometrie.
+**Zweck:** Vierte Abhilfe: Line Search N_ls = 5 (*CONTROLS, PARAMETERS=LINE SEARCH) zusammen mit den Iterationsgrenzen 20/30/100, gegen die mit 4 % je Iteration wachsende Oszillation des Flankenknotens an der Ritzelkopfkante (iter100-Lauf); Stellungen 2 (Kontrolle), 3, 44, 45, scharfe Kante, Lagrange (Vorlage, 2026-10-09). **Ergebnis:** Vorlage; Decks identisch mit der Studie bis auf die CONTROLS-Zeilen je Schritt; gerechnet in study_20layers_bore33_60perpitch_retry_ls5_iter100_gerechnet (nach pos_003 abgebrochen).
 
 Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
 
@@ -1098,4 +1098,44 @@ Nicht gerechnet: 4 Dateien (`pos_001`, `pos_016`, `pos_178`, `pos_193`).
 Netz: 82425 Knoten, 72320 Elemente (C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 1 Stellungsdateien (grid, 60 je Teilung)
 
 Nicht gerechnet: 1 Dateien (`pos_133`).
+
+## 2026-10-09 14:07 `study_20layers_bore33_60perpitch_retry_ls5_iter100_gerechnet`
+
+**Zweck:** Line Search N_ls = 5 mit den Iterationsgrenzen 20/30/100: Kontrolle pos_002 und die abgebrochene pos_003, vom Nutzer nach pos_003 gestoppt (2026-10-09). **Ergebnis:** Hilft nicht: pos_003 bricht exakt wie im iter100-Lauf ab (gleiche Inkremente, gleiche Iterationszahlen, Schrittzeit 0,206, 23 min); der Line Search greift in den letzten Attempts gar nicht (18 zusätzliche Residuenauswertungen im ganzen Lauf, keine in den divergierenden Iterationen), die Oszillation des Knotens 7293 wächst unverändert um 4 % je Iteration. Damit sind die löserseitigen, physikneutralen Hebel erschöpft (Penalty, Iterationsgrenzen, Line Search); die Abbruchstellen der Studie liegen paarweise nebeneinander (044/045, 055/056, 106/107, 117/118), das instabile Fenster ist also 0,05 bis 0,1 mm breit auf dem Wälzweg. Nächste Versuche: Versatz der Stellung um 0,025 mm (halber Schritt des 60er-Gitters, die Nachbarn 002 und 004 liefen) und, als Geometrieoption, Rundung 0,1 mm mit 12 Facetten je Bogen. (gerechnet: Vollversion; Befunde FE-14, FE-19)
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
+
+**Läufe**
+
+| Datei     | Stellung | Stufe | Rate | Variante | Löser               | Status                        | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|-----------|----------|-------|------|----------|---------------------|-------------------------------|-----------------------|--------|---------|------------------|
+| `pos_002` | ρ1 6.359 | W1    | QS   |          | linear, N2S 0.2, LS | complete                      | 6, 6, 6, 6            | 193    | 0       | 2026-10-09 13:34 |
+| `pos_003` | ρ1 6.408 | W1    | QS   |          | linear, N2S 0.2, LS | not completed (step 4 inc 13) | 6, 6, 6, 22           | 1403   | 369     | 2026-10-09 13:58 |
+| `pos_044` | ρ1 8.376 | W1    | QS   |          | linear, N2S 0.2, LS | open (step 3 inc 11)          | 6, 6, 16              |        | 66      | 2026-10-09 14:07 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei     | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                                         | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|-----------|-----------|----------|------------|----------------|---------------------------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_002` | LOAD_16NM | -0.26 %  | 76.9       | 116.5          | T5 RIGHT, r 25.90, z -6.8                   | 76.5       | T3_T4, r 24.83, z +0.0, Tangente 45° | -89.8      | T4_T5      | 92.0    | T4   |
+| `pos_003` | LOAD_12NM | -0.21 %  | 64.3       | 70.9           | T5 RIGHT, r 25.90, z -6.8                   | 64.2       | T3_T4, r 24.83, z -3.8, Tangente 45° | -76.1      | T4_T5      | 76.8    | T4   |
+| `pos_044` | LOAD_8NM  | +0.32 %  | 35.0       | 98.1           | (105 geschlossene Knoten, Ort nur mit .odb) |            |                                      |            |            |         |      |
+
+Nicht gerechnet: 1 Dateien (`pos_045`).
+
+## 2026-10-09 14:18 `study_20layers_bore33_60perpitch_retry_shift0p025_iter100`
+
+**Zweck:** Fünfte Abhilfe, ohne Änderung von Modell oder Löser: die Stellungen 2 (Kontrolle), 3, 44, 45 um 0,025 mm auf dem Wälzweg versetzt (halber Schritt des 60er-Gitters; die Nachbarn der Abbrüche liefen durch), mit den Iterationsgrenzen 20/30/100; die Dateien behalten ihre Nummern, das Manifest trägt den Versatz und den verschobenen Wälzweg (Vorlage, 2026-10-09). **Ergebnis:** Vorlage; trägt der Versatz, wiederholt der Batch abgebrochene Stellungen so.
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
+
+Nicht gerechnet: 4 Dateien (`pos_002`, `pos_003`, `pos_044`, `pos_045`).
+
+## 2026-10-09 14:18 `study_20layers_bore33_60perpitch_retry_round0p1_f12_iter100`
+
+**Zweck:** Geometrieoption: Kopfkante des starren Ritzels auf 0,1 mm gerundet (eine Knotenreihe der Radflanke, Reihenabstand 0,1 mm) mit mindestens 12 Facetten je Bogen (Knicke rund 5° statt 12°), Iterationsgrenzen 20/30/100, Stellungen 2, 3, 44, 45 (Vorlage, 2026-10-09; der Nutzer nimmt die Rundung nur, wenn sie zum Unterbinden des Flatterns nötig ist, FE-17). **Ergebnis:** Vorlage.
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
+
+Nicht gerechnet: 4 Dateien (`pos_002`, `pos_003`, `pos_044`, `pos_045`).
 

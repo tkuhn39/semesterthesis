@@ -179,7 +179,20 @@ folders:
     findings: [FE-14, FE-19]
   study_20layers_bore33_60perpitch_retry_ls5_iter100:
     purpose: "Vierte Abhilfe: Line Search N_ls = 5 (*CONTROLS, PARAMETERS=LINE SEARCH) zusammen mit den Iterationsgrenzen 20/30/100, gegen die mit 4 % je Iteration wachsende Oszillation des Flankenknotens an der Ritzelkopfkante (iter100-Lauf); Stellungen 2 (Kontrolle), 3, 44, 45, scharfe Kante, Lagrange (Vorlage, 2026-10-09)"
-    outcome: "Vorlage; Decks identisch mit der Studie bis auf die CONTROLS-Zeilen je Schritt; falls auch das nicht trägt, bleibt physikneutral nur der Versatz der Stellung (`decks --shift-mm`, 0,01 mm), sonst Kontaktgesetz oder Geometrie"
+    outcome: "Vorlage; Decks identisch mit der Studie bis auf die CONTROLS-Zeilen je Schritt; gerechnet in study_20layers_bore33_60perpitch_retry_ls5_iter100_gerechnet (nach pos_003 abgebrochen)"
+    machine: "-"
+  study_20layers_bore33_60perpitch_retry_ls5_iter100_gerechnet:
+    purpose: "Line Search N_ls = 5 mit den Iterationsgrenzen 20/30/100: Kontrolle pos_002 und die abgebrochene pos_003, vom Nutzer nach pos_003 gestoppt (2026-10-09)"
+    outcome: "Hilft nicht: pos_003 bricht exakt wie im iter100-Lauf ab (gleiche Inkremente, gleiche Iterationszahlen, Schrittzeit 0,206, 23 min); der Line Search greift in den letzten Attempts gar nicht (18 zusätzliche Residuenauswertungen im ganzen Lauf, keine in den divergierenden Iterationen), die Oszillation des Knotens 7293 wächst unverändert um 4 % je Iteration. Damit sind die löserseitigen, physikneutralen Hebel erschöpft (Penalty, Iterationsgrenzen, Line Search); die Abbruchstellen der Studie liegen paarweise nebeneinander (044/045, 055/056, 106/107, 117/118), das instabile Fenster ist also 0,05 bis 0,1 mm breit auf dem Wälzweg. Nächste Versuche: Versatz der Stellung um 0,025 mm (halber Schritt des 60er-Gitters, die Nachbarn 002 und 004 liefen) und, als Geometrieoption, Rundung 0,1 mm mit 12 Facetten je Bogen"
+    machine: "Vollversion"
+    findings: [FE-14, FE-19]
+  study_20layers_bore33_60perpitch_retry_shift0p025_iter100:
+    purpose: "Fünfte Abhilfe, ohne Änderung von Modell oder Löser: die Stellungen 2 (Kontrolle), 3, 44, 45 um 0,025 mm auf dem Wälzweg versetzt (halber Schritt des 60er-Gitters; die Nachbarn der Abbrüche liefen durch), mit den Iterationsgrenzen 20/30/100; die Dateien behalten ihre Nummern, das Manifest trägt den Versatz und den verschobenen Wälzweg (Vorlage, 2026-10-09)"
+    outcome: "Vorlage; trägt der Versatz, wiederholt der Batch abgebrochene Stellungen so"
+    machine: "-"
+  study_20layers_bore33_60perpitch_retry_round0p1_f12_iter100:
+    purpose: "Geometrieoption: Kopfkante des starren Ritzels auf 0,1 mm gerundet (eine Knotenreihe der Radflanke, Reihenabstand 0,1 mm) mit mindestens 12 Facetten je Bogen (Knicke rund 5° statt 12°), Iterationsgrenzen 20/30/100, Stellungen 2, 3, 44, 45 (Vorlage, 2026-10-09; der Nutzer nimmt die Rundung nur, wenn sie zum Unterbinden des Flatterns nötig ist, FE-17)"
+    outcome: "Vorlage"
     machine: "-"
   study_20layers_bore33_60perpitch_retry_round0p05:
     purpose: "Dieselben 14 Stellungen mit der Kopfkante des starren Ritzels auf 0,05 mm gerundet (Entgratung als Modellannahme der starren Fläche, mindestens vier Facetten je Bogen), Kontaktdurchsetzung wie in der Studie (Vorlage, 2026-10-09)"

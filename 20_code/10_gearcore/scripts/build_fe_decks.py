@@ -648,6 +648,7 @@ def surface(
     rotation: pl.Rotation,
     out: Path,
     tip_rounding_mm: float = 0.0,
+    rounding_facets: int = rsf.ROUNDING_FACETS,
 ) -> list[str]:
     """Write the rigid tooth surface of the gear ``role`` and a picture of it in mesh with the
     sector of the mating gear; returns the lines of the report. ``tip_rounding_mm`` > 0 rounds
@@ -666,6 +667,7 @@ def surface(
         max_edge_mm=max_edge_mm,
         z_levels_mm=levels,
         tip_rounding_mm=tip_rounding_mm,
+        rounding_facets=rounding_facets,
     )
     out.mkdir(parents=True, exist_ok=True)
     target = out / f"{role}_surface.inp"
@@ -725,7 +727,7 @@ def surface(
         *(
             [
                 f"tip corners rounded with {tip_rounding_mm:g} mm (at least "
-                f"{rsf.ROUNDING_FACETS} facets per arc); 0 = the sharp corner of the drawing"
+                f"{rounding_facets} facets per arc); 0 = the sharp corner of the drawing"
             ]
             if tip_rounding_mm > 0.0
             else []
@@ -1036,6 +1038,7 @@ def decks(
     iteration_limits: tuple[int, int, int] | None = None,
     line_search: int = 0,
     shift_mm: float = 0.0,
+    rounding_facets: int = rsf.ROUNDING_FACETS,
 ) -> list[str]:
     """Write the wheel mesh, the pinion surface, one position file per position and
     combination, the manifest and the runner into ``out``; returns the lines of the report.
@@ -1106,7 +1109,15 @@ def decks(
     )
     report = list(built.lines)
     report += surface(
-        case, "pinion", teeth, layers, max_edge_mm, rotation, out, tip_rounding_mm=tip_rounding_mm
+        case,
+        "pinion",
+        teeth,
+        layers,
+        max_edge_mm,
+        rotation,
+        out,
+        tip_rounding_mm=tip_rounding_mm,
+        rounding_facets=rounding_facets,
     )
     section = built.section
     layers = built.solid.layers
@@ -1328,6 +1339,7 @@ def decks(
             "teeth": teeth + 2,
             "max_edge_mm": max_edge_mm,
             "tip_rounding_mm": tip_rounding_mm,
+            "rounding_facets": rounding_facets,
         },
         "positions": entries,
         "variants": {v: VARIANTS[v][1] for v in variants} if variants else {},
@@ -1348,8 +1360,9 @@ def decks(
                 f"{', '.join(f'{t} ({f})' for t, f in mesh_files.items())}, "
                 f"{len(built.solid.nodes_mm)} Knoten; starre Ritzelfläche mit {teeth + 2} Zähnen"
                 + (
-                    f", Kopfkanten mit {tip_rounding_mm:g} mm gerundet (Entgratung als "
-                    "Modellannahme der starren Fläche, nicht der Zeichnung; FE-17)"
+                    f", Kopfkanten mit {tip_rounding_mm:g} mm gerundet, mindestens "
+                    f"{rounding_facets} Facetten je Bogen (Entgratung als Modellannahme der "
+                    "starren Fläche, nicht der Zeichnung; FE-17)"
                     if tip_rounding_mm > 0.0
                     else ", scharfe Kopfkanten wie das reale Ritzel (FE-17)"
                 )
@@ -2732,6 +2745,12 @@ def main() -> None:
         help="mm; radius of the rounding of the tip corners of the rigid surface (deburring as "
         "a modelling choice), 0 = sharp corners as the drawing",
     )
+    surface_parser.add_argument(
+        "--rounding-facets",
+        type=int,
+        default=rsf.ROUNDING_FACETS,
+        help="smallest number of facets along each rounding arc of the tip corners",
+    )
     surface_parser.add_argument("--out", type=Path, default=None)
     preview_parser = commands.add_parser("preview", help="draw the pair in five positions")
     preview_parser.add_argument("--case", default="kst_e", help="packaged STplus case")
@@ -2816,6 +2835,12 @@ def main() -> None:
         default=0.0,
         help="mm; radius of the rounding of the tip corners of the rigid pinion surface, "
         "0 = sharp corners as the drawing (FE-17)",
+    )
+    decks_parser.add_argument(
+        "--rounding-facets",
+        type=int,
+        default=rsf.ROUNDING_FACETS,
+        help="smallest number of facets along each rounding arc (12 = about 5 deg per facet)",
     )
     decks_parser.add_argument(
         "--variants",
@@ -2933,6 +2958,7 @@ def main() -> None:
             args.pinion_rotation,
             out,
             tip_rounding_mm=args.tip_rounding,
+            rounding_facets=args.rounding_facets,
         ):
             print(line)
     if args.command == "preview":
@@ -2965,6 +2991,8 @@ def main() -> None:
             folder += f"_{args.enforcement}"
         if args.tip_rounding > 0.0:
             folder += f"_round{args.tip_rounding:g}"
+            if args.rounding_facets != rsf.ROUNDING_FACETS:
+                folder += f"_f{args.rounding_facets}"
         if args.iterations:
             folder += f"_iter{args.iterations[2]}"
         if args.line_search:
@@ -3003,6 +3031,7 @@ def main() -> None:
             iteration_limits=tuple(args.iterations) if args.iterations else None,
             line_search=args.line_search,
             shift_mm=args.shift_mm,
+            rounding_facets=args.rounding_facets,
         ):
             print(line)
     if args.command == "report":

@@ -117,10 +117,12 @@ def test_tip_rounding_reaches_the_rigid_surface_and_the_manifest(
     sharp = tmp_path / "sharp"
     rounded = tmp_path / "rounded"
     _decks(script, sharp, grid_indices=[2])
-    lines = _decks(script, rounded, grid_indices=[2], tip_rounding_mm=0.05)
-    assert any("tip corners rounded with 0.05 mm" in line for line in lines)
+    lines = _decks(script, rounded, grid_indices=[2], tip_rounding_mm=0.05, rounding_facets=12)
+    assert any("tip corners rounded with 0.05 mm (at least 12 facets" in line for line in lines)
     assert _profile_nodes(rounded) > _profile_nodes(sharp)
     manifest = json.loads((rounded / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["pinion_surface"]["tip_rounding_mm"] == 0.05
+    assert manifest["pinion_surface"]["rounding_facets"] == 12
+    assert "mindestens 12 Facetten" in (rounded / "README.md").read_text(encoding="utf-8")
     assert "0.05 mm gerundet" in (rounded / "README.md").read_text(encoding="utf-8")
     assert "scharfe Kopfkanten" in (sharp / "README.md").read_text(encoding="utf-8")

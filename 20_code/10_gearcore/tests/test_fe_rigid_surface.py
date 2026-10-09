@@ -159,9 +159,32 @@ def test_tip_rounding_replaces_the_tip_corners_by_tangent_arcs(kst_e: Generation
     angle = np.arctan2(profile[:, 0], profile[:, 1])
     assert bool(np.all(np.diff(angle) < 0.0))
     assert np.allclose(profile[::-1] * np.array([-1.0, 1.0]), profile, rtol=0.0, atol=1e-9)
+    # more facets per arc turn the normal in smaller steps: 12 facets over about 60 deg
+    fine = rs.rigid_surface(
+        kst_e,
+        "pinion",
+        teeth=1,
+        max_edge_mm=0.05,
+        z_levels_mm=levels,
+        tip_rounding_mm=0.1,
+        rounding_facets=12,
+    )
+    turn_fine, radius_fine = _turning_angles_deg(fine)
+    assert float(turn_fine[radius_fine > r_a - 0.3].max()) < 7.0
+    assert fine.profile_nodes > rounded.profile_nodes
     with pytest.raises(InputRangeError):
         rs.rigid_surface(
             kst_e, "pinion", teeth=1, max_edge_mm=0.05, z_levels_mm=levels, tip_rounding_mm=-0.1
+        )
+    with pytest.raises(InputRangeError):
+        rs.rigid_surface(
+            kst_e,
+            "pinion",
+            teeth=1,
+            max_edge_mm=0.05,
+            z_levels_mm=levels,
+            tip_rounding_mm=0.05,
+            rounding_facets=1,
         )
     with pytest.raises(GeometryInfeasibleError):
         rs.rigid_surface(

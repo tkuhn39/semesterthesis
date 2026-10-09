@@ -92,13 +92,17 @@ def _length(points: Array) -> float:
 
 
 def _rounded_corner(
-    before: Array, after: Array, radius_mm: float, max_edge_mm: float
+    before: Array,
+    after: Array,
+    radius_mm: float,
+    max_edge_mm: float,
+    facets: int = ROUNDING_FACETS,
 ) -> tuple[Array, Array, Array]:
     """The corner where ``before`` ends and ``after`` begins (the first point of ``after``)
     replaced by a circular arc of ``radius_mm`` tangent to both pieces: ``before`` and
     ``after`` shortened by the tangent length t = r / tan(phi / 2) (phi the angle between the
     pieces at the corner), and the arc between the two tangent points, sampled so that it gets
-    at least ``ROUNDING_FACETS`` facets."""
+    at least ``facets`` facets."""
     corner = after[0]
     scale = float(np.hypot(*corner))
     if float(np.hypot(*(before[-1] - corner))) > ct.JOIN_TOLERANCE * scale:
@@ -137,7 +141,7 @@ def _rounded_corner(
     theta_1 = math.atan2(*(t_before - centre)[::-1])
     theta_2 = math.atan2(*(t_after - centre)[::-1])
     sweep = math.remainder(theta_2 - theta_1, 2.0 * math.pi)
-    count = ROUNDING_FACETS  # no rounding function in the source: the step count by counting
+    count = facets  # no rounding function in the source: the step count by counting
     while abs(sweep) * radius_mm > count * max_edge_mm:
         count += 1
     angles = theta_1 + sweep * np.arange(count + 1, dtype=np.float64) / count
@@ -146,7 +150,11 @@ def _rounded_corner(
 
 
 def _tooth_profile(
-    contour: ct.ToothContour, pitch: float, max_edge_mm: float, tip_rounding_mm: float = 0.0
+    contour: ct.ToothContour,
+    pitch: float,
+    max_edge_mm: float,
+    tip_rounding_mm: float = 0.0,
+    rounding_facets: int = ROUNDING_FACETS,
 ) -> Array:
     """One pitch of the profile, counter-clockwise, the tooth centre on +y: from the centre line
     of the gap on the right (clockwise) to the centre line of the gap on the left, without the
@@ -183,17 +191,17 @@ def _tooth_profile(
         k = tip[0]
         # the corner after the tip land first, so that the index of the tip stays valid
         tip_points, arc_2, after = _rounded_corner(
-            raw[k][1], raw[k + 1][1], tip_rounding_mm, max_edge_mm
+            raw[k][1], raw[k + 1][1], tip_rounding_mm, max_edge_mm, rounding_facets
         )
         before, arc_1, tip_points = _rounded_corner(
-            raw[k - 1][1], tip_points, tip_rounding_mm, max_edge_mm
+            raw[k - 1][1], tip_points, tip_rounding_mm, max_edge_mm, rounding_facets
         )
-        # the arcs keep at least ROUNDING_FACETS facets when the pieces are divided
+        # the arcs keep at least ``rounding_facets`` facets when the pieces are divided
         raw[k - 1 : k + 2] = [
             (raw[k - 1][0], before, max_edge_mm),
-            ("tip_rounding", arc_1, min(max_edge_mm, _length(arc_1) / ROUNDING_FACETS)),
+            ("tip_rounding", arc_1, min(max_edge_mm, _length(arc_1) / rounding_facets)),
             ("tip", tip_points, max_edge_mm),
-            ("tip_rounding", arc_2, min(max_edge_mm, _length(arc_2) / ROUNDING_FACETS)),
+            ("tip_rounding", arc_2, min(max_edge_mm, _length(arc_2) / rounding_facets)),
             (raw[k + 1][0], after, max_edge_mm),
         ]
     # every piece runs up to the first point of the next one, so that the corners of the contour
@@ -244,10 +252,12 @@ def rigid_surface(
     max_edge_mm: float,
     z_levels_mm: Array,
     tip_rounding_mm: float = 0.0,
+    rounding_facets: int = ROUNDING_FACETS,
 ) -> RigidSurface:
     """The swept tooth surface of ``teeth`` teeth of the gear ``role`` on the z-levels
     ``z_levels_mm`` (see ``surface_z_levels``); ``tip_rounding_mm`` > 0 rounds the two corners
-    of the tip land (see the module)."""
+    of the tip land with arcs of at least ``rounding_facets`` facets (see the module; 12
+    facets turn the normal by about 5° per facet instead of 12° with the default 4)."""
     if not isinstance(generation, GenerationResult):
         raise InputRangeError(
             f"a GenerationResult of compute_generation is required, got {type(generation).__name__}"
@@ -261,6 +271,9 @@ def rigid_surface(
     rounding = finite_input(tip_rounding_mm, "tip rounding")
     if rounding < 0.0:
         raise InputRangeError(f"the tip rounding must not be negative, got {tip_rounding_mm!r}")
+    facets = integer_input(rounding_facets, "facets per rounding arc")
+    if facets < 2:
+        raise InputRangeError(f"a rounding arc needs at least 2 facets, got {rounding_facets!r}")
     levels = np.asarray(z_levels_mm, dtype=np.float64).ravel()
     if len(levels) < 2 or not bool(np.all(np.isfinite(levels)) and np.all(np.diff(levels) > 0.0)):
         raise InputRangeError("the z-levels must be at least two rising finite values")
@@ -271,7 +284,7 @@ def rigid_surface(
             f"a surface of a gear with {z} teeth holds 1 to {z - 1} teeth, got {teeth!r}"
         )
     pitch = 2.0 * math.pi / z
-    one = _tooth_profile(contour, pitch, edge, rounding)
+    one = _tooth_profile(contour, pitch, edge, rounding, facets)
     pieces = []
     for j in range(count):
         turn = (j - 0.5 * (count - 1)) * pitch  # counter-clockwise from +y
