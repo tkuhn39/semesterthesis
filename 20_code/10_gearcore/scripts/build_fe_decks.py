@@ -1454,8 +1454,17 @@ def decks(
                 "",
                 f"1. Diesen Ordner kopieren (die Stellungsdateien binden `{built.file_name}` und "
                 "`pinion_surface.inp` ein, sie müssen daneben liegen).",
-                "2. Abaqus-Eingabeaufforderung im Ordner öffnen, Datenprüfung einer Datei: "
-                "`abaqus job=pos_001 datacheck interactive`.",
+                "2. Abaqus-Eingabeaufforderung im Ordner öffnen, Datenprüfung je Werkstoffstufe und "
+                "Rate (etwa eine Minute je Datei; der Präprozessor findet Eingabefehler, die kein "
+                "Test findet, z. B. die fehlende Orientierung von W2 am 2026-10-09):"
+                + "".join(
+                    f" `abaqus job={Path(str(e['file'])).stem} datacheck interactive`"
+                    for e in entries
+                    if e["index"] == entries[0]["index"] and not e.get("variant")
+                )
+                + ". Endet jede ohne ***ERROR, kann der Runner starten; er überspringt nur "
+                "Stellungen, deren `.sta` einen vollständigen Lauf meldet, und überschreibt die "
+                "Dateien der Datenprüfung.",
                 "3. Alle Stellungen nacheinander: `powershell -ExecutionPolicy Bypass -File run_all.ps1` "
                 "(anderer Starter: `-Launcher abq2025`, Kerne: `-Cpus 4`). Fertige Stellungen werden "
                 "übersprungen; `run_log.txt` protokolliert.",

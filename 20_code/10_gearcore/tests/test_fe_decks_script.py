@@ -83,6 +83,9 @@ def test_retry_folder_keeps_the_numbering_and_sets_the_enforcement(
     assert manifest["pinion_surface"]["tip_rounding_mm"] == 0.0
     readme = (out / "README.md").read_text(encoding="utf-8")
     assert "PENALTY=LINEAR" in readme and "I_0/I_R/I_C = 20/30/100" in readme
+    # the README names one data check per material step and rate (the first position)
+    assert "`abaqus job=pos_002 datacheck interactive`" in readme
+    assert "job=pos_003 datacheck" not in readme
     # line search and a shift of the positions along the path (a retry of a position whose
     # contact state does not converge): the file keeps its number, the manifest the shift
     shifted = tmp_path / "shifted"

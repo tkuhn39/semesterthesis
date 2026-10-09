@@ -1513,10 +1513,16 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     outgoing tooth and raises the rotation and the root stress of the wheel by 6 to 13 %
     (FE-17): the real edge radius of the pinion decides, to be measured on the part, and a
     rounding is a model decision recorded with the pair, never a convergence remedy. The
-    physics-neutral fallback for a position whose contact state does not converge is the
-    shift of that position along the path (`decks --shift-mm`, the manifest carries the
-    shift and the shifted path coordinate, the named points A to E are never shifted); the
-    batch repeats a broken-off position that way. Design rule for the later mesher (user):
+    shift of a failing position along the path (`decks --shift-mm`, the manifest carries the
+    shift, the named points A to E are never shifted) was tried as the physics-neutral
+    fallback and withdrawn the same day: the shifted positions complete, but two of three
+    land on the other branch of the corner contact (force turned 9 to 13° against the line
+    of action, support moment 3 to 5 % too high: the edge nodes sit on the tip facet of the
+    rigid surface) and one loses the contact entirely. The instability is the ambiguity of
+    the main-surface normal at a sharp corner, the solver picks a branch by chance, and
+    only the flank branch is physically consistent; the rounded edge has one continuous
+    normal and therefore one branch. Hence the measured edge of the real pinion is the
+    model, and a sharp corner is not run in a batch. Design rule for the later mesher (user):
     a contacting convex edge of the main surface needs a radius of at least the node row
     spacing of the secondary surface in the sliding direction, finely facetted, or the
     secondary surface must be refined below the edge radius.

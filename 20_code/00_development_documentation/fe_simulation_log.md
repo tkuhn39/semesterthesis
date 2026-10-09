@@ -1,8 +1,8 @@
 # Simulationstagebuch (generiert)
 
-Stand 2026-10-09 16:20; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
+Stand 2026-10-09 17:57; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
 
-Läufe: 208 vollständig, 28 abgebrochen, 8 offen, 282 Dateien nicht gerechnet; 59 Ordner.
+Läufe: 212 vollständig, 28 abgebrochen, 8 offen, 678 Dateien nicht gerechnet; 61 Ordner.
 
 ## 2026-10-05 16:43 `pinion_surface_7teeth_80layers`
 
@@ -1125,7 +1125,7 @@ Nicht gerechnet: 1 Dateien (`pos_045`).
 
 ## 2026-10-09 14:18 `study_20layers_bore33_60perpitch_retry_shift0p025_iter100`
 
-**Zweck:** Fünfte Abhilfe, ohne Änderung von Modell oder Löser: die Stellungen 2 (Kontrolle), 3, 44, 45 um 0,025 mm auf dem Wälzweg versetzt (halber Schritt des 60er-Gitters; die Nachbarn der Abbrüche liefen durch), mit den Iterationsgrenzen 20/30/100; die Dateien behalten ihre Nummern, das Manifest trägt den Versatz und den verschobenen Wälzweg (Vorlage, 2026-10-09). **Ergebnis:** Vorlage; trägt der Versatz, wiederholt der Batch abgebrochene Stellungen so.
+**Zweck:** Fünfte Abhilfe, ohne Änderung von Modell oder Löser: die Stellungen 2 (Kontrolle), 3, 44, 45 um 0,025 mm auf dem Wälzweg versetzt (halber Schritt des 60er-Gitters; die Nachbarn der Abbrüche liefen durch), mit den Iterationsgrenzen 20/30/100; die Dateien behalten ihre Nummern, das Manifest trägt den Versatz und den verschobenen Wälzweg (Vorlage, 2026-10-09). **Ergebnis:** Vorlage; gerechnet in study_20layers_bore33_60perpitch_retry_shift0p025_iter100_gerechnet.
 
 Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
 
@@ -1180,4 +1180,36 @@ Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, K
 | `pos_003` | LOAD_16NM | -0.99 %  | 82.2       | 74.0           | T4 RIGHT, r 26.10, z +0.0 | 81.8       | T3_T4, r 24.83, z +0.0, Tangente 45° | -99.9      | T4_T5      | 98.2    | T4   |
 | `pos_044` | LOAD_16NM | +0.62 %  | 72.2       | 180.1          | T4 RIGHT, r 25.80, z -6.8 | 63.1       | T2_T3, r 24.82, z -5.2, Tangente 49° | -77.3      | T4_T5      | 84.4    | T3   |
 | `pos_045` | LOAD_16NM | +0.47 %  | 72.4       | 181.6          | T4 RIGHT, r 25.80, z -6.8 | 63.8       | T2_T3, r 24.82, z -5.2, Tangente 49° | -76.2      | T4_T5      | 84.7    | T3   |
+
+## 2026-10-09 16:33 `study_20layers_bore33_60perpitch_retry_shift0p025_iter100_gerechnet`
+
+**Zweck:** Stellungen 2, 3, 44, 45 um 0,025 mm versetzt, Iterationsgrenzen 20/30/100 (2026-10-09, 16:16 bis 16:33). **Ergebnis:** Alle vier 'COMPLETED', aber nur die Kontrolle pos_002 ist brauchbar (gegen die unversetzte Stellung: Drehung, Fußspannung, Kopfverschiebung innerhalb 0,5 bis 1 %, Kantendruck −4 bis −5 %, wie die Steigung der Kurven dort erwartet). pos_003 und pos_044 landen auf dem anderen Lösungsast des Knoten-zu-Fläche-Kontakts an der scharfen Kante: die Kontaktkraft ist um 8,9 / 5,5 / 3,6 ° (pos_003) und 12,9 / 8,3 / 5,8 ° (pos_044) gegen die Eingriffslinie gedreht, a_1/r_b1 nur 0,86 bis 0,97, das Stützmoment 3,2 bis 5,1 % über z_2/z_1·T_1, Summe der Zahnkräfte über der Zahnkraft: die Kantenknoten des auslaufenden Zahns liegen auf der Kopffacette der starren Fläche statt auf der Flankenfacette, die Kraft zeigt radial zum Ritzel statt entlang der Eingriffslinie. pos_045 verliert im 8-Nm-Schritt den Kontakt vollständig (0 geschlossene Knoten, RM3 = 0, Ritzel um 8,9 mrad verdreht), der Lauf 'konvergiert' mit leerem Kontakt. Der Versatz ist damit keine Rückfallebene: die Instabilität ist die Mehrdeutigkeit der Masternormalen an der scharfen Kante (Normalenkegel zwischen Flanken- und Kopffacette), und welchen Ast der Löser trifft, ist Zufall. Konsistent sind nur die Lösungen auf dem Flankenast (Kraft innerhalb 0,1 bis 3 ° der Eingriffslinie, Stützmoment innerhalb 1 %), wie in allen 122 durchgelaufenen Stellungen der Studie; die gerundete Kante (retry_round0p1_f12) hat eine stetige Normale und damit genau einen Ast. (gerechnet: Vollversion; Befunde FE-15, FE-17, FE-19)
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
+
+**Läufe**
+
+| Datei     | Stellung | Stufe | Rate | Variante | Löser           | Status   | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|-----------|----------|-------|------|----------|-----------------|----------|-----------------------|--------|---------|------------------|
+| `pos_002` | ρ1 6.384 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 194    | 0       | 2026-10-09 16:19 |
+| `pos_003` | ρ1 6.433 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 200    | 5       | 2026-10-09 16:23 |
+| `pos_044` | ρ1 8.401 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 8, 6, 6            | 406    | 67      | 2026-10-09 16:30 |
+| `pos_045` | ρ1 8.450 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 160    | 2       | 2026-10-09 16:33 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei     | Schritt   | RM3 Abw.  | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|-----------|-----------|-----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_002` | LOAD_16NM | -0.35 %   | 76.6       | 112.1          | T5 RIGHT, r 25.90, z -6.8 | 76.2       | T3_T4, r 24.83, z +0.0, Tangente 45° | -89.7      | T4_T5      | 91.6    | T4   |
+| `pos_003` | LOAD_16NM | +0.45 %   | 82.2       | 74.1           | T4 RIGHT, r 26.10, z -6.8 | 81.3       | T3_T4, r 24.83, z +0.0, Tangente 45° | -98.8      | T4_T5      | 98.1    | T4   |
+| `pos_044` | LOAD_16NM | +2.40 %   | 72.8       | 178.2          | T4 RIGHT, r 25.80, z -6.8 | 62.9       | T2_T3, r 24.82, z -5.2, Tangente 49° | -78.0      | T4_T5      | 85.0    | T3   |
+| `pos_045` | LOAD_16NM | -100.00 % | 213.2      |                |                           | 0.0        | T3_T4, r 25.06, z -0.8, Tangente 12° | -0.0       | T3_T4      | 0.0     | T3   |
+
+## 2026-10-09 17:35 `series_20layers_bore33_round0p1f12_30perpitch_margin1_qs`
+
+**Zweck:** Wochenendserie (Nutzer 2026-10-09, ein Ordner für einen unbeaufsichtigten Lauf von rund 60 h): Ringkörper Bohrung 33, Kopfkante des starren Ritzels 0,1 mm mit 12 Facetten je Bogen (kleinste Kante, die das Netz ohne Instabilität verträgt, FE-19; die gemessene Kante kommt nächste Woche), 30 Stellungen je Teilung von 1,0 Teilung vor A bis 1,0 Teilung hinter E (99 Stellungen; der Rand zeigt selbst, wo die Randzähne kraftfrei werden, FE-21), alle vier Werkstoffstufen W1 bis W4 bei Rate QS, Iterationsgrenzen 20/30/100; 396 Dateien, erwartet rund 22 min je Stellung (W1/W2/W3 je 4 min, W4 10 min), 38 h plus Extraktion, ODBs rund 120 GB. **Ergebnis:** Datenprüfung aller vier Stufen ohne Fehler, läuft auf der Vollversion seit 2026-10-09 abends (unbeaufsichtigt bis 2026-10-12); liefert die vollständige Lastgeschichte eines Zahns je Stufe, Anisotropie (W1 → W3) getrennt von Plastizität (W1 → W2, W3 → W4), die Auflösungsprüfung 30/15/10 an W4 selbst und mit der Studie den Vergleich scharf gegen gerundet über den ganzen Eingriffsweg (W1). **Stand:** läuft. (gerechnet: Vollversion)
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, W2, W3, W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 396 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 396 Dateien (`pos_001_W1_QS`, `pos_001_W2_QS`, `pos_001_W3_QS`, `pos_001_W4_QS`, `pos_002_W1_QS`, `pos_002_W2_QS` …).
 
