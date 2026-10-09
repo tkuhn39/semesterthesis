@@ -653,6 +653,12 @@ before increment 5.
   outer teeth still loaded at ±0,5 pitch (FE-21). Sector boundary 1 to 2 % (FE-20).
 - Tests: `test_fe_decks_script.py` (retry options, loads the script via importlib), rounding
   and iteration-limit tests; diary regenerated (49 folders).
+- Later the same day: the iteration limits let the slow increments finish but one increment
+  of pos_003 diverges with a growing oscillation (FE-19 updated); `decks --line-search N`
+  (N_ls of every step) and `--shift-mm` (a position moved along the path, the manifest
+  carries the shift and clears the point label) added, retry folder `retry_ls5_iter100`
+  written; the regenerated nonlinear pilot folder is versioned `_V2` (user rule: a
+  regenerated folder never keeps the name whose `_gerechnet` result exists).
 
 ### Added (increment 2 - pair geometry, 2026-09-30, ADR-107, ADR-110)
 - `gearcore.pair`: mating quantities of an external gear pair per DIN ISO 21771:2014-08 §4.4, §4.5,

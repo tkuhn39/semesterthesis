@@ -161,7 +161,16 @@ folders:
     machine: "-"
   study_20layers_bore33_60perpitch_retry_iter100:
     purpose: "Dritte Abhilfe gegen das Flattern an der Ritzelkopfkante, ohne Änderung von Geometrie und Kontaktbedingung: Iterationsgrenzen je Inkrement I_0/I_R/I_C = 20/30/100 statt 4/8/16 (*CONTROLS, PARAMETERS=TIME INCREMENTATION), damit die langsam konvergierende Kontaktiteration (Faktor 0,85 bis 0,95 je Iteration in den .msg der Abbrüche) zu Ende läuft statt in den Rückschnitt; Stellungen 2 (Kontrolle), 3, 44, 45 der Studie (Abbrüche bei 16, 12 und 8 Nm), scharfe Kante, Lagrange (Vorlage, 2026-10-09)"
-    outcome: "Vorlage; Netz, Fläche und Decks identisch mit der Studie bis auf die vier *CONTROLS-Zeilen"
+    outcome: "Vorlage; Netz, Fläche und Decks identisch mit der Studie bis auf die vier *CONTROLS-Zeilen; gerechnet in study_20layers_bore33_60perpitch_retry_iter100_gerechnet (nach pos_003 abgebrochen)"
+    machine: "-"
+  study_20layers_bore33_60perpitch_retry_iter100_gerechnet:
+    purpose: "Iterationsgrenzen I_0/I_R/I_C = 20/30/100: Kontrolle pos_002 und die abgebrochene pos_003, vom Nutzer nach pos_003 gestoppt (2026-10-09)"
+    outcome: "Hilft nur teilweise: die Inkremente 8 bis 10 des 16-Nm-Schritts, die mit 16 Iterationen zurückgeschnitten wurden, konvergieren jetzt nach 50, 51 und 40 Iterationen; Inkrement 13 (Schrittzeit 0,206, 12,8 Nm, dieselbe Stelle wie in der Studie) divergiert aber: der Penetrationsfehler des Knotens 7293 (rechte Flanke T5, r 25,901, z −6,75) wechselt je Iteration das Vorzeichen und wächst um 4 % je Iteration (2,5e-8 → 5,6e-8 mm in 20 Iterationen), bei Inkrementgrößen 1e-5 bis 1e-6 gleich; Abaqus meldet 'THE SOLUTION APPEARS TO BE DIVERGING', 20 min, 1 322 s. Also eine echte Instabilität der Newton-Iteration des harten Knoten-zu-Fläche-Kontakts an der facettierten Kopfkante, kein Iterationsbudget. Kontrolle pos_002 (186 s) ziffernidentisch mit der Studie, wie erwartet. Nächste physikneutrale Hebel: Line Search N_ls = 5 (dämpft oszillierende Newton-Korrekturen) und der Versatz der Stellung um 0,01 mm; darüber hinaus nur mit Eingriff in Kontaktgesetz (weiches Kontaktgesetz) oder Geometrie (Rundung größer als der Knotenreihenabstand 0,1 mm)"
+    machine: "Vollversion"
+    findings: [FE-14, FE-19]
+  study_20layers_bore33_60perpitch_retry_ls5_iter100:
+    purpose: "Vierte Abhilfe: Line Search N_ls = 5 (*CONTROLS, PARAMETERS=LINE SEARCH) zusammen mit den Iterationsgrenzen 20/30/100, gegen die mit 4 % je Iteration wachsende Oszillation des Flankenknotens an der Ritzelkopfkante (iter100-Lauf); Stellungen 2 (Kontrolle), 3, 44, 45, scharfe Kante, Lagrange (Vorlage, 2026-10-09)"
+    outcome: "Vorlage; Decks identisch mit der Studie bis auf die CONTROLS-Zeilen je Schritt; falls auch das nicht trägt, bleibt physikneutral nur der Versatz der Stellung (`decks --shift-mm`, 0,01 mm), sonst Kontaktgesetz oder Geometrie"
     machine: "-"
   study_20layers_bore33_60perpitch_retry_round0p05:
     purpose: "Dieselben 14 Stellungen mit der Kopfkante des starren Ritzels auf 0,05 mm gerundet (Entgratung als Modellannahme der starren Fläche, mindestens vier Facetten je Bogen), Kontaktdurchsetzung wie in der Studie (Vorlage, 2026-10-09)"

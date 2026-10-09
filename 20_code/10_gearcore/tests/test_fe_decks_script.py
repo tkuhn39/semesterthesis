@@ -83,6 +83,20 @@ def test_retry_folder_keeps_the_numbering_and_sets_the_enforcement(
     assert manifest["pinion_surface"]["tip_rounding_mm"] == 0.0
     readme = (out / "README.md").read_text(encoding="utf-8")
     assert "PENALTY=LINEAR" in readme and "I_0/I_R/I_C = 20/30/100" in readme
+    # line search and a shift of the positions along the path (a retry of a position whose
+    # contact state does not converge): the file keeps its number, the manifest the shift
+    shifted = tmp_path / "shifted"
+    _decks(script, shifted, grid_indices=[2], line_search=5, shift_mm=0.01)
+    deck = (shifted / "pos_002.inp").read_text(encoding="ascii")
+    assert deck.count("*CONTROLS, PARAMETERS=LINE SEARCH\n5\n") == 2 and "line search 5" in deck
+    assert "(shifted by 0.01 mm)" in deck
+    moved = json.loads((shifted / "manifest.json").read_text(encoding="utf-8"))
+    assert moved["line_search"] == 5 and moved["shift_mm"] == 0.01
+    entry, original = moved["positions"][0], manifest["positions"][0]
+    assert entry["index"] == original["index"] == 2 and entry["shift_mm"] == 0.01
+    assert entry["from_A_mm"] == pytest.approx(original["from_A_mm"] + 0.01)
+    assert entry["rho_1_mm"] == pytest.approx(original["rho_1_mm"] + 0.01)
+    assert "0.01 mm" in (shifted / "README.md").read_text(encoding="utf-8")
     # a variant that names its own enforcement wins over the option
     other = tmp_path / "direct"
     _decks(script, other, grid_indices=[2], variants=["direct"], enforcement="penalty")

@@ -44,7 +44,7 @@ from matplotlib.patches import Patch
 from gearcore import contour as ct
 from gearcore import data
 from gearcore import involute as iv
-from gearcore._safe import integer_input
+from gearcore._safe import finite_input, integer_input
 from gearcore.errors import InputRangeError
 from gearcore.fe import abaqus as ab
 from gearcore.fe import body as bd
@@ -1034,12 +1034,18 @@ def decks(
     grid_indices: list[int] | None = None,
     tip_rounding_mm: float = 0.0,
     iteration_limits: tuple[int, int, int] | None = None,
+    line_search: int = 0,
+    shift_mm: float = 0.0,
 ) -> list[str]:
     """Write the wheel mesh, the pinion surface, one position file per position and
     combination, the manifest and the runner into ``out``; returns the lines of the report.
     ``tip_rounding_mm`` rounds the tip corners of the rigid pinion surface (``surface``);
     ``iteration_limits`` (I_0, I_R, I_C) raises the equilibrium iteration limits of every step
-    (``deck.PositionDeck.iteration_limits``).
+    (``deck.PositionDeck.iteration_limits``); ``line_search`` is N_ls of the line search of
+    every step (0 = off); ``shift_mm`` moves every written position along the path of
+    contact by that length (a retry of a position whose contact state does not converge:
+    the file keeps its number, the manifest carries the shifted ``rho_1_mm`` and
+    ``from_A_mm`` and the field ``shift_mm``).
 
     ``enforcement`` sets the enforcement of the hard contact of every file (a variant that
     names its own enforcement wins): ``default`` leaves it to Abaqus (direct Lagrange
@@ -1171,14 +1177,19 @@ def decks(
             "nlgeom": nlgeom,
             "enforcement": enforcement,
             "iteration_limits": iteration_limits,
+            "line_search": line_search,
         }
         if variants:
             return {v: {**common, **VARIANTS[v][0]} for v in variants}
         return {"": common}
 
-    for k, (label, rho) in enumerate(chosen, start=1):
+    shift = finite_input(shift_mm, "shift of the positions")
+    if line_search < 0:
+        raise InputRangeError(f"line search iterations must not be negative, got {line_search}")
+    for k, (label, rho_grid) in enumerate(chosen, start=1):
         if grid_indices is not None and k not in grid_indices:
             continue
+        rho = rho_grid + shift
         position = pl.mesh_position(generation, rho, working_flank=flank)
         place = pl.fixed_axes(position)
         for step in material_steps:
@@ -1206,7 +1217,8 @@ def decks(
                             model_file if step == "W4" else elastic_file if step == "W3" else None
                         ),
                         title=f"{case}: position {k} of {len(chosen)}"
-                        f"{' (' + label + ')' if label else ''}, rho_1 = {rho:.6f} mm, "
+                        f"{' (' + label + ')' if label else ''}, rho_1 = {rho:.6f} mm"
+                        f"{f' (shifted by {shift:g} mm)' if shift else ''}, "
                         f"{step} {rate}{', variant ' + variant if variant else ''}, built by gearcore",
                         step_names=step_names,
                         rate=rate,
@@ -1228,7 +1240,8 @@ def decks(
                                 else None
                             ),
                             "variant": variant,
-                            "point": label,
+                            "point": label if not shift else "",
+                            "shift_mm": shift,
                             "rho_1_mm": rho,
                             "rho_2_mm": position.radius_of_curvature_mm.wheel,
                             "from_A_mm": rho - rho_a,
@@ -1267,6 +1280,8 @@ def decks(
         "contact": "node_to_surface",
         "enforcement": enforcement,
         "iteration_limits": list(iteration_limits) if iteration_limits is not None else None,
+        "line_search": line_search,
+        "shift_mm": shift,
         "grid": {
             "positions": positions,
             "indices": grid_indices,
@@ -1385,6 +1400,22 @@ def decks(
                     "Ritzelkopfkante konvergiert mit Faktor 0,85 bis 0,95 je Iteration und lief "
                     "mit 16 Iterationen in den Rückschnitt (Wiederholungsläufe 2026-10-09)"
                     if iteration_limits is not None
+                    else ""
+                )
+                + (
+                    f", Line Search N_ls = {line_search} in jedem Schritt (*CONTROLS, "
+                    "PARAMETERS=LINE SEARCH: skaliert die Newton-Korrektur, wenn das Residuum "
+                    "sonst wüchse; gegen die wachsende Oszillation des Flankenknotens an der "
+                    "Ritzelkopfkante, Wiederholungslauf iter100 2026-10-09)"
+                    if line_search
+                    else ""
+                )
+                + (
+                    f". Alle Stellungen dieses Ordners sind um {shift:g} mm auf dem Wälzweg "
+                    "verschoben (Wiederholung einer Stellung, deren Kontaktzustand nicht "
+                    "konvergiert; die Datei behält ihre Nummer, das Manifest trägt den "
+                    "verschobenen Wälzweg)"
+                    if shift
                     else ""
                 )
                 + ", keine Stabilisierung. Regel je Werkstoffstufe (`deck.NLGEOM_OF_STEP`, "
@@ -2819,6 +2850,20 @@ def main() -> None:
         "INCREMENTATION (Abaqus defaults 4 8 16): more iterations before a cutback for the "
         "slowly converging contact of a flank node on the pinion tip corner",
     )
+    decks_parser.add_argument(
+        "--line-search",
+        type=int,
+        default=0,
+        help="N_ls of *CONTROLS, PARAMETERS=LINE SEARCH in every step (0 = off, the "
+        "documentation suggests 5): damps an oscillating Newton iteration",
+    )
+    decks_parser.add_argument(
+        "--shift-mm",
+        type=float,
+        default=0.0,
+        help="mm; move every written position along the path of contact (retry of a "
+        "position whose contact state does not converge; the manifest carries the shift)",
+    )
     decks_parser.add_argument("--out", type=Path, default=None)
     report_parser = commands.add_parser(
         "report", help="evaluate the .sta/.msg/.dat files of a position folder after the run"
@@ -2922,6 +2967,10 @@ def main() -> None:
             folder += f"_round{args.tip_rounding:g}"
         if args.iterations:
             folder += f"_iter{args.iterations[2]}"
+        if args.line_search:
+            folder += f"_ls{args.line_search}"
+        if args.shift_mm:
+            folder += f"_shift{args.shift_mm:g}"
         if args.grid_indices:
             folder += f"_retry{len(args.grid_indices)}"
         out = args.out if args.out is not None else OUTPUT / args.case / folder
@@ -2952,6 +3001,8 @@ def main() -> None:
             grid_indices=args.grid_indices,
             tip_rounding_mm=args.tip_rounding,
             iteration_limits=tuple(args.iterations) if args.iterations else None,
+            line_search=args.line_search,
+            shift_mm=args.shift_mm,
         ):
             print(line)
     if args.command == "report":
