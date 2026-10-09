@@ -1,8 +1,8 @@
 # Simulationstagebuch (generiert)
 
-Stand 2026-10-09 15:47; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
+Stand 2026-10-09 16:20; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
 
-Läufe: 204 vollständig, 28 abgebrochen, 8 offen, 282 Dateien nicht gerechnet; 58 Ordner.
+Läufe: 208 vollständig, 28 abgebrochen, 8 offen, 282 Dateien nicht gerechnet; 59 Ordner.
 
 ## 2026-10-05 16:43 `pinion_surface_7teeth_80layers`
 
@@ -1133,7 +1133,7 @@ Nicht gerechnet: 4 Dateien (`pos_002`, `pos_003`, `pos_044`, `pos_045`).
 
 ## 2026-10-09 14:18 `study_20layers_bore33_60perpitch_retry_round0p1_f12_iter100`
 
-**Zweck:** Geometrieoption: Kopfkante des starren Ritzels auf 0,1 mm gerundet (eine Knotenreihe der Radflanke, Reihenabstand 0,1 mm) mit mindestens 12 Facetten je Bogen (Knicke rund 5° statt 12°), Iterationsgrenzen 20/30/100, Stellungen 2, 3, 44, 45 (Vorlage, 2026-10-09; der Nutzer nimmt die Rundung nur, wenn sie zum Unterbinden des Flatterns nötig ist, FE-17). **Ergebnis:** Vorlage.
+**Zweck:** Geometrieoption: Kopfkante des starren Ritzels auf 0,1 mm gerundet (eine Knotenreihe der Radflanke, Reihenabstand 0,1 mm) mit mindestens 12 Facetten je Bogen (Knicke rund 5° statt 12°), Iterationsgrenzen 20/30/100, Stellungen 2, 3, 44, 45 (Vorlage, 2026-10-09; der Nutzer nimmt die Rundung nur, wenn sie zum Unterbinden des Flatterns nötig ist, FE-17). **Ergebnis:** Vorlage; gerechnet in study_20layers_bore33_60perpitch_retry_round0p1_f12_iter100_gerechnet.
 
 Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
 
@@ -1156,4 +1156,28 @@ Netz: 82425 Knoten, 72320 Elemente (C3D8), 20 Schichten, Bohrung r 16.500 mm, K�
 | Datei     | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
 |-----------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
 | `pos_133` | LOAD_12NM | -1.89 %  | 76.0       | 55.0           | T1 RIGHT, r 26.89, z +0.8 | 56.1       | T1_T2, r 24.79, z -6.8, Tangente 58° | -68.2      | T2_T3      | 85.0    | T2   |
+
+## 2026-10-09 16:12 `study_20layers_bore33_60perpitch_retry_round0p1_f12_iter100_gerechnet`
+
+**Zweck:** Rundung 0,1 mm mit 12 Facetten je Bogen plus Iterationsgrenzen an den Stellungen 2, 3, 44, 45 (2026-10-09, 15:58 bis 16:13). **Ergebnis:** Numerisch die erste Variante, die alle vier Stellungen durchbringt: je 6 Inkremente je Schritt ohne Rückschnitt, 0 negative Eigenwerte, 197 bis 219 s. Physikalisch aber keine kleine Änderung: gegen die scharfe Kante (Studie) bei pos_002 Ritzeldrehung +9,7 / +7,9 / +6,8 % bei 8 / 12 / 16 Nm, Kopfverschiebung +10 / +8 / +7 %, σ1 am Fuß +10 / +7 / +6 %, |σ3| +12 / +10 / +8 %; die Kraft des auslaufenden Zahns T5 am Kantenkontakt −42 / −18 / −9 %, die des Hauptzahns T4 +12 / +9 / +8 %, der Kantendruck bei 16 Nm 116,5 → 72,1 MPa (das Maximum liegt dann am Hauptkontakt). pos_003 bei 8 Nm: Drehung +12 %, σ1 +13 %, T5 trägt gar nicht mehr. Die Rundung verkürzt also den verlängerten Eingriff am Ritzelkopf, verlagert Last vom auslaufenden auf den Hauptzahn und hebt Drehung und Fußspannung um 6 bis 13 %: eine Modelländerung, kein numerischer Eingriff. Befund für die Arbeit: Drehung und Fußspannung des Kunststoffrads hängen mit rund 10 % je 0,1 mm am Kantenradius des Stahlritzels; der wirkliche Radius der Ritzelkante (Mikroskop) ist damit ein Eingangsparameter, nicht eine Numerikfrage. (gerechnet: Vollversion; Befunde FE-17, FE-19)
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 4 Stellungsdateien (grid, 60 je Teilung)
+
+**Läufe**
+
+| Datei     | Stellung | Stufe | Rate | Variante | Löser           | Status   | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|-----------|----------|-------|------|----------|-----------------|----------|-----------------------|--------|---------|------------------|
+| `pos_002` | ρ1 6.359 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 199    | 0       | 2026-10-09 16:01 |
+| `pos_003` | ρ1 6.408 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 197    | 0       | 2026-10-09 16:04 |
+| `pos_044` | ρ1 8.376 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 219    | 0       | 2026-10-09 16:08 |
+| `pos_045` | ρ1 8.425 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 208    | 0       | 2026-10-09 16:12 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei     | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|-----------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_002` | LOAD_16NM | +0.89 %  | 82.1       | 72.1           | T4 RIGHT, r 26.10, z -6.8 | 81.2       | T3_T4, r 24.83, z +0.0, Tangente 45° | -97.1      | T4_T5      | 98.4    | T4   |
+| `pos_003` | LOAD_16NM | -0.99 %  | 82.2       | 74.0           | T4 RIGHT, r 26.10, z +0.0 | 81.8       | T3_T4, r 24.83, z +0.0, Tangente 45° | -99.9      | T4_T5      | 98.2    | T4   |
+| `pos_044` | LOAD_16NM | +0.62 %  | 72.2       | 180.1          | T4 RIGHT, r 25.80, z -6.8 | 63.1       | T2_T3, r 24.82, z -5.2, Tangente 49° | -77.3      | T4_T5      | 84.4    | T3   |
+| `pos_045` | LOAD_16NM | +0.47 %  | 72.4       | 181.6          | T4 RIGHT, r 25.80, z -6.8 | 63.8       | T2_T3, r 24.82, z -5.2, Tangente 49° | -76.2      | T4_T5      | 84.7    | T3   |
 

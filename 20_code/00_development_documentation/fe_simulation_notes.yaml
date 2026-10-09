@@ -197,8 +197,13 @@ folders:
     machine: "-"
   study_20layers_bore33_60perpitch_retry_round0p1_f12_iter100:
     purpose: "Geometrieoption: Kopfkante des starren Ritzels auf 0,1 mm gerundet (eine Knotenreihe der Radflanke, Reihenabstand 0,1 mm) mit mindestens 12 Facetten je Bogen (Knicke rund 5° statt 12°), Iterationsgrenzen 20/30/100, Stellungen 2, 3, 44, 45 (Vorlage, 2026-10-09; der Nutzer nimmt die Rundung nur, wenn sie zum Unterbinden des Flatterns nötig ist, FE-17)"
-    outcome: "Vorlage"
+    outcome: "Vorlage; gerechnet in study_20layers_bore33_60perpitch_retry_round0p1_f12_iter100_gerechnet"
     machine: "-"
+  study_20layers_bore33_60perpitch_retry_round0p1_f12_iter100_gerechnet:
+    purpose: "Rundung 0,1 mm mit 12 Facetten je Bogen plus Iterationsgrenzen an den Stellungen 2, 3, 44, 45 (2026-10-09, 15:58 bis 16:13)"
+    outcome: "Numerisch die erste Variante, die alle vier Stellungen durchbringt: je 6 Inkremente je Schritt ohne Rückschnitt, 0 negative Eigenwerte, 197 bis 219 s. Physikalisch aber keine kleine Änderung: gegen die scharfe Kante (Studie) bei pos_002 Ritzeldrehung +9,7 / +7,9 / +6,8 % bei 8 / 12 / 16 Nm, Kopfverschiebung +10 / +8 / +7 %, σ1 am Fuß +10 / +7 / +6 %, |σ3| +12 / +10 / +8 %; die Kraft des auslaufenden Zahns T5 am Kantenkontakt −42 / −18 / −9 %, die des Hauptzahns T4 +12 / +9 / +8 %, der Kantendruck bei 16 Nm 116,5 → 72,1 MPa (das Maximum liegt dann am Hauptkontakt). pos_003 bei 8 Nm: Drehung +12 %, σ1 +13 %, T5 trägt gar nicht mehr. Die Rundung verkürzt also den verlängerten Eingriff am Ritzelkopf, verlagert Last vom auslaufenden auf den Hauptzahn und hebt Drehung und Fußspannung um 6 bis 13 %: eine Modelländerung, kein numerischer Eingriff. Befund für die Arbeit: Drehung und Fußspannung des Kunststoffrads hängen mit rund 10 % je 0,1 mm am Kantenradius des Stahlritzels; der wirkliche Radius der Ritzelkante (Mikroskop) ist damit ein Eingangsparameter, nicht eine Numerikfrage"
+    machine: "Vollversion"
+    findings: [FE-17, FE-19]
   study_20layers_bore33_60perpitch_retry_round0p05:
     purpose: "Dieselben 14 Stellungen mit der Kopfkante des starren Ritzels auf 0,05 mm gerundet (Entgratung als Modellannahme der starren Fläche, mindestens vier Facetten je Bogen), Kontaktdurchsetzung wie in der Studie (Vorlage, 2026-10-09)"
     outcome: "Vorlage; Radnetz und Decks identisch mit der Studie, nur pinion_surface.inp hat 932 statt 897 Profilknoten; gerechnet in study_20layers_bore33_60perpitch_retry_round0p05_gerechnet (nach pos_003 abgebrochen)"

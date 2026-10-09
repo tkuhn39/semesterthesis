@@ -1504,3 +1504,19 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     measured the fracture tangents of POM gears of kst-E with a template of 30° to 55° lines
     over photographs (±5°), finding about 40°; the user wants the same comparison with
     microscope images of his PA46 GF30 gears later.
+43. **Edge radius of the steel pinion is an input, not a numerical knob (2026-10-09).** The
+    retries of the broken-off positions (FE-19) ended with: penalty enforcement, iteration
+    limits and line search change nothing at the critical state (a growing oscillation of
+    one flank node on the tip corner, alike for W1 and W4); a tip rounding of 0,05 mm moves
+    the break-off; a rounding of 0,1 mm with 12 facets per arc completes every position in
+    6 increments per step. That rounding, however, shortens the extended contact of the
+    outgoing tooth and raises the rotation and the root stress of the wheel by 6 to 13 %
+    (FE-17): the real edge radius of the pinion decides, to be measured on the part, and a
+    rounding is a model decision recorded with the pair, never a convergence remedy. The
+    physics-neutral fallback for a position whose contact state does not converge is the
+    shift of that position along the path (`decks --shift-mm`, the manifest carries the
+    shift and the shifted path coordinate, the named points A to E are never shifted); the
+    batch repeats a broken-off position that way. Design rule for the later mesher (user):
+    a contacting convex edge of the main surface needs a radius of at least the node row
+    spacing of the secondary surface in the sliding direction, finely facetted, or the
+    secondary surface must be refined below the edge radius.
