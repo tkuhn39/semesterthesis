@@ -118,6 +118,58 @@ def stplus_input_path(case: str) -> Path:
     return _stplus_case_dir(case) / "input.ste"
 
 
+MEASUREMENT_FIXTURE_SUFFIXES = (".mew", ".mka", ".scan.txt", ".utf16.txt")
+"""Packaged measurement fixtures: GINA value and curve files, contour scans (renamed, the
+repository ignores ``*.dat``), roughness exports (UTF-16 bytes verbatim)."""
+
+
+def load_measurement_parts() -> dict[str, Any]:
+    """The user's decisions on the measured parts (``measurement/parts.yaml``): groups of ME
+    numbers per part, drawings, batch labels, known anomalies."""
+    path = data_path("measurement", "parts.yaml")
+    loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, dict) or not isinstance(loaded.get("parts"), dict):
+        raise ParseError("parts.yaml: expected a mapping 'parts'")
+    for part in ("wheel", "pinion"):
+        entry = loaded["parts"].get(part)
+        if not isinstance(entry, dict) or not isinstance(entry.get("groups"), dict):
+            raise ParseError(f"parts.yaml: part {part!r} needs a mapping 'groups'")
+        for name, members in entry["groups"].items():
+            if not isinstance(members, list) or not all(
+                isinstance(me, str) and re.fullmatch(r"\d{5}", me) for me in members
+            ):
+                raise ParseError(f"parts.yaml: group {name!r} of {part!r}: five-digit ME strings")
+        if not isinstance(entry.get("scatter_group"), str):
+            raise ParseError(f"parts.yaml: part {part!r} needs 'scatter_group'")
+        for name, members in entry.get("labels", {}).items():
+            if not isinstance(members, list) or not all(
+                isinstance(me, str) and re.fullmatch(r"\d{5}", me) for me in members
+            ):
+                raise ParseError(f"parts.yaml: label {name!r} of {part!r}: five-digit ME strings")
+    result: dict[str, Any] = loaded
+    return result
+
+
+def measurement_fixture_names() -> list[str]:
+    """Names of the packaged measurement fixtures (files below ``measurement/fixtures``)."""
+    base = data_path("measurement", "fixtures")
+    if not base.is_dir():
+        return []
+    return sorted(
+        p.name
+        for p in base.iterdir()
+        if p.is_file() and p.name.endswith(MEASUREMENT_FIXTURE_SUFFIXES)
+    )
+
+
+def measurement_fixture(name: str) -> Path:
+    """Path of a packaged measurement fixture; an unknown name is an ``InputRangeError``."""
+    known = measurement_fixture_names()
+    if not isinstance(name, str) or name not in known:
+        raise InputRangeError(f"unknown measurement fixture {name!r}; packaged: {known}")
+    return data_path("measurement", "fixtures", name)
+
+
 def worked_example_ids() -> list[str]:
     """Identifiers of the packaged norm worked examples."""
     base = data_path("worked_examples")

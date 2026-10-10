@@ -1526,3 +1526,79 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     a contacting convex edge of the main surface needs a radius of at least the node row
     spacing of the secondary surface in the sliding direction, finely facetted, or the
     secondary surface must be refined below the edge radius.
+44. **Measured geometry of the pinion and the wheel (2026-10-10).** The P40 contour scan of the
+    older steel pinion 86481 (three teeth, 2023) gives a tip edge that is sharp within the
+    resolution of the scan (rounding radius 0 to 0,018 mm, band at most 0,03 mm on 13 corners;
+    the 0,05 and 0,1 mm arcs of the retries lie 9 and 19 um outside the points) and a linear tip
+    relief of about 21 um at the tip from d_Ca about 51,86 mm (drawing 20220623: 25 um from
+    51,946 mm). The GINA measurements of the pinion series the rig pinion comes from (95911 to
+    95920, October 2025, "Stahlritzel mit KR") report the relief as fKo about -23 um per tooth
+    over the zone 51,946 to 52,88 mm and a root diameter 48,38 mm: these pinions follow the 2022
+    drawing with relief, not the 2025 drawing (48,644 mm, no relief), while STplus kst-E carries no
+    relief (`OHNE_RUECKNAHME = ja`; the printed `C_a(K_v) 8 um` is the running-in assumption of
+    the dynamic factor). The plastic wheels have a tip rounding of about 0,2 mm (drawing
+    20220316 `r_Kopfrundung 0,2`) where STplus and the contour model a 45 degree chamfer of h_K
+    0,117 mm. Decision of the user: the kst-E base geometry in STplus, gearcore and the FE decks
+    stays as it is; the measured geometry enters as separate cases (STplus variant with the linear
+    relief, then "as manufactured" variants of the steel pinion, of the plastic wheel and of both,
+    so the influence of either manufacturing deviation can be attributed; measurement track M7).
+    The edge of the current pinion series waits for its contour scan and microscope images.
+
+## ADR-117 — Measurement data of the manufactured gears: parsers in `io`, pure evaluation in `gearcore.measurement`, the user's decisions in `parts.yaml`, text exports versioned (2026-10-10)
+
+**Context.** The running tests of the thesis are accompanied by three kinds of measurement of
+the manufactured parts: the Klingelnberg P40 gear measurement (GINA value files `.mew` with the
+flank, pitch, runout and size deviations of five teeth (wheel) or three (pinion) per flank, curve files `.mka` with the
+traces and the per-tooth pitch tables of every tooth, image-only report PDFs), P40 contour scans
+of three teeth in the transverse section (`.DAT`), and Hommel-Etamic roughness exports (UTF-16
+ASCII tables, binary profiles, text PDFs). 58 wheel and 10 pinion GINA files, 79 contour scans
+and 72 roughness series exist (inventory of 2026-10-10); the data are needed for the
+manufacturing scatter of the wheels, the wear comparison of contour scans before and after the
+tests, the correlation of tooth-individual deviations with the failure window (teeth 36 to 40)
+and the FE geometry "as manufactured". The 2015 FZG Excel macro reads twenty `.mew` labels by
+substring, which clashes (`Fa m` matches `ffa m`) and loses the per-tooth data.
+
+**Decision.**
+1. Parsers are grammar only and live in `gearcore.io` (`p40`, `p40_contour`, `hommel`), as the
+   STplus parsers do: every line is matched by a rule or is a `ParseError`; numbers are read by a
+   strict regex (a decimal comma, `nan` or a word is never "absent"); placeholders of the P40
+   (-9999.0 not measured, 8999.0 not available) and undefined curve points are typed, never
+   numbers. The five-digit result codes are the keys; what a code means is decided in
+   `gearcore.measurement.gina` (M2), so a file with new labels still parses.
+2. Evaluation modules are pure (`gearcore.measurement`): they take parsed files and return frozen
+   results, write nothing and import no matplotlib; `scripts/measurements.py` reads the folder,
+   draws and writes below `80_output/messungen`.
+3. What the files cannot say is a packaged decision file `data/measurement/parts.yaml` with
+   provenance: the user's groups (core running tests, extra test, scatter, pinion series, older
+   pinion), the drawings, the failure window and the known anomalies. Measurement rounds come
+   from the header dates (the name suffixes `-neu`, `_neu`, `-neu1` are inconsistent), dates at
+   most five days apart form a round.
+4. Norm quantities are registered before use (ADR-108) from the pages of DIN ISO 1328-1:2018 and
+   ISO/TR 6336-30:2022 read on the rendered page; the tolerances the P40 stores (its own setting,
+   grade 7 for the wheels, 6 for the pinions) are reported as "Toleranz laut Messprotokoll" and
+   never as a grade of a norm; fit statistics of the contour evaluation (edge radius, cut-back,
+   axis offset, RMS) are coordinates without a registry name, like `gearcore.contour`. Quantities
+   whose defining norm is not in the repository (R_max, R_q, R_sk, R_t, R_p, R_zISO, W_t, R-delta-q,
+   R_pk/R_k/R_vk of ISO 4287 / ISO 21920, the quality grades of DIN 3962) are passed through raw
+   and never computed with until the user places the norms (then: rename the files without
+   spaces, register them in `sources.yaml` with transcribed data).
+5. The text exports of `70_input` are versioned (`.mew`, `.mka`, `.DAT` by an exception from the
+   `*.dat` rule, `.txt`, the test-rig `.xlsx`); PDFs, `.hwp` and `.xlsm` stay local;
+   `.gitattributes` leaves the instrument bytes untouched. Anomalies are stated in the inventory,
+   never repaired (two blocks in one scan, a misnamed file, 30 coarse scans, twin exports, an ME
+   number that occurs in roughness files only, per-tooth tip lines that repeat the root values).
+6. Increments of the track: M1 inventory, parsers, registry (this entry); M2 GINA evaluation;
+   M3 contour evaluation (port of the script of 2026-10-10, nominal comparison, the wheel's tip
+   corner as arc or chamfer); M4 roughness; M5 wear comparison of two scans and the interface to
+   the test-rig file (no evaluation of the running tests, the user's separate step); M6 thesis
+   tables and figures in the FZG/TUM design (FZG guideline first); M7 FE variants theory versus
+   manufactured (item 44 of ADR-116). The style of every plot follows the FZG guideline, then the
+   TUM corporate design (M0, waits for the FZG template files).
+
+**Consequences.** The inventory names 44 measured parts (10 core wheels, 26 scatter wheels
+including the extra 12 Nm test 97364, 7 pinions of the rig series, the older pinion 86481) and the gaps (no contour scan of
+six core wheels and of the rig pinion, no roughness of the pinions, test-rig data only in the
+Excel sheet). A new kind of file is an unknown path in the inventory, not a silent omission. The
+registry grows by 25 verified entries; `d_M` becomes a homonym of three quantities. The FE base
+case is untouched; variants are separate cases (M7).
+

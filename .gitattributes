@@ -25,3 +25,9 @@
 # GitHub Linguist: keep language stats focused on source code
 00_literatur/** linguist-vendored
 10_report/**    linguist-documentation
+
+# Measurement exports keep the bytes of the instruments (CRLF, UTF-16, UTF-8 BOM)
+70_input/**  -text
+
+# Packaged measurement fixtures keep the instrument bytes too (CRLF, UTF-16, UTF-8 BOM)
+20_code/10_gearcore/src/gearcore/data/measurement/fixtures/**  -text

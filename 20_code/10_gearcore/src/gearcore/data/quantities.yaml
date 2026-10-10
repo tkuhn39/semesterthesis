@@ -978,6 +978,8 @@ quantities:
     english: { text: "tip relief", source: "ISO6336-1:2019", location: "Table 2, p. 4" }
     also:
       - { symbol: "C_alpha_a", description: "Betrag der Kopfrücknahme", source: "ISO21771:2014", location: "§3.1 symbol list, p. 14" }
+      - { symbol: "C_alpha_a", description: "Wert der Kopfrücknahme", source: "DINISO1328-1:2018", location: "Tabelle 1, p. 9" }
+      - { symbol: "C_alpha_a", description: "Amount of tip relief", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 8" }
     stplus: null
     replaced: []
     note: "Flank modification, used by the load capacity (stage 2). DIN ISO 21771 writes C with the indices alpha and a."
@@ -2080,3 +2082,330 @@ quantities:
     note: "Input of a tip diameter check (STplus MINDESTKOPFSPIEL). The tip clearance of Eq. (60) needs the generated root diameter of the mating gear; verified with the generation (increment 3)."
     since: 0
     status: pending
+  total_profile_deviation:
+    symbol: "F_alpha"
+    unit: "µm"
+    description: "Profil-Gesamtabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 10"
+    english: { text: "Profile deviation, total", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Measured by the Klingelnberg P40 (GINA value file, label 'Fa'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10)."
+    since: 4
+    status: verified
+  profile_form_deviation:
+    symbol: "f_f_alpha"
+    unit: "µm"
+    description: "Profil-Formabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 10"
+    english: { text: "Profile form deviation (see ISO 1328-1:2013)", source: "ISOTR6336-30:2022", location: "Table 2, p. 3" }
+    also:
+      - { symbol: "f_f_alpha", description: "Profile form deviation", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    stplus: null
+    replaced: []
+    note: "Measured by the Klingelnberg P40 (GINA value file, label 'ffa'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10)."
+    since: 4
+    status: verified
+  profile_slope_deviation:
+    symbol: "f_H_alpha"
+    unit: "µm"
+    description: "Profil-Winkelabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 10"
+    english: { text: "Profile slope deviation", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Measured by the Klingelnberg P40 (GINA value file, label 'fHa'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10)."
+    since: 4
+    status: verified
+  total_helix_deviation:
+    symbol: "F_beta"
+    unit: "µm"
+    description: "Flankenlinien-Gesamtabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 9"
+    english: { text: "Helix deviation, total", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Measured by the Klingelnberg P40 (GINA value file, label 'Fb'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10)."
+    since: 4
+    status: verified
+  helix_form_deviation:
+    symbol: "f_f_beta"
+    unit: "µm"
+    description: "Flankenlinien-Formabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 9"
+    english: { text: "Helix form deviation", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Measured by the Klingelnberg P40 (GINA value file, label 'ffb'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10)."
+    since: 4
+    status: verified
+  helix_slope_deviation:
+    symbol: "f_H_beta"
+    unit: "µm"
+    description: "Flankenlinien-Winkelabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 10"
+    english: { text: "Helix slope deviation (see ISO 1328-1:2013)", source: "ISOTR6336-30:2022", location: "Table 2, p. 3" }
+    also:
+      - { symbol: "f_H_beta", description: "Helix slope deviation", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    stplus: null
+    replaced: []
+    note: "Measured by the Klingelnberg P40 (GINA value file, label 'fHb'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10)."
+    since: 4
+    status: verified
+  single_pitch_deviation:
+    symbol: "f_p"
+    unit: "µm"
+    description: "Teilungs-Einzelabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11"
+    english: { text: "Single pitch deviation", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 10" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Measured by the Klingelnberg P40 (GINA value file, label 'fp max'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10). The tolerance f_pT is the entry single_pitch_tolerance."
+    since: 4
+    status: verified
+  total_cumulative_pitch_deviation:
+    symbol: "F_p"
+    unit: "µm"
+    description: "Teilungs-Gesamtabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11"
+    english: { text: "Cumulative pitch deviation (index deviation), total", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Measured by the Klingelnberg P40 (GINA value file, label 'Fp'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10)."
+    since: 4
+    status: verified
+  sector_pitch_deviation:
+    symbol: "F_pk"
+    unit: "µm"
+    description: "Teilungs-Sektorabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11; Anhang D.2, p. 48"
+    english: { text: "Sector pitch deviation", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 10" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Anhang D.2 (p. 48): the largest algebraic difference of the 'Einzelwerte der Teilungs-Summenabweichung' (the page's term for the individual values of F_p) within any sector of k pitches; for k = z/8 (Eq. (D.1)) the symbol is F_pz/8, which the P40 prints as 'Fpz/8'."
+    since: 4
+    status: verified
+  adjacent_pitch_difference:
+    symbol: "f_u"
+    unit: "µm"
+    description: "Teilungssprung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11; Anhang G.1.2, p. 60"
+    english: { text: "Adjacent pitch difference", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 8" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Anhang G (p. 60): the largest individual value f_ui = |f_pi(n) - f_pi(n-1)| (Eq. (G.1)); the P40 prints 'fu max'. Program name after the English edition (DINISO1328-1:2018-EN, Table 1)."
+    since: 4
+    status: verified
+  runout:
+    symbol: "F_r"
+    unit: "µm"
+    description: "Rundlaufabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 10"
+    english: { text: "Runout", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 10" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Measured by the Klingelnberg P40 (GINA value file, label 'Fr'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10). Tabelle 1 of DIN ISO 1328-1 prints no tolerance symbol for the runout, so none is registered; the P40 header stores the value it checked against (code 218 'Fr')."
+    since: 4
+    status: verified
+  individual_single_pitch_deviation:
+    symbol: "f_pi"
+    unit: "µm"
+    description: "Einzelwert der Teilungs-Einzelabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 9"
+    english: { text: "Single pitch deviation (individual)", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 10" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Per tooth; the P40 curve file prints it as 'fp' in the tables 'linke/rechte Zahnflanke' for every tooth."
+    since: 4
+    status: verified
+  individual_cumulative_pitch_deviation:
+    symbol: "F_pi"
+    unit: "µm"
+    description: "Einzelwert der Teilungs-Gesamtabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 9"
+    english: { text: "Cumulative pitch deviation (index deviation), individual", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Per tooth; the P40 curve file prints it as 'Fp' in the tables 'linke/rechte Zahnflanke' for every tooth."
+    since: 4
+    status: verified
+  individual_radial_measurement:
+    symbol: "r_i"
+    unit: "µm"
+    description: "Einzelwert der Rundlaufmessung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 9"
+    english: { text: "Individual radial measurement", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Per tooth; the P40 curve file prints it as 'Fr' in the tables 'linke/rechte Zahnflanke' for every tooth. Program name after the English edition (DINISO1328-1:2018-EN, Table 1)."
+    since: 4
+    status: verified
+  profile_evaluation_length:
+    symbol: "L_alpha"
+    unit: "mm"
+    description: "Auswertelänge des Profils"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 9"
+    english: { text: "Profile evaluation length", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "The P40 header prints the evaluation range as diameters d1, d2 and the length 'La' (code 45)."
+    since: 4
+    status: verified
+  helix_evaluation_length:
+    symbol: "L_beta"
+    unit: "mm"
+    description: "Auswertelänge der Flankenlinie"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 9"
+    english: { text: "Helix evaluation length", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "The P40 header prints the evaluation range over the face width as b1, b2 (codes 62, 63)."
+    since: 4
+    status: verified
+  tip_relief_length:
+    symbol: "L_C_alpha_a"
+    unit: "mm"
+    description: "Länge der Kopfrücknahme"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 10"
+    english: { text: "Tip relief zone", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 10" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Roll length from the start of the tip relief to the tip; the P40 header of the pinion prints the zone as diameters dk1, dk2 (codes 431, 432). The amount is the entry tip_relief (symbol C_a there, C_alpha_a in DIN ISO 1328-1 and ISO 21771; the P40 prints it as 'fKo'). The English edition prints 'Tip relief zone' with the unit '–' where the German edition prints mm (Table 1, p. 10)."
+    since: 4
+    status: verified
+  measurement_diameter:
+    symbol: "d_M"
+    unit: "mm"
+    description: "Messkreisdurchmesser"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 10"
+    english: { text: "Measurement diameter", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Diameter of the pitch measurement (P40 header code 47, 'Teilungsmesskreis'); Anhang D.2 measures the sector pitch deviation along its arc. Program name after the English edition (DINISO1328-1:2018-EN, Table 1)."
+    since: 4
+    status: verified
+  profile_slope_tolerance:
+    symbol: "f_H_alpha_T"
+    unit: "µm"
+    description: "Toleranz der Profil-Winkelabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11"
+    english: { text: "Profile slope tolerance", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "The P40 header stores the tolerance it checked against (code 82/83 'FHAL'/'FHAR'); its grade is a setting of the measuring program, not a value of the norm."
+    since: 4
+    status: verified
+  helix_slope_tolerance:
+    symbol: "f_H_beta_T"
+    unit: "µm"
+    description: "Toleranz der Flankenlinien-Winkelabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11"
+    english: { text: "Helix slope tolerance", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "The P40 header stores the tolerance it checked against (code 89/90 'FHBL'/'FHBR')."
+    since: 4
+    status: verified
+  adjacent_pitch_difference_tolerance:
+    symbol: "f_uT"
+    unit: "µm"
+    description: "Toleranz des Teilungssprungs"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11; Anhang G.2, p. 60"
+    english: { text: "Adjacent pitch difference tolerance", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 8" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Eq. (G.2): f_uT = sqrt(2) f_pT (p. 60); the P40 header stores the value it checked against (code 212/213 'fu'). Program name after the English edition (DINISO1328-1:2018-EN, Table 1)."
+    since: 4
+    status: verified
+  total_cumulative_pitch_tolerance:
+    symbol: "F_pT"
+    unit: "µm"
+    description: "Toleranz der Teilungs-Gesamtabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11"
+    english: { text: "Cumulative pitch (index) tolerance, total", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "The P40 header stores the tolerance it checked against (code 214/215 'Fp')."
+    since: 4
+    status: verified
+  sector_pitch_tolerance:
+    symbol: "F_pkT"
+    unit: "µm"
+    description: "Toleranz der Teilungs-Sektorabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11"
+    english: { text: "Sector pitch tolerance", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 10" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "The P40 header stores the tolerance it checked against (code 216/217 'Fpz/8')."
+    since: 4
+    status: verified
+  arithmetic_mean_roughness:
+    symbol: "R_a"
+    unit: "µm"
+    description: "Arithmetic mean roughness value, Ra = 1/6 Rz"
+    source: "ISOTR6336-30:2022"
+    location: "Table 2, p. 4"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Defined by ISO 4287 (not in the repository); ISO/TR 6336-30 prints 'Ra' and 'Rz' without subscript. Measured by the Hommel-Etamic instrument (column 'Ra', mean of three traces 'Xq-Ra')."
+    since: 4
+    status: verified
+  mean_peak_to_valley_roughness:
+    symbol: "R_z"
+    unit: "µm"
+    description: "Mean peak-to-valley roughness (ISO 4287:1997a including ISO 4287:1997/Cor 1:1998, ISO 4287:1997/Cor 2:2005, ISO 4287:1997/Amd 1:2009 and ISO 4288:1996b)"
+    source: "ISOTR6336-30:2022"
+    location: "Table 2, p. 4"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Defined by ISO 4287 (not in the repository). Measured by the Hommel-Etamic instrument (column 'Rz', mean of three traces 'Xq-Rz')."
+    since: 4
+    status: verified

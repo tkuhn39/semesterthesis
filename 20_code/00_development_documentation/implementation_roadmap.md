@@ -54,5 +54,18 @@ on the test rig), steel pinion and plastic wheel.
 | S8 | Documentation, notebook, commit | open |
 | S9 | Rolling in one simulation as a cross-check with elastic material | open |
 
+## Measurement track — the manufactured gears (plan of 2026-10-10, ADR-117)
+
+| Step | Content | Status |
+|---|---|---|
+| M0 | Plot style of every script: FZG guideline first, TUM corporate design where the FZG says nothing (`scripts/plot_style.py`, fonts of `99_TUM_Corporate_Design`, palette tumdiag1 to 8); existing figures regenerated | waits for the FZG template files from the user |
+| M1 | Inventory, parsers and registry: `io/p40.py`, `io/p40_contour.py`, `io/hommel.py`, `measurement/inventory.py`, `data/measurement/parts.yaml`, 25 quantities of DIN ISO 1328-1 and ISO/TR 6336-30, `scripts/measurements.py inventory`, text exports of `70_input` versioned | done 2026-10-10: 44 measured parts, 696 files classified, anomalies listed (30 coarse scans, two-block scan, misnamed file, 97840 unassigned) |
+| M2 | GINA evaluation: typed results per ME, tolerances of the measuring program, per-tooth pitch and runout tables with the failure window 36 to 40, lead and profile curves, tip relief of the pinions (fKo, dk1/dk2), scatter and repeatability tables | open |
+| M3 | Contour evaluation: port of `contour_scan_tip_edge.py` into `measurement/contour_scan.py` (axis fit, involute deviation, tip relief, corner as arc or chamfer), alignment to the nominal gearcore contour, overlay of the core wheels | open |
+| M4 | Roughness: R_a, R_z per flank and group from the ASCII exports; `.hwp` only after its record layout is confirmed | open |
+| M5 | Wear comparison of two scans of the same tooth (alignment on the unworn parts) and the contract for the test-rig file `kst-E_Laufversuche_KV3.xlsx` (no evaluation of the tests here) | open; the after-test scans come after the running tests |
+| M6 | Thesis tables and figures (Markdown, CSV, LaTeX; German, decimal comma, FZG/TUM style), notebook | open |
+| M7 | FE variants theory versus manufactured: STplus case `kst_e_kr` with the linear tip relief, importer and contour with the relief, then variants steel as manufactured, plastic as manufactured, both; W1 at A to E, differences against the base (ADR-116 item 44) | open; every geometry variant with the user's go |
+
 Increment 5 (with GEN-17 and the helical worked example of DIN 21773 Eq. (9) to (13)), increment
 6, load capacity, fillet variants and parameter studies follow while the batches solve.

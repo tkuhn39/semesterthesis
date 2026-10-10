@@ -1,0 +1,59 @@
+# Measured parts of the kst-E running tests: which ME number is what, and how the user groups them.
+# User decisions of 2026-10-10 (plan "Messdaten in 70_input skriptbasiert auswerten"); the file
+# system under 70_input/71_Messungen is scanned by gearcore.measurement.inventory, this file adds
+# what the files cannot say. Every ME number is the five-digit "ME/Seite/KS/LZ" of the FZG parts
+# list, as a string.
+provenance:
+  by: "user (Tim Kuhn), transcribed by Claude"
+  date: "2026-10-10"
+  notes: >
+    Core group = the user's own running tests on the KV3 rig (PA46-GF30 wheels of the 2022 drawing
+    20220316_kst-E_Kunststoffrad); 97351 is the running-in test, 97361 still runs (8 Nm);
+    97364 was an extra 12 Nm test with a wheel measured by a student assistant and counts, with every
+    other measured wheel, as manufacturing scatter. The steel pinions 95911 to 95920 are the series the
+    rig pinion comes from (GINA October 2025, "Stahlritzel mit KR"; nominal data of the measuring
+    program = 2022 drawing 20220623_kst-E_Stahlritzel with the linear tip relief); 86481 is an older
+    pinion with a contour scan of 2023 only. Load levels per ME come from the test-rig file
+    70_input/72_Kleingetriebeverspannungspruefstand_KV3/kst-E_Laufversuche_KV3.xlsx (evaluated later).
+drawings:
+  wheel: "Rr.F4028-Kunst_52Z_neu"
+  pinion: "Lw.Stahlri_51Z_kst-E_n"
+parts:
+  wheel:
+    number_of_teeth: 52
+    material: "PA46-GF30"
+    groups:
+      core: ["97340", "97345", "97346", "97350", "97351", "97355", "97360", "97361", "97365", "97366"]
+    # every other measured wheel belongs to the group "scatter" (manufacturing scatter), 97364 included
+    scatter_group: "scatter"
+    # labels within the groups (a part may carry several)
+    labels:
+      running_in: ["97351"]
+      extra_test: ["97364"]
+  pinion:
+    number_of_teeth: 51
+    material: "20MnCr5"
+    # both drawings print 20MnCr5; the STplus kst-E file runs the pinion as 16MnCr5 (scripts/oracle_cases.yaml)
+    groups:
+      rig_series: ["95911", "95912", "95915", "95917", "95918", "95919", "95920"]
+      older: ["86481"]
+    scatter_group: "scatter"
+# Window of tooth numbers where the running tests failed so far (user observation 2026-10-10):
+# tooth 1 is marked on the parts and counted the same way by the P40, the contour scans and the rig.
+failure_window:
+  wheel: { first_tooth: 36, last_tooth: 40 }
+# Labels the roughness protocols print in "Prüfteil/Zustand" (file names of Rauheit/*/PDF), kept as
+# batch labels; the user has not explained the two labels other than PA46-GF30 yet.
+batch_labels:
+  "KST-E_PA46-GF30": "PA46-GF30 (user's running tests)"
+  "KST_E": "unexplained label"
+  "KST_Kunstsoff PA": "unexplained label, typo in the original"
+known_anomalies:
+  - me: "97840"
+    note: "roughness files only (26.05.2026, label KST_E); no such part in GINA or contour, probably a typo for 97340 — unassigned until the user decides"
+  - me: "97375"
+    note: "GINA .mew/.mka only, no report sheet, no roughness, no contour"
+  - me: "97341"
+    note: "contour scan 97341_z36.DAT holds two blocks [A] and [B] (repeated scan)"
+  - me: "97373"
+    note: "contour scan of tooth 1 named 97373_1.DAT (without the letter z)"

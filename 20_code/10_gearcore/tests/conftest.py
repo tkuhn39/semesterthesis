@@ -28,6 +28,7 @@ settings.load_profile(os.environ.get("HYPOTHESIS_PROFILE", "dev"))
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_STPLUS_ROOT = REPO_ROOT / "30_references_and_examples" / "33_STplus" / "STplus11-1F"
+DEFAULT_MEASUREMENTS_ROOT = REPO_ROOT / "70_input" / "71_Messungen"
 
 
 @pytest.fixture(scope="session")
@@ -41,6 +42,16 @@ def stplus_root() -> Path:
     root = Path(os.environ.get("GEARCORE_STPLUS_ROOT", DEFAULT_STPLUS_ROOT))
     if not (root / "bin" / "STplus.exe").is_file():
         pytest.skip(f"local STplus installation not found at {root} (reference-only test)")
+    return root
+
+
+@pytest.fixture(scope="session")
+def measurements_root() -> Path:
+    """The user's measurement folder (P40, contour scans, roughness); tests using it skip with a
+    visible reason where it is absent (it is versioned, but only in this repository)."""
+    root = Path(os.environ.get("GEARCORE_MEASUREMENTS_ROOT", DEFAULT_MEASUREMENTS_ROOT))
+    if not (root / "GINA").is_dir():
+        pytest.skip(f"measurement folder not found at {root} (reference-only test)")
     return root
 
 

@@ -88,6 +88,8 @@ Nur andere Schreibweise griechischer Buchstaben: alfa_n = alpha_n, alfa_t = alph
 | `generated_root_diameter` | d_fE | d_f | Root diameter (based on generating profile shift coefficient, x_E) | ISOTR6336-30:2022, A.6, p. 45 |
 | `generated_root_diameter` | d_fE | d_f | root diameter | ISO6336-1:2019, Table 2, p. 4 |
 | `tip_relief` | C_a | C_alpha_a | Betrag der Kopfrücknahme | ISO21771:2014, §3.1 symbol list, p. 14 |
+| `tip_relief` | C_a | C_alpha_a | Wert der Kopfrücknahme | DINISO1328-1:2018, Tabelle 1, p. 9 |
+| `tip_relief` | C_a | C_alpha_a | Amount of tip relief | DINISO1328-1:2018-EN, Table 1, p. 8 |
 | `root_relief` | C_f | C_alpha_f | Betrag der Fußrücknahme | ISO21771:2014, §3.1 symbol list, p. 14 |
 | `rotation_speed` | n | n_1 | Pinion speed | ISOTR6336-30:2022, Table A.5, p. 45 |
 | `radial_single_roller_dimension` | M_rZ | M_rR | Radiales Einrollenmaß | DIN3977:1981, Abschnitt 3, p. 1 |
@@ -289,6 +291,31 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `span_allowance` | E_Ws/E_Wi | µm | (oberes Abmaß der Zahnweite / unteres Abmaß der Zahnweite; E_W in §14.1, indices s and i of §3.2) | DIN21773:2014, §14.1, p. 23; §3.2, p. 8; §14.4 Eq. (54) to (56), p. 25 | – | Inkrement 0 | verified |
 | `quality_grade` | Q | - | – | – | – | Inkrement 0 | pending |
 | `min_tip_clearance` | c_min | mm | – | – | – | Inkrement 0 | pending |
+| `total_profile_deviation` | F_alpha | µm | Profil-Gesamtabweichung | DINISO1328-1:2018, Tabelle 1, p. 10 | Profile deviation, total (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `profile_form_deviation` | f_f_alpha | µm | Profil-Formabweichung | DINISO1328-1:2018, Tabelle 1, p. 10 | Profile form deviation (see ISO 1328-1:2013) (ISOTR6336-30:2022, Table 2, p. 3) | Inkrement 4 | verified |
+| `profile_slope_deviation` | f_H_alpha | µm | Profil-Winkelabweichung | DINISO1328-1:2018, Tabelle 1, p. 10 | Profile slope deviation (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `total_helix_deviation` | F_beta | µm | Flankenlinien-Gesamtabweichung | DINISO1328-1:2018, Tabelle 1, p. 9 | Helix deviation, total (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `helix_form_deviation` | f_f_beta | µm | Flankenlinien-Formabweichung | DINISO1328-1:2018, Tabelle 1, p. 9 | Helix form deviation (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `helix_slope_deviation` | f_H_beta | µm | Flankenlinien-Winkelabweichung | DINISO1328-1:2018, Tabelle 1, p. 10 | Helix slope deviation (see ISO 1328-1:2013) (ISOTR6336-30:2022, Table 2, p. 3) | Inkrement 4 | verified |
+| `single_pitch_deviation` | f_p | µm | Teilungs-Einzelabweichung | DINISO1328-1:2018, Tabelle 1, p. 11 | Single pitch deviation (DINISO1328-1:2018-EN, Table 1, p. 10) | Inkrement 4 | verified |
+| `total_cumulative_pitch_deviation` | F_p | µm | Teilungs-Gesamtabweichung | DINISO1328-1:2018, Tabelle 1, p. 11 | Cumulative pitch deviation (index deviation), total (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `sector_pitch_deviation` | F_pk | µm | Teilungs-Sektorabweichung | DINISO1328-1:2018, Tabelle 1, p. 11; Anhang D.2, p. 48 | Sector pitch deviation (DINISO1328-1:2018-EN, Table 1, p. 10) | Inkrement 4 | verified |
+| `adjacent_pitch_difference` | f_u | µm | Teilungssprung | DINISO1328-1:2018, Tabelle 1, p. 11; Anhang G.1.2, p. 60 | Adjacent pitch difference (DINISO1328-1:2018-EN, Table 1, p. 8) | Inkrement 4 | verified |
+| `runout` | F_r | µm | Rundlaufabweichung | DINISO1328-1:2018, Tabelle 1, p. 10 | Runout (DINISO1328-1:2018-EN, Table 1, p. 10) | Inkrement 4 | verified |
+| `individual_single_pitch_deviation` | f_pi | µm | Einzelwert der Teilungs-Einzelabweichung | DINISO1328-1:2018, Tabelle 1, p. 9 | Single pitch deviation (individual) (DINISO1328-1:2018-EN, Table 1, p. 10) | Inkrement 4 | verified |
+| `individual_cumulative_pitch_deviation` | F_pi | µm | Einzelwert der Teilungs-Gesamtabweichung | DINISO1328-1:2018, Tabelle 1, p. 9 | Cumulative pitch deviation (index deviation), individual (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `individual_radial_measurement` | r_i | µm | Einzelwert der Rundlaufmessung | DINISO1328-1:2018, Tabelle 1, p. 9 | Individual radial measurement (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `profile_evaluation_length` | L_alpha | mm | Auswertelänge des Profils | DINISO1328-1:2018, Tabelle 1, p. 9 | Profile evaluation length (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `helix_evaluation_length` | L_beta | mm | Auswertelänge der Flankenlinie | DINISO1328-1:2018, Tabelle 1, p. 9 | Helix evaluation length (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `tip_relief_length` | L_C_alpha_a | mm | Länge der Kopfrücknahme | DINISO1328-1:2018, Tabelle 1, p. 10 | Tip relief zone (DINISO1328-1:2018-EN, Table 1, p. 10) | Inkrement 4 | verified |
+| `measurement_diameter` | d_M | mm | Messkreisdurchmesser | DINISO1328-1:2018, Tabelle 1, p. 10 | Measurement diameter (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `profile_slope_tolerance` | f_H_alpha_T | µm | Toleranz der Profil-Winkelabweichung | DINISO1328-1:2018, Tabelle 1, p. 11 | Profile slope tolerance (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `helix_slope_tolerance` | f_H_beta_T | µm | Toleranz der Flankenlinien-Winkelabweichung | DINISO1328-1:2018, Tabelle 1, p. 11 | Helix slope tolerance (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `adjacent_pitch_difference_tolerance` | f_uT | µm | Toleranz des Teilungssprungs | DINISO1328-1:2018, Tabelle 1, p. 11; Anhang G.2, p. 60 | Adjacent pitch difference tolerance (DINISO1328-1:2018-EN, Table 1, p. 8) | Inkrement 4 | verified |
+| `total_cumulative_pitch_tolerance` | F_pT | µm | Toleranz der Teilungs-Gesamtabweichung | DINISO1328-1:2018, Tabelle 1, p. 11 | Cumulative pitch (index) tolerance, total (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `sector_pitch_tolerance` | F_pkT | µm | Toleranz der Teilungs-Sektorabweichung | DINISO1328-1:2018, Tabelle 1, p. 11 | Sector pitch tolerance (DINISO1328-1:2018-EN, Table 1, p. 10) | Inkrement 4 | verified |
+| `arithmetic_mean_roughness` | R_a | µm | Arithmetic mean roughness value, Ra = 1/6 Rz | ISOTR6336-30:2022, Table 2, p. 4 | – | Inkrement 4 | verified |
+| `mean_peak_to_valley_roughness` | R_z | µm | Mean peak-to-valley roughness (ISO 4287:1997a including ISO 4287:1997/Cor 1:1998, ISO 4287:1997/Cor 2:2005, ISO 4287:1997/Amd 1:2009 and ISO 4288:1996b) | ISOTR6336-30:2022, Table 2, p. 4 | – | Inkrement 4 | verified |
 
 ## STplus 11.1F
 
@@ -529,6 +556,8 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `generated_root_diameter` | d_fE | d_f | root diameter | ISO6336-1:2019, Table 2, p. 4 |
 | `residual_fillet_undercut` | s_pr | s_pr | residual fillet undercut, s_pr = pr - q | ISO6336-3:2019, Table 2, p. 4 |
 | `tip_relief` | C_a | C_alpha_a | Betrag der Kopfrücknahme | ISO21771:2014, §3.1 symbol list, p. 14 |
+| `tip_relief` | C_a | C_alpha_a | Wert der Kopfrücknahme | DINISO1328-1:2018, Tabelle 1, p. 9 |
+| `tip_relief` | C_a | C_alpha_a | Amount of tip relief | DINISO1328-1:2018-EN, Table 1, p. 8 |
 | `root_relief` | C_f | C_alpha_f | Betrag der Fußrücknahme | ISO21771:2014, §3.1 symbol list, p. 14 |
 | `working_pitch_diameter` | d_w | d_w | pitch diameter | ISO6336-1:2019, Table 2, p. 5 |
 | `transverse_base_pitch` | p_bt | p_bt | Transverse base pitch | ISOTR6336-30:2022, A.6, p. 46 |
@@ -549,6 +578,8 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `tooth_thickness_allowance` | E_sns/E_sni | A_sne/A_sni | oberes Abmaß der Zahndicke im Normalschnitt / unteres Abmaß der Zahndicke im Normalschnitt | DIN3967:1978, Anhang A symbol list, p. 7 |
 | `quality_grade` | Q | A | Flank tolerance class | ISOTR6336-30:2022, Table 2, p. 2; Table A.2, p. 43 |
 | `min_tip_clearance` | c_min | c | Kopfspiel | ISO21771:2014, §3.1 symbol list, p. 11; §5.2.7, p. 41 |
+| `profile_form_deviation` | f_f_alpha | f_f_alpha | Profile form deviation | DINISO1328-1:2018-EN, Table 1, p. 9 |
+| `helix_slope_deviation` | f_H_beta | f_H_beta | Helix slope deviation | DINISO1328-1:2018-EN, Table 1, p. 9 |
 
 ## Hinweise
 
@@ -659,3 +690,28 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 - `span_allowance` (E_Ws/E_Wi): Pair (upper, lower). E_W = E_sn cos(alpha_n) (Eq. (54)); the generation converts a span allowance into the tooth thickness allowance. STplus writes A_We / A_Wi (index e for the upper, i for the lower allowance, as DIN 3967 writes A_sne / A_sni).
 - `quality_grade` (Q): Verified in increment 5 (DIN ISO 1328-1:2018-03).
 - `min_tip_clearance` (c_min): Input of a tip diameter check (STplus MINDESTKOPFSPIEL). The tip clearance of Eq. (60) needs the generated root diameter of the mating gear; verified with the generation (increment 3).
+- `total_profile_deviation` (F_alpha): Measured by the Klingelnberg P40 (GINA value file, label 'Fa'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10).
+- `profile_form_deviation` (f_f_alpha): Measured by the Klingelnberg P40 (GINA value file, label 'ffa'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10).
+- `profile_slope_deviation` (f_H_alpha): Measured by the Klingelnberg P40 (GINA value file, label 'fHa'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10).
+- `total_helix_deviation` (F_beta): Measured by the Klingelnberg P40 (GINA value file, label 'Fb'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10).
+- `helix_form_deviation` (f_f_beta): Measured by the Klingelnberg P40 (GINA value file, label 'ffb'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10).
+- `helix_slope_deviation` (f_H_beta): Measured by the Klingelnberg P40 (GINA value file, label 'fHb'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10).
+- `single_pitch_deviation` (f_p): Measured by the Klingelnberg P40 (GINA value file, label 'fp max'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10). The tolerance f_pT is the entry single_pitch_tolerance.
+- `total_cumulative_pitch_deviation` (F_p): Measured by the Klingelnberg P40 (GINA value file, label 'Fp'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10).
+- `sector_pitch_deviation` (F_pk): Anhang D.2 (p. 48): the largest algebraic difference of the 'Einzelwerte der Teilungs-Summenabweichung' (the page's term for the individual values of F_p) within any sector of k pitches; for k = z/8 (Eq. (D.1)) the symbol is F_pz/8, which the P40 prints as 'Fpz/8'.
+- `adjacent_pitch_difference` (f_u): Anhang G (p. 60): the largest individual value f_ui = |f_pi(n) - f_pi(n-1)| (Eq. (G.1)); the P40 prints 'fu max'. Program name after the English edition (DINISO1328-1:2018-EN, Table 1).
+- `runout` (F_r): Measured by the Klingelnberg P40 (GINA value file, label 'Fr'); registered for the evaluation of the measured gears (measurement track M1, 2026-10-10). Tabelle 1 of DIN ISO 1328-1 prints no tolerance symbol for the runout, so none is registered; the P40 header stores the value it checked against (code 218 'Fr').
+- `individual_single_pitch_deviation` (f_pi): Per tooth; the P40 curve file prints it as 'fp' in the tables 'linke/rechte Zahnflanke' for every tooth.
+- `individual_cumulative_pitch_deviation` (F_pi): Per tooth; the P40 curve file prints it as 'Fp' in the tables 'linke/rechte Zahnflanke' for every tooth.
+- `individual_radial_measurement` (r_i): Per tooth; the P40 curve file prints it as 'Fr' in the tables 'linke/rechte Zahnflanke' for every tooth. Program name after the English edition (DINISO1328-1:2018-EN, Table 1).
+- `profile_evaluation_length` (L_alpha): The P40 header prints the evaluation range as diameters d1, d2 and the length 'La' (code 45).
+- `helix_evaluation_length` (L_beta): The P40 header prints the evaluation range over the face width as b1, b2 (codes 62, 63).
+- `tip_relief_length` (L_C_alpha_a): Roll length from the start of the tip relief to the tip; the P40 header of the pinion prints the zone as diameters dk1, dk2 (codes 431, 432). The amount is the entry tip_relief (symbol C_a there, C_alpha_a in DIN ISO 1328-1 and ISO 21771; the P40 prints it as 'fKo'). The English edition prints 'Tip relief zone' with the unit '–' where the German edition prints mm (Table 1, p. 10).
+- `measurement_diameter` (d_M): Diameter of the pitch measurement (P40 header code 47, 'Teilungsmesskreis'); Anhang D.2 measures the sector pitch deviation along its arc. Program name after the English edition (DINISO1328-1:2018-EN, Table 1).
+- `profile_slope_tolerance` (f_H_alpha_T): The P40 header stores the tolerance it checked against (code 82/83 'FHAL'/'FHAR'); its grade is a setting of the measuring program, not a value of the norm.
+- `helix_slope_tolerance` (f_H_beta_T): The P40 header stores the tolerance it checked against (code 89/90 'FHBL'/'FHBR').
+- `adjacent_pitch_difference_tolerance` (f_uT): Eq. (G.2): f_uT = sqrt(2) f_pT (p. 60); the P40 header stores the value it checked against (code 212/213 'fu'). Program name after the English edition (DINISO1328-1:2018-EN, Table 1).
+- `total_cumulative_pitch_tolerance` (F_pT): The P40 header stores the tolerance it checked against (code 214/215 'Fp').
+- `sector_pitch_tolerance` (F_pkT): The P40 header stores the tolerance it checked against (code 216/217 'Fpz/8').
+- `arithmetic_mean_roughness` (R_a): Defined by ISO 4287 (not in the repository); ISO/TR 6336-30 prints 'Ra' and 'Rz' without subscript. Measured by the Hommel-Etamic instrument (column 'Ra', mean of three traces 'Xq-Ra').
+- `mean_peak_to_valley_roughness` (R_z): Defined by ISO 4287 (not in the repository). Measured by the Hommel-Etamic instrument (column 'Rz', mean of three traces 'Xq-Rz').

@@ -1,0 +1,53 @@
+# Where the packaged measurement fixtures come from (copied 2026-10-10 from 70_input/71_Messungen,
+# the user's measurement folder; the originals stay there). Names avoid the extensions the
+# repository ignores (`*.dat`): contour scans end in `.scan.txt`, roughness exports in `.utf16.txt`.
+fixtures:
+  wheel_97340-neu.mew:
+    source: "GINA/Kunststoffrad/Rr_F4028-Kunst_52Z_neu_messwerte/97340-neu.mew"
+    part: wheel
+    me: "97340"
+    measured_on: "2026-05-09"
+    trimmed: false
+    notes: "complete value file: 136 header lines, 172 result lines (teeth 1/12/22/33/44)"
+  pinion_95911-neu.mew:
+    source: "GINA/Stahlritzel/Lw_Stahlri_51Z_kst-E_n_messwerte/95911-neu.mew"
+    part: pinion
+    me: "95911"
+    measured_on: "2025-10-13"
+    trimmed: false
+    notes: "complete value file: codes 431/432 (tip relief zone) and 216xx (fKo), 130 result lines (teeth 1/18/35)"
+  wheel_97340-neu_trimmed.mka:
+    source: "GINA/Kunststoffrad/Rr_F4028-Kunst_52Z_neu_messkurven/97340-neu.mka"
+    part: wheel
+    me: "97340"
+    measured_on: "2026-05-09"
+    trimmed: true
+    notes: "header complete; of the curves only Flankenlinie and Profil of tooth 44 links and tooth 1 rechts kept (no Verschränkung traces); diameter lines, both pitch tables (52 rows) and the Teilung table (104 rows) complete"
+  contour_86481_Z01.scan.txt:
+    source: "Konturscan/Stahlritzel/86481_Z01.DAT"
+    part: pinion
+    me: "86481"
+    measured_on: "2023-08-17"
+    trimmed: false
+    notes: "complete scan, block [B], 1088 points, z = 87.572"
+  contour_97341_z36_two_blocks.scan.txt:
+    source: "Konturscan/Kunststoffrad/von_Hiwis/97341_z36.DAT"
+    part: wheel
+    me: "97341"
+    measured_on: "2026-06-16"
+    trimmed: true
+    notes: "the file holds two blocks [A] and [B]; the first 60 points of each block kept"
+  roughness_F4092_97340_li.utf16.txt:
+    source: "Rauheit/Kunststoffrad/ASCII_Export/F4092_97340_li.txt"
+    part: wheel
+    me: "97340"
+    measured_on: "2026-05-31"
+    trimmed: false
+    notes: "bytes verbatim (UTF-16 LE with byte order mark), 52 columns including Bemerkung"
+  roughness_F4092_97340_neu_li.utf16.txt:
+    source: "Rauheit/Kunststoffrad/ASCII_Export/F4092_97340_neu_li.txt"
+    part: wheel
+    me: "97340"
+    measured_on: "2026-05-31"
+    trimmed: false
+    notes: "the twin export without the Bemerkung column, same numbers"

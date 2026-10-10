@@ -1,0 +1,268 @@
+﻿HEADER KS.MW.FILE
+TYPE      STI                ! Gear Value-data
+VERSION   10.0 /2            ! Version Data-file
+SEPARATOR :                  ! Definition of columnseparators
+UNITS     mm                 ! Units mm or inch
+ANGLE     decimal            ! Angle decimal or sexagezimal
+PROFILE   diameter           ! Graph length profile
+LANGUAGE  0 DEU              ! Language
+UNDEFINED -2147483.648       ! Undefined measuring points
+FILTER LEAD:    F:S 2
+FILTER PROFILE: F:S 2
+
+  1   :Protokolldaten für Zahnrad (STI0441_44 5.0.0)                                                       
+  2   :Datum.............: 13.10.25                                                                        
+  3   :Zeit..............: 07:42:39   /   07:50:10                                                         
+  4   :Prüfer............: Bd                                                                              
+  5   :Schmierstoff......: klein 3 Back ga ob                                                              
+  6   :Zeichnungsnr......: Lw.Stahlri_51Z_kst-E_n                                                          
+  7   :ME/Seite/KS/LZ....: 95915-neu                                                                       
+  8   :Benennung.........: Stahlritzel mit KR                                                              
+  9   :Ass./Versuchsnr...: Lw                                                                              
+  10  :Bemerkung.........: neu                                                                             
+  20  :Zahnrad-Daten                              links       rechts                                       
+  21  :Normalmodul mn................  [mm]....:  1::L- :R-                                                
+  22  :Zähnezahl z.............................: 51                        Außenverzahnung                 
+  23  :Schrägungswinkel ß  ..........  [Grad]..:  0                                                        
+  24  :Eingriffswinkel alpha ........  [Grad]..: 20                                                        
+  25  :Profilverschiebung xm.........  [mm]....:   .203                                                    
+  26  :Zahnbreite ...................  [mm]....: 17                                                        
+  27  :Kopfkreisdurchmesser da ......  [mm]....: 52.924                                                    
+  272 :Fußkreisdurchmesser ............[mm]....: 48.424                                                    
+  28  :Kugeldurchmesser .............  [mm]....:  1.5                                                      
+  281 :Messzähnezahl=..........................:  6                                                        
+  40  :Messwege   Profil      Eingabe in Durchmesser                  links       rechts                   
+  41  :Start Messbereich.................................da  [mm]..:  50.1        50.1                     
+  42  :Start der Auswertestrecke.........................d1  [mm]..:  50.4        50.4                     
+  43  :Ende der Auswertestrecke..........................d2  [mm]..:  51.946      51.946                   
+  431 :Start Kopfrücknahme...............................dk1 [mm]..:  51.946      51.946                   
+  432 :Ende Kopfrücknahme................................dk2 [mm]..:  52.88       52.88                    
+  44  :Ende der Messstrecke..............................de  [mm]..:  52.93       52.93                    
+  45  :Länge der Auswertestrecke La=Mk2-M1...............La  [mm]..:   3.374       3.374                   
+  46  :Flankenlinienmesskreis  V-Kreis = 51.406 [mm]...............:  51.16       51.16                    
+  47  :Teilungsmesskreis =50.88 (Kugel-Ø =1.5) [mm]................:  50.88                                
+  48  :Flankenlinienmesskreis ( innen )..................<f> [mm]..:  50.8        50.8                     
+  49  :Flankenlinienmesskreis ( außen )..................<k> [mm]..:  51          51                       
+  60  :Messwege   Flankenlinie (relativ zum vert. Messanfangspkt)     links       rechts                   
+  61  :Messanfang (unten)................................ba  [mm]..:   0           0                       
+  62  :Auswerteanfang....................................b1  [mm]..:    .85         .85                    
+  63  :Auswerteende......................................b2  [mm]..:  16.15       16.15                    
+  64  :Messende (oben)...................................be  [mm]..:  17          17                       
+  65  :Lage des Profils auf der Zahnbreite.................. [mm]..:   8.5         8.5                     
+  66  :Vertikaler Messanfangspunkt (unten).................. [mm]..:  78.723                               
+  67  :Verkürzung der Zahnbreite b beiderseits um .................:   5 %                                 
+  68  :Lage des Profils auf der Zahnbreite (unten).......<u> [mm]..:    .85         .85                    
+  69  :Lage des Profils auf der Zahnbreite  (oben).......<o> [mm]..:  16.15       16.15                    
+  80  :SECTION TOL.ASYM                                                                                    
+  81  :!Profil                                                                                             
+  82  :Winkelabw. links:         FHAL:5 : -5 : 0:   2.2196                                                 
+  83  :Winkelabw. rechts:        FHAR:5 : -5 : 0:   2.2196                                                 
+  88  :!Flanke                                                                                             
+  89  :Winkelabw. links:         FHBL:8 : -8 : 0:   17                                                     
+  90  :Winkelabw. rechts:        FHBR:8 : -8 : 0:   17                                                     
+  95  :SECTION TOL.CROWN                                                                                   
+  96  :Profil links:              PRL:0 : 0 : 0:0:   2.2196                                                
+  97  :Profil rechts:             PRR:0 : 0 : 0:0:   2.2196                                                
+  98  :Flanke links:              FLL:0 : 0 : 0:0:   15.3                                                  
+  99  :Flanke rechts:             FLR:0 : 0 : 0:0:   15.3                                                  
+  100 :Messtaster                                                                                          
+  101 :Kugeltaster Ø      [Profil/Flanke]  [mm]..: .5 : (#5) :                                             
+  102 :Kugeltaster Ø      [   Teilung   ]  [mm]..: .5 : (#5) :                                             
+  110 :SECTION TOL.MDK                                                                                     
+  111 :Diam. Zweikugelmaß:        MDK:40.951 : 0 : .1                                                      
+  112 :SECTION TOL.MRK                                                                                     
+  113 :Einkugelmaß:               MRK:0 : 0 : 0                                                            
+  114 :SECTION TOL.WKT                                                                                     
+  115 :Zahnweitenmaß:             WKT:16.822 : -.021 : 0                                                   
+  116 :SECTION TOL.MTK                                                                                     
+  117 :Dreikugelmaß:              MTK:0 : 0 : 0                                                            
+  118 :SECTION TOL.ZDS                                                                                     
+  119 :Zahndicke-Zahnlücke:       ZDS:0 : 0 : 0                                                            
+  122 :SECTION TOL.FKD                                                                                     
+  123 :Fußkreisdurchmesser:       FKD:48.424 : -.061 : 0                                                   
+  124 :Kopfkreisdurchmesser:      KKD:52.924 : -.061 : 0                                                   
+  161 :Zaehlrichtung 0-im Uhrzeigersinn     :ZRICH: 1                                                      
+  162 :Zahnverteilung 0-DIN 1-USA           :ZVERT: 0                                                      
+  163 :Zahn-/Lückenmessung 0-Zahn/-1-Luecke :ZZALU: 0                                                      
+  164 :Seitendefinition: 0-VDI/DIN / 1-USA  :ZSDEF: 0                                                      
+  165 :Reference fHb: 0-VDI / 1-DIN / 2- +-+ / 3- -VDI / 4- -+- :R_FHB: 1 : L: + : R: -                    
+  170 :Rad mit Vorschubmarken               :VOSHB: 0                                                      
+  171 :Messung Vorschubmarken Profil        :VOSPR: 0                                                      
+  172 :Messung Vorschubmarken Teilung       :VOSTE: 0                                                      
+  173 :Vorschub links                       :VSHBL: 0                                                      
+  174 :Vorschub rechts                      :VSHBR: 0                                                      
+  175 :Vorschub Steigung Profil links       :VSBSL: 0                                                      
+  176 :Vorschub Steigung Profil rechts      :VSBSR: 0                                                      
+  177 :Achslage intern                      :AXIS : 17:17                                                  
+  178 :Vorzeichen Flankenlinie 0-VDI,1-DIN  :LVORZ: 1: DIN                                                 
+  179 :Bezugslaenge Flankenlinie fHß        :BZGFL: 1: Z                                                   
+  180 :Bezugslaenge Profil       fHa        :BZGPR: 0: M1-M2                                               
+  181 :Plusmaterial Fl. ;Gesamt Fß,Form ffß :PLMFL: 0: 0: 1                                                
+  182 :Plusmaterial Pr. ;Gesamt Fa,Form ffa :PLMPR: 0: 0: 1                                                
+  183 :Schnitt: 0-Stirn, 1-Normal, 2-Achs   :SCHNT: 0                                                      
+  184 :Messgeschwindigkeit Flanke Stufe     :VFLSC: 6 : Messzeit(sec) : 3.7                                
+  185 :Messgeschwindigkeit Profil Stufe     :VPRSC: 6 : Messzeit(sec) : 3.3                                
+  186 :Achslage Position 1 X, Y , Z , Nr    :AX_P1: 0:6:89.1:  17 : >.2                                    
+  187 :Achslage Position 2 X, Y , Z , Nr    :AX_P2: .1:16.8:100:  17                                       
+  188 :Teilungsart                          :TMART: 1:statisch : :                                         
+  189 :Flankenlinie/Profil - Bahn           :FPBHN: 0                                                      
+  190 :Flankenlinie/Profil - 3D-Antastung   :FP_3D: 0                                                      
+  191 :Bezugszahn Messwertkorrektur         :BZZMK: 1                                                      
+  192 :Messtastervorauslenkung [mm]         :MTVAL: .1                                                     
+  193 :Filtercharakteristik                 :FKCHA: 916E4B4A49615A6057585D595195848C4A514C534E51787D357F76735330422E7B757076743D39343535313532
+  194 :Bezugskreis Zahndi.;0-M;1-T;2-V-Kreis:BZKTE: 1:51                                                   
+  195 :Schnitt s/e;0-t-Stirn;1-n-normal     :SHNSE: 1:n                                                    
+  196 :Achsteilung bei Schnecken            :AXTEI: 0                                                      
+  197 :Flankenlinie:oben                    :BZFLO: 0                                                      
+  199 :Teilung - 3D-Antastung               :TE_3D: 0                                                      
+  200 :Tw                    : 19.4                                                                        
+  201 :Ta                    : 19.4                                                                        
+  205 :Va Teilung   Va:      : 1000                                                                        
+  206 :Va Rundlauf  Va:      : 1000                                                                        
+  207 :Va Zahndicke Va:      : 1000                                                                        
+  210 :fp  links             : 7 : 6                                                                       
+  211 :fp  rechts            : 7 : 6                                                                       
+  212 :fu  links             : 9 : 6                                                                       
+  213 :fu  rechts            : 9 : 6                                                                       
+  214 :Fp  links             : 25 : 6                                                                      
+  215 :Fp  rechts            : 25 : 6                                                                      
+  216 :Fpz/8  links          : 16 : 6                                                                      
+  217 :Fpz/8  rechts         : 16 : 6                                                                      
+  218 :Fr                    : 16 : 6                                                                      
+  219 :Rs                    : 10 : 6                                                                      
+  240 :Rücknahmen (S73)                     :RUECA: 4                                                      
+  241 :Rücknahmen/Ausw Flanke               :RUECF: 4                                                      
+  242 :Rücknahmen/Ausw Profil               :RUECP: 4                                                      
+  243 :Ausrichtung vertikal                 :AUSRV: 6                                                      
+  244 :Aufspannrichtung (TURN)              :ZTURN: 0                                                      
+10111 : fHb links 1          :    3.7
+10112 : fHb links 18         :   -0.6
+10113 : fHb links 35         :    4.6
+10121 : fHb rechts 1         :   -0.3
+10122 : fHb rechts 18        :   -1.0
+10123 : fHb rechts 35        :    3.9
+10130 : fHbm links           :    2.6
+10140 : fHbm rechts          :    0.9
+10150 : fHb Var links        :    5.2
+10160 : fHb Var rechts       :    4.9
+10170 : fHb links max        :    4.6
+10180 : fHb rechts max       :    3.9
+10190 : fHb links min        :   -0.6
+10100 : fHb rechts min       :   -1.0
+10411 : Fb links 1           :    3.0
+10412 : Fb links 18          :    1.1
+10413 : Fb links 35          :    3.9
+10421 : Fb rechts 1          :    1.0
+10422 : Fb rechts 18         :    1.2
+10423 : Fb rechts 35         :    4.3
+10430 : Fb m links           :    2.7
+10440 : Fb m rechts          :    2.2
+10450 : V Fb links           :    2.8
+10460 : V Fb rechts          :    3.3
+10470 : Fb links max         :    3.9
+10480 : Fb rechts max        :    4.3
+10490 : Fb links min         :    1.1
+10400 : Fb rechts min        :    1.0
+10711 : ffb links 1          :    1.2
+10712 : ffb links 18         :    0.9
+10713 : ffb links 35         :    1.0
+10721 : ffb rechts 1         :    1.0
+10722 : ffb rechts 18        :    0.9
+10723 : ffb rechts 35        :    1.0
+10730 : ffb m links          :    1.0
+10740 : ffb m rechts         :    1.0
+10750 : V ffb links          :    0.3
+10760 : V ffb rechts         :    0.1
+10770 : ffb links max        :    1.2
+10780 : ffb rechts max       :    1.0
+10790 : ffb links min        :    0.9
+10700 : ffb rechts min       :    0.9
+20111 : fHa links 1          :    5.6
+20112 : fHa links 18         :    4.4
+20113 : fHa links 35         :    5.2
+20121 : fHa rechts 1         :    6.4
+20122 : fHa rechts 18        :    5.3
+20123 : fHa rechts 35        :    6.7
+20130 : fHam links           :    5.1
+20140 : fHam rechts          :    6.1
+20150 : fHa Var links        :    1.2
+20160 : fHa Var rechts       :    1.4
+20170 : fHa links max        :    5.6
+20180 : fHa rechts max       :    6.7
+20190 : fHa links min        :    4.4
+20100 : fHa rechts min       :    5.3
+20411 : Fa links 1           :    5.6
+20412 : Fa links 18          :    4.4
+20413 : Fa links 35          :    5.0
+20421 : Fa rechts 1          :    6.3
+20422 : Fa rechts 18         :    5.6
+20423 : Fa rechts 35         :    7.1
+20430 : Fa m links           :    5.0
+20440 : Fa m rechts          :    6.3
+20450 : V Fa links           :    1.2
+20460 : V Fa rechts          :    1.5
+20470 : Fa links max         :    5.6
+20480 : Fa rechts max        :    7.1
+20490 : Fa links min         :    4.4
+20400 : Fa rechts min        :    5.6
+20711 : ffa links 1          :    1.3
+20712 : ffa links 18         :    1.1
+20713 : ffa links 35         :    1.2
+20721 : ffa rechts 1         :    1.2
+20722 : ffa rechts 18        :    1.7
+20723 : ffa rechts 35        :    1.3
+20730 : ffa m links          :    1.2
+20740 : ffa m rechts         :    1.4
+20750 : V ffa links          :    0.2
+20760 : V ffa rechts         :    0.5
+20770 : ffa links max        :    1.3
+20780 : ffa rechts max       :    1.7
+20790 : ffa links min        :    1.1
+20700 : ffa rechts min       :    1.2
+21611 : fKo links 1          :  -23.1
+21612 : fKo links 18         :  -23.4
+21613 : fKo links 35         :  -23.1
+21621 : fKo rechts 1         :  -23.5
+21622 : fKo rechts 18        :  -23.9
+21623 : fKo rechts 35        :  -23.2
+21630 : fKo m links          :  -23.2
+21640 : fKo m rechts         :  -23.5
+21650 : V fKo links          :    0.3
+21660 : V fKo rechts         :    0.7
+21670 : fKo links max        :  -23.1
+21680 : fKo rechts max       :  -23.2
+21690 : fKo links min        :  -23.4
+21600 : fKo rechts min       :  -23.9
+26411 : Fuß  1               :   48.4
+26412 : Fuß  18              :   48.4
+26413 : Fuß  35              :   48.4
+26430 : Fuß m                :   48.376
+26450 : V Fuß                : 8999.0
+26470 : Fuß  max             :   48.384
+26490 : Fuß  min             :   48.362
+26711 : Kopf  1              :   48.4
+26712 : Kopf  18             :   48.4
+26713 : Kopf  35             :   48.4
+26740 : Kopf m               :   52.883
+26750 : V Kopf               : 8999.0
+26780 : Kopf  max            :   52.885
+26700 : Kopf  min            :   52.882
+
+30110 : fp max links         :    1.3
+30120 : fp max rechts        :    1.2
+30410 : fu max links         :    1.2
+30420 : fu max rechts        :    1.8
+30710 : Rp links             :    2.5
+30720 : Rp rechts            :    2.0
+31010 : Fp links             :   14.3
+31020 : Fp rechts            :   11.1
+31310 : Fpz/8 links          :    5.5
+31320 : Fpz/8 rechts         :    3.8
+31610 : Fr                   :   14.8
+31910 : Rs                   :    9.4
+32810 : MdK                  :   52.169
+33110 : MdKmin               :   52.168
+33410 : MdKmax               :   52.170
+34610 : WK                   :   16.825
+34910 : WKmin                :   16.823
+35210 : WKmax                :   16.826

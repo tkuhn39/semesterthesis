@@ -93,11 +93,16 @@ OLDER_NOTATION = {"DIN3972:1952"}
 STPLUS_REFERENCE_CASE = "helix30_z25_40"
 HOMONYMS = {
     "k": {"number_of_teeth_spanned", "tip_alteration_coefficient"},
-    "d_M": {"span_measuring_circle_diameter", "ball_measuring_circle_diameter"},
+    "d_M": {
+        "span_measuring_circle_diameter",
+        "ball_measuring_circle_diameter",
+        "measurement_diameter",
+    },
     "D_M": {"measuring_ball_diameter", "ideal_measuring_ball_diameter"},
 }
 """One symbol for two quantities: k in the symbol list of DIN ISO 21771:2014-08 (§3.1, p. 12);
-d_M in DIN 21773:2014-08 for the measuring circle of the span (§7.2) and of the ball (§8); D_M
+d_M in DIN 21773:2014-08 for the measuring circle of the span (§7.2) and of the ball (§8) and in
+DIN ISO 1328-1:2018-03 for the pitch measuring circle (Tabelle 1, p. 10); D_M
 for the ball that is used and for the diameter Eq. (26) gives."""
 MANUAL_INPUT_KEYS = {"ZAEHNEZAHLVERHAELTNIS", "PR.VERSCH.SUMME"}
 """Input keys of the STplus manual (Bild 4.12, p. 25) that the importer does not map."""
@@ -205,7 +210,7 @@ def _is_numeric(annotation: Any) -> bool:
 def test_registry_is_well_formed() -> None:
     sources = load_sources()
     registry = quantities()
-    assert len(registry) == 142
+    assert len(registry) == 167
     symbols: dict[str, str] = {}
     for name, entry in registry.items():
         current = [entry.source] if entry.source else []

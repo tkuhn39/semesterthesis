@@ -95,6 +95,14 @@ sources:
     file: "00_literatur/05_normen_und_richtlinien/DIN_ISO_1328-1_2018-03-00_DE_2773568.pdf"
     verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
     confirmed_by_user: true
+  DINISO1328-1:2018-EN:
+    type: norm
+    title: "DIN ISO 1328-1:2018-03 Cylindrical gears – ISO system of flank tolerance classification – Part 1: Definitions and allowable values of deviations relevant to flanks of gear teeth (ISO 1328-1:2013), English translation of DIN ISO 1328-1:2018-03"
+    edition: "2018-03"
+    file: "00_literatur/05_normen_und_richtlinien/DIN_ISO_1328-1_2018-03-00_EN_2826145.pdf"
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-10-10" }
+    confirmed_by_user: true
+    notes: "English translation by DIN-Sprachendienst of the German edition DINISO1328-1:2018 (in case of doubt the German original is authoritative, front page); registered 2026-10-10 for the English designations of the measured deviations (Table 1, pp. 8 to 10). Table 1 prints the unit of L_C_alpha_a as '–', the German edition as mm."
   DINISO1328-2:2021:
     type: norm
     title: "DIN ISO 1328-2:2021-09 Stirnräder – ISO-Toleranzsystem – Teil 2: Definitionen und zulässige Werte für die Zweiflanken-Wälzabweichung (ISO 1328-2:2020)"

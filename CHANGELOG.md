@@ -9,6 +9,54 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (measurement track M1 - inventory, parsers and registry of the measured gears, 2026-10-10, ADR-117)
+User decision (plan of 2026-10-10): the measurements of the manufactured kst-E gears in
+`70_input/71_Messungen` (Klingelnberg P40 "GINA" value and curve files, P40 contour scans,
+Hommel-Etamic roughness exports) are evaluated by the package, not by hand or by the 2015 Excel
+macro `MEW_Auslesen_V1.xlsm`.
+- **Parsers** (grammar only, `ParseError` for every line not understood): `io/p40.py` (`.mew`
+  values keyed by their five-digit codes with typed placeholders -9999.0 / 8999.0, `.mka` curves
+  with 480 values per trace, undefined points as `None`, the diameter lines, the per-tooth pitch
+  tables of all teeth and the `Teilung` table), `io/p40_contour.py` (`.DAT` blocks `[A]`/`[B]`,
+  one scan per block, index and plane checks), `io/hommel.py` (UTF-16 ASCII export, columns by
+  name, decimal comma only after a strict regex; `.hwp` profiles deliberately not read).
+- **Inventory** `measurement/inventory.py`: folder rules of the user's layout, ME number, part,
+  kind, variant, tooth, flank and trace from the file names, dates from the headers, measurement
+  rounds per part by date (gap 5 days), anomalies stated (two blocks in `97341_z36.DAT`, misnamed
+  `97373_1.DAT`, 30 coarse scans of the 2026-06-23 batch, roughness twins, `97840` unassigned);
+  the user's groups in `data/measurement/parts.yaml` (core = ten PA46-GF30 running tests with the label running-in for 97351; every other wheel
+  = manufacturing scatter, 97364 among them with the label extra test; pinions 95911 to 95920 =
+  series of the rig pinion, 86481 older).
+- **Registry**: 25 quantities of DIN ISO 1328-1:2018 (Tabelle 1, pp. 9 to 11, Anhang D p. 48,
+  Anhang G p. 60: F_alpha, f_f_alpha, f_H_alpha, F_beta, f_f_beta, f_H_beta, f_p, F_p, F_pk, f_u,
+  F_r, f_pi, F_pi, r_i, L_alpha, L_beta, L_C_alpha_a, d_M and the tolerances f_H_alpha_T,
+  f_H_beta_T, f_uT, F_pT, F_pkT) and ISO/TR 6336-30:2022 (Table 2, p. 4: R_a, R_z), read on the rendered pages;
+  `quantities.md` regenerated (167 quantities). Quantities without a norm in the repository
+  (R_max, R_q, R_sk ... of ISO 4287/21920, DIN 3962 grades) stay raw pass-through until the user
+  places the norms.
+- **Script** `scripts/measurements.py inventory`: `80_output/messungen/inventory/inventory.md`,
+  `inventory.csv` (one row per file), `anomalies.md`. Tests: `test_io_p40.py`,
+  `test_io_p40_contour.py`, `test_io_hommel.py`, `test_measurement_inventory.py`,
+  `test_properties_measurement.py`, `test_measurements_script.py` (the real folder is skipped
+  where absent, `measurements_root` fixture); packaged fixtures with `provenance.yaml`.
+- **Git**: the text exports of `70_input` are versioned (`.mew`, `.mka`, `.DAT` by an exception
+  from the `*.dat` rule, `.txt`, the test-rig `.xlsx`), PDFs, `.hwp` and `.xlsm` stay local;
+  `.gitattributes` keeps the instrument bytes unchanged.
+- Result of the contour scan of the older steel pinion 86481 (script of 2026-10-10, ported in M3):
+  tip edge sharp to within 0,03 mm on 13 corners, linear tip relief about 21 um from d 51,86 mm
+  (drawing 2022: 25 um from 51,946 mm); GINA of the pinion series 95911 to 95920 reports the
+  relief as fKo about -23 um (zone 51,946 to 52,88 mm) with the root diameter 48,38 mm of the 2022
+  drawing. The FE geometry of kst-E is unchanged (user decision; variants follow as M7).
+- Adversarial review of M1 (two independent reviewers, 2026-10-10): Eq. (G.2) corrected to
+  f_uT = sqrt(2) f_pT; program names after the English edition of DIN ISO 1328-1 (adjacent pitch
+  difference, measurement diameter, individual radial measurement); roughness designations
+  verbatim; preamble keys with spaces (`FILTER LEAD`) and the time field of header code 3 kept
+  intact; undefined curve points recognised by magnitude; repeat measurements of one part within
+  a round numbered; per-tooth tip lines of every `.mew` carry the root values (MEAS-07).
+- The English edition of DIN ISO 1328-1:2018-03 (`DIN_ISO_1328-1_2018-03-00_EN_2826145.pdf`,
+  renamed without spaces) is registered as `DINISO1328-1:2018-EN` with the user's go; the 23
+  deviation entries carry its English designations (Table 1, pp. 8 to 10, rendered pages).
+
 ## [Unreleased]
 
 ### Changed (restart of the workbench, 2026-09-28, ADR-101)
