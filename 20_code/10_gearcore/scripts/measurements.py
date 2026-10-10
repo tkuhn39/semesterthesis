@@ -5,6 +5,7 @@
         [--rounds latest|all] [--no-plots]
     uv run --all-extras python scripts/measurements.py contour [--part wheel|pinion] [--me ME ...]
         [--include-coarse] [--magnify 10] [--corner-step 0.01] [--no-plots]
+    uv run --all-extras python scripts/measurements.py roughness [--part wheel|pinion] [--me ME ...]
 
 ``inventory`` lists every measured part with its files, measurement rounds and anomalies:
 ``inventory.md`` (one table per part kind), ``inventory.csv`` (one row per file) and
@@ -33,10 +34,16 @@ tooth at true scale, ``--magnify`` exaggerates the deviation normal to the conto
 ``kopfkante_<ME>_<scan>`` (every tip corner at 1:1 with the fitted arc and chamfer). Coarse
 scans (about 400 points) are left out unless ``--include-coarse``.
 
+``roughness`` reads the Hommel-Etamic ASCII exports (three traces per gear and flank): per part
+and flank R_a and R_z as the instrument's mean of the traces with the traces themselves and their
+spread (``tabelle.md``), the statistics of the core group and the scatter group
+(``gruppen.md``) and every parameter raw (``rohdaten.csv``); duplicate exports are dropped. No
+figure: the printed protocols go into the appendix (user's decision).
+
 Everything that computes lives in ``gearcore.measurement``; this script reads the folder, calls
 the package, draws in the house style (``gearcore.plot_style``) and writes files below
-``80_output/messungen`` (gitignored). Further subcommands (``roughness``, ``compare``,
-``report``) follow with the later increments of the measurement track.
+``80_output/messungen`` (gitignored). Further subcommands (``compare``, ``report``) follow with
+the later increments of the measurement track.
 """
 
 from __future__ import annotations
@@ -54,12 +61,14 @@ from gearcore import data
 from gearcore.data import load_measurement_parts
 from gearcore.errors import InputRangeError
 from gearcore.generation import compute_generation
+from gearcore.io.hommel import load_roughness_table
 from gearcore.io.p40 import Flank, MkaFile, load_mew, load_mka
 from gearcore.io.p40_contour import ContourScan, load_contour_scans
 from gearcore.io.ste import load_ste, pair_input_from_ste
 from gearcore.measurement import contour_scan as cs
 from gearcore.measurement import gina
 from gearcore.measurement import report as rp
+from gearcore.measurement import roughness as rg
 from gearcore.measurement.inventory import (
     Inventory,
     Kind,
@@ -1328,6 +1337,159 @@ def run_contour(
     return written
 
 
+# ---- roughness ---------------------------------------------------------------------------------
+
+
+def roughness_tables(
+    part_kind: str,
+    items: Sequence[tuple[MeasuredPart, rg.RoughnessMeasurement]],
+    dropped: int,
+) -> dict[str, str]:
+    """``tabelle.md``, ``gruppen.md`` and ``rohdaten.csv`` of one part kind."""
+    ra_label = rp.quantity_label("arithmetic_mean_roughness")
+    rz_label = rp.quantity_label("mean_peak_to_valley_roughness")
+    lines = [f"# Rauheit der Zahnflanken, {PART_LABELS[part_kind]}", ""]
+    lines.append(
+        "Hommel-Etamic-Exporte, je Teil und Flanke drei Spuren; R_a und R_z als Mittel der drei "
+        "Spuren, wie das Gerät es druckt (Xq) und gegen die Spuren geprüft. Die gedruckten Protokolle "
+        "(PDF) gehören in den Anhang; Kenngrößen jenseits von R_a und R_z laufen nur in rohdaten.csv "
+        f"mit, ohne Normeintrag (MEAS-05). {dropped} doppelte Exporte (_neu_) mit gleichen Zahlen "
+        "wurden ausgelassen."
+    )
+    lines.append("")
+    rows: list[list[str]] = []
+    for part, m in items:
+        rows.append(
+            [
+                part.me,
+                GROUP_LABELS.get(part.group, part.group),
+                ", ".join(part.batch_labels) or "–",
+                m.flank,
+                m.measured_on,
+                _n(m.R_a_um, 3),
+                ", ".join(_n(v, 3) for v in m.R_a_traces_um),
+                _n(rg.trace_spread(m, "Ra"), 3),
+                _n(m.R_z_um, 3),
+                ", ".join(_n(v, 3) for v in m.R_z_traces_um),
+                _n(rg.trace_spread(m, "Rz"), 3),
+                m.remark or "",
+            ]
+        )
+    lines.extend(
+        _table(
+            [
+                "ME",
+                "Gruppe",
+                "Chargenlabel",
+                "Flanke",
+                "Datum",
+                ra_label,
+                "Spuren R_a in µm",
+                "Spannweite R_a in µm",
+                rz_label,
+                "Spuren R_z in µm",
+                "Spannweite R_z in µm",
+                "Bemerkung",
+            ],
+            rows,
+        )
+    )
+    groups: dict[str, list[rg.RoughnessMeasurement]] = {}
+    for part, m in items:
+        groups.setdefault(part.group, []).append(m)
+    group_lines = [f"# Rauheit nach Gruppen, {PART_LABELS[part_kind]}", ""]
+    group_lines.append(
+        "Mittel, Standardabweichung (n − 1), Minimum und Maximum von R_a und R_z (Mittel der drei "
+        "Spuren) über die Teile der Gruppe je Flanke; Spurenspannweite = Mittel über die Teile der "
+        "Spannweite der drei Spuren eines Teils (Streuung entlang einer Flanke)."
+    )
+    group_lines.append("")
+    group_rows: list[list[str]] = []
+    for group in sorted(groups):
+        for stat in rg.statistics(groups[group]):
+            group_rows.append(
+                [
+                    GROUP_LABELS.get(group, group),
+                    rp.plain_symbol(quantity(stat.quantity).symbol or stat.parameter)
+                    if stat.quantity
+                    else stat.parameter,
+                    stat.flank,
+                    str(stat.count),
+                    _n(stat.mean_um, 3),
+                    _n(stat.standard_deviation_um, 3),
+                    f"{_n(stat.minimum_um, 3)} ({stat.me_of_minimum})",
+                    f"{_n(stat.maximum_um, 3)} ({stat.me_of_maximum})",
+                    _n(stat.mean_trace_spread_um, 3),
+                ]
+            )
+    group_lines.extend(
+        _table(
+            [
+                "Gruppe",
+                "Größe",
+                "Flanke",
+                "n",
+                "Mittel in µm",
+                "s in µm",
+                "min (ME)",
+                "max (ME)",
+                "Spurenspannweite Mittel in µm",
+            ],
+            group_rows,
+        )
+    )
+    columns = ["me", "group", "flank", "measured_on", "measured_at", "remark", "program"]
+    raw_names = [name for name, _ in items[0][1].raw]
+    csv_rows: list[list[str]] = []
+    for part, m in items:
+        values = dict(m.raw)
+        csv_rows.append(
+            [part.me, part.group, m.flank, m.measured_on, m.measured_at, m.remark or "", m.program]
+            + [_raw(values.get(name)) for name in raw_names]
+        )
+    return {
+        "tabelle.md": "\n".join(lines) + "\n",
+        "gruppen.md": "\n".join(group_lines) + "\n",
+        "rohdaten.csv": rp.csv_text(columns + raw_names, csv_rows),
+    }
+
+
+def run_roughness(
+    input_dir: Path,
+    out: Path,
+    *,
+    parts: Sequence[str] = ("wheel", "pinion"),
+    me_filter: Sequence[str] | None = None,
+) -> list[Path]:
+    inventory = scan_folder(input_dir)
+    root = Path(inventory.root)
+    written: list[Path] = []
+    for part_kind in parts:
+        measurements: list[rg.RoughnessMeasurement] = []
+        part_of: dict[str, MeasuredPart] = {}
+        for part in inventory.parts:
+            if part.part != part_kind or (me_filter and part.me not in me_filter):
+                continue
+            part_of[part.me] = part
+            for file in sorted(part.of_kind("roughness"), key=lambda f: f.path):
+                measurements.extend(
+                    rg.roughness_measurements(load_roughness_table(root / file.path))
+                )
+        if not measurements:
+            continue
+        kept, dropped = rg.dedupe(measurements)
+        items = sorted(
+            ((part_of[m.me], m) for m in kept), key=lambda pair: (pair[1].me, pair[1].flank)
+        )
+        folder = out / part_kind
+        folder.mkdir(parents=True, exist_ok=True)
+        for name, text in roughness_tables(part_kind, items, len(dropped)).items():
+            path = folder / name
+            path.write_text(text, encoding="utf-8", newline="\n")
+            written.append(path)
+    return written
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -1358,6 +1520,11 @@ def main() -> None:
     contour_parser.add_argument("--corner-step", type=float, default=0.01, help="mm")
     contour_parser.add_argument("--corner-max", type=float, default=0.3, help="mm")
     contour_parser.add_argument("--no-plots", action="store_true")
+    roughness_parser = sub.add_parser("roughness", help="evaluate the Hommel roughness exports")
+    roughness_parser.add_argument("--input", type=Path, default=INPUT, help="measurement folder")
+    roughness_parser.add_argument("--out", type=Path, default=OUTPUT / "rauheit")
+    roughness_parser.add_argument("--part", choices=("wheel", "pinion"), action="append")
+    roughness_parser.add_argument("--me", action="append", help="ME numbers to evaluate")
     gina_parser.add_argument(
         "--curves",
         action="store_true",
@@ -1390,6 +1557,14 @@ def main() -> None:
             corner_step_mm=args.corner_step,
             corner_max_mm=args.corner_max,
             plots=not args.no_plots,
+        ):
+            print(path)
+    elif args.command == "roughness":
+        for path in run_roughness(
+            args.input,
+            args.out,
+            parts=tuple(args.part) if args.part else ("wheel", "pinion"),
+            me_filter=args.me,
         ):
             print(path)
 

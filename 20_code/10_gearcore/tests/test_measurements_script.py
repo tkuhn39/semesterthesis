@@ -168,3 +168,26 @@ def test_contour_writes_tables_and_figures(
         "86481_Z36",
     }
     assert all(float(r["arc_radius_mm"]) <= 0.03 for r in rows)  # the sharp edge of 86481
+
+
+def test_roughness_writes_tables(
+    script: ModuleType, measurements_root: Path, tmp_path: Path
+) -> None:
+    written = script.run_roughness(measurements_root, tmp_path / "rauheit")
+    names = sorted(p.relative_to(tmp_path / "rauheit").as_posix() for p in written)
+    assert names == ["wheel/gruppen.md", "wheel/rohdaten.csv", "wheel/tabelle.md"]  # no pinion data
+    table = (tmp_path / "rauheit" / "wheel" / "tabelle.md").read_text(encoding="utf-8")
+    assert "72 doppelte Exporte" in table  # 97840 (2 files) stays unassigned, MEAS-04
+    assert (
+        "| 97340 | Laufversuch (Kerngruppe) |" in table
+        and "| links | 2026-05-31 | 1,022 |" in table
+    )
+    with (tmp_path / "rauheit" / "wheel" / "rohdaten.csv").open(
+        encoding="utf-8", newline=""
+    ) as handle:
+        rows = list(csv.DictReader(handle, delimiter=";"))
+    assert len(rows) == 70 and {r["flank"] for r in rows} == {"links", "rechts"}
+    assert "Messung-3.Rvk" in rows[0] and rows[0]["Xq-Ra"]
+    groups = (tmp_path / "rauheit" / "wheel" / "gruppen.md").read_text(encoding="utf-8")
+    assert "| Laufversuch (Kerngruppe) | R_a | links |" in groups
+    assert "| Fertigungsstreuung | R_z | rechts |" in groups

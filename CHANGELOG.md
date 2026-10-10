@@ -9,6 +9,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (measurement track M4 - roughness of the tooth flanks from the raw exports, 2026-10-11, ADR-117)
+User decision: no roughness analysis in the house style; the printed Hommel protocols go into the
+appendix, the code uses the raw exports.
+- **`measurement/roughness.py`**: `roughness_measurements` turns a Hommel-Etamic export (three
+  traces of fifteen parameters, the instrument's means `Xq-Ra`, `Xq-Rz`, `Xq-Rmax`) into a typed
+  `RoughnessMeasurement` (gear, flank, date and time, remark, probe program, the three traces of
+  R_a and R_z, the means, every parameter raw by the instrument's name); the printed mean is
+  cross-checked against the traces within the printed decimals (`ParseError` otherwise: `Xq-Rmax`
+  carries two decimals, the traces three); `dedupe` drops the duplicate `_neu_` exports (equal
+  numbers, no remark column) and refuses two exports of one measurement that disagree;
+  `trace_spread` (largest minus smallest trace) and `statistics` (mean, sample standard deviation,
+  minimum and maximum of R_a and R_z per flank over the parts of a group, plus the mean trace
+  spread). R_a and R_z carry the registry names of ISO/TR 6336-30; the other parameters stay raw
+  (MEAS-05); the `.hwp` profiles are still not read (MEAS-02).
+- **Script** `measurements.py roughness [--part] [--me]`: `tabelle.md` (per part and flank with
+  the traces and their spread), `gruppen.md` (core group against scatter group) and
+  `rohdaten.csv` (every parameter) below `80_output/messungen/rauheit/`; no figure.
+- **Results** (35 wheels with exports, 70 measurements, 72 duplicate exports dropped, two of them the second record inside each file of 97354 links; 97840 stays
+  unassigned, MEAS-04): core group R_a 0,81 µm left / 0,93 µm right (s 0,32 / 0,44), R_z 4,9 /
+  5,8 µm; scatter group R_a 1,20 / 1,21 µm (s 0,45 / 0,39), R_z 7,3 / 7,4 µm; the spread of the
+  three traces along one flank is 0,5 to 0,8 µm in R_a and 2,5 to 4,1 µm in R_z, as large as the
+  scatter between parts; 97361 is the roughest core wheel (R_a 1,5 / 2,0 µm), 97363 the smoothest
+  wheel (R_a 0,43 µm). No roughness of the pinions exists.
+- Tests `test_measurement_roughness.py` (fixture values, cross-check, twins, statistics) and
+  `test_measurements_script.py::test_roughness_writes_tables`; the module in the traceability
+  list, `RoughnessMeasurement` in the schema export.
+
 ### Added (measurement track M3 - contour scans in the house style, 2026-10-11, ADR-117)
 - User review of 2026-10-11 (second round): the curves over the path of contact carry a small
   marker on every sample point (no regular spacing that hides the kinks); the first panel is

@@ -1661,3 +1661,8 @@ case is untouched; variants are separate cases (M7).
    are aligned (`save`), and curves that share a line style carry distinct markers of the cycle;
    the old script `scripts/contour_scan_tip_edge.py` is deleted, its numbers are the regression
    test of the module.
+5. M4 (roughness): the typed measurement keeps the instrument's mean of the three traces as
+   the value of a flank and checks it against the traces within the printed decimals; the
+   duplicate exports are dropped by equal numbers, never by name; parameters without a norm in
+   the repository are carried raw under the instrument's name; no figure of the roughness is
+   drawn, the protocols are the appendix (user).
