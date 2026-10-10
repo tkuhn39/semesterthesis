@@ -60,13 +60,29 @@ from gearcore.fe import solid as so
 from gearcore.generation import compute_generation
 from gearcore.io.ste import load_ste, pair_input_from_ste
 from gearcore.models.results import GenerationResult
+from gearcore.plot_style import apply as apply_plot_style
+from gearcore.plot_style import legend_beside, legend_outside, new_figure
+from gearcore.plot_style import save as save_figure
+
+SHEET = apply_plot_style()  # house style of every figure (FZG first, then TUM)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 OUTPUT = REPO_ROOT / "80_output" / "fe"
 
-PINION_COLOUR = "#5b6f85"
-WHEEL_COLOUR = "#d98c3f"
-LINE_COLOUR = "#1f1f1f"
+PINION_COLOUR = SHEET.colour("tum_blau_dunkel")
+WHEEL_COLOUR = SHEET.colour("tum_orange")
+LINE_COLOUR = SHEET.colour("tum_schwarz")
+MARK_COLOUR = SHEET.colour("diag5")  # tumdiag5 for marks, the drawing and the Fesselung
+Colour = str | tuple[float, float, float, float]
+QUAD_EDGE = SHEET.colour("tum_grau_80")
+
+
+def _tint(name: str, alpha: float) -> tuple[float, float, float, float]:
+    """A palette colour with transparency, for fills behind lines and edges."""
+    from matplotlib.colors import to_rgba
+
+    r, g, b, _ = to_rgba(SHEET.colour(name))
+    return (r, g, b, alpha)
 
 
 def _generation(case: str) -> GenerationResult:
@@ -102,9 +118,24 @@ def _draw_pair(
         (polygons[1], place.axis_mm.wheel, place.tooth_centre_angle_deg.wheel, WHEEL_COLOUR),
     ):
         outline = pl.placed(polygon, axis, angle)
-        axes.fill(outline[:, 0], outline[:, 1], facecolor=colour, alpha=0.35, linewidth=0.0)
-        # the outline as one closed path, so that it has no line ends
-        axes.fill(outline[:, 0], outline[:, 1], facecolor="none", edgecolor=colour, linewidth=0.9)
+        axes.fill(
+            outline[:, 0],
+            outline[:, 1],
+            facecolor=colour,
+            alpha=0.35,
+            linewidth=0.0,
+            linestyle="-",
+        )
+        # the outline as one closed path, so that it has no line ends (fill cycles the line
+        # styles of the house style, hence the explicit solid line)
+        axes.fill(
+            outline[:, 0],
+            outline[:, 1],
+            facecolor="none",
+            edgecolor=colour,
+            linewidth=0.9,
+            linestyle="-",
+        )
     # line of action through the contact point of the followed pair
     alpha_wt = math.radians(generation.pair_geometry.transverse_working_pressure_angle_deg)
     side = 1.0 if position.working_flank == "left" else -1.0
@@ -114,7 +145,12 @@ def _draw_pair(
     rho_a, rho_e = pl.path_of_contact_limits(generation)
     start, end = contact + (rho_a - rho_1) * direction, contact + (rho_e - rho_1) * direction
     axes.plot(
-        [start[0], end[0]], [start[1], end[1]], color=LINE_COLOUR, linewidth=0.8, linestyle="--"
+        [start[0], end[0]],
+        [start[1], end[1]],
+        color=LINE_COLOUR,
+        linewidth=0.8,
+        linestyle="--",
+        marker="",
     )
     for label, point in (("A", start), ("E", end)):
         axes.plot(*point, marker="|", color=LINE_COLOUR, markersize=7)
@@ -123,15 +159,13 @@ def _draw_pair(
             (float(point[0]), float(point[1])),
             textcoords="offset points",
             xytext=(6, -3),
-            fontsize=8,
         )
     p_bt = generation.pair_geometry.transverse_base_pitch_mm
     sign = 1 if position.working_flank == "left" else -1
     for k in position.tooth_pairs_on_path:
         point = contact + sign * k * p_bt * direction
-        axes.plot(*point, marker="o", color="#c0392b", markersize=3.5)
+        axes.plot(*point, marker="o", color=MARK_COLOUR, markersize=3.5)
     axes.set_aspect("equal")
-    axes.tick_params(labelsize=7)
 
 
 def preview(case: str, rotation: pl.Rotation, out: Path) -> list[Path]:
@@ -161,35 +195,44 @@ def preview(case: str, rotation: pl.Rotation, out: Path) -> list[Path]:
         )
         step = 1 if flank == "left" else -1
         back_here = pl.flank_distance(generation, position, other, pinion_tooth=step)
-        figure, (overview, detail) = plt.subplots(1, 2, figsize=(11.0, 5.2), dpi=160)
+        figure, (overview, detail) = new_figure("full", 0.5, cols=2)
         for axes in (overview, detail):
             _draw_pair(axes, generation, position, polygons)
         overview.set_xlim(pitch_point - 5.0 * module, pitch_point + 5.0 * module)
         overview.set_ylim(-6.0 * module, 6.0 * module)
-        overview.set_title("Eingriff", fontsize=9)
+        overview.set_title("Eingriff")
+        pairs = ", ".join(str(k) for k in position.tooth_pairs_on_path)
         box = {"facecolor": "white", "alpha": 0.85, "edgecolor": "none", "pad": 2.0}
         overview.text(
             0.03,
             0.97,
-            f"Ritzel (treibt): {pinion_sense}" + chr(10) + f"Moment um +z {torque}",
+            f"Ritzel (treibt): {pinion_sense}"
+            + chr(10)
+            + f"Moment um +z {torque}"
+            + chr(10)
+            + f"Rad: {wheel_sense}",
             transform=overview.transAxes,
             ha="left",
             va="top",
-            fontsize=7,
             bbox=box,
         )
-        overview.text(
-            0.97,
+        detail.text(
             0.03,
-            f"Rad: {wheel_sense}",
-            transform=overview.transAxes,
-            ha="right",
+            0.03,
+            f"Arbeitsflanke {'links' if flank == 'left' else 'rechts'}: "
+            + f"{_number(1000.0 * working, 6)} µm"
+            + chr(10)
+            + f"Rückflanke: {_number(1000.0 * back_here, 1)} µm "
+            + f"(Soll {_number(1000.0 * back, 1)} µm)"
+            + chr(10)
+            + f"Zahnpaare: {pairs}",
+            transform=detail.transAxes,
+            ha="left",
             va="bottom",
-            fontsize=7,
             bbox=box,
         )
-        overview.set_xlabel("x in mm", fontsize=8)
-        overview.set_ylabel("y in mm", fontsize=8)
+        overview.set_xlabel("x in mm")
+        overview.set_ylabel("y in mm")
         centre = np.asarray(position.contact_point_mm)
         k = position.tooth_pairs_on_path[0]
         alpha_wt = math.radians(geometry.transverse_working_pressure_angle_deg)
@@ -199,30 +242,15 @@ def preview(case: str, rotation: pl.Rotation, out: Path) -> list[Path]:
         )
         detail.set_xlim(centre[0] - 0.6 * module, centre[0] + 0.6 * module)
         detail.set_ylim(centre[1] - 0.6 * module, centre[1] + 0.6 * module)
-        detail.set_title("Berührpunkt des tragenden Zahnpaars", fontsize=9)
-        detail.set_xlabel("x in mm", fontsize=8)
-        detail.set_ylabel("y in mm", fontsize=8)
-        pairs = ", ".join(str(k) for k in position.tooth_pairs_on_path)
+        detail.set_title("Berührpunkt des tragenden Zahnpaars")
+        detail.set_xlabel("x in mm")
+        detail.set_ylabel("y in mm")
         figure.suptitle(
             f"{case}: {label} (Stellung {index} von 5, Wälzweg ab A = "
-            f"{_number(rho_1 - rho_a, 3)} mm)",
-            fontsize=10,
+            f"{_number(rho_1 - rho_a, 3)} mm)"
         )
-        figure.text(
-            0.5,
-            0.02,
-            f"Arbeitsflanke ({'links' if flank == 'left' else 'rechts'}): Abstand "
-            f"{_number(1000.0 * working, 6)} µm   |   Rückflanke: Abstand "
-            f"{_number(1000.0 * back_here, 1)} µm (Sollwert {_number(1000.0 * back, 1)} µm)"
-            f"   |   Zahnpaare auf der Eingriffsstrecke: {pairs}",
-            ha="center",
-            fontsize=8,
-        )
-        figure.tight_layout(rect=(0.0, 0.05, 1.0, 0.95))
-        target = out / f"position_{index}.png"
-        figure.savefig(target)
+        written += save_figure(figure, out / f"position_{index}")
         plt.close(figure)
-        written.append(target)
     return written
 
 
@@ -231,8 +259,8 @@ def _draw_quads(
     points: np.ndarray,
     quads: np.ndarray,
     *,
-    face: str = "none",
-    edge: str = "#3a3a3a",
+    face: Colour = "none",
+    edge: Colour = QUAD_EDGE,
     width: float = 0.25,
 ) -> None:
     axes.add_collection(
@@ -258,10 +286,10 @@ def _mesh_pictures(
         return points[nodes[nodes < len(points)]]
 
     # 1 the whole sector with the tooth numbers and the fixed nodes
-    figure, axes = plt.subplots(figsize=(11.0, 6.0), dpi=160)
+    figure, axes = new_figure(280.0, 0.55)
     _draw_quads(axes, points, section.quads, width=0.2)
     fixed = nodes_of(f"{sets.prefix}_FESSELUNG")
-    axes.plot(fixed[:, 0], fixed[:, 1], ".", color="#c0392b", markersize=2.5, label="Fesselung")
+    axes.plot(fixed[:, 0], fixed[:, 1], ".", color=MARK_COLOUR, markersize=2.5, label="Fesselung")
     for tooth in range(1, section.teeth + 1):
         angle = 0.5 * math.pi + (tooth - 0.5 * (section.teeth + 1)) * section.pitch_angle_rad
         radius = section.tip_radius_mm + 0.6 * module_mm
@@ -271,24 +299,20 @@ def _mesh_pictures(
             f"T{tooth}",
             ha="center",
             va="center",
-            fontsize=8,
         )
     axes.set_aspect("equal")
     axes.autoscale_view()
     axes.margins(0.03)
     # room above the teeth for their numbers
     axes.set_ylim(top=section.tip_radius_mm + 1.6 * module_mm)
-    axes.legend(loc="lower center", fontsize=8, frameon=False)
+    legend_outside(figure, axes, where="bottom")
     axes.set_title(
         f"Radsektor: {section.teeth} Zähne + 2 zahnlose Segmente, {len(points)} Knoten und "
         f"{m} Elemente je Schicht, Bohrungsradius {_number(section.bore_radius_mm, 2)} mm",
-        fontsize=9,
     )
-    axes.set_xlabel("x in mm", fontsize=8)
-    axes.set_ylabel("y in mm", fontsize=8)
-    axes.tick_params(labelsize=7)
-    figure.tight_layout()
-    figure.savefig(out / "mesh_sector.png")
+    axes.set_xlabel("x in mm")
+    axes.set_ylabel("y in mm")
+    save_figure(figure, out / "mesh_sector")
     plt.close(figure)
 
     # 2 one tooth, 3 its root on the right side
@@ -296,79 +320,107 @@ def _mesh_pictures(
     root_centre = root_nodes.mean(axis=0)
     windows = (
         (
-            "mesh_tooth.png",
+            "mesh_tooth",
             f"Zahn T{middle}",
             (-1.9 * module_mm, 1.9 * module_mm),
             (section.fan_ring_radius_mm - 0.5 * module_mm, section.tip_radius_mm + 0.3 * module_mm),
         ),
         (
-            "mesh_root.png",
+            "mesh_root",
             f"Zahnfuß von T{middle}, rechte Seite",
             (root_centre[0] - 0.45 * module_mm, root_centre[0] + 0.45 * module_mm),
             (root_centre[1] - 0.35 * module_mm, root_centre[1] + 0.35 * module_mm),
         ),
     )
     for file_name, title, x_limits, y_limits in windows:
-        figure, axes = plt.subplots(figsize=(8.0, 6.4), dpi=160)
+        figure, axes = new_figure(200.0, 0.8)
         _draw_quads(axes, points, section.quads, width=0.3)
         axes.set_xlim(*x_limits)
         axes.set_ylim(*y_limits)
         axes.set_aspect("equal")
-        axes.set_title(title, fontsize=9)
-        axes.set_xlabel("x in mm", fontsize=8)
-        axes.set_ylabel("y in mm", fontsize=8)
-        axes.tick_params(labelsize=7)
-        figure.tight_layout()
-        figure.savefig(out / file_name)
+        axes.set_title(title)
+        axes.set_xlabel("x in mm")
+        axes.set_ylabel("y in mm")
+        save_figure(figure, out / file_name)
         plt.close(figure)
 
     def _background(axes: Axes) -> None:
-        _draw_quads(axes, points, quads_of(f"{sets.prefix}_RIM"), face="#e6e6e6", edge="#b0b0b0")
         _draw_quads(
-            axes, points, quads_of(f"{sets.prefix}_TOOTH_ZONE"), face="#f7f7f7", edge="#c8c8c8"
+            axes,
+            points,
+            quads_of(f"{sets.prefix}_RIM"),
+            face=_tint("tum_grau_20", 0.5),
+            edge=SHEET.colour("tum_grau_20"),
+        )
+        _draw_quads(
+            axes,
+            points,
+            quads_of(f"{sets.prefix}_TOOTH_ZONE"),
+            face=SHEET.colour("tum_weiss"),
+            edge=_tint("tum_grau_20", 0.8),
         )
         axes.set_xlim(-2.2 * module_mm, 2.2 * module_mm)
         axes.set_ylim(
             section.fan_ring_radius_mm - 1.2 * module_mm, section.tip_radius_mm + 0.5 * module_mm
         )
         axes.set_aspect("equal")
-        axes.set_xlabel("x in mm", fontsize=8)
-        axes.set_ylabel("y in mm", fontsize=8)
-        axes.tick_params(labelsize=7)
+        axes.set_xlabel("x in mm")
+        axes.set_ylabel("y in mm")
 
     # 4 the element sets around one tooth: by half, and by root and head
-    figure, (by_half, by_zone) = plt.subplots(1, 2, figsize=(15.0, 7.2), dpi=160)
+    figure, (by_half, by_zone) = new_figure(380.0, 0.48, cols=2)
     for axes in (by_half, by_zone):
         _background(axes)
-    fills = (("LEFT", "#a9c8e8", "#3f7fbf"), ("RIGHT", "#f3c9a0", "#d9822b"))
+    fills: tuple[tuple[str, Colour, Colour], ...] = (
+        ("LEFT", _tint("diag2", 0.6), SHEET.colour("diag1")),
+        ("RIGHT", _tint("diag8", 0.6), SHEET.colour("diag3")),
+    )
     handles: list[Artist] = []
     for side, light, dark in fills:
-        _draw_quads(by_half, points, quads_of(f"{name}_{side}_HALF"), face=light, edge="#8a8a8a")
+        _draw_quads(
+            by_half,
+            points,
+            quads_of(f"{name}_{side}_HALF"),
+            face=light,
+            edge=SHEET.colour("tum_grau_50"),
+        )
         _draw_quads(by_half, points, quads_of(f"{name}_{side}_LAYER1"), face=dark, edge=dark)
-        handles.append(Patch(facecolor=light, edgecolor="#8a8a8a", label=f"{name}_{side}_HALF"))
+        handles.append(
+            Patch(
+                facecolor=light, edgecolor=SHEET.colour("tum_grau_50"), label=f"{name}_{side}_HALF"
+            )
+        )
         handles.append(Patch(facecolor=dark, edgecolor=dark, label=f"{name}_{side}_LAYER1"))
-    by_half.legend(handles=handles, loc="upper left", fontsize=6.5, frameon=True)
-    by_half.set_title("Elementsets je Zahnhälfte", fontsize=9)
-    zones = [(f"{sets.prefix}_HEAD_T{middle}", "#b7dfb9", "#2e8b57")]
+    legend_beside(by_half, handles=handles)
+    by_half.set_title("Elementsets je Zahnhälfte")
+    zones: list[tuple[str, Colour, Colour]] = [
+        (f"{sets.prefix}_HEAD_T{middle}", _tint("diag4", 0.5), SHEET.colour("diag4"))
+    ]
     if middle > 1:
-        zones.append((f"{sets.prefix}_ROOT_T{middle - 1}_T{middle}", "#f5b7b1", "#c0392b"))
+        zones.append(
+            (f"{sets.prefix}_ROOT_T{middle - 1}_T{middle}", _tint("diag5", 0.4), MARK_COLOUR)
+        )
     if middle < section.teeth:
-        zones.append((f"{sets.prefix}_ROOT_T{middle}_T{middle + 1}", "#d7bde2", "#7d3c98"))
+        zones.append(
+            (
+                f"{sets.prefix}_ROOT_T{middle}_T{middle + 1}",
+                _tint("diag6", 0.4),
+                SHEET.colour("diag6"),
+            )
+        )
     handles = []
     for zone, light, dark in zones:
-        _draw_quads(by_zone, points, quads_of(zone), face=light, edge="#8a8a8a")
+        _draw_quads(by_zone, points, quads_of(zone), face=light, edge=SHEET.colour("tum_grau_50"))
         _draw_quads(by_zone, points, quads_of(f"{zone}_LAYER1"), face=dark, edge=dark)
-        handles.append(Patch(facecolor=light, edgecolor="#8a8a8a", label=zone))
+        handles.append(Patch(facecolor=light, edgecolor=SHEET.colour("tum_grau_50"), label=zone))
         handles.append(Patch(facecolor=dark, edgecolor=dark, label=f"{zone}_LAYER1"))
-    by_zone.legend(handles=handles, loc="upper left", fontsize=6.5, frameon=True)
-    by_zone.set_title("Elementsets Fuß je Zahnlücke und Kopf je Zahn", fontsize=9)
+    legend_beside(by_zone, handles=handles)
+    by_zone.set_title("Elementsets Fuß je Zahnlücke und Kopf je Zahn")
 
     figure.suptitle(
         f"Elementsets um Zahn T{middle} (für alle Zähne und Zahnlücken des Sektors gleich aufgebaut)",
-        fontsize=10,
     )
-    figure.tight_layout(rect=(0.0, 0.0, 1.0, 0.96))
-    figure.savefig(out / "mesh_sets.png")
+    save_figure(figure, out / "mesh_sets")
     plt.close(figure)
 
     # 5 the surface sets around one tooth: one panel per group of sets that divides the surface
@@ -382,24 +434,28 @@ def _mesh_pictures(
         first, second = points[corners[index, edge]], points[corners[index, (edge + 1) % 4]]
         return list(np.stack((first, second), axis=1))
 
-    groups: list[tuple[str, list[tuple[str, str]]]] = [
-        ("Ganze Zahnoberfläche (Kontaktfläche)", [(f"{sets.prefix}_TEETH_SURF", "#444444")]),
+    surface_parts: tuple[tuple[str, tuple[Colour, Colour]], ...] = (
+        ("ROOT", (MARK_COLOUR, _tint("diag5", 0.5))),
+        ("FLANK", (SHEET.colour("diag7"), _tint("diag7", 0.5))),
+        ("TIP", (SHEET.colour("diag6"), _tint("diag6", 0.5))),
+    )
+    groups: list[tuple[str, list[tuple[str, Colour]]]] = [
+        (
+            "Ganze Zahnoberfläche (Kontaktfläche)",
+            [(f"{sets.prefix}_TEETH_SURF", SHEET.colour("tum_grau_80"))],
+        ),
         ("Je Zahnhälfte", [(f"{name}_{side}_SURF", dark) for side, _, dark in fills]),
         (
             "Je Zahnhälfte geteilt an Fußformkreis und Kopfformkreis",
             [
                 (f"{name}_{side}_SURF_{part}", colour)
-                for part, colours in (
-                    ("ROOT", ("#c0392b", "#f1948a")),
-                    ("FLANK", ("#1e8449", "#7dcea0")),
-                    ("TIP", ("#6c3483", "#bb8fce")),
-                )
+                for part, colours in surface_parts
                 for (side, _, _), colour in zip(fills, colours, strict=True)
             ],
         ),
         ("Kopf je Zahn und Fuß je Zahnlücke", [(f"{zone}_SURF", dark) for zone, _, dark in zones]),
     ]
-    figure, panels = plt.subplots(2, 2, figsize=(15.0, 13.5), dpi=150)
+    figure, panels = new_figure(380.0, 0.9, rows=2, cols=2)
     for axes, (title, members) in zip(panels.ravel(), groups, strict=True):
         _background(axes)
         handles = []
@@ -408,15 +464,13 @@ def _mesh_pictures(
                 LineCollection(faces_of(surface_name), colors=colour, linewidths=3.0)
             )
             handles.append(Line2D([], [], color=colour, linewidth=3.0, label=surface_name))
-        axes.legend(handles=handles, loc="lower center", fontsize=7, frameon=True)
-        axes.set_title(title, fontsize=9)
+        legend_beside(axes, handles=handles)
+        axes.set_title(title)
     figure.suptitle(
         f"Oberflächensets um Zahn T{middle}; zu jedem Set gibt es das Knotenset mit der Endung "
         "_NODES (für alle Zähne und Zahnlücken gleich aufgebaut)",
-        fontsize=10,
     )
-    figure.tight_layout(rect=(0.0, 0.0, 1.0, 0.97))
-    figure.savefig(out / "mesh_surfaces.png")
+    save_figure(figure, out / "mesh_surfaces")
     plt.close(figure)
     del solid
 
@@ -468,9 +522,14 @@ def _body_picture(built: bd.BodyMesh, out: Path) -> None:
         lower = sorted(corners[:4][mask[element, :4]].tolist(), key=lambda k: radius[k])
         upper = sorted(corners[4:][mask[element, 4:]].tolist(), key=lambda k: -radius[k])
         polygons.append([(radius[k], z[k]) for k in (*lower, *upper)])
-    figure, axes = plt.subplots(figsize=(11.0, 6.5), dpi=160)
+    figure, axes = new_figure(280.0, 0.6)
     axes.add_collection(
-        PolyCollection(polygons, facecolors="#e6e6e6", edgecolors="#3a3a3a", linewidths=0.3)
+        PolyCollection(
+            polygons,
+            facecolors=_tint("tum_grau_20", 0.5),
+            edgecolors=SHEET.colour("tum_grau_80"),
+            linewidths=0.3,
+        )
     )
     half, floor, depth = 0.5 * body.face_width_mm, body.bottom_z_mm, body.pocket_depth_mm
     hub_face, hub_floor = body.hub_wall_radius_at(0.0), body.hub_wall_radius_at(depth)
@@ -479,28 +538,27 @@ def _body_picture(built: bd.BodyMesh, out: Path) -> None:
         axes.plot(
             [hub_face, hub_floor, rim_floor, rim_face],
             [sign * half, sign * floor, sign * floor, sign * half],
-            color="#c0392b",
+            color=MARK_COLOUR,
+            linestyle="-",
+            marker="",
             linewidth=1.2,
             label="Zeichnung" if sign > 0 else None,
         )
-    axes.axvline(body.bore_radius_mm, color="#c0392b", linewidth=0.8, linestyle=":")
-    axes.axvline(body.tip_radius_mm, color="#c0392b", linewidth=0.8, linestyle=":")
+    axes.axvline(body.bore_radius_mm, color=MARK_COLOUR, linewidth=0.8, linestyle=":")
+    axes.axvline(body.tip_radius_mm, color=MARK_COLOUR, linewidth=0.8, linestyle=":")
     axes.set_xlim(body.bore_radius_mm - 0.5, body.tip_radius_mm + 0.5)
     axes.set_ylim(-half - 0.5, half + 0.5)
     axes.set_aspect("equal")
-    axes.legend(loc="upper right", fontsize=8, frameon=False)
+    legend_outside(figure, axes, where="bottom")
     axes.set_title(
         f"Radkörper im Meridianschnitt durch die Mitte von Zahn T{middle}: Nabe, Steg und Taschen "
         f"nach Zeichnung; Ringe Nabe/Tasche/Felge {built.counts.hub_rings}/{built.counts.pocket_rings}/"
         f"{built.counts.rim_rings}, Schichten Steg {built.counts.web_layers}, je Tasche "
         f"{built.counts.flange_layers}; {len(solid.nodes_mm)} Knoten, {len(solid.hexes)} Elemente",
-        fontsize=9,
     )
-    axes.set_xlabel("r in mm", fontsize=8)
-    axes.set_ylabel("z in mm", fontsize=8)
-    axes.tick_params(labelsize=7)
-    figure.tight_layout()
-    figure.savefig(out / "mesh_body.png")
+    axes.set_xlabel("r in mm")
+    axes.set_ylabel("z in mm")
+    save_figure(figure, out / "mesh_body")
     plt.close(figure)
 
 
@@ -549,8 +607,10 @@ def mesh(
     bore_radius_mm: float | None = None,
     body: bd.BodyShape = "ring",
     body_counts: bd.BodyCounts | None = None,
+    pictures_only: bool = False,
 ) -> MeshResult:
-    """Write the mesh file of one gear sector and its pictures. ``body`` ``pocket`` meshes the
+    """Write the mesh file of one gear sector and its pictures (``pictures_only``: only the
+    pictures, nothing of the deck). ``body`` ``pocket`` meshes the
     body of the drawing (``fe.body``) with ``body_counts`` (rings hub / pocket / rim, layers
     web / flange) instead of ``layers`` equal layers of the full ring."""
     if body not in bd.BODY_SHAPES:
@@ -589,13 +649,15 @@ def mesh(
         element_type=element_type,
         title=f"{case}: {role}, face width {gear.face_width_mm:g} mm, body {body}, built by gearcore",
     )
-    target.write_text(written, encoding="ascii")
+    if not pictures_only:
+        target.write_text(written, encoding="ascii")
     if built is not None:
         _mesh_pictures(section, built.full, built.full_sets, out)
         _body_picture(built, out)
     else:
         _mesh_pictures(section, solid, sets, out)
-    (out / "sets.txt").write_text(_set_list(written, sets), encoding="utf-8")
+    if not pictures_only:
+        (out / "sets.txt").write_text(_set_list(written, sets), encoding="utf-8")
     quality = sm.scaled_jacobians(section.points_mm, section.quads)
     edges = np.concatenate(
         [
@@ -694,26 +756,23 @@ def surface(
     points = pl.placed(section.points_mm, *by_role[mating_role])
     module_mm = generation.inputs.normal_module_mm
     pitch_point = 0.5 * generation.pair_geometry.working_pitch_diameter_mm.pinion
-    figure, (overview, detail) = plt.subplots(1, 2, figsize=(12.0, 6.0), dpi=160)
+    figure, (overview, detail) = new_figure("full", 0.5, cols=2)
     for axes, half, width in ((overview, 5.0 * module_mm, 0.9), (detail, 1.4 * module_mm, 1.2)):
         _draw_quads(axes, points, section.quads, edge=WHEEL_COLOUR, width=0.25)
         axes.plot(profile[:, 0], profile[:, 1], "-", color=PINION_COLOUR, linewidth=width)
         axes.set_xlim(pitch_point - half, pitch_point + half)
         axes.set_ylim(-1.2 * half, 1.2 * half)
         axes.set_aspect("equal")
-        axes.set_xlabel("x in mm", fontsize=8)
-        axes.tick_params(labelsize=7)
-    overview.set_ylabel("y in mm", fontsize=8)
-    detail.set_ylabel("y in mm", fontsize=8)
-    overview.set_title("Starre Fläche und Netz des Gegenrads", fontsize=9)
-    detail.set_title("Ausschnitt am Wälzpunkt", fontsize=9)
+        axes.set_xlabel("x in mm")
+    overview.set_ylabel("y in mm")
+    detail.set_ylabel("y in mm")
+    overview.set_title("Starre Fläche und Netz des Gegenrads")
+    detail.set_title("Ausschnitt am Wälzpunkt")
     figure.suptitle(
         f"{case}: Mitte der Eingriffsstrecke, {rigid.teeth} Zähne der starren Fläche, "
         f"{rigid.profile_nodes} Knoten am Profil, {len(levels)} z-Ebenen",
-        fontsize=10,
     )
-    figure.tight_layout(rect=(0.0, 0.0, 1.0, 0.95))
-    figure.savefig(out / "pair_mesh.png")
+    save_figure(figure, out / "pair_mesh")
     plt.close(figure)
     along = rigid.nodes_mm[: rigid.profile_nodes, :2]
     steps = np.hypot(*(along[1:] - along[:-1]).T)
@@ -1683,7 +1742,7 @@ def _instance_turns(deck_text: str) -> dict[str, float]:
     return turns
 
 
-def report(folder: Path) -> list[str]:
+def report(folder: Path, pictures_out: Path | None = None) -> list[str]:
     """Evaluation of a position folder after the run, without ODB access: status and
     increments per step, support moment and rotation, the direction of the contact force
     against the line of action and the lever arms (known limit FE-15: the force stays tangent
@@ -1843,14 +1902,16 @@ def report(folder: Path) -> list[str]:
             if name in summaries:
                 out.extend(ev.format_summary(summaries[name]))
             out.extend(checks.get(name, []))
-    out.extend(_path_report(folder, manifest))
+    out.extend(_path_report(folder, manifest, pictures_out))
     return out
 
 
 PATH_QUANTITIES = ("pinion_rotation_rad", "p_max", "s1_max", "s3_min", "u_head_max")
 
 
-def _path_report(folder: Path, manifest: dict[str, object]) -> list[str]:
+def _path_report(
+    folder: Path, manifest: dict[str, object], pictures_out: Path | None = None
+) -> list[str]:
     """Curves over the path of contact (one picture per load step and series) and the
     resolution table of the sub-grids (``path_report.md``) for a folder with extracted fields
     of three or more positions; a series is one material step, rate and variant."""
@@ -1862,7 +1923,9 @@ def _path_report(folder: Path, manifest: dict[str, object]) -> list[str]:
         if len(points) < 3:
             continue
         lines.extend(
-            _path_series(folder, manifest, name if len(series) > 1 else "", points, document)
+            _path_series(
+                folder, manifest, name if len(series) > 1 else "", points, document, pictures_out
+            )
         )
     if len(document) > 2:
         (folder / "path_report.md").write_text("\n".join(document) + "\n", encoding="utf-8")
@@ -1875,6 +1938,7 @@ def _path_series(
     series: str,
     points: list[ev.PathPoint],
     document: list[str],
+    pictures_out: Path | None = None,
 ) -> list[str]:
     """The pictures and the resolution rows of one series (``series`` empty: the only one)."""
     r_b1 = float(manifest["seating_arc_mm"]) / float(manifest["seating_angle_rad"])  # type: ignore[arg-type]
@@ -1898,45 +1962,73 @@ def _path_series(
         )
     ]
     for step in step_names:
-        fig, axes = plt.subplots(4, 1, figsize=(8.0, 11.0), sharex=True)
+        fig, axes = new_figure("full", 1.2, rows=4, sharex=True)
         rotation = ev.curve(points, step, "pinion_rotation_rad")
-        axes[0].plot([x for x, _ in rotation], [v * r_b1 * 1000.0 for _, v in rotation], ".-")
-        axes[0].set_ylabel("Ritzeldrehung · r_b1 in µm")
+        axes[0].plot(
+            [x for x, _ in rotation],
+            [v * r_b1 * 1000.0 for _, v in rotation],
+            linestyle="-",
+            markersize=2.0,
+        )
+        axes[0].set_ylabel(r"Verdrehweg $\varphi_1 \, r_{\mathrm{b1}}$ in µm")
         for half in halves:
             pressure = ev.curve(points, step, f"p:{half}")
-            axes[1].plot([x for x, _ in pressure], [v for _, v in pressure], ".-", label=half)
+            axes[1].plot(
+                [x for x, _ in pressure],
+                [v for _, v in pressure],
+                linestyle="-",
+                markersize=2.0,
+                label=half,
+            )
         axes[1].set_ylabel("CPRESS max in MPa")
-        axes[1].legend(fontsize=7, ncol=2)
+        legend_beside(axes[1])
         s1 = ev.curve(points, step, "s1_max")
         s3 = ev.curve(points, step, "s3_min")
-        axes[2].plot([x for x, _ in s1], [v for _, v in s1], ".-", label="σ1 max (Zug)")
-        axes[2].plot([x for x, _ in s3], [v for _, v in s3], ".-", label="|σ3| max (Druck)")
+        axes[2].plot(
+            [x for x, _ in s1],
+            [v for _, v in s1],
+            linestyle="-",
+            markersize=2.0,
+            label=r"$\sigma_{\mathrm{1}}$ max (Zug)",
+        )
+        axes[2].plot(
+            [x for x, _ in s3],
+            [v for _, v in s3],
+            linestyle="-",
+            markersize=2.0,
+            label=r"|$\sigma_{\mathrm{3}}$| max (Druck)",
+        )
         axes[2].set_ylabel("Fußspannung in MPa")
-        axes[2].legend(fontsize=7)
+        legend_beside(axes[2])
         any_force = False
         for half in halves:
             force = ev.curve(points, step, f"force:{half}")
             if any(v for _, v in force):
                 any_force = True
-                axes[3].plot([x for x, _ in force], [v for _, v in force], ".-", label=half)
+                axes[3].plot(
+                    [x for x, _ in force],
+                    [v for _, v in force],
+                    linestyle="-",
+                    markersize=2.0,
+                    label=half,
+                )
         axes[3].set_ylabel(
             "Normalkraft je Zahnhälfte in N" if any_force else "Normalkraft: ohne CFORCE"
         )
         if any_force:
-            axes[3].legend(fontsize=7, ncol=2)
+            legend_beside(axes[3])
         axes[3].set_xlabel("Wälzweg ab A in mm")
         for ax in axes:
             for x, _ in named:
-                ax.axvline(x, color="0.7", linewidth=0.7)
-            ax.grid(True, linewidth=0.4)
+                ax.axvline(x, color=SHEET.colour("tum_grau_50"), linewidth=0.6)
         for x, label in named:
-            axes[0].text(x, axes[0].get_ylim()[1], label, ha="center", va="bottom", fontsize=8)
+            axes[0].text(x, axes[0].get_ylim()[1], label, ha="center", va="bottom")
         fig.suptitle(f"{Path(folder).name}: {tag}{step}")
-        fig.tight_layout()
-        picture = folder / (f"path_{series}_{step}.png" if series else f"path_{step}.png")
-        fig.savefig(picture, dpi=150)
+        target = pictures_out if pictures_out is not None else folder
+        stem = f"path_{series}_{step}" if series else f"path_{step}"
+        pictures = save_figure(fig, target / stem)
         plt.close(fig)
-        lines.append(f"  {tag}{step}: {picture.name}")
+        lines.append(f"  {tag}{step}: " + ", ".join(picture.name for picture in pictures))
         steps_per_pitch = grid.get("steps_per_pitch")
         base_pitch = grid.get("transverse_base_pitch_mm")
         margin = grid.get("margin_pitches")
@@ -2738,6 +2830,11 @@ def main() -> None:
         counts_group.add_argument(f"--{name}", type=int, default=None, help=text)
     _body_arguments(mesh_parser)
     mesh_parser.add_argument("--out", type=Path, default=None)
+    mesh_parser.add_argument(
+        "--pictures-only",
+        action="store_true",
+        help="draw the pictures of the mesh only (SVG and PNG), write no deck file",
+    )
     surface_parser = commands.add_parser("surface", help="write the rigid tooth surface")
     surface_parser.add_argument("--case", default="kst_e", help="packaged STplus case")
     surface_parser.add_argument("--role", choices=("pinion", "wheel"), default="pinion")
@@ -2903,6 +3000,12 @@ def main() -> None:
         "report", help="evaluate the .sta/.msg/.dat files of a position folder after the run"
     )
     report_parser.add_argument("--folder", type=Path, required=True)
+    report_parser.add_argument(
+        "--pictures-out",
+        type=Path,
+        default=None,
+        help="folder for the figures of the path of contact (preset: the result folder)",
+    )
     extract_parser = commands.add_parser(
         "extract", help="extract <job>_fields.json from every .odb of a folder with Abaqus Python"
     )
@@ -2953,6 +3056,7 @@ def main() -> None:
             args.bore_radius,
             body=args.body,
             body_counts=body_counts,
+            pictures_only=args.pictures_only,
         ).lines:
             print(line)
     if args.command == "surface":
@@ -3044,7 +3148,7 @@ def main() -> None:
         ):
             print(line)
     if args.command == "report":
-        for line in report(args.folder):
+        for line in report(args.folder, args.pictures_out):
             print(line)
     if args.command == "extract":
         for line in extract(args.folder, args.launcher):

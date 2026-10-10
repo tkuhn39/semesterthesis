@@ -210,7 +210,7 @@ def _is_numeric(annotation: Any) -> bool:
 def test_registry_is_well_formed() -> None:
     sources = load_sources()
     registry = quantities()
-    assert len(registry) == 167
+    assert len(registry) == 168
     symbols: dict[str, str] = {}
     for name, entry in registry.items():
         current = [entry.source] if entry.source else []

@@ -9,6 +9,168 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (measurement track M3 - contour scans in the house style, 2026-10-11, ADR-117)
+- User review of 2026-10-11 (second round): the curves over the path of contact carry a small
+  marker on every sample point (no regular spacing that hides the kinks); the first panel is
+  labelled as the twist path of the pinion (φ₁ r_b1), not as a rotation; the overlays are drawn
+  at true scale by default (`--magnify` exaggerates); the middle tooth of a scan is the tooth of
+  the file name; MEAS-10 explains the measuring plane and the 60 to 90 µm gap between the tip
+  radii of the scans and GINA; the roadmap carries the M7 variant proposals with the measured
+  numbers (pinion relief, steel and plastic as manufactured, each its own case).
+- User answers of 2026-10-11: the named tooth is the middle of the three scanned teeth (the overlay
+  labels say so and name the neighbours by their side); the measuring height was noted on paper and
+  the worn wheels will be scanned at the same height (MEAS-10 answered); the pinion edge of M7 is
+  decided after the microscope image, with the FE limit of about 0,1 mm rounding (FE-19) stated;
+  M0, M2 and M3 are committed with this entry, M4 (roughness) approved.
+User decisions (2026-10-11): M3 approved with the reduced figure set (the overlay of the measured
+teeth on the nominal tooth and the tip corners; no profile, RMS or overview figure); the data
+contracts stay as they are and are only mentioned in the outlook (the master's thesis builds on
+them); the mesh-convergence figures may not belong in the thesis any more (decided later); axis
+labels of stacked panels sit on one vertical line; series that cannot be told apart by line style
+carry distinct markers.
+- **`measurement/contour_scan.py`** (port of `scripts/contour_scan_tip_edge.py`, which is deleted):
+  `scan_geometry` from the STplus generation (base, tip and root form circles, s_b nominal and
+  with the mean allowance), `segment` (tip lands, roots, flanks by radius), `fit_scan` (axis,
+  one involute angle per flank, one radius per tip land, robust loss, two passes), `flank_reliefs`
+  (threshold start, amount at the tip, straight line over the roll length: r_Ca, C_a at the fitted
+  and the nominal tip circle; values are `None` where no ramp exists), `tooth_thicknesses` (s_b),
+  `angular_pitches`, `measure_corner` with `fit_corner_shapes` (best tangent arc and best
+  symmetric chamfer over a size grid, the better one named; a 0,2 mm arc and a 0,15 mm chamfer
+  are told apart at 0,5 µm noise, tested), `tooth_frames` (every tooth rotated into the frame of
+  the nominal tooth), `nominal_outline` (the generated tooth continued along the root circle),
+  `closest_on_outline` / `signed_deviation` (positive outside the nominal tooth), `overlay_points`
+  (deviation magnified along the measured contour's own normal, so the curve stays smooth at the
+  corners). Typed `ScanEvaluation` in the schema export, the module in the traceability list.
+- **Script** `measurements.py contour [--part] [--me] [--include-coarse] [--magnify 10]
+  [--corner-step] [--corner-max] [--no-plots]`: `bericht.md`, `kanten.csv`, `kopfruecknahme.csv`,
+  `zahndicke.csv`, `teilung.csv`; figures `ueberlagerung_<ME>_<scan>` (teeth of one scan on the
+  nominal tooth, 10-fold magnified), `ueberlagerung_<part>_<group>` (the middle tooth of the first
+  scan of every part of a group), `kopfkante_<ME>_<scan>` (every corner at 1:1 with the fitted
+  arc and chamfer); coarse scans left out unless asked for. Output `80_output/messungen/konturscan/`.
+- **Regression** against the evaluation of 2026-10-10 (pinion 86481 Z01): axis (0,0250, −0,0578) mm,
+  tip radii 26,419 mm, RMS 0,5 µm, s_b 2,032 mm, pitches 7,0664° / 7,0657°, relief of the first
+  flank (start 25,979 mm, 18,4 µm at the tip, line r_Ca 25,905 mm, C_a 20,1 / 21,1 µm, 15,7 µm/mm),
+  four corners with ρ ≤ 0,02 mm; the synthetic three-tooth wheel scan (axis offset 0,15 / −0,10 mm,
+  rotation 0,3°, 1 µm noise) is recovered to 3 µm in axis, tip radius and s_b.
+- **Findings** (18 wheels with fine scans, 49 scans, 163 corners; pinion 86481): the wheel tip
+  edge is a rounding of ρ = 0,21 mm mean (0,20 to 0,30; the arc beats the symmetric chamfer on 162
+  of 163 corners, RMS about 1 µm against 2 µm), as the drawing says (r 0,2) and unlike the STplus
+  chamfer h_K 0,117 mm of the nominal contour (MEAS-11, an input of M7); s_b 2,182 to 2,202 mm
+  (−11 to −31 µm against the generated nominal 2,212 mm); d_a 53,93 to 54,00 mm; the straight
+  relief line reads the rounding as a relief of 70 to 120 µm on the wheels (the report says so);
+  the pinion 86481 has a sharp edge (ρ 0,008 mm mean) and C_a 20,8 µm.
+- **Figures of 2026-10-11**: `plot_style.save` aligns the axis labels of every figure
+  (`figure.align_labels`); the curves over the path of contact carry the markers of the cycle
+  (circle, square, triangle, diamond …, one every 8 % of the path) instead of the dot of the
+  format string, so five tooth pairs are told apart in black and white; `font.family` lists only
+  families matplotlib finds (no warning per draw for Helvetica); the preview puts the distances
+  into a text box of the detail panel; the GINA profile and lead figures stay opt-in.
+
+### Changed (figures after the user's feedback, 2026-10-10 evening: legends outside the data, Helvetica clone for the symbols, FE figures in the house style)
+User decisions: the GINA profile and lead analyses and the roughness analyses are not built in the
+house style; the Klingelnberg sheets and the roughness PDFs go into the appendix and the code only
+has to use the raw data correctly. The design is for the contour scans that show wear, the Wöhler
+lines and the FE figures. A legend must never overlap the diagram content. Symbols are set in a
+face as close to the TUM typeface as possible. The FE figures are regenerated as SVG and PNG. The
+GINA rounds were measured with the same set-up and procedure by different operators and are
+comparable (MEAS-08 answered). The test-rig folder is `72_Kleingetriebepruefstand_KV3` (renamed
+by the user; the rename is staged and `parts.yaml` names the new path).
+- **`plot_style`**: `new_figure` (thesis sizes, constrained layout), `legend_outside` (``bottom``,
+  the place for a figure with a suptitle, ``top``, ``right``), `legend_beside` (one axes, to the
+  right), `legend_overlaps` (legend boxes against plotted points, patches and titles) and
+  `save` warns on an overlap, which the tests turn into an error. `font.family` names the
+  families explicitly: matplotlib then takes a glyph the TUM face lacks (σ, ₁ in plain text) from
+  the next family instead of drawing a box. TeX Gyre Heros, the Helvetica clone the thesis
+  template sets its text in, is registered from the TeX Live installation (`kpsewhich`) and is the
+  symbol face (`StyleSheet.math_family`); Arial and DejaVu Sans follow where it is absent.
+- **`measurements.py gina`**: legends below the axes; the profile and lead figures only with
+  `--curves` (the Klingelnberg sheets show them).
+- **FE scripts**: every figure of `build_fe_decks.py` (preview of the five positions, mesh
+  pictures, element and surface sets, body section, pair mesh, curves over the path of contact)
+  and of `fe_mesh_convergence.py` (convergence, fillet stress, load case) goes through
+  `new_figure` and `save` (SVG + PNG), legends outside or beside the axes, fills and edges from
+  the palette (`_tint`), no explicit font sizes, symbols as mathtext (σ₁, r_b1, h/h₁, b_H, p₀),
+  solid outlines in the preview (`fill` cycles the line styles otherwise), the stress map as a
+  gradation of the brand colour; `mesh --pictures-only` draws the pictures of a mesh without
+  writing a deck, `report --pictures-out` puts the path figures beside the result folder. The
+  figures are regenerated into `80_output/fe/kst_e/bilder_V2/` (preview, pictures of the frozen
+  mesh with the bore of 33 mm, convergence study, path figures of the 60-per-pitch study and of
+  the five-position pilot); the deck and result folders stay as they are (folder rule).
+- Tests: legend placement and overlap detection, suptitle collision, glyph fallback (σ₁ as text),
+  TeX Gyre Heros as the symbol face where TeX Live is installed, `font.family` list; the FE script
+  tests run with warnings as errors.
+
+### Added (measurement track M2 - GINA evaluation of the value and curve files, 2026-10-10, ADR-117)
+- **`measurement/gina.py`**: the five-digit result codes of a `.mew` file decoded as group,
+  measurand, statistic and tooth slot (`G MM S T`) and cross-checked against the label the file
+  prints (a mismatch is a `ParseError`, so a changed export cannot be misread); typed `GinaResult`
+  per file: the six flank deviations of DIN ISO 1328-1 (per tooth, mean, variation, max, min and
+  the values at the second position f/k and u/o), pitch and runout values, sizes (`Kopf`, `Fuß`,
+  `WK`, `MdK`), the tolerances of the measuring program as "Toleranz laut Messprotokoll" with its
+  grade (7 wheels, 6 pinions), the measured tip relief of the pinions (`fKo`, zone of header codes
+  431/432, roll length of the zone L_C_alpha_a via `involute.radius_of_curvature`); the sign
+  settings of the header are required (code 178 `LVORZ 1: DIN`, code 165 `R_FHB 1`), another
+  setting is a `NotSupportedError`. From the `.mka`: per-tooth tables f_pi, F_pi, r_i of every
+  tooth, the three sector quantities (`sector_pitch_deviation` = F_pk of Anhang D.2 p. 48,
+  `pitch_span_deviation` = F_pSk of Anhang D.4 p. 49, `sliding_pitch_span_deviation` = the
+  program's Fpz/8; `sector_pitches` k = z/8 to the nearest whole number, Eq. (D.1)), window
+  statistics of a tooth window, curve abscissae (profile evenly spaced in roll length between
+  the diameters of header codes 41 and 44, lead over the face width 61 to 64), the DIN sign of
+  the raw curves (`din_sign`, `curve_values_din`); scatter, repeatability and latest-per-part
+  (date, time of day, variant) statistics over results.
+- **Finding** on `Fpz/8`: what the P40 prints is the pitch span of Anhang D.4 (first minus last
+  F_pi of a sector of k pitches, k = z/8 to the nearest whole number: 7 for z = 52, 6 for z = 51)
+  taken over all z sectors; checked on 136 of 136 flanks (97340: 16,7 / 21,7 µm). It is neither
+  F_pk of Anhang D.2 (max minus min inside a sector, larger by up to 22 µm: 97348 rechts 78,1
+  against 100,1 µm) nor F_pSk of D.4 (z/k consecutive sectors), so it stays a value of the
+  measuring program with its own tolerance (codes 216/217), and the registry entry
+  `pitch_span_deviation` (F_pSk, Tabelle 1 p. 11, Table 1 p. 9 of the English edition) is added;
+  F_pk and F_pSk are computed from the per-tooth tables (`teilungssektoren.md`).
+- **Finding** on the curves: the profile traces are evenly spaced in roll length (the printed
+  f_Hα is reproduced from the curve to 0,05 µm with that spacing, to 1 µm with a diameter
+  spacing), the raw values carry the probe's sign (profile left flank −1, right +1, lead −1 on
+  both flanks turn them into the printed DIN sign: the pinion relief then reads −23 µm on both
+  flanks), and f_Hβ is referred to the face width b (header code 179 `BZGFL 1: Z`), not to L_β as
+  DIN ISO 1328-1 defines it; codes 179 and 180 are now required settings and the reports say so.
+- `measurement/report.py`: German numbers, plain-text symbols with Greek letters (`f_H_alpha` →
+  `f_Hα`), labels from the registry, Markdown and CSV tables with a cell-count check.
+- **Script** `measurements.py gina [--part] [--me] [--rounds latest|all] [--no-plots]` writes per
+  part kind below `80_output/messungen/gina/`: `tabelle_streuung.md/.csv` (core group and
+  scatter group side by side, latest measurement per part), `wiederholbarkeit.md`,
+  `toleranzen_protokoll.md` (with every value above the program's tolerance),
+  `kopfruecknahme_ritzel.md`, `fenster_zaehne.md` (teeth 36 to 40 against the rest, rank of the
+  F_pi spread among all windows of that length), `teilungssektoren.md` (Fpz/8 of the file,
+  recomputed, F_pk and F_pSk per flank) and per part the figures `zaehne_<ME>`,
+  `profil_<ME>`, `flankenlinie_<ME>` as SVG and PNG in the house style.
+- **Results of the run over all 68 files** (wheels: 10 core, 26 scatter parts, latest round):
+  f_H_beta left 5,5 µm mean (s 6,4) in the core group and -5,1 µm (s 8,0) in the scatter group,
+  F_beta about 21 µm, f_f_beta about 9,5 µm, F_p 17 to 136 µm, F_r 20 to 89 µm, d_a 54,014 to
+  54,092 mm, W_k 16,962 to 16,989 mm, root diameter 49,466 to 49,541 mm. Per-tooth f_H_beta lies
+  above the program's 11 µm in all 58 wheel files (396 values) and f_H_alpha above 7 µm in all 58
+  (485 values); F_p above 32 µm in 40 files, F_r above 22 µm in 55, Rs above 14 µm in all 58
+  (17,6 to 42,2 µm). Pinions (7 parts): f_H_beta
+  2 to 12 µm, f_H_alpha above 7 µm in 4 of 10 files, fKo -22,3 to -25,8 µm per tooth, zone
+  51,946 to 52,880 mm, L_C_alpha_a 1,155 mm in every file. Repeatability: 21 wheels measured two
+  or three times differ between rounds by 10,4 µm (f_H_beta left, max 33,5) and 9,6 µm (F_p, max
+  32,3) on average, of the order of the manufacturing scatter (MEAS-08); the three pinions
+  measured twice agree within 1 µm. The failure window 36 to 40 is not the sector with the
+  largest F_pi spread on the core wheels (ranks 2 of 52 for 97351 and 97355, 23 for 97340);
+  it is rank 1 on the scatter wheels 97363 and 97368.
+- Tests `test_measurement_gina.py` (decoding against every label of both fixtures, pinned values
+  of 97340 and 95911, relief length, sector deviation by hand and against the file, window
+  statistics, abscissae, scatter and repeatability, refused label and sign changes),
+  `test_measurement_report.py`, `test_measurements_script.py::test_gina_writes_tables_and_figures`
+  on the real folder; `gearcore.measurement.gina` in the traceability list, `GinaResult` in the
+  schema export; the inventory CSV gains the columns `labels` and `repeat`.
+- Adversarial review of M2 (one independent reviewer, 2026-10-10), fixed: F_pk, F_pSk and the
+  program's Fpz/8 told apart (above); profile abscissa in roll length; DIN sign of the curves;
+  settings 179/180 required; Rs checked against its tolerance; same-day files ordered by the
+  time of day (97365: `-neu` 09:33 is later than `_neu` 08:54); `ToothSize` with `value_mm` for
+  the per-tooth root diameters; the slot check before the index; asymmetric tolerances refused;
+  window columns labelled as whole-gear values; CSV `me_max`; the relief label from the registry;
+  tests pin the sample standard deviation, the slope regression of every curve of the fixture
+  against the printed f_Hα / f_Hβ, the same-day order and the refused files.
+
 ### Added (measurement track M1 - inventory, parsers and registry of the measured gears, 2026-10-10, ADR-117)
 User decision (plan of 2026-10-10): the measurements of the manufactured kst-E gears in
 `70_input/71_Messungen` (Klingelnberg P40 "GINA" value and curve files, P40 contour scans,
@@ -57,7 +219,50 @@ macro `MEW_Auslesen_V1.xlsm`.
   renamed without spaces) is registered as `DINISO1328-1:2018-EN` with the user's go; the 23
   deviation entries carry its English designations (Table 1, pp. 8 to 10, rendered pages).
 
+### Added (measurement track M0 - house style of every figure, 2026-10-10)
+Standing rule of the user: every plot, figure and table follows the FZG guideline first and the
+TUM corporate design where the FZG says nothing.
+- `gearcore/plot_style.py` (matplotlib imported lazily, the package keeps no hard dependency):
+  two layers `TUM` (typeface TUM Neue Helvetica from `99_TUM_Corporate_Design`, fallback
+  Helvetica/Arial with a note, TUM blue and grey, the diagram palette tumdiag1 to tumdiag8) and
+  `FZG` (what `10_report/FZGdef.sty` defines: Helvetica, `fzgblau`), merged in order so further
+  FZG template files override; `apply()` sets the rcParams (fonts, sizes, palette, grid, mathtext
+  in the text font so symbols are italic with upright subscripts), `symbol_label()` builds axis
+  labels from registry symbols ("$F_p$ in µm"), `caption()` follows the FZG citation guideline
+  §2.12 (source in square brackets, "nach [..]" when changed).
+- `build_fe_decks.py` and `fe_mesh_convergence.py` apply the style; the preview figures of kst-E
+  were regenerated. Figures of earlier FE reports take the style when their report is run again.
+- The FZG files the user placed in `10_report` (`FZG-Zitierrichtlinie.pdf`,
+  `Formeln_in_wissenschaftlichen_Arbeiten.pdf`) define citations and formula typesetting (DIN
+  1338), not colours or fonts; the layer `FZG` grows when the FZG template files arrive.
+- Style decisions of the user (2026-10-10): the TUM layer carries the corporate design codes
+  the user quoted (primary blue #0065BD, black, white; secondary blues #005293, #003359; greys
+  80/50/20 %; accents ivory, orange, green, two light blues; the extended palette of ten colours
+  for diagrams only; line widths 0,3/0,6/1,2 pt; no 3D effects or shadows; Tufte's data-ink
+  ratio); the FZG palette tumdiag1 to 8 stays first, the extended palette continues it; every
+  series gets a line style and a marker so the figures read in black-and-white print; thesis
+  figures are SVG with the text kept as text (`svg.fonttype none`, the typeface can be exchanged
+  later) plus a 300 dpi PNG preview (`plot_style.save`); figure sizes from the text width 161 mm
+  (`figure_size`); decimal comma on the axes (`decimal_comma`, `german_number`); the thesis itself
+  switches to TUM Neue Helvetica (M6, LaTeX side).
+- Tests `tests/test_plot_style.py` (layers, fallback, cycle, widths, sizes, labels, captions,
+  decimal comma, an SVG with text and a PNG).
+
 ## [Unreleased]
+- Adversarial review of M0 (one independent reviewer, 2026-10-10), fixed: the TUM Neue Helvetica
+  files carry no Greek glyphs, so mathtext fell back to Computer Modern and the SVG stored wrong
+  code points (α as ®); `apply` now draws the symbols in the first fallback face with Greek (Arial,
+  else DejaVu Sans), says so in `font_note`, and the SVG holds α and µ as characters; a missing
+  font folder warns; eight distinct line styles (the FZG colours 1/5 and 3/7 share a grey value);
+  `decimal_comma` without `digits` prints positional decimals (no exponent, twelve decimals,
+  trailing zeros cut) and a value that prints as zero loses its sign; fonts are registered once;
+  `caption` takes the relation "nach" or "in Anlehnung an" and a page (Zitierrichtlinie §2.12);
+  `tumblau` added; the FE scripts take their colours from the sheet (pinion tum_blau_dunkel, wheel
+  tum_orange, marks tumdiag5, convergence series black/orange/dark blue/tumdiag7) and state line
+  style and marker where the colour is explicit, so geometry lines no longer inherit the series
+  cycle; the legend of the tooth figure sits above the axes; tests pin the FZG colours against
+  `10_report/FZGdef.sty` and the TUM colours against the TUM LaTeX template, run in an rc context
+  and check the Greek characters in the SVG. The FE previews in `80_output` are not regenerated.
 
 ### Changed (restart of the workbench, 2026-09-28, ADR-101)
 User decision: the legacy FastAPI/Next.js workbench (22k LOC backend, 65 open

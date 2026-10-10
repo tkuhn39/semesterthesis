@@ -14,6 +14,8 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from gearcore.measurement.contour_scan import ScanEvaluation
+from gearcore.measurement.gina import GinaResult
 from gearcore.models.inputs import GearInput, PairInput, SpanMeasurement, ToolProfile
 from gearcore.models.materials import MaterialRecord
 from gearcore.models.profiles import BasicRackProfile
@@ -33,6 +35,8 @@ MODELS: list[type[BaseModel]] = [
     BasicGearGeometry,
     PairGeometry,
     ParityRow,
+    GinaResult,
+    ScanEvaluation,
 ]
 
 

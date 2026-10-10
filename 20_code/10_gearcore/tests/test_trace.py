@@ -33,6 +33,8 @@ COMPUTATIONAL_MODULES = [
     "gearcore.tolerances.din3967",
     "gearcore.tolerances.din3964",
     "gearcore.tolerances.iso1328_1",
+    "gearcore.measurement.gina",
+    "gearcore.measurement.contour_scan",
 ]
 """Modules whose public functions must carry @eq; a module that does not exist yet is skipped visibly."""
 

@@ -52,14 +52,24 @@ from gearcore.fe import solid as so
 from gearcore.generation import compute_generation
 from gearcore.io.ste import load_ste, pair_input_from_ste
 from gearcore.models.results import GenerationResult
+from gearcore.plot_style import apply as apply_plot_style
+from gearcore.plot_style import legend_outside, new_figure
+from gearcore.plot_style import save as save_figure
+
+SHEET = apply_plot_style()  # house style of every figure (FZG first, then TUM)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 OUTPUT = REPO_ROOT / "80_output" / "fe"
 ABAQUS = Path(r"C:\SIMULIA\Commands\abq2025le.bat")
 
-COLOURS = ("#1f1f1f", "#d98c3f", "#5b6f85", "#2a7f62")
+COLOURS = (
+    SHEET.colour("tum_schwarz"),
+    SHEET.colour("tum_orange"),
+    SHEET.colour("tum_blau_dunkel"),
+    SHEET.colour("diag7"),
+)
 MARKERS = ("o", "s", "^", "D")
-STRESS_MAP = "Oranges"
+STRESS_MAP = "Blues"  # a gradation of the brand colour (TUM)
 
 
 def _generation(case: str) -> GenerationResult:
@@ -71,12 +81,9 @@ def _number(value: float, digits: int) -> str:
 
 
 def _style(axes: Axes, xlabel: str, ylabel: str) -> None:
+    """Axis labels; grid, spines and sizes come from the house style."""
     axes.set_xlabel(xlabel)
     axes.set_ylabel(ylabel)
-    axes.grid(True, color="#dddddd", linewidth=0.6)
-    axes.tick_params(labelsize=8)
-    for side in ("top", "right"):
-        axes.spines[side].set_visible(False)
 
 
 # --- study ---------------------------------------------------------------------------------------
@@ -211,12 +218,19 @@ def _plot_series(
     ylabel: str,
     limits: dict[str, float | None],
 ) -> None:
-    figure, axes = plt.subplots(figsize=(6.3, 4.0), dpi=150)
+    figure, axes = new_figure("full", 0.62)
     for k, (label, rows) in enumerate(series.items()):
         x = [1.0 / float(r["level"]) for r in rows]
         y = [float(r[key]) for r in rows]
         axes.plot(
-            x, y, color=COLOURS[k], marker=MARKERS[k], markersize=5, linewidth=1.2, label=label
+            x,
+            y,
+            color=COLOURS[k],
+            linestyle="-",
+            marker=MARKERS[k],
+            markersize=5,
+            linewidth=1.2,
+            label=label,
         )
         limit = limits.get(label)
         if limit is not None:
@@ -226,21 +240,19 @@ def _plot_series(
                 (0.02, limit),
                 textcoords="offset points",
                 xytext=(4, 3),
-                fontsize=7,
                 color=COLOURS[k],
             )
     axes.set_xlim(0.0, 1.08)
     axes.set_xticks([1.0, 0.5, 1.0 / 3.0, 0.25])
     axes.set_xticklabels(["1", "1/2", "1/3", "1/4"])
-    _style(axes, "relative Elementgröße h / h₁ (1 = gestriges Netz)", ylabel)
-    axes.legend(fontsize=8, frameon=False)
-    figure.tight_layout()
-    figure.savefig(out / name)
+    _style(axes, r"relative Elementgröße $h / h_{\mathrm{1}}$ (1 = gestriges Netz)", ylabel)
+    legend_outside(figure, axes, where="bottom")
+    save_figure(figure, out / Path(name).stem)
     plt.close(figure)
 
 
 def _plot_fillet(out: Path, results: dict[str, cv.Evaluation]) -> None:
-    figure, axes = plt.subplots(figsize=(6.3, 4.0), dpi=150)
+    figure, axes = new_figure("full", 0.62)
     for k, (label, result) in enumerate(results.items()):
         axes.plot(
             result.fillet_arc_mm,
@@ -252,10 +264,13 @@ def _plot_fillet(out: Path, results: dict[str, cv.Evaluation]) -> None:
             markevery=max(1, len(result.fillet_arc_mm) // 40),
             label=label,
         )
-    _style(axes, "Bogenlänge ab dem Fußformpunkt in mm", "σ1 an der Fußoberfläche in MPa")
-    axes.legend(fontsize=8, frameon=False)
-    figure.tight_layout()
-    figure.savefig(out / "fillet_stress.png")
+    _style(
+        axes,
+        "Bogenlänge ab dem Fußformpunkt in mm",
+        r"$\sigma_{\mathrm{1}}$ an der Fußoberfläche in MPa",
+    )
+    legend_outside(figure, axes, where="bottom")
+    save_figure(figure, out / "fillet_stress")
     plt.close(figure)
 
 
@@ -269,7 +284,7 @@ def _plot_load_case(
     sigma1, _ = ps.principal_stresses(solution.nodal_stress_mpa)
     per_quad = sigma1[section.quads].mean(axis=1)
     points = section.points_mm
-    figure, axes = plt.subplots(figsize=(6.3, 5.2), dpi=150)
+    figure, axes = new_figure("full", 0.82)
     quads = list(points[section.quads])
     polygons = PolyCollection(
         quads, array=per_quad, cmap=STRESS_MAP, edgecolors="none", linewidths=0.0
@@ -277,11 +292,18 @@ def _plot_load_case(
     polygons.set_clim(0.0, max(float(per_quad.max()), 1.0))
     axes.add_collection(polygons)
     axes.add_collection(
-        PolyCollection(quads, facecolors="none", edgecolors="#1f1f1f", linewidths=0.12)
+        PolyCollection(
+            quads, facecolors="none", edgecolors=SHEET.colour("tum_schwarz"), linewidths=0.12
+        )
     )
     fixed = cv.fixed_nodes(section)
     axes.plot(
-        points[fixed, 0], points[fixed, 1], ".", color="#c0392b", markersize=1.5, label="Fesselung"
+        points[fixed, 0],
+        points[fixed, 1],
+        ".",
+        color=SHEET.colour("diag5"),
+        markersize=1.5,
+        label="Fesselung",
     )
     loaded = load.loaded_nodes
     f = load.loads_n_per_mm[loaded]
@@ -295,17 +317,20 @@ def _plot_load_case(
         scale_units="xy",
         scale=1.0,
         width=0.004,
-        color="#1f1f1f",
+        color=SHEET.colour("tum_schwarz"),
     )
     axes.plot(
-        *points[result.root_node], marker="o", markersize=5, markerfacecolor="none", color="#1f1f1f"
+        *points[result.root_node],
+        marker="o",
+        markersize=5,
+        markerfacecolor="none",
+        color=SHEET.colour("tum_schwarz"),
     )
     axes.annotate(
-        f"σ1,max = {_number(result.root_sigma1_max_mpa, 1)} MPa",
+        rf"$\sigma_{{1,\mathrm{{max}}}}$ = {_number(result.root_sigma1_max_mpa, 1)} MPa",
         points[result.root_node],
         textcoords="offset points",
         xytext=(8, -12),
-        fontsize=7,
     )
     tooth = load.loaded_tooth
     theta = 0.5 * math.pi + (tooth - 0.5 * (section.teeth + 1)) * section.pitch_angle_rad
@@ -320,17 +345,15 @@ def _plot_load_case(
     axes.set_aspect("equal")
     _style(axes, "x in mm", "y in mm")
     bar = figure.colorbar(polygons, ax=axes, shrink=0.8)
-    bar.set_label("σ1 je Element in MPa", fontsize=8)
-    bar.ax.tick_params(labelsize=7)
+    bar.set_label(r"$\sigma_{\mathrm{1}}$ je Element in MPa")
     torque_nm = _number(load.torque_wheel_nmm / 1000.0, 0)
     axes.set_title(
-        f"Lastfall Punkt B, {torque_nm} Nm am Rad: F' = {_number(load.force_per_mm, 2)} N/mm, "
-        f"b_H = {_number(load.half_width_mm, 3)} mm, p0 = {_number(load.max_pressure_mpa, 1)} MPa",
-        fontsize=8,
+        f"Lastfall Punkt B, {torque_nm} Nm am Rad: $F'$ = {_number(load.force_per_mm, 2)} N/mm, "
+        rf"$b_{{\mathrm{{H}}}}$ = {_number(load.half_width_mm, 3)} mm, "
+        rf"$p_{{\mathrm{{0}}}}$ = {_number(load.max_pressure_mpa, 1)} MPa",
     )
-    axes.legend(fontsize=7, frameon=False, loc="lower left")
-    figure.tight_layout()
-    figure.savefig(out / "load_case.png")
+    legend_outside(figure, axes, where="bottom")
+    save_figure(figure, out / "load_case")
     plt.close(figure)
 
 
@@ -465,7 +488,7 @@ def study(
         "convergence_root_stress.png",
         series_rows,
         "root_sigma1_max_mpa",
-        "σ1,max an der Fußoberfläche in MPa",
+        r"$\sigma_{1,\mathrm{max}}$ an der Fußoberfläche in MPa",
         limits_sigma,
     )
     _plot_series(

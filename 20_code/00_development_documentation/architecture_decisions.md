@@ -1602,3 +1602,62 @@ Excel sheet). A new kind of file is an unknown path in the inventory, not a sile
 registry grows by 25 verified entries; `d_M` becomes a homonym of three quantities. The FE base
 case is untouched; variants are separate cases (M7).
 
+### Amendment of 2026-10-10 (M2 built: GINA evaluation)
+
+1. A `.mew` value is used only when its decoded code and its printed label agree
+   (`gina.decode_code`, `gina.expected_labels`); sizes and pitch values are taken by label, and
+   every code the evaluation does not use is listed in `GinaResult.unmapped`. The sign settings
+   of the header (codes 161, 165, 178, 181, 182) are carried verbatim; the evaluation refuses a
+   file whose code 178 is not `LVORZ 1: DIN` or whose code 165 is not `R_FHB 1`.
+2. Three sector quantities are kept apart (reviewer finding, pages 48/49 read): F_pk of Anhang
+   D.2 (max minus min of the F_pi inside any of the z sectors of k pitches), F_pSk of Anhang D.4
+   (first minus last F_pi over z/k consecutive sectors, no tolerance in the norm), and what the
+   P40 prints as `Fpz/8`: the first-minus-last span over all z sectors, k = z/8 to the nearest
+   whole number (7 wheel, 6 pinion), which matches the printed value on every flank but is
+   neither F_pk nor F_pSk (F_pk is larger by up to 22 µm). The program value and its tolerance
+   (codes 216/217) stay raw; F_pk and F_pSk are computed from the per-tooth tables and reported
+   beside it; the registry gains `pitch_span_deviation` (F_pSk).
+3. Exceedances are reported against the tolerances stored in the file ("Toleranz laut
+   Messprotokoll"): per tooth for the slope deviations (the program stores f_H_alpha_T and
+   f_H_beta_T only), per file for the pitch and runout values; a grade of a norm is still not
+   computed (MEAS-05).
+4. Statistics over parts take one result per ME (latest date, then the last variant string);
+   earlier rounds feed the repeatability table only. The repeat measurements of the wheels differ
+   by about 10 µm in slope and cumulative pitch (MEAS-08); the user's account (2026-10-10): same
+   set-up and procedure, a different operator per round, so the thesis states the manufacturing
+   scatter together with this measurement scatter.
+5. Figures of the measurement track are drawn by the script in the house style
+   (`gearcore.plot_style`); the evaluation modules import no matplotlib.
+6. Curves of the `.mka`: the profile traces are evenly spaced in roll length between the
+   diameters of header codes 41 and 44 (the printed f_Hα is reproduced from the curve to
+   0,05 µm with that spacing), the lead traces evenly over the face width; the raw values carry
+   the probe's sign, `din_sign` (profile left −1, right +1, lead −1) turns them into the sign
+   of the printed values, established by regressing every printed f_Hα and f_Hβ against its
+   curve over all 68 files. The reference lengths of the program (code 179 `BZGFL 1: Z`: f_Hβ
+   over the face width b, not L_β; code 180 `BZGPR 0: M1-M2`) are required settings and are
+   stated in the reports, because DIN ISO 1328-1 defines f_Hβ over L_β.
+7. Same-day files of one part are ordered by the time of day of header code 3, not by the
+   variant string (`_neu` sorts after `-neu` but was measured earlier on 97365).
+
+### Amendment of 2026-10-11 (M3 built: contour scans; figure rules)
+
+1. The contour evaluation lives in `measurement/contour_scan.py` and is pure: the axis, the
+   involutes (nominal base circle, one angle per flank), the tip circles and the corners are
+   fitted per scan; the nominal tooth is the STplus generation with the mean tooth thickness
+   allowance (`scan_geometry`), so a thickness deviation reads against the generated tooth and
+   the registry names apply (`tip_relief`, `tip_relief_start_diameter`, `base_tooth_thickness`).
+2. A tip corner is fitted as a tangent arc and as a symmetric chamfer over a size grid; both
+   results are reported with their RMS and the better one is named, because the drawing of the
+   wheel asks for a rounding (r 0,2) while the STplus nominal carries a 45° chamfer. The fit
+   refines the corner and the leg directions freely (as the script of 2026-10-10 did); a
+   synthetic rounding of 0,2 mm and a synthetic chamfer of 0,15 mm are told apart at 0,5 µm
+   noise (test), the STplus chamfer itself is approximated by both shapes to about 5 µm.
+3. Overlays show the measured teeth in the frame of the nominal tooth with the deviation
+   magnified along the measured contour's own normal (the nominal normal jumps at the corners
+   and would cross the curves); the figure says the magnification. The profile deviation over
+   the radius is not drawn (the user: the Klingelnberg sheets show it); the wear comparison of
+   M5 will overlay two scans of the same tooth the same way.
+4. Figure rules added after the user's review of 2026-10-11: the axis labels of stacked panels
+   are aligned (`save`), and curves that share a line style carry distinct markers of the cycle;
+   the old script `scripts/contour_scan_tip_edge.py` is deleted, its numbers are the regression
+   test of the module.

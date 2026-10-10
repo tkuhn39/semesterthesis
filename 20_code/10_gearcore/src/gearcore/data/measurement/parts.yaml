@@ -14,7 +14,7 @@ provenance:
     rig pinion comes from (GINA October 2025, "Stahlritzel mit KR"; nominal data of the measuring
     program = 2022 drawing 20220623_kst-E_Stahlritzel with the linear tip relief); 86481 is an older
     pinion with a contour scan of 2023 only. Load levels per ME come from the test-rig file
-    70_input/72_Kleingetriebeverspannungspruefstand_KV3/kst-E_Laufversuche_KV3.xlsx (evaluated later).
+    70_input/72_Kleingetriebepruefstand_KV3/kst-E_Laufversuche_KV3.xlsx (evaluated later).
 drawings:
   wheel: "Rr.F4028-Kunst_52Z_neu"
   pinion: "Lw.Stahlri_51Z_kst-E_n"
