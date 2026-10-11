@@ -23,6 +23,7 @@ from gearcore.data import (
     worked_example_ids,
 )
 from gearcore.errors import InputRangeError
+from gearcore.fatigue import stommel
 from gearcore.io import ste
 from gearcore.models import inputs as inputs_module
 from gearcore.models import profiles as profiles_module
@@ -92,7 +93,10 @@ OLDER_NOTATION = {"DIN3972:1952"}
 
 STPLUS_REFERENCE_CASE = "helix30_z25_40"
 HOMONYMS = {
-    "k": {"number_of_teeth_spanned", "tip_alteration_coefficient"},
+    "k": {"number_of_teeth_spanned", "tip_alteration_coefficient", "woehler_slope_exponent"},
+    "q": {"machining_allowance", "control_variable"},
+    "h": {"tooth_depth", "multiaxiality_degree"},
+    "sigma_B": {"static_strength", "component_fatigue_strength"},
     "d_M": {
         "span_measuring_circle_diameter",
         "ball_measuring_circle_diameter",
@@ -103,7 +107,10 @@ HOMONYMS = {
 """One symbol for two quantities: k in the symbol list of DIN ISO 21771:2014-08 (§3.1, p. 12);
 d_M in DIN 21773:2014-08 for the measuring circle of the span (§7.2) and of the ball (§8) and in
 DIN ISO 1328-1:2018-03 for the pitch measuring circle (Tabelle 1, p. 10); D_M
-for the ball that is used and for the diameter Eq. (26) gives."""
+for the ball that is used and for the diameter Eq. (26) gives. Stommel et al. (2018) use k
+for the slope exponent of the Wöhler line, q for the control variable of the failure hypothesis,
+h for the degree of multiaxiality and sigma_B for the static strength (Eq. (6.7)) as well as the
+component fatigue strength (Eq. (6.18)); ADR-118."""
 MANUAL_INPUT_KEYS = {"ZAEHNEZAHLVERHAELTNIS", "PR.VERSCH.SUMME"}
 """Input keys of the STplus manual (Bild 4.12, p. 25) that the importer does not map."""
 
@@ -191,8 +198,18 @@ NOT_A_QUANTITY = {
     ("mean_tooth_thickness_allowance", "E_sns_um"): "upper allowance (registry: E_sns/E_sni)",
     ("overcut_tip_diameter", "x_Es"): "symbol of the registry (upper generating coefficient)",
     ("number_of_teeth_spanned", "d_v_mm"): "symbol of the registry (V-circle diameter)",
+    # design check after Stommel et al.: tensor helpers and indices that are not gear indices
+    ("tensors_from_components", "components"): "six stress components",
+    ("components_from_tensors", "tensors"): "stress tensors",
+    ("principal_stresses", "components"): "six stress components",
+    ("signed_mises_stress", "I_1"): "first invariant of the stress tensor (registry I_1)",
+    ("cyclic_utilisation_mises", "a_sigma_3"): "single utilisation, third principal direction",
+    (
+        "cyclic_utilisation_normal_stress",
+        "a_sigma_3",
+    ): "single utilisation, third principal direction",
 }
-ARGUMENT_SUFFIXES = ("_mm", "_rad", "_deg", "_um")
+ARGUMENT_SUFFIXES = ("_mm", "_rad", "_deg", "_um", "_mpa", "_percent")
 
 
 def _is_numeric(annotation: Any) -> bool:
@@ -210,7 +227,7 @@ def _is_numeric(annotation: Any) -> bool:
 def test_registry_is_well_formed() -> None:
     sources = load_sources()
     registry = quantities()
-    assert len(registry) == 168
+    assert len(registry) == 226
     symbols: dict[str, str] = {}
     for name, entry in registry.items():
         current = [entry.source] if entry.source else []
@@ -358,7 +375,7 @@ def _names_a_quantity(argument: str) -> bool:
 
 @pytest.mark.parametrize(
     "module",
-    [involute, rack, pair, generation, trochoid, contour, inspection],
+    [involute, rack, pair, generation, trochoid, contour, inspection, stommel],
     ids=lambda m: m.__name__,
 )
 def test_arguments_are_named_by_symbol_or_registry_name(module: Any) -> None:

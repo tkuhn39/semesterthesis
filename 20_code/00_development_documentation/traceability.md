@@ -9,6 +9,64 @@ Tests are linked through `@pytest.mark.eq(source, eq)` markers and, as a fallbac
 | ISO21771:2014 | Bild 24 | §6.1.2 p.55 | contour.chamfer_flank | test_adv_3.py, test_contour.py, test_quantities.py | – | ✓ tested |
 | ISO21771:2014 | (40) | §4.7.2 p.35 | contour.involute_flank | test_half_angles_and_arc_thickness_at_any_diameter, test_quantities_at_a_diameter_against_decimal_references[A], test_quantities_at_a_diameter_against_decimal_references[B] | – | ✓ tested |
 | ISO21771:2014 | (17) | §4.3.8 p.30 | contour.involute_flank | test_quantities_at_a_diameter_against_decimal_references[A], test_quantities_at_a_diameter_against_decimal_references[B], test_roll_angle_and_radius_of_curvature_are_consistent | – | ✓ tested |
+| Stommel2018 | (6.23) | §6.3.4 p.372 | fatigue.stommel.capped_component_fatigue_strength | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.19) | §6.3.2 p.363 | fatigue.stommel.component_alternating_strength | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.18) | §6.3 p.360 | fatigue.stommel.component_fatigue_strength | test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
+| Stommel2018 | (6.2) | §6.1.3 p.322 | fatigue.stommel.control_variable | test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
+| Stommel2018 | (6.22) | §6.3.4 p.371 | fatigue.stommel.cycles_at_fatigue_life_factor | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.24) | §6.3.5 p.374 | fatigue.stommel.cyclic_utilisation | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.25) | §6.3.5 p.374 | fatigue.stommel.cyclic_utilisation_mises | test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
+| Stommel2018 | (6.25) | §6.3.5 p.374 | fatigue.stommel.cyclic_utilisation_normal_stress | test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
+| Stommel2018 | (6.2) | §6.1.3 p.322 | fatigue.stommel.equivalent_stress | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.16) | §6.2.4 p.357 | fatigue.stommel.equivalent_stress | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.16) | §6.2.4 p.357 | fatigue.stommel.equivalent_stress_static | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.17) | §6.2.4 p.357 | fatigue.stommel.equivalent_stress_static | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.22) | §6.3.4 p.371 | fatigue.stommel.fatigue_life_factor | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.10) | §6.1.5 p.333 | fatigue.stommel.first_stress_invariant | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.7) | §6.1.4 p.328 | fatigue.stommel.gerber_amplitude | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.7) | §6.1.4 p.328 | fatigue.stommel.goodman_amplitude | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.3) | §6.1.3 p.325 | fatigue.stommel.hydrostatic_stress | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.11) | §6.1.5 p.334 | fatigue.stommel.manson_mcknight_mean | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.23) | §6.3.4 p.372 | fatigue.stommel.max_component_fatigue_strength | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.9) | §6.1.5 p.332 | fatigue.stommel.mean_stress | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.20) | §6.3.3 p.367 | fatigue.stommel.mean_stress_factor | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.21) | §6.3.3 p.367 | fatigue.stommel.mean_stress_factor_case_1 | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.21) | §6.3.3 p.367 | fatigue.stommel.mean_stress_factor_case_2 | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.21) | §6.3.3 p.367 | fatigue.stommel.mean_stress_factor_case_3 | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.21) | §6.3.3 p.368 | fatigue.stommel.mean_stress_factor_case_4 | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.21) | §6.3.3 p.368 | fatigue.stommel.mean_stress_sensitivity | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.3) | §6.1.3 p.325 | fatigue.stommel.mises_stress | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.17) | §6.2.4 p.357 | fatigue.stommel.mises_stress | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.8) | §6.1.5 p.332 | fatigue.stommel.mises_stress_plane | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.9) | §6.1.5 p.332 | fatigue.stommel.mises_stress_plane | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.12) | §6.1.5 p.335 | fatigue.stommel.modified_manson_mcknight_mean | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.3) | §6.1.3 p.325 | fatigue.stommel.multiaxiality_degree | test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
+| Stommel2018 | (6.5) | §6.1.3 p.327 | fatigue.stommel.natural_multiaxiality_degree | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.14) | §6.1.6 p.341 | fatigue.stommel.neuber_product | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.17) | §6.2.4 p.357 | fatigue.stommel.normal_stress_hypothesis_stress | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.13) | §6.1.5 p.336 | fatigue.stommel.normalised_mises_utilisation | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.4) | §6.1.3 p.326 | fatigue.stommel.permissible_strain | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.6) | §6.1.3 p.327 | fatigue.stommel.permissible_strain_natural | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.17) | §6.2.4 p.357 | fatigue.stommel.pressure_corrected_principal_stress | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.10) | §6.1.5 p.333 | fatigue.stommel.signed_mises_amplitude | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.10) | §6.1.5 p.333 | fatigue.stommel.signed_mises_mean | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.10) | §6.1.5 p.333 | fatigue.stommel.signed_mises_stress | test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
+| Stommel2018 | (6.26) | §6.3.5 p.374 | fatigue.stommel.single_utilisation | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.15) | §6.2.4 p.355 | fatigue.stommel.static_utilisation | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.9) | §6.1.5 p.332 | fatigue.stommel.stress_amplitude | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.1) | §6.1.2.2 p.313 | fatigue.stommel.utilisation | test_fatigue_check.py, test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
+| Stommel2018 | (6.22) | §6.3.4 p.371 | fatigue.stommel.woehler_slope_exponent | test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
+| NiemannWinterHoehnStahl2019 | Tab. 13.1 | §13.2.1 p.372 | fe.convergence.hertz_line_contact | – | – | ⚠ untested |
+| NiemannWinterHoehnStahl2019 | (13.5) | §13.2.3 p.376 | fe.convergence.hertz_line_contact | – | – | ⚠ untested |
+| NiemannWinterHoehnStahl2019 | (13.6) | §13.2.3 p.376 | fe.convergence.hertz_line_contact | – | – | ⚠ untested |
+| VDI2736-2:2014 | (15) | §Flankentragfähigkeit p.15 | fe.convergence.hertz_line_contact | – | – | ⚠ untested |
+| DahmenReusken2022 | (10.35) | §10.4 p.528 | fe.convergence.richardson | test_fe_convergence.py | – | ✓ tested |
+| DahmenReusken2022 | (10.36) | §10.4 p.528 | fe.convergence.richardson | test_fe_convergence.py | – | ✓ tested |
+| Bathe1996 | (4.102) | §4.3.5 p.247 | fe.convergence.richardson | test_fe_convergence.py | – | ✓ tested |
+| DahmenReusken2022 | (10.35) | §10.4 p.528 | fe.convergence.richardson_fit | test_fe_convergence.py | – | ✓ tested |
+| DahmenReusken2022 | (10.36) | §10.4 p.528 | fe.convergence.richardson_fit | test_fe_convergence.py | – | ✓ tested |
+| Bathe1996 | (4.102) | §4.3.5 p.247 | fe.convergence.richardson_fit | test_fe_convergence.py | – | ✓ tested |
+| ISO21771:2014 | 5.4.3 B, D | §5.4.3 p.45 | fe.placement.single_contact_points | test_fe_placement.py | – | ✓ tested |
 | ISO21771:2014 | (36) | §4.6.2 p.34 | generation.addendum | test_heights[H], test_heights[K], test_heights[L], test_heights[S] | – | ✓ tested |
 | ISO21771:2014 | (37) | §4.6.2 p.34 | generation.dedendum | test_heights[H], test_heights[K], test_heights[L], test_heights[S] | – | ✓ tested |
 | ISO21771:2014 | (19) | §4.3.10 p.31 | generation.edge_break_base_diameter | test_base_diameter_matches_worked_example[pinion], test_base_diameter_matches_worked_example[wheel], test_basic_geometry_against_decimal_references[A], test_basic_geometry_against_decimal_references[B] | – | ✓ tested |
@@ -19,8 +77,8 @@ Tests are linked through `@pytest.mark.eq(source, eq)` markers and, as a fallbac
 | DIN3960:1987 | (3.6.04) | §3.6.4 p.14 | generation.generated_root_diameter | test_generation.py, test_quantities.py, test_trochoid.py | 03_werkzeug_erzeugung_zahnkontur.ipynb | ✓ tested |
 | ISO21771:2014 | (123) | §7.4 p.67 | generation.generating_profile_shift_coefficient | test_generating_profile_shift_coefficient[H], test_generating_profile_shift_coefficient[K], test_generating_profile_shift_coefficient[L], test_generating_profile_shift_coefficient[S] | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
 | ISO21771:2014 | (124) | §7.4 p.67 | generation.generating_profile_shift_coefficient | test_generating_profile_shift_coefficient[H], test_generating_profile_shift_coefficient[K], test_generating_profile_shift_coefficient[L], test_generating_profile_shift_coefficient[S] | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
-| DIN21773:2014 | (44) | §14.1 p.24 | generation.generating_profile_shift_coefficient | test_generation.py, test_inspection.py, test_stplus_parity.py, test_stplus_reading.py, test_worked_examples.py | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
-| DIN3960:1987 | (3.6.03) | §3.6.3 p.14 | generation.generating_profile_shift_coefficient | test_generation.py, test_inspection.py, test_stplus_parity.py, test_stplus_reading.py, test_worked_examples.py | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (44) | §14.1 p.24 | generation.generating_profile_shift_coefficient | test_fe_placement.py, test_generation.py, test_inspection.py, test_stplus_parity.py, test_stplus_reading.py, test_worked_examples.py | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN3960:1987 | (3.6.03) | §3.6.3 p.14 | generation.generating_profile_shift_coefficient | test_fe_placement.py, test_generation.py, test_inspection.py, test_stplus_parity.py, test_stplus_reading.py, test_worked_examples.py | 02_paarungsgeometrie_iso21771.ipynb, 03_werkzeug_erzeugung_zahnkontur.ipynb, 04_pruefmasse_din21773.ipynb | ✓ tested |
 | ISO21771:2014 | (135) | §7.7 p.70 | generation.min_generating_profile_shift_coefficient | test_min_generating_profile_shift_coefficient[H], test_min_generating_profile_shift_coefficient[K], test_min_generating_profile_shift_coefficient[L], test_min_generating_profile_shift_coefficient[S], test_undercut_limit_of_the_norm_agrees_with_the_fillet | 03_werkzeug_erzeugung_zahnkontur.ipynb | ✓ tested |
 | DIN3960:1987 | (3.6.06) | §3.6.6 p.14 | generation.min_generating_profile_shift_coefficient | test_adv_3.py, test_generation.py, test_stplus_parity.py, test_trochoid.py | 03_werkzeug_erzeugung_zahnkontur.ipynb | ✓ tested |
 | ISO21771:2014 | (48) | §4.7.5 p.37 | generation.normal_tip_tooth_thickness | test_tip_tooth_thickness[H], test_tip_tooth_thickness[K], test_tip_tooth_thickness[L], test_tip_tooth_thickness[S], test_half_angles_and_arc_thickness_at_any_diameter | – | ✓ tested |
@@ -105,8 +163,8 @@ Tests are linked through `@pytest.mark.eq(source, eq)` markers and, as a fallbac
 | DIN3977:1981 | (3) | §Anhang A p.6 | inspection.space_width_half_angle_from_ball | – | – | ⚠ untested |
 | DIN21773:2014 | (54) | §14.4 p.25 | inspection.span_allowance | test_quantities.py | – | ✓ tested |
 | DIN21773:2014 | (54) | §14.4 p.25 | inspection.span_allowance_factor | test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
-| DIN21773:2014 | (14) | §7.2 p.13 | inspection.span_measurement | test_adv_2.py, test_adv_4.py, test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
-| DIN3960:1987 | (3.8.18) | §3.8.2 p.21 | inspection.span_measurement | test_adv_2.py, test_adv_4.py, test_inspection.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN21773:2014 | (14) | §7.2 p.13 | inspection.span_measurement | test_adv_2.py, test_adv_4.py, test_inspection.py, test_measurement_report.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
+| DIN3960:1987 | (3.8.18) | §3.8.2 p.21 | inspection.span_measurement | test_adv_2.py, test_adv_4.py, test_inspection.py, test_measurement_report.py, test_quantities.py | 04_pruefmasse_din21773.ipynb | ✓ tested |
 | DIN21773:2014 | (17) | §7.2 p.14 | inspection.span_measuring_circle_diameter | test_inspection.py, test_quantities.py | – | ✓ tested |
 | DIN3960:1987 | (3.8.15) | §3.8.2 p.21 | inspection.span_measuring_circle_diameter | test_inspection.py, test_quantities.py | – | ✓ tested |
 | ISO21771:2014 | (123) | §7.4 p.67 | inspection.tooth_thickness_allowance_from_generating | test_generating_profile_shift_coefficient[H], test_generating_profile_shift_coefficient[K], test_generating_profile_shift_coefficient[L], test_generating_profile_shift_coefficient[S] | – | ✓ tested |
@@ -145,6 +203,9 @@ Tests are linked through `@pytest.mark.eq(source, eq)` markers and, as a fallbac
 | ISO21771:2014 | (43) | §4.7.3 p.35 | involute.transverse_space_width_at | test_half_angles_and_arc_thickness_at_any_diameter | – | ✓ tested |
 | ISO21771:2014 | (39) | §4.7.1 p.35 | involute.transverse_tooth_thickness | test_basic_geometry_against_decimal_references[A], test_basic_geometry_against_decimal_references[B], test_tooth_thickness_and_space_width_add_up_to_the_pitch | – | ✓ tested |
 | ISO21771:2014 | (38) | §4.7.1 p.35 | involute.transverse_tooth_thickness_at | test_tip_tooth_thickness[H], test_tip_tooth_thickness[K], test_tip_tooth_thickness[L], test_tip_tooth_thickness[S], test_half_angles_and_arc_thickness_at_any_diameter, test_quantities_at_a_diameter_against_decimal_references[A], test_quantities_at_a_diameter_against_decimal_references[B] | 01_involute_bezugsprofil.ipynb | ✓ tested |
+| DINISO1328-1:2018 | D.4 | §Anhang D.4 p.49 | measurement.gina.pitch_span_deviation | test_measurement_gina.py | – | ✓ tested |
+| DINISO1328-1:2018 | D.2 | §Anhang D.2 and D.4 p.48 | measurement.gina.sector_pitch_deviation | test_measurement_gina.py, test_measurement_report.py | – | ✓ tested |
+| DINISO1328-1:2018 | (D.1) | §Anhang D.2 p.48 | measurement.gina.sector_pitches | test_measurement_gina.py | – | ✓ tested |
 | ISO21771:2014 | (68) | §5.4.1 p.43 | pair.active_tip_diameter | test_g2a04_limited_active_profile_against_decimal_references[D], test_g2a04_limited_active_profile_against_decimal_references[E], test_active_tip_diameter_and_form_over_dimension | – | ✓ tested |
 | ISO21771:2014 | (69) | §5.4.1 p.43 | pair.active_tip_diameter | test_g2a04_limited_active_profile_against_decimal_references[D], test_g2a04_limited_active_profile_against_decimal_references[E], test_active_tip_diameter_and_form_over_dimension | – | ✓ tested |
 | ISO21771:2014 | (54) | §5.2.4 p.39 | pair.centre_distance | test_working_pressure_angle_centre_distance_and_shift_sum[A], test_working_pressure_angle_centre_distance_and_shift_sum[B], test_working_pressure_angle_centre_distance_and_shift_sum[C] | 01_involute_bezugsprofil.ipynb | ✓ tested |

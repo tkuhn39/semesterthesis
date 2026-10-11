@@ -944,9 +944,10 @@ def _runner_text() -> str:
             '    "$(Get-Date -Format s) end $job exit $LASTEXITCODE, $outcome" | Tee-Object -FilePath $log -Append',
             '    if ((Test-Path "$job.odb") -and (Test-Path "extract_odb.py")) {',
             "        # the fields of the .odb (contact, fillets, heads, reference points) into",
-            "        # <job>_fields.json, read by build_fe_decks.py report",
+            "        # <job>_fields.json (build_fe_decks.py report) and the stress tensor of every",
+            "        # wheel node into <job>_stress.npz (the design check after Stommel, fe_fatigue.py)",
             '        & $Launcher "python" "extract_odb.py" "$job" 2>&1 | Tee-Object -FilePath $log -Append',
-            '        "$(Get-Date -Format s) fields of $job written to ${job}_fields.json" '
+            '        "$(Get-Date -Format s) fields of $job written to ${job}_fields.json and ${job}_stress.npz" '
             "| Tee-Object -FilePath $log -Append",
             "    }",
             "}",
@@ -960,26 +961,29 @@ EXTRACTION_SCRIPT = Path(__file__).with_name("fe_odb_extract.py")
 
 def extract(folder: Path, launcher: Path) -> list[str]:
     """Run the extraction script of a folder with the Python of an Abaqus installation for
-    every job that has an ``.odb`` but no ``_fields.json`` yet (the Learning Edition's Python
-    reads the output databases of the full licence)."""
+    every job that has an ``.odb`` but no ``_fields.json`` or no ``_stress.npz`` yet (the
+    Learning Edition's Python reads the output databases of the full licence). The folder's
+    copy of the script is refreshed from the package when it differs (a series extracted with
+    an older script gets the stress files by a second pass, ADR-118)."""
     script = folder / "extract_odb.py"
-    if not script.exists():
-        script.write_text(EXTRACTION_SCRIPT.read_text(encoding="utf-8"), encoding="utf-8")
+    packaged = EXTRACTION_SCRIPT.read_text(encoding="utf-8")
+    if not script.exists() or script.read_text(encoding="utf-8") != packaged:
+        script.write_text(packaged, encoding="utf-8")
     report: list[str] = []
     for odb in sorted(folder.glob("pos_*.odb")):
         job = odb.stem
         target = folder / f"{job}_fields.json"
-        if target.exists():
-            report.append(f"{job}: fields already extracted")
+        stress = folder / f"{job}_stress.npz"
+        if target.exists() and stress.exists():
+            report.append(f"{job}: fields and stress already extracted")
             continue
         command = f'"{launcher}" python extract_odb.py {job}'
         completed = subprocess.run(
             command, cwd=folder, shell=True, capture_output=True, text=True, timeout=3600
         )
         tail = (completed.stdout + completed.stderr).strip().splitlines()[-3:]
-        report.append(
-            f"{job}: " + ("written" if target.exists() else "FAILED") + " - " + " | ".join(tail)
-        )
+        state = "written" if target.exists() and stress.exists() else "FAILED"
+        report.append(f"{job}: {state} - " + " | ".join(tail))
     return report
 
 

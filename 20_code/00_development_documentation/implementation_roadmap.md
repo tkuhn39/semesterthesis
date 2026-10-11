@@ -67,21 +67,163 @@ on the test rig), steel pinion and plastic wheel.
 | M6 | Thesis tables and figures (Markdown, CSV, LaTeX; German, decimal comma, FZG/TUM style), notebook | open |
 | M7 | FE variants theory versus manufactured: STplus case `kst_e_kr` with the linear tip relief, importer and contour with the relief, then variants steel as manufactured, plastic as manufactured, both; W1 at A to E, differences against the base (ADR-116 item 44) | open; every geometry variant with the user's go |
 
+### Open points recorded on 2026-10-11 (evening, user and Claude)
+
+1. **Pinion edge below 0,1 mm in the FE (Monday 2026-10-13, after the microscope image).** On the
+   frozen mesh a rounding of 0,1 mm always converged, shifting the sampling points did not help
+   (FE-19). If the edge is nearly sharp: either keep the rounding as a fixed model parameter of
+   every variant V0 to V4, report the measured edge as a deviation of the real part and put the
+   FE-17 sensitivity (6 to 13 % between sharp and 0,1 mm) beside it, so the variants stay
+   comparable; or refine the facets of the rigid surface and the wheel tip mesh locally to carry
+   0,05 mm or less, which costs time and must be proven first.
+2. **Curves over the path of contact are maxima over the face width.** CPRESS per tooth half,
+   σ1 and σ3 in the fillet and the normal forces are the largest values over all 20 layers, not
+   the values of a fixed section; the layer of the σ1 maximum and a mid-width value are in the
+   extracted fields (`FilletLayer.z`, `mid_width`). Wanted later: an optional mid-width curve in
+   the figure, and a 3D map (face width × position on the tooth or path of contact) with sliders
+   for the further dimensions (load step, torque, variant, material step and fibre orientation
+   from the CONVERSE mapping, body geometry with pockets), so that the place of a maximum on the
+   tooth can be related to the fibre orientation and the body. The per-layer fillet values and the
+   per-node contact stresses already exist in the extractions; the thesis version is a static map
+   in the house style (sequential blue map), the interactive one (sliders) a notebook or an HTML
+   page for exploration (see `extension_points.md`).
+3. **M7 inputs**: the STplus kst-E file does not match the manufactured wheels (tip rounding 0,21
+   mm instead of the chamfer, s_b 11 to 31 µm thinner, MEAS-11); the supervisor had taken the file
+   as fitting; the variants of the table below build the "as manufactured" cases step by step.
+4. **M5 wear comparison**: the worn wheels are scanned at the same tooth (the named tooth in the
+   middle of the three) and the same measuring height (noted on paper, MEAS-10); the before/after
+   overlay follows the M3 overlay at true scale with the deviation between the two scans.
+5. **Thesis**: the data contracts (pydantic models, JSON schemas) are mentioned in the outlook
+   only; whether the mesh-convergence figures stay is decided later; the Klingelnberg and
+   roughness protocols go to the appendix.
+6. **Data**: 97840 (roughness only, typo?), 97354 links exported twice inside each file, no
+   roughness of the pinions, norms ISO 4287/21920 and DIN 3962 to be placed, MEAS-09 lead-curve
+   sign to be checked on a wheel with a known lead modification.
+
 ### M7 variants: proposal of 2026-10-11 (from M2 and M3, each variant its own STplus case and deck folder, the kst-E base untouched)
 
 | Variant | What changes against the base `kst_e` | Source of the number | How |
 |---|---|---|---|
 | V0 | nothing (today's series) | – | reference |
-| V1 pinion relief | linear tip relief of the pinion: C_a 25 µm from d_Ca 51,946 mm (drawing 2022); measured 86481: 21 µm from 51,81 mm; series 95911 to 95920: fKo −23 µm, zone 51,946 to 52,880 | drawing, `konturscan/pinion/kopfruecknahme.csv`, GINA `kopfruecknahme_ritzel.md` | STplus case `kst_e_kr` (keys of the manual: tip relief amount and start diameter), importer and contour with the relief, rigid surface from the contour |
-| V2 steel as manufactured | V1 plus tooth thickness: s_b −20 µm against the generated nominal (86481), W_k 16,83 against 17,09 nominal (GINA series); tip diameter 52,85 (scan 86481) / 52,88 (GINA series); sharp tip edge (ρ ≤ 0,02 mm) | `zahndicke.csv`, GINA `tabelle_streuung.md` (pinion), `kanten.csv` | tooth thickness allowance and d_a in the case file; no rounding (`--tip-rounding 0`) |
-| V3 plastic as manufactured | tip rounding ρ 0,21 mm instead of the chamfer h_K 0,117 mm (drawing r 0,2; 162 of 163 corners); s_b −24 µm mean of the core wheels (−11 to −31); d_a 53,94 (scans) or 54,05 (GINA) pending MEAS-10; root diameter 49,50 (GINA) against 49,52 generated | `kanten.csv`, `zahndicke.csv`, GINA `tabelle_streuung.md` (wheel) | chamfer 0 in the case file, rounding through `--tip-rounding 0.21` of the rigid surface and the sector mesh (`fe/rigid_surface`, `fe/resample`), allowance and d_a in the case file |
-| V4 both | V2 and V3 | – | – |
+| V1 drawing features | the features of the drawings the STplus case lacks: linear tip relief of the steel pinion (C_a 25 µm from d_Ca 51,946 mm, drawing 2022-06-08) **and** the tip rounding r 0,2 of the plastic wheel instead of the chamfer h_K 0,117 (drawing 2022-02-28); theoretical gearing otherwise; the list is completed by M7a | drawings `93_Zeichnungen`, `konturscan/pinion/kopfruecknahme.csv`, GINA `kopfruecknahme_ritzel.md` | STplus case `kst_e_kr` (keys of the manual: tip relief amount and start diameter; chamfer 0), importer and contour with the relief, rigid surface from the contour, rounding through `--tip-rounding 0.2` of the rigid surface and the sector mesh |
+| V2 steel as manufactured | the V1 wheel paired with the steel pinion as measured: tooth thickness s_b −20 µm against the generated nominal (86481), W_k 16,83 (GINA series; equals the Fertigmaß 16,822 −0,021 of the 2022 drawing, so it may be a V1 item, M7a decides); tip diameter 52,85 (scan 86481) / 52,88 (GINA series); measured relief 21 µm from 51,81; tip edge per the microscope image (ρ ≤ 0,02 mm measured on 86481) | `zahndicke.csv`, GINA `tabelle_streuung.md` (pinion), `kanten.csv` | tooth thickness allowance and d_a in the case file; the smallest rounding the contact tolerates as the model choice (FE-19) |
+| V3 plastic as manufactured | the V1 pinion paired with the plastic wheel as measured: tip rounding ρ 0,21 (162 of 163 corners) instead of r 0,2; s_b −24 µm mean of the core wheels (−11 to −31); d_a 53,94 (scans) or 54,05 (GINA) pending MEAS-10; root diameter 49,50 (GINA) against 49,52 generated | `kanten.csv`, `zahndicke.csv`, GINA `tabelle_streuung.md` (wheel) | `--tip-rounding 0.21`, allowance and d_a in the case file |
+| V4 both | the V2 pinion with the V3 wheel | – | – |
 | V5 (optional) wheel profile | f_Hα 5 to 18 µm, f_Hβ up to 40 µm of the wheels as a pressure-angle change (profile) only; lead deviations need the 3D model | GINA `tabelle_streuung.md` | later, user decision |
 
 Order: V1, then V3 (the rounding changes the tip load of FE-17), then V2 and V4; W1 linear, positions A to E, every variant with the user's go; the differences against V0 per position in the `report` tables.
 
+**M7a — check of V1 against the drawings (user, 2026-10-11, before V1 is built):** every field of the three drawings (`93_Zeichnungen/20220316_kst-E_Kunststoffrad.pdf`, `20220623_kst-E_Stahlritzel.pdf`, `20250402_kst-E_Stahlritzel.pdf`) is transcribed into `data/measurement/drawings.yaml` (numbers copied, never derived) and compared field by field with the STplus case `kst_e`: x, the allowances behind the Fertigmaß spans (wheel W 17,002 −0,059 against the nominal 17,180; pinion 16,822 −0,021 against 17,090), d_a, d_f, d_Ff, d_Fa, tool h_aP0 and ρ_aP0 (wheel hob 1,25 mm / 0,20 mm; pinion 2022 1,10·m_n / 0,20·m_n; pinion 2025 protuberance hob 1,34·m_n / 0,25·m_n with x_E·m_n 0,177 −0,031), tip relief (2022 drawing only), tip rounding or chamfer, material (20MnCr5 on both pinion drawings, 16MnCr5 in the STplus file), quality (Q10 wheel, < 6 pinion), face width, centre distance tolerance. The differences go into a table with evidence; the user decides which enter V1 (drawing) and which stay V2/V3 (manufacturing). First question to the user: which drawing the rig pinions 95911 to 95920 were made to (GINA shows the relief and the 2022 span, the earlier note names the 2025 drawing).
+
 The pinion edge of V2 is decided after the microscope image of the rig pinion (user, Monday 2026-10-13). The FE model cannot carry a sharp edge: the retries of FE-19 needed a rounding of 0,05 to 0,1 mm on the rigid surface (the sharp corner's normal cone gives two solution branches), so V2 states the smallest rounding the contact tolerates as a model choice and compares it with the measured edge rather than reproducing it.
 
+
+## Thesis text, evaluation after Stommel et al. and running tests — plan of 2026-10-11 (user and Claude, ADR-118)
+
+What a complete thesis still needs beyond the open items above (user, 2026-10-11): the text itself
+(nothing is written yet; first a precise table of contents with subtitles), the node-wise evaluation
+of the FE results after Stommel et al. (ready before the first large batch returns from the
+server), the Wöhler lines of the running tests (method, distribution, torque and root stress as
+abscissas, POM and PEEK beside PA46-GF30, temperature bars) and writing rules that keep the text
+close to the author. The Stommel procedure has not been applied to gears at the chair before; the
+Bachelor thesis BA-0486 introduced it by calculation only, this thesis supplies the experimental
+validation. Premises checked in the sources on 2026-10-11:
+
+1. `10_report` holds no thesis text; the chapter files are from an Abaqus exercise, only
+   `aufgabenstellung.tex` is real; `litbib.bib` is the template bibliography; no nomenclature
+   mechanism exists.
+2. BA-0486 is a pure calculation study (FVA-Workbench, Abaqus, S-Life Plastics; PA66, PEEK): no
+   test rig, no PA46-GF30, no fibre orientation. Sections 2.2, 2.3, 3.3.2 and 4.2.5 are reusable
+   only after every statement, formula and figure was re-checked at its source (user: worked by
+   hand then, errors possible). The BA chose overload case 2 (R = 0 constant) and drew the method
+   figures "in Anlehnung an [Sto18]".
+3. MA-0296 (Fiederling 2023, supervisor Reitschuster) is the kst-E running and pulsator test
+   thesis on POM, PEEK 4000G and PEEK-GF30 (tests March to September 2023, log-normal 50 % lines,
+   Rossow estimator, Corten/Dolan continuation); it does not compare evaluation methods. The 2023
+   rows of the test-rig sheet (KV4, pinion 86481, POM and PEEK) fall into that period and may be
+   her data; which PEEK grade ran is not in the sheet.
+4. Stommel chapter 6 is a utilisation check, not a statistical Wöhler method: equivalent stress
+   between von Mises and the normal stress hypothesis (q from f_τ, Table 6.1), multiaxiality h
+   after Hencky (6.3), Goodman factor K_M with four overload cases (6.20/6.21), synthetic Basquin
+   line between the static strength at N = 1 and σ_W = A_W·K at 10^7 (6.19, 6.22, Table 6.3),
+   static a_stat (6.15 to 6.17) and cyclic a_B,V per node (6.24 to 6.26); no Weibull, no Miner.
+   The method prescribes an isotropic model (6.2.1), so W1 is its basis; the anisotropic
+   evaluation is own work (E7; PART Engineering has not released its anisotropic module).
+   Formula bodies are read on the rendered page (6.21 unreadable in the text layer).
+5. FZG Wöhler practice in the repository: VDI 2736 Blatt 4 section 4 (normal distribution of
+   lg N, 50 % → 10 % by (1 − 1,28 s), Eq. 11 to 15), Hasl (log-normal after Stahl, Eq. 10 and 51
+   to 53, σ_F linear over lg N), Illenberger (Weibull per level, f_10 = 0,58, f_1 = 0,30 from
+   about 200 points), DIN 50100:2022-12 (in the repository, to be registered).
+6. Test-rig sheet: PA46-GF30 at 8 / 12 / 16 Nm at the wheel (7,9 / 11,8 / 15,7 Nm at the pinion;
+   the FE load steps), 3058 1/min, four runs at 16 Nm, two 8 Nm runs still running, 97361 as the
+   last test; tooth temperature matrix 3 × 2 in the remarks of kst-E_63; mixed types, duplicated
+   IDs, failure modes and re-adjustments as free text; few repeats per level (stated as the
+   starting situation; a Hiwi continues after the thesis, also at the second speed).
+7. The extraction writes only σ1, σ3 and Mises per fillet node; S is in every ODB, the ODBs are
+   kept, so the Stommel input is a re-extraction, no new FE run.
+8. Material data: the METG tensile tests of Stanyl TW200F6 as σ-ε curves per direction (0°, 45°,
+   90°; 15° at 23 °C) and rate (QS, DY1, DY2) at 80 °C and 23 °C, 50 % r. h.
+   (`06_datenblaetter/*.xlsx`); Matscape built the three anisotropic cards from them; the pinion
+   is 20MnCr5 on both drawings.
+9. Simulation tool chain: METG tests → Matscape cards QS/DY1/DY2 → CADMOULD moulding of the wheel
+   → CONVERSE mapping (own Python writes the mapping deck and embeds the `.cof`) → Abaqus implicit
+   → own evaluation (standard and Stommel) → S-Life Plastics on single nodes. The thesis describes
+   it at a middle depth (principle in 2.4.4, what was done in 3.4, settings in the appendix,
+   algorithms cited), see T6.
+
+### Track T — the thesis text (highest priority; German; FZG class `FZGdasa`)
+
+| Step | Content | Status |
+|---|---|---|
+| T0 | Gliederung with subtitles and, per section, the content in bullets, the sources, the figures and tables and the script that generates them, what the BA supplies (re-verified) versus what is new: first `10_report/00_gliederung.md` for the discussion, then the `.tex` skeleton replaces the exercise chapters (one file per chapter, `% Inhalt:` per section). Chapters: 1 Einleitung; 2 Stand der Wissenschaft und Technik (Werkstoffe, Herstellung und Prüfverzahnungen, Schäden und Tragfähigkeit, Berechnung incl. Stommel und Prozess-Struktur-Kopplung, experimentelle Kennwertermittlung und Statistik, Problemstellung und Zielsetzung); 3 Untersuchungsgegenstand und Methoden (kst-E und Prüfräder, Prüfstand und Durchführung, analytische Berechnung, Simulationskette und FE-Modell, Auswertung der Beanspruchung, Auswertung der Laufversuche); 4 Voruntersuchungen (Netzkonvergenz, Eingriffsauflösung und Kopfkante, Materialstufen und Radkörper, Prüfräder vor dem Versuch, Temperaturverhalten); 5 Ergebnisse der Berechnung; 6 Ergebnisse der Laufversuche; 7 Diskussion; 8 Zusammenfassung und Ausblick (Datenkontrakte and tool chain as the bridge to the master thesis); Anhang | open |
+| T1 | Schreibregeln `10_report/00_schreibregeln.md`: the author's voice from BA-0486 (passive and impersonal, 15 to 30 words as the base with short statements and few long relative clauses, varied openers, no dashes, colons only before formulas and lists, parentheses for abbreviations and "vgl."), the FZG citation rules ([AaaJJ] before the full stop, author named, "nach" and "in Anlehnung an" with page) and formula rules (DIN 1338, "Formel (x.y)", symbols only in the Nomenklatur, symbol italic and subscripts upright), the source rule (nothing cited that was not read in `00_literatur`, no source invented, BA statements re-checked), the review checklist per passage; also a memory | open |
+| T2 | Bibliography: thesis-own `litbib.bib` in the FZG format (three groups, norms with year and month, all authors of FVA reports), every entry transcribed from the title page; DIN 50100:2022-12 and every new source registered in `sources.yaml` | open |
+| T3 | Nomenklatur generated from `data/quantities.yaml` for the quantities the thesis uses (symbol, unit, designation, indices, abbreviations): `scripts/build_nomenclature.py` → `Nomenklatur.tex`, included once at the beginning | open (M6) |
+| T4 | Chapters in the order 3, 4, 2, 1, then 5 and 6 as the results arrive, 7 and 8 last; the user gives text or bullets per section, Claude edits per T1 | open |
+| T5 | Figures and tables in the house style (M6), generated into `80_output` and copied to `10_report/bilder` by a build step; German labels, decimal comma; standing rules (user 2026-10-11): comparable diagrams share the axis scaling (maximum over all), method figures with lines only and varied styles, file names carry the variant, every value in the legend rather than annotated inside the axes; black and white by uniform line width, temperature = colour + style family (23 °C solid family, 80 °C dotted family), series = family member, legends in rows per temperature; nomogram with the reduction-factor panel of the book; Wöhler line only in its range of validity | open |
+| T6 | Tool chain map `simulation_toolchain.md` (programs, inputs and outputs, settings, versions, licences, scripts, own work) and the flow figure for 3.4 | open |
+
+### Track E — evaluation after Stommel et al. (first; ready before the batch)
+
+| Step | Content | Status |
+|---|---|---|
+| E1 | Stress tensor extraction: `fe_odb_extract.py` writes per job and load step S (six components, `ELEMENT_NODAL` averaged) for every node of the wheel as float32 into `<job>_stress.npz` (node ids, coordinates, set membership), in the part frame of the wheel (instance rotation of the position undone; W3/W4 local `*ORIENTATION` output transformed too); about 2 MB per step and position; `run_all.ps1` and `extract --folder` call it; re-extraction over the ODBs of the running series | done 2026-10-11 on the local 20-layer position (29 s, 8,3 MB for four steps; part frame verified against the mesh file and the fillet tangent); the server series is re-extracted after the batch |
+| E2 | `gearcore/fatigue/stommel.py`: one traced function per equation (`@eq` Stommel2018, page): 6.1 to 6.4, 6.6, 6.7, 6.9 to 6.12, 6.15 to 6.26; load history per node = unloaded state plus the positions of one series and load step; amplitude and mean by Eq. 6.10 by default, 6.9 and 6.11/6.12 selectable; overload case 2 (R constant, the BA's choice) checked against 6.3.3 and against the FE history (compression from the neighbouring tooth gives R < 0; case 3 compared; decision in ADR-118); outputs per node a_stat, a_B,V, N at a_B,V = 1; critical node per load step; predicted N(T) | built 2026-10-11 (`fatigue/stommel.py`, `fatigue/check.py`; every formula read on the rendered page; routes principal (default, as 6.3.5 prints), signed_mises, mmk, mmk_modified; overload case 2 default, comparison with case 3 pending the full series); independently reviewed 2026-10-11: 2 P0, 4 P1, P2/P3 resolved (ADR-118 review section) |
+| E3 | `data/fatigue/stommel_materials.yaml`: the class tables (Table 6.1, Bild 6.18, Bild 6.26, Table 6.3) and PA46-GF30 Stanyl TW200F6 at 80 °C, 50 % r. h. (K from the 0° QS curve of the METG tests through `io/matscape.py`, the isotropic reference as the method requires, cross-checked with the W2 `*PLASTIC` card; the 45° and 90° curves kept for E7); the book's worked numbers as tests (PA66 52 → 47 MPa; POM 16,8; PA66-GF 39,6) | built 2026-10-11 (`fatigue/materials.py`, `io/matscape.py`, `data/fatigue/stommel_materials.yaml`; Tabelle 6.3 reproduced from the A rows; PA46-GF30: K 115,5 MPa, σ_Y(80 °C) 89,0, σ_stat 46,6 to 59,6, σ_W 20,2 MPa; failure hypothesis ductile per the footnote of Tabelle 6.1 for moist PA+GF, the user decides); later the same day: curves switched to the raw values Matscape uses (user's copy, CSV under `data/fatigue/matscape/`), four materials incl. the linear card, the Matscape strength limits reproduced exactly; `io.converse_card` reads the whole card (Hill lattice), `material_for_state` builds a state curve from R_11 and E_1 (E7 groundwork); open: which card the linear "conditioned" one is (user) |
+| E4 | Validation against S-Life Plastics with the three CONVERSE cards: the user evaluates three nodes (critical fillet node, flank node, rim node) at one torque, reports inputs and outputs (σ1, σ2, σ3 or S per load state, h, q, σ_V, σ_W, K_M, K_B, σ_B, a_stat, a_B,V, overload case); fixture `tests/fixtures/slife/`, tolerance per quantity, differences explained | open |
+| E5 | `scripts/fe_fatigue.py stommel`: tables (critical node, a_stat, a_B,V, N_pred per load step), curves over the path of contact, maps over the fillet, the method figures for PA46-GF30 "in Anlehnung an [Sto18]" in the house style (K-value on the isotherm, ε_zul over h, Haigh diagram with Goodman line and K_M, synthetic Wöhler line R = 0 beside the VDI 2736 values, A-factor ranges), Markdown report | skeleton 2026-10-11 (`scripts/fe_fatigue.py stommel` and `curves`: report, node table, fillet map, curves of the critical nodes, nomogram, Haigh diagram, synthetic Wöhler line); first run on position C at 16 Nm: a_stat 1,49 (tension fillet), a_B,V 4,6 (compression fillet, static cap) — the full series and E4 decide what that means; figures rebuilt 2026-10-11 per the user's rules (same scaling per family, lines only, Haigh after the Matscape original, values in the legends, decade markers; σ-ε per card and direction, card comparison, orientation states) into `stommel_methode_V2` |
+| E6 | ADR-118, `fe_simulation_log.md` entry, notebook NB 07 "Bemessung nach Stommel" | open |
+| E8 | The check against the measured Wöhler line (user, 2026-10-11): once L2 gives the 50 % line of the tests, the synthetic line of the method is replaced by a measured one at the critical node — the FE amplitude and mean of that node per torque level against the measured cycles give a local Wöhler line (slope k and the amplitude at N_G), fed into the same chain as an alternative to A_W and k of the book; both predictions side by side per torque | open; after L2 |
+| E7 | Anisotropic extension (own work): fibre frame per element from the `.cof`, stress history in that frame, direction-dependent strengths from the METG curves (0°, 45°, 90° per rate), component-wise utilisation (Stommel 6.1.5 and Eq. 6.13; Tsai-Hill 3.34 to 3.37 as the alternative), on W3/W4; isotropic (W1, method as published) against anisotropic per node | open; after E5; groundwork 2026-10-11: `io.converse_card` (all six Hill ratios per state read) and `material_for_state` (R_11 and E_1 only); proposal to the user pending: Hill equivalent stress of the fibre frame with all six ratios in place of von Mises (q = 0), rates QS/DY1 as the band, root state from the mapping |
+
+### Track L — running tests and Wöhler lines
+
+| Step | Content | Status |
+|---|---|---|
+| L1 | `measurement/test_rig.py` (`TestRun`) and the xlsx importer (column map, mixed types, duplicates, 2023 failure modes and re-adjustment history from the remarks, wheel torque 8 / 12 / 16 Nm as the level key); `measurements.py testruns` writes the clean CSV and an anomaly list the user confirms; `parts.yaml` note on 97364 corrected (M5 item moved here) | open |
+| L2 | `measurement/woehler.py`: regression in the finite-life range (semi-log as VDI 2736 Blatt 4 and Hasl; log-log Basquin slope for Stommel Table 6.3), pooled scatter of lg N on the 50 % line (DIN 50100 Perlschnurverfahren, VDI 2736 Blatt 4 Eq. 11 to 15, Hasl Eq. 51 to 53), 50 % → 10 % and 1 %, Weibull on the pooled normalised cycles (Rossow median ranks, Illenberger Table 7-2 as reference), probability nets for both, runouts marked, no endurance limit; the distribution for PA46-GF30 chosen by the nets and stated with the limitation | open |
+| L3 | Wöhler figures: T_2 over N_L; σ_F per method over N_L; FE σ1 over N_L; 50 % and 10 % lines (1 % optional), runouts as arrows, failed tooth annotated; PA46-GF30 beside POM and PEEK (2026 KV3 and 2023 KV4 marked), VDI 2736 PA66 band | open |
+| L4 | Voruntersuchung Temperatur: flank temperature over torque and speed (kst-E_63, 3 × 2) as bars, oil and box temperatures as a table | open |
+| L5 | Comparison materials: 2023 rows checked against MA-0296 (same cycles → citable as Studienarbeit), PEEK grade identified (user checks databases if open); otherwise the FZG rule for unpublished data or 2026 data only | open |
+| L6a | External root stresses registered: `data/strength/root_stress_external.yaml` with RIKOR (supervisor) and FVA-Workbench (user) per torque, with program, version, report, date, geometry case | open; values pending |
+| L6b | VDI 2736 Blatt 2 Eq. 10 in `gearcore/strength/vdi2736.py` with Y_Fa and Y_Sa per ISO 6336-3 method B from the generated fillet, `@eq`, FVA-Workbench as oracle; first slice of stage 2 and the analytical basis for the geometry variation and the fillet variants of stage 3, built for any fillet contour | open; after E and L1 to L4 |
+| L7 | Comparison table: per torque N_50% and N_10%, σ_F of every method against σ_FlimN (PA66 proxy as Hasl did), FE σ1, Stommel a_stat, a_B,V, N_pred; the verdict on accuracy and applicability. Failure definitions kept apart (user, 2026-10-11): the method's failure is the first macroscopic crack (Stommel section 3.2, p. 221); the rig's criterion is a torque loss of more than 1 Nm over about 100 000 cycles (derived for POM in MA-0296), which already admits cracks; total failure is the loss of drive. 8 Nm: total failure of the first wheel at 24 million cycles, the second run beyond 40 million and still running | open |
+| L8 | Comparison figure of the root stresses across methods (RIKOR, FVA-Workbench, VDI 2736, FE per material step and rate, per variant V0 to V4) per torque; grouped bars or dot plot, house style | open |
+
+### Decisions of 2026-10-11
+
+- Analytical σ_F: RIKOR and FVA-Workbench values as registered inputs (L6a), VDI 2736 in gearcore long-term (L6b), one comparison figure (L8).
+- Extraction scope: whole wheel.
+- The Stommel check runs on W1 (isotropic, as the method requires); W3/W4 enter only through the own extension E7.
+- Overload case 2 as the BA chose, verified against the FE history in E2.
+- DIN 50100:2022-12 is the primary source of the statistics; VDI 2736 Blatt 4, Hasl, Illenberger and MA-0296 beside it.
+- Few repeats per level are stated as the starting situation of the thesis, not hidden.
+- Tool chain description at middle depth (finding 9).
+- Thesis planning files live in `10_report/`.
+- Open: which drawing the rig pinions follow (M7a); the PEEK grade of the 2023 and 2026 runs (L5); which strength per direction (break, yield, K-value) for E7 (E3); the nodes and overload case of the S-Life session (E4).
+- User confirmations of 2026-10-11 (afternoon): ductile class for q (the Bachelor thesis designed with the dry material, hence semi-ductile there; Matscape estimates the card's failure type as ductile with f_τ 0,577), K as the maximum of the 23 °C curve, engineering curves. Material data: the METG workbooks in `00_literatur/06_datenblaetter` (engineering σ-ε per direction and rate at 23 and 80 °C) are readable and used; the `.cof` cards are readable text (orthotropic engineering constants per temperature and field variables, `*PLASTIC` as true stress over plastic strain at 23 and 80 °C, Hill potential); the Matscape database `70_input/73_Materialdatenbank/METG_PA46-GF30.db` is a proprietary binary and is not read; the Matscape screenshots (renamed `Matscape_PA46-GF30_<card>_*.png`) are read and serve as the validation of the material side (σ_B,S, σ_SK, σ_WK, M per card and temperature, `tests/test_fatigue_matscape.py`).
+
+Order: today the roadmap and ADR-118, then E1 to E3 with an E5 skeleton on the Learning Edition ODBs; with the batch E4, E5 and L1; then T0, T1, T6 for the thesis discussion, L2 to L5, L6 to L8, E7, T2 to T5.
 
 Increment 5 (with GEN-17 and the helical worked example of DIN 21773 Eq. (9) to (13)), increment
 6, load capacity, fillet variants and parameter studies follow while the batches solve.

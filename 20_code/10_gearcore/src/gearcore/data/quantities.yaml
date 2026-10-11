@@ -2422,3 +2422,761 @@ quantities:
     note: "Defined by ISO 4287 (not in the repository). Measured by the Hommel-Etamic instrument (column 'Rz', mean of three traces 'Xq-Rz')."
     since: 4
     status: verified
+  # ---- design check after Stommel, Stojek, Korte (2018), chapter 6 (track E, ADR-118) --------------
+  # Symbols as printed, with the registry grammar: a comma in a subscript becomes an underscore
+  # (sigma_V,Mises -> sigma_V_Mises), the asterisk of the corrected von Mises values is dropped
+  # (it marks a module factor here), the prime of sigma'_W is kept. Pages are the printed ones.
+  equivalent_stress:
+    symbol: "sigma_V"
+    unit: "MPa"
+    description: "Vergleichsspannung (aus FEM)"
+    source: "Stommel2018"
+    location: "§6.1.2.2 Gl. (6.1), p. 313"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.2), p. 322: interpoliert zwischen von-Mises-Spannung und Normalspannungshypothese; Gl. (6.16), p. 357: druckkorrigiert im statischen Nachweis."
+    since: 4
+    status: verified
+  permissible_stress:
+    symbol: "sigma_zul"
+    unit: "MPa"
+    description: "zulässige Spannung"
+    source: "Stommel2018"
+    location: "§6.1.2.2 Gl. (6.1), p. 313"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: null
+    since: 4
+    status: verified
+  equivalent_strain:
+    symbol: "epsilon_V"
+    unit: "%"
+    description: "vorliegende Vergleichsdehnung (aus FEM)"
+    source: "Stommel2018"
+    location: "§6.1.2.2 Gl. (6.1), p. 313"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.15), p. 355: Vergleichsdehnung (als Funktion der Vergleichsspannung), von der Spannungs-Dehnungs-Kurve abgelesen."
+    since: 4
+    status: verified
+  permissible_strain:
+    symbol: "epsilon_zul"
+    unit: "%"
+    description: "zulässige Dehnung"
+    source: "Stommel2018"
+    location: "§6.1.2.2 Gl. (6.1), p. 313"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.4), p. 326: über den Mehraxialitätsgrad zwischen epsilon_min und epsilon_max skaliert."
+    since: 4
+    status: verified
+  stress:
+    symbol: "sigma"
+    unit: "MPa"
+    description: "Spannung"
+    source: "Stommel2018"
+    location: "§6.1.3 Bild 6.8, p. 326"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Achse des Spannungs-Dehnungs-Diagramms; die Hauptspannungen sigma_1 bis sigma_3 tragen den Index der Hauptspannung, nicht den eines Rades."
+    since: 4
+    status: verified
+  max_principal_stress:
+    symbol: "sigma_1"
+    unit: "MPa"
+    description: "(größte Hauptnormalspannung)"
+    source: "Stommel2018"
+    location: "§6.1.3 Tabelle 6.2, p. 325"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "p. 335: sigma_1,max 'maximale größte Hauptnormalspannung'; p. 357: i Index der Hauptspannungen."
+    since: 4
+    status: verified
+  mid_principal_stress:
+    symbol: "sigma_2"
+    unit: "MPa"
+    description: "(mittlere Hauptnormalspannung)"
+    source: "Stommel2018"
+    location: "§6.1.3 Tabelle 6.2, p. 325"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: null
+    since: 4
+    status: verified
+  min_principal_stress:
+    symbol: "sigma_3"
+    unit: "MPa"
+    description: "(kleinste Hauptnormalspannung)"
+    source: "Stommel2018"
+    location: "§6.1.3 Tabelle 6.2, p. 325"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "p. 335: sigma_3,min 'minimale kleinste Hauptnormalspannung'."
+    since: 4
+    status: verified
+  principal_stress:
+    symbol: "sigma_i"
+    unit: "MPa"
+    description: "(Hauptspannung, i: Index der Hauptspannungen)"
+    source: "Stommel2018"
+    location: "§6.2.4 Gl. (6.17), p. 357"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: null
+    since: 4
+    status: verified
+  control_variable:
+    symbol: "q"
+    unit: "-"
+    description: "Steuergröße"
+    source: "Stommel2018"
+    location: "§6.1.3 Gl. (6.2), p. 322"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Tabelle 6.1, p. 323: 0 duktil, 0,26 semi-duktil, 0,52 spröde (Raumtemperatur, quasi-statisch). Homonym: q ist auch die Bearbeitungszugabe der Verzahnung."
+    since: 4
+    status: verified
+  shear_strength_factor:
+    symbol: "f_tau"
+    unit: "-"
+    description: "Schubfestigkeitsfaktor"
+    source: "Stommel2018"
+    location: "§6.1.3 Gl. (6.2), p. 322"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Schubfestigkeit zu Zugfestigkeit; Tabelle 6.1, p. 323: 0,58 / 0,65 / 0,74."
+    since: 4
+    status: verified
+  mises_stress:
+    symbol: "sigma_V_Mises"
+    unit: "MPa"
+    description: "von-Mises-Spannung"
+    source: "Stommel2018"
+    location: "§6.1.3 Gl. (6.2), p. 322"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt sigma_V,Mises in Gl. (6.2); Gl. (6.3), p. 325 druckt sigma_Mises als deviatorische Spannung (von-Mises), dieselbe Größe."
+    since: 4
+    status: verified
+  normal_stress_hypothesis_stress:
+    symbol: "sigma_V_NH"
+    unit: "MPa"
+    description: "Vergleichsspannung aus der Normalspannungshypothese"
+    source: "Stommel2018"
+    location: "§6.1.3 Gl. (6.2), p. 322"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.17), p. 357: MAX(|sigma_1|, |sigma_2|, |sigma_3|); gedruckt sigma_V,NH."
+    since: 4
+    status: verified
+  multiaxiality_degree:
+    symbol: "h"
+    unit: "-"
+    description: "Mehraxialitätsgrad"
+    source: "Stommel2018"
+    location: "§6.1.3 Gl. (6.3), p. 325"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Nach Hencky: hydrostatische zu deviatorischer Spannung; Tabelle 6.2: 0 Schub, 1/3 einachsig, 2/3 äquibiaxial. Homonym: h ist auch die Zahnhöhe."
+    since: 4
+    status: verified
+  hydrostatic_stress:
+    symbol: "sigma_H"
+    unit: "MPa"
+    description: "hydrostatische Spannung"
+    source: "Stommel2018"
+    location: "§6.1.3 Gl. (6.3), p. 325"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: null
+    since: 4
+    status: verified
+  min_permissible_strain:
+    symbol: "epsilon_min"
+    unit: "%"
+    description: "minimal zulässige Dehnung"
+    source: "Stommel2018"
+    location: "§6.1.3 Gl. (6.4), p. 326"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Untere Grenze des Abminderungsfaktorbereichs auf der Spannungs-Dehnungs-Kurve (Bild 6.20, p. 348)."
+    since: 4
+    status: verified
+  max_permissible_strain:
+    symbol: "epsilon_max"
+    unit: "%"
+    description: "maximal zulässige Dehnung"
+    source: "Stommel2018"
+    location: "§6.1.3 Gl. (6.4), p. 326"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Obere Grenze des Abminderungsfaktorbereichs (Bild 6.20, p. 348)."
+    since: 4
+    status: verified
+  first_stress_invariant:
+    symbol: "I_1"
+    unit: "MPa"
+    description: "1. Invariante des Spannungstensors"
+    source: "Stommel2018"
+    location: "§6.1.3 Gl. (6.5), p. 327"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.10), p. 333: I_1 = sigma_11 + sigma_22 + sigma_33 = sigma_1 + sigma_2 + sigma_3; die Ziffer ist kein Radindex."
+    since: 4
+    status: verified
+  first_stress_invariant_at_extreme:
+    symbol: "I_1_d"
+    unit: "MPa"
+    description: "1. Invariante des Spannungstensors zum Zeitpunkt des größten Abstands von null"
+    source: "Stommel2018"
+    location: "§6.1.5 Gl. (6.11), p. 334"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt I_1,d."
+    since: 4
+    status: verified
+  component_alternating_strength:
+    symbol: "sigma_W"
+    unit: "MPa"
+    description: "Bauteil-Wechselfestigkeit"
+    source: "Stommel2018"
+    location: "§6.3 Gl. (6.18), p. 360"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.19), p. 363: sigma_W = A_W K. Gl. (6.7), p. 329 druckt sigma_w (klein) als 'zulässige Spannungsamplitude bei R = -1', dieselbe Größe."
+    since: 4
+    status: verified
+  corrected_alternating_strength:
+    symbol: "sigma'_W"
+    unit: "MPa"
+    description: "Bauteil-Wechselfestigkeit (mittelspannungskorrigiert)"
+    source: "Stommel2018"
+    location: "§6.3.3 Gl. (6.20), p. 367"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.22), p. 371: 'ggf. mittelspannungskorrigiert'."
+    since: 4
+    status: verified
+  stress_amplitude:
+    symbol: "sigma_a"
+    unit: "MPa"
+    description: "Spannungsamplitude"
+    source: "Stommel2018"
+    location: "§6.3.3 Gl. (6.21), p. 368"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.7), p. 329: 'zulässige Spannungsamplitude' auf der Goodman-Geraden; Gl. (6.9), p. 332: (sigma_max - sigma_min) / 2 je Komponente."
+    since: 4
+    status: verified
+  component_stress_amplitude:
+    symbol: "sigma_a_i"
+    unit: "MPa"
+    description: "vorliegende Spannungsamplitude der Spannungskomponente"
+    source: "Stommel2018"
+    location: "§6.3.5 Gl. (6.26), p. 374"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt sigma_a,i; i Index der Hauptspannungen."
+    since: 4
+    status: verified
+  mean_stress:
+    symbol: "sigma_m"
+    unit: "MPa"
+    description: "Mittelspannung"
+    source: "Stommel2018"
+    location: "§6.3.3 Gl. (6.21), p. 368"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.7), p. 329: 'zulässige Mittelspannung'; Gl. (6.9), p. 332: (sigma_max + sigma_min) / 2 je Komponente."
+    since: 4
+    status: verified
+  static_strength:
+    symbol: "sigma_B"
+    unit: "MPa"
+    description: "statische Festigkeit"
+    source: "Stommel2018"
+    location: "§6.1.4 Gl. (6.7), p. 329"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Normierung der Goodman-Geraden und der Gerber-Parabel. Homonym: sigma_B ist auch die Bauteil-Betriebsfestigkeit (Gl. (6.18))."
+    since: 4
+    status: verified
+  component_fatigue_strength:
+    symbol: "sigma_B"
+    unit: "MPa"
+    description: "Bauteil-Betriebsfestigkeit (Amplitudenwert)"
+    source: "Stommel2018"
+    location: "§6.3 Gl. (6.18), p. 360"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "sigma_B = K_B K_M sigma_W; Gl. (6.23), p. 372: durch sigma_B,max begrenzt. Homonym: sigma_B ist auch die statische Festigkeit (Gl. (6.7))."
+    since: 4
+    status: verified
+  max_component_fatigue_strength:
+    symbol: "sigma_B_max"
+    unit: "MPa"
+    description: "maximale zulässige Bauteil-Betriebsfestigkeit"
+    source: "Stommel2018"
+    location: "§6.3.4 Gl. (6.23), p. 372"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "sigma_B,max = sigma_stat - sigma_m (Zugseite); gedruckt sigma_B,max."
+    since: 4
+    status: verified
+  static_component_strength:
+    symbol: "sigma_stat"
+    unit: "MPa"
+    description: "statische Bauteilfestigkeit"
+    source: "Stommel2018"
+    location: "§6.3.4 Gl. (6.23), p. 372"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Bild 6.20, p. 348: die über den Mehraxialitätsgrad interpolierte zulässige Spannung des statischen Nachweises (47 MPa im PA66-Beispiel). Gl. (6.23), p. 372 druckt 'statische Baueilfestigkeit' (Druckfehler), hier berichtigt."
+    since: 4
+    status: verified
+  yield_stress:
+    symbol: "sigma_Y"
+    unit: "MPa"
+    description: "Streckspannung (statisch)"
+    source: "Stommel2018"
+    location: "§6.3.3 Gl. (6.21), p. 368"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Bild 6.17, p. 345: A = 1,0 des Nomogramms entspricht sigma_Y der Raumtemperaturkurve; Bild 6.28, p. 365: Ende der Goodman-Geraden auf der Mittelspannungsachse."
+    since: 4
+    status: verified
+  stress_component_x:
+    symbol: "sigma_x"
+    unit: "MPa"
+    description: "(Normalspannungskomponente in x-Richtung, zeitlich veränderlich)"
+    source: "Stommel2018"
+    location: "§6.1.5 Gl. (6.8), p. 332"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: null
+    since: 4
+    status: verified
+  stress_component_y:
+    symbol: "sigma_y"
+    unit: "MPa"
+    description: "(Normalspannungskomponente in y-Richtung, zeitlich veränderlich)"
+    source: "Stommel2018"
+    location: "§6.1.5 Gl. (6.8), p. 332"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: null
+    since: 4
+    status: verified
+  shear_stress_component_xy:
+    symbol: "tau_xy"
+    unit: "MPa"
+    description: "(Schubspannungskomponente, zeitlich veränderlich)"
+    source: "Stommel2018"
+    location: "§6.1.5 Gl. (6.8), p. 332"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: null
+    since: 4
+    status: verified
+  max_stress:
+    symbol: "sigma_max"
+    unit: "MPa"
+    description: "Maximalspannung"
+    source: "Stommel2018"
+    location: "§6.3.3 Gl. (6.21), p. 368"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.9), p. 332: der größte Wert einer Komponente im Lastspiel (sigma_x,max ...)."
+    since: 4
+    status: verified
+  min_stress:
+    symbol: "sigma_min"
+    unit: "MPa"
+    description: "Minimalspannung"
+    source: "Stommel2018"
+    location: "§6.3.3 Gl. (6.21), p. 367"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.9), p. 332: der kleinste Wert einer Komponente im Lastspiel (sigma_x,min ...)."
+    since: 4
+    status: verified
+  mises_mean_stress:
+    symbol: "sigma_V_Mises_m"
+    unit: "MPa"
+    description: "von-Mises-Mittelspannung gemäß Gleichung (6.9)"
+    source: "Stommel2018"
+    location: "§6.1.5 Gl. (6.11), p. 334"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt sigma_V,Mises,m; komponentenweise aus den Mittelspannungen gebildet."
+    since: 4
+    status: verified
+  max_of_max_principal_stress:
+    symbol: "sigma_1_max"
+    unit: "MPa"
+    description: "maximale größte Hauptnormalspannung"
+    source: "Stommel2018"
+    location: "§6.1.5 Gl. (6.12), p. 335"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt sigma_1,max: das Maximum von sigma_1 über das Lastspiel."
+    since: 4
+    status: verified
+  min_of_min_principal_stress:
+    symbol: "sigma_3_min"
+    unit: "MPa"
+    description: "minimale kleinste Hauptnormalspannung"
+    source: "Stommel2018"
+    location: "§6.1.5 Gl. (6.12), p. 335"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt sigma_3,min: das Minimum von sigma_3 über das Lastspiel."
+    since: 4
+    status: verified
+  single_utilisation_x:
+    symbol: "a_sigma_x"
+    unit: "-"
+    description: "Einzelauslastungsgrade für Normalspannungen (x-Komponente)"
+    source: "Stommel2018"
+    location: "§6.1.5 Gl. (6.13), p. 336"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt a_sigma,x = sigma_x,a / sigma_B."
+    since: 4
+    status: verified
+  single_utilisation_y:
+    symbol: "a_sigma_y"
+    unit: "-"
+    description: "Einzelauslastungsgrade für Normalspannungen (y-Komponente)"
+    source: "Stommel2018"
+    location: "§6.1.5 Gl. (6.13), p. 336"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt a_sigma,y = sigma_y,a / sigma_B."
+    since: 4
+    status: verified
+  single_utilisation_shear:
+    symbol: "a_tau"
+    unit: "-"
+    description: "Einzelauslastungsgrad für Schubspannungen"
+    source: "Stommel2018"
+    location: "§6.1.5 Gl. (6.13), p. 336"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "a_tau = tau_a / tau_B."
+    since: 4
+    status: verified
+  elastic_stress:
+    symbol: "sigma_el"
+    unit: "MPa"
+    description: "linear-elastisch ermittelte Beanspruchungsgröße (Spannung)"
+    source: "Stommel2018"
+    location: "§6.1.6 Gl. (6.14), p. 341"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Neuber: sigma_el epsilon_el = sigma_pl epsilon_pl = sigma_el^2 / E."
+    since: 4
+    status: verified
+  modulus_of_elasticity:
+    symbol: "E"
+    unit: "MPa"
+    description: "E-Modul der elastisch durchgeführten Berechnung"
+    source: "Stommel2018"
+    location: "§6.1.6 Gl. (6.14), p. 341"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: null
+    since: 4
+    status: verified
+  safety_factor:
+    symbol: "S"
+    unit: "-"
+    description: "ggf. Sicherheitsfaktor (hier 1)"
+    source: "Stommel2018"
+    location: "§6.2.4 Gl. (6.15), p. 355"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Der Nachweis trägt die Sicherheit implizit in den Abminderungsfaktoren (p. 358)."
+    since: 4
+    status: verified
+  compressive_strength_factor:
+    symbol: "f_sigma"
+    unit: "-"
+    description: "Druckfestigkeitsfaktor"
+    source: "Stommel2018"
+    location: "§6.2.4 Gl. (6.17), p. 357"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt f_sigma,i: 1 für sigma_i >= 0, 1,3 für sigma_i < 0 (30 % höhere Druckfestigkeit angenommen)."
+    since: 4
+    status: verified
+  static_utilisation:
+    symbol: "a_stat"
+    unit: "-"
+    description: "(statischer Auslastungsgrad)"
+    source: "Stommel2018"
+    location: "§6.2.4 Gl. (6.15), p. 355"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "a_stat = epsilon_V / (epsilon_zul / S); Nachweis erfüllt für a_stat <= 1. Der Text nennt ihn 'Auslastungsgrad' (statisch)."
+    since: 4
+    status: verified
+  fatigue_life_factor:
+    symbol: "K_B"
+    unit: "-"
+    description: "Betriebsfestigkeitsfaktor"
+    source: "Stommel2018"
+    location: "§6.3 Gl. (6.18), p. 360"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.22), p. 371: K_B = (N_G / N)^(1/k)."
+    since: 4
+    status: verified
+  mean_stress_factor:
+    symbol: "K_M"
+    unit: "-"
+    description: "Mittelspannungsfaktor"
+    source: "Stommel2018"
+    location: "§6.3 Gl. (6.18), p. 360"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (6.20), p. 367: sigma'_W / sigma_W; Gl. (6.21), p. 367 f.: Überlastungsfälle F1 bis F4."
+    since: 4
+    status: verified
+  cyclic_reduction_factor:
+    symbol: "A_W"
+    unit: "-"
+    description: "zyklischer Abminderungsfaktor"
+    source: "Stommel2018"
+    location: "§6.3.2 Gl. (6.19), p. 363"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Bild 6.26, p. 362: für N = 10^7 und R = -1; feste Werte 0,25 / 0,17 für kurzfaserverstärkte Klassen."
+    since: 4
+    status: verified
+  static_characteristic_value:
+    symbol: "K"
+    unit: "MPa"
+    description: "statischer Werkstoffkennwert"
+    source: "Stommel2018"
+    location: "§6.3.2 Gl. (6.19), p. 363"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Bild 6.17, p. 345: A = 1,0 des Nomogramms entspricht der Streckgrenze sigma_Y der Raumtemperaturkurve."
+    since: 4
+    status: verified
+  mean_stress_sensitivity:
+    symbol: "M"
+    unit: "-"
+    description: "Mittelspannungsempfindlichkeit"
+    source: "Stommel2018"
+    location: "§6.3.3 Gl. (6.21), p. 368"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "M = |sigma_W / sigma_Y|, der Betrag der Steigung der Goodman-Geraden (p. 365)."
+    since: 4
+    status: verified
+  limit_number_of_cycles:
+    symbol: "N_G"
+    unit: "-"
+    description: "Grenzlastspielzahl = 10^7"
+    source: "Stommel2018"
+    location: "§6.3.4 Gl. (6.22), p. 371"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Ersatz der Dauerfestigkeitsgrenze (§6.1.4, p. 328)."
+    since: 4
+    status: verified
+  required_number_of_cycles:
+    symbol: "N"
+    unit: "-"
+    description: "geforderte Lastspielzahl"
+    source: "Stommel2018"
+    location: "§6.3.4 Gl. (6.22), p. 371"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt mit Überstrich."
+    since: 4
+    status: verified
+  woehler_slope_exponent:
+    symbol: "k"
+    unit: "-"
+    description: "Neigungsexponent der Wöhlerkurve"
+    source: "Stommel2018"
+    location: "§6.3.4 Gl. (6.22), p. 371"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "k = lg N_G / lg(A_S / A_W); Tabelle 6.3: 15,65 bis 20,44 teilkristallin verstärkt. Homonym: k ist auch die Messzähnezahl und der Kopfhöhenänderungsfaktor."
+    since: 4
+    status: verified
+  static_reduction_factor:
+    symbol: "A_S"
+    unit: "-"
+    description: "Abminderungsfaktor für einmalige statische Belastung"
+    source: "Stommel2018"
+    location: "§6.3.4 Gl. (6.22), p. 371"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Zeile 'einmalig' von Bild 6.18, p. 346."
+    since: 4
+    status: verified
+  cyclic_utilisation:
+    symbol: "a_B_V"
+    unit: "-"
+    description: "Vergleichsauslastungsgrad (Bauteil-Betriebsfestigkeit)"
+    source: "Stommel2018"
+    location: "§6.3.5 Gl. (6.24), p. 374"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt a_B,V = q a_B,NH + (1 - q) a_B,Mises; Nachweis erfüllt für a_B,V <= 1."
+    since: 4
+    status: verified
+  cyclic_utilisation_mises:
+    symbol: "a_B_Mises"
+    unit: "-"
+    description: "Vergleichsauslastungsgrad (nach von-Mises-Spannung)"
+    source: "Stommel2018"
+    location: "§6.3.5 Gl. (6.24), p. 374"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt a_B,Mises; Gl. (6.25)."
+    since: 4
+    status: verified
+  cyclic_utilisation_normal_stress:
+    symbol: "a_B_NH"
+    unit: "-"
+    description: "Vergleichsauslastungsgrad (nach Normalspannungshypothese)"
+    source: "Stommel2018"
+    location: "§6.3.5 Gl. (6.24), p. 374"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt a_B,NH; Gl. (6.25): MAX(|a_sigma,1|, |a_sigma,2|, |a_sigma,3|)."
+    since: 4
+    status: verified
+  single_utilisation:
+    symbol: "a_sigma"
+    unit: "-"
+    description: "Einzelauslastungsgrade"
+    source: "Stommel2018"
+    location: "§6.3.5 Gl. (6.25), p. 374"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gedruckt a_sigma,i mit i Index der Hauptspannungen; Gl. (6.26): sigma_a,i / sigma_B. Programmnamen a_sigma_1 bis a_sigma_3."
+    since: 4
+    status: verified

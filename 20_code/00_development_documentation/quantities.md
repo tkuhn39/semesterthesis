@@ -317,6 +317,64 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `sector_pitch_tolerance` | F_pkT | µm | Toleranz der Teilungs-Sektorabweichung | DINISO1328-1:2018, Tabelle 1, p. 11 | Sector pitch tolerance (DINISO1328-1:2018-EN, Table 1, p. 10) | Inkrement 4 | verified |
 | `arithmetic_mean_roughness` | R_a | µm | Arithmetic mean roughness value, Ra = 1/6 Rz | ISOTR6336-30:2022, Table 2, p. 4 | – | Inkrement 4 | verified |
 | `mean_peak_to_valley_roughness` | R_z | µm | Mean peak-to-valley roughness (ISO 4287:1997a including ISO 4287:1997/Cor 1:1998, ISO 4287:1997/Cor 2:2005, ISO 4287:1997/Amd 1:2009 and ISO 4288:1996b) | ISOTR6336-30:2022, Table 2, p. 4 | – | Inkrement 4 | verified |
+| `equivalent_stress` | sigma_V | MPa | Vergleichsspannung (aus FEM) | Stommel2018, §6.1.2.2 Gl. (6.1), p. 313 | – | Inkrement 4 | verified |
+| `permissible_stress` | sigma_zul | MPa | zulässige Spannung | Stommel2018, §6.1.2.2 Gl. (6.1), p. 313 | – | Inkrement 4 | verified |
+| `equivalent_strain` | epsilon_V | % | vorliegende Vergleichsdehnung (aus FEM) | Stommel2018, §6.1.2.2 Gl. (6.1), p. 313 | – | Inkrement 4 | verified |
+| `permissible_strain` | epsilon_zul | % | zulässige Dehnung | Stommel2018, §6.1.2.2 Gl. (6.1), p. 313 | – | Inkrement 4 | verified |
+| `stress` | sigma | MPa | Spannung | Stommel2018, §6.1.3 Bild 6.8, p. 326 | – | Inkrement 4 | verified |
+| `max_principal_stress` | sigma_1 | MPa | (größte Hauptnormalspannung) | Stommel2018, §6.1.3 Tabelle 6.2, p. 325 | – | Inkrement 4 | verified |
+| `mid_principal_stress` | sigma_2 | MPa | (mittlere Hauptnormalspannung) | Stommel2018, §6.1.3 Tabelle 6.2, p. 325 | – | Inkrement 4 | verified |
+| `min_principal_stress` | sigma_3 | MPa | (kleinste Hauptnormalspannung) | Stommel2018, §6.1.3 Tabelle 6.2, p. 325 | – | Inkrement 4 | verified |
+| `principal_stress` | sigma_i | MPa | (Hauptspannung, i: Index der Hauptspannungen) | Stommel2018, §6.2.4 Gl. (6.17), p. 357 | – | Inkrement 4 | verified |
+| `control_variable` | q | - | Steuergröße | Stommel2018, §6.1.3 Gl. (6.2), p. 322 | – | Inkrement 4 | verified |
+| `shear_strength_factor` | f_tau | - | Schubfestigkeitsfaktor | Stommel2018, §6.1.3 Gl. (6.2), p. 322 | – | Inkrement 4 | verified |
+| `mises_stress` | sigma_V_Mises | MPa | von-Mises-Spannung | Stommel2018, §6.1.3 Gl. (6.2), p. 322 | – | Inkrement 4 | verified |
+| `normal_stress_hypothesis_stress` | sigma_V_NH | MPa | Vergleichsspannung aus der Normalspannungshypothese | Stommel2018, §6.1.3 Gl. (6.2), p. 322 | – | Inkrement 4 | verified |
+| `multiaxiality_degree` | h | - | Mehraxialitätsgrad | Stommel2018, §6.1.3 Gl. (6.3), p. 325 | – | Inkrement 4 | verified |
+| `hydrostatic_stress` | sigma_H | MPa | hydrostatische Spannung | Stommel2018, §6.1.3 Gl. (6.3), p. 325 | – | Inkrement 4 | verified |
+| `min_permissible_strain` | epsilon_min | % | minimal zulässige Dehnung | Stommel2018, §6.1.3 Gl. (6.4), p. 326 | – | Inkrement 4 | verified |
+| `max_permissible_strain` | epsilon_max | % | maximal zulässige Dehnung | Stommel2018, §6.1.3 Gl. (6.4), p. 326 | – | Inkrement 4 | verified |
+| `first_stress_invariant` | I_1 | MPa | 1. Invariante des Spannungstensors | Stommel2018, §6.1.3 Gl. (6.5), p. 327 | – | Inkrement 4 | verified |
+| `first_stress_invariant_at_extreme` | I_1_d | MPa | 1. Invariante des Spannungstensors zum Zeitpunkt des größten Abstands von null | Stommel2018, §6.1.5 Gl. (6.11), p. 334 | – | Inkrement 4 | verified |
+| `component_alternating_strength` | sigma_W | MPa | Bauteil-Wechselfestigkeit | Stommel2018, §6.3 Gl. (6.18), p. 360 | – | Inkrement 4 | verified |
+| `corrected_alternating_strength` | sigma'_W | MPa | Bauteil-Wechselfestigkeit (mittelspannungskorrigiert) | Stommel2018, §6.3.3 Gl. (6.20), p. 367 | – | Inkrement 4 | verified |
+| `stress_amplitude` | sigma_a | MPa | Spannungsamplitude | Stommel2018, §6.3.3 Gl. (6.21), p. 368 | – | Inkrement 4 | verified |
+| `component_stress_amplitude` | sigma_a_i | MPa | vorliegende Spannungsamplitude der Spannungskomponente | Stommel2018, §6.3.5 Gl. (6.26), p. 374 | – | Inkrement 4 | verified |
+| `mean_stress` | sigma_m | MPa | Mittelspannung | Stommel2018, §6.3.3 Gl. (6.21), p. 368 | – | Inkrement 4 | verified |
+| `static_strength` | sigma_B | MPa | statische Festigkeit | Stommel2018, §6.1.4 Gl. (6.7), p. 329 | – | Inkrement 4 | verified |
+| `component_fatigue_strength` | sigma_B | MPa | Bauteil-Betriebsfestigkeit (Amplitudenwert) | Stommel2018, §6.3 Gl. (6.18), p. 360 | – | Inkrement 4 | verified |
+| `max_component_fatigue_strength` | sigma_B_max | MPa | maximale zulässige Bauteil-Betriebsfestigkeit | Stommel2018, §6.3.4 Gl. (6.23), p. 372 | – | Inkrement 4 | verified |
+| `static_component_strength` | sigma_stat | MPa | statische Bauteilfestigkeit | Stommel2018, §6.3.4 Gl. (6.23), p. 372 | – | Inkrement 4 | verified |
+| `yield_stress` | sigma_Y | MPa | Streckspannung (statisch) | Stommel2018, §6.3.3 Gl. (6.21), p. 368 | – | Inkrement 4 | verified |
+| `stress_component_x` | sigma_x | MPa | (Normalspannungskomponente in x-Richtung, zeitlich veränderlich) | Stommel2018, §6.1.5 Gl. (6.8), p. 332 | – | Inkrement 4 | verified |
+| `stress_component_y` | sigma_y | MPa | (Normalspannungskomponente in y-Richtung, zeitlich veränderlich) | Stommel2018, §6.1.5 Gl. (6.8), p. 332 | – | Inkrement 4 | verified |
+| `shear_stress_component_xy` | tau_xy | MPa | (Schubspannungskomponente, zeitlich veränderlich) | Stommel2018, §6.1.5 Gl. (6.8), p. 332 | – | Inkrement 4 | verified |
+| `max_stress` | sigma_max | MPa | Maximalspannung | Stommel2018, §6.3.3 Gl. (6.21), p. 368 | – | Inkrement 4 | verified |
+| `min_stress` | sigma_min | MPa | Minimalspannung | Stommel2018, §6.3.3 Gl. (6.21), p. 367 | – | Inkrement 4 | verified |
+| `mises_mean_stress` | sigma_V_Mises_m | MPa | von-Mises-Mittelspannung gemäß Gleichung (6.9) | Stommel2018, §6.1.5 Gl. (6.11), p. 334 | – | Inkrement 4 | verified |
+| `max_of_max_principal_stress` | sigma_1_max | MPa | maximale größte Hauptnormalspannung | Stommel2018, §6.1.5 Gl. (6.12), p. 335 | – | Inkrement 4 | verified |
+| `min_of_min_principal_stress` | sigma_3_min | MPa | minimale kleinste Hauptnormalspannung | Stommel2018, §6.1.5 Gl. (6.12), p. 335 | – | Inkrement 4 | verified |
+| `single_utilisation_x` | a_sigma_x | - | Einzelauslastungsgrade für Normalspannungen (x-Komponente) | Stommel2018, §6.1.5 Gl. (6.13), p. 336 | – | Inkrement 4 | verified |
+| `single_utilisation_y` | a_sigma_y | - | Einzelauslastungsgrade für Normalspannungen (y-Komponente) | Stommel2018, §6.1.5 Gl. (6.13), p. 336 | – | Inkrement 4 | verified |
+| `single_utilisation_shear` | a_tau | - | Einzelauslastungsgrad für Schubspannungen | Stommel2018, §6.1.5 Gl. (6.13), p. 336 | – | Inkrement 4 | verified |
+| `elastic_stress` | sigma_el | MPa | linear-elastisch ermittelte Beanspruchungsgröße (Spannung) | Stommel2018, §6.1.6 Gl. (6.14), p. 341 | – | Inkrement 4 | verified |
+| `modulus_of_elasticity` | E | MPa | E-Modul der elastisch durchgeführten Berechnung | Stommel2018, §6.1.6 Gl. (6.14), p. 341 | – | Inkrement 4 | verified |
+| `safety_factor` | S | - | ggf. Sicherheitsfaktor (hier 1) | Stommel2018, §6.2.4 Gl. (6.15), p. 355 | – | Inkrement 4 | verified |
+| `compressive_strength_factor` | f_sigma | - | Druckfestigkeitsfaktor | Stommel2018, §6.2.4 Gl. (6.17), p. 357 | – | Inkrement 4 | verified |
+| `static_utilisation` | a_stat | - | (statischer Auslastungsgrad) | Stommel2018, §6.2.4 Gl. (6.15), p. 355 | – | Inkrement 4 | verified |
+| `fatigue_life_factor` | K_B | - | Betriebsfestigkeitsfaktor | Stommel2018, §6.3 Gl. (6.18), p. 360 | – | Inkrement 4 | verified |
+| `mean_stress_factor` | K_M | - | Mittelspannungsfaktor | Stommel2018, §6.3 Gl. (6.18), p. 360 | – | Inkrement 4 | verified |
+| `cyclic_reduction_factor` | A_W | - | zyklischer Abminderungsfaktor | Stommel2018, §6.3.2 Gl. (6.19), p. 363 | – | Inkrement 4 | verified |
+| `static_characteristic_value` | K | MPa | statischer Werkstoffkennwert | Stommel2018, §6.3.2 Gl. (6.19), p. 363 | – | Inkrement 4 | verified |
+| `mean_stress_sensitivity` | M | - | Mittelspannungsempfindlichkeit | Stommel2018, §6.3.3 Gl. (6.21), p. 368 | – | Inkrement 4 | verified |
+| `limit_number_of_cycles` | N_G | - | Grenzlastspielzahl = 10^7 | Stommel2018, §6.3.4 Gl. (6.22), p. 371 | – | Inkrement 4 | verified |
+| `required_number_of_cycles` | N | - | geforderte Lastspielzahl | Stommel2018, §6.3.4 Gl. (6.22), p. 371 | – | Inkrement 4 | verified |
+| `woehler_slope_exponent` | k | - | Neigungsexponent der Wöhlerkurve | Stommel2018, §6.3.4 Gl. (6.22), p. 371 | – | Inkrement 4 | verified |
+| `static_reduction_factor` | A_S | - | Abminderungsfaktor für einmalige statische Belastung | Stommel2018, §6.3.4 Gl. (6.22), p. 371 | – | Inkrement 4 | verified |
+| `cyclic_utilisation` | a_B_V | - | Vergleichsauslastungsgrad (Bauteil-Betriebsfestigkeit) | Stommel2018, §6.3.5 Gl. (6.24), p. 374 | – | Inkrement 4 | verified |
+| `cyclic_utilisation_mises` | a_B_Mises | - | Vergleichsauslastungsgrad (nach von-Mises-Spannung) | Stommel2018, §6.3.5 Gl. (6.24), p. 374 | – | Inkrement 4 | verified |
+| `cyclic_utilisation_normal_stress` | a_B_NH | - | Vergleichsauslastungsgrad (nach Normalspannungshypothese) | Stommel2018, §6.3.5 Gl. (6.24), p. 374 | – | Inkrement 4 | verified |
+| `single_utilisation` | a_sigma | - | Einzelauslastungsgrade | Stommel2018, §6.3.5 Gl. (6.25), p. 374 | – | Inkrement 4 | verified |
 
 ## STplus 11.1F
 
@@ -717,3 +775,53 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 - `sector_pitch_tolerance` (F_pkT): Not what the P40 header codes 216/217 store: that is the tolerance of the program's own Fpz/8 (a sliding pitch span, see pitch_span_deviation), kept raw by the evaluation.
 - `arithmetic_mean_roughness` (R_a): Defined by ISO 4287 (not in the repository); ISO/TR 6336-30 prints 'Ra' and 'Rz' without subscript. Measured by the Hommel-Etamic instrument (column 'Ra', mean of three traces 'Xq-Ra').
 - `mean_peak_to_valley_roughness` (R_z): Defined by ISO 4287 (not in the repository). Measured by the Hommel-Etamic instrument (column 'Rz', mean of three traces 'Xq-Rz').
+- `equivalent_stress` (sigma_V): Gl. (6.2), p. 322: interpoliert zwischen von-Mises-Spannung und Normalspannungshypothese; Gl. (6.16), p. 357: druckkorrigiert im statischen Nachweis.
+- `equivalent_strain` (epsilon_V): Gl. (6.15), p. 355: Vergleichsdehnung (als Funktion der Vergleichsspannung), von der Spannungs-Dehnungs-Kurve abgelesen.
+- `permissible_strain` (epsilon_zul): Gl. (6.4), p. 326: über den Mehraxialitätsgrad zwischen epsilon_min und epsilon_max skaliert.
+- `stress` (sigma): Achse des Spannungs-Dehnungs-Diagramms; die Hauptspannungen sigma_1 bis sigma_3 tragen den Index der Hauptspannung, nicht den eines Rades.
+- `max_principal_stress` (sigma_1): p. 335: sigma_1,max 'maximale größte Hauptnormalspannung'; p. 357: i Index der Hauptspannungen.
+- `min_principal_stress` (sigma_3): p. 335: sigma_3,min 'minimale kleinste Hauptnormalspannung'.
+- `control_variable` (q): Tabelle 6.1, p. 323: 0 duktil, 0,26 semi-duktil, 0,52 spröde (Raumtemperatur, quasi-statisch). Homonym: q ist auch die Bearbeitungszugabe der Verzahnung.
+- `shear_strength_factor` (f_tau): Schubfestigkeit zu Zugfestigkeit; Tabelle 6.1, p. 323: 0,58 / 0,65 / 0,74.
+- `mises_stress` (sigma_V_Mises): Gedruckt sigma_V,Mises in Gl. (6.2); Gl. (6.3), p. 325 druckt sigma_Mises als deviatorische Spannung (von-Mises), dieselbe Größe.
+- `normal_stress_hypothesis_stress` (sigma_V_NH): Gl. (6.17), p. 357: MAX(|sigma_1|, |sigma_2|, |sigma_3|); gedruckt sigma_V,NH.
+- `multiaxiality_degree` (h): Nach Hencky: hydrostatische zu deviatorischer Spannung; Tabelle 6.2: 0 Schub, 1/3 einachsig, 2/3 äquibiaxial. Homonym: h ist auch die Zahnhöhe.
+- `min_permissible_strain` (epsilon_min): Untere Grenze des Abminderungsfaktorbereichs auf der Spannungs-Dehnungs-Kurve (Bild 6.20, p. 348).
+- `max_permissible_strain` (epsilon_max): Obere Grenze des Abminderungsfaktorbereichs (Bild 6.20, p. 348).
+- `first_stress_invariant` (I_1): Gl. (6.10), p. 333: I_1 = sigma_11 + sigma_22 + sigma_33 = sigma_1 + sigma_2 + sigma_3; die Ziffer ist kein Radindex.
+- `first_stress_invariant_at_extreme` (I_1_d): Gedruckt I_1,d.
+- `component_alternating_strength` (sigma_W): Gl. (6.19), p. 363: sigma_W = A_W K. Gl. (6.7), p. 329 druckt sigma_w (klein) als 'zulässige Spannungsamplitude bei R = -1', dieselbe Größe.
+- `corrected_alternating_strength` (sigma'_W): Gl. (6.22), p. 371: 'ggf. mittelspannungskorrigiert'.
+- `stress_amplitude` (sigma_a): Gl. (6.7), p. 329: 'zulässige Spannungsamplitude' auf der Goodman-Geraden; Gl. (6.9), p. 332: (sigma_max - sigma_min) / 2 je Komponente.
+- `component_stress_amplitude` (sigma_a_i): Gedruckt sigma_a,i; i Index der Hauptspannungen.
+- `mean_stress` (sigma_m): Gl. (6.7), p. 329: 'zulässige Mittelspannung'; Gl. (6.9), p. 332: (sigma_max + sigma_min) / 2 je Komponente.
+- `static_strength` (sigma_B): Normierung der Goodman-Geraden und der Gerber-Parabel. Homonym: sigma_B ist auch die Bauteil-Betriebsfestigkeit (Gl. (6.18)).
+- `component_fatigue_strength` (sigma_B): sigma_B = K_B K_M sigma_W; Gl. (6.23), p. 372: durch sigma_B,max begrenzt. Homonym: sigma_B ist auch die statische Festigkeit (Gl. (6.7)).
+- `max_component_fatigue_strength` (sigma_B_max): sigma_B,max = sigma_stat - sigma_m (Zugseite); gedruckt sigma_B,max.
+- `static_component_strength` (sigma_stat): Bild 6.20, p. 348: die über den Mehraxialitätsgrad interpolierte zulässige Spannung des statischen Nachweises (47 MPa im PA66-Beispiel). Gl. (6.23), p. 372 druckt 'statische Baueilfestigkeit' (Druckfehler), hier berichtigt.
+- `yield_stress` (sigma_Y): Bild 6.17, p. 345: A = 1,0 des Nomogramms entspricht sigma_Y der Raumtemperaturkurve; Bild 6.28, p. 365: Ende der Goodman-Geraden auf der Mittelspannungsachse.
+- `max_stress` (sigma_max): Gl. (6.9), p. 332: der größte Wert einer Komponente im Lastspiel (sigma_x,max ...).
+- `min_stress` (sigma_min): Gl. (6.9), p. 332: der kleinste Wert einer Komponente im Lastspiel (sigma_x,min ...).
+- `mises_mean_stress` (sigma_V_Mises_m): Gedruckt sigma_V,Mises,m; komponentenweise aus den Mittelspannungen gebildet.
+- `max_of_max_principal_stress` (sigma_1_max): Gedruckt sigma_1,max: das Maximum von sigma_1 über das Lastspiel.
+- `min_of_min_principal_stress` (sigma_3_min): Gedruckt sigma_3,min: das Minimum von sigma_3 über das Lastspiel.
+- `single_utilisation_x` (a_sigma_x): Gedruckt a_sigma,x = sigma_x,a / sigma_B.
+- `single_utilisation_y` (a_sigma_y): Gedruckt a_sigma,y = sigma_y,a / sigma_B.
+- `single_utilisation_shear` (a_tau): a_tau = tau_a / tau_B.
+- `elastic_stress` (sigma_el): Neuber: sigma_el epsilon_el = sigma_pl epsilon_pl = sigma_el^2 / E.
+- `safety_factor` (S): Der Nachweis trägt die Sicherheit implizit in den Abminderungsfaktoren (p. 358).
+- `compressive_strength_factor` (f_sigma): Gedruckt f_sigma,i: 1 für sigma_i >= 0, 1,3 für sigma_i < 0 (30 % höhere Druckfestigkeit angenommen).
+- `static_utilisation` (a_stat): a_stat = epsilon_V / (epsilon_zul / S); Nachweis erfüllt für a_stat <= 1. Der Text nennt ihn 'Auslastungsgrad' (statisch).
+- `fatigue_life_factor` (K_B): Gl. (6.22), p. 371: K_B = (N_G / N)^(1/k).
+- `mean_stress_factor` (K_M): Gl. (6.20), p. 367: sigma'_W / sigma_W; Gl. (6.21), p. 367 f.: Überlastungsfälle F1 bis F4.
+- `cyclic_reduction_factor` (A_W): Bild 6.26, p. 362: für N = 10^7 und R = -1; feste Werte 0,25 / 0,17 für kurzfaserverstärkte Klassen.
+- `static_characteristic_value` (K): Bild 6.17, p. 345: A = 1,0 des Nomogramms entspricht der Streckgrenze sigma_Y der Raumtemperaturkurve.
+- `mean_stress_sensitivity` (M): M = |sigma_W / sigma_Y|, der Betrag der Steigung der Goodman-Geraden (p. 365).
+- `limit_number_of_cycles` (N_G): Ersatz der Dauerfestigkeitsgrenze (§6.1.4, p. 328).
+- `required_number_of_cycles` (N): Gedruckt mit Überstrich.
+- `woehler_slope_exponent` (k): k = lg N_G / lg(A_S / A_W); Tabelle 6.3: 15,65 bis 20,44 teilkristallin verstärkt. Homonym: k ist auch die Messzähnezahl und der Kopfhöhenänderungsfaktor.
+- `static_reduction_factor` (A_S): Zeile 'einmalig' von Bild 6.18, p. 346.
+- `cyclic_utilisation` (a_B_V): Gedruckt a_B,V = q a_B,NH + (1 - q) a_B,Mises; Nachweis erfüllt für a_B,V <= 1.
+- `cyclic_utilisation_mises` (a_B_Mises): Gedruckt a_B,Mises; Gl. (6.25).
+- `cyclic_utilisation_normal_stress` (a_B_NH): Gedruckt a_B,NH; Gl. (6.25): MAX(|a_sigma,1|, |a_sigma,2|, |a_sigma,3|).
+- `single_utilisation` (a_sigma): Gedruckt a_sigma,i mit i Index der Hauptspannungen; Gl. (6.26): sigma_a,i / sigma_B. Programmnamen a_sigma_1 bis a_sigma_3.

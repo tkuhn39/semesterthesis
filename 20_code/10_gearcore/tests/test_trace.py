@@ -36,6 +36,7 @@ COMPUTATIONAL_MODULES = [
     "gearcore.measurement.gina",
     "gearcore.measurement.contour_scan",
     "gearcore.measurement.roughness",
+    "gearcore.fatigue.stommel",
 ]
 """Modules whose public functions must carry @eq; a module that does not exist yet is skipped visibly."""
 

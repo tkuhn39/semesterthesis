@@ -1666,3 +1666,314 @@ case is untouched; variants are separate cases (M7).
    duplicate exports are dropped by equal numbers, never by name; parameters without a norm in
    the repository are carried raw under the instrument's name; no figure of the roughness is
    drawn, the protocols are the appendix (user).
+
+## ADR-118 — Thesis text, node-wise design check after Stommel et al. and the running tests: three tracks beside the FE batches (2026-10-11)
+
+**Context.** The user listed on 2026-10-11 what a complete thesis still needs beyond the open
+roadmap items: the text itself (nothing written; `10_report` holds the FZG template and the
+chapters of an Abaqus exercise), the node-wise evaluation of the FE results after Stommel et al.
+(the user can evaluate single nodes in S-Life Plastics only, the batch of the running series
+needs a script over every node), the Wöhler lines of the running tests (method and distribution,
+torque and root stress as abscissas, POM and PEEK beside PA46-GF30, the temperature matrix) and
+writing rules that keep the text close to the author. The sources were checked before planning
+(roadmap section "Thesis text, evaluation after Stommel et al. and running tests"): the Bachelor
+thesis BA-0486 is a calculation study without tests, fibre orientation or PA46-GF30; MA-0296
+(Fiederling 2023) is the kst-E running-test thesis on POM and PEEK whose data may be the 2023
+rows of the test-rig sheet; Stommel chapter 6 is a utilisation check (interpolated equivalent
+stress, Hencky multiaxiality, Goodman mean stress factor with four overload cases, synthetic
+Basquin line between the static strength and σ_W = A_W·K at 10^7, static and cyclic utilisation
+per node) that prescribes an isotropic model and knows no Weibull and no Miner; the FZG practice
+for root fracture is the log-normal distribution of lg N (VDI 2736 Blatt 4 section 4, Hasl after
+Stahl), Illenberger uses Weibull per level for pitting; DIN 50100:2022-12 is in the repository;
+the ODB extraction writes only the principal stresses of the fillet surfaces, the stress tensor is
+in every ODB and the ODBs are kept; the METG tensile tests of Stanyl TW200F6 exist as σ-ε curves
+per direction (0°, 45°, 90°) and strain rate (QS, DY1, DY2) at 80 °C and 23 °C, Matscape built
+the three CONVERSE cards from them; the Stommel procedure has not been applied to gears at the
+chair before and PART Engineering has not released its anisotropic module.
+
+**Decision.**
+1. Three tracks are added to the roadmap and run beside the FE batches and the measurement
+   track: T (thesis text), E (evaluation after Stommel et al.), L (running tests and Wöhler
+   lines). The thesis planning files (`00_gliederung.md`, `00_schreibregeln.md`) live in
+   `10_report/`; the Nomenklatur is generated from `data/quantities.yaml` for the quantities the
+   thesis uses; every statement reused from the Bachelor thesis is re-verified at its source first.
+2. The Stommel input is a re-extraction, not a new FE run: `fe_odb_extract.py` writes, beside the
+   `_fields.json`, a `<job>_stress.npz` with the nodal averaged stress tensor (six components,
+   float32) of every node of the wheel per load step, in the part frame of the wheel (the
+   instance rotation of the position is undone, a local `*ORIENTATION` system of W3/W4 is
+   transformed to global first), with node labels, coordinates and set membership. Whole wheel,
+   because the method is a component check and the place of the highest utilisation is not the
+   place of the highest stress.
+3. The method is implemented as published (`gearcore/fatigue/stommel.py`, one traced function
+   per equation of chapter 6, every formula body read on the rendered page) and applied to the
+   isotropic linear step W1, as section 6.2.1 of the book requires. The load history of a node is
+   the unloaded state plus the positions of one series and load step; amplitude and mean follow
+   the signed von Mises stress (Eq. 6.10) by default, the component-wise form (6.9) and
+   Manson–McKnight (6.11/6.12) are selectable. The overload case is case 2 (R constant), the
+   choice of the Bachelor thesis, to be verified against section 6.3.3 and against the FE
+   history (the fillet sees compression when the neighbouring tooth carries the load); the
+   static utilisation is reported beside the cyclic one.
+4. Material data for the check come from the METG curves (`io/matscape.py` reads the xlsx), the
+   0° QS curve at 80 °C and 50 % r. h. as the isotropic reference; the class tables of the book
+   are transcribed with their pages into `data/fatigue/stommel_materials.yaml`; the book's worked
+   numbers are the unit tests; S-Life Plastics on single nodes with the same three cards is the
+   oracle (fixture per node, differences explained).
+5. The anisotropic evaluation (fibre frame per element from the `.cof`, direction-dependent
+   strengths from the 0°, 45°, 90° curves, component-wise utilisation after section 6.1.5 or
+   Tsai-Hill) is the own extension of this thesis and is kept apart from the published method in
+   code, documentation and text.
+6. The running tests get a contract and an importer of the user's sheet (wheel torque 8 / 12 /
+   16 Nm as the level key, the anomalies listed for the user), a Wöhler module with the
+   semi-log regression of VDI 2736 Blatt 4 and Hasl, the pooled scatter of lg N after DIN 50100
+   (primary source), the conversions to 10 % and 1 %, and Weibull on the pooled normalised cycles
+   as the check; the distribution for PA46-GF30 is chosen on the probability nets and the few
+   repeats per level are stated as the starting situation. Runouts are marked, no endurance
+   limit is evaluated.
+7. The analytical root stress of the comparison comes from registered inputs (RIKOR values of
+   the supervisor, FVA-Workbench values of the user, each with program, version and report) and,
+   long-term, from VDI 2736 Blatt 2 Eq. 10 in gearcore with the form factors per ISO 6336-3
+   method B from the generated fillet, built for any fillet contour as the basis of the geometry
+   variation; one comparison figure shows every method per torque.
+8. The M7 variants are redefined (user): V1 carries the drawing features the STplus case lacks
+   (tip relief of the pinion and tip rounding r 0,2 of the wheel), V2 and V3 pair one gear as
+   measured with the V1 version of the other, V4 both; a field-by-field check of the three
+   drawings against the STplus case (M7a) precedes V1, since both drawings prescribe Fertigmaß
+   spans well below the nominal (wheel 17,002 −0,059 against 17,180; pinion 16,822 −0,021
+   against 17,090) and the GINA span of the rig pinions equals the drawing value.
+9. The simulation tool chain (METG tests → Matscape → CADMOULD → CONVERSE → gearcore decks →
+   Abaqus → evaluation → S-Life) is documented in `simulation_toolchain.md` and described in the
+   thesis at middle depth: principle in the theory, what was done and which settings mattered in
+   the methods, settings in the appendix, the algorithms of the programs cited.
+
+**Consequences.** The Stommel check needs the stress tensor of every node, so the running series
+is re-extracted on the server after the batch (about 2 MB per step and position). The method as
+published is isotropic; every anisotropic statement of the thesis rests on the own extension and
+says so. The statistics of the Wöhler lines rest on about ten PA46-GF30 points on three levels;
+the thesis names this limit and the continuation by a student assistant. New sources
+(DIN 50100:2022-12, the METG data, the drawings) are registered with transcribed data before use.
+Amendments follow as the tracks are built.
+
+### Amendment of 2026-10-11 (E1 to E3 built, E5 skeleton)
+
+1. **Stress file.** Nodal averaging over the element-nodal values of the tensor (then the
+   invariants), not over the invariants as the fields JSON does; the two differ by up to 0,4 MPa
+   at 83 MPa on the frozen mesh. The frame is the wheel part: the rotation of the instance is read
+   from the deck (`*INSTANCE` second data line, manifest as fallback); the σ1 direction of the
+   critical fillet node then lies along the fillet tangent (0,5°, tangent angle 44,6° against the
+   tooth centre line, the region Hasl names for the fractures).
+2. **Default route of the cyclic check is `principal`**, the procedure of section 6.3.5 as
+   printed (three principal components, each with its own amplitude, mean and K_M, combined by q),
+   not the signed von Mises stress the plan named: with one scalar history both hypotheses
+   coincide and q plays no part, so the printed procedure is the reference and the signed route
+   the comparison. Component-wise and Manson–McKnight routes are selectable.
+3. **Material input.** K is the largest stress of the room-temperature curve (the yield stress
+   σ_Y the nomogram's A = 1,0 corresponds to, Bild 6.17); the strain limits of a load case come
+   from A_min K and A_max K on the room-temperature curve and are transferred to the 80 °C
+   isotherm as section 6.2.2.1 prescribes; the same for σ_W with A_W (p. 363). The METG workbooks
+   of the user (0°, 45°, 90°; QS, DY1, DY2; 23 and 80 °C at 50 % r. h.) are the curves; the
+   Matscape database `70_input/73_Materialdatenbank/METG_PA46-GF30.db` is binary and not read.
+   The conditioned PA46-GF30 falls, by the footnote of Tabelle 6.1, into the ductile class for
+   the failure hypothesis (q = 0) while the reduction factors stay those of the reinforced
+   class; the semi-ductile alternative (q = 0,26, the Bachelor thesis' Tabelle 2.5) is selectable
+   in the data file; the user decides (E3, open).
+4. **Conventions the book leaves open** (module docstring of `stommel.py`): h = 0 for an
+   unloaded state, ±∞ for a hydrostatic one; the overload cases with the signed mean stress give
+   the mirrored line of Bild 6.28 on the compression side; the static cap is σ_stat − |σ_m| on
+   both sides, as the symmetric construction of Bild 6.28 shows (no compressive strength factor
+   in the Haigh diagram); K_M = 1 for a component without amplitude; a non-positive K_M or cap
+   leaves no strength (infinite utilisation).
+5. **First numbers** (position C alone at 16 Nm, W1): the linear elastic root stress of 83 MPa
+   exceeds σ_stat(80 °C) of 46,6 to 59,6 MPa, so the static check fails at both fillets (a_stat
+   1,49) and the cyclic utilisation reaches 4,6 on the compression side where the cap binds. The
+   gears ran 1,1 to 1,9 million cycles at this level; W2 had shown the elastic-plastic root
+   stress 41 % lower. What this says about the method's applicability is a result of the thesis,
+   not a defect of the implementation; the full series, the comparison with S-Life (E4) and the
+   Neuber correction of section 6.1.6 are the next steps.
+
+### Review of 2026-10-11 (independent, read-only; findings and resolutions)
+
+The user asked for a lean independent review before the commit. The reviewer read the staged
+increment, the rendered pages and the Abaqus 2025 reference, ran the tests and probes without
+writing (git status identical before and after). Every equation body 6.1 to 6.26, the constants
+and more than twenty registry designations were confirmed against the pages; the linear algebra
+of the extraction was confirmed. Findings and what was done:
+
+- **P0-1 (extraction).** ``FieldBulkData.localCoordSystem`` is a quaternion (vector part first,
+  scalar last, "the rotation from global to local"), not the 3 x 3 matrix of
+  ``FieldValue.localCoordSystem``; the first version would have crashed on every W3/W4 job and
+  lost the fields JSON with it. Resolved: the matrix is built from the quaternion and checked
+  against the matrix of one field value of the same element and node before use (the extraction
+  stops when neither the matrix nor its transpose matches, the convention found is recorded in
+  the stress file); the fields JSON is written before a stress failure is raised; double
+  precision output databases are read through ``dataDouble``; the numpy helpers import without
+  Abaqus and are unit-tested. Verified on the Learning Edition model ``pair_coarse_w3`` with a
+  synthetic orientation file.
+- **P0-2 (principal route).** Sorting the principal values per state splits a component that
+  reverses between tension and compression into two half amplitudes (reviewer's example: +40 /
+  −40 MPa gave a_B,V 1,09 instead of 2,0). Resolved: the principal directions of the governing
+  state are fixed and every state is projected onto them (n_i^T S n_i) in a second pass over the
+  stress files; the reversal test now gives the same 2,0 as the signed route. Item 2 of the
+  amendment above is corrected: the per-state sorting was an interpretation, not the printed
+  procedure.
+- **P1-1, P1-2 (infinities).** An equivalent stress above the isotherm and a vanishing σ_B
+  crashed the guards; now a_stat and a_B,V become infinite and the node is flagged
+  ``immediate``.
+- **P1-3 (case F2 on the compression side).** Where the ray of constant R never meets the
+  continued Goodman line (1 + M σ_m/σ_a ≤ 0) the factor is infinite and the static cap alone
+  governs; the first version clipped it to zero strength. Item 4 above holds for F1, F3 and F4
+  only; F2 is corrected.
+- **P1-4 (slope k).** k is now formed with the effective factors at the service temperature,
+  k = lg N_G / lg(σ_stat,T / σ_W,T) (p. 371), so the synthetic line runs from σ_stat,T at N = 1
+  to σ_W,T at N_G; for PA46-GF30 at 80 °C that is 14,9 (h = 1/3) to 19,3 (h → ∞) instead of
+  the room-temperature 15,65 to 20,44, about 18 % in the predicted life.
+- **P2.** The component routes (mmk, mmk_modified) refuse a stress file whose instance
+  rotation is unknown; the inverse reading of the isotherm bridges a dip of the measured curve;
+  tests added for the reversal, the infinities, F2 without a limit, F3/F4 inside the check, the
+  flags ``immediate`` and ``below_1e4``, the unknown rotation and the extraction algebra.
+- **P3.** "Mirrored line" was the wrong word: the formulas continue the Goodman line straight
+  into the compression side, as Bild 6.28 and 6.29 draw it (wording corrected); the claim
+  "p. 362" for the non-rotating directions removed; K_B is reported per node; the registry note
+  of the von Mises stress names the symbol σ_Mises of Eq. (6.3) and the typo "Baueilfestigkeit"
+  of p. 372; the optional yield-strain shift of Bild 6.22 is named as left out; K_M = 1 at zero
+  amplitude is a convention (its utilisation is 0 anyway).
+
+Reviewer's judgement of the interpretation choices: h = 0 unloaded and ±∞ hydrostatic
+supported; signed mean stress supported as the continued line; the cap on both sides supported
+by p. 365; the ductile class for the conditioned PA+GF supported by the footnote of Tabelle
+6.1 (calling 50 % r. h. "feucht" stays a judgement, the user decides).
+
+### Amendment of 2026-10-11 (the user's answers; Matscape as the validation of the material side)
+
+1. **Confirmed by the user**: the ductile class for the failure hypothesis of the conditioned
+   PA46-GF30 (q = 0; the Bachelor thesis designed with the dry material and therefore took the
+   semi-ductile column), K as the maximum of the 23 °C curve, engineering stress-strain curves
+   as the input of the nomogram. Matscape (PART Engineering) estimates the failure type of the
+   user's cards from the test data as "Ductile" with f_τ 0,577 = 1/√3, which the material entry
+   now carries as its own value (`failure_hypothesis`), overriding the class value 0,58 of
+   Tabelle 6.1.
+2. **Matscape as oracle of the material side.** The user's screenshots of the "Strength Limits
+   (SSK)" tab (the Oberbach-based estimate, N = 10^7, weld line factor 1) print, per card QS,
+   DY1, DY2 and temperature 23 / 80 °C, the static reference σ_B,S (the maximum of the 0° curve),
+   the static limit σ_SK (A_max 0,70 of the single load), the alternating strength σ_WK (A_W 0,25)
+   and M = σ_WK / σ_B,S, with the influence factors of Bild 6.18 for the reinforced
+   semi-crystalline class. gearcore reproduces them from the METG workbooks: at 23 °C within 0,1 MPa
+   (σ_SK = 0,7 K, σ_WK = 0,25 K), at 80 °C the static limit within 0,15 MPa and the alternating
+   strength within 2 % (QS 20,19 against 20,02 MPa, DY1 25,37 against 25,77, DY2 36,02 against
+   35,90; Matscape reads the strain of A_W K off its
+   fitted curve, gearcore interpolates the measured points, and some points dropped out of the
+   workbook, the user re-exports the raw curves), M within 0,005. The values are
+   recorded in `stommel_materials.yaml` (`validation_matscape`) and tested
+   (`tests/test_fatigue_matscape.py`); the cards DY1 and DY2 are registered as materials of
+   their own. The method figures of `fe_fatigue.py curves` now draw the Haigh diagram at both
+   temperatures in the house style, the counterpart of the Matscape diagrams.
+3. **What is readable and what is not**: the METG workbooks and the `.cof` cards are text or
+   xlsx and are read; the Matscape database `METG_PA46-GF30.db` is a proprietary binary and is
+   not read; screenshots are read as images. Nothing of the material side is guessed: every
+   number traces to a workbook, a `.cof` line, a screenshot or a page of the book.
+4. **Failure definitions** for the comparison with the tests (user): the method's failure is the
+   first macroscopic crack (section 3.2 of the book); the rig criterion (torque loss above 1 Nm
+   over about 100 000 cycles, derived for POM in MA-0296) admits cracks already; total failure is
+   the loss of drive. At 8 Nm the first wheel failed totally at 24 million cycles, the second
+   run stands beyond 40 million. The comparison of L7 therefore reports the method's prediction
+   against crack initiation, which the rig does not record directly, and names this.
+5. **E8**: the user asks for the check against the measured Wöhler line once it exists: the FE
+   amplitude and mean of the critical node per torque level and the measured cycles give a local
+   Wöhler line (k and the amplitude at N_G) that replaces A_W and k of the book in the same
+   chain; both predictions go side by side (roadmap E8).
+
+### Amendment of 2026-10-11 (Matscape raw curves, the CONVERSE card as the orientation source, figure rules)
+
+1. **Curve source = the raw values Matscape uses.** The user copied the stress-strain values of
+   the four cards out of Matscape (linear card: two points per temperature; QS: 0° and 90°;
+   DY1 and DY2: 0°, 45° and 90°; each at 23 and 80 °C, conditioned). They are versioned as CSV
+   files under `data/fatigue/matscape/` with a provenance header (strain in %, engineering stress
+   in MPa) and checked for copy errors (strictly increasing strain, the initial slope and the
+   maxima against the model properties Matscape prints: E_0, σ_b 0° and 90°). The METG workbook
+   reader (`io.matscape`) stays as the alternative source `xlsx`; the default `matscape_csv` is
+   the raw copy. Rule of the user: figures and checks are built on raw data, never on values read
+   off screenshots; screenshot values serve only as test expectations.
+2. **Four materials**: `pa46_gf30_linear` (the linear-elastic card "conditioned"; which card
+   this is the user states), `pa46_gf30_qs`, `pa46_gf30_dy1`, `pa46_gf30_dy2`, each with the 0°
+   bar as the reference curve, the other directions kept for the figures and E7, the model
+   properties and the Matscape strength limits per temperature. The reproduction of the Matscape
+   Haigh values is now exact: σ_B,S, σ_SK and σ_WK agree to the printed two decimals at 23 and
+   80 °C for all four cards, M within the printed rounding (QS 0,2249 against 0,225, DY1 0,2376
+   against 0,238, DY2 0,2765 against 0,276). The 2 % gap of the earlier workbook curves was the
+   dropped points of the workbook, not the method.
+3. **`gearcore.io.converse_card`** reads the whole material card of a `.cof` (every row of the
+   elastic lattice over (a_11, a_22) and temperature, the `*PLASTIC` reference curve, every Hill
+   row with R_11, R_22, R_33, R_12, R_13, R_23, the density). Finding: the `*PLASTIC` curve is
+   the 0° bar converted to true stress (reproduced within 0,16 MPa from the Matscape 0° curve
+   with its E_0), and the orientation state enters through the Hill ratios of the lattice (QS,
+   23 °C: isotropic 0,647, the mean state of the root fillets of the mapping (0,646; 0,083)
+   0,961, fully aligned 1,563). `fatigue.materials.material_for_state` builds the engineering
+   curve of a state from R_11 and E_1 of the nearest lattice state (true stress times R_11,
+   plastic strain divided by R_11, because Abaqus defines the equivalent plastic strain of the
+   Hill potential through the plastic work; the first version scaled the stress only, found by
+   the review), the uniaxial strength along the first fibre axis; **the other five ratios are read but not used yet** (the user's question
+   of 2026-10-11: R_22, R_33 and the shear ratios are not in the state curve). A real anisotropic
+   check (E7) needs the Hill equivalent stress of the fibre frame with all six ratios in place of
+   the von Mises stress, which with q = 0 is the natural generalisation of the ductile hypothesis;
+   proposal to the user in the report of 2026-10-11, decision pending. The state curves are the
+   own extension, not the published method (p. 344: isotropic reference bar).
+4. **Figure rules of the user (2026-10-11), standing**: comparable diagrams get the same axis
+   scaling, the maximum over all of them per figure family; the method figures are drawn with
+   lines only, the line style varied, no markers; file names carry the card (`_linear`, `_qs`,
+   `_dy1`, `_dy2`). The Haigh diagram is rebuilt after the Matscape original: static limit
+   triangle, Goodman line from −σ_SK to σ_B,S, allowed region below both, the stress ratios
+   R = −∞, −1, 0 as rays with labels, equal aspect, every value in the legend, nothing annotated
+   inside the axes. The nomogram carries K, A_max, A_min and A_W with their strains and isotherm
+   stresses in the legend. The synthetic Wöhler line has a linear amplitude axis and markers at
+   the decades only, both temperatures and h = 1/3 and h → ∞. New: plain stress-strain diagrams
+   per card (every direction, both temperatures), the comparison of the reference curves of all
+   cards, and the orientation-state figure per rate card (measured 0°, 45°, 90° beside the card's
+   isotropic, root-mapping and aligned states). Captions and the limits used go to
+   `bildunterschriften.md`; the output folder is `80_output/fe/stommel_methode_V2` (the old folder
+   stays recognisable).
+5. **Independent review of the evening changes (read-only, 2026-10-11)**: no P0. P1: the state
+   curve had kept the plastic strain unscaled (fixed, item 3; at QS 23 °C the isotropic K moves
+   from 74,9 to 73,2 MPa, the strain of A_W K hardly changes); the synthetic Wöhler line took
+   σ_stat of the chosen load case while k uses the single load (fixed: the line always uses the
+   single-load factors A_S of Eq. (6.22)). P2 resolved: one symbol set in the figures (the book's
+   σ_stat, σ_W, σ_Y, the Matscape names σ_SK, σ_WK, σ_B,S in the captions and the K legend),
+   ε_zul,max / ε_zul,min in the nomogram, tolerances of the Matscape test tightened to 0,01 MPa
+   (actual deviations ±0,005 MPa), the 23 °C limits also checked through the nomogram
+   functions, the CSV loader refuses a stress column that does not start at zero or goes
+   negative, temperature lookups of the card with a tolerance, dead code removed.
+6. **Second figure round (user feedback, 2026-10-11 evening), standing rules**: black-and-white
+   legibility is secured by three channels, the temperature by colour and line width (23 °C
+   dark and thick, 80 °C light and thin), the direction, orientation state, card or
+   multiaxiality by the line style, with an extended set of dash patterns where more than
+   three styles meet (orientation states: six distinct patterns); a legend of several
+   temperatures is laid out in rows per temperature (23 °C above 80 °C). The Haigh diagram
+   carries the characteristic values on value axes below and beside the main axes (−σ_stat,
+   σ_stat, σ_Y under the mean stress axis; σ_W, σ_stat beside the amplitude axis, value and
+   symbol in two lines, coloured like the line they belong to) and the label M at the Goodman
+   line, as the Matscape original prints them. The nomogram constructions are arrows (to the
+   reference curve, down to the isotherm, back to the stress axis). The synthetic Wöhler line
+   runs to 10^8 with the range of validity 10^4 to N_G framed by two dotted verticals and the
+   continuation beyond N_G dotted and declared as not part of the method.
+7. **Third figure round (user feedback, 2026-10-11 evening)**: (a) the line width stays
+   uniform (thick lines looked clumsy); the temperature is told by colour and by a family of
+   line styles (23 °C solid, long dash, dash-dot; 80 °C short dash, dotted, dash-dot-dot), the
+   direction, state or multiaxiality by the member of the family, so no two curves of one
+   panel share a style. (b) The nomogram now shows the process of Bild 3.26 / 6.17 / 6.21
+   (p. 194, 345, 349): a left panel with the ranges of the reduction factors per material
+   class and load case as bars on the shared A axis (A = 1,0 at K), the class of the gear in
+   colour and first, the chosen load case and the alternating case emphasised; from A_max of
+   the bar an arrow to the reference curve at 23 °C, down at constant strain to the isotherm
+   of the service temperature, on to the stress axis at the right of the panel with a dot at
+   σ_stat (a Z, the stress axis sits only on the right, nothing crosses; user); A_min and A_W
+   likewise; the nomogram is scaled per card (its A axis hangs on K, a shared stress limit
+   squashed it), the one exception to the shared-scaling rule, stated in the captions file.
+   K follows Bild 3.25 (p. 193): the gear's PA46-GF30 is ductile without a distinct
+   yield point (case d), so K = σ_B, the maximum of the curve. The lump-sum factors of the
+   Oberbach formula σ_zul = K A_T A_S A_W A_A A_I A_n (p. 193 to 195: temperature, static
+   duration, alternating load; ageing, inhomogeneity, others) are not applied beyond A_S or
+   A_W and the isotherm transfer, which replaces A_T; the strain shift of Bild 6.22 is not
+   applied (the user: its criteria do not fit the measured curves). (c) The synthetic Wöhler
+   line is drawn only where the method is valid (10^4 to N_G), no extrapolation to either
+   side, the axis from 10^3 to 10^8; the two lines per temperature are the uniaxial state
+   h = 1/3 (A_max) and the hydrostatic bound h → ∞ (A_min), which bracket σ_stat and k over
+   the multiaxiality a node can have, σ_W being fixed for the short-fibre classes. (d) Box
+   labels (R rays, M) are centred on the glyphs (matplotlib reserves the descender).

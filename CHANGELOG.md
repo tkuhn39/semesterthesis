@@ -9,6 +9,116 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (track E: stress tensor extraction, the check after Stommel et al. and its material side, 2026-10-11, ADR-118)
+- **`scripts/fe_odb_extract.py`** writes, beside the fields JSON, `<job>_stress.npz` (stress
+  format 1): the nodal averaged stress tensor (six components, float32) of every node of the wheel
+  per step from the bulk data blocks of the element-nodal subset, rotated into the frame of the
+  wheel part (the instance rotation of the position read from the deck, a local `*ORIENTATION`
+  system of W3/W4 transformed to global first), with node labels, coordinates in the part frame,
+  the count of values per node and every node set of the instance; 29 s and 8,3 MB for the four
+  steps of the 82 425-node position (verified: part-frame coordinates equal the mesh file within
+  3e-6 mm, the principal stresses of the averaged tensor stay within 0,4 MPa of the averaged
+  invariants of the JSON, the σ1 direction at the critical fillet node lies 0,5° off the fillet
+  tangent). `build_fe_decks.py extract` refreshes the folder's copy of the script and re-runs a
+  job whose stress file is missing; `run_all.ps1` names both files.
+- **`gearcore.fe.stress`**: reader of the stress files (`read_stress_file`, `StressFile` with
+  `stress(step)`, `is_complete`, `index_of`, the sets) and `positions_with_stress` along the path
+  of contact.
+- **`gearcore.fatigue.stommel`**: the equations of chapter 6 of Stommel, Stojek, Korte (2018) as
+  traced functions (6.1 to 6.26: utilisation, control variable and interpolated equivalent
+  stress, Hencky and natural degree of multiaxiality with the strain scalings, Goodman and
+  Gerber, component-wise and signed von Mises amplitude and mean, Manson–McKnight in both
+  variants, the normalised equivalent utilisation, Neuber, the static check with the pressure
+  correction, σ_W, K_M of the four overload cases, M, K_B and the slope k with their inverse, the
+  static cap, the cyclic utilisations), vectorised over nodes; every formula body read on the
+  rendered page (the text layer had 6.21 unreadable; 6.17 and 6.25 take magnitudes, M = |σ_W/σ_Y|).
+  Conventions stated in the module: h = 0 for an unloaded state and ±∞ for a hydrostatic one, the
+  overload cases with a signed mean stress (the mirrored line of Bild 6.28), the cap σ_stat − |σ_m|
+  on both sides, K_M = 1 for a component without amplitude.
+- **`gearcore.fatigue.materials`** and `data/fatigue/stommel_materials.yaml`: the class tables
+  (Tabelle 6.1, Bild 6.18, Bild 6.26, Tabelle 6.3, transcribed from the rendered pages; the test
+  reproduces Tabelle 6.3 from the A rows), the nomogram (K = the largest stress of the
+  room-temperature curve, the strain limits of a load case, the transfer to the service isotherm
+  after 6.2.2.1, A_W fixed for the short-fibre classes, the effective A_S(h) and k(h)) and the
+  materials `pa46_gf30_linear`, `pa46_gf30_qs`, `pa46_gf30_dy1`, `pa46_gf30_dy2` (reduction
+  class reinforced semi-crystalline, failure hypothesis ductile with the card's own f_τ 0,577;
+  curves = the values Matscape uses for the cards, copied by the user and versioned as CSV under
+  `data/fatigue/matscape/` with provenance, the 0° bar as the reference, 45° and 90° kept for the
+  figures and E7; the METG workbook reader stays as the alternative source `xlsx`;
+  `material_for_state` builds the curve of an orientation state from the CONVERSE card).
+- **`gearcore.io.matscape`**: parser of the METG / Matscape stress-strain workbooks (one sheet
+  per direction, column pairs per rate, missing curves marked), `StressStrainCurve` with
+  interpolation on the rising branch, provenance from the file name.
+- **`gearcore.fatigue.check`**: the history of every node over the mesh cycle (unloaded state
+  plus the complete positions of one series and load step, streamed file by file), the static
+  check per state with the governing state kept, four amplitude routes (`principal` as section
+  6.3.5 prints it, `signed_mises`, `mmk`, `mmk_modified`), K_M per component and overload case,
+  σ_B capped, a_B,V, and the predicted life on the synthetic Wöhler line with flags
+  (`ok`, `below_1e4`, `beyond_N_G`, `none`, `immediate`); `check_folder` over a folder.
+- **Script `fe_fatigue.py`**: `stommel` (report, node table, fillet map, curves of the critical
+  nodes over the positions) and `curves` (nomogram, Haigh diagram, synthetic Wöhler line of the
+  material "in Anlehnung an [Sto18]" with captions). First run on the single position C of
+  `frozen_mesh_20layers_bore33_gerechnet` (W1, history = unloaded + C): K 115,5 MPa (23 °C),
+  σ_Y(80 °C) 89,0 MPa, σ_stat 46,6 to 59,6 MPa, σ_W 20,2 MPa, M 0,227, k 15,65 to 20,44; at 16 Nm
+  both fillets exceed one (a_stat 1,49 at the tension fillet, a_B,V 4,6 at the compression
+  fillet where the static cap binds), to be read with the full series and S-Life (E4).
+- **Registry**: 58 quantities of the check (units MPa and % added, a prime allowed in a
+  symbol), homonyms k, q, h and σ_B recorded; `openpyxl` (with stubs) as a dependency.
+- **Matscape as the oracle of the material side** (user's screenshots of the SSK strength
+  limits, renamed in `70_input/73_Materialdatenbank`): σ_B,S, σ_SK, σ_WK and M per card and
+  temperature recorded in `stommel_materials.yaml` and reproduced exactly from the Matscape raw
+  curves (σ_B,S, σ_SK and σ_WK to the printed two decimals at 23 and 80 °C for all four cards,
+  M within the printed rounding); the user's card values f_τ 0,577 / q 0 (ductile, confirmed)
+  override the class.
+- **`gearcore.io.converse_card`**: the whole material card of a `.cof` (elastic lattice over
+  the orientation state and temperature, the `*PLASTIC` reference curve, the six Hill ratios per
+  state, density); the reference curve is the 0° bar in true stress (reproduced within 0,16 MPa
+  with Matscape's E_0), the state curve scales it with R_11 (stress times, plastic strain divided
+  by, the plastic-work definition of the equivalent plastic strain) and E_1 of the nearest
+  lattice state (the other five ratios are read, not used yet; E7); reviewed independently
+  (two P1 fixed: that strain scaling, and the synthetic Wöhler line always with the single-load
+  factors).
+- **Method figures rebuilt per the user's rules** (`fe_fatigue.py curves`, all four cards,
+  `80_output/fe/stommel_methode_V2`): same axis scaling per figure family (maximum over all
+  cards), lines only with varied styles, file names carrying the card; stress-strain diagrams per
+  card and direction, the comparison of the reference curves, the nomogram with every value in
+  the legend, the Haigh diagram after the Matscape original (static triangle, Goodman line from
+  −σ_SK to σ_B,S, allowed region, R rays), the synthetic Wöhler line with a linear amplitude axis
+  and markers at the decades, the orientation states of the CONVERSE card beside the measured
+  directions; captions and limits in `bildunterschriften.md`. Second round after the user's
+  review: temperature by colour and line width, styles per direction/state/card (six patterns
+  where needed), legends in rows per temperature, value axes and the M label in the Haigh
+  diagram as in the Matscape original, arrowed nomogram constructions, Wöhler axis to 10^8
+  with the validity window 10^4 to N_G framed. Third round: uniform line width with style
+  families per temperature, the nomogram with the reduction-factor panel of Bild 6.17/6.21
+  (bars per class and load case, arrows from A_max to the reference curve, down to the isotherm
+  and back to the stress axis), the Wöhler line drawn only between 10^4 and N_G on an axis
+  10^3 to 10^8, centred box labels.
+- **Independent review before the commit** (ADR-118, review section): two P0 resolved (the
+  quaternion of the bulk data blocks, verified on the W3 Learning Edition model; the principal
+  route now projects every state onto the fixed directions of the governing state in a second
+  pass), four P1 resolved (infinite strain and vanishing strength flagged instead of crashing,
+  F2 without a Goodman limit on the compression side, k at the service temperature), P2/P3
+  resolved (rotation guard for the component routes, monotone inverse reading, wording, notes,
+  tests of the reversal, the limits, the flags and the extraction algebra).
+
+### Changed (documentation: thesis text, evaluation after Stommel et al. and running tests planned, 2026-10-11, ADR-118)
+- **Roadmap**: new section with the user's requirements of 2026-10-11 and the premises checked
+  in the sources (no thesis text yet, BA-0486 a calculation study, MA-0296 the kst-E running-test
+  thesis of 2023, Stommel chapter 6 a utilisation check on an isotropic model, FZG Wöhler
+  practice and DIN 50100 in the repository, the METG direction-dependent curves of Stanyl
+  TW200F6, the drawings against the STplus case); three tracks T (thesis), E (Stommel), L
+  (running tests and Wöhler lines) with steps and status; the decisions of the discussion.
+- **M7 variants** redefined after the user: V1 = drawing features the STplus case lacks (pinion
+  tip relief and wheel tip rounding), V2/V3 = one gear as measured paired with the V1 version of
+  the other, V4 = both; new step M7a, the field-by-field check of the three drawings against the
+  STplus case before V1 (both drawings prescribe Fertigmaß spans well below the nominal).
+- **ADR-118** records the decisions: whole-wheel stress tensor extraction in the part frame,
+  the method as published on W1, overload case 2 to be verified, METG curves as material input,
+  S-Life as oracle, the anisotropic evaluation as own work, DIN 50100 as the primary source of
+  the statistics, registered external root stresses and VDI 2736 in gearcore long-term, tool
+  chain documented at middle depth.
+
 ### Added (measurement track M4 - roughness of the tooth flanks from the raw exports, 2026-10-11, ADR-117)
 User decision: no roughness analysis in the house style; the printed Hommel protocols go into the
 appendix, the code uses the raw exports.

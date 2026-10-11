@@ -1,0 +1,35 @@
+# Engineering stress-strain curve as Matscape (PART Engineering) uses it for the material card of
+# Stanyl TW200F6 (PA46-GF30, conditioned 50 % r. h.); copied by the user from Matscape on
+# 2026-10-11 (decimal comma, scientific notation in the original; the points are Matscape's
+# representation of the METG tensile tests, not the raw test points). Columns: strain in %,
+# stress in MPa. Card DY2, 23 degC, 0 deg to the flow. ADR-118.
+strain_percent,stress_mpa
+0.000000,0.000000
+0.100000,10.595590
+0.230000,24.196150
+0.280000,28.925440
+0.440000,43.567700
+0.920000,92.399580
+1.080000,105.987300
+1.240000,119.009200
+1.400000,131.978500
+1.560000,144.738300
+1.720000,156.333800
+1.880000,167.008700
+2.040000,177.306300
+2.200000,186.375800
+2.360000,194.659300
+2.520000,202.003800
+2.680000,208.719500
+2.840000,214.721000
+3.000000,219.882100
+3.160000,224.663400
+3.320000,228.862400
+3.480000,232.356800
+3.640000,235.441600
+3.800000,237.833000
+3.960000,240.109300
+4.120000,241.983400
+4.280000,243.495600
+4.440000,244.822400
+4.600000,245.733100

@@ -25,5 +25,20 @@ the guard and implementing the branch against its primary source.
 | Generating state selectable (upper, mean, lower allowance) | the generation uses the upper allowance | FVA Workbench attribute 15139 `switch_base_tangent_length_deviations`; DIN 21773 §4 | proposed for increment 5 |
 | Load capacity, materials, fillet variants, FE | separate stages (see roadmap) | ISO 6336:2019 family, VDI 2736, patents/papers in `00_literatur` | contracts (`MaterialKind`, `MaterialRecord`) exist from stage 1 |
 | Test-rig results of the running tests (torque, speed, temperature, cycles, failure, failed teeth) | none yet; the sheet `70_input/72_Kleingetriebepruefstand_KV3/kst-E_Laufversuche_KV3.xlsx` is inventoried only (one sheet, columns Datum, Prüfstand, Werkstoff, ME-Nr. Ritzel, ME-Nr. Rad, Öltemperatur, Ziel Zahntemperatur, Versagensart, Ziel Drehmoment Ritzel, verspannt, T_0, 15 min, 60 min, T_nachgespannt, Drehmoment Rad, Drehzahl, Lastwechsel, Bemerkung, Grübchenfläche) | the user's sheet; the evaluation of the tests is a separate step (Wöhler lines, other materials) | M5 adds the contract `measurement.test_rig.TestRun` with a column map; a CSV export with a column for the failed teeth is proposed |
+| Matscape material database (`70_input/73_Materialdatenbank/METG_PA46-GF30.db`) | not read (proprietary binary, not SQLite); the METG curves are read from the user's workbooks in `00_literatur/06_datenblaetter` (`io.matscape`), the Matscape results from the user's screenshots (validation values in `stommel_materials.yaml`) | the format of Matscape (PART Engineering); an export of the database as text or xlsx by the user | the direction-dependent cards of E7 if the database holds more than the workbooks |
+| Anisotropic design check (track E7) | none; `fatigue.check` runs the published isotropic method on W1 | Stommel 2018 section 6.1.5 (component-wise with direction-dependent strengths), Tsai-Hill 3.34 to 3.37; the METG curves at 0°, 45°, 90° | the fibre frame per element from the `.cof`, strengths per direction, the utilisation in the fibre frame on W3/W4 (ADR-118) |
 | Hommel raw roughness profiles (`.hwp`) | `io.hommel` reads the ASCII export only; `parse_hwp` is `NotSupportedError` until the record layout is confirmed (MEAS-02) | EVOVIS V3.00.1 export (266-byte ASCII header: `CX A 2978 nm`, `LT ... NoPoints 2978`) | profile plots of the thesis if wanted (M4) |
 | Quality grades of the measured gears | none; the inventory and M2 report the tolerances the P40 stored | DIN ISO 1328-1:2018 Tabelle 3 ff. (tolerances per grade, in the repository); DIN 3962 (withdrawn, to be placed by the user for the comparison with STplus) | `gearcore.tolerances.iso1328_1` (increment 5) |
+
+## FE results as a map over the tooth (idea of 2026-10-11)
+
+The curves over the path of contact report maxima over the face width. The extracted fields hold
+the fillet values per layer (`fe.evaluation.FilletLayer`: z, σ1, σ3, node, radius) and the contact
+stresses per node, so a map of σ1 or CPRESS over face width × position on the tooth (or × path of
+contact) can be drawn without new FE runs. Planned: a static map per load step in the house style
+(sequential map of the brand colour, `plot_style`) for the thesis, and an interactive page or
+notebook with sliders for load step, torque, variant (V0 to V4 of M7), material step and the fibre
+orientation of the CONVERSE mapping, and the body geometry (ring or pockets), to relate the place
+of a maximum to the fibre orientation and the body. Entry point: `scripts/build_fe_decks.py report`
+(`_path_series`) and `fe.evaluation.path_points`.
+

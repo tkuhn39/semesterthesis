@@ -28,7 +28,7 @@ from gearcore.data import data_path
 from gearcore.errors import InputRangeError
 from gearcore.models.common import FrozenModel
 
-Unit = Literal["mm", "deg", "µm", "rad", "m/s", "1/min", "-"]
+Unit = Literal["mm", "deg", "µm", "rad", "m/s", "1/min", "MPa", "%", "-"]
 UNIT_SUFFIX: MappingProxyType[str, str] = MappingProxyType(
     {
         "mm": "_mm",
@@ -37,6 +37,8 @@ UNIT_SUFFIX: MappingProxyType[str, str] = MappingProxyType(
         "rad": "_rad",
         "m/s": "_m_s",
         "1/min": "_per_min",
+        "MPa": "_mpa",
+        "%": "_percent",
         "-": "",
     }
 )
@@ -195,7 +197,9 @@ def _latex_part(part: str) -> str:
     star = part.endswith(FACTOR_MARK)
     body = part.removesuffix(FACTOR_MARK)
     base, _, subscript = body.partition("_")
-    rendered = GREEK.get(base, base)
+    prime = base.endswith("'")  # sigma'_W: the corrected value of a quantity (Stommel 2018)
+    base = base.removesuffix("'")
+    rendered = GREEK.get(base, base) + ("'" if prime else "")
     if subscript:
         pieces = [GREEK.get(p, rf"\mathrm{{{p}}}") for p in subscript.split("_")]
         rendered += "_{" + "".join(pieces) + "}"
@@ -207,7 +211,7 @@ def latex(symbol: str) -> str:
 
     ``'inv alpha_n'`` names the involute function of an angle, ``'E_sns/E_sni'`` a pair.
     """
-    if not isinstance(symbol, str) or not re.fullmatch(r"[A-Za-z0-9_*/ ]+", symbol):
+    if not isinstance(symbol, str) or not re.fullmatch(r"[A-Za-z0-9_*/ ']+", symbol):
         raise InputRangeError(f"not a symbol of the registry: {symbol!r}")
     parts = []
     for part in symbol.split("/"):

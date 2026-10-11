@@ -75,6 +75,21 @@ def load_converse_rates() -> dict[str, dict[str, Any]]:
     return rates
 
 
+def load_stommel_materials() -> dict[str, Any]:
+    """The material classes of Stommel et al. (2018), chapter 6, and the materials of the thesis
+    (``fatigue/stommel_materials.yaml``): the mappings ``classes``, ``constants`` and
+    ``materials`` with the provenance of the transcription (ADR-118)."""
+    path = data_path("fatigue", "stommel_materials.yaml")
+    loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, dict):
+        raise ParseError("stommel_materials.yaml: expected a mapping")
+    for key in ("classes", "constants", "materials"):
+        if not isinstance(loaded.get(key), dict):
+            raise ParseError(f"stommel_materials.yaml: expected a mapping {key!r}")
+    document: dict[str, Any] = loaded
+    return document
+
+
 def load_expected_differences() -> dict[str, dict[str, Any]]:
     """Documented differences between gearcore and the STplus oracle (ADR-105), by name."""
     path = data_path("stplus", "expected_differences.yaml")

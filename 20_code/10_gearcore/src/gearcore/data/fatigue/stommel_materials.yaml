@@ -1,0 +1,197 @@
+# Material classes of the simplified strength check of Stommel, Stojek, Korte (2018), chapter 6,
+# and the materials of the thesis. Every number of the classes is copied from the rendered page
+# of the book (printed page; PDF page = printed + 18); nothing is derived here. ADR-118.
+#
+# Tabelle 6.1 (p. 323): shear strength factor f_tau and control variable q per failure behaviour
+#   at room temperature and quasi-static speed; three columns: ductile (unreinforced
+#   semi-crystalline)*, semi-ductile (reinforced semi-crystalline), brittle (amorphous)**.
+#   * "auch feuchte hydrophile verstaerkte Thermoplaste (z. B. PA+GF)" count as ductile;
+#   ** 0,74 after [SAE2007]. The table knows no reinforced amorphous column; the brittle
+#   values are assigned to it here (the text, p. 323: amorphous = brittle).
+# Bild 6.18 (p. 346): reduction factors A per material class and load case, min and max;
+#   footnote: long-term + 0,1 to 0,2 for retardation (creep).
+# Bild 6.26 (p. 362): A_W for N = 10^7 and R = -1, min and max per class; fixed values for the
+#   short-fibre classes (p. 363: "feste Werte"), not scaled by the degree of multiaxiality
+#   (p. 363: "ausser bei kurzfaserverstaerkten Werkstoffen").
+# Tabelle 6.3 (p. 371): slope exponents k of the synthetic Woehler line per class, min and max
+#   (k = lg N_G / lg(A_S / A_W), Eq. (6.22): the extremes of the single-load row of Bild 6.18
+#   against those of A_W reproduce the table, tests/test_fatigue_stommel.py).
+# Constants: N_G = 10^7 (p. 328, p. 371); compressive strength factor 1,3 (Eq. (6.17), p. 357).
+provenance:
+  source: "Stommel2018"
+  transcribed: "Claude, 2026-10-11, on the rendered pages 323, 346, 362, 371; confirmed by the independent review of 2026-10-11"
+  confirmed_by_user: false
+classes:
+  semi_crystalline_unreinforced:
+    designation: "teilkristallin (unverstärkt)"
+    behaviour: "duktil"
+    f_tau: 0.58
+    q: 0.0
+    reduction_factor:
+      einmalig: [0.8, 1.0]
+      mehrmalig: [0.6, 0.8]
+      langzeitig: [0.5, 0.6]
+      wechselnd: [0.2, 0.3]
+    cyclic_reduction_factor: [0.20, 0.30]
+    cyclic_factor_scaled_by_multiaxiality: true
+    slope_exponent: [11.63, 13.39]
+  amorphous_unreinforced:
+    designation: "amorph (unverstärkt)"
+    behaviour: "spröde"
+    f_tau: 0.74
+    q: 0.52
+    reduction_factor:
+      einmalig: [0.65, 0.8]
+      mehrmalig: [0.5, 0.65]
+      langzeitig: [0.4, 0.5]
+      wechselnd: [0.17, 0.2]
+    cyclic_reduction_factor: [0.17, 0.20]
+    cyclic_factor_scaled_by_multiaxiality: true
+    slope_exponent: [11.63, 12.02]
+  semi_crystalline_reinforced:
+    designation: "teilkristallin (verstärkt)"
+    behaviour: "semi-duktil"
+    f_tau: 0.65
+    q: 0.26
+    reduction_factor:
+      einmalig: [0.55, 0.7]
+      mehrmalig: [0.45, 0.55]
+      langzeitig: [0.35, 0.45]
+      wechselnd: [0.25, 0.25]
+    cyclic_reduction_factor: [0.25, 0.25]
+    cyclic_factor_scaled_by_multiaxiality: false
+    slope_exponent: [15.65, 20.44]
+  amorphous_reinforced:
+    designation: "amorph (verstärkt)"
+    behaviour: "spröde"
+    f_tau: 0.74
+    q: 0.52
+    reduction_factor:
+      einmalig: [0.55, 0.7]
+      mehrmalig: [0.45, 0.55]
+      langzeitig: [0.35, 0.45]
+      wechselnd: [0.17, 0.17]
+    cyclic_reduction_factor: [0.17, 0.17]
+    cyclic_factor_scaled_by_multiaxiality: false
+    slope_exponent: [11.39, 13.73]
+constants:
+  limit_number_of_cycles: 1.0e7
+  compressive_strength_factor: 1.3
+  lowest_number_of_cycles: 1.0e4
+# --- the materials of the thesis -------------------------------------------------------------------
+# Stanyl TW200F6 (PA46-GF30), conditioned at 50 % r. h. The curves are the engineering
+# stress-strain curves Matscape (PART Engineering) uses for the user's material cards, copied by
+# the user from Matscape on 2026-10-11 and versioned as CSV files below `fatigue/matscape/`
+# (`source: matscape_csv`, strain in %, stress in MPa). The 0 deg curve is the bar in flow
+# direction: the reference curve the nomogram wants (Stommel 2018, p. 344, "Fliessrichtung ...
+# in Laengsrichtung des Pruefstabs"), the input of Matscape's own strength limits and, converted
+# to true stress, the `*PLASTIC` curve of the CONVERSE card (`io.converse_card`: reproduced within
+# 0,16 MPa with the modulus E_0 of the bar). The orientation state of an element enters through
+# the Hill ratios of the card (`cof`): the state curves (isotropic a_11 = a_22 = 1/3, the mean
+# state of the root fillets of the mapping, the aligned state) are built from the card, not
+# stored here.
+#
+# The user's confirmations of 2026-10-11: ductile class for the failure hypothesis (the Bachelor
+# thesis designed with the dry material and therefore took the semi-ductile column), K as the
+# maximum of the 23 degC curve, engineering curves. Matscape estimates the failure type of the
+# cards from the test data as "Ductile" with f_tau 0,577 = 1/sqrt(3), the von Mises value, so
+# q = 0 exactly (model properties and strength limits in 70_input/73_Materialdatenbank,
+# `Matscape_PA46-GF30_<card>_*.png`). The failure_hypothesis block of a material overrides the
+# class values with the card's own f_tau and q.
+#
+# validation_matscape: what Matscape prints in its Haigh diagrams ("Strength Limits (SSK)",
+# N = 1e7, weld line factor A_WL = 1) per card and temperature: sigma_B_S the static reference
+# (the maximum of the 0 deg curve), sigma_SK the static limit (A_max of the single load, 0,70),
+# sigma_WK the alternating strength (A_W 0,25) and M = sigma_WK / sigma_B_S; read off the
+# screenshots of 2026-10-11. `tests/test_fatigue_matscape.py` reproduces them from the CSV curves.
+# E_0 (initial modulus of the bar, MPa) and sigma_b_90 (the 90 deg maximum) are the model
+# properties Matscape prints; E_0 converts the `*PLASTIC` reference back to engineering strain.
+materials:
+  pa46_gf30_linear:
+    designation: "Stanyl TW200F6 (PA46-GF30), konditioniert, linear-elastische Karte (Matscape 'conditioned')"
+    reduction_class: semi_crystalline_reinforced
+    failure_hypothesis_class: semi_crystalline_unreinforced
+    failure_hypothesis: { f_tau: 0.577, q: 0.0, source: "Matscape failure type estimate (Ductile), user 2026-10-11" }
+    confirmed_by_user: "2026-10-11: the linear card of Matscape for the comparison of the figures only"
+    static_characteristic_value: "maximum"
+    curves:
+      room_temperature: { source: matscape_csv, file: "pa46_gf30_linear_23C.csv", temperature_c: 23, direction_deg: 0 }
+      service: { source: matscape_csv, file: "pa46_gf30_linear_80C.csv", temperature_c: 80, direction_deg: 0 }
+    provenance: "Matscape card 'PA46 GF30 | none | conditioned': two points per temperature (0 and 1 % strain, 62,77 and 41,56 MPa; the slopes 6277 and 4156 MPa follow from them); which card this is, the user states (open)"
+    validation_matscape:
+      screenshots: ["Matscape_PA46-GF30_conditioned_linear-elastisch_Haigh_23C_N1e7_AWL1.png", "Matscape_PA46-GF30_conditioned_linear-elastisch_Haigh_80C_N1e7_AWL1.png"]
+      23: { sigma_B_S_mpa: 62.77, sigma_SK_mpa: 43.94, sigma_WK_mpa: 15.69, M: 0.25 }
+      80: { sigma_B_S_mpa: 41.56, sigma_SK_mpa: 29.09, sigma_WK_mpa: 10.39, M: 0.25 }
+  pa46_gf30_qs:
+    designation: "Stanyl TW200F6 (PA46-GF30), konditioniert, quasi-statisch (QS, 1,67e-5 m/s)"
+    reduction_class: semi_crystalline_reinforced
+    failure_hypothesis_class: semi_crystalline_unreinforced
+    failure_hypothesis: { f_tau: 0.577, q: 0.0, source: "Matscape failure type estimate of the card (Ductile, f_tau 0,577), user 2026-10-11" }
+    confirmed_by_user: "2026-10-11: ductile class for q, K = maximum of the 23 degC curve, engineering curves"
+    static_characteristic_value: "maximum"
+    curves:
+      room_temperature: { source: matscape_csv, file: "pa46_gf30_qs_23C_0deg.csv", temperature_c: 23, direction_deg: 0 }
+      service: { source: matscape_csv, file: "pa46_gf30_qs_80C_0deg.csv", temperature_c: 80, direction_deg: 0 }
+    other_curves:
+      - { file: "pa46_gf30_qs_23C_90deg.csv", temperature_c: 23, direction_deg: 90 }
+      - { file: "pa46_gf30_qs_80C_90deg.csv", temperature_c: 80, direction_deg: 90 }
+    cof: "30_references_and_examples/91_Converse/wheel_mesh_QS.cof"
+    model_properties:
+      23: { E_0_mpa: 5980.00, E_90_mpa: 3933.45, sigma_b_0_mpa: 115.51, sigma_b_90_mpa: 70.92 }
+      80: { E_0_mpa: 3885.64, E_90_mpa: 1787.00, sigma_b_0_mpa: 88.98, sigma_b_90_mpa: 52.12 }
+      effective_orientation: [0.698, 0.238, 0.063]
+    provenance: "METG tensile tests at 1,67e-5 m/s (QS), as Matscape uses them (user, 2026-10-11); no 45 deg curve at QS"
+    validation_matscape:
+      screenshots: ["Matscape_PA46-GF30_QS_Haigh_23C_N1e7_AWL1.png", "Matscape_PA46-GF30_QS_Haigh_80C_N1e7_AWL1.png"]
+      23: { sigma_B_S_mpa: 115.51, sigma_SK_mpa: 80.86, sigma_WK_mpa: 28.88, M: 0.25 }
+      80: { sigma_B_S_mpa: 88.98, sigma_SK_mpa: 59.60, sigma_WK_mpa: 20.02, M: 0.225 }
+  pa46_gf30_dy1:
+    designation: "Stanyl TW200F6 (PA46-GF30), konditioniert, Dehnrate DY1 (0,174 m/s, 3 1/s)"
+    reduction_class: semi_crystalline_reinforced
+    failure_hypothesis_class: semi_crystalline_unreinforced
+    failure_hypothesis: { f_tau: 0.577, q: 0.0, source: "Matscape failure type estimate of the card (Ductile, f_tau 0,577), user 2026-10-11" }
+    confirmed_by_user: "2026-10-11: as the QS card"
+    static_characteristic_value: "maximum"
+    curves:
+      room_temperature: { source: matscape_csv, file: "pa46_gf30_dy1_23C_0deg.csv", temperature_c: 23, direction_deg: 0 }
+      service: { source: matscape_csv, file: "pa46_gf30_dy1_80C_0deg.csv", temperature_c: 80, direction_deg: 0 }
+    other_curves:
+      - { file: "pa46_gf30_dy1_23C_45deg.csv", temperature_c: 23, direction_deg: 45 }
+      - { file: "pa46_gf30_dy1_23C_90deg.csv", temperature_c: 23, direction_deg: 90 }
+      - { file: "pa46_gf30_dy1_80C_45deg.csv", temperature_c: 80, direction_deg: 45 }
+      - { file: "pa46_gf30_dy1_80C_90deg.csv", temperature_c: 80, direction_deg: 90 }
+    cof: "30_references_and_examples/91_Converse/wheel_mesh_DY1.cof"
+    model_properties:
+      23: { E_0_mpa: 7589.89, E_90_mpa: 5390.41, sigma_b_0_mpa: 176.40, sigma_b_90_mpa: 104.93 }
+      80: { E_0_mpa: 4626.00, E_90_mpa: 2214.00, sigma_b_0_mpa: 108.43, sigma_b_90_mpa: 62.45 }
+      effective_orientation: [0.698, 0.238, 0.064]
+    provenance: "METG tensile tests at 0,174 m/s (DY1), as Matscape uses them (user, 2026-10-11)"
+    validation_matscape:
+      screenshots: ["Matscape_PA46-GF30_DY1_Haigh_23C_N1e7_AWL1.png", "Matscape_PA46-GF30_DY1_Haigh_80C_N1e7_AWL1.png"]
+      23: { sigma_B_S_mpa: 176.40, sigma_SK_mpa: 123.48, sigma_WK_mpa: 44.10, M: 0.25 }
+      80: { sigma_B_S_mpa: 108.43, sigma_SK_mpa: 73.60, sigma_WK_mpa: 25.77, M: 0.238 }
+  pa46_gf30_dy2:
+    designation: "Stanyl TW200F6 (PA46-GF30), konditioniert, Dehnrate DY2 (10 m/s, 60 1/s)"
+    reduction_class: semi_crystalline_reinforced
+    failure_hypothesis_class: semi_crystalline_unreinforced
+    failure_hypothesis: { f_tau: 0.577, q: 0.0, source: "Matscape failure type estimate of the card (Ductile, f_tau 0,577), user 2026-10-11" }
+    confirmed_by_user: "2026-10-11: as the QS card"
+    static_characteristic_value: "maximum"
+    curves:
+      room_temperature: { source: matscape_csv, file: "pa46_gf30_dy2_23C_0deg.csv", temperature_c: 23, direction_deg: 0 }
+      service: { source: matscape_csv, file: "pa46_gf30_dy2_80C_0deg.csv", temperature_c: 80, direction_deg: 0 }
+    other_curves:
+      - { file: "pa46_gf30_dy2_23C_45deg.csv", temperature_c: 23, direction_deg: 45 }
+      - { file: "pa46_gf30_dy2_23C_90deg.csv", temperature_c: 23, direction_deg: 90 }
+      - { file: "pa46_gf30_dy2_80C_45deg.csv", temperature_c: 80, direction_deg: 45 }
+      - { file: "pa46_gf30_dy2_80C_90deg.csv", temperature_c: 80, direction_deg: 90 }
+    cof: "30_references_and_examples/91_Converse/wheel_mesh_DY2.cof"
+    model_properties:
+      23: { E_0_mpa: 10595.59, E_90_mpa: 7922.89, sigma_b_0_mpa: 245.73, sigma_b_90_mpa: 135.66 }
+      80: { E_0_mpa: 6074.84, E_90_mpa: 3290.00, sigma_b_0_mpa: 129.84, sigma_b_90_mpa: 75.52 }
+      effective_orientation: [0.698, 0.238, 0.064]
+    provenance: "METG tensile tests at 10 m/s (DY2), as Matscape uses them (user, 2026-10-11)"
+    validation_matscape:
+      screenshots: ["Matscape_PA46-GF30_DY2_Haigh_23C_N1e7_AWL1.png", "Matscape_PA46-GF30_DY2_Haigh_80C_N1e7_AWL1.png"]
+      23: { sigma_B_S_mpa: 245.73, sigma_SK_mpa: 172.01, sigma_WK_mpa: 61.43, M: 0.25 }
+      80: { sigma_B_S_mpa: 129.84, sigma_SK_mpa: 90.27, sigma_WK_mpa: 35.90, M: 0.276 }
