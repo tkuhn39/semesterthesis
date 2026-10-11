@@ -390,6 +390,18 @@ def material_for_state(
     )
 
 
+def with_reduction_class(material: StommelMaterial, class_name: str) -> StommelMaterial:
+    """The same material with the reduction factors of another class of the book. The user's
+    decision of 2026-10-11 for the Hill extension (E7): the low factors of the reinforced class
+    carry the transverse weakness as a lump sum (book p. 346), which the ratios of the card
+    express explicitly, so the anisotropy must not be counted twice; the extension takes the
+    factors of the ductile unreinforced class by default."""
+    classes = material_classes()
+    if class_name not in classes:
+        raise InputRangeError(f"unknown material class {class_name!r}; known: {sorted(classes)}")
+    return material.model_copy(update={"reduction_class": classes[class_name]})
+
+
 # --- the nomogram -----------------------------------------------------------------------------------
 
 

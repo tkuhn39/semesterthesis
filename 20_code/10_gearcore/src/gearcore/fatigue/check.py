@@ -53,13 +53,22 @@ import numpy as np
 import numpy.typing as npt
 
 from gearcore.errors import InputRangeError
+from gearcore.fatigue import anisotropy as an
 from gearcore.fatigue import materials as mt
 from gearcore.fatigue import stommel as st
 from gearcore.fe import stress as sf
 
 Array = npt.NDArray[np.float64]
-AmplitudeRoute = Literal["principal", "signed_mises", "mmk", "mmk_modified"]
-ROUTES: tuple[AmplitudeRoute, ...] = ("principal", "signed_mises", "mmk", "mmk_modified")
+AmplitudeRoute = Literal["principal", "signed_mises", "mmk", "mmk_modified", "signed_hill"]
+ROUTES: tuple[AmplitudeRoute, ...] = (
+    "principal",
+    "signed_mises",
+    "mmk",
+    "mmk_modified",
+    "signed_hill",
+)
+Equivalent = Literal["mises", "hill"]
+EQUIVALENTS: tuple[Equivalent, ...] = ("mises", "hill")
 COMPONENT_ROUTES: tuple[AmplitudeRoute, ...] = ("mmk", "mmk_modified")
 """Routes that work with the components of the part frame and need the instance rotation."""
 LIFE_GRID = np.logspace(3.0, 10.0, 71)
@@ -81,6 +90,9 @@ class CheckSettings:
     compressive_strength_factor: float = st.COMPRESSIVE_STRENGTH_FACTOR
     include_unloaded_state: bool = True
     """Add the state σ = 0 to every history (the wheel turns out of the mesh)."""
+    equivalent: Equivalent = "mises"
+    """Equivalent stress of the static check: the book's von Mises stress (with q, Eq. (6.16))
+    or the Hill stress of the fibre frame (own extension E7; needs a ``NodalAnisotropy``)."""
 
     def __post_init__(self) -> None:
         if self.overload_case not in (1, 2, 3, 4):
@@ -91,6 +103,17 @@ class CheckSettings:
             )
         if not self.required_cycles > 0.0 or not self.safety > 0.0:
             raise InputRangeError("required cycles and safety must be positive")
+        if self.equivalent not in EQUIVALENTS:
+            raise InputRangeError(
+                f"equivalent must be one of {EQUIVALENTS}, got {self.equivalent!r}"
+            )
+        if self.amplitude_route == "signed_hill" and self.equivalent != "hill":
+            raise InputRangeError("the route signed_hill needs the equivalent 'hill'")
+        if self.equivalent == "hill" and self.amplitude_route != "signed_hill":
+            raise InputRangeError(
+                "the Hill equivalent needs the route signed_hill (the other routes keep the "
+                "isotropic strengths per axis, review of 2026-10-11)"
+            )
 
 
 class HistoryAccumulator:
@@ -102,12 +125,28 @@ class HistoryAccumulator:
     then ``project_state`` for the same states in any order (the normal stresses along the
     fixed directions)."""
 
-    def __init__(self, material: mt.StommelMaterial, settings: CheckSettings, n_nodes: int) -> None:
+    def __init__(
+        self,
+        material: mt.StommelMaterial,
+        settings: CheckSettings,
+        n_nodes: int,
+        *,
+        anisotropy: an.NodalAnisotropy | None = None,
+    ) -> None:
         if n_nodes <= 0:
             raise InputRangeError("a history needs at least one node")
         self.material = material
         self.settings = settings
         self.n = n_nodes
+        self.anisotropy = anisotropy
+        if settings.equivalent == "hill" and anisotropy is None:
+            raise InputRangeError(
+                "the Hill equivalent needs the nodal anisotropy (frames and ratios)"
+            )
+        if anisotropy is not None and anisotropy.n != n_nodes:
+            raise InputRangeError(f"anisotropy of {anisotropy.n} nodes for {n_nodes} nodes")
+        self.hill_signed_max = np.full(n_nodes, -np.inf)
+        self.hill_signed_min = np.full(n_nodes, np.inf)
         self.states = 0
         self.projected_states = 0
         shape3 = (n_nodes, 3)
@@ -159,15 +198,34 @@ class HistoryAccumulator:
         signed = st.signed_mises_stress(mises, trace)
         np.maximum(self.signed_max, signed, out=self.signed_max)
         np.minimum(self.signed_min, signed, out=self.signed_min)
+        hill: Array | None = None
+        hill_static: Array | None = None
+        if self.anisotropy is not None:
+            frames, ratios = self.anisotropy.frames, self.anisotropy.ratios
+            hill = an.hill_equivalent_stress(an.to_local_frame(s, frames), ratios)
+            corrected = an.pressure_corrected_components(
+                s, self.settings.compressive_strength_factor
+            )
+            hill_static = an.hill_equivalent_stress(an.to_local_frame(corrected, frames), ratios)
+            signed_hill = st.signed_mises_stress(hill, trace)
+            np.maximum(self.hill_signed_max, signed_hill, out=self.hill_signed_max)
+            np.minimum(self.hill_signed_min, signed_hill, out=self.hill_signed_min)
         farther = np.abs(signed) > self.signed_abs_max
         self.signed_abs_max[farther] = np.abs(signed[farther])
         self.I_1_at_abs_max[farther] = trace[farther]
         # static check of this state
         settings = self.settings
         h = st.multiaxiality_degree(s1, s2, s3)
-        sigma_V = st.equivalent_stress_static(
-            s1, s2, s3, self.material.q, settings.compressive_strength_factor
-        )
+        if settings.equivalent == "hill":
+            if hill_static is None:
+                raise InputRangeError("the Hill equivalent needs the nodal anisotropy")
+            sigma_V = an.equivalent_stress_static_hill(
+                s1, s2, s3, hill_static, self.material.q, settings.compressive_strength_factor
+            )
+        else:
+            sigma_V = st.equivalent_stress_static(
+                s1, s2, s3, self.material.q, settings.compressive_strength_factor
+            )
         lower, upper = self._strain_limits
         epsilon_zul = st.permissible_strain(h, lower, upper)
         epsilon_V = mt.equivalent_strain_percent(self.material.service_curve, sigma_V)
@@ -206,13 +264,17 @@ class HistoryAccumulator:
 
 
 def accumulate(
-    material: mt.StommelMaterial, settings: CheckSettings, states: Sequence[npt.ArrayLike]
+    material: mt.StommelMaterial,
+    settings: CheckSettings,
+    states: Sequence[npt.ArrayLike],
+    *,
+    anisotropy: an.NodalAnisotropy | None = None,
 ) -> HistoryAccumulator:
     """Both passes over states held in memory (tests, small folders)."""
     if not states:
         raise InputRangeError("no state")
     first = np.asarray(states[0], dtype=np.float64)
-    history = HistoryAccumulator(material, settings, first.shape[0])
+    history = HistoryAccumulator(material, settings, first.shape[0], anisotropy=anisotropy)
     for label, state in enumerate(states):
         history.add_state(state, label=label)
     history.start_second_pass()
@@ -266,6 +328,8 @@ class CheckResult:
     life_flags: tuple[str, ...]
     a_B_V_at_N_G: Array
     extras: Mapping[str, object] = field(default_factory=dict)
+    equivalent: str = "mises"
+    """Equivalent stress of the static check: ``mises`` (the book) or ``hill`` (E7)."""
 
     @property
     def critical_static(self) -> int:
@@ -323,8 +387,13 @@ def _amplitude_and_mean(
             )
         upper, lower = history.projected_max, history.projected_min
         return st.stress_amplitude(upper, lower), st.mean_stress(upper, lower), upper, lower
-    if route == "signed_mises":
-        s_max, s_min = history.signed_max, history.signed_min
+    if route in ("signed_mises", "signed_hill"):
+        if route == "signed_hill":
+            if history.anisotropy is None:
+                raise InputRangeError("the route signed_hill needs the nodal anisotropy")
+            s_max, s_min = history.hill_signed_max, history.hill_signed_min
+        else:
+            s_max, s_min = history.signed_max, history.signed_min
         return (
             st.signed_mises_amplitude(s_max, s_min),
             st.signed_mises_mean(s_max, s_min),
@@ -486,6 +555,7 @@ def check(history: HistoryAccumulator, node_labels: npt.ArrayLike) -> CheckResul
         N_predicted=predicted,
         life_flags=flags,
         a_B_V_at_N_G=at_limit.a_B_V,
+        equivalent=settings.equivalent,
     )
 
 
@@ -547,6 +617,7 @@ def check_folder(
     step: str,
     series: str | None = None,
     progress: Callable[[str], None] | None = None,
+    anisotropy: an.NodalAnisotropy | None = None,
 ) -> FolderCheck:
     """Assemble the history of every wheel node from the stress files of one series and load
     step of a folder and run the check. Positions whose step broke off or that have no stress
@@ -561,7 +632,9 @@ def check_folder(
             f"{folder}: no complete position of step {step!r} in series {series!r}"
         )
     first = usable[0][1]
-    history = HistoryAccumulator(material, settings, first.n_nodes)
+    if anisotropy is not None and not np.array_equal(anisotropy.node_labels, first.node_labels):
+        raise InputRangeError("the anisotropy's node table differs from the stress files")
+    history = HistoryAccumulator(material, settings, first.n_nodes, anisotropy=anisotropy)
     for position, file in usable:
         history.add_state(file.stress(step), label=position.point.index)
         if progress is not None:

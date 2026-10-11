@@ -50,6 +50,7 @@ VERIFIED_METHODS = {
     "crossref",
     "dpma-front-page",
     "urn-resolver",
+    "html-title",
     None,
 }
 

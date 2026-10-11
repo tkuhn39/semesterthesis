@@ -375,6 +375,8 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `cyclic_utilisation_mises` | a_B_Mises | - | Vergleichsauslastungsgrad (nach von-Mises-Spannung) | Stommel2018, §6.3.5 Gl. (6.24), p. 374 | – | Inkrement 4 | verified |
 | `cyclic_utilisation_normal_stress` | a_B_NH | - | Vergleichsauslastungsgrad (nach Normalspannungshypothese) | Stommel2018, §6.3.5 Gl. (6.24), p. 374 | – | Inkrement 4 | verified |
 | `single_utilisation` | a_sigma | - | Einzelauslastungsgrade | Stommel2018, §6.3.5 Gl. (6.25), p. 374 | – | Inkrement 4 | verified |
+| `hill_equivalent_stress` | sigma_V_Hill | MPa | Hill-Vergleichsspannung (quadratisches Hill-Potential im Faserkoordinatensystem) | Abaqus2025:Hill, Hill Anisotropic Yield/Creep, Yield and Creep Stress Ratios | – | Inkrement 4 | verified |
+| `hill_stress_ratio` | R_ij | - | Fließspannungsverhältnis nach Hill (R_11, R_22, R_33, R_12, R_13, R_23 der Materialkarte) | Abaqus2025:Hill, Hill Anisotropic Yield/Creep, Yield and Creep Stress Ratios | – | Inkrement 4 | verified |
 
 ## STplus 11.1F
 
@@ -825,3 +827,5 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 - `cyclic_utilisation_mises` (a_B_Mises): Gedruckt a_B,Mises; Gl. (6.25).
 - `cyclic_utilisation_normal_stress` (a_B_NH): Gedruckt a_B,NH; Gl. (6.25): MAX(|a_sigma,1|, |a_sigma,2|, |a_sigma,3|).
 - `single_utilisation` (a_sigma): Gedruckt a_sigma,i mit i Index der Hauptspannungen; Gl. (6.26): sigma_a,i / sigma_B. Programmnamen a_sigma_1 bis a_sigma_3.
+- `hill_equivalent_stress` (sigma_V_Hill): Hill-Vergleichsspannung (quadratisches Hill-Potential im Faserkoordinatensystem), eigene Erweiterung E7: ersetzt sigma_V_Mises in Gl. (6.2) und (6.16); mit q = 0 ist sigma_V = sigma_V_Hill; R_ij der CONVERSE-Karte je Orientierungszustand des Knotens. Quelle: Abaqus2025:Hill, Hill Anisotropic Yield/Creep.
+- `hill_stress_ratio` (R_ij): Fließspannungsverhältnis nach Hill (R_11, R_22, R_33, R_12, R_13, R_23 der Materialkarte), bezogen auf die Referenzfließspannung der 0°-Probe, die Schubverhältnisse auf sigma_0/sqrt(3); je Orientierungszustand (a_11, a_22) und Temperatur in der Karte tabelliert. Quelle: Abaqus2025:Hill.

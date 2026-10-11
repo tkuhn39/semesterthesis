@@ -3,6 +3,7 @@
     uv run --all-extras python scripts/fe_fatigue.py stommel --folder DIR [--step LOAD_16NM ...]
         [--series W1] [--material pa46_gf30_qs] [--load-case einmalig] [--case 2]
         [--route principal] [--cycles 1e7] [--safety 1] [--top 12] [--out DIR] [--no-plots]
+        [--equivalent mises|hill --cof FILE]
     uv run --all-extras python scripts/fe_fatigue.py curves [--material NAME ...]
         [--load-case einmalig] [--out DIR]
 
@@ -48,6 +49,7 @@ import numpy as np
 import numpy.typing as npt
 
 from gearcore.errors import InputRangeError
+from gearcore.fatigue import anisotropy as an
 from gearcore.fatigue import check as ck
 from gearcore.fatigue import materials as mt
 from gearcore.fatigue import stommel as st
@@ -67,6 +69,9 @@ from gearcore.plot_style import save as save_figure
 REPO = Path(__file__).resolve().parents[3]
 Array = npt.NDArray[np.float64]
 DEFAULT_MATERIAL = "pa46_gf30_qs"
+HILL_DEFAULT_CLASS = "semi_crystalline_unreinforced"
+"""Reduction factors under the Hill extension (user 2026-10-11): the anisotropy is in the
+ratios of the card, so the lump-sum factors of the reinforced class are not applied again."""
 SOURCE_LABEL = "Sto18"
 SHEET = apply_plot_style()
 
@@ -213,6 +218,13 @@ def _material_section(material: mt.StommelMaterial, settings: ck.CheckSettings) 
         f"- N_G = {st.LIMIT_NUMBER_OF_CYCLES:.0e}, geforderte Lastspielzahl {settings.required_cycles:.3g}, "
         f"Überlastungsfall F{settings.overload_case}, Amplitudenroute {settings.amplitude_route}, "
         f"S = {_g(settings.safety, 1)}",
+        (
+            "- Vergleichsspannung: Hill-Vergleichsspannung im Faserkoordinatensystem mit den "
+            "R_ij der CONVERSE-Karte je Knoten (Erweiterung E7); Amplitude und Mittelwert aus "
+            "der vorzeichenbehafteten Hill-Spannung"
+            if settings.amplitude_route == "signed_hill"
+            else "- Vergleichsspannung: von Mises mit q nach Gl. (6.2) und (6.16), wie veröffentlicht"
+        ),
         "",
     ]
 
@@ -399,6 +411,24 @@ CLASS_ORDER: tuple[str, ...] = (
     "semi_crystalline_unreinforced",
     "amorphous_unreinforced",
 )
+LOAD_CASE_COLOURS: dict[str, str] = {
+    "einmalig": "diag1",
+    "mehrmalig": "diag2",
+    "langzeitig": "diag3",
+    "wechselnd": "diag4",
+}
+LOAD_CASE_HATCHES: dict[str, str] = {
+    "einmalig": "",
+    "mehrmalig": "///",
+    "langzeitig": "...",
+    "wechselnd": "xxx",
+}
+LOAD_CASE_NAMES: dict[str, str] = {
+    "einmalig": "einmalig",
+    "mehrmalig": "mehrmalig",
+    "langzeitig": "langzeitig",
+    "wechselnd": "wechselnd ($N$ ≤ 10$^7$)",
+}
 CLASS_SHORT: dict[str, str] = {
     "semi_crystalline_reinforced": "teilkristallin\nverstärkt",
     "amorphous_reinforced": "amorph\nverstärkt",
@@ -593,18 +623,18 @@ def _figure_stress_strain(material: mt.StommelMaterial, limits: FigureLimits, ou
     )
 
 
-def _arrow(
-    axes: Any, start: tuple[float, float], end: tuple[float, float], style: LineStyle
-) -> None:
+def _head(axes: Any, start: tuple[float, float], end: tuple[float, float]) -> None:
+    """A filled arrow head at ``end`` pointing from ``start``: a very short solid arrow, so the
+    head is complete whatever the line style of the shaft."""
+    dx, dy = end[0] - start[0], end[1] - start[1]
     axes.annotate(
         "",
         xy=end,
-        xytext=start,
+        xytext=(end[0] - 1.0e-3 * dx, end[1] - 1.0e-3 * dy),
         arrowprops={
             "arrowstyle": "-|>",
             "color": GREY,
             "linewidth": 0.9,
-            "linestyle": style,
             "shrinkA": 0.0,
             "shrinkB": 0.0,
             "mutation_scale": 9,
@@ -612,31 +642,43 @@ def _arrow(
     )
 
 
+def _arrow(
+    axes: Any, start: tuple[float, float], end: tuple[float, float], style: LineStyle
+) -> None:
+    """A construction arrow: the shaft in the given line style, the head filled."""
+    axes.plot(
+        [start[0], end[0]],
+        [start[1], end[1]],
+        color=GREY,
+        linestyle=style,
+        linewidth=0.9,
+        marker="none",
+    )
+    _head(axes, start, end)
+
+
 def _reduction_panel(
     axes: Any, material: mt.StommelMaterial, load_case: mt.LoadCase, k_value: float
-) -> dict[str, tuple[float, float]]:
+) -> tuple[dict[str, tuple[float, float]], list[tuple[Any, str]]]:
     """The left panel of the nomogram (Bild 6.17 / 6.21, "Bereiche der A-Faktoren"): one column
     per material class with the ranges of the reduction factor per load case as bars on the
-    shared stress axis (A K), the class of the gear in colour and first, the chosen load case
-    and the alternating case emphasised; returns the x position of the bar tops the
-    constructions start from."""
+    shared stress axis (A K); the load case is told by its hatch in every class and by its colour
+    in the class of the gear (first column), the names go to the legend (user, 2026-10-11).
+    Returns the bar corners the constructions start from and the legend entries."""
+    from matplotlib.patches import Patch
+
     classes = mt.material_classes()
     chosen = material.reduction_class.name
-    dark, light = SHEET.colour("diag1"), SHEET.colour("diag2")
     starts: dict[str, tuple[float, float]] = {}
+    legend: list[tuple[Any, str]] = []
     for column, name in enumerate(CLASS_ORDER, start=1):
         cls = classes[name]
+        own = name == chosen
         for case in mt.LOAD_CASES:
             bounds = cls.a_range(case)
-            own = name == chosen
-            if own and case == load_case:
-                colour, alpha = dark, 0.65
-            elif own and case == "wechselnd":
-                colour, alpha = light, 0.9
-            elif own:
-                colour, alpha = dark, 0.25
-            else:
-                colour, alpha = GREY, 0.25
+            colour = SHEET.colour(LOAD_CASE_COLOURS[case]) if own else GREY
+            alpha = 0.85 if own else 0.3
+            hatch = LOAD_CASE_HATCHES[case]
             low, high = bounds.minimum * k_value, bounds.maximum * k_value
             if high > low:
                 axes.bar(
@@ -644,30 +686,42 @@ def _reduction_panel(
                     high - low,
                     bottom=low,
                     width=0.6,
-                    color=colour,
+                    facecolor=colour,
+                    edgecolor=colour,
                     alpha=alpha,
+                    hatch=hatch,
                     linewidth=0,
                 )
             else:
-                axes.plot(
-                    [column - 0.3, column + 0.3],
-                    [low, low],
-                    color=colour,
-                    linewidth=2.0,
-                    marker="none",
+                # a single value (A_min = A_max): a thin bar of the common width with the hatch
+                axes.bar(
+                    column,
+                    0.03 * k_value,
+                    bottom=low - 0.015 * k_value,
+                    width=0.6,
+                    facecolor=colour,
+                    edgecolor=colour,
+                    alpha=alpha,
+                    hatch=hatch,
+                    linewidth=0,
                 )
             if own:
-                axes.text(
-                    column - 0.42,
-                    0.5 * (low + high),
-                    case,
-                    ha="right",
-                    va="center",
-                    fontsize="small",
-                    color=dark if case in (load_case, "wechselnd") else GREY,
-                )
                 starts[case] = (column + 0.3, high)
                 starts[case + "_min"] = (column + 0.3, low)
+                span = (
+                    f"$A$ = {_g(bounds.minimum, 2)} bis {_g(bounds.maximum, 2)}"
+                    if high > low
+                    else f"$A$ = {_g(bounds.maximum, 2)}"
+                )
+                handle = Patch(
+                    facecolor=colour, edgecolor=colour, alpha=alpha, hatch=hatch, linewidth=0
+                )
+                legend.append(
+                    (
+                        handle,
+                        f"{LOAD_CASE_NAMES[case]}, {material.reduction_class.designation}: {span}",
+                    )
+                )
         axes.text(
             column,
             1.02,
@@ -677,9 +731,16 @@ def _reduction_panel(
             va="bottom",
             fontsize="x-small",
             rotation=90,
-            color=dark if name == chosen else GREY,
+            multialignment="left",
+            color=SHEET.colour("diag1") if own else GREY,
         )
-    axes.set_xlim(-1.9, len(CLASS_ORDER) + 0.6)
+    legend.append(
+        (
+            Patch(facecolor=GREY, edgecolor=GREY, alpha=0.3, linewidth=0),
+            "andere Werkstoffklassen, Lastart am Muster erkennbar (Bild 6.18)",
+        )
+    )
+    axes.set_xlim(0.2, len(CLASS_ORDER) + 0.8)
     axes.set_xticks([])
     axes.tick_params(labelleft=False, left=False)
     axes.grid(False)
@@ -702,7 +763,7 @@ def _reduction_panel(
     factor_axis.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
     factor_axis.set_yticklabels(["0,0", "0,2", "0,4", "0,6", "0,8", "1,0"])
     factor_axis.set_ylabel("Abminderungsfaktor $A$")
-    return starts
+    return starts, legend
 
 
 def _figure_nomogram(
@@ -716,7 +777,7 @@ def _figure_nomogram(
     of the panel (a Z, user 2026-10-11; section 6.2.2.1);
     A_min and A_W likewise. Every value in the legend."""
     import matplotlib.pyplot as plt
-    from matplotlib.patches import ConnectionPatch, Patch
+    from matplotlib.patches import ConnectionPatch
 
     room, service = material.room_curve, material.service_curve
     k_value = material.K_mpa
@@ -733,7 +794,7 @@ def _figure_nomogram(
         layout="constrained",
         gridspec_kw={"width_ratios": [1.0, 2.4]},
     )
-    starts = _reduction_panel(left, material, load_case, k_value)
+    starts, case_legend = _reduction_panel(left, material, load_case, k_value)
     # own scaling per card: the A axis hangs on K, a shared stress limit would squash it
     x_max = float(math.ceil(max(room.strain_percent[-1], service.strain_percent[-1])))
     y_max = 10.0 * math.ceil(0.11 * k_value)
@@ -799,15 +860,15 @@ def _figure_nomogram(
                 coordsA=left.transData,
                 xyB=(strain, level),
                 coordsB=right.transData,
-                arrowstyle="-|>",
+                arrowstyle="-",
                 linestyle=style,
                 color=GREY,
                 linewidth=0.9,
-                mutation_scale=9,
                 shrinkA=0.0,
                 shrinkB=0.0,
             )
         )
+        _head(right, (0.0, level), (strain, level))
         _arrow(right, (strain, level), (strain, sigma_t), style)
         _arrow(right, (strain, sigma_t), (x_max, sigma_t), style)
         right.plot(
@@ -841,11 +902,9 @@ def _figure_nomogram(
             ),
         )
     handles, labels = right.get_legend_handles_labels()
-    handles.append(Patch(facecolor=SHEET.colour("diag1"), alpha=0.4, linewidth=0))
-    labels.append(
-        f"Bereiche der $A$-Faktoren je Werkstoffklasse und Lastart (Bild 6.18); farbig: "
-        f"{material.reduction_class.designation}"
-    )
+    for handle, label in case_legend:
+        handles.append(handle)
+        labels.append(label)
     right.set_xlabel("Dehnung $\\varepsilon$ in %")
     right.set_ylabel("Spannung $\\sigma$ in MPa")
     right.yaxis.tick_right()
@@ -861,7 +920,8 @@ def _figure_nomogram(
     _save(figure, out / stem)
     return f"`{stem}`: " + caption(
         f"Nomogramm zur Ermittlung der Bemessungsgrenzen für {material.designation}: links die "
-        f"Bereiche der Abminderungsfaktoren je Werkstoffklasse und Lastart, rechts die "
+        f"Bereiche der Abminderungsfaktoren je Werkstoffklasse und Lastart (Lastart durch das "
+        f"Flächenmuster, in der Klasse des Zahnrads zusätzlich durch die Farbe), rechts die "
         f"{REFERENCE_NOTE} bei {t_room} °C und die Isotherme bei {t_hot} °C; der obere Wert A_max "
         f"der Lastart {load_case} führt waagerecht zur Referenzkurve, die zulässige Dehnung gilt "
         f"als temperaturunabhängig und wird senkrecht auf die Isotherme übertragen, von dort "
@@ -1209,16 +1269,131 @@ def _method_figures(
 # --- commands ---------------------------------------------------------------------------------------
 
 
+def _nodal_anisotropy(
+    folder: Path,
+    manifest: dict[str, Any],
+    cof: Path,
+    material: mt.StommelMaterial,
+    series: str | None,
+) -> an.NodalAnisotropy:
+    """Frames, states and Hill ratios of every node of the folder's wheel from the CONVERSE
+    orientation file and the mesh file named in the manifest, in the node order of the stress
+    files."""
+    from gearcore.fe.deck import read_distribution, read_element_connectivity, read_field_variables
+    from gearcore.io.converse_card import read_converse_card
+
+    positions = sf.positions_with_stress(manifest, folder, series)
+    with_file = [p for p in positions if p.path is not None]
+    if not with_file:
+        raise InputRangeError(f"{folder}: no stress file of series {series!r}")
+    first = sf.read_stress_file(with_file[0].path)  # type: ignore[arg-type]
+    mesh_entry = manifest.get("wheel_mesh", {})
+    mesh_file = folder / str(mesh_entry.get("file", "wheel_mesh.inp"))
+    if not mesh_file.is_file():
+        raise InputRangeError(f"mesh file not found: {mesh_file}")
+    if not cof.is_file():
+        raise InputRangeError(f"orientation file not found: {cof}")
+    print(f"reading the mesh {mesh_file.name} and the orientation file {cof.name} ...")
+    elements = read_element_connectivity(mesh_file.read_text(encoding="utf-8", errors="replace"))
+    text = cof.read_text(encoding="utf-8", errors="replace")
+    orientation = read_distribution(text)
+    fields = read_field_variables(text)
+    card = read_converse_card(text)
+    built = an.build_nodal_anisotropy(
+        first.node_labels, elements, orientation, fields, card, material.temperature_c
+    )
+    print(f"  {built.n} nodes, card {built.card} at {_g(built.temperature_c, 0)} °C")
+    return built
+
+
+def _anisotropy_rows(built: an.NodalAnisotropy) -> list[dict[str, Any]]:
+    """Per node: the orientation state, the six ratios and the frame quality (the gap of the
+    first orientation tensor; below 0,1 the first axis is weakly defined)."""
+    gap = built.frame_gap if built.frame_gap is not None else np.full(built.n, np.nan)
+    rows: list[dict[str, Any]] = []
+    for i in range(built.n):
+        row: dict[str, Any] = {
+            "node": int(built.node_labels[i]),
+            "a11": float(built.states[i, 0]),
+            "a22": float(built.states[i, 1]),
+            "elements": int(built.element_count[i]),
+            "frame_gap": float(gap[i]),
+        }
+        for j, name in enumerate(an.RATIO_NAMES):
+            row[name] = float(built.ratios[i, j])
+        rows.append(row)
+    return rows
+
+
+def _frame_quality_lines(built: an.NodalAnisotropy | None, node: int) -> list[str]:
+    """The frame quality of one node for the report (nothing without anisotropy)."""
+    if built is None or built.frame_gap is None:
+        return []
+    hits = np.where(built.node_labels == node)[0]
+    if hits.size == 0:
+        return []
+    i = int(hits[0])
+    gap = float(built.frame_gap[i])
+    verdict = "schwach bestimmt" if gap < 0.1 else "gut bestimmt"
+    return [
+        f"- Faserrahmen: a_11 {_g(float(built.states[i, 0]), 3)}, a_22 "
+        f"{_g(float(built.states[i, 1]), 3)}, R_11 {_g(float(built.ratios[i, 0]), 3)}, "
+        f"Eigenwertabstand {_g(gap, 3)} ({verdict}), {int(built.element_count[i])} Elemente"
+    ]
+
+
+def _anisotropy_lines(built: an.NodalAnisotropy, cof: Path) -> list[str]:
+    ratios = built.ratios
+    states = built.states
+    lines = [
+        "# Anisotropie je Knoten (Erweiterung E7)",
+        "",
+        f"- Orientierungsdatei: {cof}; Karte {built.card} bei {_g(built.temperature_c, 0)} °C",
+        f"- Knoten: {built.n}; Elemente je Knoten {int(built.element_count.min())} bis "
+        f"{int(built.element_count.max())}",
+        f"- Orientierungszustand a_11: Mittel {_g(float(states[:, 0].mean()), 3)}, "
+        f"min {_g(float(states[:, 0].min()), 3)}, max {_g(float(states[:, 0].max()), 3)}; "
+        f"a_22: Mittel {_g(float(states[:, 1].mean()), 3)}",
+        "- Hill-Verhältnisse (Mittel über die Knoten): "
+        + ", ".join(
+            f"{name} {_g(float(ratios[:, i].mean()), 3)}" for i, name in enumerate(an.RATIO_NAMES)
+        ),
+        f"- R_11: min {_g(float(ratios[:, 0].min()), 3)}, max {_g(float(ratios[:, 0].max()), 3)}",
+    ]
+    if built.frame_gap is not None:
+        gap = built.frame_gap
+        weak = int(np.sum(gap < 0.1))
+        lines.append(
+            f"- Rahmenqualität: Eigenwertabstand (λ_3 − λ_2)/λ_3 des ersten Orientierungstensors "
+            f"Mittel {_g(float(gap.mean()), 3)}, min {_g(float(gap.min()), 3)}; Knoten unter 0,1: "
+            f"{weak} (dort ist die erste Achse schwach bestimmt, die Elemente widersprechen sich)"
+        )
+    return lines
+
+
 def run_stommel(args: argparse.Namespace) -> None:
     folder: Path = args.folder.resolve()
     manifest = _manifest(folder)
     material = mt.load_material(args.material)
+    reduction_class = args.reduction_class
+    if args.equivalent == "hill" and reduction_class is None:
+        reduction_class = HILL_DEFAULT_CLASS
+        print(
+            f"Hill equivalent: reduction factors of the class {reduction_class} (the anisotropy is "
+            "not counted twice; override with --reduction-class)"
+        )
+    if reduction_class is not None:
+        material = mt.with_reduction_class(material, reduction_class)
+    route: ck.AmplitudeRoute = "signed_hill" if args.equivalent == "hill" else "principal"
+    if args.route:
+        route = args.route
     settings = ck.CheckSettings(
         load_case=args.load_case,
         overload_case=args.case,
-        amplitude_route=args.route,
+        amplitude_route=route,
         required_cycles=args.cycles,
         safety=args.safety,
+        equivalent=args.equivalent,
     )
     steps = args.step or _load_steps(manifest)
     if not steps:
@@ -1229,8 +1404,18 @@ def run_stommel(args: argparse.Namespace) -> None:
 
         names = series_names(manifest)
         series = names[0] if names else None
-    out: Path = (args.out or folder / "stommel").resolve()
+    default_out = folder / ("stommel_hill" if args.equivalent == "hill" else "stommel")
+    out: Path = (args.out or default_out).resolve()
     out.mkdir(parents=True, exist_ok=True)
+    anisotropy: an.NodalAnisotropy | None = None
+    if args.equivalent == "hill":
+        if args.cof is None:
+            raise InputRangeError("the Hill equivalent needs --cof (the CONVERSE orientation file)")
+        anisotropy = _nodal_anisotropy(folder, manifest, args.cof.resolve(), material, series)
+        (out / "anisotropie.md").write_text(
+            "\n".join(_anisotropy_lines(anisotropy, args.cof)) + "\n", encoding="utf-8"
+        )
+        _write_csv(out / "anisotropie_knoten.csv", _anisotropy_rows(anisotropy))
     for step in steps:
         print(f"{step}: assembling the history of series {series} ...")
         folder_check = ck.check_folder(
@@ -1241,6 +1426,7 @@ def run_stommel(args: argparse.Namespace) -> None:
             step=step,
             series=series,
             progress=lambda m: print("  " + m),
+            anisotropy=anisotropy,
         )
         result = folder_check.result
         file = folder_check.stress_file
@@ -1279,10 +1465,12 @@ def run_stommel(args: argparse.Namespace) -> None:
             "## Kritischer Knoten der zyklischen Bemessung",
             "",
             *_node_lines(critical),
+            *_frame_quality_lines(anisotropy, int(critical["node"])),
             "",
             "## Kritischer Knoten der statischen Bemessung",
             "",
             *_node_lines(by_static[0]),
+            *_frame_quality_lines(anisotropy, int(by_static[0]["node"])),
             "",
             f"## Die {args.top} höchsten zyklischen Auslastungen",
             "",
@@ -1393,7 +1581,26 @@ def main() -> None:
         "--case", type=int, default=2, choices=(1, 2, 3, 4), help="overload case F1 to F4"
     )
     s.add_argument(
-        "--route", default="principal", choices=ck.ROUTES, help="amplitude and mean of the cycle"
+        "--equivalent",
+        default="mises",
+        choices=ck.EQUIVALENTS,
+        help="equivalent stress of the static check: the book's von Mises or the Hill stress (E7)",
+    )
+    s.add_argument(
+        "--reduction-class",
+        default=None,
+        choices=sorted(mt.material_classes()),
+        help="class of the reduction factors (Bild 6.18); default: the material's class, under the "
+        "Hill equivalent the ductile unreinforced class",
+    )
+    s.add_argument(
+        "--cof",
+        type=Path,
+        default=None,
+        help="CONVERSE orientation file of the wheel mesh (element orientations, field variables, card)",
+    )
+    s.add_argument(
+        "--route", default=None, choices=ck.ROUTES, help="amplitude and mean of the cycle"
     )
     s.add_argument(
         "--cycles", type=float, default=st.LIMIT_NUMBER_OF_CYCLES, help="required number of cycles"

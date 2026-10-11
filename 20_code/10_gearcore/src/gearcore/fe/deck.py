@@ -268,6 +268,48 @@ def read_field_variables(text: str) -> dict[int, tuple[float, float]]:
     return {label: (first[label], second[label]) for label in first}
 
 
+NODES_PER_ELEMENT: dict[str, int] = {
+    "C3D4": 4,
+    "C3D6": 6,
+    "C3D8": 8,
+    "C3D10": 10,
+    "C3D15": 15,
+    "C3D20": 20,
+}
+"""Nodes of the base element types; a variant (C3D8I, C3D8R, C3D10M) counts as its base."""
+
+
+def read_element_connectivity(text: str) -> dict[int, tuple[int, ...]]:
+    """Element label -> node labels of every ``*ELEMENT`` block of an Abaqus input file
+    (continuation lines joined); the node count follows the element type."""
+    out: dict[int, tuple[int, ...]] = {}
+    for keyword, line, data in _blocks(text):
+        if keyword != "ELEMENT":
+            continue
+        if "TYPE=" not in line.upper():
+            raise ParseError(f"input file: *ELEMENT without TYPE: {line!r}")
+        kind = line.upper().split("TYPE=")[1].split(",")[0].strip()
+        base = next(
+            (b for b in sorted(NODES_PER_ELEMENT, key=len, reverse=True) if kind.startswith(b)),
+            None,
+        )
+        if base is None:
+            raise ParseError(f"input file: element type {kind!r} not known")
+        width = NODES_PER_ELEMENT[base] + 1
+        numbers: list[int] = []
+        for row in data:
+            numbers.extend(
+                int(float(item)) for item in row.replace("\t", " ").split(",") if item.strip()
+            )
+        if len(numbers) % width:
+            raise ParseError(f"input file: {len(numbers)} labels do not form {kind} elements")
+        for k in range(0, len(numbers), width):
+            out[numbers[k]] = tuple(numbers[k + 1 : k + width])
+    if not out:
+        raise ParseError("input file: no *ELEMENT block")
+    return out
+
+
 def split_orientation_file(
     text: str, instance: str = WHEEL_INSTANCE, elset: str = WHEEL
 ) -> OrientationFilePieces:

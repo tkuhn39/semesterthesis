@@ -3180,3 +3180,30 @@ quantities:
     note: "Gedruckt a_sigma,i mit i Index der Hauptspannungen; Gl. (6.26): sigma_a,i / sigma_B. Programmnamen a_sigma_1 bis a_sigma_3."
     since: 4
     status: verified
+  # --- track E7: anisotropic strength, own extension (ADR-118) ---------------------------------
+  hill_equivalent_stress:
+    symbol: "sigma_V_Hill"
+    unit: "MPa"
+    description: "Hill-Vergleichsspannung (quadratisches Hill-Potential im Faserkoordinatensystem)"
+    source: "Abaqus2025:Hill"
+    location: "Hill Anisotropic Yield/Creep, Yield and Creep Stress Ratios"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Hill-Vergleichsspannung (quadratisches Hill-Potential im Faserkoordinatensystem), eigene Erweiterung E7: ersetzt sigma_V_Mises in Gl. (6.2) und (6.16); mit q = 0 ist sigma_V = sigma_V_Hill; R_ij der CONVERSE-Karte je Orientierungszustand des Knotens. Quelle: Abaqus2025:Hill, Hill Anisotropic Yield/Creep."
+    since: 4
+    status: verified
+  hill_stress_ratio:
+    symbol: "R_ij"
+    unit: "-"
+    description: "Fließspannungsverhältnis nach Hill (R_11, R_22, R_33, R_12, R_13, R_23 der Materialkarte)"
+    source: "Abaqus2025:Hill"
+    location: "Hill Anisotropic Yield/Creep, Yield and Creep Stress Ratios"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Fließspannungsverhältnis nach Hill (R_11, R_22, R_33, R_12, R_13, R_23 der Materialkarte), bezogen auf die Referenzfließspannung der 0°-Probe, die Schubverhältnisse auf sigma_0/sqrt(3); je Orientierungszustand (a_11, a_22) und Temperatur in der Karte tabelliert. Quelle: Abaqus2025:Hill."
+    since: 4
+    status: verified

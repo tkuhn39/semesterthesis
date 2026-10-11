@@ -117,7 +117,7 @@ materials:
     curves:
       room_temperature: { source: matscape_csv, file: "pa46_gf30_linear_23C.csv", temperature_c: 23, direction_deg: 0 }
       service: { source: matscape_csv, file: "pa46_gf30_linear_80C.csv", temperature_c: 80, direction_deg: 0 }
-    provenance: "Matscape card 'PA46 GF30 | none | conditioned': two points per temperature (0 and 1 % strain, 62,77 and 41,56 MPa; the slopes 6277 and 4156 MPa follow from them); which card this is, the user states (open)"
+    provenance: "Matscape card 'PA46 GF30 | none | conditioned': two points per temperature (0 and 1 % strain, 62,77 and 41,56 MPa). User 2026-10-11: the moduli 6277 MPa (23 degC) and 4156 MPa (80 degC) are values the supervisor gave him (he says they also stand on the Stanyl datasheet; the CAMPUS sheet in the repository prints no tensile modulus, so not verified here), the line is E times 1 % engineering strain, a comparison value only; the chain works with the Matscape curves of the METG tests; a W1 comparison with E = 4156 MPa at 80 degC is planned"
     validation_matscape:
       screenshots: ["Matscape_PA46-GF30_conditioned_linear-elastisch_Haigh_23C_N1e7_AWL1.png", "Matscape_PA46-GF30_conditioned_linear-elastisch_Haigh_80C_N1e7_AWL1.png"]
       23: { sigma_B_S_mpa: 62.77, sigma_SK_mpa: 43.94, sigma_WK_mpa: 15.69, M: 0.25 }

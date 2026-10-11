@@ -1963,7 +1963,9 @@ by p. 365; the ductile class for the conditioned PA+GF supported by the footnote
    colour and first, the chosen load case and the alternating case emphasised; from A_max of
    the bar an arrow to the reference curve at 23 °C, down at constant strain to the isotherm
    of the service temperature, on to the stress axis at the right of the panel with a dot at
-   σ_stat (a Z, the stress axis sits only on the right, nothing crosses; user); A_min and A_W
+   σ_stat (a Z, the stress axis sits only on the right, nothing crosses; user); the load case is
+   told by its hatch in every class and by its colour in the gear's class, the names sit in the
+   legend, not in the panel (user, late evening); A_min and A_W
    likewise; the nomogram is scaled per card (its A axis hangs on K, a shared stress limit
    squashed it), the one exception to the shared-scaling rule, stated in the captions file.
    K follows Bild 3.25 (p. 193): the gear's PA46-GF30 is ductile without a distinct
@@ -1977,3 +1979,112 @@ by p. 365; the ductile class for the conditioned PA+GF supported by the footnote
    h = 1/3 (A_max) and the hydrostatic bound h → ∞ (A_min), which bracket σ_stat and k over
    the multiaxiality a node can have, σ_W being fixed for the short-fibre classes. (d) Box
    labels (R rays, M) are centred on the glyphs (matplotlib reserves the descender).
+
+### Amendment of 2026-10-11 (E7 first slice: the Hill equivalent stress of the fibre frame)
+
+The user approved the proposal of the evening (the anisotropy enters the strength side through
+the Hill equivalent stress with all six ratios of the card, not through a single R_11 curve) and
+asked for it after the figure rounds. Built as `gearcore.fatigue.anisotropy` with the wiring in
+`fatigue.check` (`CheckSettings.equivalent = "hill"`, route `signed_hill`, `NodalAnisotropy`),
+`fe.deck.read_element_connectivity` and `fe_fatigue.py stommel --equivalent hill --cof FILE`.
+
+1. **Equivalent stress.** σ_Hill² = F (σ_22 − σ_33)² + G (σ_33 − σ_11)² + H (σ_11 − σ_22)² + 2 L σ_23²
+   + 2 M σ_13² + 2 N σ_12² with F, G, H, L, M, N from the six yield stress ratios R_11 … R_23 of
+   the card, the components in the fibre frame, exactly the quadratic Hill potential Abaqus
+   applies to the ``*POTENTIAL, TYPE=HILL`` card that CONVERSE writes (Abaqus 2025 documentation,
+   "Hill Anisotropic Yield/Creep", registered as `Abaqus2025:Hill`). Unit ratios give the von
+   Mises stress (test); uniaxial stress along the fibre gives |σ_11| / R_11, pure shear
+   √3 |σ_12| / R_12. The static equivalent stress keeps Eq. (6.16): σ_V = q σ̄_V,NH + (1 − q) σ_Hill,
+   with q = 0 of the ductile hypothesis it is σ_Hill. The strength side (K, ε_zul, σ_stat, σ_W of
+   the 0° reference curve) stays untouched: the ratios of the card already express every state
+   relative to that bar, so the equivalent stress carries the whole orientation effect.
+2. **Per node.** The fibre frame is averaged from the element orientations of the CONVERSE
+   distribution without a sign (the orientation tensors e_1 e_1ᵀ and e_2 e_2ᵀ of the attached
+   elements are averaged, the dominant eigenvectors taken, the third axis by the cross product;
+   1 to 12 elements per node on the 20-layer mesh), the orientation state (a_11, a_22) comes from
+   the nodal field variables of the file, the Hill row from the nearest lattice state of the
+   card at the service temperature (`ConverseCard.hill_at`). The element connectivity is read
+   from the mesh file of the folder. The degree of multiaxiality h (Eq. (6.3)) and the sign of
+   the cyclic history (Eq. (6.10), sign of I_1) stay frame-free; the route `signed_hill` applies
+   that sign to σ_Hill. The principal route is not combined with Hill (it would need
+   direction-dependent strengths per principal axis, extension point).
+3. **Trace gate.** The Abaqus page lives in the local installation, not in the repository; the
+   source entry is registered with `status: missing` and `confirmed_by_user: false` until the
+   user opens the page and confirms it, the two Hill functions are listed in `EQ_EXEMPT` with the
+   reference in the module docstring, and the two quantities `sigma_V_Hill` and `R_ij` are
+   registered as `pending` (ADR-108: entry before use). After the confirmation the `@eq`
+   decorators and the verified entries follow (a verification method for HTML pages is added to
+   the trace tests then).
+4. **First numbers (position C, W1 stresses, QS card at 80 °C, route signed_hill against
+   signed_mises on the same files).** Over all loaded nodes the Hill stress is 1,74 times the von
+   Mises stress in the median (95 % quantile 1,95, largest 2,29): every mapped state of the wheel
+   (a_11 0,40 to 0,81, mean 0,59; R_11 0,73 to 1,07, R_22 about 0,69, R_33 0,57, the shear ratios
+   0,46 to 0,58) is weaker than the 0° bar, and at the root fillet the stress in the fibre frame
+   has a shear component σ_13 of about 37 MPa between the contour and the radial direction that
+   the shear ratio 0,53 penalises hardest. 16 Nm: a_stat ∞ (σ_Hill 131,6 MPa at the compression
+   fillet lies above the maximum of the 80 °C curve, 89 MPa; von Mises 66,1 MPa, a_stat 1,19),
+   a_B,V ∞ (von Mises 2,58); 8 Nm: a_stat ∞ at 1050 nodes (von Mises 0,79, none above one),
+   a_B,V 107 (von Mises 1,44, N_pred 3,2e4). Read with care: these are the isotropic W1 stresses
+   combined with the anisotropic surface, a sensitivity, not the final evaluation; the W3 and W4
+   stresses in the fibre frame (server re-extraction) are the ones the extension is meant for.
+5. **What the book says and what follows for the thesis.** p. 345 to 346: the reference curve
+   is the one with the fibres "vorzugsweise in Lastrichtung ..., also die vorteilhaftesten
+   Werkstoffkennwerte", and "Die Festigkeitsminderung bei Beanspruchung quer zur
+   Faserhauptrichtung wird hier pauschal über den (niedrigen) Abminderungsfaktor für die
+   Werkstoffklasse 'faserverstärkt' berücksichtigt." The published method therefore covers the
+   transverse weakness only through the low A of the reinforced class. E7 with the same class
+   factors counts the anisotropy twice (explicitly through the ratios and again through the
+   class); whether the extension should take the factors of a less conservative class, or keep
+   both and report the double conservatism, is a decision for the user and the thesis text
+   (open).
+6. **The user's answers later the same evening.** (a) The Abaqus page is confirmed (the
+   formulas render shifted in his browser, the content is right): the source is now
+   `confirmed_by_user: true` with the verification method `html-title` (added to the trace
+   tests), the two Hill functions carry `@eq`, the quantities `sigma_V_Hill` and `R_ij` are
+   verified. (b) The anisotropy is not counted twice: "Der Abminderungsfaktor ist ... quasi
+   eine Worst-case-Annahme, wenn man nicht so tief geht wie in meiner Simulation mit
+   anisotroper Materialkarte"; under the Hill equivalent the check takes the reduction
+   factors of another class, by default the ductile unreinforced one (the class of the
+   failure hypothesis the user chose for q; `--reduction-class` overrides,
+   `materials.with_reduction_class`). Which class is the right one for the thesis text stays
+   a question to justify there (the book has no class for "reinforced, anisotropy
+   resolved"; the reinforced class's low A also covers the small plastic reserve, p. 345).
+   With the ductile class on position C (W1 stresses): 16 Nm a_B,V 41,8 (reinforced class
+   ∞, von Mises 2,58), 8 Nm a_B,V 2,73 (reinforced ∞, von Mises 1,44); a_stat stays ∞ where
+   σ_Hill exceeds the 89 MPa of the 80 °C curve (875 nodes at 16 Nm, 151 at 8 Nm). (c) The
+   "linear conditioned" card: the values are the moduli the supervisor gave the user
+   (6277 MPa at 23 °C, 4156 MPa at 80 °C) times 1 % engineering strain, a comparison value;
+   the user says they also stand on the Stanyl datasheet, the CAMPUS sheet in the repository
+   prints no tensile modulus, so unverified here; the chain works with the Matscape curves of
+   the METG tests. A W1 comparison with E = 4156 MPa at 80 °C is planned (the W1 step used
+   the isotropic row of the QS card, 2282 MPa). (d) Nomogram: the arrow heads are drawn as
+   short solid arrows on dashed shafts (a dashed arrow style left them half drawn).
+7. **Independent review of E7 (read-only, 2026-10-11, late evening)**, findings and
+   resolutions. P0: the static Hill branch fed the raw tensor while the published branch
+   feeds the pressure-corrected principal stresses (compression divided by 1,3) into both
+   hypotheses, so unit ratios did not reproduce the published check for compressive states
+   (uniaxial −60 MPa: 46,2 against 60,0 MPa; at the critical node a factor up to 1,3 of the
+   Hill excess was the missing correction, not anisotropy); fixed: the corrected principal
+   values are put back on their directions (`pressure_corrected_components`), rotated into
+   the fibre frame and fed to Hill, the guard test now compares finite static stresses (the
+   first version compared infinities). P1: `equivalent="hill"` with the principal route was
+   accepted and the CLI default route is principal, so the Hill static check silently met the
+   isotropic cyclic route; now refused in the settings, the CLI resolves the route from the
+   equivalent, the report line keys on the route. P1: nearest-state snapping of the ratios
+   (the lattice is coarse in a_22, 0, 1/12, 1/6, 1/4, 1/3; 53 603 of 82 425 nodes had a
+   second state within 0,02 and the ratios jumped by up to 10 % between neighbours); now
+   linear interpolation over the (a_11, a_22) triangulation as Abaqus interpolates its field
+   tables, nearest state outside the hull. P1: the frame quality was not reported (507 nodes
+   with a near-degenerate first orientation tensor, 36 of them on root surfaces); the
+   eigenvalue gap (λ_3 − λ_2)/λ_3 per node is kept and summarised in `anisotropie.md`
+   (element-wise evaluation stays an extension point). P2: the single-value "wechselnd"
+   marker cycled line styles, now solid; its legend swatch is a line, not a hatched box.
+   Verified by the reviewer: frames consistent end to end (npz coordinates equal the mesh
+   file within 3e-6 mm, the distribution's 72 320 element rows and 82 425 field nodes equal
+   the mesh, fibres tangential at the bore in the part frame), Hill constants and the pairing
+   L-σ_23, M-σ_13, N-σ_12 against the Abaqus page, all 82 425 frames orthonormal and
+   right-handed, the element parser against the mesh, the nomogram figure legible.
+8. **Open:** the server re-extraction (the user copies the ODBs on 2026-10-12, Claude runs the
+   extraction here); the S-Life comparison on the five named nodes (the user runs S-Life and
+   collects what it prints); E7 on the W3/W4 stresses; the principal route with
+   direction-dependent strengths; the W1 comparison with the supervisor's modulus.

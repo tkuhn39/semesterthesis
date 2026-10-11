@@ -93,7 +93,30 @@ Dates are ISO 8601 (YYYY-MM-DD).
   families per temperature, the nomogram with the reduction-factor panel of Bild 6.17/6.21
   (bars per class and load case, arrows from A_max to the reference curve, down to the isotherm
   and back to the stress axis), the Wöhler line drawn only between 10^4 and N_G on an axis
-  10^3 to 10^8, centred box labels.
+  10^3 to 10^8, centred box labels; load cases of the reduction panel by hatch in every class
+  and by colour in the gear's class, named in the legend.
+- **E7, first slice: the Hill equivalent stress of the fibre frame** (`gearcore.fatigue.anisotropy`,
+  `fatigue.check` with `equivalent="hill"` and the route `signed_hill`,
+  `fe.deck.read_element_connectivity`, `fe_fatigue.py stommel --equivalent hill --cof FILE`):
+  σ_Hill from the six yield stress ratios of the CONVERSE card (quadratic Hill potential as
+  Abaqus defines it; unit ratios give von Mises), per node the fibre frame averaged sign-free
+  from the element orientations of the distribution, the state from the nodal field variables,
+  the ratios from the nearest lattice state; the strength side keeps the 0° reference curve.
+  First numbers on position C with the W1 stresses: σ_Hill is 1,74 times σ_Mises in the median,
+  the root exceeds the surface at 16 and 8 Nm (a sensitivity; the W3/W4 stresses follow with the
+  server re-extraction). The Abaqus source is confirmed by the user (method `html-title`), the
+  two quantities verified, the Hill functions traced with `@eq`. Under the Hill equivalent the
+  reduction factors of the ductile unreinforced class are the default (`--reduction-class`,
+  `materials.with_reduction_class`; the user: the anisotropy is not counted twice): position C
+  then gives a_B,V 41,8 at 16 Nm and 2,73 at 8 Nm against 2,58 and 1,44 of the published
+  method. The linear card's provenance recorded (the supervisor's moduli times 1 % strain,
+  comparison only). Nomogram arrow heads drawn solid. Independent review of E7: one P0 (the
+  static Hill branch now uses the pressure-corrected tensor, so unit ratios reproduce the
+  published check exactly), three P1 (Hill only with the route signed_hill; ratios interpolated
+  linearly over the lattice instead of snapped; frame quality reported) and two nits resolved.
+  Single-value load cases drawn as hatched bars of the common width (panel and legend), the
+  class labels of the panel flush; frame quality per node in `anisotropie_knoten.csv` and at
+  the critical nodes in the report.
 - **Independent review before the commit** (ADR-118, review section): two P0 resolved (the
   quaternion of the bulk data blocks, verified on the W3 Learning Edition model; the principal
   route now projects every state onto the fixed directions of the governing state in a second

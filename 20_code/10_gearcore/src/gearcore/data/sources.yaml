@@ -567,3 +567,12 @@ sources:
     verified: { method: pdf-footer, by: "claude/pdftotext", date: "2026-09-28" }
     confirmed_by_user: true
     notes: "Footer: https://www.campusplastics.com – Envalior – 2024-07-12. ISO 10350 single-point data; no gear strength values."
+  # ---- anisotropic strength (track E7, own extension) ------------------------------------------
+  Abaqus2025:Hill:
+    type: manual
+    title: "Hill Anisotropic Yield/Creep (Abaqus 2025 documentation, Materials: Hill anisotropic yield and/or creep)"
+    edition: "Abaqus 2025 Learning Edition, local installation"
+    file: "C:/SIMULIA/Documentation/2025LE/English/SIMACAEMATRefMap/simamat-c-anisoyield.htm"
+    verified: { method: html-title, by: "claude/title of the local HTML page; the user opened the page", date: "2026-10-11" }
+    confirmed_by_user: true
+    notes: "Confirmed by the user on 2026-10-11 (the formulas render slightly shifted in his browser, the content reads correctly). Outside the repository (local installation). Quadratic Hill potential with the yield stress ratios R_11 to R_23 relative to the reference yield stress (F, G, H, L, M, N from the ratios); the equivalent plastic strain is defined through the plastic work (PEEQ). Used by fatigue.anisotropy (ADR-118, E7)."
