@@ -25,10 +25,11 @@ from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.optimize import least_squares
+from scipy.optimize import brentq, least_squares
 
 from gearcore import contour as ct
 from gearcore import involute as iv
+from gearcore._safe import finite_input
 from gearcore.errors import InputRangeError
 from gearcore.io.p40_contour import ContourScan
 from gearcore.models.common import FrozenModel
@@ -44,6 +45,7 @@ EQ_EXEMPT = (
     "nominal_base_tooth_thickness",
     "segment",
     "fit_axis",
+    "constrain_axis",
     "fit_corner_shapes",
     "fit_scan",
     "flank_normal_deviation",
@@ -260,6 +262,16 @@ class AxisFit(FrozenModel):
     flank_points_used: int
     fit_r_low_mm: float
     fit_r_high_mm: tuple[float, ...]
+    root_radius_mm: tuple[float, ...] = ()
+    """Smallest radius about the axis of every root run: the root circle per gap."""
+    tip_radius_constraint_mm: float | None = None
+    """The tip radius the axis was constrained to (``constrain_axis``: the tip diameter GINA
+    measured on the same part, halved); None for the free axis."""
+    radial_shift_mm: float = 0.0
+    """Shift of the constrained axis from the free axis along the centre line of the middle
+    tooth, positive towards the tooth; 0 for the free axis."""
+    rms_flank_free_um: float | None = None
+    """Flank RMS of the free fit the constrained fit started from; None for the free axis."""
 
     @property
     def centre(self) -> Array:
@@ -282,12 +294,21 @@ def fit_axis(
     geometry: ScanGeometry,
     settings: FitSettings = DEFAULT_SETTINGS,
     centre0: tuple[float, float] | None = None,
+    fixed_centre: tuple[float, float] | None = None,
 ) -> AxisFit:
     """Axis, one involute angle per flank and one radius per tip land. With ``centre0`` (a
     previous solution) the point selection is made about that axis instead of the origin of
-    the scan; ``fit_scan`` runs two passes so an eccentric mounting does not move the limits."""
+    the scan; ``fit_scan`` runs two passes so an eccentric mounting does not move the limits.
+    With ``fixed_centre`` the axis is not fitted: the involute angles and the tip radii are
+    fitted about that axis (``constrain_axis``)."""
     xy = _points(scan)
-    c0 = np.zeros(2) if centre0 is None else np.asarray(centre0, dtype=float)
+    fixed = None if fixed_centre is None else np.asarray(fixed_centre, dtype=float)
+    if fixed is not None and (fixed.shape != (2,) or not np.all(np.isfinite(fixed))):
+        raise InputRangeError("fixed_centre must be two finite coordinates in mm")
+    if fixed is not None and centre0 is not None:
+        raise InputRangeError("give either centre0 (a start) or fixed_centre (no axis fit)")
+    start = np.zeros(2) if centre0 is None else np.asarray(centre0, dtype=float)
+    c0 = fixed if fixed is not None else start
     d0 = xy - c0
     r0 = np.hypot(d0[:, 0], d0[:, 1])
     phi0 = np.arctan2(d0[:, 0], d0[:, 1])
@@ -320,9 +341,11 @@ def fit_axis(
     if not selections:
         raise InputRangeError("no flank long enough for the involute fit")
     tip_sel = [np.arange(t.start, t.stop + 1) for t in tip_runs]
+    n_free = 0 if fixed is not None else 2
 
     def unpack(p: Array) -> tuple[Array, Array, Array]:
-        return p[:2], p[2 : 2 + len(selections)], p[2 + len(selections) :]
+        centre = fixed if fixed is not None else p[:2]
+        return centre, p[n_free : n_free + len(selections)], p[n_free + len(selections) :]
 
     def residual(p: Array) -> Array:
         centre, theta0, r_a = unpack(p)
@@ -335,7 +358,7 @@ def fit_axis(
             parts.append(np.hypot(d[:, 0], d[:, 1]) - ra)
         return np.concatenate(parts)
 
-    p0 = [float(c0[0]), float(c0[1])]
+    p0 = [] if fixed is not None else [float(c0[0]), float(c0[1])]
     for sel, hand in zip(selections, hands, strict=True):
         alpha = math.acos(min(1.0, geometry.r_b / float(r0[sel[0]])))
         p0.append(float(phi0[sel[0]]) - hand * (math.tan(alpha) - alpha))
@@ -345,6 +368,11 @@ def fit_axis(
     res = residual(sol.x)
     n_flank = sum(len(s) for s in selections)
     rms_tip = float(np.sqrt(np.mean(res[n_flank:] ** 2))) if len(res) > n_flank else 0.0
+    d = xy - centre
+    radius = np.hypot(d[:, 0], d[:, 1])
+    root_radius = tuple(
+        float(radius[run.start : run.stop + 1].min()) for run in runs if run.kind == "root"
+    )
     return AxisFit(
         centre_mm=(float(centre[0]), float(centre[1])),
         flank_runs=tuple(kept_runs),
@@ -358,17 +386,96 @@ def fit_axis(
         flank_points_used=n_flank,
         fit_r_low_mm=low,
         fit_r_high_mm=tuple(highs),
+        root_radius_mm=root_radius,
+    )
+
+
+CONSTRAINT_BRACKET_MM = 0.5
+"""How far from the free axis ``constrain_axis`` looks for the tip radius, either way."""
+
+
+def constrain_axis(
+    scan: ContourScan | Array,
+    runs: Sequence[Run],
+    geometry: ScanGeometry,
+    settings: FitSettings,
+    free: AxisFit,
+    tip_radius_mm: float,
+) -> AxisFit:
+    """The axis moved from the free fit along the median centre line of the complete teeth
+    (the middle tooth of a three-tooth scan; without a complete tooth the direction of the
+    middle tip land) until the median of the fitted tip radii equals ``tip_radius_mm`` (the tip
+    diameter GINA measured on the same part, halved), the involute angles and the tip radii
+    refitted about it; the tangential position stays the one of the free fit. The median, not
+    the mean: a run the segmentation takes for a tip land although it is none (the pinion scan
+    95912 Z36 holds one 0,28 mm below the others) would otherwise drag the axis with it.
+
+    Why: the free fit holds the nominal base circle, so a real pressure-angle deviation of
+    the part is absorbed as a radial shift of the axis (a shift of 50 µm changes the normal
+    deviation along the fit zone by about 7 µm, like a profile slope deviation). The moulded
+    wheels have f_Hα of +10 to +13 µm on both flanks (GINA); on 47 wheel scans the free axis
+    sat a median 52 µm too close to the tooth, which made the tip and root radii of the scans
+    about 50 µm too small and s_b about 28 µm too thin against GINA (2026-10-12, MEAS-10).
+    The constrained fit's flank RMS (about 2,5 µm instead of 1,0) is then the real profile
+    deviation."""
+    if not isinstance(free, AxisFit):
+        raise InputRangeError("constrain_axis needs the free AxisFit to start from")
+    radius = finite_input(tip_radius_mm, "tip radius")
+    if radius <= 0.0:
+        raise InputRangeError(f"the tip radius must be positive, got {radius!r}")
+    teeth = tooth_thicknesses(free, geometry)
+    if teeth:
+        theta = float(np.median([t.theta_centre_rad for t in teeth]))
+    elif free.tip_runs:
+        run = free.tip_runs[len(free.tip_runs) >> 1]
+        d = _points(scan)[run.start : run.stop + 1].mean(axis=0) - free.centre
+        theta = math.atan2(float(d[0]), float(d[1]))
+    else:
+        raise InputRangeError("the axis constraint needs a complete tooth or a tip land")
+    direction = np.array([math.sin(theta), math.cos(theta)])
+
+    def fit_at(shift: float) -> AxisFit:
+        centre = free.centre + shift * direction
+        return fit_axis(
+            scan, runs, geometry, settings, fixed_centre=(float(centre[0]), float(centre[1]))
+        )
+
+    def gap(shift: float) -> float:
+        return float(np.median(fit_at(shift).tip_radius_mm)) - radius
+
+    lo, hi = -CONSTRAINT_BRACKET_MM, CONSTRAINT_BRACKET_MM
+    if gap(lo) * gap(hi) > 0.0:
+        raise InputRangeError(
+            f"the tip radius {radius:g} mm is not reached within {CONSTRAINT_BRACKET_MM:g} mm "
+            f"of the free axis (median tip radius of the free fit "
+            f"{float(np.median(free.tip_radius_mm)):.4f} mm)"
+        )
+    shift = float(brentq(gap, lo, hi, xtol=1.0e-7))
+    fit = fit_at(shift)
+    return fit.model_copy(
+        update={
+            "tip_radius_constraint_mm": radius,
+            "radial_shift_mm": shift,
+            "rms_flank_free_um": free.rms_flank_um,
+        }
     )
 
 
 def fit_scan(
-    scan: ContourScan | Array, geometry: ScanGeometry, settings: FitSettings = DEFAULT_SETTINGS
+    scan: ContourScan | Array,
+    geometry: ScanGeometry,
+    settings: FitSettings = DEFAULT_SETTINGS,
+    tip_radius_mm: float | None = None,
 ) -> tuple[tuple[Run, ...], AxisFit]:
     """Segmentation and axis fit in two passes (the second selects the points about the axis
-    of the first)."""
+    of the first); with ``tip_radius_mm`` the axis is then constrained to that tip radius
+    (``constrain_axis``)."""
     runs = segment(scan, settings)
     first = fit_axis(scan, runs, geometry, settings)
-    return runs, fit_axis(scan, runs, geometry, settings, centre0=first.centre_mm)
+    free = fit_axis(scan, runs, geometry, settings, centre0=first.centre_mm)
+    if tip_radius_mm is None:
+        return runs, free
+    return runs, constrain_axis(scan, runs, geometry, settings, free, tip_radius_mm)
 
 
 # ---- tip relief, thickness, pitch --------------------------------------------------------------
@@ -900,9 +1007,11 @@ def evaluate_scan(
     settings: FitSettings = DEFAULT_SETTINGS,
     *,
     corners: bool = True,
+    tip_radius_mm: float | None = None,
 ) -> ScanEvaluation:
-    """Everything the module measures on one scan."""
-    runs, fit = fit_scan(scan, geometry, settings)
+    """Everything the module measures on one scan; ``tip_radius_mm`` constrains the axis to
+    the tip radius GINA measured on the part (``constrain_axis``), None keeps the axis free."""
+    runs, fit = fit_scan(scan, geometry, settings, tip_radius_mm)
     found: list[CornerFit] = []
     if corners:
         for k in range(len(fit.tip_runs)):

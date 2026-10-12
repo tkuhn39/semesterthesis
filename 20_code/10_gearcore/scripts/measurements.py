@@ -53,7 +53,9 @@ import csv
 import io
 from collections import Counter
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 from pathlib import Path
+from statistics import median
 from typing import Any
 
 from gearcore import contour as ct
@@ -93,6 +95,7 @@ KIND_LABELS: dict[Kind, str] = {
     "roughness": "Rauheit ASCII (.txt)",
     "roughness_profile": "Rauheit Profil (.hwp)",
     "roughness_pdf": "Rauheit Protokoll (PDF)",
+    "microscope": "Mikroskop Zahnkopf (JPG)",
 }
 PART_LABELS = {"wheel": "Kunststoffrad (z = 52)", "pinion": "Stahlritzel (z = 51)"}
 LABELS = {"running_in": "Einlauf", "extra_test": "Zusatzversuch 12 Nm"}
@@ -847,6 +850,52 @@ def _generation(case: str) -> GenerationResult:
     return compute_generation(pair_input_from_ste(load_ste(data.stplus_input_path(case))).pair)
 
 
+@dataclass(frozen=True)
+class GinaSize:
+    """Tip and root radius of a part from its GINA files of one measurement round."""
+
+    tip_radius_mm: float | None
+    root_radius_mm: float | None
+    measurement_round: int | None
+    files: tuple[str, ...]
+
+
+GinaSizes = dict[str, GinaSize]
+"""ME → the GINA sizes of the part."""
+
+
+def gina_sizes(
+    inventory: Inventory, part_kind: ct.Role, me_filter: Sequence[str] | None = None
+) -> GinaSizes:
+    """Tip and root radius of every part of the kind from its GINA measurements of the EARLIEST
+    measurement round (``Kopf m`` and ``Fuß m`` of the ``.mew`` files of that round, averaged
+    over the repeats), the state nearest to the unworn contour scan; the files used are named.
+    None where no file of the round holds the size; parts without a GINA file are absent."""
+    rounds: dict[str, dict[int, list[tuple[str, float | None, float | None]]]] = {}
+    for part, file, result in gina_results(inventory, part_kind, me_filter):
+        sizes: list[float | None] = []
+        for label in ("Kopf", "Fuß"):
+            try:
+                sizes.append(0.5 * result.size(label).mean_mm)
+            except InputRangeError:
+                sizes.append(None)
+        key = file.measurement_round if file.measurement_round is not None else 0
+        rounds.setdefault(part.me, {}).setdefault(key, []).append((file.path, sizes[0], sizes[1]))
+    out: GinaSizes = {}
+    for me, by_round in rounds.items():
+        earliest = min(by_round)
+        entries = by_round[earliest]
+        tips = [t for _, t, _ in entries if t is not None]
+        roots = [r for _, _, r in entries if r is not None]
+        out[me] = GinaSize(
+            tip_radius_mm=sum(tips) / len(tips) if tips else None,
+            root_radius_mm=sum(roots) / len(roots) if roots else None,
+            measurement_round=earliest if earliest else None,
+            files=tuple(path for path, _, _ in entries),
+        )
+    return out
+
+
 def contour_evaluations(
     inventory: Inventory,
     part_kind: ct.Role,
@@ -855,19 +904,25 @@ def contour_evaluations(
     me_filter: Sequence[str] | None = None,
     *,
     include_coarse: bool = False,
+    gina: GinaSizes | None = None,
 ) -> list[ContourItem]:
-    """Every contour scan of the part kind evaluated, in the order of the inventory."""
+    """Every contour scan of the part kind evaluated, in the order of the inventory. With
+    ``gina`` the axis of every scan of a part with a GINA tip diameter is constrained to that
+    tip radius (``contour_scan.constrain_axis``, MEAS-10); parts without one keep the free axis."""
     root = Path(inventory.root)
     out: list[ContourItem] = []
     for part in inventory.parts:
         if part.part != part_kind or (me_filter and part.me not in me_filter):
             continue
+        size = (gina or {}).get(part.me)
+        tip_radius = size.tip_radius_mm if size is not None else None
         for file in sorted(part.of_kind("contour"), key=lambda f: (f.tooth or 0, f.path)):
             coarse = any("coarse" in note for note in file.anomalies)
             if coarse and not include_coarse:
                 continue
             for scan in load_contour_scans(root / file.path):
-                out.append((part, file, scan, cs.evaluate_scan(scan, geometry, settings)))
+                evaluation = cs.evaluate_scan(scan, geometry, settings, tip_radius_mm=tip_radius)
+                out.append((part, file, scan, evaluation))
     return out
 
 
@@ -881,9 +936,61 @@ def _hand_label(hand: int) -> str:
 
 
 def contour_tables(
-    part_kind: str, items: Sequence[ContourItem], geometry: cs.ScanGeometry
+    part_kind: str,
+    items: Sequence[ContourItem],
+    geometry: cs.ScanGeometry,
+    gina: GinaSizes | None = None,
 ) -> dict[str, str]:
-    """``bericht.md`` and the CSV tables of one part kind."""
+    """``bericht.md`` and the CSV tables of one part kind; ``gina`` adds the GINA tip and root
+    radii of the parts beside the scan values."""
+    gina = gina or {}
+    axis_columns = [
+        "me",
+        "scan",
+        "axis",
+        "tip_radius_constraint_mm",
+        "radial_shift_um",
+        "rms_flank_free_um",
+        "rms_flank_um",
+        "centre_x_mm",
+        "centre_y_mm",
+        "tip_radius_median_mm",
+        "tip_radius_mean_mm",
+        "root_radius_median_mm",
+        "gina_tip_radius_mm",
+        "gina_root_radius_mm",
+        "gina_round",
+        "gina_files",
+    ]
+    axis_rows: list[list[str]] = []
+    for part, _file, scan, ev in items:
+        fit = ev.fit
+        size = gina.get(part.me)
+        bound = fit.tip_radius_constraint_mm is not None
+        axis_rows.append(
+            [
+                part.me,
+                scan.name,
+                "gina_tip" if bound else "free",
+                _raw(fit.tip_radius_constraint_mm),
+                repr(1000.0 * fit.radial_shift_mm) if bound else "",
+                _raw(fit.rms_flank_free_um),
+                repr(fit.rms_flank_um),
+                repr(fit.centre_mm[0]),
+                repr(fit.centre_mm[1]),
+                _raw(median(fit.tip_radius_mm) if fit.tip_radius_mm else None),
+                _raw(
+                    sum(fit.tip_radius_mm) / len(fit.tip_radius_mm) if fit.tip_radius_mm else None
+                ),
+                _raw(median(fit.root_radius_mm) if fit.root_radius_mm else None),
+                _raw(size.tip_radius_mm if size is not None else None),
+                _raw(size.root_radius_mm if size is not None else None),
+                ""
+                if size is None or size.measurement_round is None
+                else str(size.measurement_round),
+                "; ".join(size.files) if size is not None else "",
+            ]
+        )
     corner_columns = [
         "me",
         "scan",
@@ -1022,10 +1129,20 @@ def contour_tables(
         f"r_b = {_n(geometry.r_b, 4)} mm, r_a = {_n(geometry.r_a, 4)} mm, "
         f"r_Ff = {_n(geometry.r_ff, 4)} mm; s_b Nenn {_n(geometry.base_tooth_thickness_nominal_mm, 4)} mm, "
         f"mit Zahndickenabmaß (erzeugt) {_n(geometry.base_tooth_thickness_generated_mm, 4)} mm; "
-        f"Teilung 360°/z = {_n(nominal_pitch, 4)}°. Achse je Scan frei, Evolventen mit dem Nenn-Grundkreis "
+        f"Teilung 360°/z = {_n(nominal_pitch, 4)}°. Evolventen mit dem Nenn-Grundkreis "
         f"(ein Drehwinkel je Flanke), ein Radius je Kopfkreis; Fit zwischen r_Ff + "
         f"{_n(items[0][3].settings.flank_margin_above_root_form_mm, 2)} mm und "
-        f"{_n(items[0][3].settings.flank_margin_below_tip_mm, 2)} mm unter dem Kopfkreis. Kanten: tangentialer "
+        f"{_n(items[0][3].settings.flank_margin_below_tip_mm, 2)} mm unter dem Kopfkreis. Achse: aus den "
+        "Flanken gefittet und, wo GINA den Kopfkreis desselben Teils gemessen hat, entlang der Zahnmitte so "
+        "verschoben, dass der Median der Kopfradien dem GINA-Kopfkreis entspricht (Spalte Achse; ohne "
+        "GINA-Messung bleibt die Achse frei; Median, damit ein als Kopfbogen erkannter Lauf, der keiner "
+        "ist, die Achse nicht mitzieht; GINA-Werte aus der frühesten Messrunde des Teils, Dateien in "
+        "achse.csv). Je Teil stehen d_a und d_f als Median über die Bögen und Lücken "
+        "aller Scans. Grund: Der freie Fit mit dem Nenn-Grundkreis nimmt eine reale "
+        "Profilwinkelabweichung des Teils als radialen Achsversatz auf (Räder: f_Hα +10 bis +13 µm, Versatz "
+        "im Median 52 µm zum Zahn hin, Kopf- und Fußradius der Scans damit rund 50 µm zu klein, s_b rund "
+        "28 µm zu dünn; MEAS-10, 2026-10-12); die RMS des gebundenen Fits ist die reale Profilabweichung. "
+        "Kanten: tangentialer "
         "Bogen (Radius ρ) und symmetrische Fase (Schenkellänge c) über ein Größenraster, besser = kleinerer RMS; "
         "Band = Größen mit RMS höchstens 10 % über dem Minimum. Rücknahme: Gerade über der Wälzlänge "
         "(linear, ISO 21771), Material fehlt positiv; an einem Rad mit Kopfrundung liest diese "
@@ -1050,8 +1167,14 @@ def contour_tables(
                 str(ev.points),
                 "ja" if ev.coarse else "nein",
                 f"{_n(ev.fit.centre_mm[0], 4)}, {_n(ev.fit.centre_mm[1], 4)}",
+                "GINA-Kopfkreis" if ev.fit.tip_radius_constraint_mm is not None else "frei",
+                _n(1000.0 * ev.fit.radial_shift_mm, 0)
+                if ev.fit.tip_radius_constraint_mm is not None
+                else "–",
                 ", ".join(_n(v, 4) for v in ev.fit.tip_radius_mm),
+                ", ".join(_n(v, 4) for v in ev.fit.root_radius_mm) or "–",
                 _n(ev.fit.rms_flank_um, 1),
+                _n(ev.fit.rms_flank_free_um, 1) if ev.fit.rms_flank_free_um is not None else "–",
                 _n(ev.fit.rms_tip_um, 1),
                 s_b,
                 _n(sum(p.pitch_deg for p in ev.pitches) / len(ev.pitches), 4)
@@ -1073,8 +1196,12 @@ def contour_tables(
                 "Punkte",
                 "grob",
                 "Achse x, y in mm",
+                "Achse",
+                "Versatz radial in µm",
                 "Kopfradien in mm",
+                "Fußradien in mm",
                 "RMS Flanken in µm",
+                "RMS Flanken frei in µm",
                 "RMS Kopf in µm",
                 "s_b je Zahn in mm",
                 "Teilung Mittel in °",
@@ -1095,6 +1222,15 @@ def contour_tables(
     summary: list[list[str]] = []
     for me, evaluations in by_me.items():
         tips = [v for ev in evaluations for v in ev.fit.tip_radius_mm]
+        roots = [v for ev in evaluations for v in ev.fit.root_radius_mm]
+        shifts = [
+            1000.0 * ev.fit.radial_shift_mm
+            for ev in evaluations
+            if ev.fit.tip_radius_constraint_mm is not None
+        ]
+        size = gina.get(me)
+        g_tip = size.tip_radius_mm if size is not None else None
+        g_root = size.root_radius_mm if size is not None else None
         s_bs = [t.s_b_mm for ev in evaluations for t in ev.teeth]
         reliefs = [
             r.ramp_at_nominal_tip_um
@@ -1108,7 +1244,12 @@ def contour_tables(
                 me,
                 GROUP_LABELS.get(groups_of[me], groups_of[me]),
                 str(len(evaluations)),
-                _n(2.0 * sum(tips) / len(tips), 4) if tips else "–",
+                f"{len(shifts)} von {len(evaluations)}" if shifts else "frei",
+                _n(sum(shifts) / len(shifts), 0) if shifts else "–",
+                _n(2.0 * median(tips), 4) if tips else "–",
+                _n(2.0 * g_tip, 4) if g_tip is not None else "–",
+                _n(2.0 * median(roots), 4) if roots else "–",
+                _n(2.0 * g_root, 4) if g_root is not None else "–",
                 _n(sum(s_bs) / len(s_bs), 4) if s_bs else "–",
                 _n(1000.0 * (sum(s_bs) / len(s_bs) - geometry.base_tooth_thickness_generated_mm), 0)
                 if s_bs
@@ -1124,7 +1265,12 @@ def contour_tables(
                 "ME",
                 "Gruppe",
                 "Scans",
-                "d_a Mittel in mm",
+                "Achse an GINA",
+                "Versatz radial Mittel in µm",
+                "d_a Median in mm",
+                "d_a GINA in mm",
+                "d_f Median in mm",
+                "d_f GINA in mm",
                 "s_b Mittel in mm",
                 "s_b − erzeugt in µm",
                 "Gerade am Nenn-Kopfkreis Mittel in µm",
@@ -1136,6 +1282,7 @@ def contour_tables(
     )
     return {
         "bericht.md": "\n".join(lines) + "\n",
+        "achse.csv": rp.csv_text(axis_columns, axis_rows),
         "kanten.csv": rp.csv_text(corner_columns, corner_rows),
         "kopfruecknahme.csv": rp.csv_text(relief_columns, relief_rows),
         "zahndicke.csv": rp.csv_text(thickness_columns, thickness_rows),
@@ -1290,14 +1437,21 @@ def run_contour(
     written: list[Path] = []
     for part_kind in parts:
         geometry = cs.scan_geometry(generation, part_kind)
+        gina = gina_sizes(inventory, part_kind, me_filter)
         items = contour_evaluations(
-            inventory, part_kind, geometry, settings, me_filter, include_coarse=include_coarse
+            inventory,
+            part_kind,
+            geometry,
+            settings,
+            me_filter,
+            include_coarse=include_coarse,
+            gina=gina,
         )
         if not items:
             continue
         folder = out / part_kind
         folder.mkdir(parents=True, exist_ok=True)
-        for name, text in contour_tables(part_kind, items, geometry).items():
+        for name, text in contour_tables(part_kind, items, geometry, gina).items():
             path = folder / name
             path.write_text(text, encoding="utf-8", newline="\n")
             written.append(path)

@@ -1543,6 +1543,55 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     relief, then "as manufactured" variants of the steel pinion, of the plastic wheel and of both,
     so the influence of either manufacturing deviation can be attributed; measurement track M7).
     The edge of the current pinion series waits for its contour scan and microscope images.
+45. **Ring body on the z-levels of the pocket body (2026-10-12, user).** The fibre orientation
+    mapped on the ring mesh and on the pocket mesh is the same moulding result sampled at other
+    z-positions: the ring body has 20 layers of 0,75 mm, the pocket body 6 layers of 0,667 mm
+    over the web and 7 of 0,786 mm over each pocket depth, so the tooth elements of the two
+    meshes lie up to 0,23 mm apart in z. Checked on the QS cards: the layer means of a11 agree
+    within 0,004, the local 1-direction is identical for 60 % of the tooth elements and turned by
+    more than 10° for 21 % (99th percentile 83°), mostly where a11 lies at 0,50 to 0,55 and the
+    tensor is nearly degenerate; the differences follow the z-offset of the layers (up to 52 % of
+    the elements of a layer at 0,23 mm offset, 4 % at 0,02 mm). A comparison W3/W4 pocket against
+    ring therefore carried a re-sampling of the fibre field beside the body. Decision: `decks
+    --levels pocket` sweeps the ring body to the z-levels of the pocket body (`--web-layers` over
+    |z| ≤ web/2, the rest over the pocket depths; `MeshResult.level_counts`, manifest
+    `wheel_mesh.levels`, `z_levels_mm`, `level_counts`, a README sentence); the transverse mesh
+    and the element numbering stay those of the ring body, the tooth nodes coincide with the
+    pocket mesh, the pinion surface is unchanged. The user mapped the three rates on that mesh
+    (`wheel-pocketlevels_mesh_{QS,DY1,DY2}.cof`; tooth-element 1-directions 100 % identical to
+    the pocket mapping, a11 within 1e-6 above the root circle). Folders of the day: the rate
+    pilot on the ring (`pilot_20layers_bore33_round0p1f12_dy1dy2_AtoE`, A to E, W1 to W4, DY1 and
+    DY2), the pocket series (`series_20layers_bore33_pocket_round0p1f12_30perpitch_margin1_qs`,
+    W1 to W4 at QS after the user re-exported the pocket cards with their plastic rows), the
+    pocket pilot and the ring-on-pocket-levels pilot (A to E, W1 to W4, QS, DY1, DY2 each), so
+    that at the five points three meshes stand beside each other: ring 0,75 against ring on
+    pocket levels = the layer division, ring on pocket levels against pocket = the body alone.
+    The moulding result is not rotationally symmetric; the sector is the same angular position
+    in every mapping (the coincident nodes agree), a rotation in CONVERSE would be a new variant.
+46. **Orientation-file guard (2026-10-12, user: nothing runs silently with a wrongly assigned
+    mapping).** `deck.verify_orientation_file`: the element labels of a CONVERSE file's
+    distribution must be exactly the elements of the mesh and the node labels of its field
+    variables exactly the nodes (a mapping of the other body has other counts); with the
+    folder's own `wheel_orientation_<rate>_part.inp` as the reference every orientation row must
+    be equal, because a mapping on the same numbering at other node positions (ring 0,75
+    against ring on pocket levels: 28 526 of 72 320 rows differ) has the same labels. `decks`
+    checks the labels of every `--cof` when W3 or W4 is written and notes a card whose name lacks
+    the rate; `fe_fatigue.py stommel --cof` checks labels, the reference piece and the card name
+    against the card the manifest records for the series' rate (the orientation rows are the
+    same for QS, DY1 and DY2, only the material tables differ). Demonstrated on the real cards:
+    every mix-up (other body, other levels, ring against levels) is refused with the counts and
+    the first differing element. Tests `test_fe_deck_orientation_guard.py`,
+    `test_fe_fatigue_script_guard.py`, `test_fe_decks_levels.py`. Independent review
+    (read-only, 2026-10-12): no P0; P1 taken: a card whose name carries another known rate
+    (the user's names `PA46_GF30_<rate>_cond_aniso`) is refused at the generation, since a
+    swapped `--cof` order would otherwise write the decks of one rate with the tables of
+    another and be caught only at the evaluation; the thickness line of the levels report
+    named the web and the pocket layers by min and max, now by their position in the sweep.
+    P2 taken: the reference-piece message names file and piece correctly, the evaluation says
+    what the row-by-row check can and cannot tell (a file swapped since the generation, not a
+    file wrong at the generation already), the card line prints "as recorded" only when a card
+    was recorded. Test `test_fe_decks_guard_script.py` runs `decks` with W3 against a fitting
+    synthetic file, a file of another mesh and a swapped rate.
 
 ## ADR-117 — Measurement data of the manufactured gears: parsers in `io`, pure evaluation in `gearcore.measurement`, the user's decisions in `parts.yaml`, text exports versioned (2026-10-10)
 
@@ -1666,6 +1715,86 @@ case is untouched; variants are separate cases (M7).
    duplicate exports are dropped by equal numbers, never by name; parameters without a norm in
    the repository are carried raw under the instrument's name; no figure of the roughness is
    drawn, the protocols are the appendix (user).
+
+### Amendment of 2026-10-12 (the axis of a contour scan is constrained to GINA's tip diameter; MEAS-10 explained)
+
+1. **Finding (user's question on the root deviation of the overlays).** The overlays of M3 showed
+   the root circle of the wheels 70 to 90 µm and the tip land 30 to 48 µm inside the STplus
+   nominal tooth (radius), the flanks only 10 to 15 µm, and on all 47 wheel scans the scan's tip
+   radius lay a median 52 µm (11 to 84) and its root radius 46 µm below the GINA values of the
+   same part. An experiment moved the fitted axis along the centre line of the middle tooth with
+   the involute angles and tip radii refitted: the flank RMS rises from 1,0 µm (free axis) to 2,4
+   at ±50 µm and 4,5 at ±100 µm, s_b changes by 58 µm, the tip and root radii by 100 µm per 100 µm
+   of shift. The cause is the fit, not the machine: the free fit holds the nominal base circle,
+   and a real pressure-angle deviation of the part (GINA: f_Hα +10 to +13 µm on both flanks of
+   the moulded wheels, about 1 µm on the pinions) is absorbed as a radial shift of the axis,
+   because a shift of 50 µm changes the normal deviation over the fit zone by about 7 µm like a
+   profile slope; the fit buys an RMS of 1,0 instead of 2,5 µm with it. With the axis moved so
+   that the mean tip radius equals GINA's (median shift 52 µm away from the tooth) the root
+   circle agrees with GINA within +4 µm (median) and s_b lies +9 µm above the generated value,
+   where GINA's span measurement gives 0 µm for the core wheels (16,973 mm = 17,180 − 0,207 of
+   STplus) and +9 µm for the scatter group.
+2. **Decision (user, 2026-10-12: "alles so ausführen").** `contour_scan.constrain_axis` moves
+   the axis of a scan from the free fit along the middle tooth until the mean of the fitted tip
+   radii equals the tip radius GINA measured on the same part (`fit_scan(..., tip_radius_mm)`,
+   `evaluate_scan(..., tip_radius_mm=...)`); `fit_axis` takes a `fixed_centre` for that and
+   returns the root circle per gap (`root_radius_mm`); the `AxisFit` carries the constraint,
+   the radial shift and the free fit's RMS. The script passes the GINA tip radius of every part
+   (`gina_sizes`: means of `Kopf m` over the part's `.mew` files); a part without a GINA file
+   keeps the free axis and the report says so (the older pinion 86481). The reports list axis,
+   shift, both RMS values and the root radii per scan (`achse.csv`), and d_a, d_f of the scans
+   beside GINA per part; the overlays are redrawn. The constrained fit's RMS (about 2,5 µm) is
+   reported as the real profile deviation, the free fit's as the one the bias hid.
+3. **Consequences.** The scan-derived tooth thicknesses of M3 (wheels −11 to −31 µm, mean
+   −24 µm) were the bias, not the parts: the wheels' thickness equals the STplus generation
+   (core group) or lies 9 µm above it (scatter group) per GINA, the rig pinions' span 16,808 mm
+   lies 4 µm below the generated 16,812 mm. The M7 variants "as manufactured" (V2, V3, V4)
+   take their tooth thickness from the GINA spans, not from the scans; V0 and V1 keep the STplus
+   thickness. The root deviation of the overlays reduces to about 10 µm (GINA d_f 49,50 against
+   49,523 generated) plus the fillet shape; the tip rounding (ρ 0,21) and the relief are local
+   fits and unchanged. The steel side of this cross-check (GINA and contour scan of the same
+   part) is open until the rig pinions of 2025 are scanned (user: at the machine height 87,57 mm,
+   the same clamping as 86481 recorded), because the only scanned pinion has no GINA file.
+   The test `test_axis_constraint_removes_the_bias_of_a_profile_slope_deviation` builds a
+   synthetic scan with a 12 µm profile slope on both flanks: the free axis shifts by more than
+   20 µm towards the tooth, the constrained one recovers the axis within 5 µm, the root circle
+   within 5 µm and s_b as generated plus twice the ramp at the middle of the fit zone (what a
+   span measurement sees too).
+4. **The steel side of the cross-check (user, 2026-10-12 afternoon: contour scan of the rig
+   pinion 95912 at the machine height 87,57 to 87,62 mm, and microscope images of its three
+   tooth tips).** On a part whose profile slope deviation is small (GINA f_Hα −1,4 and −0,7 µm)
+   the constraint moves the axis by 4 to 15 µm only, against the 32 to 69 µm of the moulded
+   wheels, which confirms the explanation. Scan against GINA of 95912: root diameter 48,308
+   (median of the gaps) against 48,299 mm, s_b −23 µm against the generated value where the
+   span 16,786 mm lies 26 µm below the generated 16,812 mm, relief 25 to 27 µm at the tip
+   against fKo −22,7 and −23,4 µm, the tip edge sharp (arc radius 0,002 to 0,008 mm, chamfer
+   legs 0,001 to 0,004 mm where the fit prefers a chamfer). The same code serves both materials.
+   The scan Z36 holds a fourth run the segmentation takes for a tip land, 0,28 mm below the
+   others (and a "root" at 24,37 mm): with the mean of the tip radii the constraint pulled the
+   axis by 65 µm, hence the constraint holds the **median** of the tip radii and the per-part
+   d_a and d_f are medians over the lands and gaps of all scans (test: one tooth truncated
+   0,2 mm below the tip leaves the axis within 3 µm). The microscope images (F4092_95912_Z1,
+   Z18, Z36, scale bar 200 µm, oblique view of the tip land and one flank) show the turned tip
+   land meeting the hobbed flank at an edge without a chamfer facet and without a visible
+   rounding band; the viewing angle is not recorded, so no radius is read from them beyond
+   "below about 20 µm", which agrees with the scan. The older pinion 86481 keeps the free axis
+   (no GINA file): its root diameter 48,135 mm is 0,26 mm below the STplus value and 0,17 mm
+   below the rig series, a different cut, which is why 86481 is not the reference of V2. The
+   inventory knows the images as the kind `microscope` (`Mikroskop/F<n>_<ME>_Z<tooth>.jpg`);
+   that folder names no part, so the part comes from the ME number through parts.yaml and an
+   ME not listed there is refused as unknown (`classify(..., part_of_me)`).
+5. **Independent review (read-only, 2026-10-12 afternoon) and what it changed.** No P0. P1:
+   the GINA tip radius of a part was averaged over every measurement round, while the contour
+   scan has no date; now `gina_sizes` takes the earliest round of the part (the state nearest to
+   the unworn scan) and `achse.csv` names the round and the files. P2 taken: the direction of
+   the shift is the median centre line of the complete teeth (an even count no longer picks
+   the upper-middle tooth), `fit_axis` refuses `centre0` together with `fixed_centre`, the
+   bracket error names the free fit's median tip radius, `achse.csv` carries the median tip
+   radius beside the mean and leaves the shift empty for a free axis, the image rule accepts
+   `.JPG`, an ME listed under both parts is refused, the microscope count in the real-folder
+   test is a lower bound. Left as documented: the pinion scans are constrained too (the steel
+   cross-check is their validation), the tip-land fallback of `constrain_axis` (no complete
+   tooth) has no test.
 
 ## ADR-118 — Thesis text, node-wise design check after Stommel et al. and the running tests: three tracks beside the FE batches (2026-10-11)
 

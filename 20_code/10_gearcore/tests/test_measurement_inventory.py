@@ -118,6 +118,31 @@ def test_classify_by_the_folder_rules(
         assert getattr(file, name) == value, name
 
 
+def test_microscope_images_take_their_part_from_the_registry() -> None:
+    # the folder names no part: the ME number decides through parts.yaml
+    file = classify("Mikroskop/F4092_95912_Z18.jpg", {"95912": "pinion"})
+    assert file is not None
+    assert (file.me, file.part, file.kind, file.tooth) == ("95912", "pinion", "microscope", 18)
+    with pytest.raises(ParseError, match="not in parts.yaml"):
+        classify("Mikroskop/F4092_95912_Z18.jpg")
+    with pytest.raises(ParseError, match="not in parts.yaml"):
+        classify("Mikroskop/F4092_99999_Z1.jpg", {"95912": "pinion"})
+    # a camera writes .JPG as well
+    upper = classify("Mikroskop/F4092_95912_Z36.JPG", {"95912": "pinion"})
+    assert upper is not None and upper.kind == "microscope" and upper.tooth == 36
+
+
+def test_an_me_listed_under_both_parts_is_refused(tmp_path: Path) -> None:
+    parts = {
+        "parts": {
+            "wheel": {"groups": {"core": ["11111"]}, "material": "PA", "scatter_group": "s"},
+            "pinion": {"groups": {"rig": ["11111"]}, "material": "St", "scatter_group": "s"},
+        }
+    }
+    with pytest.raises(ParseError, match="wheel and as a pinion"):
+        scan_folder(tmp_path, parts)
+
+
 def test_ignored_and_unknown_paths() -> None:
     assert classify("Auswertung/MEW_Auslesen_V1.xlsm") is None
     assert classify("GINA/Kunststoffrad/Rr_F4028-Kunst_52Z_neu_messblatt/Thumbs.db") is None
@@ -168,7 +193,10 @@ def test_scan_of_the_real_folder(measurements_root: Path) -> None:
     assert inventory.part("97351").labels == ("running_in",)
     kinds = Counter(file.kind for part in inventory.parts for file in part.files)
     assert kinds["mew"] == kinds["mka"] and kinds["mew"] >= 68
-    assert kinds["contour"] >= 79 and kinds["roughness"] >= 140
+    assert kinds["contour"] >= 82 and kinds["roughness"] >= 140
+    assert kinds["microscope"] >= 3
+    assert {1, 18, 36} <= {f.tooth for f in inventory.part("95912").of_kind("microscope")}
+    assert len(inventory.part("95912").of_kind("contour")) == 3
     assert {file.me for file in inventory.unassigned} == {"97840"}
     core = inventory.of_group("core")
     assert {part.me for part in core} == {
@@ -195,7 +223,7 @@ def test_scan_of_the_real_folder(measurements_root: Path) -> None:
     assert any("97373_1.DAT" in a for a in inventory.anomalies)
     pinion = inventory.part("95911")
     assert pinion.group == "rig_series" and len(pinion.of_kind("mew")) == 2
-    assert sorted(f.repeat for f in pinion.of_kind("mew")) == [1, 2]
+    assert sorted(f.repeat for f in pinion.of_kind("mew") if f.repeat is not None) == [1, 2]
     assert {f.measurement_round for f in pinion.of_kind("mew")} == {1}
     assert inventory.part("97342").rounds == (3,)
     with pytest.raises(InputRangeError):

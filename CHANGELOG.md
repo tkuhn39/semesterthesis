@@ -9,6 +9,70 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (measurement: the axis of a contour scan constrained to GINA's tip diameter, the steel cross-check, the microscope images, 2026-10-12, ADR-117 amendment of 2026-10-12)
+- **`gearcore.measurement.contour_scan.constrain_axis`**: the axis of a scan is moved from the
+  free fit along the centre line of the middle tooth until the median of the fitted tip radii
+  equals the tip radius GINA measured on the same part (`fit_scan(..., tip_radius_mm)`,
+  `evaluate_scan(..., tip_radius_mm)`; `fit_axis(..., fixed_centre)` fits the involute angles and
+  tip radii about a given axis and returns the root circle per gap, `AxisFit.root_radius_mm`).
+  Why: the free fit with the nominal base circle absorbs a real profile slope deviation of the
+  part as a radial shift of the axis; on 47 wheel scans (f_Hα +10 to +13 µm) the free axis sat a
+  median 52 µm too close to the tooth, so the scan's tip and root radii were about 50 µm too small
+  and s_b about 28 µm too thin against GINA; with the constraint the root circle agrees with GINA
+  within +4 µm (median) and s_b with the GINA spans (core wheels = the STplus generation, scatter
+  group +9 µm); on the steel pinion 95912 (f_Hα −1 µm) the constraint moves the axis by 4 to 15 µm
+  only and root, thickness and relief agree with GINA within 3 to 10 µm. The `AxisFit` carries the
+  constraint, the radial shift and the free fit's RMS (the constrained RMS is the real profile
+  deviation). Test: a synthetic scan with a 12 µm profile slope on both flanks, and one tooth
+  truncated 0,2 mm below the tip (the median holds the axis).
+- **`scripts/measurements.py contour`**: `gina_sizes` (tip and root radius per part from the
+  GINA files of the part's earliest measurement round, the files named), the constraint for every
+  part with a GINA tip diameter (parts without one keep the free axis and the report says so),
+  `achse.csv` (axis, constraint, shift, both RMS values, median and mean tip radius, median root
+  radius, GINA values, round and files per scan), new columns in `bericht.md` (axis, radial
+  shift, root radii, free RMS; per part d_a and d_f as medians beside GINA), the overlays
+  redrawn. Independently reviewed (read-only) before the commit, findings taken (ADR-117
+  amendment of 2026-10-12, item 5).
+- **Inventory kind `microscope`** (`Mikroskop/F<n>_<ME>_Z<tooth>.jpg`): the folder names no part,
+  so the part comes from the ME number through parts.yaml (`classify(relative, part_of_me)`); an
+  ME not listed there is refused as unknown. Inputs added: contour scans of the rig pinion 95912
+  (teeth 1, 18, 36 at the machine height 87,57 to 87,62 mm) and microscope images of its tips
+  (the axial view shows the face-edge chamfer, not the tip edge along the width; the scan gives
+  the tip edge as sharp, arc radius 0,002 to 0,008 mm).
+
+### Changed (measurement, 2026-10-12)
+- The scan-derived tooth thicknesses of M3 (wheels −11 to −31 µm) were the axis bias, not the
+  parts; the M7 variants "as manufactured" take their thickness from the GINA spans (roadmap,
+  known limit MEAS-10 explained, MEAS-06 answered).
+- mypy strict: the two remaining errors in `tests/test_measurement_contour.py` and
+  `tests/test_measurement_inventory.py` fixed (`Optional` comparisons).
+
+### Added (FE: ring body on the z-levels of the pocket body, the orientation-file guard, the folders of 2026-10-12, ADR-116 items 45 and 46)
+- **`build_fe_decks.py decks --levels pocket`**: the ring body swept to the z-levels of the
+  pocket body (`--web-layers` over the web, the rest over the pocket depths; the transverse mesh
+  and the element numbering stay those of the ring body, the tooth nodes coincide with the pocket
+  mesh), manifest `wheel_mesh.levels`, `z_levels_mm`, `level_counts`, a README sentence;
+  `MeshResult.level_counts`. Reason: the pocket mesh samples the same fibre field at other
+  z-positions (tooth elements up to 0,23 mm apart; 21 % of the tooth elements with the local
+  1-direction turned by more than 10°), so a W3/W4 comparison of the bodies carried a re-sampling
+  of the orientation. Test `test_fe_decks_levels.py`.
+- **`deck.verify_orientation_file`** (with `read_node_labels`, `OrientationFit`): a CONVERSE
+  orientation file is refused unless the element labels of its distribution and the node labels
+  of its field variables are exactly those of the mesh, and, with the folder's own orientation
+  piece as the reference, every orientation row is equal; `decks` checks every `--cof` when W3 or
+  W4 is written (and notes a card whose name lacks the rate), `fe_fatigue.py stommel --cof`
+  checks labels, reference piece and the card name against the manifest's record of the
+  series' rate (`OrientationReference`, `_orientation_reference`); a card whose name carries
+  another known rate than the one it is given for is refused at the generation (a swapped
+  `--cof` order). Tests `test_fe_deck_orientation_guard.py`, `test_fe_fatigue_script_guard.py`,
+  `test_fe_decks_guard_script.py`. Independently reviewed (read-only) before the commit,
+  findings taken (ADR-116 item 46).
+- Deck folders written and verified against the frozen meshes (diary entries): the rate pilot
+  DY1/DY2 at A to E on the ring, the pocket series W1 to W4 at QS (after the user re-exported the
+  pocket cards with their plastic rows), the pocket pilot and the ring-on-pocket-levels pilot
+  (A to E, W1 to W4, QS/DY1/DY2 each). The weekend series completed on 2026-10-11 (395 of 396
+  jobs; `pos_073_W1_QS` broke off) and arrived on 2026-10-12.
+
 ### Added (track E: stress tensor extraction, the check after Stommel et al. and its material side, 2026-10-11, ADR-118)
 - **`scripts/fe_odb_extract.py`** writes, beside the fields JSON, `<job>_stress.npz` (stress
   format 1): the nodal averaged stress tensor (six components, float32) of every node of the wheel

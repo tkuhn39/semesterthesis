@@ -34,7 +34,14 @@ from gearcore.models.common import FrozenModel
 
 Part = Literal["wheel", "pinion"]
 Kind = Literal[
-    "mew", "mka", "messblatt_pdf", "contour", "roughness", "roughness_profile", "roughness_pdf"
+    "mew",
+    "mka",
+    "messblatt_pdf",
+    "contour",
+    "roughness",
+    "roughness_profile",
+    "roughness_pdf",
+    "microscope",
 ]
 Flank = Literal["li", "re"]
 
@@ -89,8 +96,16 @@ FOLDER_RULES: tuple[tuple[Kind, re.Pattern[str]], ...] = (
             rf"^Rauheit/(?P<part>Kunststoffrad|Stahlritzel)/PDF/{ME}-(?P<label>.+?)-(?P<flank>li|re)-neu_?\.pdf$"
         ),
     ),
+    (
+        "microscope",
+        re.compile(
+            rf"^Mikroskop/(?:[^/]+/)*F\d+_{ME}_[Zz](?P<tooth>\d{{1,2}})\.(?i:jpg|jpeg|png)$"
+        ),
+    ),
 )
-"""Kind and file-name grammar per folder, paths relative to the input root with ``/``."""
+"""Kind and file-name grammar per folder, paths relative to the input root with ``/``. The
+microscope images (tooth tips, 2026-10-12) name no part in their folder: the part comes from the
+ME number through parts.yaml (``classify(..., part_of_me)``)."""
 
 IGNORED = re.compile(r"^(Auswertung/.*|.*/Thumbs\.db)$")
 """Files of the folder that are not measurements (the Excel macro, thumbnail caches)."""
@@ -161,9 +176,11 @@ class Inventory(FrozenModel):
         return tuple(entry for entry in self.parts if entry.group == group)
 
 
-def classify(relative: str) -> MeasurementFile | None:
+def classify(relative: str, part_of_me: Mapping[str, Part] | None = None) -> MeasurementFile | None:
     """The file a relative path names, from the folder rules alone (no file is read); ``None`` for
-    an ignored file, ``ParseError`` for a path no rule matches."""
+    an ignored file, ``ParseError`` for a path no rule matches. A rule whose folder names no part
+    (the microscope images) takes the part of the ME number from ``part_of_me`` (parts.yaml);
+    an ME not listed there is a ``ParseError`` too, so that a new part never slips in unnamed."""
     if IGNORED.match(relative):
         return None
     for kind, pattern in FOLDER_RULES:
@@ -171,12 +188,25 @@ def classify(relative: str) -> MeasurementFile | None:
         if match is None:
             continue
         groups = match.groupdict()
-        part: Part = _PART_OF_FOLDER[groups["part"]]  # type: ignore[assignment]
+        part: Part
+        if groups.get("part") is not None:
+            part = _PART_OF_FOLDER[groups["part"]]  # type: ignore[assignment]
+        elif part_of_me is not None and groups["me"] in part_of_me:
+            part = part_of_me[groups["me"]]
+        else:
+            raise ParseError(
+                f"{relative}: the folder names no part and the ME {groups['me']} is not in "
+                "parts.yaml"
+            )
         anomalies: list[str] = []
         tooth: int | None = None
         flank: Flank | None = None
         trace: int | None = None
         label: str | None = None
+        if kind == "microscope":
+            tooth = int(groups["tooth"])
+            if tooth < 1:
+                raise ParseError(f"{relative}: tooth number {tooth}")
         if kind == "contour":
             tooth = int(groups["tooth"])
             if not groups["z"]:
@@ -286,13 +316,20 @@ def scan_folder(root: Path, parts: Mapping[str, Any] | None = None) -> Inventory
     if not base.is_dir():
         raise InputRangeError(f"measurement folder not found: {base}")
     decisions = load_measurement_parts() if parts is None else parts
+    part_of_me: dict[str, Part] = {}
+    for kind_of_part in ("wheel", "pinion"):
+        for members in decisions["parts"][kind_of_part]["groups"].values():
+            for me in members:
+                if part_of_me.get(str(me), kind_of_part) != kind_of_part:
+                    raise ParseError(f"parts.yaml: ME {me} is listed as a wheel and as a pinion")
+                part_of_me[str(me)] = kind_of_part
     files: list[MeasurementFile] = []
     ignored: list[str] = []
     unknown: list[str] = []
     for path in sorted(p for p in base.rglob("*") if p.is_file()):
         relative = PurePosixPath(path.relative_to(base).as_posix()).as_posix()
         try:
-            classified = classify(relative)
+            classified = classify(relative, part_of_me)
         except ParseError:
             unknown.append(relative)
             continue
