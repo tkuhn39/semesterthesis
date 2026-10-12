@@ -1,8 +1,8 @@
 # Simulationstagebuch (generiert)
 
-Stand 2026-10-09 17:57; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
+Stand 2026-10-12 11:33; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
 
-Läufe: 212 vollständig, 28 abgebrochen, 8 offen, 678 Dateien nicht gerechnet; 61 Ordner.
+Läufe: 212 vollständig, 28 abgebrochen, 8 offen, 1244 Dateien nicht gerechnet; 66 Ordner.
 
 ## 2026-10-05 16:43 `pinion_surface_7teeth_80layers`
 
@@ -1212,4 +1212,44 @@ Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, K
 Netz: 82425 Knoten, 72320 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, W2, W3, W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 396 Stellungsdateien (grid, 30 je Teilung)
 
 Nicht gerechnet: 396 Dateien (`pos_001_W1_QS`, `pos_001_W2_QS`, `pos_001_W3_QS`, `pos_001_W4_QS`, `pos_002_W1_QS`, `pos_002_W2_QS` …).
+
+## 2026-10-12 09:28 `pilot_20layers_bore33_round0p1f12_dy1dy2_AtoE`
+
+**Zweck:** Ratenpilot (Vorlage, 2026-10-12): dieselbe Einstellung wie die Wochenendserie (Ringkörper Bohrung 33, Kopfkante des starren Ritzels 0,1 mm mit 12 Facetten je Bogen, Iterationsgrenzen 20/30/100, Gitter 30 je Teilung mit Rand 1,0), aber nur die Punkte A, B, C, D, E (Indizes 31, 36, 49, 63, 68 des Gitters; die Dateien behalten die Nummern der Serie) mit den dynamischen Karten des Nutzers DY1 (isotrope Zeile E = 2542,5 MPa, ν = 0,2951 bei 80 °C, Dehnrate 3 1/s) und DY2 (E = 3596,6 MPa, ν = 0,2973, 60 1/s) für alle vier Werkstoffstufen W1 bis W4; 40 Dateien, erwartet rund 4 h. Zweck: die Dehnratenabhängigkeit je Stufe gegen die Rate QS der Serie an denselben Stellungen (Drehung, Fußspannung, Kantendruck, Lastaufteilung). Radnetz, starre Fläche und Stellungsdateien sind bis auf die Werkstoffzeile und die Kopfzeile byte-identisch mit der Serie (geprüft 2026-10-12). **Ergebnis:** Vorlage.
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, W2, W3, W4, Raten DY1, DY2; Momente am Rad 8, 12, 16 Nm; 40 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 40 Dateien (`pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_DY1`, `pos_031_W2_DY2`, `pos_031_W3_DY1`, `pos_031_W3_DY2` …).
+
+## 2026-10-12 10:47 `series_20layers_bore33_pocket_round0p1f12_30perpitch_margin1_qs`
+
+**Zweck:** Taschenkörper-Serie (Vorlage, 2026-10-12): das Gegenstück der Wochenendserie auf dem Radkörper nach Zeichnung (Nabe, Steg, Taschen; das Netz ist byte-identisch mit frozen_mesh_20layers_bore33_pocket, auf dem das Mapping des Nutzers liegt), Kopfkante des starren Ritzels 0,1 mm mit 12 Facetten je Bogen, 30 Stellungen je Teilung, Rand 1,0 Teilung (99 Stellungen), Iterationsgrenzen 20/30/100, alle vier Werkstoffstufen W1 bis W4 bei Rate QS; 396 Dateien, erwartet rund 45 h (der Taschenkörper rechnete an C 215 statt 177 s, also etwa 27 min je Stellung) plus Extraktion. Vorgeschichte desselben Vormittags: die ersten Taschen-Karten des Nutzers (07.10.) enthielten keine *PLASTIC- und *POTENTIAL-Blöcke, der Kartenleser lehnte W2 ab; eine Fassung mit W1 und W3 allein wurde geschrieben und ungerechnet wieder gelöscht, nachdem der Nutzer die drei Taschen-Karten mit Plastizität neu exportiert hatte (12.10. 10:34 bis 10:45). Geprüft: *ELASTIC, *EXPANSION, *DENSITY, *PLASTIC und *POTENTIAL der neuen Taschen-Karten sind Zeile für Zeile identisch mit den Ringkarten derselben Rate, die Verteilung nennt alle 72932 Elemente des Taschen-Netzes. Zweck: Körpereinfluss über den ganzen Eingriffsweg je Stufe gegen die Ringserie (Drehung, Fußspannung über der Breite, Kantendruck, Lastaufteilung), Grundlage der Stommel-Auswertung auf dem Körper nach Zeichnung. **Ergebnis:** Vorlage.
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 396 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 396 Dateien (`pos_001_W1_QS`, `pos_001_W2_QS`, `pos_001_W3_QS`, `pos_001_W4_QS`, `pos_002_W1_QS`, `pos_002_W2_QS` …).
+
+## 2026-10-12 10:54 `pilot_20layers_bore33_pocket_round0p1f12_qsdy1dy2_AtoE`
+
+**Zweck:** Taschenkörper-Pilot (Vorlage, 2026-10-12, Idee des Nutzers: unter der Woche schnelle Läufe für die ersten Vergleiche der Arbeit, die 45-h-Serie am Wochenende): Taschenkörper, Kopfkante 0,1 mm mit 12 Facetten, Iterationsgrenzen 20/30/100, nur die Punkte A, B, C, D, E (Indizes 31, 36, 49, 63, 68 des 30er-Gitters mit Rand 1,0; Dateinummern wie in den Serien), alle vier Werkstoffstufen W1 bis W4 bei allen drei Raten QS, DY1, DY2 (Taschen-Karten mit Plastizität vom 12.10.); 60 Dateien, erwartet rund 6,5 h. Zusammen mit der Ringserie (QS, Wochenende) und dem Ringpiloten DY1/DY2 ergibt das an den fünf Punkten die volle Matrix zwei Körper × drei Raten × vier Stufen. Die 20 QS-Dateien sind byte-identisch mit den gleichnamigen Dateien der Taschen-Serie: ihre Ergebnisse (.sta, .dat, .msg, .odb, _fields.json, _stress.npz) können in den Serienordner kopiert werden, der Runner überspringt sie dann. **Ergebnis:** Vorlage.
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-12 11:17 `pilot_20layers_bore33_pocketlevels_round0p1f12_qs_AtoE_w1w2`
+
+**Zweck:** Netzeinfluss-Pilot (Vorlage, 2026-10-12, Wunsch des Nutzers): der Ringkörper der Wochenendserie, aber auf den z-Ebenen des Taschenkörpers extrudiert (neue Option `decks --levels pocket`: 6 Schichten à 0,667 mm über |z| ≤ 2,0, 7 Schichten à 0,786 mm je Taschentiefe statt 20 × 0,75 mm; Stirnschnitt-Netz und Elementnummern wie das Ringnetz, Knotenlagen der Zähne wie das Taschen-Netz), Kopfkante 0,1 mm mit 12 Facetten, Iterationsgrenzen 20/30/100, Punkte A bis E (Indizes 31, 36, 49, 63, 68), Rate QS, zunächst nur W1 und W2 (10 Dateien, rund 40 min), weil W3 und W4 ein eigenes CONVERSE-Mapping auf dieses Netz brauchen (der Nutzer mappt es; die Elemente liegen auf anderen z als beim Ring-Mapping). Zweck: an den Normpunkten den Einfluss der Schichtteilung vom Einfluss des Körpers trennen (Ring 0,75 gegen Ring auf Taschen-Ebenen = Netz; Ring auf Taschen-Ebenen gegen Tasche = Körper, bei W3/W4 ohne Neuabtastung der Faserorientierung, da beide Mappings dieselben Punkte abtasten). Hintergrund: Vergleich der Mappings 2026-10-12 (Zahnbereich, QS): a11 im Schichtmittel gleich, lokale Faserrichtung bei 60 % der Elemente identisch, bei 21 % um > 10° verschieden, Ursache die um bis zu 0,23 mm versetzten Abtastpunkte. **Ergebnis:** Vorlage; ersetzt durch pilot_20layers_bore33_pocketlevels_round0p1f12_qsdy1dy2_AtoE (alle Stufen und Raten, die 10 Dateien hier sind dort byte-identisch enthalten), nachdem der Nutzer die drei Mappings auf dieses Netz geliefert hatte (wheel-pocketlevels_mesh_QS/DY1/DY2.cof, 12.10. 11:27 bis 11:28).
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, W2, Raten QS; Momente am Rad 8, 12, 16 Nm; 10 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 10 Dateien (`pos_031_W1_QS`, `pos_031_W2_QS`, `pos_036_W1_QS`, `pos_036_W2_QS`, `pos_049_W1_QS`, `pos_049_W2_QS` …).
+
+## 2026-10-12 11:31 `pilot_20layers_bore33_pocketlevels_round0p1f12_qsdy1dy2_AtoE`
+
+**Zweck:** Netzeinfluss-Pilot vollständig (Vorlage, 2026-10-12 mittags): Ringkörper auf den z-Ebenen des Taschenkörpers (`decks --levels pocket`, Elementnummern wie das Ringnetz, Knotenlagen der Zähne wie das Taschen-Netz), Kopfkante 0,1 mm mit 12 Facetten, Iterationsgrenzen 20/30/100, Punkte A bis E (Indizes 31, 36, 49, 63, 68), alle vier Werkstoffstufen W1 bis W4 bei allen drei Raten QS, DY1, DY2 mit den Mappings des Nutzers auf dieses Netz (wheel-pocketlevels_mesh_<Rate>.cof); 60 Dateien, erwartet rund 6,5 h. Damit stehen an den fünf Punkten drei Netze nebeneinander: Ring 0,75 mm (Serie QS, Pilot DY1/DY2), Ring auf Taschen-Ebenen (dieser Ordner) und Tasche (pilot_20layers_bore33_pocket_round0p1f12_qsdy1dy2_AtoE); Ring 0,75 gegen Ring auf Taschen-Ebenen = Schichtteilung, Ring auf Taschen-Ebenen gegen Tasche = Körper, bei W3/W4 ohne Neuabtastung der Faserorientierung (beide Mappings tasten dieselben Punkte ab). **Ergebnis:** Vorlage.
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
 

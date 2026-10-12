@@ -1279,7 +1279,13 @@ def _nodal_anisotropy(
     """Frames, states and Hill ratios of every node of the folder's wheel from the CONVERSE
     orientation file and the mesh file named in the manifest, in the node order of the stress
     files."""
-    from gearcore.fe.deck import read_distribution, read_element_connectivity, read_field_variables
+    from gearcore.fe.deck import (
+        read_distribution,
+        read_element_connectivity,
+        read_field_variables,
+        read_node_labels,
+        verify_orientation_file,
+    )
     from gearcore.io.converse_card import read_converse_card
 
     positions = sf.positions_with_stress(manifest, folder, series)
@@ -1294,16 +1300,107 @@ def _nodal_anisotropy(
     if not cof.is_file():
         raise InputRangeError(f"orientation file not found: {cof}")
     print(f"reading the mesh {mesh_file.name} and the orientation file {cof.name} ...")
-    elements = read_element_connectivity(mesh_file.read_text(encoding="utf-8", errors="replace"))
+    mesh_text = mesh_file.read_text(encoding="utf-8", errors="replace")
+    elements = read_element_connectivity(mesh_text)
     text = cof.read_text(encoding="utf-8", errors="replace")
+    # the guard: the file must be the mapping of THIS mesh (labels of elements and nodes),
+    # and, where the folder holds its own orientation piece, the mapping the decks were
+    # built with (row by row; a mapping on the same numbering at other node positions has
+    # the same labels and other vectors)
+    reference = _orientation_reference(folder, manifest, series)
+    fit = verify_orientation_file(
+        text,
+        element_labels=elements,
+        node_labels=read_node_labels(mesh_text),
+        reference_text=reference.piece_text,
+        name=cof.name,
+        reference_name=reference.piece_name,
+    )
+    if fit.reference is not None:
+        print(
+            f"  {cof.name} fits the mesh ({fit.elements} elements, {fit.nodes} nodes) and equals "
+            f"the folder's {fit.reference} row by row"
+        )
+    else:
+        print(
+            f"  {cof.name} fits the mesh by its labels ({fit.elements} elements, {fit.nodes} "
+            "nodes); the folder holds no orientation piece of this series, so a mapping on the "
+            "same numbering at other node positions could not be told apart"
+            + (
+                f" (the decks were built with {reference.recorded_file})"
+                if reference.recorded_file
+                else ""
+            )
+        )
     orientation = read_distribution(text)
     fields = read_field_variables(text)
     card = read_converse_card(text)
+    # the rate: the orientation rows are the same for every rate of one mesh, only the
+    # material tables differ, so the card's name is checked against the card the decks of
+    # this series were built with
+    if reference.recorded_card is not None and card.name != reference.recorded_card:
+        raise InputRangeError(
+            f"{cof.name} holds the card {card.name}, but the decks of series {series!r} were "
+            f"built with {reference.recorded_card}: the orientation file of another strain rate?"
+        )
+    if reference.recorded_card is not None:
+        print(f"  card {card.name} as recorded for series {series}")
+    else:
+        print(f"  card {card.name}; the manifest records no card for series {series}, not checked")
+    if fit.reference is not None:
+        print(
+            "  note: the row-by-row check tells a file swapped since the generation apart, not a "
+            "file that was wrong at the generation already (the piece was cut from that file)"
+        )
     built = an.build_nodal_anisotropy(
         first.node_labels, elements, orientation, fields, card, material.temperature_c
     )
     print(f"  {built.n} nodes, card {built.card} at {_g(built.temperature_c, 0)} °C")
     return built
+
+
+@dataclass(frozen=True)
+class OrientationReference:
+    """What the folder records about the orientation file of one series: the folder's own
+    orientation piece (``wheel_orientation_<rate>_part.inp``, cut from the file the decks were
+    built with), the name of that file and the name of its material card."""
+
+    piece_name: str | None
+    piece_text: str | None
+    recorded_file: str | None
+    recorded_card: str | None
+
+
+def _orientation_reference(
+    folder: Path, manifest: dict[str, Any], series: str | None
+) -> OrientationReference:
+    """The folder's reference for the orientation-file guard of ``series``; Nones where the
+    folder has none (a folder of the isotropic steps only, or written before the rates were
+    a variant axis, which records the card under ``material_card``)."""
+    rate = series.split("_")[1] if series and series.count("_") >= 1 else None
+    rates = manifest.get("rates")
+    entry: dict[str, Any] | None = None
+    if isinstance(rates, dict):
+        if rate is not None and isinstance(rates.get(rate), dict):
+            entry = rates[rate]
+        elif rate is None and len(rates) == 1:
+            entry = next(iter(rates.values()))
+    files: list[str] = []
+    if entry is not None and isinstance(entry.get("orientation_files"), list):
+        files = [str(f) for f in entry["orientation_files"]]
+    elif isinstance(manifest.get("orientation_files"), list):
+        files = [str(f) for f in manifest["orientation_files"]]
+    recorded_file = Path(str(entry["file"])).name if entry and entry.get("file") else None
+    recorded_card = str(entry["name"]) if entry and entry.get("name") else None
+    if recorded_card is None:
+        card = manifest.get("material_card")
+        if isinstance(card, dict) and card.get("name"):
+            recorded_card = str(card["name"])
+    for name in files:
+        if name.endswith("_part.inp") and (folder / name).is_file():
+            text = (folder / name).read_text(encoding="utf-8", errors="replace")
+            return OrientationReference(name, text, recorded_file, recorded_card)
+    return OrientationReference(None, None, recorded_file, recorded_card)
 
 
 def _anisotropy_rows(built: an.NodalAnisotropy) -> list[dict[str, Any]]:

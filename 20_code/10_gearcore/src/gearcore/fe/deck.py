@@ -29,6 +29,7 @@ settings of a file stand in its ``** steps ...`` heading line.
 """
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Literal
 
@@ -41,6 +42,9 @@ EQ_EXEMPT = (
     "read_distribution",
     "read_field_variables",
     "split_orientation_file",
+    "OrientationFit",
+    "read_node_labels",
+    "verify_orientation_file",
     "position_deck_text",
     "seating_angle_rad",
     "step_name",
@@ -308,6 +312,100 @@ def read_element_connectivity(text: str) -> dict[int, tuple[int, ...]]:
     if not out:
         raise ParseError("input file: no *ELEMENT block")
     return out
+
+
+def read_node_labels(text: str) -> tuple[int, ...]:
+    """Node labels of every ``*NODE`` block of an Abaqus input file, in file order."""
+    labels: list[int] = []
+    for keyword, _line, data in _blocks(text):
+        if keyword != "NODE":
+            continue
+        for row in data:
+            first = row.split(",")[0].strip()
+            if first:
+                labels.append(int(float(first)))
+    if not labels:
+        raise ParseError("input file: no *NODE block")
+    return tuple(labels)
+
+
+@dataclass(frozen=True)
+class OrientationFit:
+    """What ``verify_orientation_file`` confirmed about an orientation file and a mesh."""
+
+    elements: int
+    nodes: int
+    reference: str | None
+    """Name of the orientation piece the rows were compared with, None without one."""
+
+
+def _label_mismatch(what: str, name: str, wanted: set[int], found: set[int]) -> str | None:
+    missing, extra = sorted(wanted - found), sorted(found - wanted)
+    if not missing and not extra:
+        return None
+    parts = [
+        f"{name} does not belong to this mesh: {what} of the mesh {len(wanted)}, of the file "
+        f"{len(found)}"
+    ]
+    if missing:
+        parts.append(f"{len(missing)} of the mesh missing in the file (first {missing[:5]})")
+    if extra:
+        parts.append(f"{len(extra)} of the file not in the mesh (first {extra[:5]})")
+    return "; ".join(parts)
+
+
+def verify_orientation_file(
+    cof_text: str,
+    *,
+    element_labels: Iterable[int],
+    node_labels: Iterable[int],
+    reference_text: str | None = None,
+    name: str = "orientation file",
+    reference_name: str | None = None,
+) -> OrientationFit:
+    """Refuse a CONVERSE orientation file that does not belong to a mesh, so that a wrongly
+    assigned mapping never runs silently. The element labels of its distribution must be
+    exactly the elements of the mesh and the node labels of its field variables exactly the
+    nodes of the mesh (a mapping made on the other body has other counts). With
+    ``reference_text``, the folder's own orientation piece (``wheel_orientation_<rate>_part.inp``,
+    cut from the file the decks were built with), every orientation row must equal the row of
+    that piece: a mapping on a mesh with the same numbering but other node positions (the ring
+    body on the levels of the pocket body against the ring body with equal layers) has the
+    same labels and other vectors, and nothing else tells the two apart. Raises
+    ``InputRangeError`` naming the first difference."""
+    if not isinstance(cof_text, str) or not cof_text:
+        raise InputRangeError("an orientation file text is required")
+    orientation = read_distribution(cof_text)
+    fields = read_field_variables(cof_text)
+    wanted_elements = {int(k) for k in element_labels}
+    wanted_nodes = {int(k) for k in node_labels}
+    if not wanted_elements or not wanted_nodes:
+        raise InputRangeError("element and node labels of the mesh are required")
+    for message in (
+        _label_mismatch("elements", name, wanted_elements, set(orientation)),
+        _label_mismatch("nodes", name, wanted_nodes, set(fields)),
+    ):
+        if message is not None:
+            raise InputRangeError(message)
+    compared: str | None = None
+    if reference_text is not None:
+        compared = reference_name or "the orientation piece of the folder"
+        reference = read_distribution(reference_text)
+        if set(orientation) != set(reference):
+            raise InputRangeError(
+                f"{name} is not the mapping of this folder: its distribution names "
+                f"{len(orientation)} elements, the folder's {compared} {len(reference)}"
+            )
+        differing = [k for k in sorted(orientation) if orientation[k] != reference[k]]
+        if differing:
+            first = differing[0]
+            raise InputRangeError(
+                f"{name} is not the mapping of this folder: {len(differing)} of "
+                f"{len(orientation)} element orientations differ from {compared} (first element "
+                f"{first}: file {orientation[first][0]}, folder {reference[first][0]}); a mapping "
+                "made on a mesh with the same numbering but other node positions?"
+            )
+    return OrientationFit(elements=len(orientation), nodes=len(fields), reference=compared)
 
 
 def split_orientation_file(

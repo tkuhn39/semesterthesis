@@ -593,6 +593,8 @@ class MeshResult:
     solid: so.SolidMesh
     sets: so.GearSets
     body: bd.BodyMesh | None
+    level_counts: bd.BodyCounts | None = None
+    """Set when a ring body was swept to the z-levels of the pocket body (``--levels pocket``)."""
 
 
 def mesh(
@@ -608,13 +610,29 @@ def mesh(
     body: bd.BodyShape = "ring",
     body_counts: bd.BodyCounts | None = None,
     pictures_only: bool = False,
+    level_counts: bd.BodyCounts | None = None,
 ) -> MeshResult:
     """Write the mesh file of one gear sector and its pictures (``pictures_only``: only the
     pictures, nothing of the deck). ``body`` ``pocket`` meshes the
     body of the drawing (``fe.body``) with ``body_counts`` (rings hub / pocket / rim, layers
-    web / flange) instead of ``layers`` equal layers of the full ring."""
+    web / flange) instead of ``layers`` equal layers of the full ring. ``level_counts`` sweeps
+    the RING body to the z-levels of the pocket body (``fe.body.body_levels``: ``web_layers``
+    over the web, ``flange_layers`` over each pocket depth, ``layers`` in all), so that a ring
+    mesh and a pocket mesh share the node positions of their teeth and a CONVERSE mapping on
+    both samples the fibre orientation at the same points (comparison of the bodies without a
+    re-sampling of the orientation, 2026-10-12)."""
     if body not in bd.BODY_SHAPES:
         raise InputRangeError(f"body must be one of {bd.BODY_SHAPES}, got {body!r}")
+    if level_counts is not None:
+        if body != "ring":
+            raise InputRangeError(
+                "level_counts (the z-levels of the pocket body) apply to the ring body"
+            )
+        if level_counts.layers != layers:
+            raise InputRangeError(
+                f"level_counts give {level_counts.layers} layers (web {level_counts.web_layers} + "
+                f"2 x {level_counts.flange_layers}), layers is {layers}"
+            )
     generation = _generation(case)
     gear = generation.inputs.gears.pinion if role == "pinion" else generation.inputs.gears.wheel
     section = sm.sector_mesh(
@@ -637,6 +655,15 @@ def mesh(
             )
         built = bd.body_mesh(section, shape, body_counts or bd.BodyCounts(), prefix)
         section, solid, sets = built.section, built.solid, built.sets
+    elif level_counts is not None:
+        shape = bd.body_section(case, role)
+        if abs(shape.face_width_mm - gear.face_width_mm) > 1.0e-6:
+            raise InputRangeError(
+                f"the drawing has the face width {shape.face_width_mm:g} mm, the STplus file "
+                f"{gear.face_width_mm:g} mm"
+            )
+        solid = so.extrude_to_levels(section, bd.body_levels(shape, level_counts))
+        sets = so.gear_sets(solid, prefix)
     else:
         solid = so.extrude(section, face_width_mm=gear.face_width_mm, layers=layers)
         sets = so.gear_sets(solid, prefix)
@@ -670,11 +697,20 @@ def mesh(
             for k in range(4)
         ]
     )
-    thickness = (
-        f"layer thickness {gear.face_width_mm / solid.layers:.4f} mm"
-        if built is None
-        else "layers of the web and of the pockets differ (see body mesh)"
-    )
+    if built is not None:
+        thickness = "layers of the web and of the pockets differ (see body mesh)"
+    elif level_counts is not None:
+        # the levels run flange, web, flange: the first step is a pocket-depth layer, the
+        # step after the flange layers a web layer
+        steps = np.diff(solid.z_levels_mm)
+        thickness = (
+            f"z-levels of the pocket body: {level_counts.web_layers} layers of "
+            f"{float(steps[level_counts.flange_layers]):.4f} mm over the web, "
+            f"{level_counts.flange_layers} of {float(steps[0]):.4f} mm over each pocket depth "
+            "(ring body, the teeth share their node positions with the pocket mesh)"
+        )
+    else:
+        thickness = f"layer thickness {gear.face_width_mm / solid.layers:.4f} mm"
     lines = [
         target.as_posix(),
         f"nodes {len(solid.nodes_mm)}, elements {len(solid.hexes)} ({element_type}), "
@@ -697,7 +733,13 @@ def mesh(
     if built is not None:
         lines.extend(_body_lines(built))
     return MeshResult(
-        lines=lines, file_name=file_name, section=section, solid=solid, sets=sets, body=built
+        lines=lines,
+        file_name=file_name,
+        section=section,
+        solid=solid,
+        sets=sets,
+        body=built,
+        level_counts=level_counts,
     )
 
 
@@ -1102,6 +1144,7 @@ def decks(
     line_search: int = 0,
     shift_mm: float = 0.0,
     rounding_facets: int = rsf.ROUNDING_FACETS,
+    level_counts: bd.BodyCounts | None = None,
 ) -> list[str]:
     """Write the wheel mesh, the pinion surface, one position file per position and
     combination, the manifest and the runner into ``out``; returns the lines of the report.
@@ -1169,6 +1212,7 @@ def decks(
         bore_radius_mm,
         body=body,
         body_counts=body_counts,
+        level_counts=level_counts,
     )
     report = list(built.lines)
     report += surface(
@@ -1204,11 +1248,43 @@ def decks(
     pieces_of: dict[str, tuple[str, str | None, str | None]] = {}
     orientation_files: list[str] = []
     needs_orientation = any(s in ("W3", "W4") for s in material_steps)
+    mesh_labels: tuple[dict[int, tuple[int, ...]], tuple[int, ...]] | None = None
+    rate_tokens = {str(k).upper() for k in data.load_converse_rates()}
     for rate, cof in zip(rates, cofs, strict=True):
         cof_text = cof.read_text(encoding="utf-8", errors="replace")
         cards[rate] = dk.read_material_card(cof_text, temperature_c)
+        # the order of --cof against --rates: a card whose name carries another known rate
+        # (the user's cards are named PA46_GF30_<rate>_cond_aniso) is refused, a card without
+        # a rate token in its name is noted
+        tokens = {t.upper() for t in cards[rate].name.replace("-", "_").split("_")}
+        others = (tokens & rate_tokens) - {rate.upper()}
+        if others:
+            raise InputRangeError(
+                f"the card of rate {rate} is named {cards[rate].name}, which carries the rate "
+                f"{', '.join(sorted(others))}: the order of --cof against --rates?"
+            )
+        if rate.upper() not in tokens:
+            report.append(
+                f"note: the card of rate {rate} is named {cards[rate].name} without the rate "
+                "in its name; check the order of --cof against --rates"
+            )
         if not needs_orientation:
             continue
+        # the guard: an orientation file of another mesh (other element or node labels)
+        # never gets into a deck silently. A mapping on the same numbering at other node
+        # positions (ring 0,75 against ring on pocket levels) cannot be told apart by labels;
+        # the evaluation compares the file row by row with the piece cut here, which catches a
+        # file swapped between generation and evaluation, not a wrong file used for both
+        if mesh_labels is None:
+            mesh_text = (out / built.file_name).read_text(encoding="ascii")
+            mesh_labels = (dk.read_element_connectivity(mesh_text), dk.read_node_labels(mesh_text))
+        fit = dk.verify_orientation_file(
+            cof_text, element_labels=mesh_labels[0], node_labels=mesh_labels[1], name=cof.name
+        )
+        report.append(
+            f"{cof.name}: orientation file of rate {rate} fits the mesh by its labels "
+            f"({fit.elements} elements, {fit.nodes} nodes)"
+        )
         pieces = dk.split_orientation_file(cof_text, dk.WHEEL_INSTANCE, dk.WHEEL)
         part_file = f"wheel_orientation_{rate}_part.inp"
         (out / part_file).write_text(pieces.part, encoding="utf-8")
@@ -1394,6 +1470,16 @@ def decks(
                 "root_layers": counts.root_layers if counts is not None else 3,
                 "shoulder_columns": counts.shoulder_columns if counts is not None else 4,
             },
+            "levels": "pocket" if level_counts is not None else "equal",
+            "z_levels_mm": built.solid.z_levels_mm.tolist(),
+            "level_counts": (
+                {
+                    "web_layers": level_counts.web_layers,
+                    "flange_layers": level_counts.flange_layers,
+                }
+                if level_counts is not None
+                else None
+            ),
             "body": _body_manifest(built.body),
             "fillet_chains_transverse": _fillet_chains(section),
         },
@@ -1419,8 +1505,17 @@ def decks(
                 f"# Stellungsrechnungen {case}, Werkstoffstufe{'n' if len(material_steps) > 1 else ''} "
                 f"{', '.join(material_steps)}, Rate{'n' if len(rates) > 1 else ''} {', '.join(rates)}",
                 "",
-                f"Radsektor {teeth} Zähne + 2 zahnlose Segmente, {layers} Schichten, "
-                f"{', '.join(f'{t} ({f})' for t, f in mesh_files.items())}, "
+                f"Radsektor {teeth} Zähne + 2 zahnlose Segmente, {layers} Schichten"
+                + (
+                    f" auf den z-Ebenen des Taschenkörpers (Steg {level_counts.web_layers}, je "
+                    f"Tasche {level_counts.flange_layers} Schichten; Ring- und Taschen-Netz teilen "
+                    "damit die Knotenlagen der Zähne, ein CONVERSE-Mapping auf beiden tastet die "
+                    "Faserorientierung an denselben Punkten ab, dieses Netz braucht ein eigenes "
+                    "Mapping)"
+                    if level_counts is not None
+                    else ""
+                )
+                + f", {', '.join(f'{t} ({f})' for t, f in mesh_files.items())}, "
                 f"{len(built.solid.nodes_mm)} Knoten; starre Ritzelfläche mit {teeth + 2} Zähnen"
                 + (
                     f", Kopfkanten mit {tip_rounding_mm:g} mm gerundet, mindestens "
@@ -2775,8 +2870,32 @@ def _body_arguments(parser: argparse.ArgumentParser) -> None:
         "--web-layers",
         type=int,
         default=preset.web_layers,
-        help="pocket body: layers over the web (even); the rest of --layers goes to the pockets",
+        help="pocket body: layers over the web (even); the rest of --layers goes to the pockets; "
+        "with --levels pocket also the layers of the ring body over |z| <= web/2",
     )
+    parser.add_argument(
+        "--levels",
+        choices=("equal", "pocket"),
+        default="equal",
+        help="ring body only: 'equal' sweeps --layers equal layers over the face width; 'pocket' "
+        "sweeps the ring body to the z-levels of the pocket body (--web-layers over the web, "
+        "the rest over the pocket depths), so that ring and pocket mesh share the node "
+        "positions of their teeth and a CONVERSE mapping on both samples the fibre "
+        "orientation at the same points; the mesh then needs its own mapping",
+    )
+
+
+def _flange_layers(args: argparse.Namespace) -> int:
+    """Layers over each pocket depth: what --layers leaves beside --web-layers, halved."""
+    layers: int = args.layers
+    web_layers: int = args.web_layers
+    outside = layers - web_layers
+    if outside < 2 or outside % 2:
+        raise InputRangeError(
+            f"--layers {args.layers} minus --web-layers {args.web_layers} must leave an even "
+            "number of pocket layers, at least 2"
+        )
+    return outside // 2
 
 
 def _body_counts(args: argparse.Namespace) -> bd.BodyCounts | None:
@@ -2785,19 +2904,23 @@ def _body_counts(args: argparse.Namespace) -> bd.BodyCounts | None:
         return None
     preset = bd.BodyCounts()
     rim = args.rings if args.rings is not None else preset.rim_rings
-    outside = args.layers - args.web_layers
-    if outside < 2 or outside % 2:
-        raise InputRangeError(
-            f"--layers {args.layers} minus --web-layers {args.web_layers} must leave an even "
-            "number of pocket layers, at least 2"
-        )
     return bd.BodyCounts(
         hub_rings=args.hub_rings,
         pocket_rings=args.pocket_rings,
         rim_rings=rim,
         web_layers=args.web_layers,
-        flange_layers=outside // 2,
+        flange_layers=_flange_layers(args),
     )
+
+
+def _level_counts(args: argparse.Namespace) -> bd.BodyCounts | None:
+    """The layer counts of ``--levels pocket`` for a ring body (web and flange layers; the
+    rings are not used), else None."""
+    if args.levels != "pocket":
+        return None
+    if args.body != "ring":
+        raise InputRangeError("--levels pocket applies to the ring body (--body ring)")
+    return bd.BodyCounts(web_layers=args.web_layers, flange_layers=_flange_layers(args))
 
 
 def main() -> None:
@@ -3042,11 +3165,14 @@ def main() -> None:
         counts = None
         if any(value is not None for value in given.values()):
             counts = rs.MeshCounts(**{k: v for k, v in given.items() if v is not None})
+        level_counts = _level_counts(args)
         folder = f"{args.role}_{args.teeth}teeth_{args.rim_rings}rings_{args.layers}layers"
         if counts is not None:
             folder += f"_{counts.label()}"
         if body_counts is not None:
             folder += f"_pocket_{body_counts.label()}"
+        if level_counts is not None:
+            folder += "_pocketlevels"
         out = args.out if args.out is not None else OUTPUT / args.case / folder
         for line in mesh(
             args.case,
@@ -3061,6 +3187,7 @@ def main() -> None:
             body=args.body,
             body_counts=body_counts,
             pictures_only=args.pictures_only,
+            level_counts=level_counts,
         ).lines:
             print(line)
     if args.command == "surface":
@@ -3100,8 +3227,11 @@ def main() -> None:
             f"decks_{'_'.join(args.material)}_{'_'.join(args.rates)}_{args.layers}layers_"
             f"{'_'.join(args.positions)}"
         )
+        level_counts = _level_counts(args)
         if body_counts is not None:
             folder += "_pocket"
+        if level_counts is not None:
+            folder += "_pocketlevels"
         if args.variants:
             folder += "_variants"
         if args.enforcement != "default":
@@ -3149,6 +3279,7 @@ def main() -> None:
             line_search=args.line_search,
             shift_mm=args.shift_mm,
             rounding_facets=args.rounding_facets,
+            level_counts=level_counts,
         ):
             print(line)
     if args.command == "report":
