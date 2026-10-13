@@ -1,0 +1,36 @@
+# Elastic constants of the skin layers of PA46-GF30 from FVA 856 I (FVA-Heft 1491, 2022),
+# Tabelle 4 "Per GeoDict umgerechnete elastische Konstatanten der Randschichten
+# (konditioniert)", printed page 22 (PDF page 35), transcribed by pdftotext on 2026-10-13 and
+# checked digit by digit against the layout extraction; the thousands separator of the report
+# (6.277) is dropped, the decimal comma becomes a point. The report converts the tensile tests
+# (0 degree and 90 degree specimens, three temperatures, three test speeds) with a micro-
+# mechanical cell of the three-layer specimen (GeoDict) into the constants of the oriented
+# skin layer, section 6.3.1. The report states the 1-direction as the preferred fibre
+# direction and E_2 as perpendicular to it ("E1 (Richtung der Faservorzugsrichtung) und E2
+# (senkrecht dazu)", section 6.3.2, printed page 22); that 2 lies in the plane of the plate
+# and 3 is the thickness direction is INFERRED from the plate-shaped specimen cell, not
+# quoted. The report writes RT for the room temperature rows (its test matrix names -20, 23
+# and 80 degC, section 6.3.1; Tabelle 20 on printed page 116 uses the same E_2 values at
+# 23 degC). The rates QS, DY1, DY2 are those of the CONVERSE cards of the user
+# (converse_rates.yaml): the rows of Tabelle 4 carry the same names.
+source: "FVA856-I:2022"
+table: "Tabelle 4"
+printed_page: 22
+pdf_page: 35
+state: "konditioniert"
+frame:
+  "1": "Faservorzugsrichtung (Hauptrichtung des Orientierungstensors; so im Bericht)"
+  "2": "senkrecht dazu, in der Plattenebene (Ebene erschlossen aus der Probenzelle)"
+  "3": "Dickenrichtung (erschlossen aus der Probenzelle)"
+constant_names: [E_1, E_2, E_3, nu_12, nu_13, nu_23, G_12, G_13, G_23]
+units: [MPa, MPa, MPa, "", "", "", MPa, MPa, MPa]
+rows:
+  - { label: "RT, QS", temperature_c: 23, rate: QS, values: [6277, 3000, 2929, 0.403, 0.380, 0.489, 1266, 1149, 998] }
+  - { label: "RT, DY1", temperature_c: 23, rate: DY1, values: [8296, 4850, 4795, 0.394, 0.378, 0.476, 1937, 1814, 1641] }
+  - { label: "RT, DY2", temperature_c: 23, rate: DY2, values: [11030, 7655, 7619, 0.387, 0.377, 0.458, 2942, 2823, 2635] }
+  - { label: "80 °C, QS", temperature_c: 80, rate: QS, values: [4156, 1444, 1369, 0.423, 0.386, 0.495, 683, 585, 469] }
+  - { label: "80 °C, DY1", temperature_c: 80, rate: DY1, values: [4823, 1866, 1790, 0.416, 0.384, 0.495, 845, 739, 611] }
+  - { label: "80 °C, DY2", temperature_c: 80, rate: DY2, values: [6193, 2931, 2861, 0.404, 0.380, 0.489, 1241, 1124, 974] }
+  - { label: "-20 °C, QS", temperature_c: -20, rate: QS, values: [8155, 4713, 4656, 0.394, 0.378, 0.477, 1888, 1765, 1593] }
+  - { label: "-20 °C, DY1", temperature_c: -20, rate: DY1, values: [10306, 6887, 6846, 0.388, 0.377, 0.463, 2669, 2547, 2363] }
+  - { label: "-20 °C, DY2", temperature_c: -20, rate: DY2, values: [13639, 10487, 10467, 0.383, 0.376, 0.444, 3952, 3840, 3646] }

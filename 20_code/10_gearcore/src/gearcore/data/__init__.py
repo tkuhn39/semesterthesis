@@ -75,6 +75,63 @@ def load_converse_rates() -> dict[str, dict[str, Any]]:
     return rates
 
 
+def load_fva856_table4() -> dict[str, Any]:
+    """Tabelle 4 of FVA 856 I (elastic constants of the conditioned skin layer of PA46-GF30
+    per temperature and strain rate, ``fe/fva856_table4.yaml``): the mapping with ``rows``
+    (label, temperature_c, rate, the nine values E_1, E_2, E_3, nu_12, nu_13, nu_23, G_12,
+    G_13, G_23) and the provenance keys ``source``, ``table``, ``printed_page``, ``pdf_page``,
+    ``state``, ``frame``, ``constant_names``, ``units``."""
+    path = data_path("fe", "fva856_table4.yaml")
+    loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, dict) or not isinstance(loaded.get("rows"), list):
+        raise ParseError("fva856_table4.yaml: expected a mapping with a list 'rows'")
+    keys = (
+        "source",
+        "table",
+        "printed_page",
+        "pdf_page",
+        "state",
+        "frame",
+        "constant_names",
+        "units",
+    )
+    missing = [key for key in keys if key not in loaded]
+    if missing:
+        raise ParseError(f"fva856_table4.yaml: missing keys {missing}")
+    if not isinstance(loaded["frame"], dict) or len(loaded["constant_names"]) != 9:
+        raise ParseError(
+            "fva856_table4.yaml: 'frame' must be a mapping, 'constant_names' nine names"
+        )
+    for row in loaded["rows"]:
+        if (
+            not isinstance(row, dict)
+            or not isinstance(row.get("values"), list)
+            or len(row["values"]) != 9
+            or "temperature_c" not in row
+            or "rate" not in row
+            or "label" not in row
+        ):
+            raise ParseError(f"fva856_table4.yaml: malformed row {row!r}")
+    document: dict[str, Any] = loaded
+    return document
+
+
+def fva856_table4_row(temperature_c: float, rate: str) -> tuple[float, ...]:
+    """The nine engineering constants of Tabelle 4 of FVA 856 I at ``temperature_c`` and the
+    strain rate ``rate`` (QS, DY1, DY2); an ``InputRangeError`` names the rows that exist when
+    none matches."""
+    rows = load_fva856_table4()["rows"]
+    for row in rows:
+        if abs(float(row["temperature_c"]) - float(temperature_c)) < 1.0e-9 and (
+            str(row["rate"]).upper() == str(rate).upper()
+        ):
+            return tuple(float(v) for v in row["values"])
+    labels = ", ".join(str(row["label"]) for row in rows)
+    raise InputRangeError(
+        f"FVA 856 I Tabelle 4 has no row at {temperature_c} degC and rate {rate!r}; rows: {labels}"
+    )
+
+
 def load_stommel_materials() -> dict[str, Any]:
     """The material classes of Stommel et al. (2018), chapter 6, and the materials of the thesis
     (``fatigue/stommel_materials.yaml``): the mappings ``classes``, ``constants`` and

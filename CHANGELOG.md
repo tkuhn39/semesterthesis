@@ -9,6 +9,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (FE: the CT-orientation pilot evaluated, 2026-10-13 evening, ADR-119 item 6)
+- `scripts/fe_orientation_comparison.py`: W3/W4 with the CT-zone orientation against the
+  mapping at A to E per rate and load step (tables, effect figures with markers only, captions
+  file) → `vergleich_orientierung_AtoE`; the series analysis of the pilot against W3 QS of the
+  series in its `analyse/` folder. Results: pinion rotation −5 to −13 %, head displacement −3
+  to −13 %, tensile root stress −8 to +6 %, compressive root stress +2 to +13 %, contact
+  pressure redistributed (A/D/E −10 to −16 %, C +4 to +20 %); FIB-04 amended, diary note.
+
+### Added (FE: W3 with the constants of FVA 856 I Tabelle 4, 2026-10-13, ADR-116 item 51)
+- `data/fe/fva856_table4.yaml` (the nine rows of Tabelle 4, transcribed, with provenance) and
+  `data.load_fva856_table4` / `data.fva856_table4_row(temperature, rate)`; source
+  `Abaqus2025:LinearElastic` registered and confirmed by the user. Both Abaqus sources now
+  cite the official documentation site (`url`, `accessed`, user decision 2026-10-13); the
+  pages sit behind the 3DEXPERIENCE login, the content was read in the local installation.
+- `fe.deck.orthotropic_stability` (the stability restrictions on nine engineering constants of
+  the Abaqus material guide, traced), `fe.deck.replace_elastic_block` (the one `*ELASTIC` block
+  of a model piece replaced by constant engineering constants, every other block kept),
+  `ENGINEERING_CONSTANT_NAMES`.
+- `build_fe_decks.py decks --elastic-constants fva856_table4` (W3 alone): the elastic block of
+  the card replaced per rate, file `wheel_orientation_<rate>_model_elastic_fva856_table4.inp`,
+  manifest `elastic_constants`, README paragraph, heading line, folder suffix.
+- Tests `test_fe_deck_elastic_constants.py` (table, stability, replacement, note wrapping to
+  the 256-character line limit, folder, refusals). Independent read-only review applied (no
+  P0; the comment line of 286 characters wrapped, a stale sentence removed, the frame
+  inference marked, the loader validating every key, a dispatch table for the constant
+  tables); the long comment line was shown harmless in the local Learning Edition (truncated
+  with a warning, analysis complete), so a night run started with the first version stands.
+- Folders `pilot_20layers_bore33_fva856tab4_round0p1f12_w3_qsdy1dy2_AtoE` (the table's
+  constants in the directions of the mapping) and
+  `pilot_20layers_bore33_fva856tab4_ctorient_round0p1f12_w3_qsdy1dy2_AtoE` (in the directions
+  of the CT zones), 15 jobs each: with the series' W3 and the CT pilot the 2 × 2 scheme of
+  material source and direction source is complete.
+
+### Added (FE: tip contact with a finer flank, night run of 2026-10-13, ADR-116 item 50)
+- Pilots with the flank rows doubled and tripled (`--over-tooth-height 36 | 54`) and the
+  pinion tip rounded with 0,05 (W1 and W2) and 0,02 mm (W1), plus two controls with the
+  series' 0,1 mm on the refined meshes (W1), at QS at A to E
+  (`pilot_20layers_bore33_hoehe{36,54}_round0p{05,02,1}f12_*_qs_AtoE`); bundled with the
+  CT-orientation pilot and the Tabelle 4 pilot in `nachtlauf_2026-10-13_kopfkontakt_ctorient`
+  for the user's machine (about 10 h); diary notes written.
+
 ### Added (FE: the three bodies at A to E, the closed wheel, the CT-zone orientation file, 2026-10-13, ADR-116 items 48 and 49, ADR-119 amendment)
 - **`scripts/fe_body_comparison.py`**: ring (series QS, rate pilot DY1/DY2), ring on the
   pocket's z-levels and the pocket body at A to E for every material step and rate; the layer

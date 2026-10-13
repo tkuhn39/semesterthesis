@@ -29,6 +29,7 @@ settings of a file stand in its ``** steps ...`` heading line.
 """
 
 import re
+import textwrap
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Literal
@@ -36,9 +37,11 @@ from typing import Literal
 from gearcore._safe import finite_input, integer_input, positive_input
 from gearcore.errors import InputRangeError, ParseError
 from gearcore.fe.placement import Placement
+from gearcore.trace import eq
 
 EQ_EXEMPT = (
     "read_material_card",
+    "replace_elastic_block",
     "read_distribution",
     "read_field_variables",
     "split_orientation_file",
@@ -214,6 +217,119 @@ def read_material_card(text: str, temperature_c: float) -> MaterialCard:
         potential_rows=tuple(potential),
         density_rows=tuple(density),
     )
+
+
+ENGINEERING_CONSTANT_NAMES = (
+    "E_1",
+    "E_2",
+    "E_3",
+    "nu_12",
+    "nu_13",
+    "nu_23",
+    "G_12",
+    "G_13",
+    "G_23",
+)
+"""Order of the nine engineering constants on the data lines of ``*ELASTIC,
+TYPE=ENGINEERING CONSTANTS`` (first line E_1 to G_13, second line G_23)."""
+LINE_LIMIT = 256
+"""Characters per line of an Abaqus input file: the limit of keyword and data lines of the
+input syntax rules (Abaqus 2025, "Input Syntax Rules"); comment lines carry no stated limit
+and are kept below it as well, because no deck of this project has ever exceeded it."""
+
+
+@eq(
+    "Abaqus2025:LinearElastic",
+    "stability",
+    section="Defining Orthotropic Elasticity by Specifying the Engineering Constants",
+    note="E_i, G_ij > 0; |nu_12| < sqrt(E_1/E_2), |nu_13| < sqrt(E_1/E_3), |nu_23| < "
+    "sqrt(E_2/E_3); 1 - nu_12 nu_21 - nu_23 nu_32 - nu_31 nu_13 - 2 nu_21 nu_32 nu_13 > 0 "
+    "with nu_ji = nu_ij E_j / E_i",
+)
+def orthotropic_stability(constants: Iterable[float]) -> float:
+    """The left-hand side 1 - nu_12 nu_21 - nu_23 nu_32 - nu_31 nu_13 - 2 nu_21 nu_32 nu_13
+    of the stability restrictions on nine engineering constants (E_1, E_2, E_3, nu_12, nu_13,
+    nu_23, G_12, G_13, G_23), after every other restriction held; a violated restriction raises
+    an ``InputRangeError``. The value approaches zero for an incompressible material."""
+    values = tuple(constants)
+    if len(values) != len(ENGINEERING_CONSTANT_NAMES):
+        raise InputRangeError(
+            f"nine engineering constants {ENGINEERING_CONSTANT_NAMES} are required, got {len(values)}"
+        )
+    e1, e2, e3, n12, n13, n23, g12, g13, g23 = (
+        finite_input(v, name) for v, name in zip(values, ENGINEERING_CONSTANT_NAMES, strict=True)
+    )
+    for value, name in (
+        (e1, "E_1"),
+        (e2, "E_2"),
+        (e3, "E_3"),
+        (g12, "G_12"),
+        (g13, "G_13"),
+        (g23, "G_23"),
+    ):
+        if value <= 0.0:
+            raise InputRangeError(f"material stability needs {name} > 0, got {value!r}")
+    for ratio, name, upper in (
+        (n12, "nu_12", (e1 / e2) ** 0.5),
+        (n13, "nu_13", (e1 / e3) ** 0.5),
+        (n23, "nu_23", (e2 / e3) ** 0.5),
+    ):
+        if abs(ratio) >= upper:
+            raise InputRangeError(f"material stability needs |{name}| < {upper:.4g}, got {ratio!r}")
+    n21 = n12 * e2 / e1
+    n31 = n13 * e3 / e1
+    n32 = n23 * e3 / e2
+    left = 1.0 - n12 * n21 - n23 * n32 - n31 * n13 - 2.0 * n21 * n32 * n13
+    if left <= 0.0:
+        raise InputRangeError(
+            "material stability needs 1 - nu_12 nu_21 - nu_23 nu_32 - nu_31 nu_13 - "
+            f"2 nu_21 nu_32 nu_13 > 0, got {left!r}"
+        )
+    return left
+
+
+def replace_elastic_block(text: str, constants: Iterable[float], note: str = "") -> str:
+    """``text`` (the model piece of an orientation file) with its one ``*ELASTIC`` block
+    replaced by ``*ELASTIC, TYPE=ENGINEERING CONSTANTS`` and the nine ``constants`` on two
+    data lines (E_1 to G_13, then G_23), without temperature or field dependence; every
+    other block stays as it is, ``note`` becomes comment lines below the keyword line, wrapped
+    to at most ``LINE_LIMIT`` characters (the limit of keyword and data lines of the Abaqus
+    input syntax, kept for comments as well). The block that is replaced must itself be of
+    ``TYPE=ENGINEERING CONSTANTS`` (an isotropic ``*ELASTIC`` is refused: the piece is not a
+    CONVERSE model piece), its data lines and the comment lines inside it are dropped. The
+    constants must satisfy the stability restrictions (``orthotropic_stability``)."""
+    if not isinstance(text, str) or not text.strip():
+        raise InputRangeError("the model piece must be a non-empty string")
+    values = tuple(constants)
+    orthotropic_stability(values)
+    out: list[str] = []
+    found = 0
+    skipping = False
+    for raw in text.splitlines():
+        line = raw.rstrip("\r")
+        stripped = line.strip()
+        if stripped.startswith("*") and not stripped.startswith("**"):
+            if _keyword(stripped) == "ELASTIC":
+                if "ENGINEERING CONSTANTS" not in stripped.upper():
+                    raise ParseError(f"model piece: unexpected elastic definition {stripped!r}")
+                found += 1
+                out.append("*ELASTIC, TYPE=ENGINEERING CONSTANTS")
+                if note:
+                    out.extend(
+                        f"** {part}"
+                        for part in textwrap.wrap(note, LINE_LIMIT - 3, break_on_hyphens=False)
+                    )
+                out.append(", ".join(_format(v) for v in values[:8]))
+                out.append(_format(values[8]))
+                skipping = True
+                continue
+            skipping = False
+        elif skipping:
+            continue
+        out.append(line)
+    if found != 1:
+        raise ParseError(f"model piece: {found} *ELASTIC blocks, exactly one expected")
+    return "\n".join(out) + "\n"
 
 
 @dataclass(frozen=True)

@@ -1687,6 +1687,75 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     weld lines) and the scatter from tooth to tooth, and supports the outlook sentence that
     the choice of the mapped teeth is itself an input of the sector model. The `.car` binary
     stays unread (FIB-01), the full mapping comes from CONVERSE.
+50. **Tip contact with a finer flank (2026-10-13 evening; the user's decision of 2026-10-12).**
+    No local refinement feature exists in the mesher, and the one available knob that sets
+    the node row spacing of the wheel flank in the sliding direction is the number of rows
+    over the tooth height (`--over-tooth-height`, 18 in the series). The pilots double it
+    (36, spacing about 0,05 mm, 97 520 elements) and triple it (54, about 0,033 mm, 122 720
+    elements, ten quads below the quality 0,35) and pair each with a pinion tip rounding of
+    0,05 and 0,02 mm (12 facets per arc), W1 at QS at A to E: four folders
+    `pilot_20layers_bore33_hoehe{36,54}_round0p{05,02}f12_w1_qs_AtoE` in the night-run folder
+    `nachtlauf_2026-10-13_kopfkontakt_ctorient` together with the CT-orientation pilot. The
+    design rule of FE-19 (a convex edge needs a radius of at least the node row spacing of
+    the secondary surface) predicts that 0,05 mm converges with 36 rows and 0,02 mm with
+    neither; the run decides, and the comparison with the 0,1 mm series at A to E gives the
+    sensitivity of FE-17 on the finer mesh. A refinement confined to the tip-contact band of
+    the flank stays the better model and is a mesher feature to build if the pilots show the
+    uniform refinement too expensive for the nonlinear steps.
+    *Amendment (2026-10-13, 18:00, the user's wish for a 10 to 12 h night):* the 0,05 mm
+    folders carry W2 as well (`..._round0p05f12_w1w2_qs_AtoE`, the elastic-plastic head
+    contact on the finer flank; the W1-only folders were never computed and are replaced), and
+    two control folders with the series' rounding of 0,1 mm on the refined meshes
+    (`..._hoehe{36,54}_round0p1f12_w1_qs_AtoE`) separate the mesh effect from the rounding
+    effect: series (18 rows, 0,1) against 36/54 rows at 0,1 is the mesh, 36/54 rows at 0,1
+    against 0,05 and 0,02 the rounding. W3 on the refined meshes needs a CONVERSE mapping of
+    those meshes (the card's labels do not fit them, the guard refuses) and waits.
+51. **W3 with the elastic constants of FVA 856 I Tabelle 4 (2026-10-13 evening; the user's
+    choice "B orthotrop" with the QS, DY1 and DY2 columns).** The user wants a reference of his
+    FE model to the FVA report: the anisotropic elastic step with the report's skin-layer
+    constants instead of the CONVERSE card. `decks --elastic-constants fva856_table4` replaces
+    the field-dependent `*ELASTIC, TYPE=ENGINEERING CONSTANTS, DEPENDENCIES=2` block of the
+    card in the W3 model piece by the nine constants of Tabelle 4 (printed page 22, the
+    conditioned skin layer, GeoDict conversion of the tensile tests, transcribed into
+    `data/fe/fva856_table4.yaml` with all nine rows) at the folder's temperature and each
+    rate, constant over the wheel, in the fibre frame the card's distribution gives per
+    element (1 = the preferred fibre direction, as the report defines E_1 in section 6.3.2;
+    that 2 lies in the plane of the plate and 3 is its thickness direction is inferred from
+    the plate-shaped specimen cell, the report does not state it); the orientation, the
+    field variables, density
+    and expansion of the card stay (`deck.replace_elastic_block`), plasticity is left out as in
+    W3. The step keeps the name W3: the folder name, the manifest (`elastic_constants` with
+    the rows and the stability value), the heading line of every position file and the README
+    name the table, and a folder holds W3 alone (W1/W2 take the isotropic row of the card, W4
+    needs plastic data the table does not have). The constants pass the stability
+    restrictions of the Abaqus material guide (`deck.orthotropic_stability`, source
+    `Abaqus2025:LinearElastic`, confirmed by the user on 2026-10-13; both Abaqus sources cite
+    the official documentation site with the access date, the pages sit behind the
+    3DEXPERIENCE login and were read in the local installation; the left-hand side of the
+    determinant condition is 0,60 at 80 °C QS). The note written into the deck as comment
+    lines is wrapped to the 256-character line limit of the input syntax (review finding of
+    2026-10-13: the first version wrote one line of 286 characters, which no deck of the
+    project had tested). Folder
+    `pilot_20layers_bore33_fva856tab4_round0p1f12_w3_qsdy1dy2_AtoE` (15 jobs, the mesh and the
+    orientation pieces of the series, in the night run). What the comparison with the mapped
+    W3 means: the card's constants per element follow the local a_11/a_22 of the mapping, the
+    table's are those of the fully oriented skin applied everywhere, so the table variant is
+    stiffer where the mapping sees a weak orientation (core, fillets) and its E_1 (4156 MPa at
+    80 °C QS) is the report's, not the card's; the report's rate rows are matched to the
+    user's card names (his statement of 2026-10-13), their test speeds are not cross-checked
+    (FE-24). Independent review (read-only, 2026-10-13 evening): no P0; the transcription
+    checked digit by digit, the stability formula against the page, the generated block's
+    syntax; P1 the comment line length (fixed) and a stale sentence on the confirmation
+    (fixed); P2 the frame inference marked in the data file, the loader validates every key
+    it reads, the lookup is a dispatch table, the docstring names the refusals. Isotropic variants with the table's E_1 (the options A1/A2 offered) were not
+    chosen and are not built. On the user's question whether B is "mapped with the report's
+    orientation" (it is not: the directions come from the CONVERSE mapping), the fourth
+    combination was added the same evening: the table's constants in the directions of the
+    CT-zone files of `orientierung_ct`
+    (`pilot_20layers_bore33_fva856tab4_ctorient_round0p1f12_w3_qsdy1dy2_AtoE`, 15 jobs), so
+    that the card and the table each stand on the mapping and on the CT zones: material source
+    and direction source are separated in a 2 × 2 scheme (W3 of the series, `fva856tab4`,
+    `ctorient`, `fva856tab4_ct`), all on the series mesh at A to E.
 
 ## ADR-117 — Measurement data of the manufactured gears: parsers in `io`, pure evaluation in `gearcore.measurement`, the user's decisions in `parts.yaml`, text exports versioned (2026-10-10)
 
@@ -2542,3 +2611,27 @@ recognisable tensor structure).
    0,59 against 0,63, fillet 0,29 against 0,34), the sampling of the orientation at the
    pocket's z-levels (item 45 of ADR-116). The scatter around the wheel is a property of the
    moulding result, not of the body mesh.
+6. **The CT-zone orientation computed (W3/W4, QS/DY1/DY2, A to E; the user's machine
+   2026-10-13 afternoon, 30 of 30 jobs; `scripts/fe_orientation_comparison.py` →
+   `vergleich_orientierung_AtoE`).** Against the mapping with the same mesh, card and rate,
+   the CT zones make the tooth stiffer: the pinion rotation falls by 5 to 11 % (W3) and 6 to
+   13 % (W4), the head displacement by 3 to 13 %, least at C (−3 to −8 %) and most at A, D and
+   E; DY1 shows the largest effect, QS the smallest, the load steps hardly differ. The root
+   stresses move little and in opposite directions: the tensile maximum σ1 by −8 to +0 % (W3)
+   and −4 to +6 % (W4), the compressive maximum |σ3| up by 2 to 13 %, most at C (W4 +11 to
+   +13 %). The maximum contact pressure is redistributed rather than changed: at the tip-edge
+   positions A, D and E it falls by 10 to 16 % (W3), at C it rises by 4 to 20 %; W4 at 16 Nm
+   at C turns the sign (−15 to −19 % at QS and DY1), where the maximum sits in the plastic
+   zone of the flank. Reading: the CT file puts the fibres along the flank in the upper flank
+   and tip, where the mapping sees them axial (item 3), and keeps the skin's full anisotropy
+   constant over each zone and the width, so the flank skin and the tooth bend stiffer and
+   the compression-side fillet carries more; the tensile fillet, whose in-plane angle both
+   pictures share (item 2), is nearly unchanged. For the thesis: the orientation picture
+   moves the stiffness by about a tenth and the root stresses by less than a tenth, which is
+   the same order as the body (ADR-116 item 48) and smaller than the material step (W1 to
+   W4); which picture the real wheel follows stays with the microsection (FIB-03, FIB-04).
+   The run times grew with the CT file (W3 7,9 against 7,0 min, W4 10,5 against 9,9 min per
+   position), the zone-wise constant field variables cost nothing, the directions do. The
+   Stommel check is not run on the five positions (no load history); the series' Stommel
+   results stand on the mapping. Next: the Tabelle 4 variants of the night run complete the
+   2 × 2 scheme of material source and direction source (ADR-116 item 51).

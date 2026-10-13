@@ -25,6 +25,7 @@ import json
 import math
 import re
 import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -866,6 +867,15 @@ LE_COUNTS = rs.MeshCounts(
     shoulder_columns=2,
 )
 
+ELASTIC_CONSTANT_TABLES: dict[str, Callable[[float, str], tuple[float, ...]]] = {
+    "fva856_table4": data.fva856_table4_row,
+}
+"""Tables whose engineering constants can replace the elastic block of the card in the step W3
+(``decks(..., elastic_constants=...)``): name -> lookup (temperature in degC, rate) -> the
+nine constants. ``fva856_table4`` = FVA 856 I Tabelle 4, the conditioned skin layer per
+temperature and rate (``gearcore.data.fva856_table4_row``)."""
+ELASTIC_CONSTANT_SOURCES = tuple(ELASTIC_CONSTANT_TABLES)
+
 VARIANTS: dict[str, tuple[dict[str, object], str]] = {
     "ls": (
         {"nlgeom": False, "contact": "surface_to_surface", "line_search": 5},
@@ -1159,9 +1169,15 @@ def decks(
     shift_mm: float = 0.0,
     rounding_facets: int = rsf.ROUNDING_FACETS,
     level_counts: bd.BodyCounts | None = None,
+    elastic_constants: str | None = None,
 ) -> list[str]:
     """Write the wheel mesh, the pinion surface, one position file per position and
     combination, the manifest and the runner into ``out``; returns the lines of the report.
+    ``elastic_constants`` (one of ``ELASTIC_CONSTANT_SOURCES``) replaces the field-dependent
+    elastic block of the card in the model piece of the step W3 by the nine engineering
+    constants of that table at ``temperature_c`` and each rate (``fva856_table4``: FVA 856 I
+    Tabelle 4, the conditioned skin layer, in the fibre frame of the card's orientation); the
+    folder must then hold W3 alone.
     ``tip_rounding_mm`` rounds the tip corners of the rigid pinion surface (``surface``);
     ``iteration_limits`` (I_0, I_R, I_C) raises the equilibrium iteration limits of every step
     (``deck.PositionDeck.iteration_limits``); ``line_search`` is N_ls of the line search of
@@ -1199,11 +1215,36 @@ def decks(
         )
     if len(dict.fromkeys(material_steps)) != len(material_steps):
         raise InputRangeError(f"material steps repeat: {material_steps!r}")
+    if elastic_constants is not None:
+        if elastic_constants not in ELASTIC_CONSTANT_SOURCES:
+            raise InputRangeError(
+                f"elastic constants must be one of {ELASTIC_CONSTANT_SOURCES}, got {elastic_constants!r}"
+            )
+        if list(material_steps) != ["W3"]:
+            raise InputRangeError(
+                "the engineering constants of a table replace the elastic block of the anisotropic "
+                "elastic step W3 only: write that folder with --material W3 alone (W1 and W2 take "
+                "the isotropic row of the card, W4 needs the plastic data the table does not have)"
+            )
     if not rates or len(cofs) != len(rates) or len(set(rates)) != len(rates):
         raise InputRangeError("one CONVERSE file per rate is required, rate names distinct")
     for rate in rates:
         if not rate.isidentifier():
             raise InputRangeError(f"a rate name must be an identifier, got {rate!r}")
+    # the engineering constants of the table per rate, looked up before the mesh is built so
+    # that a missing row (another temperature, another rate name) fails at once
+    table4 = data.load_fva856_table4() if elastic_constants is not None else {}
+    override_values: dict[str, tuple[float, ...]] = {}
+    override_rows: dict[str, dict[str, object]] = {}
+    elastic_label = f"{table4['source']} {table4['table']}" if elastic_constants is not None else ""
+    if elastic_constants is not None:
+        for rate in rates:
+            row = ELASTIC_CONSTANT_TABLES[elastic_constants](temperature_c, rate)
+            override_values[rate] = row
+            override_rows[rate] = {
+                "values": list(row),
+                "stability_left_hand_side": dk.orthotropic_stability(row),
+            }
     types_of_step: dict[str, str] = {
         s: element_type if element_type is not None else dk.ELEMENT_TYPE_OF_STEP[s]
         for s in material_steps
@@ -1309,8 +1350,29 @@ def decks(
             (out / model_file).write_text(pieces.model, encoding="utf-8")
             orientation_files.append(model_file)
         if "W3" in material_steps:
+            elastic_text = pieces.model_without_plasticity
             elastic_file = f"wheel_orientation_{rate}_model_elastic.inp"
-            (out / elastic_file).write_text(pieces.model_without_plasticity, encoding="utf-8")
+            if elastic_constants is not None:
+                row = override_values[rate]
+                stability = float(override_rows[rate]["stability_left_hand_side"])  # type: ignore[arg-type]
+                constants_text = ", ".join(
+                    f"{n} {v:g}" for n, v in zip(dk.ENGINEERING_CONSTANT_NAMES, row, strict=True)
+                )
+                elastic_text = dk.replace_elastic_block(
+                    elastic_text,
+                    row,
+                    f"{table4['source']} {table4['table']} (printed page "
+                    f"{table4['printed_page']}, {table4['state']}), {temperature_c:g} degC, "
+                    f"rate {rate}: {constants_text}; constant in the fibre frame of the "
+                    "orientation above, replaces the field-dependent elastic block of the card",
+                )
+                elastic_file = f"wheel_orientation_{rate}_model_elastic_{elastic_constants}.inp"
+                report.append(
+                    f"{elastic_file}: elastic block of the card replaced by {table4['source']} "
+                    f"{table4['table']} at {temperature_c:g} degC, {rate} ({constants_text}; "
+                    f"stability {stability:.3f})"
+                )
+            (out / elastic_file).write_text(elastic_text, encoding="utf-8")
             orientation_files.append(elastic_file)
         pieces_of[rate] = (part_file, model_file, elastic_file)
     known_rates = data.load_converse_rates()
@@ -1383,7 +1445,8 @@ def decks(
                         title=f"{case}: position {k} of {len(chosen)}"
                         f"{' (' + label + ')' if label else ''}, rho_1 = {rho:.6f} mm"
                         f"{f' (shifted by {shift:g} mm)' if shift else ''}, "
-                        f"{step} {rate}{', variant ' + variant if variant else ''}, built by gearcore",
+                        f"{step} {rate}{', variant ' + variant if variant else ''}"
+                        f"{', elastic constants ' + elastic_label if elastic_label else ''}, built by gearcore",
                         step_names=step_names,
                         rate=rate,
                         **settings,  # type: ignore[arg-type]
@@ -1463,6 +1526,21 @@ def decks(
             "poisson_ratio": first_card.poisson_ratio,
         },
         "orientation_files": orientation_files,
+        "elastic_constants": (
+            {
+                "source": elastic_constants,
+                "document": table4["source"],
+                "table": table4["table"],
+                "printed_page": table4["printed_page"],
+                "state": table4["state"],
+                "frame": table4["frame"],
+                "names": list(dk.ENGINEERING_CONSTANT_NAMES),
+                "temperature_c": temperature_c,
+                "rows": override_rows,
+            }
+            if elastic_constants is not None
+            else None
+        ),
         "wheel_mesh": {
             "file": built.file_name,
             "files": mesh_files,
@@ -1568,7 +1646,31 @@ def decks(
                 "umgeschrieben). In W3 und W4 schreibt die Ausgabe die Feldvariablen (FV) der Knoten "
                 "und die lokalen Materialrichtungen (DIRECTIONS=YES) in die .odb; `report` prüft "
                 "daraus, dass die Faserorientierung mit der Instanz mitgedreht wurde und die "
-                "Feldvariablen die der Datei sind.",
+                "Feldvariablen die der Datei sind."
+                + (
+                    f" Der Elastik-Block der Karte ist in `wheel_orientation_<Rate>_model_elastic_"
+                    f"{elastic_constants}.inp` durch die neun Ingenieurkonstanten aus {elastic_label} "
+                    f"(Randschicht, {table4['state']}, S. {table4['printed_page']}) bei "
+                    f"{temperature_c:g} °C je Rate ersetzt: "
+                    + "; ".join(
+                        f"{rate}: "
+                        + ", ".join(
+                            f"{n} {v:g}"
+                            for n, v in zip(
+                                dk.ENGINEERING_CONSTANT_NAMES, override_values[rate], strict=True
+                            )
+                        )
+                        for rate in rates
+                    )
+                    + ". Die Konstanten sind feld- und temperaturunabhängig und gelten im "
+                    "Faserkoordinatensystem der Orientierungsdatei (1 = Faservorzugsrichtung, 2 = "
+                    "quer dazu in der Ebene, 3 = Dickenrichtung); die Feldvariablen der Karte bleiben "
+                    "in der Datei (Wärmedehnung der Karte, ohne Temperaturänderung ohne Wirkung). "
+                    "Werkstoffstufe W3 mit den Konstanten des FVA-Berichts statt der CONVERSE-Karte, "
+                    "ohne Plastizität (ADR-116 Punkt 51)."
+                    if elastic_constants is not None
+                    else ""
+                ),
                 "",
                 "Schritte geometrisch "
                 + ", ".join(
@@ -3066,6 +3168,14 @@ def main() -> None:
         default=["QS"],
         help="names of the strain rates of the files of --cof, in the same order (QS DY1 DY2)",
     )
+    decks_parser.add_argument(
+        "--elastic-constants",
+        choices=ELASTIC_CONSTANT_SOURCES,
+        default=None,
+        help="replace the elastic block of the W3 model piece by the engineering constants of "
+        "this table at --temperature and each rate (fva856_table4 = FVA 856 I Tabelle 4, the "
+        "conditioned skin layer); the folder must hold W3 alone",
+    )
     decks_parser.add_argument("--temperature", type=float, default=80.0, help="degC, required")
     decks_parser.add_argument(
         "--torques", type=float, nargs="+", default=[8.0, 12.0, 16.0], help="N m at the wheel"
@@ -3276,6 +3386,8 @@ def main() -> None:
             folder += f"_shift{args.shift_mm:g}"
         if args.grid_indices:
             folder += f"_retry{len(args.grid_indices)}"
+        if args.elastic_constants:
+            folder += f"_{args.elastic_constants}"
         out = args.out if args.out is not None else OUTPUT / args.case / folder
         for line in decks(
             args.case,
@@ -3308,6 +3420,7 @@ def main() -> None:
             shift_mm=args.shift_mm,
             rounding_facets=args.rounding_facets,
             level_counts=level_counts,
+            elastic_constants=args.elastic_constants,
         ):
             print(line)
     if args.command == "report":

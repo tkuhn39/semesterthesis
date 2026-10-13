@@ -350,7 +350,12 @@ sources:
     series: "FVA-Heft 1491"
     year: 2022
     file: "00_literatur/07_themis/KST_856_I_AB_1491.pdf"
-    verified: { method: pdf-header, by: "claude/rendered title page", date: "2026-10-13" }
+    verified:
+      {
+        method: pdf-header,
+        by: "claude/rendered title page",
+        date: "2026-10-13",
+      }
     confirmed_by_user: true
     note: "placed and named by the user on 2026-10-13 (chapters 6.2 and 6.3: CT fibre orientation of the gear, zone eigenvalues and anisotropy index); page numbers cited are the printed ones (PDF page = printed + 13)"
   STplus-Manual:11.1F:
@@ -578,11 +583,35 @@ sources:
     confirmed_by_user: true
     notes: "Footer: https://www.campusplastics.com – Envalior – 2024-07-12. ISO 10350 single-point data; no gear strength values."
   # ---- anisotropic strength (track E7, own extension) ------------------------------------------
+  Abaqus2025:LinearElastic:
+    type: manual
+    title: "Linear Elastic Behavior (Abaqus 2025 documentation, Materials: Linear elastic behavior)"
+    publisher: "Dassault Systèmes SIMULIA"
+    edition: "Abaqus 2025 documentation, SIMULIA Established Products"
+    url: "https://help.3ds.com/2025/english/dssimulia_established/SIMACAEMATRefMap/simamat-c-linearelastic.htm"
+    accessed: "2026-10-13"
+    file: "C:/SIMULIA/Documentation/2025LE/English/SIMACAEMATRefMap/simamat-c-linearelastic.htm"
+    verified:
+      {
+        method: html-title,
+        by: "claude/title of the HTML page of the local installation; the official URL answered with a redirect to the 3DEXPERIENCE login on 2026-10-13",
+        date: "2026-10-13",
+      }
+    confirmed_by_user: true
+    notes: "Cite the official site with the access date (user decision 2026-10-13); the page is behind the 3DEXPERIENCE login, the content was read in the local Abaqus 2025 Learning Edition installation (same page name, `file`). Confirmed by the user on 2026-10-13. Orthotropic elasticity by engineering constants (compliance with nu_ij/E_i = nu_ji/E_j) and the material stability restrictions on them (E_i, G_ij > 0, |nu_12| < sqrt(E_1/E_2), |nu_13| < sqrt(E_1/E_3), |nu_23| < sqrt(E_2/E_3), 1 - nu_12 nu_21 - nu_23 nu_32 - nu_31 nu_13 - 2 nu_21 nu_32 nu_13 > 0). Used by fe.deck.orthotropic_stability for the constants of FVA 856 I Tabelle 4 (ADR-116 item 51)."
   Abaqus2025:Hill:
     type: manual
     title: "Hill Anisotropic Yield/Creep (Abaqus 2025 documentation, Materials: Hill anisotropic yield and/or creep)"
-    edition: "Abaqus 2025 Learning Edition, local installation"
+    publisher: "Dassault Systèmes SIMULIA"
+    edition: "Abaqus 2025 documentation, SIMULIA Established Products"
+    url: "https://help.3ds.com/2025/english/dssimulia_established/SIMACAEMATRefMap/simamat-c-anisoyield.htm"
+    accessed: "2026-10-13"
     file: "C:/SIMULIA/Documentation/2025LE/English/SIMACAEMATRefMap/simamat-c-anisoyield.htm"
-    verified: { method: html-title, by: "claude/title of the local HTML page; the user opened the page", date: "2026-10-11" }
+    verified:
+      {
+        method: html-title,
+        by: "claude/title of the HTML page of the local installation; the user opened the page; the official URL answered with a redirect to the 3DEXPERIENCE login on 2026-10-13",
+        date: "2026-10-11",
+      }
     confirmed_by_user: true
-    notes: "Confirmed by the user on 2026-10-11 (the formulas render slightly shifted in his browser, the content reads correctly). Outside the repository (local installation). Quadratic Hill potential with the yield stress ratios R_11 to R_23 relative to the reference yield stress (F, G, H, L, M, N from the ratios); the equivalent plastic strain is defined through the plastic work (PEEQ). Used by fatigue.anisotropy (ADR-118, E7)."
+    notes: "Cite the official site with the access date (user decision 2026-10-13); the page is behind the 3DEXPERIENCE login, the content was read in the local Abaqus 2025 Learning Edition installation (same page name, `file`). Confirmed by the user on 2026-10-11 (the formulas render slightly shifted in his browser, the content reads correctly). Quadratic Hill potential with the yield stress ratios R_11 to R_23 relative to the reference yield stress (F, G, H, L, M, N from the ratios); the equivalent plastic strain is defined through the plastic work (PEEQ). Used by fatigue.anisotropy (ADR-118, E7)."
