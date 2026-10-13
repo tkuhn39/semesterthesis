@@ -1510,7 +1510,9 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     one flank node on the tip corner, alike for W1 and W4); a tip rounding of 0,05 mm moves
     the break-off; a rounding of 0,1 mm with 12 facets per arc completes every position in
     6 increments per step. That rounding, however, shortens the extended contact of the
-    outgoing tooth and raises the rotation and the root stress of the wheel by 6 to 13 %
+    outgoing tooth and raises the rotation and the root stress of the wheel by 6 to 13 % at
+    the positions of the retry (corrected in item 47 (c): those positions lie in the 0,3 mm
+    window around B and E; over the whole path the maxima differ within 2,5 %)
     (FE-17): the real edge radius of the pinion decides, to be measured on the part, and a
     rounding is a model decision recorded with the pair, never a convergence remedy. The
     shift of a failing position along the path (`decks --shift-mm`, the manifest carries the
@@ -1592,6 +1594,62 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     file wrong at the generation already), the card line prints "as recorded" only when a card
     was recorded. Test `test_fe_decks_guard_script.py` runs `decks` with W3 against a fitting
     synthetic file, a file of another mesh and a swapped rate.
+47. **The weekend series evaluated (2026-10-12 evening; `fe_series_analysis.py`, diary entry
+    `series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet`).** 395 of 396 jobs,
+    50 h (W1 3,8, W2 5,0, W3 8,7, W4 12,6 min per position); pos_073_W1_QS breaks off at 16 Nm
+    0,43 mm beyond E with the diverging kind of FE-19 on flank nodes at r 25,80 mm, so the 0,1 mm
+    rounding lowers the break-off rate from 11/133 to 1/396 without removing the mechanism.
+    (a) Margin: the middle tooth carries load from 0,47 to 0,60 pitch before A to 0,35 to 0,48
+    pitch after E, growing with the torque and with plasticity; 1,0 pitch holds every step
+    (FE-21 closed). (b) Anisotropy against plasticity at 16 Nm against W1: W3 raises the root
+    stresses (σ1 +18 %, |σ3| +14 %) at 3 % more rotation; W2 lowers them (σ1 −39 %, |σ3| −43 %,
+    edge pressure −46 %) at 17 % more rotation, because the flow curve at 80 °C starts at 4,3 MPa;
+    W4 against W3 the same by −33 / −35 / −46 % at +13 %; W4 against W2 (anisotropy of the plastic
+    step) +28 / +29 % root stress at the same rotation, so anisotropy and plasticity act nearly
+    multiplicatively and the orientation matters as much in the plastic steps. The maxima of the
+    linear steps lie at C (rotation, head) and 0,4 to 1,4 mm beyond E (σ1 of the following fillet,
+    edge pressure); the plastic steps move the rotation maximum to 1,9 mm. (c) Sharp against
+    rounded (FE-17, 68 common positions with the 60-per-pitch study): the rounding acts only in
+    a window of about 0,3 mm around B and E where the pinion tip corner carries load (rotation
+    +5 to +7 %, edge pressure −8 to −11 %, σ1 −5 to −9 %), at A, C, D and at the global maxima
+    within 2,5 %; the 6 to 13 % of 2026-10-09 were positions inside that window, so the FE-17
+    sensitivity is a local one. (d) Resolution of the 30-per-pitch grid: 15 per pitch changes the
+    maxima by at most 2,9 % (W3 at 16 Nm) and moves them by at most 0,21 mm within the pitch,
+    10 per pitch by 5,5 %, 6 per pitch by 15 %; 30 per pitch holds every maximum within 1 %
+    (the shift is reduced by whole pitches, a maximum jumping to the neighbouring tooth has not
+    moved). (e) The Stommel check per series (section 7 of the analysis, ADR-118 amendment of
+    2026-10-12 evening): at the fillets of the middle tooth W2 as published gives a_B,V 1,24 /
+    1,47 / 1,74 at 8 / 12 / 16 Nm with a static check that passes, W1 1,63 / 2,03 / 4,47, the
+    Hill variants 2,2 to 17; the global maxima at head nodes and at the first subsurface node
+    row under the tip-edge contact track (r 25,78 mm, in no node set, which `fe_fatigue.py`
+    labels "rim") are the edge-contact concentration, no root-fatigue statement (FE-22); the
+    synthetic line underestimates the 8 Nm test by about 70× with W2,
+    E8 follows. (f) Rates (the pilot DY1/DY2 at A to E of the same morning, section 8 of its
+    analysis against the QS series): DY1 lowers the rotation by 5 to 10 % and raises σ1 by 0
+    to 10 %, DY2 lowers the rotation by 23 to 41 % and raises σ1 by 1 to 8 % at B to E but by
+    20 to 32 % at A and the contact pressure at C by up to 40 %, alike for the four steps: the
+    rate acts on the deflection, little on the root maximum of the mid-path, strongly at the
+    edge contacts. (g) "W1 (Hill, Vergleich)" is the isotropic linear step W1 checked against
+    the Hill strengths of the fibre frame (the card's orientation read, the stresses of the
+    isotropic solution): a method comparison on the same stress state, no material statement;
+    it sits above the W3 Hill values because W1 lacks the anisotropic stress redistribution.
+    The global maxima of every Stommel table lie under the tip-edge contact of the pinion:
+    at head nodes of the wheel flank (r 25,80 mm) or, under Hill, at the first subsurface node
+    row 0,02 mm beneath them (r 25,78 mm; these nodes belong to no node set, so the zone column
+    says "rim", the remainder label of `fe_fatigue.py`, and not the Fesselung, whose set ends
+    at the root circle r 24,76 mm; checked on 2026-10-13 with the node coordinates of the
+    mesh); both are the edge-contact concentration of the model, not the root (FE-22). The
+    critical fillet node sits 0,015 mm above the root circle at the transition to the root
+    land (r 24,775 mm of the zone 24,76 to 25,08 mm), 1,5 mm from the face (z ±6,0 mm, the
+    isotropic steps give the symmetric pair) in W1/W2 and at mid-width (z −3,0 mm) in W4, the
+    latter nearer the test (cracks start mid-fillet; the radial position along the fillet is
+    to be compared with the crack origin once the user's scans of the run wheels exist). Review:
+    an independent compact review of the analysis script found no blocking issue; its findings
+    (neighbour force outside the path only, refusals instead of fallbacks, no sub-grids on a
+    selection of positions) are applied and both analyses re-run on 2026-10-13. Decision
+    (user): the next model change is the local refinement of the wheel mesh at the tip contact
+    so that a pinion edge of 0,05 or 0,02 mm converges (the real edge is sharp, FE-17); the
+    separate instruction follows.
 
 ## ADR-117 — Measurement data of the manufactured gears: parsers in `io`, pure evaluation in `gearcore.measurement`, the user's decisions in `parts.yaml`, text exports versioned (2026-10-10)
 
@@ -2057,8 +2115,9 @@ by p. 365; the ductile class for the conditioned PA+GF supported by the footnote
    per card (every direction, both temperatures), the comparison of the reference curves of all
    cards, and the orientation-state figure per rate card (measured 0°, 45°, 90° beside the card's
    isotropic, root-mapping and aligned states). Captions and the limits used go to
-   `bildunterschriften.md`; the output folder is `80_output/fe/stommel_methode_V2` (the old folder
-   stays recognisable).
+   `bildunterschriften.md`; the output folder is `80_output/fe/stommel_methode_V2` (the old
+   folder `stommel_methode` of the morning was deleted on 2026-10-13 at the user's request:
+   superseded figures are removed once the reworked ones exist).
 5. **Independent review of the evening changes (read-only, 2026-10-11)**: no P0. P1: the state
    curve had kept the plastic strain unscaled (fixed, item 3; at QS 23 °C the isotropic K moves
    from 74,9 to 73,2 MPa, the strain of A_W K hardly changes); the synthetic Wöhler line took
@@ -2217,3 +2276,50 @@ asked for it after the figure rounds. Built as `gearcore.fatigue.anisotropy` wit
    extraction here); the S-Life comparison on the five named nodes (the user runs S-Life and
    collects what it prints); E7 on the W3/W4 stresses; the principal route with
    direction-dependent strengths; the W1 comparison with the supervisor's modulus.
+
+### Amendment of 2026-10-12 (evening: the check applied to the whole weekend series, E5 and E7 on 99 positions per series)
+
+1. **Extraction.** The 396 ODBs (140 GB) arrived locally on 2026-10-12; the stress tensors
+   were extracted with the Learning Edition Python, first sequentially (39 s per job, one
+   process), then with eight parallel workers (21 s per job in throughput, the disk, not the
+   cores, is the limit; 165 s per job inside the pack); 396 of 396 written, none failed.
+2. **Runs** (`fe_fatigue.py stommel`, 99 positions each, overload case F2, the synthetic
+   Wöhler line, reduction class reinforced semi-crystalline for the published route and the
+   ductile unreinforced class under Hill as decided on 2026-10-11; output folders
+   `stommel_W1_QS`, `stommel_W2_QS`, `stommel_hill_W3_QS`, `stommel_hill_W4_QS`,
+   `stommel_hill_W1_QS` in the series folder, 5 to 7 min each): the orientation-file guard
+   (ADR-116 item 46) passed on every Hill run (labels, piece row by row, card as recorded).
+3. **Where the maxima lie.** Over all 82 425 nodes the largest utilisations sit at the head
+   nodes of the teeth (r 25,80 mm, the zone where the rounded pinion tip loads the wheel flank:
+   contact stress states, a_B,V → ∞ for W1 as published) and, under Hill, at the first
+   subsurface node row beneath that track (r 25,78 mm, z near the faces or mid-width, in the
+   teeth T2 to T5; h −0,6, σ_V 93 to 105 MPa beyond the end of the 80 °C isotherm, hence
+   a_stat → ∞). Those subsurface nodes belong to no node set, so the tables label them "rim",
+   the remainder label of `_zones` in `fe_fatigue.py`; they are not the Fesselung, whose set
+   spans r 16,50 to 24,76 mm (corrected on 2026-10-13 against the node coordinates; the
+   evening text had read the label as the constraint). Neither is a root-fatigue statement.
+   The analysis (`fe_series_analysis.py`, section 7) therefore reports the two fillets of the
+   middle tooth T3 (2 562 nodes) and names the global maximum beside them (known limit FE-22).
+   An "a_stat = ∞" means the equivalent stress lies beyond the end of the service isotherm,
+   where no strain can be read (`check.py`), not a numeric utilisation.
+4. **Results at the fillets of T3** (a_B,V at 8 / 12 / 16 Nm; N on the synthetic line):
+   W1 as published 1,63 / 2,03 / 4,47 (3,9e3 / 0 / 0); W2 as published 1,24 / 1,47 / 1,74
+   (3,5e5 / 2,2e4 / 1,7e3), a_stat 0,48 to 0,73 so no static failure; W3 under Hill 3,1 / 3,9 /
+   10,4 with a_stat ∞; W4 under Hill 2,16 / 2,58 / 3,03 with a_stat 0,44 to 0,73 (four fillet
+   nodes above 1 at 16 Nm); W1 under Hill 3,1 / 4,0 / 16,6. The critical node is in the fillet
+   T3_T4 (the compression side, R < 0 by the neighbouring tooth, h about 0,5) near the face
+   (z −6,0 to −6,75 mm) for W1 and W2 and at z −3,0 mm for W4, where the fibre orientation
+   moves it inward, as the σ1 maps of the path report showed.
+5. **Against the running test.** At 8 Nm the rig gave 24 million cycles to the first total
+   failure and more than 40 million in the second run; the synthetic line with W2 predicts
+   3,5e5, a factor of about 70 too low, W1 and every Hill variant far more. The plastic
+   isotropic step with the method as published is the only variant whose static check passes
+   and whose life falls with the torque in a plausible order; the gap is what E8 (the measured
+   Wöhler line at the critical node) has to close, and the Hill route needs its own reduction
+   class before it can be judged (the ductile unreinforced class under Hill was a first
+   choice, ADR-118 item 6 of the E7 amendment). The S-Life comparison on the five named nodes
+   (E4) is still the user's.
+6. **Consequence for the thesis text.** The chapter on the design check reports the published
+   route on W2 as the main line, W1 beside it as the linear reference, and the Hill route as
+   the own extension with its open class question; the figure set per series is the one of
+   `fe_fatigue.py` (fillet map, curves of the critical nodes over the path).

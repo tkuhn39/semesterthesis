@@ -9,6 +9,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (FE: the weekend series evaluated, `fe_series_analysis.py`, 2026-10-12 evening, ADR-116 item 47)
+- **`scripts/fe_series_analysis.py`**: the analysis of a computed series folder beyond the path
+  report: the run (jobs, wall times from the runner's UTF-16 log, broken-off jobs with the
+  chattering contact nodes located in the mesh), the maxima of the global quantities with their
+  location and the values at A to E per series and load step, anisotropy against plasticity
+  (W1 → W3, W1 → W2, W3 → W4, W2 → W4 as relative changes), the extended contact of the middle
+  tooth in pitches before A and after E against the margin of the grid, the comparison with a
+  reference folder at the common positions (sharp against rounded pinion edge: rotation, root
+  stress, contact pressure, force of the neighbouring tooth), the resolution of the sub-grids with
+  the location shift reduced by whole pitches, and the Stommel results per series from the output
+  folders of `fe_fatigue.py`; `analyse/analyse.md` and the figures in the house style
+  (`vergleich_stufen_<step>`, `vergleich_referenz_<step>`). Tests of the helpers on synthetic path
+  points (`test_fe_series_analysis.py`).
+- The weekend series `series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet`
+  (395 of 396 jobs, 50 h) re-extracted locally with the stress tensors (Learning Edition Python,
+  eight parallel workers) and evaluated, the Stommel check run on every series (section 7); the
+  rate pilot DY1/DY2 of the same morning evaluated against the QS series (section 8, "Raten gegen
+  QS der Referenz"; the step comparisons of section 3 stay within one rate). Findings in the
+  diary, ADR-116 item 47 and the ADR-118 amendment of 2026-10-12 evening; known limit FE-22.
+- Independent compact review of the script (2026-10-13, no blocking finding) applied: the force
+  of the neighbouring tooth in the reference comparison is taken outside the theoretical path
+  only (inside it the second largest force is the handover share, not the edge contact), a
+  Stommel table without the middle fillets is refused instead of read as the whole sector, a
+  manifest without path or base pitch is refused, a reference manifest without a tip rounding
+  is named "scharf (nicht im Manifest)", a selection of positions (the pilots) gets no
+  sub-grid section, the positions with fields and the broken-off jobs are named per series
+  (section 3 says where a maximum runs over fewer positions), rates in the legend when a folder
+  mixes them, no "−0,0 %"; tests for the Stommel tables (order by torque, refusal, infinite
+  life), the chattering nodes and the single-tooth position added. Both analyses re-run.
+  Corrected reading of the global maxima: the "rim" nodes of the Hill tables are the first
+  subsurface node row under the tip-edge contact track (r 25,78 mm, in no node set, the
+  remainder label of `fe_fatigue.py`), not the Fesselung (ADR-118 amendment item 3, FE-22).
+- Superseded outputs removed at the user's request (2026-10-13, `80_output`, not versioned):
+  the old PNG twins of the figures regenerated into `bilder_V2` on 2026-10-10 (convergence,
+  frozen mesh, positions pilot, preview, 60-per-pitch study), the morning folder
+  `fe/stommel_methode` (replaced by `stommel_methode_V2`), and the outputs of the deleted
+  tip-edge script (`messungen/konturscan_86481`, `konturscan_kunststoffrad_Z1_firstlook`,
+  replaced by the M3 contour evaluation in `messungen/konturscan`). The earlier statements of
+  "6 to 13 %" for the tip rounding (ADR-116 item 43, FE-19, roadmap open point 1, the study's
+  diary note) now carry the correction of item 47 (c).
+
 ### Added (measurement: the axis of a contour scan constrained to GINA's tip diameter, the steel cross-check, the microscope images, 2026-10-12, ADR-117 amendment of 2026-10-12)
 - **`gearcore.measurement.contour_scan.constrain_axis`**: the axis of a scan is moved from the
   free fit along the centre line of the middle tooth until the median of the fitted tip radii
