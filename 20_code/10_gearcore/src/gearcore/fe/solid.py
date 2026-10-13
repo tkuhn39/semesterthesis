@@ -386,6 +386,12 @@ def gear_sets(mesh: SolidMesh, prefix: str) -> GearSets:
         target = f"{prefix}_ROOT_T{tooth}_T{tooth + 1}"
         joined(target, f"{prefix}_T{tooth}_LEFT_ROOT", f"{prefix}_T{tooth + 1}_RIGHT_ROOT")
         surface(f"{target}_SURF", halves[(tooth, 1)][0] + halves[(tooth + 1, -1)][0])
+    if section.closed and section.teeth > 1:
+        # the closed wheel has one more tooth space: between the last tooth and the first
+        last = section.teeth
+        target = f"{prefix}_ROOT_T{last}_T1"
+        joined(target, f"{prefix}_T{last}_LEFT_ROOT", f"{prefix}_T1_RIGHT_ROOT")
+        surface(f"{target}_SURF", halves[(last, 1)][0] + halves[(1, -1)][0])
     for tooth in range(1, section.teeth + 1):
         target = f"{prefix}_HEAD_T{tooth}"
         joined(target, f"{prefix}_T{tooth}_LEFT_HEAD", f"{prefix}_T{tooth}_RIGHT_HEAD")

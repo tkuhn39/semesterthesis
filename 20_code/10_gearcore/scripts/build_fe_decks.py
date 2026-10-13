@@ -231,8 +231,8 @@ def preview(case: str, rotation: pl.Rotation, out: Path) -> list[Path]:
             va="bottom",
             bbox=box,
         )
-        overview.set_xlabel("x in mm")
-        overview.set_ylabel("y in mm")
+        overview.set_xlabel("$x$ in mm")
+        overview.set_ylabel("$y$ in mm")
         centre = np.asarray(position.contact_point_mm)
         k = position.tooth_pairs_on_path[0]
         alpha_wt = math.radians(geometry.transverse_working_pressure_angle_deg)
@@ -243,8 +243,8 @@ def preview(case: str, rotation: pl.Rotation, out: Path) -> list[Path]:
         detail.set_xlim(centre[0] - 0.6 * module, centre[0] + 0.6 * module)
         detail.set_ylim(centre[1] - 0.6 * module, centre[1] + 0.6 * module)
         detail.set_title("Berührpunkt des tragenden Zahnpaars")
-        detail.set_xlabel("x in mm")
-        detail.set_ylabel("y in mm")
+        detail.set_xlabel("$x$ in mm")
+        detail.set_ylabel("$y$ in mm")
         figure.suptitle(
             f"{case}: {label} (Stellung {index} von 5, Wälzweg ab A = "
             f"{_number(rho_1 - rho_a, 3)} mm)"
@@ -291,7 +291,7 @@ def _mesh_pictures(
     fixed = nodes_of(f"{sets.prefix}_FESSELUNG")
     axes.plot(fixed[:, 0], fixed[:, 1], ".", color=MARK_COLOUR, markersize=2.5, label="Fesselung")
     for tooth in range(1, section.teeth + 1):
-        angle = 0.5 * math.pi + (tooth - 0.5 * (section.teeth + 1)) * section.pitch_angle_rad
+        angle = section.tooth_centre_angle_rad(tooth)
         radius = section.tip_radius_mm + 0.6 * module_mm
         axes.text(
             radius * math.cos(angle),
@@ -306,12 +306,17 @@ def _mesh_pictures(
     # room above the teeth for their numbers
     axes.set_ylim(top=section.tip_radius_mm + 1.6 * module_mm)
     legend_outside(figure, axes, where="bottom")
-    axes.set_title(
-        f"Radsektor: {section.teeth} Zähne + 2 zahnlose Segmente, {len(points)} Knoten und "
-        f"{m} Elemente je Schicht, Bohrungsradius {_number(section.bore_radius_mm, 2)} mm",
+    what = (
+        f"Vollrad: {section.teeth} Zähne"
+        if section.closed
+        else f"Radsektor: {section.teeth} Zähne + 2 zahnlose Segmente"
     )
-    axes.set_xlabel("x in mm")
-    axes.set_ylabel("y in mm")
+    axes.set_title(
+        f"{what}, {len(points)} Knoten und {m} Elemente je Schicht, Bohrungsradius "
+        f"{_number(section.bore_radius_mm, 2)} mm",
+    )
+    axes.set_xlabel("$x$ in mm")
+    axes.set_ylabel("$y$ in mm")
     save_figure(figure, out / "mesh_sector")
     plt.close(figure)
 
@@ -339,8 +344,8 @@ def _mesh_pictures(
         axes.set_ylim(*y_limits)
         axes.set_aspect("equal")
         axes.set_title(title)
-        axes.set_xlabel("x in mm")
-        axes.set_ylabel("y in mm")
+        axes.set_xlabel("$x$ in mm")
+        axes.set_ylabel("$y$ in mm")
         save_figure(figure, out / file_name)
         plt.close(figure)
 
@@ -364,8 +369,8 @@ def _mesh_pictures(
             section.fan_ring_radius_mm - 1.2 * module_mm, section.tip_radius_mm + 0.5 * module_mm
         )
         axes.set_aspect("equal")
-        axes.set_xlabel("x in mm")
-        axes.set_ylabel("y in mm")
+        axes.set_xlabel("$x$ in mm")
+        axes.set_ylabel("$y$ in mm")
 
     # 4 the element sets around one tooth: by half, and by root and head
     figure, (by_half, by_zone) = new_figure(380.0, 0.48, cols=2)
@@ -508,7 +513,7 @@ def _body_picture(built: bd.BodyMesh, out: Path) -> None:
     with the walls and the floor of the drawing in red."""
     section, solid, body = built.section, built.solid, built.body
     middle = rf.middle_tooth(section.teeth)
-    centre = 0.5 * math.pi + (middle - 0.5 * (section.teeth + 1)) * section.pitch_angle_rad
+    centre = section.tooth_centre_angle_rad(middle)
     xy = solid.nodes_mm[:, :2]
     offset = np.angle(np.exp(1j * (np.arctan2(xy[:, 1], xy[:, 0]) - centre)))
     on_line = np.abs(offset) < 1.0e-7
@@ -556,8 +561,8 @@ def _body_picture(built: bd.BodyMesh, out: Path) -> None:
         f"{built.counts.rim_rings}, Schichten Steg {built.counts.web_layers}, je Tasche "
         f"{built.counts.flange_layers}; {len(solid.nodes_mm)} Knoten, {len(solid.hexes)} Elemente",
     )
-    axes.set_xlabel("r in mm")
-    axes.set_ylabel("z in mm")
+    axes.set_xlabel("$r$ in mm")
+    axes.set_ylabel("$z$ in mm")
     save_figure(figure, out / "mesh_body")
     plt.close(figure)
 
@@ -611,9 +616,13 @@ def mesh(
     body_counts: bd.BodyCounts | None = None,
     pictures_only: bool = False,
     level_counts: bd.BodyCounts | None = None,
+    closed: bool = False,
+    pictures: bool = True,
 ) -> MeshResult:
     """Write the mesh file of one gear sector and its pictures (``pictures_only``: only the
-    pictures, nothing of the deck). ``body`` ``pocket`` meshes the
+    pictures, nothing of the deck); ``closed`` meshes the full wheel (every tooth, no shoulder
+    pitches, the ring closed on itself) for a CONVERSE mapping of the whole part. ``body``
+    ``pocket`` meshes the
     body of the drawing (``fe.body``) with ``body_counts`` (rings hub / pocket / rim, layers
     web / flange) instead of ``layers`` equal layers of the full ring. ``level_counts`` sweeps
     the RING body to the z-levels of the pocket body (``fe.body.body_levels``: ``web_layers``
@@ -642,6 +651,7 @@ def mesh(
         rim_rings=rim_rings,
         bore_radius_mm=bore_radius_mm,
         counts=counts,
+        closed=closed,
     )
     effective = rf.effective_counts(section)
     prefix = role.upper()
@@ -674,11 +684,14 @@ def mesh(
         solid,
         sets,
         element_type=element_type,
-        title=f"{case}: {role}, face width {gear.face_width_mm:g} mm, body {body}, built by gearcore",
+        title=f"{case}: {role}, face width {gear.face_width_mm:g} mm, body {body}, "
+        f"{'full wheel (closed)' if closed else 'sector'}, built by gearcore",
     )
     if not pictures_only:
         target.write_text(written, encoding="ascii")
-    if built is not None:
+    if not pictures:
+        pass  # the full wheel: its SVG pictures would run to hundreds of megabytes
+    elif built is not None:
         _mesh_pictures(section, built.full, built.full_sets, out)
         _body_picture(built, out)
     else:
@@ -715,7 +728,8 @@ def mesh(
         target.as_posix(),
         f"nodes {len(solid.nodes_mm)}, elements {len(solid.hexes)} ({element_type}), "
         f"layers {solid.layers}, {thickness}",
-        f"mesh parameters: {teeth} teeth + {effective.shoulder_pitches} shoulder pitches, "
+        f"mesh parameters: {teeth} teeth + "
+        f"{'no shoulder pitches (closed wheel)' if closed else f'{effective.shoulder_pitches} shoulder pitches'}, "
         f"elements over the tooth height {effective.over_tooth_height}, at the tooth root (one "
         f"gap) {effective.at_tooth_root}, over the tooth thickness "
         f"{effective.over_tooth_thickness}, over the face width {solid.layers}, rim rings "
@@ -805,9 +819,9 @@ def surface(
         axes.set_xlim(pitch_point - half, pitch_point + half)
         axes.set_ylim(-1.2 * half, 1.2 * half)
         axes.set_aspect("equal")
-        axes.set_xlabel("x in mm")
-    overview.set_ylabel("y in mm")
-    detail.set_ylabel("y in mm")
+        axes.set_xlabel("$x$ in mm")
+    overview.set_ylabel("$y$ in mm")
+    detail.set_ylabel("$y$ in mm")
     overview.set_title("Starre Fläche und Netz des Gegenrads")
     detail.set_title("Ausschnitt am Wälzpunkt")
     figure.suptitle(
@@ -2932,6 +2946,16 @@ def main() -> None:
     mesh_parser.add_argument("--case", default="kst_e", help="packaged STplus case")
     mesh_parser.add_argument("--role", choices=("pinion", "wheel"), default="wheel")
     mesh_parser.add_argument("--teeth", type=int, default=5)
+    mesh_parser.add_argument(
+        "--closed",
+        action="store_true",
+        help="the full wheel: --teeth equal to the gear's teeth, no shoulder pitches, closed ring",
+    )
+    mesh_parser.add_argument(
+        "--no-pictures",
+        action="store_true",
+        help="write no mesh pictures (the full wheel's SVGs would be huge)",
+    )
     mesh_parser.add_argument("--rim-rings", type=int, default=12)
     mesh_parser.add_argument("--layers", type=int, default=80)
     mesh_parser.add_argument("--element-type", default="C3D8R")
@@ -3167,6 +3191,8 @@ def main() -> None:
             counts = rs.MeshCounts(**{k: v for k, v in given.items() if v is not None})
         level_counts = _level_counts(args)
         folder = f"{args.role}_{args.teeth}teeth_{args.rim_rings}rings_{args.layers}layers"
+        if args.closed:
+            folder += "_closed"
         if counts is not None:
             folder += f"_{counts.label()}"
         if body_counts is not None:
@@ -3188,6 +3214,8 @@ def main() -> None:
             body_counts=body_counts,
             pictures_only=args.pictures_only,
             level_counts=level_counts,
+            closed=args.closed,
+            pictures=not args.no_pictures,
         ).lines:
             print(line)
     if args.command == "surface":

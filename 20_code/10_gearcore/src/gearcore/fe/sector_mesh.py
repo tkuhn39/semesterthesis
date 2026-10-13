@@ -107,6 +107,18 @@ class SectorMesh:
     """Refinement factors applied by ``fe.refine`` (1 = the density of the template)."""
     counts: MeshCounts | None = None
     """The numbers of elements the template was resampled to (None: the template's own)."""
+    closed: bool = False
+    """True for the full wheel: every tooth of the gear, no shoulder pitches, the last tooth
+    block joined to the first (no cut planes; the Fesselung is the bore alone)."""
+
+    def tooth_centre_angle_rad(self, tooth: int) -> float:
+        """Angle of the axis of tooth ``tooth`` (1-based) from +x: the sector is centred on +y
+        (an odd count puts its middle tooth there), the closed wheel puts the tooth after half
+        the count on +y."""
+        if not 1 <= tooth <= self.teeth:
+            raise InputRangeError(f"tooth must lie in 1 to {self.teeth}, got {tooth!r}")
+        first = -float(self.teeth >> 1) if self.closed else -0.5 * (self.teeth - 1)
+        return 0.5 * math.pi + (tooth - 1 + first) * self.pitch_angle_rad
 
 
 @dataclass(frozen=True)
@@ -402,8 +414,11 @@ def sector_mesh(
     bore_radius_mm: float | None = None,
     template: SectorTemplate | None = None,
     counts: MeshCounts | None = None,
+    closed: bool = False,
 ) -> SectorMesh:
-    """The transverse mesh of ``teeth`` teeth of the gear ``role`` between two shoulder pitches.
+    """The transverse mesh of ``teeth`` teeth of the gear ``role`` between two shoulder pitches,
+    or, with ``closed``, of the full wheel: ``teeth`` must then be the number of teeth of the
+    gear, there are no shoulder pitches and the last tooth block is joined to the first.
 
     ``rim_rings`` is the number of element rings of the template's rim below the fan ring that
     are kept (the template has 25); fewer rings leave a larger bore. Without ``bore_radius_mm``
@@ -425,7 +440,10 @@ def sector_mesh(
     rings = integer_input(rim_rings, "number of rim rings")
     contour = ct.tooth_contour(generation, role, points=CONTOUR_POINTS)
     z = contour.number_of_teeth
-    if not 1 <= count <= z - 2:
+    if closed:
+        if count != z:
+            raise InputRangeError(f"the closed wheel holds all {z} teeth, got {teeth!r}")
+    elif not 1 <= count <= z - 2:
         raise InputRangeError(
             f"a sector of a gear with {z} teeth holds 1 to {z - 2} teeth, got {teeth!r}"
         )
@@ -501,8 +519,12 @@ def sector_mesh(
         radius[np.array(kind) == "bore"] = bore
     shoulder_radius[lists.shoulder_cut[0]] = bore  # the corner of cut plane and bore
 
-    # assembly, counter-clockwise: shoulder, the tooth blocks, mirrored shoulder
-    first_centre = -0.5 * (count - 1)
+    # assembly, counter-clockwise: shoulder, the tooth blocks, mirrored shoulder; the sector
+    # is centred on +y, so with an odd number of teeth the middle tooth sits on +y and with
+    # an even number a gap. The closed wheel puts the tooth after half the count on +y
+    # instead (tooth 27 of 52), so that its teeth coincide with those of the sectors (a
+    # mapping of the moulding result made for a sector fits the full wheel without a turn).
+    first_centre = -float(count >> 1) if closed else -0.5 * (count - 1)
     radii: list[Array] = []
     angles: list[Array] = []  # from the bisector of the sector, counter-clockwise
     kinds: list[str] = []
@@ -553,45 +575,58 @@ def sector_mesh(
     empty = np.empty(0, dtype=np.int64)
     no_head = np.zeros(len(shoulder.quads), dtype=np.int64)
     interface_angle = (first_centre - 0.5) * pitch
-    numbers = add(
-        shoulder,
-        shoulder_radius,
-        interface_angle + shoulder.phi * pitch,
-        empty,
-        empty,
-        shoulder.quads,
-        0,
-        shoulder.phi,
-        shoulder.surface_order,
-        no_head,
-    )
-    open_interface = numbers[lists.shoulder_interface]
+    if closed:
+        open_interface = empty
+        first_left = empty
+    else:
+        numbers = add(
+            shoulder,
+            shoulder_radius,
+            interface_angle + shoulder.phi * pitch,
+            empty,
+            empty,
+            shoulder.quads,
+            0,
+            shoulder.phi,
+            shoulder.surface_order,
+            no_head,
+        )
+        open_interface = numbers[lists.shoulder_interface]
     for j in range(count):
+        joined = lists.tooth_left if len(open_interface) else empty
+        joined_to = open_interface
+        if closed and j == count - 1:
+            # the last tooth closes the ring: its right interface is the first tooth's left
+            joined = np.concatenate([joined, lists.tooth_right])
+            joined_to = np.concatenate([joined_to, first_left])
         numbers = add(
             tooth,
             tooth_radius,
             (first_centre + j) * pitch + tooth_angle,
-            lists.tooth_left,
-            open_interface,
+            joined,
+            joined_to,
             tooth.quads,
             j + 1,
             tooth_angle,
             tooth.surface_order,
             lists.tooth_grid,
         )
+        if closed and j == 0:
+            first_left = numbers[lists.tooth_left]
         open_interface = numbers[lists.tooth_right]
-    add(
-        shoulder,
-        shoulder_radius,
-        (first_centre + count - 0.5) * pitch - shoulder.phi * pitch,
-        lists.shoulder_interface,
-        open_interface,
-        shoulder.quads[:, ::-1],
-        0,
-        shoulder.phi,
-        shoulder.surface_order[::-1],
-        no_head,
-    )
+    if not closed:
+        add(
+            shoulder,
+            shoulder_radius,
+            (first_centre + count - 0.5) * pitch - shoulder.phi * pitch,
+            lists.shoulder_interface,
+            open_interface,
+            shoulder.quads[:, ::-1],
+            0,
+            shoulder.phi,
+            shoulder.surface_order[::-1],
+            no_head,
+        )
 
     radius_all = np.concatenate(radii)
     angle_all = 0.5 * math.pi + np.concatenate(angles)
@@ -624,6 +659,7 @@ def sector_mesh(
         tip_radius_mm=tip,
         pitch_angle_rad=pitch,
         counts=counts,
+        closed=closed,
     )
     for array in (
         mesh.points_mm,

@@ -44,6 +44,8 @@ EQ_EXEMPT = (
     "split_orientation_file",
     "OrientationFit",
     "read_node_labels",
+    "read_node_coordinates",
+    "read_sets",
     "verify_orientation_file",
     "position_deck_text",
     "seating_angle_rad",
@@ -327,6 +329,95 @@ def read_node_labels(text: str) -> tuple[int, ...]:
     if not labels:
         raise ParseError("input file: no *NODE block")
     return tuple(labels)
+
+
+def read_node_coordinates(text: str) -> dict[int, tuple[float, float, float]]:
+    """Node label -> (x, y, z) of every ``*NODE`` block of an Abaqus input file."""
+    out: dict[int, tuple[float, float, float]] = {}
+    for keyword, _line, data in _blocks(text):
+        if keyword != "NODE":
+            continue
+        for row in data:
+            items = [item.strip() for item in row.replace("\t", " ").split(",") if item.strip()]
+            if len(items) < 4:
+                raise ParseError(f"input file: node row {row!r} has fewer than four items")
+            out[int(float(items[0]))] = (float(items[1]), float(items[2]), float(items[3]))
+    if not out:
+        raise ParseError("input file: no *NODE block")
+    return out
+
+
+def read_sets(text: str) -> tuple[dict[str, tuple[int, ...]], dict[str, tuple[int, ...]]]:
+    """(node sets, element sets) of an Abaqus input file: set name -> labels, from the
+    ``*NSET`` and ``*ELSET`` blocks (``GENERATE`` ranges expanded, names upper case) and from
+    the ``NSET=`` / ``ELSET=`` of ``*NODE`` and ``*ELEMENT`` blocks."""
+    node_sets: dict[str, list[int]] = {}
+    element_sets: dict[str, list[int]] = {}
+
+    def integers(row: str) -> list[int]:
+        items = [v.strip() for v in row.replace("\t", " ").split(",") if v.strip()]
+        try:
+            return [int(float(v)) for v in items]
+        except ValueError as error:
+            raise ParseError(
+                f"input file: set row {row!r} is not a list of labels (a set name inside a set "
+                "is not read)"
+            ) from error
+
+    for keyword, line, data in _blocks(text):
+        upper = line.upper()
+        parameters = {p.strip().split("=")[0] for p in upper.split(",")[1:]}
+        if keyword in ("NSET", "ELSET"):
+            parameter = f"{keyword}="
+            if parameter not in upper:
+                raise ParseError(f"input file: *{keyword} without a name: {line!r}")
+            name = upper.split(parameter)[1].split(",")[0].strip()
+            target = node_sets if keyword == "NSET" else element_sets
+            labels = target.setdefault(name, [])
+            for row in data:
+                items = integers(row)
+                if "GENERATE" in parameters:
+                    if len(items) not in (2, 3):
+                        raise ParseError(
+                            f"input file: GENERATE row {row!r} is not (first, last[, step])"
+                        )
+                    step = items[2] if len(items) == 3 else 1
+                    if step < 1 or items[1] < items[0]:
+                        raise ParseError(f"input file: GENERATE row {row!r} runs backwards")
+                    labels.extend(range(items[0], items[1] + 1, step))
+                else:
+                    labels.extend(items)
+        elif keyword == "NODE":
+            if "NSET=" not in upper:
+                continue
+            name = upper.split("NSET=")[1].split(",")[0].strip()
+            labels = node_sets.setdefault(name, [])
+            for row in data:
+                first = row.split(",")[0].strip()
+                if first:
+                    labels.append(int(float(first)))
+        elif keyword == "ELEMENT":
+            if "ELSET=" not in upper:
+                continue
+            name = upper.split("ELSET=")[1].split(",")[0].strip()
+            kind = upper.split("TYPE=")[1].split(",")[0].strip() if "TYPE=" in upper else ""
+            base = next(
+                (b for b in sorted(NODES_PER_ELEMENT, key=len, reverse=True) if kind.startswith(b)),
+                None,
+            )
+            if base is None:
+                raise ParseError(f"input file: element type {kind!r} not known")
+            width = NODES_PER_ELEMENT[base] + 1
+            numbers: list[int] = []
+            for row in data:
+                numbers.extend(integers(row))  # continuation rows of larger elements joined
+            if len(numbers) % width:
+                raise ParseError(f"input file: {len(numbers)} labels do not form {kind} elements")
+            element_sets.setdefault(name, []).extend(numbers[::width])
+    return (
+        {name: tuple(values) for name, values in node_sets.items()},
+        {name: tuple(values) for name, values in element_sets.items()},
+    )
 
 
 @dataclass(frozen=True)

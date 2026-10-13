@@ -330,7 +330,7 @@ def refined(section: SectorMesh, tooth_outline: Array, refinement: Refinement) -
                 scale = section.root_radius_mm / np.hypot(*coordinates[chosen].T)
                 coordinates[chosen] *= scale[:, None]
             else:
-                angle = (tooth - 0.5 * (section.teeth + 1)) * section.pitch_angle_rad
+                angle = section.tooth_centre_angle_rad(tooth) - 0.5 * math.pi
                 coordinates[chosen] = _nearest_on_polyline(
                     coordinates[chosen], _turned(outline, angle)
                 )

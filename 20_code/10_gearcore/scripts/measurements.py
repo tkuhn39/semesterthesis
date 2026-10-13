@@ -1408,9 +1408,9 @@ def plot_corners(evaluation: cs.ScanEvaluation, title: str, stem: Path) -> list[
         axis.set_visible(False)
     for k, axis in enumerate(axes_list[: len(corners)]):
         if k % cols == 0:
-            axis.set_ylabel("längs der Halbierenden in µm")
+            axis.set_ylabel("Längs der Halbierenden in µm")
         if k >= len(corners) - cols:
-            axis.set_xlabel("quer in µm")
+            axis.set_xlabel("Quer in µm")
     figure.suptitle(f"{title}: Kopfkanten (Bogen ρ gegen Fase c, RMS in Klammern)")
     legend_outside(figure, axes_list[0], where="bottom", ncol=4)
     written = save(figure, stem)

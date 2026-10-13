@@ -158,12 +158,32 @@ LINE_STYLES: tuple[LineStyle, ...] = (
     "-.",
     (0.0, (10.0, 3.0)),  # long dashes
     (0.0, (5.0, 1.5, 1.0, 1.5, 1.0, 1.5)),  # dash, dot, dot
-    (0.0, (1.0, 3.0)),  # sparse dots
+    (0.0, (2.0, 2.0)),  # short dashes
     (0.0, (10.0, 3.0, 2.0, 3.0)),  # long dash, dot
+    (0.0, (6.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 2.0)),  # dash, dot, dot, dot
+    (0.0, (10.0, 2.0, 2.0, 2.0, 2.0, 2.0)),  # long dash, two short dashes
 )
-MARKERS: tuple[str, ...] = ("o", "s", "^", "D", "v", "P", "X", "*")
-"""Eight distinct line styles and markers cycled with the colours, so every series differs in
-black-and-white print even where two palette colours share a grey value (tumdiag1 and 5, 3 and 7)."""
+MARKERS: tuple[str, ...] = ("o", "s", "^", "D", "v", "P", "X", "*", "<", "h")
+"""Ten distinct line styles and markers cycled with the colours (the FZG palette, then the
+TUM extended palette), so every series differs in black-and-white print even where two
+palette colours share a grey value (tumdiag1 and 5, 3 and 7); ten, because a figure with nine
+series (the zones around the wheel) must not repeat a style (user, 2026-10-13).
+Scripts take their markers from this cycle (no ``marker=`` of their own) so that the symbols stay
+the same across all figures; a figure without lines (categories on the x axis) names the
+markers from this tuple in order."""
+SERIES_LINE_WIDTH_PT = 0.9
+"""Width of the series lines: between the TUM medium (0,6) and thick (1,2) widths; the thick
+lines made the figures look heavy (user, 2026-10-13)."""
+SERIES_MARKER_SIZE_PT = 3.0
+"""Marker size of the series: small, since every point carries one (user, 2026-10-13)."""
+DEGREE_COLOURMAP = "viridis"
+"""Colour map of a degree of orientation or utilisation over a geometry: perceptually uniform
+with changing hue, so that regions of different value stay apart in print and for colour
+deficiencies; the single-hue blue map looked pale (user, 2026-10-13)."""
+FIGURES_WITHOUT_TITLES = True
+"""Thesis figures carry no title inside the SVG: the caption goes below the figure in LaTeX,
+the scripts store their captions in ``bildunterschriften.md`` beside the figures (user,
+2026-10-13). Panel labels that tell the panels of one figure apart are not titles."""
 
 
 @dataclass(frozen=True)
@@ -355,8 +375,10 @@ def apply(*, font_folder_override: Path | None = None) -> StyleSheet:
                 + cycler(linestyle=list(LINE_STYLES))
                 + cycler(marker=list(MARKERS))
             ),
-            "lines.linewidth": thick,
-            "lines.markersize": 3.5,
+            # series lines between the TUM medium and thick widths and small markers, so that
+            # several series with markers at every point stay readable (user, 2026-10-13)
+            "lines.linewidth": SERIES_LINE_WIDTH_PT,
+            "lines.markersize": SERIES_MARKER_SIZE_PT,
             "lines.markeredgewidth": medium,
             "patch.linewidth": medium,
             "axes.linewidth": medium,

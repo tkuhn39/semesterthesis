@@ -1650,6 +1650,43 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     (user): the next model change is the local refinement of the wheel mesh at the tip contact
     so that a pinion edge of 0,05 or 0,02 mm converges (the real edge is sharp, FE-17); the
     separate instruction follows.
+48. **The three bodies at A to E (2026-10-13; `scripts/fe_body_comparison.py`, folder
+    `vergleich_koerper_AtoE`).** The night run of 2026-10-12 computed the pocket body and the
+    ring on the pocket's z-levels at A to E for W1 to W4 and QS, DY1, DY2 (60 jobs each, 6,5 h
+    for the pocket body, all complete). Against the ring (series QS, rate pilot DY1/DY2) two
+    effects are separated. (a) Layer division (ring on pocket levels against ring, same
+    geometry, the orientation sampled at the pocket's z-levels): ≤ 0,2 % in every quantity for
+    W1 and W2; for W3 and W4 up to ±7 % in the contact pressure and ±4 % in |σ3|, ≤ 0,8 % in
+    the rotation and σ1, so the re-sampling of the fibre field (21 % of the tooth elements
+    turned by more than 10°, item 45) reaches the contact of the anisotropic steps but not the
+    deflection (FE-23). (b) Body (pocket against ring on pocket levels, same sampling): the
+    pocket body is far more compliant, rotation +8 to +24 % and head displacement +9 to +29 %,
+    the root stresses |σ3| +2 to +21 % and σ1 +1 to +17 % for the isotropic steps but −16 to
+    +5 % for W3/W4 (the anisotropic tooth bends less, the web carries more), the contact
+    pressure −9 to +25 % with the largest changes at the edge contacts B and E. The body
+    therefore changes the deflection as much as the material model does (items 43 and 47):
+    the thesis reports the pocket body as the model of the real part and the ring as the
+    reference of the mesh studies. The figures per load step and rate show the body effect in
+    percent per material step (series by the house cycle).
+49. **The closed wheel (2026-10-13; `sector_mesh(..., closed=True)`, `mesh --closed`).** For a
+    CONVERSE mapping of the whole part the mesher joins the tooth blocks of all 52 teeth into
+    a ring without shoulder pitches (the last block's right interface is the first block's
+    left; no cut planes, the Fesselung is the bore alone; the set of the tooth space between
+    the last and the first tooth is `ROOT_T52_T1`). Tooth 27 sits on +y where tooth 3 of the
+    five-tooth sector sits, so the node positions of the teeth coincide with the sector's and
+    the moulding result maps without a turn (test `test_fe_closed_wheel.py`). Written at the
+    density of the weekend series with 20 layers and no pictures: `vollrad_52teeth_ring`
+    (846 300 nodes, 744 640 C3D8I, layers of 0,75 mm as the weekend series),
+    `vollrad_52teeth_pocket` (857 220 nodes, 750 256) and, on the user's question,
+    `vollrad_52teeth_pocketlevels` (the ring on the pocket's z-levels, `--levels pocket`,
+    846 300 nodes), so that every body of the night run has its full wheel with the same
+    sampling of the orientation.
+    Why (user, 2026-10-13): the CADMOULD model fed the part through a virtual distributor of
+    238 points because the real mould (metal insert, central sprue cut off afterwards) was not
+    available; the mapping of all teeth shows the orientation around the wheel (gate side,
+    weld lines) and the scatter from tooth to tooth, and supports the outlook sentence that
+    the choice of the mapped teeth is itself an input of the sector model. The `.car` binary
+    stays unread (FIB-01), the full mapping comes from CONVERSE.
 
 ## ADR-117 — Measurement data of the manufactured gears: parsers in `io`, pure evaluation in `gearcore.measurement`, the user's decisions in `parts.yaml`, text exports versioned (2026-10-10)
 
@@ -2323,3 +2360,185 @@ asked for it after the figure rounds. Built as `gearcore.fatigue.anisotropy` wit
    route on W2 as the main line, W1 beside it as the linear reference, and the Hill route as
    the own extension with its open class question; the figure set per series is the one of
    `fe_fatigue.py` (fillet map, curves of the critical nodes over the path).
+
+### Amendment of 2026-10-13 (afternoon: what is node-wise in the check, the overload case as the load path)
+
+The user asked whether the check treats every node by its own stress state (tension or
+compression only, alternating, multiaxiality) or applies one mean stress factor to all.
+Status: everything but the overload case is node-wise. Per node and load step the history is
+the unloaded state plus the 99 positions; from it the extreme values, the amplitude and the
+mean per principal direction (route "principal") or of the signed von Mises stress, the stress
+ratio R, the multiaxiality h of the governing state, the permissible strain ε_zul(h), the
+static utilisation, and K_M from the node's own σ_m and σ_a (Eq. (6.21)); a fillet node that
+sees tension under its own tooth and compression under the neighbour (R ≈ −0,4 at the W2
+critical node at 8 Nm: +32 / −14 MPa signed von Mises) is treated as alternating, a node under
+compression only as such, without any assumption. What is one choice for all nodes is the
+overload case of Eq. (6.21), because it describes the load path, not the node: the gear has one
+load parameter, the torque, and every stress of the linear model scales with it, so the ratio
+R of every node stays constant under an overload (case F2); the plastic steps bend this
+proportionality a little. The planned check is therefore not a node-wise case but the
+sensitivity: the critical nodes evaluated with cases F1 to F4 side by side
+(`CheckSettings.overload_case`), as section 6.3.3 of the book lays the cases out, to show how
+much K_M and a_B,V depend on that reading (open, E2). The curves of the critical nodes name
+the two nodes by their role and carry the points A to E (user, 2026-10-13).
+
+## ADR-119 — Fibre orientation of the moulding simulation, evaluated on the mapped FE mesh and compared with the CT zones of FVA 856 I (2026-10-13)
+
+**Context.** The user wants a short thesis chapter on the injection-moulding simulation: does
+the fibre orientation of his CADMOULD run (`92_CADMOULD/Kunststoffrad_Spritzgegossen_V3`,
+Cadmould Flex 19.0.1.10, strategy 3D-F, element edge 1 mm, STANYL TW200F6 of Envalior,
+fibre factors 0,99 / 0,94 / 0,09, interaction coefficient 0,01, a virtual distributor of 238
+injection points on r 15,0 to 19,1 mm in the web plane z = 0, fill time 0,554 s, melt 315 °C,
+wall 100 °C, holding 500 bar for 10,9 s) match what the research project FVA 856 I found on
+real gears by CT (chapter 6.2: Bild 15 colour-coded orientation in a tooth plane, Bild 16 the
+zone evaluation with the orientation tensor and the anisotropy index AI = 1 − λ_min/λ_max,
+Bild 17 the zones of a tooth with their eigenvalues, Bild 18 the zone map with the preferred
+direction in the front plane; chapter 6.3: zone stiffnesses and the thirds of the face width,
+Bild 23)? CONVERSE shows the mapped orientation only as a screenshot. The orientation result
+of CADMOULD (`..._115_0022376.car`) is an undocumented binary (header "CAR_000 cadmould",
+40 bytes per element after a descriptor table; a decode attempt gave values in ±0,5 without a
+recognisable tensor structure).
+
+**Decision.**
+1. **Source of the orientation: the CONVERSE orientation file, not the `.car`.** The `.cof`
+   of the ring mesh (`91_Converse/wheel_mesh_QS.cof`) carries the same result as CONVERSE
+   mapped it onto the FE mesh: the fibre frame per element (`*DISTRIBUTION`) and the two
+   largest eigenvalues a_11, a_22 of the orientation tensor per node (field variables). This
+   is exactly what the FE steps W3 and W4 use, so the comparison judges the orientation the
+   FE computes with. The `.car` stays unread (known limit FIB-01); a whole-wheel view (gate,
+   weld lines) would need CADMOULD's own export or a documented format.
+2. **Evaluation as the report evaluates its CT (`gearcore.fe.fibre`, `scripts/fibre_orientation.py`).**
+   Per element the orientation tensor A = a_11 e_1e_1ᵀ + a_22 e_2e_2ᵀ + (1 − a_11 − a_22) e_3e_3ᵀ
+   with the nodal states averaged over the element; per zone the volume-weighted mean of the
+   element tensors (the volumes by 2 × 2 × 2 Gauss integration of the trilinear hexahedron),
+   its eigenvalues λ_1 ≤ λ_2 ≤ λ_3, the anisotropy index after Eq. (1) of the report (traced
+   `@eq`, source `FVA856-I:2022` registered from the rendered title page) and the preferred
+   direction of the main axis in the transverse plane (0° along the tooth axis, 90° across,
+   positive towards the left as the arrow of Bild 18), plus the diagonal of the zone tensor in
+   the tooth frame (tooth axis, across, face width) and the tilt of the main axis out of the
+   plane. The zones follow Bild 17 by name: surface band T, F, FU, FO, S along the outline,
+   transition band ÜU, ÜM, ÜO, the inner zones M (above the root circle) and U (below), left
+   and right by the halves of the mesh (LEFT = counter-clockwise, the mesh header). The bands
+   are depths below the outline in the transverse plane (surface 0,2 mm, transition to
+   0,4 mm; the report does not print its zone widths, so the depth is a parameter, sensitivity
+   run with 0,1 and 0,3 mm), the valley is the lowest 15 % of the fillet height (the tooth's
+   root sets reach the middle of the gaps; the mesh has no separate root land set), lower and
+   upper flank split at half the tooth height. The thirds of the face width as Bild 23. Mesh
+   readers `deck.read_node_coordinates` and `deck.read_sets` added.
+3. **Figures in the house style** into `80_output/fe/faserorientierung/`: `schnitt_T3` (two
+   transverse sections, mid-width and the layer at the face, the fibre direction of every
+   element as a line coloured by a_11, the zone borders over it; the analogue of Bild 15 and
+   17), `zonen_T3` (zone map with the simulated preferred direction, Bild 18), `vergleich_T3`
+   (λ_3 and AI per zone, CT against simulation), `drittel_T3` (AI per zone and third, Bild 23),
+   `breite_T3`; `bericht.md`, `zonen.csv`, `drittel.csv`, `bildunterschriften.md` with the
+   captions "in Anlehnung an" / "nach" the report.
+
+**Findings (tooth T3, QS card, surface band 0,2 mm).**
+- Over the whole face width the simulated zones are far less anisotropic than the CT zones of
+  the report: AI 0,33 to 0,39 in the fillets and lower flanks against 0,83 to 0,86, 0,20 to
+  0,35 in the transition zones against 0,60 to 0,76; only the valleys (0,63 / 0,62 against
+  0,71), the upper flanks (0,62 / 0,70 against 0,76), M (0,30 against 0,35) and U (0,67 against
+  0,70) come close. The elements themselves are better oriented (a_11 mean 0,55 to 0,66): the
+  whole-width mean loses anisotropy because the fibre axis tilts out of the transverse plane
+  with opposite sign in the two halves of the width (tilt +25 to +75° in the third z < −b/6,
+  −45 to −69° in z > b/6 for F, FU, FO, ÜU, ÜM, ÜU), so the off-diagonal terms cancel.
+- In the thirds of the width the simulation reaches AI 0,65 to 0,80 in the fillets and flanks
+  (CT 0,76 to 0,86), 0,64 to 0,80 in the valleys (0,71), 0,47 to 0,68 in the transition zones
+  (0,60 to 0,76), 0,26 to 0,39 in M (0,35) and 0,69 to 0,72 in U (0,70). The middle third is
+  less anisotropic than the outer thirds in the valleys, fillets, lower flanks and most
+  transition zones (λ_3 8 to 27 % lower), as the report finds for its gear (5 to 15 % in E_1 of
+  the outer zones, up to 20 % of the transition zones, Bild 23); the upper flanks and M show no
+  such drop.
+- Direction: valleys and U run across the tooth (A_tt 0,5; −79 / +82°, the report −81,6 /
+  +84,4°), the fillets and lower transition zones lie in the plane at −40 to −48° (left) and
+  +50° (right) against the report's −27,5 / +28,5° (fillet) and ∓32,5° (transition): the
+  same sense, 12 to 21° steeper. In the upper flanks, the tip and the upper right transition zone the main
+  axis lies along the face width (in-plane share 0,01 to 0,06, A_zz 0,45 to 0,55), where the
+  CT sees fibres in the plane along the surface (−18,5 / +20,9°, −89,1° at the tip); the
+  in-plane projections of the simulation (−14 / +31°, the thirds −19 / +19°) follow the flank
+  as well, but with a small share. The core M runs at −43° in the plane against −85,3° in
+  the report. The tensor of the report's left root zone (Bild 16) has no width component
+  (0,19 on the diagonal, eigenvector 3 in the front plane), the simulated fillet has 0,34.
+- Sensitivity to the band depth: valleys, fillets, lower flanks, M and U move by at most 0,04
+  in AI between 0,1 and 0,3 mm; the upper flanks and the tip by up to 0,13, the transition
+  zones by up to 0,5 (a thin band at 0,1 mm sits inside the skin gradient).
+
+**Consequences.**
+- For the thesis chapter: the moulding simulation reproduces the structure of the CT in the
+  root land, under the root circle, in the core and in the local degree of orientation of the
+  fillets and flanks (thirds), but not the direction in the upper flank and tip, where the
+  mapped fibres run along the face width, and not the in-plane fillet direction. The likely
+  reason is the filling: the virtual distributor feeds the web plane, the rim and the teeth
+  fill from z = 0 towards both faces, so the flow in the thin tooth runs along the width; the
+  report's gears were gated differently (not stated in chapter 6). A microsection of a kst-E
+  wheel in the transverse plane (the user has the microscope) would decide which picture the
+  real part follows; until then the comparison is simulation against another gear's CT
+  (FIB-03).
+- For the FE steps W3 and W4: with the mapped orientation the stiff fibre direction (E_1) lies
+  along the face width in the upper flank and tip and only partly in the plane of the tooth
+  bending; a real part with CT-like in-plane skins would be stiffer and stronger in bending
+  than the model. This is a model statement to carry into the discussion of W3/W4 against
+  W1/W2 (ADR-116 item 47 (b)).
+- Open: the pocket mapping (`wheel-pocket_mesh_QS.cof`) and the DY1/DY2 cards give the same
+  tooth orientation (ADR-116 item 45), so one evaluation stands for all; the night-run bodies
+  need no repeat. The report's own gear (module, gating) is not quoted here beyond chapter 6.
+
+### Amendment of 2026-10-13 (midday: the fillet sign, the CT-zone orientation file for W3/W4, the full wheel)
+
+1. **Bild 18 re-read at 220 dpi:** the left fillet prints −27,5° (the minus was lost at
+   100 dpi), so every left zone is negative and every right zone positive; the simulated
+   fillets (−40 / +50°) have the same sense as the report's (−27,5 / +28,5°), 12 to 21°
+   steeper. `FVA856_ANGLES_DEG` corrected, the findings above re-worded.
+2. **Decision (user): a "CT-like" orientation for the FE.** `scripts/ct_orientation.py`
+   writes `80_output/fe/kst_e/orientierung_ct/wheel_mesh_QS_ct.cof`: the five teeth of the
+   sector carry the zone map of Bild 18 (the main direction in the transverse plane at the
+   zone's angle, the second axis the wheel axis as the CT's second eigenvector of Bild 16)
+   with the eigenvalues λ3, λ2 of Bild 17 as the nodal states a_11, a_22, in the format and
+   with the material card of the CONVERSE file; the zone U below the root circle and the
+   body keep the mapping (the mapped U matched the CT). 48 400 element rows and 119 364 field
+   rows replaced; the zone evaluation on the written file reproduces Bild 17 and Bild 18 to
+   0,02 (zone borders). One file per rate card (QS, DY1, DY2: the same orientation rows, the
+   card's material). The deck folder `pilot_20layers_bore33_ctorient_round0p1f12_qsdy1dy2_AtoE`
+   (W3 and W4 at A to E, QS, DY1 and DY2, 30 jobs, about 4,5 h; the user asked for the rates
+   on 2026-10-13, the QS-only folder written first was never computed and replaced) runs the
+   comparison against the mapped orientation of the rate pilot and the night run; the result tells how much of the W3/W4 behaviour (ADR-116 item 47 (b)) is
+   the mapped orientation and how much the anisotropy as such. This is an idealisation of
+   another gear's CT (the report's zone map handed to its own FE), not a measurement of the
+   kst-E wheel (FIB-04); a microsection stays the open check (FIB-03).
+3. **The full wheel for CONVERSE** (ADR-116 item 49): the three bodies with all 52 teeth, so
+   the user can map the whole moulding result and the tooth-to-tooth scatter of the
+   orientation can be evaluated once the mapping exists.
+4. **The nine full-wheel mappings (user, 2026-10-13 14:17 to 14:57:** `wheel-52_mesh_*`,
+   `wheel-52-pocket_mesh_*`, `wheel-52-pocketlevels_mesh_*` for QS, DY1, DY2, 86 MB each).
+   Checked: every file fits its mesh by labels, carries the card of its rate, and the three
+   rates of a body have identical orientation rows (as the sector mappings had). Against the
+   sector mapping (71 600 coincident elements, the shoulders excluded) 97,3 % of the elements
+   carry the same 1-direction; 2,7 % differ by more than 1° and 1,5 % by more than 10° (up
+   to 90°: the 1- and 2-axes swapped where the two largest eigenvalues are nearly equal),
+   spread evenly over the teeth, the radii and the circumference and twice as frequent at the
+   faces; the nodal a_11 differs by 0,001 on average and 0,24 at most (FIB-05). The mapping is
+   therefore reproducible for the zone statistics but not element by element.
+   `scripts/fibre_wheel.py` evaluates the zones of all 52 teeth (`faserorientierung_vollrad/
+   <body>/`: `zaehne.csv`, `bericht.md`, the figures `umfang` with the anisotropy index of the
+   main zones over the tooth number and `vollrad` with the fibre direction of every element of
+   the mid-width layer over the whole wheel), the result in the next item.
+5. **The orientation around the wheel (ring body, QS).** Tooth 27 of the full wheel equals
+   tooth 3 of the sector in every zone (AI to two decimals), so the sector mapping is the
+   mapping of its tooth. Around the circumference the zones scatter strongly: AI of the
+   fillets 0,30 ± 0,10 (0,12 to 0,53), the lower flanks 0,29 to 0,32 ± 0,10 (0,11 to 0,52),
+   the upper flanks 0,57 ± 0,13 (0,23 to 0,79), the valleys 0,55 ± 0,10 (0,23 to 0,76), the
+   core M 0,35 ± 0,14 (0,11 to 0,67), U 0,51 ± 0,16 (0,12 to 0,71), in long waves of about
+   twelve to fifteen teeth (`umfang`). The sector's tooth lies near the mean of the fillets
+   and lower flanks and above it for the upper flanks, valleys and U. The directions hold
+   around the wheel: the fillets in the plane at −50 / +51° (median), the upper flanks axial
+   on 88 to 98 % of the teeth, the lower flanks axial on 56 to 65 %. For the thesis: the
+   fibre orientation of one tooth is not the orientation of the wheel; which teeth a sector
+   model maps is an input that moves the zone anisotropy by one standard deviation of 0,1
+   and by a factor of three to four between the extreme teeth (outlook sentence of the user).
+   The pocket and pocket-levels wheels (`faserorientierung_vollrad/pocket`, `pocketlevels`)
+   give the same picture: zone means within 0,02 of the ring wheel, the same extreme teeth
+   (fillet minimum at tooth 5, upper-flank maximum at tooth 52, core maximum at tooth 23),
+   the same directions; tooth 27 differs from the ring wheel by up to 0,05 in AI (valley
+   0,59 against 0,63, fillet 0,29 against 0,34), the sampling of the orientation at the
+   pocket's z-levels (item 45 of ADR-116). The scatter around the wheel is a property of the
+   moulding result, not of the body mesh.

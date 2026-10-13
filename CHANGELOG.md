@@ -9,6 +9,86 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (FE: the three bodies at A to E, the closed wheel, the CT-zone orientation file, 2026-10-13, ADR-116 items 48 and 49, ADR-119 amendment)
+- **`scripts/fe_body_comparison.py`**: ring (series QS, rate pilot DY1/DY2), ring on the
+  pocket's z-levels and the pocket body at A to E for every material step and rate; the layer
+  effect and the body effect as tables and the body effect in percent per material step as
+  figures (`vergleich_koerper_AtoE`). Findings: layer effect ≤ 0,2 % (W1/W2), up to ±7 % in
+  the contact pressure for W3/W4 (FE-23); body effect rotation +8 to +24 %, root stresses up
+  to +21 %, σ1 of W3/W4 −16 to +5 % (ADR-116 item 48).
+- **`sector_mesh(..., closed=True)`, `build_fe_decks.py mesh --closed --no-pictures`**: the
+  full wheel as a closed ring of all tooth blocks (no shoulders, no cut planes, the gap set
+  `ROOT_T<z>_T1`, the tooth after half the count on +y so the teeth coincide with the
+  sector's); the wheels `vollrad_52teeth_ring`, `vollrad_52teeth_pocket` and
+  `vollrad_52teeth_pocketlevels` written for the CONVERSE mapping of the whole part (ADR-116
+  item 49). Test `test_fe_closed_wheel.py`.
+- **`scripts/ct_orientation.py`**: a CONVERSE orientation file whose teeth carry the CT zone
+  map of FVA 856 I (Bild 18 directions, Bild 17 eigenvalues), the body keeping the mapping;
+  `orientierung_ct/wheel_mesh_<rate>_ct.cof` for QS, DY1 and DY2 and the pilot folder
+  `pilot_20layers_bore33_ctorient_round0p1f12_qsdy1dy2_AtoE` (W3, W4 at A to E, three rates,
+  30 jobs) for the comparison with the mapped orientation (ADR-119 amendment). The left fillet angle of Bild 18 corrected
+  to −27,5° (re-read at 220 dpi).
+- **`scripts/fibre_wheel.py`** and the nine full-wheel mappings of the user (ring, pocket,
+  ring on pocket levels × QS, DY1, DY2): every file checked against its mesh and card, the
+  rates identical; against the sector mapping 97,3 % of the coincident elements carry the same
+  1-direction, the rest are swapped 1/2 axes at nearly equal eigenvalues (FIB-05). The zones
+  of all 52 teeth evaluated (`faserorientierung_vollrad/<body>`): tooth 27 equals the sector's
+  tooth 3; around the wheel the zone anisotropy scatters by one standard deviation of about
+  0,1 and by a factor of three to four between the extreme teeth (ADR-119 amendment items 4
+  and 5).
+- **Independent compact review of the day's code (2026-10-13 evening)**: no P0 or P1 finding;
+  twelve P2 items, applied: `deck.read_sets` tests the GENERATE parameter, not the name,
+  reads larger elements by their width and refuses a set name inside a set as `ParseError`;
+  `fibre.in_plane_angle` folds an axis exactly across the tooth to +90°; the reference legend
+  names the folders when both describe the same body and edge, and an older reference without
+  a grid block is judged by the folder's grid; `SectorMesh.tooth_centre_angle_rad` serves the
+  pictures of the closed wheel; `ct_orientation.py` evaluates every tooth in its own
+  neighbourhood; `fibre_wheel.py` names the extreme teeth from the teeth that carry the zone;
+  `fe_body_comparison.py` never lets a QS series of the rate pilot replace the series'.
+  Axis labels start with a capital letter, formula symbols stay as symbols (`$x$ in mm`),
+  the contour-scan figures regenerated with them.
+- **Figure rules, second round (user, 2026-10-13 evening)**: ten line styles and markers in
+  the house cycle (`LINE_STYLES`, `MARKERS`, the colours continue into the TUM extended
+  palette), so nine series never repeat a style; degrees of orientation and utilisation over
+  a geometry in the perceptually uniform multi-hue map `DEGREE_COLOURMAP` (viridis) instead
+  of the pale single-hue blue (`schnitt`, `breite`, `vollrad`, the Stommel fillet map); no
+  titles inside the SVGs, every figure script writes its captions to `bildunterschriften.md`
+  beside the figures (`FIGURES_WITHOUT_TITLES`), panel labels stay; the whole-wheel section
+  gets a window of five teeth (`vollrad_ausschnitt`).
+- **Figure rules (user, 2026-10-13 afternoon)**: a folder with a selection of positions (the
+  pilots at A to E) is drawn as markers without a line, because a line between computed
+  points suggests maxima that were never computed (`fe_series_analysis.py` both comparison
+  figures, `fe_body_comparison.py`); legends and titles name what a reader at the institute
+  understands instead of "Serie" and "Referenz": body, layer division and pinion tip edge from
+  the manifest (`describe`), the material steps as "W1 linear-elastisch, isotrop" and so on,
+  the rates by their strain rate (`RATE_LABELS`); the Stommel curves name the two nodes by
+  their role (largest cyclic and largest static utilisation, zone and place) and carry the
+  points A to E as vertical lines like every other path figure.
+- **Plot style (user, 2026-10-13)**: series lines 0,9 pt instead of 1,2 pt and markers 3 pt
+  instead of 3,5 pt (`SERIES_LINE_WIDTH_PT`, `SERIES_MARKER_SIZE_PT`); the scripts no longer
+  override the marker and line-style cycle (`fe_series_analysis.py`), category figures take
+  their markers from `MARKERS` in order (`fibre_orientation.py`); the Stommel runs and the
+  series analyses regenerated with the style.
+- The night run of 2026-10-12 (pocket body and ring on pocket levels, A to E, W1 to W4 at
+  QS/DY1/DY2) evaluated: both folders complete (60 of 60 jobs each), analyses against the
+  ring series in their `analyse/` folders.
+
+### Added (FE: fibre orientation of the moulding simulation against the CT zones of FVA 856 I, 2026-10-13, ADR-119)
+- **`gearcore.fe.fibre`**: the orientation tensor of an element from the CONVERSE fibre frame
+  and the nodal states a_11, a_22; volumes of trilinear hexahedra (2 × 2 × 2 Gauss, exact);
+  volume-weighted zone tensor, sorted eigenvalues, the anisotropy index of FVA 856 I (Eq. (1),
+  traced), the preferred direction in the transverse plane and its tilt out of the plane, the
+  diagonal in the tooth frame, the zone names of the report (surface, transition, inner zones,
+  left and right) and the thirds of the face width; the eigenvalues and angles of Bild 17 and
+  Bild 18 transcribed as constants. `deck.read_node_coordinates` and `deck.read_sets` (node and
+  element sets, GENERATE expanded). Source `FVA856-I:2022` registered. Tests
+  (`test_fe_fibre.py`).
+- **`scripts/fibre_orientation.py`**: zones of a tooth from the mesh sets and depth bands,
+  tables (zones against the CT, directions against Bild 18, thirds against Bild 23) and the
+  figures in the house style (`schnitt`, `zonen`, `vergleich`, `drittel`, `breite`) into
+  `80_output/fe/faserorientierung`; run for T3 with the QS card and three band depths.
+  Findings in ADR-119 and roadmap S10; known limits FIB-01 to FIB-03.
+
 ### Added (FE: the weekend series evaluated, `fe_series_analysis.py`, 2026-10-12 evening, ADR-116 item 47)
 - **`scripts/fe_series_analysis.py`**: the analysis of a computed series folder beyond the path
   report: the run (jobs, wall times from the runner's UTF-16 log, broken-off jobs with the

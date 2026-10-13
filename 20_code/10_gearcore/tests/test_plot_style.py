@@ -102,10 +102,12 @@ def test_apply_without_the_tum_files_falls_back_and_warns(tmp_path: Path) -> Non
     assert matplotlib.rcParams["mathtext.rm"] == sheet.math_family
     assert matplotlib.rcParams["mathtext.it"] == f"{sheet.math_family}:italic"
     cycle = list(matplotlib.rcParams["axes.prop_cycle"])
-    assert len(cycle) == 8 and cycle[0]["color"] == "#003359"
-    assert len({str(entry["linestyle"]) for entry in cycle}) == 8
-    assert len({entry["marker"] for entry in cycle}) == 8
-    assert matplotlib.rcParams["lines.linewidth"] == 1.2
+    assert len(cycle) == 10 and cycle[0]["color"] == "#003359"
+    assert len({str(entry["linestyle"]) for entry in cycle}) == 10
+    assert len({entry["marker"] for entry in cycle}) == 10
+    assert len({entry["color"] for entry in cycle}) == 10
+    assert matplotlib.rcParams["lines.linewidth"] == plot_style.SERIES_LINE_WIDTH_PT == 0.9
+    assert matplotlib.rcParams["lines.markersize"] == plot_style.SERIES_MARKER_SIZE_PT == 3.0
     assert matplotlib.rcParams["axes.linewidth"] == 0.6
     assert matplotlib.rcParams["grid.linewidth"] == 0.3
     assert matplotlib.rcParams["grid.color"] == "#cccccc"

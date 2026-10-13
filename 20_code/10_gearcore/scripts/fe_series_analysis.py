@@ -51,11 +51,37 @@ MSG_NODE = re.compile(r"NODE WHEEL-1\.(\d+) OF CONTACT PAIR")
 MSG_TAIL_LINES = 400
 STEP_LABELS = {"LOAD_8NM": "8 Nm", "LOAD_12NM": "12 Nm", "LOAD_16NM": "16 Nm"}
 SERIES_LABELS = {
-    "W1": "W1 linear isotrop",
-    "W2": "W2 plastisch isotrop",
-    "W3": "W3 linear anisotrop",
-    "W4": "W4 plastisch anisotrop",
+    "W1": "W1 linear-elastisch, isotrop",
+    "W2": "W2 elastisch-plastisch, isotrop",
+    "W3": "W3 linear-elastisch, anisotrop",
+    "W4": "W4 elastisch-plastisch, anisotrop",
 }
+"""The material steps as a reader of the thesis knows them (ADR-116: W1 to W4)."""
+RATE_LABELS = {"QS": "quasistatisch", "DY1": "Dehnrate 3 s$^{-1}$", "DY2": "Dehnrate 60 s$^{-1}$"}
+"""The CONVERSE rate cards by their test speed (the cards of the user, ADR-116 item 44)."""
+BODY_LABELS = {"ring": "Ringkörper", "pocket": "Taschenkörper"}
+
+
+def rate_text(series: str) -> str:
+    """``'W3_DY1'`` -> ``'Dehnrate 3 s⁻¹'``; the code itself for an unknown rate."""
+    rate = rate_of(series)
+    return RATE_LABELS.get(rate, rate)
+
+
+def describe(manifest: Mapping[str, Any]) -> str:
+    """What a folder is, for a legend: body, the layer division when borrowed from the pocket
+    body, and the pinion tip edge (``'Taschenkörper, Kopfkante r = 0,10 mm'``)."""
+    mesh = manifest.get("wheel_mesh", {})
+    body = mesh.get("body", "ring")
+    shape = str(body.get("shape", "ring")) if isinstance(body, dict) else str(body)
+    text = BODY_LABELS.get(shape, shape)
+    if shape == "ring" and mesh.get("levels") == "pocket":
+        text += " (Schichtung des Taschenkörpers)"
+    edge = manifest.get("pinion_surface", {}).get("tip_rounding_mm")
+    text += f", Kopfkante r = {_g(float(edge), 2)} mm" if edge else ", Kopfkante scharf"
+    return text
+
+
 COMPARISONS: tuple[tuple[str, str, str], ...] = (
     ("W1", "W3", "Anisotropie (linear)"),
     ("W1", "W2", "Plastizität (isotrop)"),
@@ -380,6 +406,13 @@ def read_stommel(label: str, folder: Path) -> list[StommelSummary]:
 # --- figures ---------------------------------------------------------------------------------------
 
 
+def _line_style(full: bool) -> dict[str, str]:
+    """The house line for a full grid; markers only for a selection of positions, where the
+    course between the points is not computed and a line would suggest maxima that are none
+    (user, 2026-10-13)."""
+    return {} if full else {"linestyle": "none"}
+
+
 def figure_series_comparison(
     by_series: Mapping[str, Sequence[ev.PathPoint]],
     step: str,
@@ -387,8 +420,12 @@ def figure_series_comparison(
     named: Sequence[tuple[float, str]],
     stem: Path,
     title: str,
+    steps_per_pitch: int = 0,
+    pitch_mm: float = 0.0,
 ) -> list[Path]:
-    """The five global quantities over the path, one line per series."""
+    """The five global quantities over the path, one line per series; a series that holds a
+    selection of positions only (the pilots at A to E) gets markers without a line, because
+    the course between its points is not computed (user, 2026-10-13)."""
     fig, axes = new_figure("full", 1.35, rows=5, sharex=True)
     several_rates = len({rate_of(s) for s in by_series}) > 1
     labels = [
@@ -408,10 +445,9 @@ def figure_series_comparison(
             ax.plot(
                 [x for x, _ in data],
                 [v * scale for _, v in data],
-                linestyle="-",
-                markersize=2.0,
                 label=SERIES_LABELS.get(step_of(series), series)
-                + (f" ({rate_of(series)})" if several_rates else ""),
+                + (f", {rate_text(series)}" if several_rates else ""),
+                **_line_style(is_full_grid(points, steps_per_pitch, pitch_mm)),
             )
         ax.set_ylabel(ylabel)
         for x, _ in named:
@@ -420,7 +456,7 @@ def figure_series_comparison(
     for x, label in named:
         axes[0].text(x, axes[0].get_ylim()[1], label, ha="center", va="bottom")
     axes[-1].set_xlabel("Wälzweg ab A in mm")
-    fig.suptitle(title)
+    del title  # the caption goes to bildunterschriften.md, not into the SVG
     pictures = save_figure(fig, stem)
     plt.close(fig)
     return list(pictures)
@@ -435,10 +471,15 @@ def figure_reference_comparison(
     stem: Path,
     labels: tuple[str, str],
     title: str,
+    own_full: bool = True,
+    ref_full: bool = True,
 ) -> list[Path]:
     """Rotation, root stress, contact pressure and the edge-tooth force of the folder against
-    the reference folder (sharp against rounded pinion edge)."""
+    the reference folder (sharp against rounded pinion edge); a folder with a selection of
+    positions (``own_full`` or ``ref_full`` False) gets markers without a line."""
     fig, axes = new_figure("full", 1.2, rows=4, sharex=True)
+    own_style = _line_style(own_full)
+    ref_style = _line_style(ref_full)
     rows = [
         (
             r"Verdrehweg $\varphi_1 \, r_{\mathrm{b1}}$ in µm",
@@ -449,21 +490,19 @@ def figure_reference_comparison(
         ("CPRESS max in MPa", "p_max", 1.0),
     ]
     for ax, (ylabel, quantity, scale) in zip(axes[:3], rows, strict=True):
-        for points, label in ((reference_points, labels[1]), (series_points, labels[0])):
+        for points, label, style in (
+            (reference_points, labels[1], ref_style),
+            (series_points, labels[0], own_style),
+        ):
             data = ev.curve(points, step, quantity)
-            ax.plot(
-                [x for x, _ in data],
-                [v * scale for _, v in data],
-                linestyle="-",
-                markersize=2.0,
-                label=label,
-            )
+            ax.plot([x for x, _ in data], [v * scale for _, v in data], label=label, **style)
         ax.set_ylabel(ylabel)
-    for points, label in ((reference_points, labels[1]), (series_points, labels[0])):
+    for points, label, style in (
+        (reference_points, labels[1], ref_style),
+        (series_points, labels[0], own_style),
+    ):
         data = edge_tooth_force(points, step)
-        axes[3].plot(
-            [x for x, _ in data], [v for _, v in data], linestyle="-", markersize=2.0, label=label
-        )
+        axes[3].plot([x for x, _ in data], [v for _, v in data], label=label, **style)
     axes[3].set_ylabel("Kraft des Nebenzahns in N")
     legend_outside(fig, axes[0], where="bottom")
     for ax in axes:
@@ -472,7 +511,7 @@ def figure_reference_comparison(
     for x, label in named:
         axes[0].text(x, axes[0].get_ylim()[1], label, ha="center", va="bottom")
     axes[-1].set_xlabel("Wälzweg ab A in mm")
-    fig.suptitle(title)
+    del title  # the caption goes to bildunterschriften.md, not into the SVG
     pictures = save_figure(fig, stem)
     plt.close(fig)
     return list(pictures)
@@ -507,7 +546,15 @@ def analyse(
     first_series = next(iter(by_series.values()), [])
     named = [(p.from_a_mm, p.label) for p in first_series if p.label]
     grid = manifest.get("grid", {})
+    if not isinstance(grid.get("path_of_contact_mm"), int | float) or not isinstance(
+        grid.get("transverse_base_pitch_mm"), int | float
+    ):
+        raise InputRangeError("the manifest's grid names no path of contact or base pitch")
+    path_mm = float(grid["path_of_contact_mm"])
+    pitch_mm = float(grid["transverse_base_pitch_mm"])
+    steps_per_pitch = int(grid.get("steps_per_pitch") or 0)
     lines: list[str] = []
+    captions: list[str] = []
     doc: list[str] = [f"# Analyse der Serie {folder.name}", ""]
     doc.append(
         f"Ordner mit {len(manifest.get('positions', []))} Stellungsdateien, Serien "
@@ -592,19 +639,35 @@ def analyse(
     doc.extend(["## 2 Lastverlauf je Werkstoffstufe", ""])
     doc.append(
         "Die Kurven je Serie und Schritt liegen als `path_<Serie>_<Schritt>` im Ordner; hier die "
-        "Serien übereinander (Bilder `vergleich_stufen_<Schritt>`) und die Maxima mit Ort."
+        "Werkstoffstufen einer Rate übereinander (Bilder `vergleich_stufen_<Schritt>[_<Rate>]`) "
+        "und die Maxima mit Ort; eine Auswahl von Stellungen steht als Marker ohne Linie."
     )
     doc.append("")
+    rates_present = sorted({rate_of(s) for s in by_series})
     for step in steps:
-        pictures = figure_series_comparison(
-            by_series,
-            step,
-            r_b1,
-            named,
-            out / f"vergleich_stufen_{step}",
-            f"Werkstoffstufen bei {STEP_LABELS.get(step, step)}",
-        )
-        lines.append(f"{step}: " + ", ".join(p.name for p in pictures))
+        # one figure per rate: four material steps per figure, never more series than the
+        # house cycle has markers
+        for rate in rates_present:
+            of_rate = {s: pts for s, pts in by_series.items() if rate_of(s) == rate}
+            suffix = f"_{rate}" if len(rates_present) > 1 else ""
+            pictures = figure_series_comparison(
+                of_rate,
+                step,
+                r_b1,
+                named,
+                out / f"vergleich_stufen_{step}{suffix}",
+                f"{describe(manifest)}, {RATE_LABELS.get(rate, rate)}, "
+                f"{STEP_LABELS.get(step, step)}",
+                steps_per_pitch=steps_per_pitch,
+                pitch_mm=pitch_mm,
+            )
+            lines.append(f"{step}{suffix}: " + ", ".join(p.name for p in pictures))
+            captions.append(
+                f"- `vergleich_stufen_{step}{suffix}`: Werkstoffstufen W1 bis W4 über dem Wälzweg, "
+                f"{describe(manifest)}, {RATE_LABELS.get(rate, rate)}, {STEP_LABELS.get(step, step)}: "
+                "Verdrehweg, Kopfverschiebung, größter Kontaktdruck und die Fußspannungen σ1 und |σ3| "
+                "als Größtwerte über die Zahnbreite; senkrechte Linien an den Normpunkten A bis E."
+            )
         rows = []
         for quantity, label, unit, scale in GLOBAL_QUANTITIES:
             for series, points in by_series.items():
@@ -683,12 +746,6 @@ def analyse(
 
     # 4 extended contact and the margin
     doc.extend(["## 4 Verlängerter Eingriff und Rand des Gitters", ""])
-    if not isinstance(grid.get("path_of_contact_mm"), int | float) or not isinstance(
-        grid.get("transverse_base_pitch_mm"), int | float
-    ):
-        raise InputRangeError("the manifest's grid names no path of contact or base pitch")
-    path_mm = float(grid["path_of_contact_mm"])
-    pitch_mm = float(grid["transverse_base_pitch_mm"])
     doc.append(
         f"Erste und letzte Stellung, an der der mittlere Zahn des Sektors mehr als "
         f"{_g(FORCE_THRESHOLD_N, 0)} N trägt, gegen den theoretischen Eingriff von A (0) bis E "
@@ -749,18 +806,23 @@ def analyse(
         def edge_text(value: float | None) -> str:
             # a manifest written before the rounding existed names none: sharp as the drawing
             return (
-                f"Ritzelkante {_g(value, 2)} mm"
+                f"Ritzelkopfkante r = {_g(value, 2)} mm"
                 if value is not None
-                else "Ritzelkante scharf (nicht im Manifest)"
+                else "Ritzelkopfkante scharf (keine Rundung im Manifest)"
             )
 
-        labels = (f"Serie, {edge_text(own_edge)}", f"Referenz, {edge_text(ref_edge)}")
+        labels = (describe(manifest), describe(ref_manifest))
+        if labels[0] == labels[1]:
+            # the same body and edge in both folders: the folder names tell them apart
+            labels = (f"{labels[0]} ({folder.name})", f"{labels[1]} ({reference.name})")
         doc.extend([f"## 5 Vergleich mit {reference.name}", ""])
         pairs = common_positions(by_series[own_name], ref_series[ref_name])
         doc.append(
-            f"Serie {own_name} gegen {ref_name} der Referenz an {len(pairs)} gemeinsamen Stellungen "
-            f"(Serie: {edge_text(own_edge)}; Referenz: {edge_text(ref_edge)}); Bilder "
-            "`vergleich_referenz_<Schritt>`."
+            f"Dieser Ordner ({describe(manifest)}, Serie {own_name}) gegen den Referenzordner "
+            f"{reference.name} ({describe(ref_manifest)}, Serie {ref_name}) an {len(pairs)} "
+            f"gemeinsamen Stellungen; {edge_text(own_edge)} gegen {edge_text(ref_edge)}. Bilder "
+            "`vergleich_referenz_<Schritt>`; ein Ordner mit einer Auswahl von Stellungen steht "
+            "dort als Marker ohne Linie, weil der Verlauf dazwischen nicht gerechnet ist."
         )
         doc.append("")
         for step in steps:
@@ -772,10 +834,23 @@ def analyse(
                 named,
                 out / f"vergleich_referenz_{step}",
                 labels,
-                f"{STEP_LABELS.get(step, step)}: Ritzelkante {_g(own_edge, 2)} gegen "
-                f"{_g(ref_edge, 2)} mm",
+                f"{SERIES_LABELS.get(step_of(own_name), own_name)}, {rate_text(own_name)}, "
+                f"{STEP_LABELS.get(step, step)}",
+                own_full=is_full_grid(by_series[own_name], steps_per_pitch, pitch_mm),
+                ref_full=is_full_grid(
+                    ref_series[ref_name],
+                    # an older reference without a grid block: judged by this folder's grid
+                    int(ref_manifest.get("grid", {}).get("steps_per_pitch") or steps_per_pitch),
+                    float(ref_manifest.get("grid", {}).get("transverse_base_pitch_mm") or pitch_mm),
+                ),
             )
             lines.append(f"{step}: " + ", ".join(p.name for p in pictures))
+            captions.append(
+                f"- `vergleich_referenz_{step}`: {labels[0]} gegen {labels[1]} über dem Wälzweg, "
+                f"{SERIES_LABELS.get(step_of(own_name), own_name)}, {rate_text(own_name)}, "
+                f"{STEP_LABELS.get(step, step)}: Verdrehweg, Fußspannung σ1, größter Kontaktdruck und "
+                "die Kraft des Nebenzahns; eine Auswahl von Stellungen als Marker ohne Linie."
+            )
             rows = []
             for quantity, label, unit, scale in GLOBAL_QUANTITIES:
                 own_at = values_at_points([p for p, _ in pairs], step, quantity)
@@ -834,9 +909,8 @@ def analyse(
             doc.append("")
 
     # 6 resolution
-    steps_per_pitch = grid.get("steps_per_pitch")
     base_pitch = grid.get("transverse_base_pitch_mm")
-    if not (isinstance(steps_per_pitch, int) and isinstance(base_pitch, int | float)):
+    if not (steps_per_pitch >= 1 and isinstance(base_pitch, int | float)):
         doc.extend(
             ["## 6 Auflösung des Gitters", "", "Kein Gitter im Manifest, keine Teilgitter.", ""]
         )
@@ -1026,6 +1100,9 @@ def analyse(
                     doc.append("")
 
     (out / "analyse.md").write_text("\n".join(doc) + "\n", encoding="utf-8")
+    (out / "bildunterschriften.md").write_text(
+        "\n".join(["# Bildunterschriften", "", *captions, ""]), encoding="utf-8"
+    )
     lines.append((out / "analyse.md").as_posix())
     return lines
 

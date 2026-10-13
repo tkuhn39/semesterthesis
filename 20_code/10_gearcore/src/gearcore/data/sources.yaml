@@ -343,6 +343,16 @@ sources:
     file: "00_literatur/07_themis/KR_604_II_AB_1176.pdf"
     verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
     confirmed_by_user: true
+  FVA856-I:2022:
+    type: report
+    title: "Auslegung spritzgegossener Kunststoffzahnräder. Forschungsvorhaben Nr. 856 I, Abschlussbericht (Arbeitskreis Kunststoffe)"
+    publisher: "Forschungsvereinigung Antriebstechnik e.V., Frankfurt"
+    series: "FVA-Heft 1491"
+    year: 2022
+    file: "00_literatur/07_themis/KST_856_I_AB_1491.pdf"
+    verified: { method: pdf-header, by: "claude/rendered title page", date: "2026-10-13" }
+    confirmed_by_user: true
+    note: "placed and named by the user on 2026-10-13 (chapters 6.2 and 6.3: CT fibre orientation of the gear, zone eigenvalues and anisotropy index); page numbers cited are the printed ones (PDF page = printed + 13)"
   STplus-Manual:11.1F:
     type: manual
     title: "Programmanleitung FVA-Stirnradprogramm STplus 11.1F (Rothemund, M.; Otto, M.; FZG, TU München)"

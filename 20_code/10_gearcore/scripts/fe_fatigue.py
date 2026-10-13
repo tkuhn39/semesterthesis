@@ -40,7 +40,7 @@ import argparse
 import csv
 import json
 import math
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -55,8 +55,8 @@ from gearcore.fatigue import materials as mt
 from gearcore.fatigue import stommel as st
 from gearcore.fe import stress as sf
 from gearcore.io.matscape import StressStrainCurve
-from gearcore.plot_style import apply as apply_plot_style
 from gearcore.plot_style import (
+    DEGREE_COLOURMAP,
     caption,
     decimal_comma,
     figure_size,
@@ -64,6 +64,7 @@ from gearcore.plot_style import (
     legend_outside,
     new_figure,
 )
+from gearcore.plot_style import apply as apply_plot_style
 from gearcore.plot_style import save as save_figure
 
 REPO = Path(__file__).resolve().parents[3]
@@ -130,6 +131,43 @@ def _zones(file: sf.StressFile) -> list[str]:
 
 def _fillet_of(zone: str) -> str | None:
     return zone.removeprefix("fillet ") if zone.startswith("fillet ") else None
+
+
+MATERIAL_STEP_TEXT = {
+    "W1": "W1 linear-elastisch, isotrop",
+    "W2": "W2 elastisch-plastisch, isotrop",
+    "W3": "W3 linear-elastisch, anisotrop",
+    "W4": "W4 elastisch-plastisch, anisotrop",
+}
+RATE_TEXT = {"QS": "quasistatisch", "DY1": "Dehnrate 3 s$^{-1}$", "DY2": "Dehnrate 60 s$^{-1}$"}
+STEP_TEXT = {"LOAD_8NM": "8 Nm", "LOAD_12NM": "12 Nm", "LOAD_16NM": "16 Nm"}
+
+
+def _zone_text(zone: str) -> str:
+    """The zone of a node in the words of the figures: ``'fillet T3_T4'`` -> ``'Fußrundung
+    T3/T4'``, ``'T3 head'`` -> ``'Zahnkopf T3'``, ``'rim'`` (the remainder label of ``_zones``:
+    every node outside the fillet, head and surface sets, FE-22) -> ``'ohne Satz'``."""
+    if zone.startswith("fillet "):
+        return "Fußrundung " + zone.removeprefix("fillet ").replace("_", "/")
+    if zone.endswith(" head"):
+        return "Zahnkopf " + zone.removesuffix(" head")
+    if zone == "rim":
+        return "ohne Satz (Flanke oder Körper)"
+    if zone == "TEETH nodes":
+        return "Zahnoberfläche"
+    return zone
+
+
+def _series_title(series: str | None, step: str) -> str:
+    """``'W2_QS', 'LOAD_8NM'`` -> ``'W2 elastisch-plastisch, isotrop, quasistatisch, 8 Nm'``."""
+    parts: list[str] = []
+    if series:
+        material, _, rate = series.partition("_")
+        parts.append(MATERIAL_STEP_TEXT.get(material, material))
+        if rate:
+            parts.append(RATE_TEXT.get(rate, rate))
+    parts.append(STEP_TEXT.get(step, step))
+    return ", ".join(parts)
 
 
 def _row(
@@ -295,13 +333,12 @@ def _fillet_map(
     values = result.cyclic.a_B_V[index]
     figure, axes = new_figure("full", 0.45)
     scatter = axes.scatter(
-        angle, coordinates[:, 2], c=values, s=9, cmap="Blues", marker="s", linewidths=0
+        angle, coordinates[:, 2], c=values, s=9, cmap=DEGREE_COLOURMAP, marker="s", linewidths=0
     )
     bar = figure.colorbar(scatter, ax=axes, pad=0.02)
     bar.set_label("$a_{\\mathrm{B,V}}$")
     axes.set_xlabel("Winkel um die Radachse in °")
     axes.set_ylabel("$z$ in mm")
-    axes.set_title(f"Fußrundung {fillet}, {step}")
     decimal_comma(axes)
     return save_figure(figure, stem)
 
@@ -315,13 +352,20 @@ def _position_curves(
     series: str | None,
     nodes: Sequence[int],
     stem: Path,
+    roles: Mapping[int, str] | None = None,
 ) -> list[Path]:
-    """σ_V and the signed von Mises stress of the given nodes over the positions."""
+    """σ_V and the signed von Mises stress of the given nodes over the positions; ``roles``
+    names what each node is in the legend (its check, zone and place), the named points A to
+    E of the path stand as vertical lines."""
     positions = [
         p for p in sf.positions_with_stress(manifest, folder, series) if p.path is not None
     ]
     if not positions or not nodes:
         return []
+    named = sorted(
+        {(p.point.from_a_mm, p.point.label) for p in positions if p.point.label},
+        key=lambda item: item[0],
+    )
     first = sf.read_stress_file(positions[0].path)  # type: ignore[arg-type]
     rows = first.index_of(nodes)
     from_a: list[float] = []
@@ -350,12 +394,18 @@ def _position_curves(
     sv = np.array(sigma_v)
     sg = np.array(signed)
     for j, node in enumerate(nodes):
-        top.plot(from_a, sv[:, j], label=f"Knoten {node}")
-        bottom.plot(from_a, sg[:, j], label=f"Knoten {node}")
+        label = f"Knoten {node}" + (f": {roles[node]}" if roles and node in roles else "")
+        top.plot(from_a, sv[:, j], label=label)
+        bottom.plot(from_a, sg[:, j], label=label)
+    for ax in (top, bottom):
+        for x, _label in named:
+            ax.axvline(x, color=SHEET.colour("tum_grau_50"), linewidth=0.6)
+    for x, label in named:
+        top.text(x, top.get_ylim()[1], label, ha="center", va="bottom")
     top.set_ylabel("$\\sigma_{\\mathrm{V}}$ in MPa")
     bottom.set_ylabel("$\\sigma_{\\mathrm{V,Mises}}\\,\\mathrm{sgn}\\,I_1$ in MPa")
-    bottom.set_xlabel("Weg auf der Eingriffsstrecke ab A in mm")
-    legend_outside(figure, top)
+    bottom.set_xlabel("Wälzweg ab A in mm")
+    legend_outside(figure, top, where="bottom", ncol=1)
     decimal_comma(top)
     decimal_comma(bottom)
     return save_figure(figure, stem)
@@ -1471,6 +1521,7 @@ def _anisotropy_lines(built: an.NodalAnisotropy, cof: Path) -> list[str]:
 def run_stommel(args: argparse.Namespace) -> None:
     folder: Path = args.folder.resolve()
     manifest = _manifest(folder)
+    figure_captions: list[str] = []
     material = mt.load_material(args.material)
     reduction_class = args.reduction_class
     if args.equivalent == "hill" and reduction_class is None:
@@ -1615,7 +1666,35 @@ def run_stommel(args: argparse.Namespace) -> None:
             fillet = _fillet_of(critical["zone"])
             if fillet is not None:
                 _fillet_map(result, file, zones, fillet, out / f"karte_{step}_{fillet}", step)
+                figure_captions.append(
+                    f"- `karte_{step}_{fillet}`: zyklische Auslastung a_B,V über der Fußrundung "
+                    f"{fillet.replace('_', '/')} (Winkel um die Radachse über der Zahnbreite), "
+                    f"{_series_title(series, step)}."
+                )
+            figure_captions.append(
+                f"- `verlauf_{step}`: Vergleichsspannung σ_V und vorzeichenbehaftete von-Mises-"
+                "Spannung der beiden kritischen Knoten (größte zyklische und größte statische "
+                f"Auslastung) über dem Wälzweg, {_series_title(series, step)}; senkrechte Linien "
+                "an den Normpunkten A bis E."
+            )
             nodes = [critical["node"], by_static[0]["node"]]
+            # legend text per node: its role(s) on the first line, its place on the second
+            whats: dict[int, list[str]] = {}
+            places: dict[int, str] = {}
+            for row, what in (
+                (critical, "größte zyklische Auslastung $a_{\\mathrm{B,V}}$"),
+                (by_static[0], "größte statische Auslastung $a_{\\mathrm{stat}}$"),
+            ):
+                node = int(row["node"])
+                whats.setdefault(node, []).append(what)
+                places[node] = (
+                    f"{_zone_text(str(row['zone']))}, r {_g(row['r_mm'], 2)} mm, "
+                    f"z {_g(row['z_mm'], 2)} mm"
+                )
+            roles = {
+                node: " und ".join(what_list) + f"\n({places[node]})"
+                for node, what_list in whats.items()
+            }
             _position_curves(
                 folder,
                 manifest,
@@ -1625,7 +1704,12 @@ def run_stommel(args: argparse.Namespace) -> None:
                 series,
                 sorted(set(nodes)),
                 out / f"verlauf_{step}",
+                roles,
             )
+    if figure_captions:
+        (out / "bildunterschriften.md").write_text(
+            "\n".join(["# Bildunterschriften", "", *figure_captions, ""]), encoding="utf-8"
+        )
     print(f"written to {out}")
 
 
