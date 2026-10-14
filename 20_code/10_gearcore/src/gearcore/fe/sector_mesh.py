@@ -35,6 +35,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from gearcore import contour as ct
+from gearcore import fillet as fl
 from gearcore._safe import integer_input, positive_input
 from gearcore.contour import Role
 from gearcore.errors import GeometryInfeasibleError, InputRangeError, NotSupportedError
@@ -415,6 +416,7 @@ def sector_mesh(
     template: SectorTemplate | None = None,
     counts: MeshCounts | None = None,
     closed: bool = False,
+    fillet: fl.FilletVariant | None = None,
 ) -> SectorMesh:
     """The transverse mesh of ``teeth`` teeth of the gear ``role`` between two shoulder pitches,
     or, with ``closed``, of the full wheel: ``teeth`` must then be the number of teeth of the
@@ -425,6 +427,8 @@ def sector_mesh(
     the rings keep the thickness of the template, scaled with the module. With ``counts`` the
     kept blocks of the template are resampled to those numbers of elements
     (``fe.resample``); the rim then has ``counts.rim_rings`` rings over the kept depth.
+    With ``fillet`` the trochoid of the tooth is replaced by that root fillet variant
+    (``gearcore.fillet.apply``) before the template is mapped onto the contour.
     """
     if not isinstance(generation, GenerationResult):
         raise InputRangeError(
@@ -439,6 +443,8 @@ def sector_mesh(
     count = integer_input(teeth, "number of teeth of the sector")
     rings = integer_input(rim_rings, "number of rim rings")
     contour = ct.tooth_contour(generation, role, points=CONTOUR_POINTS)
+    if fillet is not None:
+        contour = fl.apply(generation, role, fillet, points=CONTOUR_POINTS).contour
     z = contour.number_of_teeth
     if closed:
         if count != z:

@@ -9,6 +9,9 @@ Tests are linked through `@pytest.mark.eq(source, eq)` markers and, as a fallbac
 | ISO21771:2014 | Bild 24 | §6.1.2 p.55 | contour.chamfer_flank | test_adv_3.py, test_contour.py, test_quantities.py | – | ✓ tested |
 | ISO21771:2014 | (40) | §4.7.2 p.35 | contour.involute_flank | test_half_angles_and_arc_thickness_at_any_diameter, test_quantities_at_a_diameter_against_decimal_references[A], test_quantities_at_a_diameter_against_decimal_references[B] | – | ✓ tested |
 | ISO21771:2014 | (17) | §4.3.8 p.30 | contour.involute_flank | test_quantities_at_a_diameter_against_decimal_references[A], test_quantities_at_a_diameter_against_decimal_references[B], test_roll_angle_and_radius_of_curvature_are_consistent | – | ✓ tested |
+| Stommel2018 | (6.16) | §6.2.4 p.357 | fatigue.anisotropy.equivalent_stress_static_hill | test_fatigue_anisotropy.py | – | ✓ tested |
+| Abaqus2025:Hill | Hill potential | §Yield and Creep Stress Ratios | fatigue.anisotropy.hill_constants | – | – | ⚠ untested |
+| Abaqus2025:Hill | Hill potential | §Yield and Creep Stress Ratios | fatigue.anisotropy.hill_equivalent_stress | test_fatigue_anisotropy.py | – | ✓ tested |
 | Stommel2018 | (6.23) | §6.3.4 p.372 | fatigue.stommel.capped_component_fatigue_strength | test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.19) | §6.3.2 p.363 | fatigue.stommel.component_alternating_strength | test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.18) | §6.3 p.360 | fatigue.stommel.component_fatigue_strength | test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
@@ -19,8 +22,8 @@ Tests are linked through `@pytest.mark.eq(source, eq)` markers and, as a fallbac
 | Stommel2018 | (6.25) | §6.3.5 p.374 | fatigue.stommel.cyclic_utilisation_normal_stress | test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
 | Stommel2018 | (6.2) | §6.1.3 p.322 | fatigue.stommel.equivalent_stress | test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.16) | §6.2.4 p.357 | fatigue.stommel.equivalent_stress | test_fatigue_stommel.py | – | ✓ tested |
-| Stommel2018 | (6.16) | §6.2.4 p.357 | fatigue.stommel.equivalent_stress_static | test_fatigue_stommel.py | – | ✓ tested |
-| Stommel2018 | (6.17) | §6.2.4 p.357 | fatigue.stommel.equivalent_stress_static | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.16) | §6.2.4 p.357 | fatigue.stommel.equivalent_stress_static | test_fatigue_anisotropy.py, test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.17) | §6.2.4 p.357 | fatigue.stommel.equivalent_stress_static | test_fatigue_anisotropy.py, test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.22) | §6.3.4 p.371 | fatigue.stommel.fatigue_life_factor | test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.10) | §6.1.5 p.333 | fatigue.stommel.first_stress_invariant | test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.7) | §6.1.4 p.328 | fatigue.stommel.gerber_amplitude | test_fatigue_stommel.py | – | ✓ tested |
@@ -35,8 +38,8 @@ Tests are linked through `@pytest.mark.eq(source, eq)` markers and, as a fallbac
 | Stommel2018 | (6.21) | §6.3.3 p.367 | fatigue.stommel.mean_stress_factor_case_3 | test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.21) | §6.3.3 p.368 | fatigue.stommel.mean_stress_factor_case_4 | test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.21) | §6.3.3 p.368 | fatigue.stommel.mean_stress_sensitivity | test_fatigue_stommel.py | – | ✓ tested |
-| Stommel2018 | (6.3) | §6.1.3 p.325 | fatigue.stommel.mises_stress | test_fatigue_stommel.py | – | ✓ tested |
-| Stommel2018 | (6.17) | §6.2.4 p.357 | fatigue.stommel.mises_stress | test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.3) | §6.1.3 p.325 | fatigue.stommel.mises_stress | test_fatigue_anisotropy.py, test_fatigue_stommel.py | – | ✓ tested |
+| Stommel2018 | (6.17) | §6.2.4 p.357 | fatigue.stommel.mises_stress | test_fatigue_anisotropy.py, test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.8) | §6.1.5 p.332 | fatigue.stommel.mises_stress_plane | test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.9) | §6.1.5 p.332 | fatigue.stommel.mises_stress_plane | test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.12) | §6.1.5 p.335 | fatigue.stommel.modified_manson_mcknight_mean | test_fatigue_stommel.py | – | ✓ tested |
@@ -54,7 +57,7 @@ Tests are linked through `@pytest.mark.eq(source, eq)` markers and, as a fallbac
 | Stommel2018 | (6.26) | §6.3.5 p.374 | fatigue.stommel.single_utilisation | test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.15) | §6.2.4 p.355 | fatigue.stommel.static_utilisation | test_fatigue_stommel.py | – | ✓ tested |
 | Stommel2018 | (6.9) | §6.1.5 p.332 | fatigue.stommel.stress_amplitude | test_fatigue_stommel.py | – | ✓ tested |
-| Stommel2018 | (6.1) | §6.1.2.2 p.313 | fatigue.stommel.utilisation | test_fatigue_check.py, test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
+| Stommel2018 | (6.1) | §6.1.2.2 p.313 | fatigue.stommel.utilisation | test_fatigue_check.py, test_fatigue_slife.py, test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
 | Stommel2018 | (6.22) | §6.3.4 p.371 | fatigue.stommel.woehler_slope_exponent | test_fatigue_stommel.py, test_quantities.py | – | ✓ tested |
 | NiemannWinterHoehnStahl2019 | Tab. 13.1 | §13.2.1 p.372 | fe.convergence.hertz_line_contact | – | – | ⚠ untested |
 | NiemannWinterHoehnStahl2019 | (13.5) | §13.2.3 p.376 | fe.convergence.hertz_line_contact | – | – | ⚠ untested |
@@ -66,7 +69,25 @@ Tests are linked through `@pytest.mark.eq(source, eq)` markers and, as a fallbac
 | DahmenReusken2022 | (10.35) | §10.4 p.528 | fe.convergence.richardson_fit | test_fe_convergence.py | – | ✓ tested |
 | DahmenReusken2022 | (10.36) | §10.4 p.528 | fe.convergence.richardson_fit | test_fe_convergence.py | – | ✓ tested |
 | Bathe1996 | (4.102) | §4.3.5 p.247 | fe.convergence.richardson_fit | test_fe_convergence.py | – | ✓ tested |
+| Abaqus2025:LinearElastic | stability | §Defining Orthotropic Elasticity by Specifying the Engineering Constants | fe.deck.orthotropic_stability | test_fe_deck_elastic_constants.py | – | ✓ tested |
+| FVA856-I:2022 | (1) | §6.2.1.2 p.17 | fe.fibre.anisotropy_index | test_fe_fibre.py | – | ✓ tested |
 | ISO21771:2014 | 5.4.3 B, D | §5.4.3 p.45 | fe.placement.single_contact_points | test_fe_placement.py | – | ✓ tested |
+| DE102013004861B3:2014 | Anspruch 8 | p.10 | fillet.bezier_control_distance | test_fillet.py | – | ✓ tested |
+| RothOpferkuch2017 | (1) | §3.1 | fillet.bezier_points | test_fillet.py | – | ✓ tested |
+| DE102008045318B3:2009 | (Gl. 18) to (Gl. 21) | p.6 | fillet.bionic_circle | test_fillet.py | – | ✓ tested |
+| DE102008045318B3:2009 | Anspruch 5 | p.9 | fillet.bionic_root_angle | test_fillet.py | – | ✓ tested |
+| DE102008045318B3:2009 | (Gl. 12) to (Gl. 14) | p.5 | fillet.bionic_tangent_function | test_fillet.py | – | ✓ tested |
+| Fruehe2012 | (91) | §5.4.1 p.96 | fillet.ellipse_arc | test_fillet.py | – | ✓ tested |
+| Fruehe2012 | (90) | §5.4.1 p.96 | fillet.ellipse_arc | test_fillet.py | – | ✓ tested |
+| Fruehe2012 | (100) | §5.4.1 p.98 | fillet.ellipse_major_axis | – | – | ⚠ untested |
+| Fruehe2012 | (99) | §5.4.1 p.98 | fillet.ellipse_major_axis | – | – | ⚠ untested |
+| Fruehe2012 | (98) | §5.4.1 p.97 | fillet.ellipse_major_axis | – | – | ⚠ untested |
+| Fruehe2012 | (97) | §5.4.1 p.97 | fillet.ellipse_major_axis | – | – | ⚠ untested |
+| Fruehe2012 | (96) | §5.4.1 p.97 | fillet.ellipse_slope_at_root | test_fillet.py | – | ✓ tested |
+| Fruehe2012 | (95) | §5.4.1 p.97 | fillet.ellipse_slope_at_root_form | test_fillet.py | – | ✓ tested |
+| Fruehe2012 | (93) | §5.4.1 p.97 | fillet.ellipse_x_of_slope | test_fillet.py | – | ✓ tested |
+| Fruehe2012 | (89) | §5.4.1 p.95 | fillet.ellipse_x_star | – | – | ⚠ untested |
+| Fruehe2012 | (94) | §5.4.1 p.97 | fillet.ellipse_y_of_slope | test_fillet.py | – | ✓ tested |
 | ISO21771:2014 | (36) | §4.6.2 p.34 | generation.addendum | test_heights[H], test_heights[K], test_heights[L], test_heights[S] | – | ✓ tested |
 | ISO21771:2014 | (37) | §4.6.2 p.34 | generation.dedendum | test_heights[H], test_heights[K], test_heights[L], test_heights[S] | – | ✓ tested |
 | ISO21771:2014 | (19) | §4.3.10 p.31 | generation.edge_break_base_diameter | test_base_diameter_matches_worked_example[pinion], test_base_diameter_matches_worked_example[wheel], test_basic_geometry_against_decimal_references[A], test_basic_geometry_against_decimal_references[B] | – | ✓ tested |

@@ -377,6 +377,11 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `single_utilisation` | a_sigma | - | Einzelauslastungsgrade | Stommel2018, §6.3.5 Gl. (6.25), p. 374 | – | Inkrement 4 | verified |
 | `hill_equivalent_stress` | sigma_V_Hill | MPa | Hill-Vergleichsspannung (quadratisches Hill-Potential im Faserkoordinatensystem) | Abaqus2025:Hill, Hill Anisotropic Yield/Creep, Yield and Creep Stress Ratios | – | Inkrement 4 | verified |
 | `hill_stress_ratio` | R_ij | - | Fließspannungsverhältnis nach Hill (R_11, R_22, R_33, R_12, R_13, R_23 der Materialkarte) | Abaqus2025:Hill, Hill Anisotropic Yield/Creep, Yield and Creep Stress Ratios | – | Inkrement 4 | verified |
+| `fillet_ellipse_inclination` | gamma | deg | Neigung der Ellipse | Fruehe2012, Formelzeichen; Abschnitt 5.4.1, S. 94 bis 98, Abbildung 42 bis 44, Gl. (89), (95), (96) | – | Inkrement 4 | verified |
+| `fillet_ellipse_axis_ratio` | a/b | - | Ellipsen-Hauptachsenverhältnis | Fruehe2012, Formelzeichen; Abschnitt 5.4.1, S. 94 bis 98, Gl. (93), (94), (100) | – | Inkrement 4 | verified |
+| `bezier_control_factor` | f | - | Faktor f | DE102013004861B3:2014, Anspruch 8 und 9, S. 10; [0020], S. 4 | – | Inkrement 4 | verified |
+| `bionic_root_angle` | phi | deg | Steigungswinkel der Tangensfunktion am Schnittpunkt mit der Symmetrieachse | DE102008045318B3:2009, [0023] und [0026] Randbedingung (2), S. 4; Anspruch 2 bis 5, S. 9 | – | Inkrement 4 | verified |
+| `bionic_circle_radius` | r | mm | Radius der Kreisbahn | DE102008045318B3:2009, Anspruch 7 bis 10, S. 9; [0028], S. 4; [0050], S. 7 | – | Inkrement 4 | verified |
 
 ## STplus 11.1F
 
@@ -829,3 +834,8 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 - `single_utilisation` (a_sigma): Gedruckt a_sigma,i mit i Index der Hauptspannungen; Gl. (6.26): sigma_a,i / sigma_B. Programmnamen a_sigma_1 bis a_sigma_3.
 - `hill_equivalent_stress` (sigma_V_Hill): Hill-Vergleichsspannung (quadratisches Hill-Potential im Faserkoordinatensystem), eigene Erweiterung E7: ersetzt sigma_V_Mises in Gl. (6.2) und (6.16); mit q = 0 ist sigma_V = sigma_V_Hill; R_ij der CONVERSE-Karte je Orientierungszustand des Knotens. Quelle: Abaqus2025:Hill, Hill Anisotropic Yield/Creep.
 - `hill_stress_ratio` (R_ij): Fließspannungsverhältnis nach Hill (R_11, R_22, R_33, R_12, R_13, R_23 der Materialkarte), bezogen auf die Referenzfließspannung der 0°-Probe, die Schubverhältnisse auf sigma_0/sqrt(3); je Orientierungszustand (a_11, a_22) und Temperatur in der Karte tabelliert. Quelle: Abaqus2025:Hill.
+- `fillet_ellipse_inclination` (gamma): Neigung der Hauptachse a der Zahnfußellipse gegen die radiale Richtung des Zahns, zur Zahnmitte hin (Frühe: 0° bis 45°, Optimum der Parameterstudie 30°, Abschnitt 5.4.2). Fußrundungsvariante ellipse (gearcore.fillet).
+- `fillet_ellipse_axis_ratio` (a/b): Verhältnis der Hauptachsen a und b der Zahnfußellipse (Frühe: 2,0 bis 4,25, Optimum 3,0, Abschnitt 5.4.2). Fußrundungsvariante ellipse (gearcore.fillet).
+- `bezier_control_factor` (f): Faktor der Lage der Kontrollpunkte P1, P2 der kubischen Bézierkurve des Zahnfußes: Abstand k = (0,25 + 0,1 f) l zum Hauptpunkt auf der Tangente, l der Abstand des Hauptpunkts vom Schnittpunkt der Tangenten; 0 bis 3, bevorzugt 0,5 bis 1,5. Fußrundungsvariante bezier (gearcore.fillet).
+- `bionic_root_angle` (phi): Steigungswinkel der verlängerten Tangensfunktion y = a tan(b x) + c gegen die x-Achse auf der Symmetrieachse der Zahnlücke; Anspruch 5: 45° minus 180°/z minus alpha_r. Fußrundungsvariante bionic (gearcore.fillet).
+- `bionic_circle_radius` (r): Radius des Kreises auf der Symmetrieachse der Zahnlücke, der den Fußkreis im Fußpunkt berührt und tangentenstetig in die Tangensfunktion übergeht; 0,1 bis 0,6 des Moduls oder der Zahnlückenbreite (Sehne) am relevanten Durchmesser, Beispiel des Patents 0,3 S_L. Fußrundungsvariante bionic (gearcore.fillet).

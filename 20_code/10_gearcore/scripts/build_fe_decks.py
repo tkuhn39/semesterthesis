@@ -41,12 +41,14 @@ from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection, PolyCollection
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+from pydantic import ValidationError
 
 from gearcore import contour as ct
 from gearcore import data
+from gearcore import fillet as fl
 from gearcore import involute as iv
 from gearcore._safe import finite_input, integer_input
-from gearcore.errors import InputRangeError
+from gearcore.errors import GeometryInfeasibleError, InputRangeError, NotSupportedError
 from gearcore.fe import abaqus as ab
 from gearcore.fe import body as bd
 from gearcore.fe import convergence as cv
@@ -601,6 +603,10 @@ class MeshResult:
     body: bd.BodyMesh | None
     level_counts: bd.BodyCounts | None = None
     """Set when a ring body was swept to the z-levels of the pocket body (``--levels pocket``)."""
+    fillet: fl.FilletResult | None = None
+    """Set when the trochoid of the wheel was replaced by a root fillet variant (``--fillet``)."""
+    fillet_clearance_mm: float | None = None
+    """Smallest radial clearance of the pinion tip corners to that variant."""
 
 
 def mesh(
@@ -619,6 +625,7 @@ def mesh(
     level_counts: bd.BodyCounts | None = None,
     closed: bool = False,
     pictures: bool = True,
+    fillet: fl.FilletVariant | None = None,
 ) -> MeshResult:
     """Write the mesh file of one gear sector and its pictures (``pictures_only``: only the
     pictures, nothing of the deck); ``closed`` meshes the full wheel (every tooth, no shoulder
@@ -645,6 +652,28 @@ def mesh(
             )
     generation = _generation(case)
     gear = generation.inputs.gears.pinion if role == "pinion" else generation.inputs.gears.wheel
+    fillet_info: fl.FilletResult | None = None
+    clearance: float | None = None
+    fillet_lines: list[str] = []
+    if fillet is not None:
+        if role != "wheel":
+            raise NotSupportedError("root fillet variants are built for the wheel")
+        fillet_info = fl.apply(generation, role, fillet)
+        clearance, at_radius = fl.mating_tip_clearance(generation, fillet_info.contour)
+        reference, _ = fl.mating_tip_clearance(generation, ct.tooth_contour(generation, role))
+        if clearance < FILLET_CLEARANCE_MM:
+            raise GeometryInfeasibleError(
+                f"the root fillet variant {fillet.label()} leaves the pinion tip corners a distance "
+                f"of {clearance:.4f} mm at r {at_radius:.3f} mm (limit {FILLET_CLEARANCE_MM} mm)"
+            )
+        fillet_lines.append(
+            f"root fillet variant {fillet.label()}: transition d {fillet_info.transition_diameter_mm:.4f} mm, "
+            f"root d {fillet_info.root_diameter_mm:.4f} mm "
+            f"(trochoid {generation.gears.wheel.generated_root_diameter_mm:.4f}), "
+            f"smallest radius of curvature {fillet_info.min_curvature_radius_mm:.4f} mm, smallest distance of "
+            f"the pinion tip corners to the fillet {clearance:.4f} mm (closest fillet point at r "
+            f"{at_radius:.3f} mm; trochoid {reference:.4f} mm)"
+        )
     section = sm.sector_mesh(
         generation,
         role,
@@ -653,6 +682,7 @@ def mesh(
         bore_radius_mm=bore_radius_mm,
         counts=counts,
         closed=closed,
+        fillet=fillet,
     )
     effective = rf.effective_counts(section)
     prefix = role.upper()
@@ -747,6 +777,7 @@ def mesh(
     ]
     if built is not None:
         lines.extend(_body_lines(built))
+    lines.extend(fillet_lines)
     return MeshResult(
         lines=lines,
         file_name=file_name,
@@ -755,6 +786,8 @@ def mesh(
         sets=sets,
         body=built,
         level_counts=level_counts,
+        fillet=fillet_info,
+        fillet_clearance_mm=clearance,
     )
 
 
@@ -931,6 +964,59 @@ ENFORCEMENT_README: dict[str, str] = {
     "augmented_lagrange": "harte Kontaktbedingung mit Augmented-Lagrange-Durchsetzung",
 }
 """Sentence of the README for the enforcement of the contact constraint."""
+
+FILLET_CLEARANCE_MM = 0.02
+"""Smallest clearance of the pinion tip corners a root fillet variant must leave."""
+
+FILLET_SOURCES: dict[str, str] = {
+    "ellipse": "geneigte Ellipse nach Frühe (2012), Abschnitt 5.4.1",
+    "bezier": "kubische Bézierkurve nach DE 10 2013 004 861 B3 (Roth, Opferkuch 2017)",
+    "bionic": "bionische Kontur (Tangensfunktion und Kreis) nach DE 10 2008 045 318 B3",
+}
+
+
+def _fillet_manifest(built: MeshResult) -> dict[str, object] | None:
+    """The root fillet variant of the wheel mesh for the manifest (None: the trochoid)."""
+    if built.fillet is None:
+        return None
+    info = built.fillet
+    return {
+        "kind": info.variant.kind,
+        "label": info.variant.label(),
+        "source": FILLET_SOURCES[info.variant.kind],
+        "parameters": info.variant.model_dump(),
+        "transition_diameter_mm": info.transition_diameter_mm,
+        "root_diameter_mm": info.root_diameter_mm,
+        "min_curvature_radius_mm": info.min_curvature_radius_mm,
+        "clearance_mm": built.fillet_clearance_mm,
+        "details": dict(info.details),
+    }
+
+
+def _fillet_readme(built: MeshResult) -> str:
+    """The paragraph of the README that names the root fillet variant of the wheel."""
+    if built.fillet is None:
+        return (
+            "Zahnfußrundung des Rades: die Trochoide der Werkzeugkopfrundung aus der Erzeugung "
+            "(STplus-Fall), keine Variante."
+        )
+    info = built.fillet
+    params = ", ".join(
+        f"{name} {value:g}"
+        for name, value in info.variant.model_dump().items()
+        if name != "kind" and value is not None
+    )
+    clearance = built.fillet_clearance_mm if built.fillet_clearance_mm is not None else float("nan")
+    return (
+        f"Zahnfußrundung des Rades: Variante `{info.variant.label()}`, {FILLET_SOURCES[info.variant.kind]} "
+        f"({params}); sie ersetzt die Trochoide zwischen dem Übergangsdurchmesser "
+        f"{info.transition_diameter_mm:.3f} mm und der Lückenmitte, tangentenstetig an beiden Enden; "
+        f"Fußkreis der Variante {info.root_diameter_mm:.3f} mm, kleinster Krümmungsradius "
+        f"{info.min_curvature_radius_mm:.3f} mm, kleinster Abstand der Ritzelkopfkanten zur Fußrundung "
+        f"über den Wälzweg {clearance:.3f} mm (`gearcore.fillet`)."
+    )
+
+
 """Coarse numbers for the function test in the Learning Edition (1000 nodes)."""
 LE_POCKET_COUNTS = rs.MeshCounts(
     over_tooth_height=4,
@@ -1170,6 +1256,7 @@ def decks(
     rounding_facets: int = rsf.ROUNDING_FACETS,
     level_counts: bd.BodyCounts | None = None,
     elastic_constants: str | None = None,
+    fillet: fl.FilletVariant | None = None,
 ) -> list[str]:
     """Write the wheel mesh, the pinion surface, one position file per position and
     combination, the manifest and the runner into ``out``; returns the lines of the report.
@@ -1268,6 +1355,7 @@ def decks(
         body=body,
         body_counts=body_counts,
         level_counts=level_counts,
+        fillet=fillet,
     )
     report = list(built.lines)
     report += surface(
@@ -1573,6 +1661,7 @@ def decks(
                 else None
             ),
             "body": _body_manifest(built.body),
+            "fillet": _fillet_manifest(built),
             "fillet_chains_transverse": _fillet_chains(section),
         },
         "pinion_surface": {
@@ -1626,6 +1715,8 @@ def decks(
                 "Momente am Rad " + ", ".join(f"{t:g}" for t in torques_wheel_nm) + " Nm.",
                 "",
                 _body_readme(built.body),
+                "",
+                _fillet_readme(built),
                 "",
                 "Raten (CONVERSE-Karten des Nutzers, dieselbe Faserorientierung, Werkstofftabellen je "
                 "Prüfgeschwindigkeit): "
@@ -2959,7 +3050,47 @@ def simulation_log(root: Path, notes_path: Path, out: Path) -> list[str]:
     ]
 
 
+def _fillet_variant(args: argparse.Namespace) -> fl.FilletVariant | None:
+    """The root fillet variant of ``--fillet`` and ``--fillet-param``, or None."""
+    if args.fillet is None:
+        if args.fillet_param:
+            raise InputRangeError("--fillet-param needs --fillet")
+        return None
+    values: dict[str, float] = {}
+    for item in args.fillet_param:
+        name, _, text = item.partition("=")
+        if not name or not text:
+            raise InputRangeError(f"--fillet-param expects NAME=VALUE, got {item!r}")
+        if name == "kind" or name not in fl.FilletVariant.model_fields:
+            raise InputRangeError(
+                f"unknown fillet parameter {name!r}; known: "
+                + ", ".join(k for k in fl.FilletVariant.model_fields if k != "kind")
+            )
+        try:
+            values[name] = float(text)
+        except ValueError as error:
+            raise InputRangeError(f"--fillet-param {name}: {text!r} is not a number") from error
+    try:
+        return fl.FilletVariant(kind=args.fillet, **values)
+    except ValidationError as error:
+        raise InputRangeError(f"fillet variant: {error}") from error
+
+
 def _body_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--fillet",
+        choices=fl.FILLET_KINDS,
+        default=None,
+        help="root fillet variant of the wheel instead of the trochoid (gearcore.fillet)",
+    )
+    parser.add_argument(
+        "--fillet-param",
+        action="append",
+        default=[],
+        metavar="NAME=VALUE",
+        help="parameter of the variant: inclination_deg, axis_ratio (ellipse); control_factor "
+        "(bezier); root_angle_deg, root_radius_factor (bionic); transition_diameter_mm (all)",
+    )
     """The options of the wheel body (``mesh`` and ``decks``)."""
     preset = bd.BodyCounts()
     parser.add_argument(
@@ -3300,6 +3431,7 @@ def main() -> None:
         if any(value is not None for value in given.values()):
             counts = rs.MeshCounts(**{k: v for k, v in given.items() if v is not None})
         level_counts = _level_counts(args)
+        fillet_variant = _fillet_variant(args)
         folder = f"{args.role}_{args.teeth}teeth_{args.rim_rings}rings_{args.layers}layers"
         if args.closed:
             folder += "_closed"
@@ -3309,6 +3441,8 @@ def main() -> None:
             folder += f"_pocket_{body_counts.label()}"
         if level_counts is not None:
             folder += "_pocketlevels"
+        if fillet_variant is not None:
+            folder += f"_fillet_{fillet_variant.label()}"
         out = args.out if args.out is not None else OUTPUT / args.case / folder
         for line in mesh(
             args.case,
@@ -3326,6 +3460,7 @@ def main() -> None:
             level_counts=level_counts,
             closed=args.closed,
             pictures=not args.no_pictures,
+            fillet=fillet_variant,
         ).lines:
             print(line)
     if args.command == "surface":
@@ -3366,6 +3501,7 @@ def main() -> None:
             f"{'_'.join(args.positions)}"
         )
         level_counts = _level_counts(args)
+        fillet_variant = _fillet_variant(args)
         if body_counts is not None:
             folder += "_pocket"
         if level_counts is not None:
@@ -3388,6 +3524,8 @@ def main() -> None:
             folder += f"_retry{len(args.grid_indices)}"
         if args.elastic_constants:
             folder += f"_{args.elastic_constants}"
+        if fillet_variant is not None:
+            folder += f"_fillet_{fillet_variant.label()}"
         out = args.out if args.out is not None else OUTPUT / args.case / folder
         for line in decks(
             args.case,
@@ -3421,6 +3559,7 @@ def main() -> None:
             rounding_facets=args.rounding_facets,
             level_counts=level_counts,
             elastic_constants=args.elastic_constants,
+            fillet=fillet_variant,
         ):
             print(line)
     if args.command == "report":

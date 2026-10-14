@@ -3207,3 +3207,68 @@ quantities:
     note: "Fließspannungsverhältnis nach Hill (R_11, R_22, R_33, R_12, R_13, R_23 der Materialkarte), bezogen auf die Referenzfließspannung der 0°-Probe, die Schubverhältnisse auf sigma_0/sqrt(3); je Orientierungszustand (a_11, a_22) und Temperatur in der Karte tabelliert. Quelle: Abaqus2025:Hill."
     since: 4
     status: verified
+  fillet_ellipse_inclination:
+    symbol: "gamma"
+    unit: "deg"
+    description: "Neigung der Ellipse"
+    source: "Fruehe2012"
+    location: "Formelzeichen; Abschnitt 5.4.1, S. 94 bis 98, Abbildung 42 bis 44, Gl. (89), (95), (96)"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Neigung der Hauptachse a der Zahnfußellipse gegen die radiale Richtung des Zahns, zur Zahnmitte hin (Frühe: 0° bis 45°, Optimum der Parameterstudie 30°, Abschnitt 5.4.2). Fußrundungsvariante ellipse (gearcore.fillet)."
+    since: 4
+    status: verified
+  fillet_ellipse_axis_ratio:
+    symbol: "a/b"
+    unit: "-"
+    description: "Ellipsen-Hauptachsenverhältnis"
+    source: "Fruehe2012"
+    location: "Formelzeichen; Abschnitt 5.4.1, S. 94 bis 98, Gl. (93), (94), (100)"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Verhältnis der Hauptachsen a und b der Zahnfußellipse (Frühe: 2,0 bis 4,25, Optimum 3,0, Abschnitt 5.4.2). Fußrundungsvariante ellipse (gearcore.fillet)."
+    since: 4
+    status: verified
+  bezier_control_factor:
+    symbol: "f"
+    unit: "-"
+    description: "Faktor f"
+    source: "DE102013004861B3:2014"
+    location: "Anspruch 8 und 9, S. 10; [0020], S. 4"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Faktor der Lage der Kontrollpunkte P1, P2 der kubischen Bézierkurve des Zahnfußes: Abstand k = (0,25 + 0,1 f) l zum Hauptpunkt auf der Tangente, l der Abstand des Hauptpunkts vom Schnittpunkt der Tangenten; 0 bis 3, bevorzugt 0,5 bis 1,5. Fußrundungsvariante bezier (gearcore.fillet)."
+    since: 4
+    status: verified
+  bionic_root_angle:
+    symbol: "phi"
+    unit: "deg"
+    description: "Steigungswinkel der Tangensfunktion am Schnittpunkt mit der Symmetrieachse"
+    source: "DE102008045318B3:2009"
+    location: "[0023] und [0026] Randbedingung (2), S. 4; Anspruch 2 bis 5, S. 9"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Steigungswinkel der verlängerten Tangensfunktion y = a tan(b x) + c gegen die x-Achse auf der Symmetrieachse der Zahnlücke; Anspruch 5: 45° minus 180°/z minus alpha_r. Fußrundungsvariante bionic (gearcore.fillet)."
+    since: 4
+    status: verified
+  bionic_circle_radius:
+    symbol: "r"
+    unit: "mm"
+    description: "Radius der Kreisbahn"
+    source: "DE102008045318B3:2009"
+    location: "Anspruch 7 bis 10, S. 9; [0028], S. 4; [0050], S. 7"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Radius des Kreises auf der Symmetrieachse der Zahnlücke, der den Fußkreis im Fußpunkt berührt und tangentenstetig in die Tangensfunktion übergeht; 0,1 bis 0,6 des Moduls oder der Zahnlückenbreite (Sehne) am relevanten Durchmesser, Beispiel des Patents 0,3 S_L. Fußrundungsvariante bionic (gearcore.fillet)."
+    since: 4
+    status: verified

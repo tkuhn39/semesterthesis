@@ -1710,6 +1710,26 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     effect: series (18 rows, 0,1) against 36/54 rows at 0,1 is the mesh, 36/54 rows at 0,1
     against 0,05 and 0,02 the rounding. W3 on the refined meshes needs a CONVERSE mapping of
     those meshes (the card's labels do not fit them, the guard refuses) and waits.
+    Outcome (2026-10-14, the night run evaluated with `fe_series_analysis.py --reference` against
+    the series at A to E, W1 at QS unless said). Runs: all 40 jobs wrote their four steps; with
+    the edge 0,05 mm W1 breaks off in the 16 Nm step at B and E on 36 rows and at E on 54 rows,
+    the FE-19 pattern on the flank node row at r 25,75 mm; with 0,02 mm all five positions
+    complete on both meshes; the 0,1 mm controls and every W2 job complete. Mesh effect alone
+    (0,1 mm, 36 and 54 rows against the 18 of the series): pinion rotation and head
+    displacement −0,2 to −1,0 % at A, C, D and −2,3 to −3,2 % at B, E; σ1 within ±1 % at A, C, D,
+    +2 to +5 % at B and +0,5 to +2 % at E; the largest contact pressure +30 to +57 % (36 rows)
+    and +90 to +171 % (54 rows, C at 16 Nm): the pressure peak under the pinion tip edge grows
+    with every refinement and has no converged value. Rounding effect on top (0,05 and 0,02 mm
+    against 0,1 mm on the same 36 rows): rotation a further −1 % at A, C, D and −3,5 % at B, E;
+    σ1 −1 % at C, +5 to +6 % at B, +4 to +5 % at E; 54 rows alike. Against the series as a whole
+    the sharp-edge model with a resolved flank (0,02 mm, 54 rows) changes the rotation by −2,6 to
+    −3,5 % at A, C, D and −4,5 to −5,9 % at B, E, the tensile root stress σ1 by −0,5 % at A, D,
+    −2,4 to −3,3 % at C, +7,5 to +9,4 % at B and +4,7 to +6,0 % at E (8 to 16 Nm). Decision: the
+    series keeps 18 rows and the 0,1 mm edge; the thesis reports this sensitivity in the
+    preliminary studies (4.2) beside FE-17, and the contact pressure peak at the edge is named as
+    a mesh- and edge-dependent quantity. A sharp-edge model would need 0,02 mm on at least 36
+    rows and, for W3/W4, a new CONVERSE mapping of the refined mesh; not pursued before the
+    pre-version of the thesis.
 51. **W3 with the elastic constants of FVA 856 I Tabelle 4 (2026-10-13 evening; the user's
     choice "B orthotrop" with the QS, DY1 and DY2 columns).** The user wants a reference of his
     FE model to the FVA report: the anisotropic elastic step with the report's skin-layer
@@ -1756,6 +1776,139 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     that the card and the table each stand on the mapping and on the CT zones: material source
     and direction source are separated in a 2 × 2 scheme (W3 of the series, `fva856tab4`,
     `ctorient`, `fva856tab4_ct`), all on the series mesh at A to E.
+    Outcome (2026-10-14, night run, 15 of 15 jobs in each folder; `fe_orientation_comparison.py`
+    with both Tabelle 4 folders → `vergleich_orientierung_tab4_AtoE`; its captions and headings
+    carry the script's standard words "Mapping" and "CT-Pilot", to be read here as Tabelle 4 on
+    the mapping directions against Tabelle 4 on the CT-zone directions). Direction effect under
+    the report's constants, W3 at A to E over QS, DY1, DY2 and 8 to 16 Nm: pinion rotation −4,4
+    to −12,0 %, head displacement −7,7 to −14,4 %, largest contact pressure −20,5 to +8,3 %,
+    tensile root stress σ1 −14,0 to +4,0 %, compressive |σ3| +0,6 to +14,7 %; QS shows the largest
+    stiffness effect (−6,8 to −12,0 % rotation), DY2 the smallest. That is the picture of the
+    card-based comparison of ADR-119 item 6 (rotation −5 to −13 %, σ1 −8 to +6 %, |σ3| +2 to
+    +13 %) with a somewhat larger stiffness gain and a larger σ1 drop: the elastic constants of
+    the report make the direction source matter slightly more than the card's lattice does. The
+    material-source effect at fixed directions (Tabelle 4 against the card, on the mapping and
+    on the CT zones) is still to be tabulated from the four folders' path reports (C8 of the
+    thesis plan); the 2 × 2 scheme is complete on disk.
+52. **Root fillet variants of the wheel (2026-10-14; the user's decision: elliptic, Bézier and
+    bionic with W1 to W4 and QS/DY1/DY2 at A to E, stage 3 pulled into the thesis).** A variant
+    replaces the trochoid of the tool tip rounding between a transition diameter on the flank
+    and the centre line of the gap (`gearcore.fillet`, one traced function per equation of the
+    source, `FilletVariant`, `apply`); involute, tip flank and tip circle stay those of the
+    generation, the pinion and its rigid surface are unchanged. The three contours as their
+    sources define them: the inclined ellipse of Frühe (2012, section 5.4.1, Eq. (89) to (100);
+    tangent-continuous at the root form point P_Ff and crossing the centre line of the gap at a
+    right angle at P_f, the root diameter follows; parameters gamma and a/b, his optimum
+    30 deg and 3,0), the cubic Bézier contour of DE 10 2013 004 861 B3 (Anspruch 8: the control
+    points on the flank tangents at k = (0,25 + 0,1 f) l from the main points, f = 1,0 inside
+    the preferred 0,5 to 1,5; Roth and Opferkuch 2017 for the Bernstein form) and the bionic
+    contour of DE 10 2008 045 318 B3 (Gl. 1: a tangent function y = a tan(b x) + c from the
+    flank point to a circle of radius r centred on the centre line of the gap, the circle
+    touching the root circle; phi by Anspruch 5, 45 deg − 180 deg / z − alpha_r, r = 0,3 of the
+    space-width chord at d_r as the patent's example). Transition: the ellipse at d_Ff (Frühe
+    Abbildung 41), the two patents at the "relevant diameter" d_r = (d_N + d_FR) / 2 (Anspruch
+    12 and [0022] of the 2009 patent), so they fill the root of the generated gear from the
+    start of the active profile downwards. Every variant is checked kinematically against the
+    pinion tip corners carried through the gap by the rolling motion (`mating_tip_clearance`,
+    the Euclidean distance of every traced corner to the fillet polyline with the sign from
+    the radial comparison; the deck writer refuses a distance below 0,02 mm). The first
+    version reported the radial gap at equal angle and overstated it by 40 to 60 % (found by
+    the independent review of 2026-10-14, P1, fixed the same day). The sector template maps onto the new
+    contour unchanged (`sector_mesh(..., fillet=...)`, `decks --fillet`, manifest
+    `wheel_mesh.fillet`, README paragraph); kst-E wheel: smallest corner sine 0,634 (ellipse)
+    and 0,501 (Bézier, bionic) against the limit, no quad below 0,35, 82 425 nodes as the
+    series. Numbers of the kst-E wheel: ellipse d_t 50,157, root d 48,952 mm (0,57 mm deeper
+    than the trochoid's 49,523), smallest radius of curvature 0,083 mm at the gap centre,
+    smallest distance of the pinion tip corners 0,490 mm (at the transition point, as for the
+    trochoid); Bézier d_t 51,210, root 50,215 mm, 0,633 mm, distance 0,203 mm; bionic d_t
+    51,210, root 50,124 mm, 0,382 mm, distance 0,203 mm (trochoid 0,490 mm; the patents' own
+    margin at the transition is (d_N − d_r) / 2 = 0,052 mm, the corner passes the transition
+    region at 0,2 mm). The ellipse's 0,083 mm radius at the gap centre lies below what the
+    template resolves (first edge 0,021 mm, fine layers 0,05 mm): the ellipse-to-trochoid
+    comparison is mesh-limited at the gap centre, not at the flank where the stress sits
+    (review P2); Frühe's optimum was found on z = 20 to 60, so 30 deg / 3,0 is a literature
+    choice for z = 52, a sweep on the plane-strain model is the open step. Folders
+    `pilot_20layers_bore33_fillet_<label>_round0p1f12_w1w2_qsdy1dy2_AtoE` (W1/W2, three rates,
+    A to E, 30 jobs each, no new CONVERSE mapping needed: W1 and W2 take the card's isotropic
+    rows) are bundled with the pocket series in `nachtlauf_2026-10-14_fussrundungen_tasche`;
+    the W3/W4 folders follow once the user has mapped the three variant meshes (orientation
+    guard of item 46 against each mesh). Open: the CAO growth method of Kassem 2023 is not a
+    closed curve and stays outside; a reinforced-class question does not arise here, the
+    evaluation is the standard path report plus the Stommel check at the critical node.
+    Review of 2026-10-14 (independent, read-only; 1 P1, 1 P2, 4 P3, all taken): the
+    published distance of the pinion tip corners is now the Euclidean distance to the fillet
+    polyline (the first version measured the radial gap at equal angle and overstated it by
+    40 to 60 %): trochoid and ellipse 0,490 mm, Bézier and bionic 0,203 mm; the ellipse's
+    0,083 mm root curvature is a property of Frühe's construction on this gear, not a code
+    error, and is below what the template resolves at the gap centre; the patent equations are
+    cited by their numbers with pages; degenerate slopes and arc limits are refused with typed
+    errors; an unknown `--fillet-param` name is refused by name.
+    **Parameter sweep on the plane-strain sector (`scripts/fillet_sweep.py`, 2026-10-14, the
+    user's wish before the CONVERSE mapping).** Three teeth, the series' counts, bore 16,5 mm,
+    the own solver with incompatible modes, W1 at 16 Nm, Hertz patch at B of the wheel; target
+    the largest σ1 along the loaded fillet, constraint distance to the pinion tip corners
+    ≥ 0,1 mm; 86 variants (42 ellipses γ 15 to 45° × a/b 1,5 to 4; 7 Bézier f 0 to 3; 36 bionic
+    φ by Anspruch 5 and 15 to 35° × r 0,1 to 0,6 S_L), reference trochoid 145,2 MPa (the plane
+    model carries the whole torque on one tooth and is only a relative measure). Result
+    (`80_output/fe/kst_e/fussrundung_sweep/bericht.md`, figures `sigma1_<kind>`): ellipse,
+    literature values γ 30°, a/b 3,0 −13,2 % against the trochoid, optimum γ 25°, a/b 2,0
+    −24,9 % (γ 20 to 30° with a/b 2,0 all within −24 %; a/b ≥ 3 at every γ makes the root
+    sharper than the mesh resolves, ρ 0,05 to 0,10 mm, and raises σ1 again); Bézier, f 1,0
+    −32,2 %, optimum f 2,5 −35,4 % (f 1,5 to 3 within 1,5 points; the patent's preferred range
+    is 0,5 to 1,5); bionic, φ 24,1° by Anspruch 5 and r 0,3 −31,9 %, optimum φ 35°, r 0,2
+    −38,1 % (φ 30 to 35° with r 0,2 to 0,3 within 2 points; r hardly matters below 0,5; r 0,6
+    is not constructible, the circle has no tangent point). The distance to the pinion tip
+    corners is 0,490 mm for every ellipse (the ellipse starts at d_Ff below the corner's path)
+    and 0,19 to 0,20 mm for every patent contour (set by the transition at d_r, not by the
+    parameter). Reading: Frühe's optimum was found on his 19 gearings with his own model; on the
+    kst-E wheel (z 52, m 1 mm, short fillet) the rounder ellipse with a/b 2 lowers the peak near
+    the root form point more than the deep, sharp-rooted one, and the a/b 3 result is in part a
+    resolution effect at the gap centre; Anspruch 5 of the bionic patent is a rule for the
+    example gear of the patent, a steeper tangent function (φ 35°) fills the fillet more on this
+    gear. Decision proposed to the user: keep the literature parameters in the chain (they are
+    the documented reference of each source) and add the two optima of the sweep as further
+    folders (`ellipse_g25_ab2`, `bionic_phi35_r0.2`) with W1/W2 first; the Bézier optimum differs
+    by 3 points only and is not added. Open until the user's go.
+    Decisions of the user later that day: the literature parameters and the sweep optima are
+    both computed, for all three kinds (the Bézier optimum f 2,5 included), each with W1 to
+    W4 at QS, DY1 and DY2 at A to E; and, since the body effect of item 48 is substantial and
+    the pocket mesh is the model of the real part, **every further computation runs on the
+    pocket body** (the ring folders of the variants, never computed, were deleted). The six
+    variant meshes on the pocket body (`pilot_20layers_bore33_pocket_fillet_<label>_round0p1f12_
+    w1w2_qsdy1dy2_AtoE`, labels `ellipse_g30_ab3`, `ellipse_g25_ab2`, `bezier_f1`, `bezier_f2.5`,
+    `bionic_phiauto_r0.3`, `bionic_phi35_r0.2`; 83 650 nodes, 72 932 C3D8I each as the pocket
+    series) go to the user for the CONVERSE mapping (18 files, `wheel-pocket-<label>_mesh_<rate>.cof`);
+    the W3/W4 decks follow on them. The chain for the weekend (the user cannot reach the
+    machine from Friday to Monday): the six variants at A to E with W1 to W4 and three rates
+    (360 jobs, about 36 h), then the pocket baseline series W1 to W4 at QS (396 jobs, about
+    45 h), then a full series of the variant with the largest potential, the bionic optimum
+    (396 jobs, about 45 h), so that the Stommel check with a real load history stands on the
+    variant and on its baseline of the same body; about 126 h in all, the starter resumes
+    where it stopped.
+    **As started (2026-10-14 evening, the user in the server room).** The user mapped all six
+    meshes (18 files `wheel-pocket-<label>_mesh_<rate>.cof`, decimal points written as `p`);
+    every file fits its mesh by the labels (72 932 elements, 83 650 nodes), the orientation
+    piece of each rate is the user's mapping on that variant. The chain folder
+    `nachtlauf_2026-10-14_fussrundungen_tasche` holds eight sub-folders with their own
+    starters: `variante_ellipse_g30_ab3`, `variante_ellipse_g25_ab2`, `variante_bezier_f1`,
+    `variante_bezier_f2p5`, `variante_bionic_phiauto_r0p3`, `variante_bionic_phi35_r0p2`
+    (each W1 to W4 × QS/DY1/DY2 at A to E, 60 jobs, origin
+    `pilot_20layers_bore33_pocket_fillet_<label>_round0p1f12_qsdy1dy2_AtoE`),
+    `tasche_serie_w1w4_qs` (the pocket baseline series, 396 jobs) and
+    `variante_bionic_phi35_r0p2_serie_w1w4_qs` (origin
+    `series_20layers_bore33_pocket_fillet_bionic_phi35_r0.2_round0p1f12_30perpitch_margin1_qs`,
+    W1 to W4 at QS, 99 positions, 396 jobs); 1 512 jobs, about 116 h on the full licence
+    (`abq2025`, 4 cores, the user's call). The chain starter removes the lock files of jobs
+    interrupted by a reboot, refuses a second instance while one runs (pid file; the Startup
+    shortcut of `autostart_einrichten.ps1` fires at every logon), resolves the sub-folder
+    names in both spellings and takes `C:\SIMULIA\Commands\abq2025.bat` when started outside
+    the Abaqus command prompt. The machine is rebooted that night; the chain resumes after
+    the user's logon. The return of the results: each sub-folder becomes
+    `<origin>_gerechnet`. Evaluation to build (C8 of the thesis plan): the six variants at A
+    to E against the pocket baseline per step and rate (the pattern of
+    `fe_body_comparison.py`), the Stommel check on the variant series against the baseline
+    series. M7 (the drawing and manufacturing variants) is not in the chain; it follows after
+    the pre-version of the thesis or goes to the outlook.
 
 ## ADR-117 — Measurement data of the manufactured gears: parsers in `io`, pure evaluation in `gearcore.measurement`, the user's decisions in `parts.yaml`, text exports versioned (2026-10-10)
 
@@ -2450,6 +2603,62 @@ sensitivity: the critical nodes evaluated with cases F1 to F4 side by side
 (`CheckSettings.overload_case`), as section 6.3.3 of the book lays the cases out, to show how
 much K_M and a_B,V depend on that reading (open, E2). The curves of the critical nodes name
 the two nodes by their role and carry the points A to E (user, 2026-10-13).
+
+### Amendment of 2026-10-14 (E4: S-Life Plastics on the named nodes, resolved with the reports)
+
+The user evaluated `pos_001.odb` of `frozen_mesh_20layers_bore33_gerechnet` (position C, W1)
+in S-Life Plastics 4.0.0 on the whole wheel instance: purely pulsating R = 0, overload case F2,
+ultimate fatigue limit at 10^7, no spectrum, increment 6 of LOAD_8NM, LOAD_12NM and LOAD_16NM
+as LC1 to LC3, the QS card at 80 °C, stresses unaveraged (the element-nodal value of one
+element at the node), critical plane with 11,25° step. He exported the static and the cyclic
+assessment report per node and load case (`70_input/74_S-Life/<T>-Nm/*.pdf`, 24 reports; node
+6193 beneath the surface gets none, S-Life evaluates surface nodes only).
+`scripts/slife_reports.py` transcribes the reports through the text layer into
+`data/fatigue/slife/pos_C_W1_QS.yaml` (tensor, principal values, σ_eq, strains, a_SK; σ_a,
+σ_WK, cap, applied strength, component ratios, a_BK where the text layer keeps the rows
+whole; labels checked by the arithmetic between them, `tests/test_fatigue_slife.py`), and
+`scripts/slife_comparison.py` writes `stommel/vergleich_slife.md` beside the node tables of
+the own check. The stress table typed into the chat earlier that day was the 8 Nm case and is
+superseded.
+
+Findings (16 Nm; 8 Nm alike; at 12 Nm the own check has no node table, stresses only):
+1. **Stresses agree.** S-Life's unaveraged element value against the averaged element-nodal
+   value of the extraction: σ1 82,84 / 82,85 MPa at 41472 (tension fillet mid-face), 84,19 /
+   81,67 at 6147 (tension fillet near the face, +3 %), σ3 −99,12 / −99,17 at 41143
+   (compression fillet), −79,88 / −76,29 at the head node 5741 (+5 %). The loads are the
+   same steps, the frames differ by the instance rotation only.
+2. **Static check agrees to 5 %.** σ_eq 68,85 / 68,61 MPa at 41472 (h 0,57 in the own check,
+   the report prints 0,56 on the rendered page), ε_zul
+   1,80 / 1,81 %, a_SK 1,388 against a_stat 1,452 (ratio 0,956); 6147 1,420 / 1,489 (0,954);
+   41143 1,079 / 1,114 (0,968). The remaining 4 to 5 % come from the strain S-Life reads for
+   σ_eq on its fitted 80 °C isotherm (2,49 % against 2,62 % of the interpolated Matscape
+   points) and from the element against the nodal value. At the head node (compression,
+   h = −1,3) S-Life gives 1,01 against 0,42: the own check divides the compressive principal
+   stresses by 1,3 (Eq. (6.17)) and reads ε_zul at h = −1,3 (2,06 %), S-Life applies another
+   criterion there (its strain ratio is 0,77 / 2,04 = 0,38, the printed utilisation 1,01).
+3. **Cyclic check: same amplitude and strength, another cap.** σ_a 41,41 / 41,42 MPa at
+   41472, σ_WK 20,12 / σ_W 20,19 MPa, K_AK 0,82 on the rendered page against K_M 0,815. S-Life
+   caps the applied
+   strength with σ_S,allow,min − σ_m, where σ_S,allow,min = 47,32 MPa is the static allowable of
+   the *unloaded* extremal state (A_S,min = 0,55 of K transferred to the 80 °C isotherm), so
+   the applied strength is 5,91 MPa at 41472 (cap 47,32 − 41,41) and a_BK 6,53; the own check
+   caps with σ_stat(h) − |σ_m| of the governing state (A_max side, 54,7 MPa at h 0,57), applied
+   strength 13,27 MPa, a_B,V 2,67. The ratio 2,45 (6147: 3,11) is this convention alone. On
+   the compression side (41143) σ_m = −49,6 MPa exceeds 47,32, S-Life's cap is zero and a_BK
+   is printed as 49 641, where the own check keeps 59,6 − 49,6 = 10 MPa and gives 4,60. The
+   convention of the own check follows the symmetric construction of Bild 6.28 with the static
+   limit of the chosen load case; S-Life takes the lower static limit of the class range as
+   the cap. Which reading the book prescribes (Eq. (6.24) to (6.26), p. 365 to 367) is to be
+   decided with the user for the thesis text; the option `cap = "min_state"` in
+   `fatigue.check` is the follow-up (roadmap E4) so that both conventions can be printed side
+   by side.
+4. **Consequence.** The implementation is confirmed on the stresses, the static check and the
+   cyclic amplitude and strength; the one difference is named and reproducible. The thesis
+   reports both programs with the cap convention as the explanation. Independent review of
+   the transcription (2026-10-14 evening): the cap arithmetic and every spot-checked number
+   trace to the reports; the parser now reads the text layer as UTF-8, matches rows on one
+   line only and leaves h and K_AK out (their rows were mis-assigned for the compressive
+   nodes in the first version).
 
 ## ADR-119 — Fibre orientation of the moulding simulation, evaluated on the mapped FE mesh and compared with the CT zones of FVA 856 I (2026-10-13)
 

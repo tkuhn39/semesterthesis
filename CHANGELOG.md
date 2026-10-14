@@ -9,6 +9,91 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (FE: root fillet variants of the wheel, the night run of 2026-10-13 brought home, the long chain of 2026-10-14, ADR-116 item 52)
+- **`gearcore.fillet`**: three alternative root fillets as contour replacements of the trochoid,
+  each from its primary source with one traced function per equation: the inclined ellipse of
+  Frühe (2012, section 5.4.1, Eq. (89) to (100): tangent-continuous at the root form point and
+  at a right angle to the centre line of the gap, the root diameter follows; gamma 30 deg,
+  a/b 3,0 as his optimum), the cubic Bézier contour of DE 10 2013 004 861 B3 (Anspruch 8,
+  k = (0,25 + 0,1 f) l; Bernstein form after Roth and Opferkuch 2017) and the bionic contour of
+  DE 10 2008 045 318 B3 (Gl. 1 and 2: tangent function and circle; phi by Anspruch 5, r = 0,3 of
+  the space-width chord). `FilletVariant` (parameters in the registry: `fillet_ellipse_inclination`,
+  `fillet_ellipse_axis_ratio`, `bezier_control_factor`, `bionic_root_angle`, `bionic_circle_radius`),
+  `apply` (the contour with the variant, mirrored, the involute re-sampled from the transition
+  diameter), `transition_diameter` (d_Ff for the ellipse, (d_N + d_FR) / 2 for the patents),
+  `mating_tip_clearance` (the pinion tip corners carried through the gaps by `fe.placement`,
+  smallest Euclidean distance to the fillet polyline, signed by the radial comparison; the
+  radial version of the first draft overstated it, review P1), `polyline_min_curvature_radius`.
+  Tests
+  `test_fillet.py` (equations, continuity, symmetry, clearance, the mesh on all three).
+- **`sector_mesh(..., fillet=)`**, **`build_fe_decks.py mesh | decks --fillet {ellipse,bezier,bionic}
+  --fillet-param NAME=VALUE`**: the template mapped onto the variant contour (quality lines in the
+  report), the clearance refused below 0,02 mm, manifest `wheel_mesh.fillet`, README paragraph,
+  folder suffix `_fillet_<label>`. kst-E wheel: corner sine 0,634 / 0,501 / 0,501, no quad below
+  0,35; ellipse root 0,57 mm deeper than the trochoid with a 0,083 mm radius at the gap centre,
+  Bézier and bionic fill the root to 50,2 and 50,1 mm; smallest distance of the pinion tip
+  corners 0,20 mm for both (trochoid and ellipse 0,49 mm, at the transition point).
+- Independent compact review of the day's code (read-only, 2026-10-14): one P1 (the clearance
+  was radial, now Euclidean), P3 items applied (patent equation labels with pages, typed
+  refusals of m_f ≤ 0 and m = 0, no silent clamp in `ellipse_arc`, unknown `--fillet-param`
+  names refused); the frames, slopes, control distance, tangent function, circle and the
+  transition diameters were confirmed against the rendered pages.
+- Folders `pilot_20layers_bore33_fillet_{ellipse_g30_ab3,bezier_f1,bionic_phiauto_r0.3}_round0p1f12_w1w2_qsdy1dy2_AtoE`
+  (W1/W2 × QS/DY1/DY2 × A to E, the settings of the series) and the chain folder
+  `nachtlauf_2026-10-14_fussrundungen_tasche` (one starter that skips absent sub-folders: the
+  three variants with W1/W2, the W3/W4 folders once the user has mapped the three meshes in
+  CONVERSE, then the pocket series W1 to W4 at QS; about 64 h).
+- The nine sub-folders of the night run of 2026-10-13 came back complete (100 jobs, 20:09 to
+  08:32) and were renamed to their origin folders with `_gerechnet`; `ctorient` is a repeat of
+  the pilot computed on 2026-10-13 afternoon (30 of 30 field files identical) and awaits the
+  user's go for deletion. Evaluation: see the diary entries and ADR-116 items 50 and 51.
+- Registry: 233 quantities (five of the fillet variants), `quantities.md` regenerated.
+- Independent review of the fillet work (2026-10-14) taken: `mating_tip_clearance` measures
+  the Euclidean distance of the traced pinion tip corners to the fillet polyline (0,490 mm for
+  the trochoid and the ellipse, 0,203 mm for the Bézier and the bionic contour; the radial gap
+  of the first version overstated it by 40 to 60 %), typed refusals of degenerate ellipse
+  slopes and arc limits, patent equations cited as (Gl. 12) to (Gl. 14) and (Gl. 18) to
+  (Gl. 21) with pages, unknown `--fillet-param` names refused; the variant folders regenerated
+  (decks byte-identical, manifest and README with the corrected distance).
+- **`scripts/fillet_sweep.py`**: parameter sweep of the three variants on the plane-strain
+  sector of the convergence study (three teeth, the series' counts, own solver with
+  incompatible modes, W1 at 16 Nm, Hertz patch at B), 86 variants, σ1 of the loaded fillet
+  against the trochoid, geometry and corner distance per variant, `sweep.csv`, `bericht.md`
+  and the figures `sigma1_{ellipse,bezier,bionic}` in `80_output/fe/kst_e/fussrundung_sweep`
+  (ADR-116 item 52 amendment: optima at γ 25° / a/b 2,0, f 2,5 and φ 35° / r 0,2).
+- **E4**: `scripts/slife_reports.py` transcribes the user's S-Life Plastics assessment reports
+  (`70_input/74_S-Life/<T>-Nm/*_Static_<node>.pdf`, `*_Cyclic_<node>.pdf`; pdftotext text layer,
+  rows accepted only where whole and checked by their arithmetic) into
+  `data/fatigue/slife/pos_C_W1_QS.yaml` (four surface nodes × 8/12/16 Nm; tensor, principal
+  values, h, σ_eq, strains, a_SK, σ_a, σ_WK, cap, applied strength, a_BK), tested by
+  `tests/test_fatigue_slife.py`; `scripts/slife_comparison.py` writes `stommel/vergleich_slife.md`
+  with the own check per load case. Result: stresses and static check agree (0 to 5 %), the
+  cyclic check differs by the static cap convention alone (ADR-118 amendment of 2026-10-14).
+- User decision: every further computation on the pocket body; the six fillet variants
+  (literature parameters and sweep optima) rebuilt as
+  `pilot_20layers_bore33_pocket_fillet_<label>_round0p1f12_w1w2_qsdy1dy2_AtoE` for the CONVERSE
+  mapping of their meshes (ADR-116 item 53).
+- The chain as started on 2026-10-14 evening (ADR-116 item 53): the user's 18 CONVERSE files
+  checked against the six variant meshes by the generator; the six variant folders rewritten with
+  W1 to W4 (`pilot_20layers_bore33_pocket_fillet_<label>_round0p1f12_qsdy1dy2_AtoE`, 60 jobs each),
+  the full series of the bionic optimum
+  (`series_20layers_bore33_pocket_fillet_bionic_phi35_r0.2_round0p1f12_30perpitch_margin1_qs`,
+  W1 to W4 at QS, 396 jobs); chain folder `nachtlauf_2026-10-14_fussrundungen_tasche` with eight
+  sub-folders (1 512 jobs, about 116 h), a starter that removes stale lock files after a reboot,
+  refuses a second instance (pid file) and resolves both spellings of the sub-folder names, and
+  `autostart_einrichten.ps1` (Startup shortcut, no administrator rights) for the reboot of the
+  machine that night. Diary notes for every folder; `fe_simulation_log.md` regenerated.
+- Known limits FAT-01 (static cap convention of the cyclic check against S-Life) and FAT-02
+  (averaged nodal against unaveraged element stresses, surface-only evaluation of S-Life).
+- Independent compact review of the day's scripts (2026-10-14 evening) taken: the report parser
+  reads the text layer as UTF-8 and matches table rows on one line only, h and K_AK are no
+  longer transcribed (their rows were mis-assigned for the compressive nodes), the fixture and
+  the comparison regenerated; `--fillet-param` values that are not numbers or not valid for the
+  variant raise `InputRangeError`; the sweep report names the bore radius; the chain starter's
+  single-instance guard accepts a pid file only while a PowerShell started before the file
+  still runs, so a reboot cannot block the resume. Verified by the reviewer: every spot-checked
+  number of the fixture traces to its report, the cap arithmetic of the comparison is exact.
+
 ### Added (FE: the CT-orientation pilot evaluated, 2026-10-13 evening, ADR-119 item 6)
 - `scripts/fe_orientation_comparison.py`: W3/W4 with the CT-zone orientation against the
   mapping at A to E per rate and load step (tables, effect figures with markers only, captions

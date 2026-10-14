@@ -1,8 +1,8 @@
 # Simulationstagebuch (generiert)
 
-Stand 2026-10-13 19:03; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
+Stand 2026-10-14 18:49; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
 
-Läufe: 797 vollständig, 29 abgebrochen, 8 offen, 1557 Dateien nicht gerechnet; 93 Ordner.
+Läufe: 894 vollständig, 32 abgebrochen, 8 offen, 3465 Dateien nicht gerechnet; 117 Ordner.
 
 ## 2026-10-05 16:43 `pinion_surface_7teeth_80layers`
 
@@ -178,7 +178,7 @@ Netz: 414 Knoten, 220 Elemente (C3D8), 2 Schichten, Bohrung r 18.100 mm, Körper
 
 ## 2026-10-07 07:30 `le_tests/element_nlgeom/c3d8r`
 
-**Zweck:** Elementtest: C3D8R mit NLGEOM=YES und NO. **Ergebnis:** keine Warnung, beide durch. (gerechnet: Learning Edition; Befunde FE-14)
+**Zweck:** Elementtest: C3D8R mit NLGEOM=YES und NO. **Ergebnis:** Vorlage; Teil der Kette nachtlauf_2026-10-14_fussrundungen_tasche. (Befunde FE-05)
 
 Netz: 414 Knoten, 220 Elemente (C3D8R), 2 Schichten, Bohrung r 18.100 mm, Körper ring; Werkstoffstufen W1, Raten QS (eine Karte); Momente am Rad 8, 12, 16 Nm; 2 Stellungsdateien
 
@@ -2674,4 +2674,468 @@ Nicht gerechnet: 15 Dateien (`pos_031_W3_QS`, `pos_031_W3_DY1`, `pos_031_W3_DY2`
 Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W3, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 15 Stellungsdateien (grid, 30 je Teilung)
 
 Nicht gerechnet: 15 Dateien (`pos_031_W3_QS`, `pos_031_W3_DY1`, `pos_031_W3_DY2`, `pos_036_W3_QS`, `pos_036_W3_DY1`, `pos_036_W3_DY2` …).
+
+## 2026-10-13 20:08 `pilot_20layers_bore33_hoehe36_round0p05f12_w1w2_qs_AtoE_gerechnet`
+
+**Zweck:** Kopfkontakt: 36 Reihen über der Zahnhöhe, Ritzelkante 0,05 mm, W1 und W2 bei QS an A bis E (Nachtlauf 2026-10-13, ADR-116 Punkt 50). **Ergebnis:** W1 bricht bei 16 Nm an B und E ab (FE-19-Muster, Flankenknoten r 25,75 mm), W2 läuft überall durch; gegen die Serie: Drehung −1,4 % an C, −6 % an B/E, σ1 −1 % an C, +7 bis +8 % an B, Kontaktdruck +60 % an B/E (analyse/). (gerechnet: Vollversion; Befunde FE-17, FE-19)
+
+Netz: 110775 Knoten, 97520 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, W2, Raten QS; Momente am Rad 8, 12, 16 Nm; 10 Stellungsdateien (grid, 30 je Teilung)
+
+**Läufe**
+
+| Datei           | Stellung | Stufe | Rate | Variante | Löser           | Status                        | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|-----------------|----------|-------|------|----------|-----------------|-------------------------------|-----------------------|--------|---------|------------------|
+| `pos_031_W1_QS` | A        | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 272    | 0       | 2026-10-13 18:06 |
+| `pos_031_W2_QS` | A        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 342    | 0       | 2026-10-13 18:12 |
+| `pos_036_W1_QS` | B        | W1    | QS   |          | linear, N2S 0.2 | not completed (step 4 inc 17) | 6, 6, 6, 30           | 1782   | 170     | 2026-10-13 18:43 |
+| `pos_036_W2_QS` | B        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 24           | 795    | 34      | 2026-10-13 18:57 |
+| `pos_049_W1_QS` | C        | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 315    | 0       | 2026-10-13 19:02 |
+| `pos_049_W2_QS` | C        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 6            | 447    | 2       | 2026-10-13 19:10 |
+| `pos_063_W1_QS` | D        | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 315    | 0       | 2026-10-13 19:16 |
+| `pos_063_W2_QS` | D        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 380    | 0       | 2026-10-13 19:23 |
+| `pos_068_W1_QS` | E        | W1    | QS   |          | linear, N2S 0.2 | not completed (step 4 inc 16) | 6, 6, 6, 29           | 1822   | 157     | 2026-10-13 19:54 |
+| `pos_068_W2_QS` | E        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 28           | 810    | 28      | 2026-10-13 20:08 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei           | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|-----------------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_031_W1_QS` | LOAD_16NM | -0.49 %  | 66.2       | 147.5          | T4 RIGHT, r 25.65, z -6.8 | 69.1       | T3_T4, r 24.83, z -6.8, Tangente 45° | -85.1      | T4_T5      | 74.5    | T3   |
+| `pos_031_W2_QS` | LOAD_16NM | -0.34 %  | 83.4       | 96.6           | T4 RIGHT, r 25.65, z -6.0 | 44.6       | T3_T4, r 24.82, z -6.0, Tangente 49° | -54.2      | T4_T5      | 94.0    | T3   |
+| `pos_036_W1_QS` | LOAD_12NM | +0.28 %  | 51.2       | 184.6          | T4 RIGHT, r 25.70, z +0.0 | 48.0       | T3_T4, r 24.85, z -6.8, Tangente 40° | -59.7      | T4_T5      | 58.9    | T3   |
+| `pos_036_W2_QS` | LOAD_16NM | +0.58 %  | 85.4       | 106.3          | T4 RIGHT, r 25.75, z -6.0 | 43.9       | T2_T3, r 24.80, z -4.5, Tangente 54° | -51.5      | T4_T5      | 99.0    | T3   |
+| `pos_049_W1_QS` | LOAD_16NM | -0.95 %  | 81.6       | 146.5          | T4 RIGHT, r 25.95, z -6.8 | 80.7       | T2_T3, r 24.83, z +0.0, Tangente 45° | -95.1      | T3_T4      | 97.2    | T3   |
+| `pos_049_W2_QS` | LOAD_16NM | -0.95 %  | 92.0       | 109.6          | T4 RIGHT, r 25.95, z -6.0 | 48.2       | T2_T3, r 24.88, z +0.0, Tangente 33° | -54.6      | T3_T4      | 107.8   | T3   |
+| `pos_063_W1_QS` | LOAD_16NM | -0.49 %  | 67.4       | 146.7          | T3 RIGHT, r 25.65, z -6.8 | 69.9       | T2_T3, r 24.83, z -6.8, Tangente 45° | -83.0      | T3_T4      | 75.4    | T2   |
+| `pos_063_W2_QS` | LOAD_16NM | -0.36 %  | 83.9       | 97.0           | T3 RIGHT, r 25.65, z -6.0 | 44.6       | T2_T3, r 24.88, z +0.0, Tangente 33° | -53.9      | T3_T4      | 94.2    | T2   |
+| `pos_068_W1_QS` | LOAD_12NM | +0.33 %  | 52.0       | 183.3          | T3 RIGHT, r 25.70, z +0.0 | 48.2       | T2_T3, r 24.83, z -6.8, Tangente 45° | -58.0      | T3_T4      | 59.7    | T2   |
+| `pos_068_W2_QS` | LOAD_16NM | +0.63 %  | 85.8       | 106.2          | T3 RIGHT, r 25.75, z -6.0 | 45.2       | T1_T2, r 24.86, z -4.5, Tangente 37° | -51.3      | T3_T4      | 99.2    | T2   |
+
+## 2026-10-13 20:38 `pilot_20layers_bore33_hoehe36_round0p02f12_w1_qs_AtoE_gerechnet`
+
+**Zweck:** Kopfkontakt: 36 Reihen, Ritzelkante 0,02 mm, W1 bei QS an A bis E (Nachtlauf 2026-10-13). **Ergebnis:** alle fünf Stellungen durch (0,02 mm konvergiert auf 36 Reihen); gegen die Serie: Drehung −1,4 % an C, −6 % an B/E, σ1 −1 % an C, +8 bis +9,5 % an B, +5 bis +6 % an E, Kontaktdruck +57 bis +95 %. (gerechnet: Vollversion; Befunde FE-17, FE-19)
+
+Netz: 110775 Knoten, 97520 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 5 Stellungsdateien (grid, 30 je Teilung)
+
+**Läufe**
+
+| Datei     | Stellung | Stufe | Rate | Variante | Löser           | Status   | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|-----------|----------|-------|------|----------|-----------------|----------|-----------------------|--------|---------|------------------|
+| `pos_031` | A        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 319    | 0       | 2026-10-13 20:14 |
+| `pos_036` | B        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 323    | 0       | 2026-10-13 20:20 |
+| `pos_049` | C        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 311    | 0       | 2026-10-13 20:26 |
+| `pos_063` | D        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 318    | 0       | 2026-10-13 20:32 |
+| `pos_068` | E        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 323    | 0       | 2026-10-13 20:38 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei     | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|-----------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_031` | LOAD_16NM | -0.49 %  | 66.2       | 147.1          | T4 RIGHT, r 25.65, z -6.8 | 69.2       | T3_T4, r 24.83, z -6.8, Tangente 45° | -85.1      | T4_T5      | 74.5    | T3   |
+| `pos_036` | LOAD_16NM | +0.10 %  | 67.0       | 230.3          | T4 RIGHT, r 25.70, z -6.8 | 64.7       | T3_T4, r 24.85, z -6.8, Tangente 40° | -79.3      | T4_T5      | 77.6    | T3   |
+| `pos_049` | LOAD_16NM | -0.97 %  | 81.6       | 146.1          | T4 RIGHT, r 25.95, z -6.8 | 80.7       | T2_T3, r 24.83, z +0.0, Tangente 45° | -95.1      | T3_T4      | 97.2    | T3   |
+| `pos_063` | LOAD_16NM | -0.50 %  | 67.4       | 146.4          | T3 RIGHT, r 25.65, z -6.8 | 70.0       | T2_T3, r 24.83, z -6.8, Tangente 45° | -83.0      | T3_T4      | 75.4    | T2   |
+| `pos_068` | LOAD_16NM | +0.08 %  | 68.0       | 229.2          | T3 RIGHT, r 25.70, z -6.8 | 65.3       | T2_T3, r 24.85, z -6.8, Tangente 40° | -77.1      | T3_T4      | 78.5    | T2   |
+
+## 2026-10-13 21:07 `pilot_20layers_bore33_hoehe36_round0p1f12_w1_qs_AtoE_gerechnet`
+
+**Zweck:** Kopfkontakt, Kontrolle: 36 Reihen mit der Kante 0,1 mm der Serie, W1 bei QS an A bis E (trennt Netzeffekt von Rundungseffekt). **Ergebnis:** reiner Netzeffekt: Drehung −0,5 % an C, −2,4 % an B/E, σ1 ±0,6 % an A, C, D und +2 bis +3 % an B, Kontaktdruck +30 bis +57 % (an der Kante nicht konvergiert). (gerechnet: Vollversion; Befunde FE-17, FE-19)
+
+Netz: 110775 Knoten, 97520 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 5 Stellungsdateien (grid, 30 je Teilung)
+
+**Läufe**
+
+| Datei     | Stellung | Stufe | Rate | Variante | Löser           | Status   | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|-----------|----------|-------|------|----------|-----------------|----------|-----------------------|--------|---------|------------------|
+| `pos_031` | A        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 325    | 0       | 2026-10-13 20:44 |
+| `pos_036` | B        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 331    | 0       | 2026-10-13 20:50 |
+| `pos_049` | C        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 323    | 0       | 2026-10-13 20:56 |
+| `pos_063` | D        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 311    | 0       | 2026-10-13 21:01 |
+| `pos_068` | E        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 333    | 0       | 2026-10-13 21:07 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei     | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|-----------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_031` | LOAD_16NM | -0.16 %  | 67.2       | 149.1          | T4 RIGHT, r 25.70, z -6.8 | 67.3       | T3_T4, r 24.83, z -6.8, Tangente 45° | -85.7      | T4_T5      | 75.6    | T3   |
+| `pos_036` | LOAD_16NM | +0.83 %  | 69.0       | 216.1          | T4 RIGHT, r 25.75, z -6.8 | 60.9       | T3_T4, r 24.85, z -6.8, Tangente 40° | -79.8      | T4_T5      | 79.9    | T3   |
+| `pos_049` | LOAD_16NM | +0.14 %  | 83.7       | 125.6          | T4 RIGHT, r 25.95, z +0.0 | 82.4       | T2_T3, r 24.83, z +0.0, Tangente 45° | -97.4      | T3_T4      | 99.7    | T3   |
+| `pos_063` | LOAD_16NM | -0.17 %  | 68.5       | 152.1          | T3 RIGHT, r 25.70, z -6.8 | 68.3       | T2_T3, r 24.83, z -6.8, Tangente 45° | -83.6      | T3_T4      | 76.6    | T2   |
+| `pos_068` | LOAD_16NM | +0.77 %  | 70.1       | 218.9          | T3 RIGHT, r 25.75, z -6.8 | 61.9       | T2_T3, r 24.85, z -6.8, Tangente 40° | -77.6      | T3_T4      | 80.9    | T2   |
+
+## 2026-10-13 23:31 `pilot_20layers_bore33_hoehe54_round0p05f12_w1w2_qs_AtoE_gerechnet`
+
+**Zweck:** Kopfkontakt: 54 Reihen, Ritzelkante 0,05 mm, W1 und W2 bei QS an A bis E (Nachtlauf 2026-10-13). **Ergebnis:** W1 bricht bei 16 Nm an E ab, W2 läuft durch; gegen die Serie: Drehung −2,8 % an C, −5,8 % an B/E, σ1 −2,4 % an C, +7 % an B, Kontaktdruck +98 % an B/E und +175 % an C bei 16 Nm. (gerechnet: Vollversion; Befunde FE-17, FE-19)
+
+Netz: 139125 Knoten, 122720 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, W2, Raten QS; Momente am Rad 8, 12, 16 Nm; 10 Stellungsdateien (grid, 30 je Teilung)
+
+**Läufe**
+
+| Datei           | Stellung | Stufe | Rate | Variante | Löser           | Status                        | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|-----------------|----------|-------|------|----------|-----------------|-------------------------------|-----------------------|--------|---------|------------------|
+| `pos_031_W1_QS` | A        | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 418    | 0       | 2026-10-13 21:15 |
+| `pos_031_W2_QS` | A        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 8            | 574    | 2       | 2026-10-13 21:25 |
+| `pos_036_W1_QS` | B        | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 11           | 661    | 17      | 2026-10-13 21:37 |
+| `pos_036_W2_QS` | B        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 9            | 610    | 2       | 2026-10-13 21:48 |
+| `pos_049_W1_QS` | C        | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 8            | 536    | 5       | 2026-10-13 21:57 |
+| `pos_049_W2_QS` | C        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 13, 17          | 1118   | 28      | 2026-10-13 22:17 |
+| `pos_063_W1_QS` | D        | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 413    | 0       | 2026-10-13 22:24 |
+| `pos_063_W2_QS` | D        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 8            | 537    | 2       | 2026-10-13 22:34 |
+| `pos_068_W1_QS` | E        | W1    | QS   |          | linear, N2S 0.2 | not completed (step 4 inc 16) | 6, 6, 6, 29           | 2475   | 170     | 2026-10-13 23:16 |
+| `pos_068_W2_QS` | E        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 15           | 867    | 15      | 2026-10-13 23:31 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei           | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|-----------------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_031_W1_QS` | LOAD_16NM | -0.25 %  | 66.3       | 149.7          | T4 RIGHT, r 25.66, z -6.8 | 67.0       | T3_T4, r 24.83, z -6.8, Tangente 45° | -85.2      | T4_T5      | 74.5    | T3   |
+| `pos_031_W2_QS` | LOAD_16NM | -0.09 %  | 83.3       | 104.7          | T4 RIGHT, r 25.66, z -6.0 | 43.8       | T3_T4, r 24.82, z -6.0, Tangente 49° | -54.3      | T4_T5      | 93.8    | T3   |
+| `pos_036_W1_QS` | LOAD_16NM | +0.30 %  | 67.2       | 281.1          | T4 RIGHT, r 25.70, z +0.0 | 63.4       | T3_T4, r 24.85, z -6.8, Tangente 40° | -79.4      | T4_T5      | 77.9    | T3   |
+| `pos_036_W2_QS` | LOAD_16NM | +0.45 %  | 85.5       | 117.2          | T4 RIGHT, r 25.73, z -6.0 | 43.9       | T2_T3, r 24.80, z -4.5, Tangente 54° | -51.5      | T4_T5      | 99.1    | T3   |
+| `pos_049_W1_QS` | LOAD_16NM | +0.27 %  | 82.1       | 206.0          | T4 RIGHT, r 25.93, z +0.0 | 80.8       | T2_T3, r 24.83, z +0.0, Tangente 45° | -94.6      | T3_T4      | 97.8    | T3   |
+| `pos_049_W2_QS` | LOAD_16NM | -0.23 %  | 92.1       | 124.6          | T4 RIGHT, r 25.97, z -6.0 | 48.1       | T2_T3, r 24.88, z +0.0, Tangente 33° | -54.5      | T3_T4      | 108.0   | T3   |
+| `pos_063_W1_QS` | LOAD_16NM | -0.24 %  | 67.6       | 154.1          | T3 RIGHT, r 25.66, z -6.8 | 68.1       | T2_T3, r 24.83, z -6.8, Tangente 45° | -83.2      | T3_T4      | 75.5    | T2   |
+| `pos_063_W2_QS` | LOAD_16NM | -0.07 %  | 83.9       | 107.7          | T3 RIGHT, r 25.66, z -6.0 | 43.5       | T2_T3, r 24.86, z +0.0, Tangente 37° | -54.0      | T3_T4      | 94.3    | T2   |
+| `pos_068_W1_QS` | LOAD_12NM | +0.29 %  | 52.0       | 226.2          | T3 RIGHT, r 25.70, z +0.0 | 48.4       | T2_T3, r 24.83, z -6.8, Tangente 45° | -58.0      | T3_T4      | 59.7    | T2   |
+| `pos_068_W2_QS` | LOAD_16NM | +0.50 %  | 85.7       | 119.2          | T3 RIGHT, r 25.73, z -6.0 | 45.2       | T1_T2, r 24.86, z -4.5, Tangente 37° | -51.2      | T3_T4      | 99.2    | T2   |
+
+## 2026-10-14 00:10 `pilot_20layers_bore33_hoehe54_round0p02f12_w1_qs_AtoE_gerechnet`
+
+**Zweck:** Kopfkontakt: 54 Reihen, Ritzelkante 0,02 mm, W1 bei QS an A bis E (Nachtlauf 2026-10-13). **Ergebnis:** alle fünf Stellungen durch (0,02 mm konvergiert auf 54 Reihen); gegen die Serie: Drehung −2,8 bis −3,5 % an C, −4,6 bis −5,9 % an B/E, σ1 −2,4 bis −3,3 % an C, +7,5 bis +9,4 % an B, +4,7 bis +6 % an E, Kontaktdruck +93 bis +210 %. (gerechnet: Vollversion; Befunde FE-17, FE-19)
+
+Netz: 139125 Knoten, 122720 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 5 Stellungsdateien (grid, 30 je Teilung)
+
+**Läufe**
+
+| Datei     | Stellung | Stufe | Rate | Variante | Löser           | Status   | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|-----------|----------|-------|------|----------|-----------------|----------|-----------------------|--------|---------|------------------|
+| `pos_031` | A        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 399    | 0       | 2026-10-13 23:39 |
+| `pos_036` | B        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 460    | 0       | 2026-10-13 23:47 |
+| `pos_049` | C        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 409    | 0       | 2026-10-13 23:55 |
+| `pos_063` | D        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 401    | 0       | 2026-10-14 00:02 |
+| `pos_068` | E        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 465    | 0       | 2026-10-14 00:10 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei     | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|-----------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_031` | LOAD_16NM | -0.53 %  | 65.8       | 166.0          | T4 RIGHT, r 25.63, z -6.8 | 69.1       | T3_T4, r 24.83, z -6.8, Tangente 45° | -84.9      | T4_T5      | 74.0    | T3   |
+| `pos_036` | LOAD_16NM | +0.11 %  | 67.1       | 283.2          | T4 RIGHT, r 25.70, z -6.8 | 64.7       | T3_T4, r 24.85, z -6.8, Tangente 40° | -79.4      | T4_T5      | 77.7    | T3   |
+| `pos_049` | LOAD_16NM | -0.90 %  | 81.0       | 232.5          | T4 RIGHT, r 25.93, z -6.8 | 80.1       | T2_T3, r 24.83, z +0.0, Tangente 45° | -94.0      | T3_T4      | 96.4    | T3   |
+| `pos_063` | LOAD_16NM | -0.54 %  | 67.0       | 165.2          | T3 RIGHT, r 25.63, z -6.8 | 69.9       | T2_T3, r 24.83, z -6.8, Tangente 45° | -82.8      | T3_T4      | 74.9    | T2   |
+| `pos_068` | LOAD_16NM | +0.09 %  | 68.1       | 281.9          | T3 RIGHT, r 25.70, z -6.8 | 65.3       | T2_T3, r 24.85, z -6.8, Tangente 40° | -77.1      | T3_T4      | 78.6    | T2   |
+
+## 2026-10-14 00:48 `pilot_20layers_bore33_hoehe54_round0p1f12_w1_qs_AtoE_gerechnet`
+
+**Zweck:** Kopfkontakt, Kontrolle: 54 Reihen mit der Kante 0,1 mm der Serie, W1 bei QS an A bis E. **Ergebnis:** reiner Netzeffekt: Drehung −0,2 bis −1,0 % an A, C, D, −2,3 bis −3,2 % an B/E, σ1 +0,2 % an C, +4,7 % an B, Kontaktdruck +88 bis +171 % (an der Kante nicht konvergiert). (gerechnet: Vollversion; Befunde FE-17, FE-19)
+
+Netz: 139125 Knoten, 122720 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W1, Raten QS; Momente am Rad 8, 12, 16 Nm; 5 Stellungsdateien (grid, 30 je Teilung)
+
+**Läufe**
+
+| Datei     | Stellung | Stufe | Rate | Variante | Löser           | Status   | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|-----------|----------|-------|------|----------|-----------------|----------|-----------------------|--------|---------|------------------|
+| `pos_031` | A        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 393    | 0       | 2026-10-14 00:18 |
+| `pos_036` | B        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 419    | 0       | 2026-10-14 00:25 |
+| `pos_049` | C        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 431    | 0       | 2026-10-14 00:33 |
+| `pos_063` | D        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 402    | 0       | 2026-10-14 00:41 |
+| `pos_068` | E        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 429    | 0       | 2026-10-14 00:48 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei     | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|-----------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_031` | LOAD_16NM | -0.31 %  | 66.9       | 179.4          | T4 RIGHT, r 25.66, z +0.0 | 67.9       | T3_T4, r 24.83, z -6.8, Tangente 45° | -85.5      | T4_T5      | 75.2    | T3   |
+| `pos_036` | LOAD_16NM | +0.63 %  | 68.6       | 272.2          | T4 RIGHT, r 25.73, z -6.8 | 61.8       | T3_T4, r 24.85, z -6.8, Tangente 40° | -79.7      | T4_T5      | 79.5    | T3   |
+| `pos_049` | LOAD_16NM | -0.68 %  | 83.2       | 202.8          | T4 RIGHT, r 25.97, z -6.8 | 82.3       | T2_T3, r 24.83, z +0.0, Tangente 45° | -97.5      | T3_T4      | 99.1    | T3   |
+| `pos_063` | LOAD_16NM | -0.26 %  | 68.1       | 173.7          | T3 RIGHT, r 25.66, z +0.0 | 68.5       | T2_T3, r 24.83, z -6.8, Tangente 45° | -83.5      | T3_T4      | 76.2    | T2   |
+| `pos_068` | LOAD_16NM | +0.62 %  | 69.7       | 275.3          | T3 RIGHT, r 25.73, z -6.8 | 62.7       | T2_T3, r 24.85, z -6.8, Tangente 40° | -77.5      | T3_T4      | 80.5    | T2   |
+
+## 2026-10-14 02:16 `pilot_20layers_bore33_fva856tab4_round0p1f12_w3_qsdy1dy2_AtoE_gerechnet`
+
+**Zweck:** W3 mit den Ingenieurkonstanten aus FVA 856 I Tabelle 4 in den Richtungen des Mappings, QS/DY1/DY2 an A bis E (Nachtlauf 2026-10-13, ADR-116 Punkt 51). **Ergebnis:** 15 von 15 Jobs; Richtungsquelle unter Tabelle 4 (gegen fva856tab4_ctorient): Drehung −4,4 bis −12 %, Kopfverschiebung −7,7 bis −14,4 %, σ1 −14 bis +4 %, |σ3| +0,6 bis +14,7 % (vergleich_orientierung_tab4_AtoE); Werkstoffquelle gegen die Karte noch zu tabellieren (FE-24). (gerechnet: Vollversion; Befunde FE-24)
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W3, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 15 Stellungsdateien (grid, 30 je Teilung)
+
+**Läufe**
+
+| Datei            | Stellung | Stufe | Rate | Variante | Löser           | Status   | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|------------------|----------|-------|------|----------|-----------------|----------|-----------------------|--------|---------|------------------|
+| `pos_031_W3_QS`  | A        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 308    | 0       | 2026-10-14 01:05 |
+| `pos_031_W3_DY1` | A        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 305    | 0       | 2026-10-14 00:54 |
+| `pos_031_W3_DY2` | A        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 285    | 0       | 2026-10-14 01:00 |
+| `pos_036_W3_QS`  | B        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 365    | 0       | 2026-10-14 01:24 |
+| `pos_036_W3_DY1` | B        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 327    | 0       | 2026-10-14 01:11 |
+| `pos_036_W3_DY2` | B        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 332    | 0       | 2026-10-14 01:17 |
+| `pos_049_W3_QS`  | C        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 315    | 0       | 2026-10-14 01:41 |
+| `pos_049_W3_DY1` | C        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 309    | 0       | 2026-10-14 01:29 |
+| `pos_049_W3_DY2` | C        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 323    | 0       | 2026-10-14 01:35 |
+| `pos_063_W3_QS`  | D        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 306    | 0       | 2026-10-14 01:57 |
+| `pos_063_W3_DY1` | D        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 312    | 0       | 2026-10-14 01:47 |
+| `pos_063_W3_DY2` | D        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 293    | 0       | 2026-10-14 01:52 |
+| `pos_068_W3_QS`  | E        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 373    | 0       | 2026-10-14 02:16 |
+| `pos_068_W3_DY1` | E        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 337    | 0       | 2026-10-14 02:04 |
+| `pos_068_W3_DY2` | E        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 341    | 0       | 2026-10-14 02:10 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei            | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|------------------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_031_W3_QS`  | LOAD_16NM | -0.39 %  | 81.9       | 134.2          | T4 RIGHT, r 25.70, z +7.5 | 92.9       | T3_T4, r 24.86, z +6.8, Tangente 37° | -102.0     | T4_T5      | 91.6    | T3   |
+| `pos_031_W3_DY1` | LOAD_16NM | -0.35 %  | 65.7       | 133.1          | T4 RIGHT, r 25.70, z +7.5 | 90.6       | T3_T4, r 24.86, z +6.8, Tangente 37° | -100.2     | T4_T5      | 73.4    | T3   |
+| `pos_031_W3_DY2` | LOAD_16NM | -0.30 %  | 44.6       | 130.8          | T4 RIGHT, r 25.70, z +7.5 | 85.9       | T3_T4, r 24.86, z +6.8, Tangente 37° | -96.9      | T4_T5      | 49.8    | T3   |
+| `pos_036_W3_QS`  | LOAD_16NM | +1.48 %  | 85.4       | 146.5          | T4 RIGHT, r 25.80, z +7.5 | 75.4       | T2_T3, r 24.85, z +6.8, Tangente 40° | -95.3      | T4_T5      | 97.2    | T3   |
+| `pos_036_W3_DY1` | LOAD_16NM | +1.46 %  | 68.8       | 150.4          | T4 RIGHT, r 25.80, z +7.5 | 73.4       | T2_T3, r 24.85, z +6.8, Tangente 40° | -92.9      | T4_T5      | 78.0    | T3   |
+| `pos_036_W3_DY2` | LOAD_16NM | +1.53 %  | 47.0       | 158.0          | T4 RIGHT, r 25.80, z +7.5 | 69.7       | T2_T3, r 24.85, z +6.8, Tangente 40° | -89.9      | T4_T5      | 53.0    | T3   |
+| `pos_049_W3_QS`  | LOAD_16NM | -1.20 %  | 95.0       | 75.5           | T4 RIGHT, r 26.00, z -7.5 | 98.5       | T2_T3, r 24.85, z +6.8, Tangente 40° | -113.6     | T3_T4      | 109.1   | T3   |
+| `pos_049_W3_DY1` | LOAD_16NM | -1.21 %  | 82.2       | 68.9           | T3 RIGHT, r 26.10, z +6.8 | 104.3      | T2_T3, r 24.85, z +6.8, Tangente 40° | -121.8     | T3_T4      | 94.8    | T3   |
+| `pos_049_W3_DY2` | LOAD_16NM | -1.38 %  | 65.4       | 93.0           | T3 RIGHT, r 26.10, z +6.8 | 118.1      | T2_T3, r 24.85, z +6.8, Tangente 40° | -141.7     | T3_T4      | 75.9    | T3   |
+| `pos_063_W3_QS`  | LOAD_16NM | -0.41 %  | 83.6       | 133.9          | T3 RIGHT, r 25.70, z +7.5 | 90.1       | T2_T3, r 24.85, z +6.8, Tangente 40° | -103.5     | T3_T4      | 92.9    | T2   |
+| `pos_063_W3_DY1` | LOAD_16NM | -0.36 %  | 67.1       | 132.7          | T3 RIGHT, r 25.70, z +7.5 | 88.4       | T2_T3, r 24.85, z +6.8, Tangente 40° | -100.8     | T3_T4      | 74.5    | T2   |
+| `pos_063_W3_DY2` | LOAD_16NM | -0.31 %  | 45.5       | 130.1          | T3 RIGHT, r 25.70, z +7.5 | 84.7       | T2_T3, r 24.85, z +6.8, Tangente 40° | -96.3      | T3_T4      | 50.6    | T2   |
+| `pos_068_W3_QS`  | LOAD_16NM | +1.36 %  | 87.0       | 171.3          | T3 RIGHT, r 25.80, z -7.5 | 82.5       | T1_T2, r 24.77, z -6.8, Tangente 68° | -96.8      | T3_T4      | 98.7    | T2   |
+| `pos_068_W3_DY1` | LOAD_16NM | +1.42 %  | 70.2       | 171.6          | T3 RIGHT, r 25.80, z -7.5 | 79.1       | T1_T2, r 24.77, z -6.8, Tangente 68° | -94.0      | T3_T4      | 79.5    | T2   |
+| `pos_068_W3_DY2` | LOAD_16NM | +1.53 %  | 48.1       | 177.5          | T3 RIGHT, r 25.80, z -7.5 | 73.0       | T1_T2, r 24.78, z -6.8, Tangente 63° | -89.2      | T3_T4      | 54.1    | T2   |
+
+## 2026-10-14 03:39 `pilot_20layers_bore33_fva856tab4_ctorient_round0p1f12_w3_qsdy1dy2_AtoE_gerechnet`
+
+**Zweck:** W3 mit den Ingenieurkonstanten aus FVA 856 I Tabelle 4 in den Richtungen der CT-Zonen, QS/DY1/DY2 an A bis E (Nachtlauf 2026-10-13, ADR-116 Punkt 51). **Ergebnis:** 15 von 15 Jobs; CT-Richtungen machen den Zahn unter Tabelle 4 um 4 bis 12 % steifer als die Mapping-Richtungen, σ1 bis −14 %, |σ3| bis +15 % (vergleich_orientierung_tab4_AtoE). (gerechnet: Vollversion; Befunde FE-24, FIB-04)
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8I), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W3, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 15 Stellungsdateien (grid, 30 je Teilung)
+
+**Läufe**
+
+| Datei            | Stellung | Stufe | Rate | Variante | Löser           | Status   | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|------------------|----------|-------|------|----------|-----------------|----------|-----------------------|--------|---------|------------------|
+| `pos_031_W3_QS`  | A        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 282    | 0       | 2026-10-14 02:32 |
+| `pos_031_W3_DY1` | A        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 282    | 0       | 2026-10-14 02:22 |
+| `pos_031_W3_DY2` | A        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 265    | 0       | 2026-10-14 02:27 |
+| `pos_036_W3_QS`  | B        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 341    | 0       | 2026-10-14 02:50 |
+| `pos_036_W3_DY1` | B        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 327    | 0       | 2026-10-14 02:38 |
+| `pos_036_W3_DY2` | B        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 319    | 0       | 2026-10-14 02:43 |
+| `pos_049_W3_QS`  | C        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 285    | 0       | 2026-10-14 03:06 |
+| `pos_049_W3_DY1` | C        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 301    | 0       | 2026-10-14 02:55 |
+| `pos_049_W3_DY2` | C        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 319    | 0       | 2026-10-14 03:01 |
+| `pos_063_W3_QS`  | D        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 282    | 0       | 2026-10-14 03:21 |
+| `pos_063_W3_DY1` | D        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 283    | 0       | 2026-10-14 03:11 |
+| `pos_063_W3_DY2` | D        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 269    | 0       | 2026-10-14 03:16 |
+| `pos_068_W3_QS`  | E        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 337    | 0       | 2026-10-14 03:39 |
+| `pos_068_W3_DY1` | E        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 329    | 0       | 2026-10-14 03:27 |
+| `pos_068_W3_DY2` | E        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 303    | 0       | 2026-10-14 03:33 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei            | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|------------------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_031_W3_QS`  | LOAD_16NM | -0.31 %  | 72.5       | 114.0          | T4 RIGHT, r 25.70, z +0.0 | 80.8       | T3_T4, r 24.88, z -0.8, Tangente 33° | -108.0     | T4_T5      | 79.0    | T3   |
+| `pos_031_W3_DY1` | LOAD_16NM | -0.26 %  | 58.7       | 116.4          | T4 RIGHT, r 25.70, z +0.0 | 79.7       | T3_T4, r 24.86, z -0.8, Tangente 37° | -106.0     | T4_T5      | 64.1    | T3   |
+| `pos_031_W3_DY2` | LOAD_16NM | -0.27 %  | 40.6       | 119.5          | T4 RIGHT, r 25.70, z +0.0 | 76.9       | T3_T4, r 24.86, z -0.8, Tangente 37° | -101.4     | T4_T5      | 44.5    | T3   |
+| `pos_036_W3_QS`  | LOAD_16NM | +1.50 %  | 76.5       | 136.7          | T4 RIGHT, r 25.80, z -6.0 | 76.1       | T2_T3, r 24.86, z +1.5, Tangente 37° | -101.0     | T4_T5      | 83.5    | T3   |
+| `pos_036_W3_DY1` | LOAD_16NM | +1.48 %  | 62.1       | 141.2          | T4 RIGHT, r 25.80, z -6.0 | 74.6       | T2_T3, r 24.86, z +1.5, Tangente 37° | -98.7      | T4_T5      | 67.7    | T3   |
+| `pos_036_W3_DY2` | LOAD_16NM | +1.48 %  | 43.2       | 152.5          | T4 RIGHT, r 25.80, z -6.0 | 71.7       | T2_T3, r 24.86, z -3.8, Tangente 37° | -94.0      | T4_T5      | 47.2    | T3   |
+| `pos_049_W3_QS`  | LOAD_16NM | -1.22 %  | 87.7       | 63.2           | T3 RIGHT, r 26.10, z +0.0 | 98.0       | T2_T3, r 24.86, z -0.8, Tangente 37° | -128.6     | T3_T4      | 96.2    | T3   |
+| `pos_049_W3_DY1` | LOAD_16NM | -1.27 %  | 76.8       | 74.1           | T3 RIGHT, r 26.10, z +0.0 | 105.5      | T2_T3, r 24.86, z -0.8, Tangente 37° | -137.9     | T3_T4      | 84.9    | T3   |
+| `pos_049_W3_DY2` | LOAD_16NM | -1.44 %  | 62.5       | 99.9           | T3 RIGHT, r 26.10, z -0.8 | 122.8      | T2_T3, r 24.86, z -0.8, Tangente 37° | -159.6     | T3_T4      | 70.1    | T3   |
+| `pos_063_W3_QS`  | LOAD_16NM | -0.32 %  | 73.9       | 112.7          | T3 RIGHT, r 25.70, z +0.0 | 80.8       | T2_T3, r 24.86, z -0.8, Tangente 37° | -105.5     | T3_T4      | 80.0    | T2   |
+| `pos_063_W3_DY1` | LOAD_16NM | -0.27 %  | 60.0       | 115.2          | T3 RIGHT, r 25.70, z +0.0 | 79.8       | T2_T3, r 24.86, z -0.8, Tangente 37° | -103.7     | T3_T4      | 65.0    | T2   |
+| `pos_063_W3_DY2` | LOAD_16NM | -0.28 %  | 41.4       | 118.2          | T3 RIGHT, r 25.70, z +0.0 | 77.5       | T2_T3, r 24.86, z +6.8, Tangente 37° | -99.2      | T3_T4      | 45.0    | T2   |
+| `pos_068_W3_QS`  | LOAD_16NM | +1.37 %  | 78.0       | 138.4          | T3 RIGHT, r 25.80, z -6.0 | 78.3       | T1_T2, r 24.86, z +0.8, Tangente 37° | -98.4      | T3_T4      | 84.8    | T2   |
+| `pos_068_W3_DY1` | LOAD_16NM | +1.41 %  | 63.3       | 143.8          | T3 RIGHT, r 25.80, z -6.0 | 76.7       | T1_T2, r 24.86, z +0.8, Tangente 37° | -96.3      | T3_T4      | 68.9    | T2   |
+| `pos_068_W3_DY2` | LOAD_16NM | +1.48 %  | 44.1       | 155.4          | T3 RIGHT, r 25.80, z -6.0 | 73.9       | T1_T2, r 24.85, z +0.8, Tangente 40° | -91.8      | T3_T4      | 48.0    | T2   |
+
+## 2026-10-14 08:32 `ctorient`
+
+(keine Notiz in fe_simulation_notes.yaml)
+
+Netz: 82425 Knoten, 72320 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper ring; Werkstoffstufen W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 30 Stellungsdateien (grid, 30 je Teilung)
+
+**Läufe**
+
+| Datei            | Stellung | Stufe | Rate | Variante | Löser           | Status   | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|------------------|----------|-------|------|----------|-----------------|----------|-----------------------|--------|---------|------------------|
+| `pos_031_W3_QS`  | A        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 472    | 0       | 2026-10-14 04:03 |
+| `pos_031_W3_DY1` | A        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 461    | 0       | 2026-10-14 03:47 |
+| `pos_031_W3_DY2` | A        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 434    | 0       | 2026-10-14 03:55 |
+| `pos_031_W4_QS`  | A        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 598    | 0       | 2026-10-14 04:35 |
+| `pos_031_W4_DY1` | A        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 615    | 0       | 2026-10-14 04:14 |
+| `pos_031_W4_DY2` | A        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 586    | 0       | 2026-10-14 04:24 |
+| `pos_036_W3_QS`  | B        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 510    | 0       | 2026-10-14 05:01 |
+| `pos_036_W3_DY1` | B        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 496    | 0       | 2026-10-14 04:43 |
+| `pos_036_W3_DY2` | B        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 502    | 0       | 2026-10-14 04:52 |
+| `pos_036_W4_QS`  | B        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 702    | 4       | 2026-10-14 05:36 |
+| `pos_036_W4_DY1` | B        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 689    | 0       | 2026-10-14 05:13 |
+| `pos_036_W4_DY2` | B        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 630    | 0       | 2026-10-14 05:24 |
+| `pos_049_W3_QS`  | C        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 481    | 0       | 2026-10-14 06:02 |
+| `pos_049_W3_DY1` | C        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 494    | 0       | 2026-10-14 05:45 |
+| `pos_049_W3_DY2` | C        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 477    | 0       | 2026-10-14 05:53 |
+| `pos_049_W4_QS`  | C        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 656    | 0       | 2026-10-14 06:35 |
+| `pos_049_W4_DY1` | C        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 642    | 0       | 2026-10-14 06:13 |
+| `pos_049_W4_DY2` | C        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 632    | 0       | 2026-10-14 06:24 |
+| `pos_063_W3_QS`  | D        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 468    | 0       | 2026-10-14 07:00 |
+| `pos_063_W3_DY1` | D        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 461    | 0       | 2026-10-14 06:44 |
+| `pos_063_W3_DY2` | D        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 431    | 0       | 2026-10-14 06:51 |
+| `pos_063_W4_QS`  | D        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 595    | 0       | 2026-10-14 07:31 |
+| `pos_063_W4_DY1` | D        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 609    | 0       | 2026-10-14 07:10 |
+| `pos_063_W4_DY2` | D        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 588    | 0       | 2026-10-14 07:20 |
+| `pos_068_W3_QS`  | E        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 528    | 0       | 2026-10-14 07:58 |
+| `pos_068_W3_DY1` | E        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 512    | 0       | 2026-10-14 07:40 |
+| `pos_068_W3_DY2` | E        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 488    | 0       | 2026-10-14 07:48 |
+| `pos_068_W4_QS`  | E        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 670    | 0       | 2026-10-14 08:32 |
+| `pos_068_W4_DY1` | E        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 681    | 0       | 2026-10-14 08:10 |
+| `pos_068_W4_DY2` | E        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 616    | 0       | 2026-10-14 08:20 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei            | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|------------------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_031_W3_QS`  | LOAD_16NM | -0.32 %  | 64.2       | 119.0          | T4 RIGHT, r 25.70, z -6.8 | 77.5       | T3_T4, r 24.85, z -6.8, Tangente 40° | -97.6      | T4_T5      | 71.1    | T3   |
+| `pos_031_W3_DY1` | LOAD_16NM | -0.28 %  | 58.0       | 118.4          | T4 RIGHT, r 25.70, z -6.8 | 79.1       | T3_T4, r 24.85, z -6.8, Tangente 40° | -100.2     | T4_T5      | 64.1    | T3   |
+| `pos_031_W3_DY2` | LOAD_16NM | -0.28 %  | 41.7       | 119.8          | T4 RIGHT, r 25.70, z -6.8 | 77.9       | T3_T4, r 24.85, z -6.8, Tangente 40° | -98.2      | T4_T5      | 46.1    | T3   |
+| `pos_031_W4_QS`  | LOAD_16NM | -0.21 %  | 76.0       | 88.7           | T4 RIGHT, r 25.70, z -6.0 | 60.0       | T3_T4, r 24.88, z -0.8, Tangente 33° | -72.6      | T4_T5      | 83.8    | T3   |
+| `pos_031_W4_DY1` | LOAD_16NM | -0.19 %  | 68.3       | 91.8           | T4 RIGHT, r 25.70, z -6.0 | 63.8       | T3_T4, r 24.88, z -0.8, Tangente 33° | -76.5      | T4_T5      | 75.2    | T3   |
+| `pos_031_W4_DY2` | LOAD_16NM | -0.15 %  | 45.9       | 99.1           | T4 RIGHT, r 25.70, z -6.0 | 65.7       | T3_T4, r 24.86, z -0.8, Tangente 37° | -79.0      | T4_T5      | 50.7    | T3   |
+| `pos_036_W3_QS`  | LOAD_16NM | +1.41 %  | 67.2       | 143.1          | T4 RIGHT, r 25.80, z +6.8 | 68.4       | T2_T3, r 24.83, z +3.8, Tangente 45° | -90.9      | T4_T5      | 75.8    | T3   |
+| `pos_036_W3_DY1` | LOAD_16NM | +1.47 %  | 60.9       | 145.1          | T4 RIGHT, r 25.80, z -6.8 | 70.5       | T2_T3, r 24.83, z +3.8, Tangente 45° | -93.3      | T4_T5      | 68.3    | T3   |
+| `pos_036_W3_DY2` | LOAD_16NM | +1.43 %  | 44.1       | 154.2          | T4 RIGHT, r 25.80, z +6.8 | 69.8       | T2_T3, r 24.83, z +3.8, Tangente 45° | -91.0      | T4_T5      | 49.2    | T3   |
+| `pos_036_W4_QS`  | LOAD_16NM | +1.57 %  | 78.6       | 101.1          | T4 RIGHT, r 25.80, z -6.0 | 57.8       | T2_T3, r 24.86, z +3.8, Tangente 37° | -68.8      | T4_T5      | 88.4    | T3   |
+| `pos_036_W4_DY1` | LOAD_16NM | +1.51 %  | 70.9       | 107.1          | T4 RIGHT, r 25.80, z -6.0 | 61.0       | T2_T3, r 24.86, z +3.8, Tangente 37° | -71.9      | T4_T5      | 79.4    | T3   |
+| `pos_036_W4_DY2` | LOAD_16NM | +1.60 %  | 48.5       | 123.4          | T4 RIGHT, r 25.80, z +6.0 | 62.6       | T2_T3, r 24.85, z +3.8, Tangente 40° | -73.4      | T4_T5      | 54.0    | T3   |
+| `pos_049_W3_QS`  | LOAD_16NM | -1.24 %  | 80.7       | 74.3           | T3 RIGHT, r 26.10, z +6.8 | 95.1       | T2_T3, r 24.83, z -0.8, Tangente 45° | -117.5     | T3_T4      | 93.1    | T3   |
+| `pos_049_W3_DY1` | LOAD_16NM | -1.28 %  | 75.6       | 79.2           | T3 RIGHT, r 26.10, z +6.8 | 101.5      | T2_T3, r 24.83, z -0.8, Tangente 45° | -126.7     | T3_T4      | 87.0    | T3   |
+| `pos_049_W3_DY2` | LOAD_16NM | -1.44 %  | 62.9       | 101.1          | T3 RIGHT, r 26.10, z +6.8 | 117.8      | T2_T3, r 24.83, z -0.8, Tangente 45° | -148.3     | T3_T4      | 72.6    | T3   |
+| `pos_049_W4_QS`  | LOAD_16NM | -1.20 %  | 88.6       | 66.8           | T4 RIGHT, r 26.00, z -6.0 | 68.3       | T2_T3, r 24.86, z +1.5, Tangente 37° | -80.2      | T3_T4      | 100.1   | T3   |
+| `pos_049_W4_DY1` | LOAD_16NM | -1.18 %  | 82.8       | 61.5           | T3 RIGHT, r 26.10, z +6.0 | 73.9       | T2_T3, r 24.86, z +1.5, Tangente 37° | -87.4      | T3_T4      | 93.4    | T3   |
+| `pos_049_W4_DY2` | LOAD_16NM | -1.31 %  | 66.6       | 79.8           | T3 RIGHT, r 26.10, z +6.0 | 87.4       | T2_T3, r 24.86, z +1.5, Tangente 37° | -105.1     | T3_T4      | 75.3    | T3   |
+| `pos_063_W3_QS`  | LOAD_16NM | -0.33 %  | 65.4       | 118.8          | T3 RIGHT, r 25.70, z -6.8 | 78.2       | T2_T3, r 24.85, z +6.8, Tangente 40° | -95.4      | T3_T4      | 71.9    | T2   |
+| `pos_063_W3_DY1` | LOAD_16NM | -0.29 %  | 59.0       | 118.3          | T3 RIGHT, r 25.70, z -6.8 | 79.8       | T2_T3, r 24.85, z +6.8, Tangente 40° | -98.0      | T3_T4      | 64.9    | T2   |
+| `pos_063_W3_DY2` | LOAD_16NM | -0.29 %  | 42.4       | 119.7          | T3 RIGHT, r 25.70, z -6.8 | 78.6       | T2_T3, r 24.85, z +6.8, Tangente 40° | -96.0      | T3_T4      | 46.6    | T2   |
+| `pos_063_W4_QS`  | LOAD_16NM | -0.22 %  | 77.1       | 88.6           | T3 RIGHT, r 25.70, z -6.0 | 60.2       | T2_T3, r 24.88, z -0.8, Tangente 33° | -72.0      | T3_T4      | 84.7    | T2   |
+| `pos_063_W4_DY1` | LOAD_16NM | -0.21 %  | 69.3       | 91.7           | T3 RIGHT, r 25.70, z -6.0 | 63.9       | T2_T3, r 24.86, z -0.8, Tangente 37° | -75.8      | T3_T4      | 75.8    | T2   |
+| `pos_063_W4_DY2` | LOAD_16NM | -0.16 %  | 46.6       | 98.9           | T3 RIGHT, r 25.70, z -6.0 | 65.9       | T2_T3, r 24.86, z -0.8, Tangente 37° | -78.0      | T3_T4      | 51.2    | T2   |
+| `pos_068_W3_QS`  | LOAD_16NM | +1.35 %  | 68.4       | 145.7          | T3 RIGHT, r 25.80, z +6.8 | 70.5       | T1_T2, r 24.83, z +2.2, Tangente 45° | -88.7      | T3_T4      | 76.9    | T2   |
+| `pos_068_W3_DY1` | LOAD_16NM | +1.38 %  | 62.0       | 146.8          | T3 RIGHT, r 25.80, z +6.8 | 72.6       | T1_T2, r 24.83, z +2.2, Tangente 45° | -91.0      | T3_T4      | 69.3    | T2   |
+| `pos_068_W3_DY2` | LOAD_16NM | +1.43 %  | 44.9       | 156.9          | T3 RIGHT, r 25.80, z +6.8 | 71.9       | T1_T2, r 24.83, z +2.2, Tangente 45° | -88.8      | T3_T4      | 49.9    | T2   |
+| `pos_068_W4_QS`  | LOAD_16NM | +1.52 %  | 79.7       | 101.3          | T3 RIGHT, r 25.80, z +6.0 | 58.7       | T1_T2, r 24.86, z +3.0, Tangente 37° | -68.0      | T3_T4      | 89.3    | T2   |
+| `pos_068_W4_DY1` | LOAD_16NM | +1.52 %  | 72.0       | 107.4          | T3 RIGHT, r 25.80, z +6.0 | 61.9       | T1_T2, r 24.86, z +0.0, Tangente 37° | -71.2      | T3_T4      | 80.4    | T2   |
+| `pos_068_W4_DY2` | LOAD_16NM | +1.59 %  | 49.2       | 123.9          | T3 RIGHT, r 25.80, z +6.0 | 63.8       | T1_T2, r 24.85, z +0.0, Tangente 40° | -72.4      | T3_T4      | 54.7    | T2   |
+
+## 2026-10-14 13:38 `nachtlauf_2026-10-14_fussrundungen_tasche/tasche_serie_w1w4_qs`
+
+(keine Notiz in fe_simulation_notes.yaml)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 396 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 396 Dateien (`pos_001_W1_QS`, `pos_001_W2_QS`, `pos_001_W3_QS`, `pos_001_W4_QS`, `pos_002_W1_QS`, `pos_002_W2_QS` …).
+
+## 2026-10-14 17:33 `pilot_20layers_bore33_pocket_fillet_ellipse_g30_ab3_round0p1f12_qsdy1dy2_AtoE`
+
+**Zweck:** Fußrundungsvariante Ellipse nach Frühe (gamma 30°, a/b 3,0; Literaturwert) am Rad, Taschenkörper: W1 bis W4, QS/DY1/DY2, A bis E, Kante 0,1 mm der Serie, Orientierung aus dem CONVERSE-Mapping des Nutzers auf das Netz der Variante (ADR-116 Punkte 52 und 53). **Ergebnis:** Vorlage; Teil der Kette nachtlauf_2026-10-14_fussrundungen_tasche. (Befunde FE-05)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-14 17:33 `pilot_20layers_bore33_pocket_fillet_ellipse_g25_ab2_round0p1f12_qsdy1dy2_AtoE`
+
+**Zweck:** Fußrundungsvariante Ellipse nach Frühe (gamma 25°, a/b 2,0; Optimum des Sweeps) am Rad, Taschenkörper: W1 bis W4, QS/DY1/DY2, A bis E, Kante 0,1 mm der Serie, Orientierung aus dem CONVERSE-Mapping des Nutzers auf das Netz der Variante (ADR-116 Punkte 52 und 53). **Ergebnis:** Vorlage; Teil der Kette nachtlauf_2026-10-14_fussrundungen_tasche. (Befunde FE-05)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-14 17:34 `nachtlauf_2026-10-14_fussrundungen_tasche/variante_ellipse_g30_ab3`
+
+(keine Notiz in fe_simulation_notes.yaml)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-14 17:34 `nachtlauf_2026-10-14_fussrundungen_tasche/variante_ellipse_g25_ab2`
+
+(keine Notiz in fe_simulation_notes.yaml)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-14 17:46 `pilot_20layers_bore33_pocket_fillet_bezier_f1_round0p1f12_qsdy1dy2_AtoE`
+
+**Zweck:** Fußrundungsvariante Bézier nach DE 10 2013 004 861 B3 (f 1,0; Literaturwert) am Rad, Taschenkörper: W1 bis W4, QS/DY1/DY2, A bis E, Kante 0,1 mm der Serie, Orientierung aus dem CONVERSE-Mapping des Nutzers auf das Netz der Variante (ADR-116 Punkte 52 und 53). **Ergebnis:** Vorlage; Teil der Kette nachtlauf_2026-10-14_fussrundungen_tasche. (Befunde FE-05)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-14 17:46 `nachtlauf_2026-10-14_fussrundungen_tasche/variante_bezier_f1`
+
+(keine Notiz in fe_simulation_notes.yaml)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-14 17:47 `pilot_20layers_bore33_pocket_fillet_bezier_f2.5_round0p1f12_qsdy1dy2_AtoE`
+
+**Zweck:** Fußrundungsvariante Bézier nach DE 10 2013 004 861 B3 (f 2,5; Optimum des Sweeps) am Rad, Taschenkörper: W1 bis W4, QS/DY1/DY2, A bis E, Kante 0,1 mm der Serie, Orientierung aus dem CONVERSE-Mapping des Nutzers auf das Netz der Variante (ADR-116 Punkte 52 und 53). **Ergebnis:** Vorlage; Teil der Kette nachtlauf_2026-10-14_fussrundungen_tasche. (Befunde FE-05)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-14 17:47 `nachtlauf_2026-10-14_fussrundungen_tasche/variante_bezier_f2p5`
+
+(keine Notiz in fe_simulation_notes.yaml)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-14 17:51 `pilot_20layers_bore33_pocket_fillet_bionic_phiauto_r0.3_round0p1f12_qsdy1dy2_AtoE`
+
+**Zweck:** Fußrundungsvariante bionisch nach DE 10 2008 045 318 B3 (phi nach Anspruch 5, r 0,3 S_L; Literaturwert) am Rad, Taschenkörper: W1 bis W4, QS/DY1/DY2, A bis E, Kante 0,1 mm der Serie, Orientierung aus dem CONVERSE-Mapping des Nutzers auf das Netz der Variante (ADR-116 Punkte 52 und 53). **Ergebnis:** Vorlage; Teil der Kette nachtlauf_2026-10-14_fussrundungen_tasche. (Befunde FE-05)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-14 17:51 `nachtlauf_2026-10-14_fussrundungen_tasche/variante_bionic_phiauto_r0p3`
+
+(keine Notiz in fe_simulation_notes.yaml)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-14 17:55 `pilot_20layers_bore33_pocket_fillet_bionic_phi35_r0.2_round0p1f12_qsdy1dy2_AtoE`
+
+**Zweck:** Fußrundungsvariante bionisch nach DE 10 2008 045 318 B3 (phi 35°, r 0,2 S_L; Optimum des Sweeps) am Rad, Taschenkörper: W1 bis W4, QS/DY1/DY2, A bis E, Kante 0,1 mm der Serie, Orientierung aus dem CONVERSE-Mapping des Nutzers auf das Netz der Variante (ADR-116 Punkte 52 und 53). **Ergebnis:** Vorlage; Teil der Kette nachtlauf_2026-10-14_fussrundungen_tasche. (Befunde FE-05)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-14 17:55 `nachtlauf_2026-10-14_fussrundungen_tasche/variante_bionic_phi35_r0p2`
+
+(keine Notiz in fe_simulation_notes.yaml)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-14 17:56 `series_20layers_bore33_pocket_fillet_bionic_phi35_r0.2_round0p1f12_30perpitch_margin1_qs`
+
+**Zweck:** Vollserie der Variante mit dem größten Potenzial (bionisch phi 35°, r 0,2 S_L) auf dem Taschenkörper: W1 bis W4 bei QS, 99 Stellungen wie die Grundserie, für den Stommel-Nachweis mit Lastgeschichte gegen die Taschen-Grundserie (ADR-116 Punkt 53). **Ergebnis:** Vorlage; dritter Block der Kette nachtlauf_2026-10-14_fussrundungen_tasche. (Befunde FE-05)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 396 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 396 Dateien (`pos_001_W1_QS`, `pos_001_W2_QS`, `pos_001_W3_QS`, `pos_001_W4_QS`, `pos_002_W1_QS`, `pos_002_W2_QS` …).
+
+## 2026-10-14 17:56 `nachtlauf_2026-10-14_fussrundungen_tasche/variante_bionic_phi35_r0p2_serie_w1w4_qs`
+
+(keine Notiz in fe_simulation_notes.yaml)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 396 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 396 Dateien (`pos_001_W1_QS`, `pos_001_W2_QS`, `pos_001_W3_QS`, `pos_001_W4_QS`, `pos_002_W1_QS`, `pos_002_W2_QS` …).
 
