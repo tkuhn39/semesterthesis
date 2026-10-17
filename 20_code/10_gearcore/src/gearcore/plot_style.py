@@ -369,6 +369,9 @@ def apply(*, font_folder_override: Path | None = None) -> StyleSheet:
             "savefig.dpi": style["png_dpi"],
             "savefig.format": "svg",
             "svg.fonttype": "none",  # text stays text: the typeface can be exchanged later
+            # the PDF twin of the thesis: TrueType and OpenType faces embedded as subsets, so
+            # that the TUM face and the symbol face print as drawn (user, 2026-10-17)
+            "pdf.fonttype": 42,
             # series: colour, line style and marker cycle together (readable in black and white)
             "axes.prop_cycle": (
                 cycler(color=[hex_colour(c) for c in series[:count]])
@@ -612,14 +615,17 @@ def _title(axes: Any) -> str:
 def save(
     figure: Any,
     stem: Path,
-    formats: Iterable[str] = ("svg", "png"),
+    formats: Iterable[str] = ("svg", "pdf", "png"),
     *,
     check_overlaps: bool = True,
 ) -> list[Path]:
-    """Write the figure as ``<stem>.svg`` (text as text) and ``<stem>.png`` (preview, 300 dpi);
-    returns the paths written, with the axis labels of all axes aligned on one line. Warns
-    (``UserWarning``) when a legend covers plotted data, so the tests, which turn warnings into
-    errors, refuse such a figure."""
+    """Write the figure as ``<stem>.svg`` (text as text, the editable form), ``<stem>.pdf``
+    (the vector twin the thesis includes: same renderer as the SVG, fonts embedded; an SVG
+    converted by another program loses the symbol face, the glyphs of mathtext and the hatch
+    of transparent faces) and ``<stem>.png`` (preview, 300 dpi); returns the paths written,
+    with the axis labels of all axes aligned on one line. Warns (``UserWarning``) when a
+    legend covers plotted data, so the tests, which turn warnings into errors, refuse such a
+    figure."""
     if check_overlaps:
         overlaps = legend_overlaps(figure)
         if overlaps:

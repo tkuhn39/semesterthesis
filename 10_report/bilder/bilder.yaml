@@ -1,0 +1,106 @@
+# Bilder der Semesterarbeit (T5): Auswahl aus 80_output, kopiert von
+# scripts/build_thesis_figures.py nach 10_report/bilder/kap<N>/<name>.pdf. Jedes Bild ist eine
+# Vektorgrafik: zu jeder SVG nimmt der Build den PDF-Zwilling, den plot_style.save aus derselben
+# Figur schreibt (eingebettete Schriften); PNG nur auf Wunsch (format: png). `unterschrift` ist
+# der Entwurf der Bildunterschrift für das Kapitel; die Quelle der Zahlen steht in der
+# bildunterschriften.md des Ausgabeordners. Hausregeln: kein Titel im Bild, jeder Wert in der
+# Legende, nur Linien mit verschiedenen Strichmustern in Methodenbildern, gleiche Skalierung
+# vergleichbarer Diagramme, Marker ohne Linie an A bis E, Legenden in den Worten eines
+# Mitarbeiters, Quelle in eckigen Klammern.
+bilder:
+  # Kapitel 2, Stand der Technik: Methodenbilder für PA46-GF30 "in Anlehnung an [Sto18]"
+  - name: spannung_dehnung_qs
+    kapitel: 2
+    quelle: fe/stommel_methode_V2/spannung_dehnung_qs.svg
+    unterschrift: "Spannungs-Dehnungs-Kurven der quasistatischen Werkstoffkarte von PA46-GF30 nach Orientierungszustand und Temperatur (Matscape-Karte)."
+  - name: orientierungszustaende_qs
+    kapitel: 2
+    quelle: fe/stommel_methode_V2/orientierungszustaende_qs.svg
+    unterschrift: "Orientierungszustände der Werkstoffkarte: Elastizitätsmodul und Festigkeit über dem Orientierungsgrad bei 80 °C."
+  - name: nomogramm_qs
+    kapitel: 2
+    quelle: fe/stommel_methode_V2/nomogramm_qs.svg
+    unterschrift: "Nomogramm der statischen Bemessung nach Stommel et al. für PA46-GF30, quasistatische Karte, in Anlehnung an [Sto18]."
+  - name: haigh_qs_80C
+    kapitel: 2
+    quelle: fe/stommel_methode_V2/haigh_qs_80C.svg
+    unterschrift: "Haigh-Diagramm der zyklischen Bemessung für PA46-GF30 bei 80 °C, quasistatische Karte, in Anlehnung an [Sto18]."
+  # Kapitel 3, Methoden: Zeichnungen aus der Geometriekette (scripts/thesis_figures.py)
+  - name: stirnschnitt_kste
+    kapitel: 3
+    quelle: thesis/stirnschnitt_kste.svg
+    unterschrift: "Stirnschnitt der Prüfverzahnung kst-E in der Stellung C: Konturen der Erzeugung, Kreise der Geometrietabelle, Eingriffslinie und Eingriffsstrecke mit den Normpunkten A bis E."
+  - name: zahnkontur_kste
+    kapitel: 3
+    quelle: thesis/zahnkontur_kste.svg
+    unterschrift: "Zahn des Rades kst-E im Stirnschnitt mit der Trochoide der Werkzeugkopfrundung, den Kreisen der Erzeugung und den 30°-Tangenten."
+  - name: radkoerper_kste
+    kapitel: 3
+    quelle: thesis/radkoerper_kste.svg
+    unterschrift: "Radkörper des Rades kst-E im Meridianschnitt durch die Zahnmitte nach der Zeichnung: Nabe, Taschen, Steg, Felge und Zahn."
+  - name: netz_sektor
+    kapitel: 3
+    quelle: thesis/netz_sektor.svg
+    unterschrift: "Sektornetz des Rades im Stirnschnitt mit der Fesselung an Bohrung und Schnittufern (Taschenkörper, 20 Schichten über der Zahnbreite)."
+  - name: netz_zahn
+    kapitel: 3
+    quelle: thesis/netz_zahn.svg
+    unterschrift: "Netz eines Zahns im Stirnschnitt: Randschicht an Flanke und Fußrundung, Vergröberung zum Körper."
+  - name: netz_koerper
+    kapitel: 3
+    quelle: thesis/netz_koerper.svg
+    unterschrift: "Radkörper des Taschennetzes im Meridianschnitt mit den Linien der Zeichnung."
+  - name: paarung_netz
+    kapitel: 3
+    quelle: thesis/paarung_netz.svg
+    unterschrift: "Radsektor und starre Ritzelfläche in der Stellung C mit Eingriffslinie und den Normpunkten A bis E."
+  - name: fussrundungsvarianten
+    kapitel: 3
+    quelle: fe/kst_e/fussrundung_konturen/konturen.svg
+    unterschrift: "Fußrundungsvarianten des Rades kst-E im Stirnschnitt gegen die Trochoide der Erzeugung, linke Zahnhälfte von der Lückenmitte bis zur Evolvente."
+  # Kapitel 4, Voruntersuchungen
+  - name: lastfall_eben
+    kapitel: 4
+    quelle: fe/kst_e/lastfall/load_case.svg
+    unterschrift: "Lastfall der Konvergenzstudie am ebenen Sektormodell (fünf Zähne, Hertzscher Lastfleck am mittleren Zahn)."
+  - name: konvergenz_fussspannung
+    kapitel: 4
+    quelle: fe/kst_e/bilder_V2/convergence/convergence_root_stress.svg
+    unterschrift: "Konvergenz der Fußspannung über der Netzleiter (Formulierung CPE4, je Verfeinerungsrichtung)."
+  - name: konvergenz_kopfverschiebung
+    kapitel: 4
+    quelle: fe/kst_e/bilder_V2/convergence/convergence_tip_displacement.svg
+    unterschrift: "Konvergenz der Kopfverschiebung über der Netzleiter."
+  - name: fussspannung_verlauf_eben
+    kapitel: 4
+    quelle: fe/kst_e/bilder_V2/convergence/fillet_stress.svg
+    unterschrift: "Verlauf der Fußspannung entlang der Fußrundung im ebenen Modell."
+  - name: koerpereffekt_16nm_qs
+    kapitel: 4
+    quelle: fe/kst_e/vergleich_koerper_AtoE/koerpereffekt_LOAD_16NM_QS.svg
+    unterschrift: "Körpereffekt: Taschenkörper gegen Ringkörper gleicher Schichtung an den Normpunkten A bis E, relative Änderung je Werkstoffstufe, 16 Nm, quasistatisch."
+  - name: kopfkante_95912
+    kapitel: 4
+    quelle: messungen/konturscan/pinion/kopfkante_95912_95912_Z18.svg
+    unterschrift: "Kopfkante des Prüfstandsritzels 95912 im Konturscan, Zahn 18."
+  # Kapitel 5, Ergebnisse der Berechnung
+  - name: faserorientierung_zonen
+    kapitel: 5
+    quelle: fe/faserorientierung/zonen_T3.svg
+    unterschrift: "Zonen der Faserorientierung im Zahn T3 der Spritzgießsimulation, ausgewertet wie das CT in FVA 856 I."
+  - name: faserorientierung_vergleich
+    kapitel: 5
+    quelle: fe/faserorientierung/vergleich_T3.svg
+    unterschrift: "Anisotropie-Index je Zone: Spritzgießsimulation gegen den CT-Befund aus FVA 856 I."
+  - name: fusseffekt_sigma1_16nm_qs
+    kapitel: 5
+    quelle: fe/kst_e/vergleich_fussrundung_AtoE/fusseffekt_sigma1_LOAD_16NM_QS.svg
+    unterschrift: "Fußrundungsvarianten gegen die Trochoide: relative Änderung der größten Zugspannung an A bis E je Werkstoffstufe, Taschenkörper, 16 Nm, quasistatisch."
+  - name: fusseffekt_uebersicht_16nm_qs
+    kapitel: 5
+    quelle: fe/kst_e/vergleich_fussrundung_AtoE/fusseffekt_uebersicht_LOAD_16NM_QS.svg
+    unterschrift: "Änderung der größten Zugspannung am Normpunkt C je Variante und Werkstoffstufe, 16 Nm, quasistatisch, mit der Vorhersage des ebenen Sektormodells."
+  - name: sweep_bionisch
+    kapitel: 5
+    quelle: fe/kst_e/fussrundung_sweep/sigma1_bionic.svg
+    unterschrift: "Parameterstudie der bionischen Fußrundung am ebenen Sektormodell: größte Zugspannung über Winkel und Kreisradius."

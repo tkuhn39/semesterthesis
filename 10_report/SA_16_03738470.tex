@@ -1,9 +1,10 @@
-\documentclass[]{FZGdasa}
+\documentclass[entwurf,nokeys]{FZGdasa}
 % {Klassen} entspr. *.cls Dateien:
 % FZGdasa > arbeitet mit \chapter als höchste Ebene
 %
 % [Optionen]:
-% entwurf      > Erstelldatum, Anmerkungen usw. sichtbar
+% entwurf      > Erstelldatum, Anmerkungen usw. sichtbar (für die Vorabversion: \Note{PH: ...} zeigt
+%                die Platzhalter; vor der Abgabe die Option entfernen)
 % notoc        > kein Inhaltsverzeichnis
 % nokeys       > keine labels anzeigen im entwurf-Modus
 % notodolist   > keine Auflistung der mit \Note \sNote \Explain \Reminder \sReminder gekennzeichneten Stellen
@@ -27,61 +28,87 @@
 \Ort{Garching bei München}
 \Aufgabepfad{aufgabenstellung.tex}
 
-% Verfügbare Kommandos:
-%\siehe[1]{s.~#1}
-%{\chapref}[1]{\textbf{\chaptername~\ref{#1}}}
-%{\schapref}[1]{\siehe{\chapref{#1}}}
-%{\secref}[1]{\textbf{Abschnitt~\ref{#1}}}
-%{\ssecref}[1]{\siehe{\secref{#1}}}
-%{\eqref}[1]{\textbf{Formel~(\ref{#1})}}
-%{\seqref}[1]{\siehe{\eqref{#1}}}
-%{\figref}[1]{\textbf{\figurename~\ref{#1}}}
-%{\sfigref}[1]{\siehe{\figref{#1}}}
-%{\tabref}[1]{\textbf{\tablename~\ref{#1}}}
-%{\stabref}[1]{\siehe{\tabref{#1}}}
-%{\datref}[1]{\textbf{Dateifenster~\ref{#1}}}
-%{\sdatref}[1]{\siehe{\datef{#1}}}
+% Verfügbare Kommandos (FZGdef.sty):
+%   \chapref \schapref \secref \ssecref \eqref \seqref \figref \sfigref \tabref \stabref \siehe
+%   \Note \sNote \Explain \Reminder \sReminder (nur mit der Klassenoption entwurf sichtbar)
+% Die Bibliographie litbib.bib wird von FZGdef.sty eingebunden (biber, Stil FZGcompdin); sie
+% wird von scripts/build_bibliography.py erzeugt, nicht von Hand gepflegt.
 
-%\addbibresource{litbib.bib}
+% Formelzeichen nach dem Inhaltsverzeichnis, römisch nummeriert: die Klasse setzt \maketitle
+% \AtBeginDocument und kennt keine Nomenklatur; deshalb wird \maketitle hier um die Seite
+% ergänzt (Nomenklatur.tex erzeugt scripts/build_nomenclature.py aus der Größenregistry).
+\makeatletter
+\renewcommand*\maketitle{%
+    \pagenumbering{Roman}
+    \titlepage
+    \Aufgabenstellung
+    \DiplomErklaerung
+    \tableofcontents
+    \cleardoublepage
+    \chapter*{Formelzeichen und Abkürzungen}
+    \addcontentsline{toc}{chapter}{Formelzeichen und Abkürzungen}
+    \markboth{Formelzeichen und Abkürzungen}{}
+    \input{Nomenklatur.tex}
+    \cleardoublepage
+    \pagenumbering{arabic}
+}
+\makeatother
+
+\graphicspath{{bilder/}{_ltx/}}
+
+% Verweise (Inhaltsverzeichnis, Bilder, Tabellen, Formeln, Quellen) in der Textfarbe statt im
+% Hellgrau der Klasse (Nutzer, 2026-10-17).
+\hypersetup{colorlinks=true, allcolors=black}
+
+% Tabellenspalten mit Umbruch linksbündig statt im Blocksatz (Nutzer, 2026-10-17): L{Breite}.
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% Die Gruppen des Literaturverzeichnisses wie in FZGdef.sty, nur mit gültigen Filtern: dort
+% stehen nottype={manual,online} und notkeyword={norm,web} als Listen, die biblatex nicht
+% kennt, so dass Patente (keyword norm) unter den Büchern und Internetseiten doppelt erschienen.
+\renewcommand{\insertbib}{%
+    \printbibliography[type=manual,title={\titleNormen},heading=subbibliography]
+    \printbibliography[nottype=manual,keyword={norm},heading=none]
+    \printbibliography[nottype=manual,nottype=online,notkeyword={norm},notkeyword={web},title={\titleJournals},heading=subbibliography]
+    \printbibliography[type=online,title={\titleURLS},heading=subbibliography]
+    \printbibliography[nottype=manual,nottype=online,keyword={web},heading=none]
+}
+
+% Platzhalter-Notizen in der Hausschrift statt in der fehlenden Handschrift ECFAugie (Schriftfamilie
+% fau ist nicht installiert); nur im Entwurfsmodus definiert, deshalb erst nach der Klasse.
+\makeatletter
+\if@entwurf
+\renewcommand{\Note}[2][]{\stepcounter{iNote}\todo[inline,color=PostItGelb,caption={Notiz \theiNote{ }#1}]{%
+        \begin{spacing}{1}\small\sffamily #2\end{spacing}}}
+\renewcommand{\Reminder}[2][]{\stepcounter{iReminder}\todo[inline,color=PostItOrange,caption={Erinnerung \theiReminder{ }#1}]{%
+        \begin{spacing}{1}\small\sffamily #2\end{spacing}}}
+\fi
+\makeatother
 
 \begin{document}
 
-%==== Kap1: ====
-\input{Kapitel/kap-einleitung.tex}
-
-%==== Kap2: ====
-\input{Kapitel/kap-theorie.tex}
-
-%==== Kap3: ====
-\input{Kapitel/kap-loesungsansatz.tex}
-
-%==== Kap4: ====
-\input{Kapitel/kap-ergebnisse_diskussion.tex}
-
-%==== Kap4: ====
-\input{Kapitel/kap-zusammenfassung_fazit.tex}
+\input{Kapitel/kap1_einleitung.tex}
+\input{Kapitel/kap2_stand.tex}
+\input{Kapitel/kap3_methoden.tex}
+\input{Kapitel/kap4_voruntersuchungen.tex}
+\input{Kapitel/kap5_berechnung.tex}
+\input{Kapitel/kap6_laufversuche.tex}
+\input{Kapitel/kap7_diskussion.tex}
+\input{Kapitel/kap8_zusammenfassung.tex}
 
 %==== Literaturverzeichnis ====
 \clearpage
-\phantomsection       % Wichtig, damit Verlinkungen im PDF richtig funktionieren
-\addcontentsline{toc}{chapter}{\bibname} % Schreibt das Wort "Anhang" ins Inhaltsverzeichnis
+\phantomsection
+\addcontentsline{toc}{chapter}{\bibname}
 \chapter*{\bibname}
 \markboth{\bibname}{}
 \insertbib
-% In der Bib sollte für Normen und Richtlinien als Type MANUAL und Webseite als ONLINE eingegeben
 
-
-
-%\phantomsection\label{sec:literaturverzeichnis}
-%\bibliography{litbib}
-%\addcontentsline{toc}{section}{\bibname}
-%\clearpage
-
-%=========================================================
 %==== Anhang ====
-\clearpage            % Sorgt dafür, dass der Anhang auf einer neuen Seite beginnt
-\appendix             % Schaltet die Nummerierung von Zahlen (1,2) auf Buchstaben (A,B) um
-\addtocontents{toc}{\protect\setcounter{tocdepth}{0}} % Ab hier nur noch die Chapter-Ebene (Ebene 0) ins Inhaltsverzeichnis aufnehmen, keine Sections (Ebene 1) mehr:
-\input{Kapitel/kap-anhang.tex}
+\clearpage
+\appendix
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
+\input{Kapitel/anhang.tex}
 
 \end{document}

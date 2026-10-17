@@ -1,0 +1,281 @@
+# Auswahl der Formelzeichen, Indizes und Abkürzungen für Nomenklatur.tex (T3).
+# scripts/build_nomenclature.py liest die Formelzeichen aus der Größenregistry
+# (20_code/10_gearcore/src/gearcore/data/quantities.yaml) über die Schlüssel unter `registry`,
+# ergänzt `extra` (Zeichen, die die Registry nicht führt; jedes mit Quelle und Seite, wie
+# transkribiert) und schreibt die drei Tabellen. Danach durchsucht es die .tex-Dateien nach
+# Formelzeichen, die in keiner Tabelle stehen, und meldet sie. Ein Zeichen wird hier eingetragen,
+# bevor es im Text steht (Regel: jedes Symbol einmal in der Nomenklatur, keine Symboltabellen
+# nach Formeln).
+registry:
+  # Verzahnung
+  - number_of_teeth
+  - normal_module
+  - normal_pressure_angle
+  - helix_angle
+  - centre_distance
+  - profile_shift_coefficient
+  - face_width
+  - reference_diameter
+  - base_diameter
+  - tip_diameter
+  - generated_root_diameter
+  - root_form_diameter
+  - working_pitch_diameter
+  - transverse_base_pitch
+  - length_of_path_of_contact
+  - transverse_contact_ratio
+  - gear_ratio
+  - span_measurement
+  - number_of_teeth_spanned
+  - basic_rack_profile_angle
+  - tool_addendum
+  - tool_tip_radius
+  - tip_relief
+  - rotation_speed
+  - circumferential_velocity
+  - transverse_working_pressure_angle
+  - generating_profile_shift_coefficient
+  - upper_generating_profile_shift_coefficient
+  - mean_generating_profile_shift_coefficient
+  - lower_generating_profile_shift_coefficient
+  - tool_root_form_height
+  - tip_chamfer_radial
+  - residual_tip_thickness
+  - measuring_ball_diameter
+  - diametral_two_ball_dimension
+  - tip_form_diameter
+  # Messung
+  - quality_grade
+  - single_pitch_deviation
+  - total_cumulative_pitch_deviation
+  - individual_cumulative_pitch_deviation
+  - sector_pitch_deviation
+  - pitch_span_deviation
+  - adjacent_pitch_difference
+  - runout
+  - total_profile_deviation
+  - profile_slope_deviation
+  - profile_form_deviation
+  - total_helix_deviation
+  - helix_slope_deviation
+  - helix_form_deviation
+  - arithmetic_mean_roughness
+  - mean_peak_to_valley_roughness
+  # Beanspruchung und Bemessung
+  - modulus_of_elasticity
+  - max_principal_stress
+  - min_principal_stress
+  - mises_stress
+  - normal_stress_hypothesis_stress
+  - equivalent_stress
+  - equivalent_strain
+  - permissible_strain
+  - multiaxiality_degree
+  - hill_equivalent_stress
+  - hill_stress_ratio
+  - stress_amplitude
+  - component_stress_amplitude
+  - mean_stress
+  - component_alternating_strength
+  - static_strength
+  - static_component_strength
+  - yield_stress
+  - static_characteristic_value
+  - static_reduction_factor
+  - cyclic_reduction_factor
+  - control_variable
+  - shear_strength_factor
+  - compressive_strength_factor
+  - safety_factor
+  - static_utilisation
+  - cyclic_utilisation
+  - cyclic_utilisation_mises
+  - cyclic_utilisation_normal_stress
+  - single_utilisation
+  - mean_stress_factor
+  - fatigue_life_factor
+  - mean_stress_sensitivity
+  - required_number_of_cycles
+  - limit_number_of_cycles
+  - woehler_slope_exponent
+  # Fußrundungsvarianten
+  - fillet_ellipse_inclination
+  - fillet_ellipse_axis_ratio
+  - bezier_control_factor
+  - bionic_root_angle
+  - bionic_circle_radius
+extra:
+  # Erst eintragen, wenn die Bezeichnung von der Seite der Quelle abgeschrieben ist.
+  - symbol: "S_L"
+    unit: "mm"
+    description: "Sehnenlänge der Zahnlücke am maßgeblichen Durchmesser (bionische Fußrundung)"
+    source: "DE 10 2008 045 318 B3 (Benennung nach ADR-116 Punkt 52, am Patent zu prüfen)"
+  - symbol: "d_r"
+    unit: "mm"
+    description: "maßgebender Durchmesser des Übergangs der Patentkonturen, Mittel aus Nutzkreisdurchmesser und tiefstem Durchmesser des Gegenradkopfes"
+    source: "DE 10 2008 045 318 B3, Anspruch 12 und Abs. [0022] (nach ADR-116 Punkt 52, am Patent zu prüfen)"
+  - symbol: "d_N"
+    unit: "mm"
+    description: "Durchmesser am Beginn des nutzbaren Profils (Patentkonturen)"
+    source: "DE 10 2008 045 318 B3 (nach ADR-116 Punkt 52, am Patent zu prüfen)"
+  - symbol: "d_FR"
+    unit: "mm"
+    description: "tiefster Durchmesser, den der Kopf des Gegenrades erreicht (Patentkonturen)"
+    source: "DE 10 2008 045 318 B3 (nach ADR-116 Punkt 52, am Patent zu prüfen)"
+  - symbol: "l"
+    unit: "mm"
+    description: "Abstand des Hauptpunkts der Bézierkontur vom Schnittpunkt der Flankentangenten"
+    source: "DE 10 2013 004 861 B3, Anspruch 8 (nach ADR-116 Punkt 52, am Patent zu prüfen)"
+  - symbol: "f_0"
+    unit: "-"
+    description: "Grenzwert einer Ergebnisgröße für die Elementgröße null (Richardson-Ansatz)"
+    source: "fe_mesh_convergence.md Abschnitt 2; Bathe 1996 Gl. (4.101), Dahmen und Reusken 2022 Gl. (10.35)"
+  - symbol: "C"
+    unit: "-"
+    description: "Konstante des Richardson-Ansatzes"
+    source: "fe_mesh_convergence.md Abschnitt 2"
+  - symbol: "h"
+    unit: "-"
+    description: "relative Elementgröße (Richardson-Ansatz)"
+    source: "fe_mesh_convergence.md Abschnitt 2"
+  - symbol: "p"
+    unit: "-"
+    description: "Konvergenzordnung (Richardson-Ansatz)"
+    source: "fe_mesh_convergence.md Abschnitt 2"
+  - symbol: "d_f"
+    unit: "mm"
+    description: "Fußkreisdurchmesser"
+    source: "DIN ISO 21771:2014-08, Symbolverzeichnis §3.1 (zu prüfen)"
+  - symbol: "d_Ca"
+    unit: "mm"
+    description: "Durchmesser am Beginn der Kopfrücknahme"
+    source: "DIN ISO 21771:2014-08, Kopfrücknahme (zu prüfen); contour_scan.py"
+  - symbol: "s_b"
+    unit: "mm"
+    description: "Zahndicke am Grundkreis (Konturscan)"
+    source: "DIN ISO 21771:2014-08 (zu prüfen); contour_scan.py"
+  - symbol: "c"
+    unit: "mm"
+    description: "Schenkel der symmetrischen Fase an der Kopfkante (Konturscan)"
+    source: "contour_scan.py, ADR-117 Amendment 2026-10-11"
+  - symbol: "T"
+    unit: "N m"
+    description: "Drehmoment (Index 1 Ritzel, 2 Rad)"
+    source: "ADR-116 Punkt 1; Normbezeichnung nach VDI 2736 Blatt 2 zu prüfen"
+  - symbol: "nu"
+    unit: "-"
+    description: "Querkontraktionszahl"
+    source: "Werkstoffkarte (CONVERSE), ADR-116 Punkt 44"
+  - symbol: "E_i"
+    unit: "MPa"
+    description: "Elastizitätsmodul in Richtung i des Faserkoordinatensystems"
+    source: "FVA 856 I Tabelle 4 (fva856_table4.yaml)"
+  - symbol: "G_ij"
+    unit: "MPa"
+    description: "Schubmodul in der Ebene ij des Faserkoordinatensystems"
+    source: "FVA 856 I Tabelle 4 (fva856_table4.yaml)"
+  - symbol: "nu_ij"
+    unit: "-"
+    description: "Querkontraktionszahl in der Ebene ij des Faserkoordinatensystems"
+    source: "FVA 856 I Tabelle 4 (fva856_table4.yaml)"
+  - symbol: "a_ij"
+    unit: "-"
+    description: "Eigenwerte des Faserorientierungstensors (Index 11 größter, 22 zweitgrößter Eigenwert)"
+    source: "Matscape-Karte, CONVERSE-Feldvariablen (ADR-118)"
+  - symbol: "sigma_ij"
+    unit: "MPa"
+    description: "Komponenten des Spannungstensors im Faserkoordinatensystem"
+    source: "ADR-118 Amendment 2026-10-11 (E7)"
+  - symbol: "A"
+    unit: "-"
+    description: "Abminderungsfaktor im Nomogramm, bezogen auf den statischen Werkstoffkennwert K"
+    source: "Stommel et al. 2018, S. 346 und 349"
+  - symbol: "F"
+    unit: "-"
+    description: "Konstante des Hill-Potentials"
+    source: "Abaqus 2025, Hill Anisotropic Yield/Creep (ADR-118 E7)"
+  - symbol: "G"
+    unit: "-"
+    description: "Konstante des Hill-Potentials"
+    source: "Abaqus 2025, Hill Anisotropic Yield/Creep (ADR-118 E7)"
+  - symbol: "H"
+    unit: "-"
+    description: "Konstante des Hill-Potentials"
+    source: "Abaqus 2025, Hill Anisotropic Yield/Creep (ADR-118 E7)"
+  - symbol: "L"
+    unit: "-"
+    description: "Konstante des Hill-Potentials"
+    source: "Abaqus 2025, Hill Anisotropic Yield/Creep (ADR-118 E7)"
+  - symbol: "M"
+    unit: "-"
+    description: "Konstante des Hill-Potentials"
+    source: "Abaqus 2025, Hill Anisotropic Yield/Creep (ADR-118 E7)"
+  - symbol: "N"
+    unit: "-"
+    description: "Konstante des Hill-Potentials"
+    source: "Abaqus 2025, Hill Anisotropic Yield/Creep (ADR-118 E7)"
+# Deutsche Benennung, wo die Registry die englische Normbezeichnung führt (ISO-Dokumente), keine
+# Benennung hat oder eine Klammerbemerkung; die Registry selbst bleibt wörtlich.
+benennung:
+  upper_generating_profile_shift_coefficient: "Erzeugungs-Profilverschiebungsfaktor am oberen Zahndickenabmaß"
+  lower_generating_profile_shift_coefficient: "Erzeugungs-Profilverschiebungsfaktor am unteren Zahndickenabmaß"
+  equivalent_strain: "Vergleichsdehnung"
+  permissible_strain: "zulässige Dehnung"
+  centre_distance: "Achsabstand"
+  reference_diameter: "Teilkreisdurchmesser"
+  generated_root_diameter: "erzeugter Fußkreisdurchmesser"
+  root_form_diameter: "Fußformkreisdurchmesser"
+  transverse_base_pitch: "Grundkreisteilung im Stirnschnitt"
+  span_measurement: "Zahnweite über k Zähne"
+  number_of_teeth_spanned: "Messzähnezahl"
+  tip_relief: "Kopfrücknahme"
+  rotation_speed: "Drehzahl"
+  circumferential_velocity: "Umfangsgeschwindigkeit am Teilkreis"
+  quality_grade: "Verzahnungsqualität"
+  arithmetic_mean_roughness: "arithmetischer Mittenrauwert"
+  mean_peak_to_valley_roughness: "gemittelte Rautiefe"
+  modulus_of_elasticity: "Elastizitätsmodul"
+  max_principal_stress: "größte Hauptnormalspannung"
+  min_principal_stress: "kleinste Hauptnormalspannung"
+  hill_equivalent_stress: "Hill-Vergleichsspannung im Faserkoordinatensystem"
+  hill_stress_ratio: "Fließspannungsverhältnisse nach Hill"
+  static_utilisation: "statischer Auslastungsgrad"
+  cyclic_utilisation: "Vergleichsauslastungsgrad der Betriebsfestigkeit"
+  required_number_of_cycles: "geforderte Lastspielzahl"
+  limit_number_of_cycles: "Grenzlastspielzahl"
+  woehler_slope_exponent: "Neigungsexponent der Wöhlerlinie"
+  fillet_ellipse_inclination: "Neigungswinkel der Ellipse"
+  fillet_ellipse_axis_ratio: "Achsenverhältnis der Ellipse"
+  bezier_control_factor: "Steuerfaktor der Bézierkurve"
+  bionic_root_angle: "Steigungswinkel der Tangensfunktion auf der Lückenmitte"
+  bionic_circle_radius: "Radius des Fußkreisbogens der bionischen Kontur"
+indices:
+  - { index: "1", description: "Ritzel" }
+  - { index: "2", description: "Rad" }
+  - { index: "a", description: "Kopf" }
+  - { index: "f", description: "Fuß" }
+  - { index: "b", description: "Grundkreis" }
+  - { index: "n", description: "Normalschnitt" }
+  - { index: "t", description: "Stirnschnitt" }
+  - { index: "w", description: "Wälzkreis, Betrieb" }
+  - { index: "max", description: "Größtwert" }
+  - { index: "min", description: "Kleinstwert" }
+  - { index: "i", description: "Zählindex (Hauptrichtung, Zahn, Komponente)" }
+  - { index: "ij", description: "Komponente im Faserkoordinatensystem" }
+  - { index: "stat", description: "statisch" }
+  - { index: "V", description: "Vergleichsgröße" }
+abkuerzungen:
+  - { kurz: "CT", lang: "Computertomographie" }
+  - { kurz: "DIN", lang: "Deutsches Institut für Normung" }
+  - { kurz: "DY1, DY2", lang: "Werkstoffkarten der Dehnraten 3 1/s und 60 1/s" }
+  - { kurz: "FE, FEM", lang: "Finite Elemente, Finite-Elemente-Methode" }
+  - { kurz: "FVA", lang: "Forschungsvereinigung Antriebstechnik e. V." }
+  - { kurz: "FZG", lang: "Forschungsstelle für Zahnräder und Getriebesysteme" }
+  - { kurz: "GF", lang: "Glasfaser" }
+  - { kurz: "ISO", lang: "International Organization for Standardization" }
+  - { kurz: "PA46", lang: "Polyamid 46" }
+  - { kurz: "PEEK", lang: "Polyetheretherketon" }
+  - { kurz: "POM", lang: "Polyoxymethylen" }
+  - { kurz: "QS", lang: "quasistatische Werkstoffkarte" }
+  - { kurz: "VDI", lang: "Verein Deutscher Ingenieure" }
+  - { kurz: "W1 bis W4", lang: "Werkstoffstufen des FE-Modells" }

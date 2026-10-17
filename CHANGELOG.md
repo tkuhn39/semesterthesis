@@ -9,6 +9,125 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (thesis: outline, writing rules, LaTeX skeleton, generators and the first ten section drafts, T0 to T6 of ADR-118, 2026-10-17)
+- `10_report/00_gliederung.md` (T0) and `00_schreibregeln.md` (T1) from the plan of 2026-10-14; the
+  Abaqus exercise chapters, the exercise pictures and the template's example appendix deleted
+  (user's go); skeleton `Kapitel/kap1_einleitung.tex` to `kap8_zusammenfassung.tex` and
+  `anhang.tex` with `anhang_a_*` to `anhang_h_*`, `% Inhalt:` per section; `SA_16_03738470.tex`
+  with the class option `entwurf,nokeys` so that `\Note{PH: ...}` placeholders show, a `\maketitle`
+  override that inputs `Nomenklatur.tex` after the table of contents, `\graphicspath{{bilder/}}`.
+- **`10_report/litbib.bib`** (T2): the thesis' own bibliography, maintained by hand, every entry
+  transcribed from the title page of the file under `00_literatur` with a `% Herkunft:` comment
+  (norms as `@manual` with the author field, so the label reads [DIN14], a title that carries the
+  designation and a date with the month; patents as `@patent`, both with `keywords = {norm}`; the
+  STplus manual as `@report` with the type Benutzeranleitung; web pages as `@online`). The user's
+  rule of 2026-10-17: the Citavi export of the Bachelor thesis is a template for older sources
+  only, the thesis cites from `litbib.bib`, and every norm goes in there. **`scripts/build_bibliography.py`**
+  `check`: every `\cite` key has an entry, entries nobody cites are listed, the norm rules above
+  are checked; `take KEY…` copies an older entry from the Citavi export with the key rules of the
+  thesis (umlauts rewritten, `@misc` with a number → `@manual` keyword norm, `@misc` with a url →
+  `@online`, Citavi's `price` and a DOI that is no DOI dropped) and marks it as still to be
+  checked against the title page. `10_report/literatur.yaml` is gone. The bibliography groups are
+  set in `SA_16_03738470.tex` by a `\renewcommand{\insertbib}` with valid biblatex filters: the
+  template's `nottype={manual,online}` and `notkeyword={norm,web}` are lists biblatex does not
+  read, so patents landed under the books and every web page printed twice.
+- **`scripts/build_nomenclature.py`** (T3): `Nomenklatur.tex` from the quantity registry via the
+  selection `10_report/nomenklatur.yaml` (registry keys, `extra` symbols with source, `benennung`
+  German designations where the registry carries the ISO wording, indices, abbreviations); symbols
+  rendered with upright subscripts (`a_B_V` → `a_{\mathrm{B,V}}`, `f_H_alpha` → `f_{\mathrm{H}\alpha}`),
+  `\varepsilon` and `\varphi`; then a scan of every `.tex` for symbols without a row (digit indices
+  matched to `i`/`ij`, listed indices known); a symbol used for two quantities is listed twice and
+  reported (k, h, M, N).
+- **`scripts/build_thesis_figures.py`** (T5): the figures listed in `10_report/bilder/bilder.yaml`
+  copied from `80_output` to `10_report/bilder/kapN/`, every one a vector PDF (user's wish of
+  2026-10-17: no loss of resolution anywhere). **`plot_style.save` now writes three files per
+  figure**: the SVG (editable), the PDF twin from the same figure (`pdf.fonttype` 42, the TUM
+  face and TeX Gyre Heros embedded as subsets, checked with `pdffonts`) and the 300 dpi PNG;
+  the build takes the twin. Inkscape 1.4.4 (unpacked by hand under
+  `%LOCALAPPDATA%\Programs\Inkscape` with `msiexec /a`, no administrator rights; looked for
+  there, under `INKSCAPE` and `C:\Program Files\Inkscape`) converts only an SVG without a
+  current twin, because its rendering of the matplotlib SVGs is not faithful: it substituted
+  Arial for the symbol face (TeX Gyre Heros is a TeX Live font; its four OTFs were copied into
+  Inkscape's user font folder as a remedy), lost the glyphs of mathtext (the prime of $F'$) and
+  moved the lines of multi-line titles onto each other. Found while checking every figure
+  against its PNG (a scratch script rasterises each PDF with `pdftoppm` and takes the pixel
+  difference): the hatch of the nomogram was missing in the SVG itself, because matplotlib's
+  SVG backend paints the hatch tile's background with the opaque face colour when the artist
+  carries an alpha, so the hatch was invisible in every SVG and every PDF made from one
+  (`fe_fatigue.py`: face and hatch are two artists now, the legend handle a tuple with
+  `HandlerTuple`); the fillet figure had `linestyle="-"` on every variant (six dash patterns
+  now, `VARIANT_STYLES`). No figure carries a title any more and every value stands in the
+  legend (user): `fe_mesh_convergence.py load-case` draws the load case picture of the base
+  mesh alone with the Fesselung, the load with $F'$, $b_{\mathrm{H}}$, $p_0$ and the node of
+  $\sigma_{1,\max}$ as legend entries (`80_output/fe/kst_e/lastfall`), `measurements.py`
+  keeps only the panel names on the tip corner figures. **`scripts/thesis_figures.py`** grew
+  from `fillets` to `stirnschnitt` (both gears in the position C from `fe.placement`, the
+  circles of Tabelle 3.1 per gear with one dash pattern per circle, the line of action with
+  T_1, T_2 and A to E), `zahnkontur` (the wheel tooth with the landmark circles and the 30°
+  tangent construction: `tangent_point` finds the fillet point where the tangent angle to the
+  centre line falls to 30°, the chord and the circumradius; it reproduces the STplus result
+  list, s_Fn 2,197 mm and rho_F/m_n 0,38, `tests/test_thesis_figures.py`), `radkoerper` (the
+  meridional section of `fe.body.body_section` with the corner radii of the drawing as arcs,
+  the regions named, the dimensions of the drawing as leaders) and `mesh` (the frozen pocket
+  mesh rebuilt with the counts of the manifest and drawn without titles: sector with the
+  Fesselung, tooth T3, body section with the drawing, the pair in the position C with the
+  rigid pinion surface and A to E, which replaces the preview picture `eingriff_stellung_c`
+  in 3.6); output `80_output/thesis/` with `bildunterschriften.md`. The analysis folders whose
+  figures the thesis uses were regenerated in place with their original arguments so that
+  every figure has a twin (`bilder_V2/convergence` re-run: `convergence.md` identical, only
+  the seconds column of the CSV differs; `vergleich_koerper_AtoE`, `fussrundung_sweep`,
+  `vergleich_fussrundung_AtoE`, `faserorientierung`: reports compared with the saved copies).
+  `format: png` takes the raster twin on request only. Stale files below `bilder/kap*` are
+  removed so that graphicx never picks an old twin; `\includegraphics` in the drafts names no
+  extension. Layout pass of 2026-10-17 afternoon after the user's look at the PDF: tables set
+  in `\footnotesize` with `p{}` columns and `\tabcolsep` 4 pt (no table wider than the text
+  any more), the placeholder notes `\Note` redefined in the main file in the house sans face
+  (the class uses the handwriting face ECFAugie, which is not installed), the longtables of
+  the Nomenklatur narrowed, figure references to drawings that do not exist yet replaced by
+  notes, the two Stommel method figures placed in 2.5.3 because 3.7 refers to them. Second
+  round the same evening (user): every link (table of contents, figure, table, equation and
+  source references) in the text colour instead of the class's grey
+  (`\hypersetup{colorlinks=true, allcolors=black}`); every table column left-aligned,
+  including the Nomenklatur, with the column type `L{width}` (`array`, ragged right) in place
+  of `p{}`, `r` and `c`; 3.1 holds the three drawings now (Stirnschnitt, Zahnkontur,
+  Radkörper), 3.6 the four mesh pictures of `thesis_figures.py mesh`;
+  **`scripts/thesis_figures.py fillets`**: the six root fillet variants against the trochoid in the
+  transverse section (`80_output/fe/kst_e/fussrundung_konturen`, lines only).
+- **`scripts/check_thesis_text.py`**: the check list of the writing rules as heuristics over the
+  prose of the chapters (sentences over 30 words, dashes, colon chains, three-part enumerations,
+  repeated sentence starts, forbidden words, placeholder and AI-mention counts, and since the
+  evening a value of a quantity left in the text face). **Rule 4.5 of the writing rules (user,
+  2026-10-17 evening):** every value of a quantity is set in math mode with `{,}` as the decimal
+  comma and the unit upright after a thin space (`$52$\,mm`, `$21{,}463$°`,
+  `$1{,}25\,m_{\mathrm{n}}$`), in tables and captions too; counts, part numbers, dates, norm
+  numbers and material designations (20MnCr5, PA46-GF30) stay in the text face.
+  **`scripts/thesis_numbers.py [--fix]`** lists or applies the conversion (decimal comma, number
+  with unit, number before a symbol formula, thin space between a formula and its unit; comments,
+  mathematics, equation environments and the arguments of `\Note`, `\cite`, `\ref` and the like
+  untouched; `2 $\times$ 15` stays a count); 805 replacements in the ten drafts and kap2, the
+  geometry table 3.1 set by hand, the conversion is idempotent. The user's first two review
+  comments (`% TK: …` in the draft) are worked in: the tangents of the tooth contour drawing now
+  run from their points of contact on the fillet to the apex, the osculating circles of radius
+  rho_F are drawn, the legend shows circles as lines; the 2025 pinion drawing describes the
+  pre-cut only, the finish grinding with the tip relief is done in the institute's workshop (the
+  placeholder on the drawing state is resolved, source noted under `% Herkunft:`).
+- Tests `tests/test_thesis_builders.py` (symbol rendering, scan, Citavi parser, key rules,
+  classification, bibliography check and take, figure listing rules), `tests/test_thesis_figures.py`
+  (the 30° tangent against the STplus result list, the body outline, the rounded corner);
+  `test_plot_style.py` and `test_fe_fillet_comparison.py` expect the three files per figure.
+- Drafts (one file per section under `Kapitel/entwuerfe/`, input by the chapter files, each with a
+  `% Herkunft:` block per paragraph and `% Bildwunsch:` comments; drafted by section agents from the
+  repository sources, reviewed and merged): 3.1, 3.3, 3.5 (with the one discreet mention of
+  AI-assisted programming), 3.6, 3.7, 4.1, 4.2, 4.3, 4.4 and 5.4. The source placeholders of the
+  drafts are `\cite` keys of `litbib.bib` now (19 cited entries, 40 in the file). The thesis
+  compiles to 60 pages with no undefined reference or citation and no overfull line above 10 pt;
+  the nomenclature scan is clean.
+- Corrections found while drafting: ADR-116 item 47 (f) and the diary note of the rate pilot placed
+  the DY2 rise of σ1 by 20 to 32 % "at A"; the tables of section 8 put it at C, with +1 to +12 % at
+  A, B, D and E (corrected). In the Citavi export `Sto18` is Stoffregen and Stommel et al. 2018 is
+  `Sto18b`, `Rot17` is FVA 732 I and `Zim16` is FVA 604 II; `litbib.bib` carries its own keys
+  (`Sto18` = Stommel et al., `RotOpf17`, `FVA604-I`).
+
 ### Added (FE: the first five root fillet variants of the chain of 2026-10-14 evaluated, ADR-116 item 53 amendment of 2026-10-17)
 - **`scripts/fe_fillet_comparison.py`** (+ `tests/test_fe_fillet_comparison.py`): the root fillet
   variants against the trochoid of the generation at A to E per material step, rate and load step

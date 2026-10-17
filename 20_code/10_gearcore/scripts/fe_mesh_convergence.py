@@ -303,11 +303,13 @@ def _plot_load_case(
         ".",
         color=SHEET.colour("diag5"),
         markersize=1.5,
-        label="Fesselung",
+        linestyle="none",
+        label="Fesselung: Knoten der Bohrung und der Schnittufer",
     )
     loaded = load.loaded_nodes
     f = load.loads_n_per_mm[loaded]
     scale = 0.6 / max(float(np.hypot(f[:, 0], f[:, 1]).max()), 1e-12)
+    torque_nm = _number(load.torque_wheel_nmm / 1000.0, 0)
     axes.quiver(
         points[loaded, 0] - scale * f[:, 0],
         points[loaded, 1] - scale * f[:, 1],
@@ -319,18 +321,32 @@ def _plot_load_case(
         width=0.004,
         color=SHEET.colour("tum_schwarz"),
     )
+    # a proxy for the arrows: a quiver has no legend handle of its own; every value of the load
+    # stands in the legend, the figure carries no title (user, 2026-10-17)
+    axes.plot(
+        [],
+        [],
+        color=SHEET.colour("tum_schwarz"),
+        marker=">",
+        markersize=4,
+        linestyle="-",
+        label=(
+            f"Flankenlast am Punkt B, {torque_nm} Nm am Rad: $F'$ = {_number(load.force_per_mm, 2)} N/mm, "
+            rf"$b_{{\mathrm{{H}}}}$ = {_number(load.half_width_mm, 3)} mm, "
+            rf"$p_{{\mathrm{{0}}}}$ = {_number(load.max_pressure_mpa, 1)} MPa"
+        ),
+    )
     axes.plot(
         *points[result.root_node],
         marker="o",
         markersize=5,
         markerfacecolor="none",
         color=SHEET.colour("tum_schwarz"),
-    )
-    axes.annotate(
-        rf"$\sigma_{{1,\mathrm{{max}}}}$ = {_number(result.root_sigma1_max_mpa, 1)} MPa",
-        points[result.root_node],
-        textcoords="offset points",
-        xytext=(8, -12),
+        linestyle="none",
+        label=(
+            rf"Knoten der größten Hauptspannung, $\sigma_{{1,\mathrm{{max}}}}$ = "
+            f"{_number(result.root_sigma1_max_mpa, 1)} MPa"
+        ),
     )
     tooth = load.loaded_tooth
     theta = 0.5 * math.pi + (tooth - 0.5 * (section.teeth + 1)) * section.pitch_angle_rad
@@ -346,15 +362,43 @@ def _plot_load_case(
     _style(axes, "x in mm", "y in mm")
     bar = figure.colorbar(polygons, ax=axes, shrink=0.8)
     bar.set_label(r"$\sigma_{\mathrm{1}}$ je Element in MPa")
-    torque_nm = _number(load.torque_wheel_nmm / 1000.0, 0)
-    axes.set_title(
-        f"Lastfall Punkt B, {torque_nm} Nm am Rad: $F'$ = {_number(load.force_per_mm, 2)} N/mm, "
-        rf"$b_{{\mathrm{{H}}}}$ = {_number(load.half_width_mm, 3)} mm, "
-        rf"$p_{{\mathrm{{0}}}}$ = {_number(load.max_pressure_mpa, 1)} MPa",
-    )
-    legend_outside(figure, axes, where="bottom")
+    legend_outside(figure, axes, where="bottom", ncol=1)
     save_figure(figure, out / "load_case")
     plt.close(figure)
+
+
+def load_case_figure(
+    case: str,
+    teeth: int,
+    rim_rings: int,
+    torque_nm: float,
+    e_mpa: float,
+    nu: float,
+    out: Path,
+    formulation: str = ps.FORMULATIONS[0],
+) -> list[str]:
+    """The load case picture of the base mesh alone (``load_case``), as ``study`` draws it
+    for its first level; for the thesis, without the study (2026-10-17)."""
+    generation = _generation(case)
+    outline = ct.tooth_contour(generation, "wheel", points=2000).as_array()
+    base = sm.sector_mesh(generation, "wheel", teeth=teeth, rim_rings=rim_rings)
+    section, load, solution, result, seconds = _run(
+        generation,
+        base,
+        outline,
+        rf.Refinement(uniform=1),
+        torque_nmm=1000.0 * torque_nm,
+        e_mpa=e_mpa,
+        nu=nu,
+        width_mm=15.0,
+        formulation=formulation,
+    )
+    _plot_load_case(out, section, load, solution, result)
+    return [
+        f"load_case: {result.nodes} nodes, sigma1 {result.root_sigma1_max_mpa:.3f} MPa, "
+        f"F' {load.force_per_mm:.2f} N/mm, b_H {load.half_width_mm:.3f} mm, "
+        f"p_0 {load.max_pressure_mpa:.1f} MPa, {seconds:.1f} s"
+    ]
 
 
 def study(
@@ -1416,6 +1460,19 @@ def main() -> None:
         help="element formulation of the own solver (CPE4/C3D8 or CPE4I/C3D8I counterpart)",
     )
     study_parser.add_argument("--out", type=Path, default=None)
+    picture_parser = commands.add_parser(
+        "load-case", help="the load case picture of the base mesh alone (thesis figure)"
+    )
+    picture_parser.add_argument("--case", default="kst_e")
+    picture_parser.add_argument("--teeth", type=int, default=5)
+    picture_parser.add_argument("--rim-rings", type=int, default=12)
+    picture_parser.add_argument("--torque", type=float, default=16.0, help="N m at the wheel")
+    picture_parser.add_argument("--youngs-modulus", type=float, default=2282.0)
+    picture_parser.add_argument("--poisson-ratio", type=float, default=0.30)
+    picture_parser.add_argument(
+        "--formulation", choices=ps.FORMULATIONS, default=ps.FORMULATIONS[0]
+    )
+    picture_parser.add_argument("--out", type=Path, default=None)
     verify_parser = commands.add_parser("verify")
     verify_parser.add_argument("--case", default="kst_e")
     verify_parser.add_argument("--torque", type=float, default=16.0)
@@ -1458,9 +1515,22 @@ def main() -> None:
         folder = "full_licence"
     if args.command == "recommend":
         folder = "recommendation"
+    if args.command == "load-case":
+        folder = "lastfall"  # the thesis picture beside the study folder, not inside it
     out = args.out if args.out is not None else OUTPUT / args.case / folder
     out.mkdir(parents=True, exist_ok=True)
-    if args.command == "recommend":
+    if args.command == "load-case":
+        lines = load_case_figure(
+            args.case,
+            args.teeth,
+            args.rim_rings,
+            args.torque,
+            args.youngs_modulus,
+            args.poisson_ratio,
+            out,
+            args.formulation,
+        )
+    elif args.command == "recommend":
         lines = recommend(
             args.case,
             args.teeth,

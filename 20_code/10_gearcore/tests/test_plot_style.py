@@ -216,12 +216,15 @@ def test_a_figure_renders_as_svg_with_text_greek_and_png(tmp_path: Path) -> None
     axes.legend()
     written = plot_style.save(figure, tmp_path / "bild")
     plt.close(figure)
-    assert [p.suffix for p in written] == [".svg", ".png"]
+    # the SVG (editable), the PDF twin the thesis includes, the PNG preview (2026-10-17)
+    assert [p.suffix for p in written] == [".svg", ".pdf", ".png"]
     svg = written[0].read_text(encoding="utf-8")
     assert "<text" in svg and "1,5" in svg  # text kept as text, decimal comma on the axis
     assert "α" in svg and "µ" in svg  # Greek and micro as characters, not glyph codes
     assert "cmmi10" not in svg and "®" not in svg  # no Computer Modern fallback
-    assert written[1].stat().st_size > 1000
+    pdf = written[1].read_bytes()
+    assert pdf.startswith(b"%PDF") and b"/FontFile" in pdf  # vector, fonts embedded
+    assert written[2].stat().st_size > 1000
 
 
 def test_legend_outside_reserves_room_and_overlaps_are_detected(tmp_path: Path) -> None:
@@ -260,7 +263,7 @@ def test_legend_outside_reserves_room_and_overlaps_are_detected(tmp_path: Path) 
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         written = plot_style.save(figure, tmp_path / "aussen")
-    assert [w.suffix for w in written] == [".svg", ".png"]
+    assert [w.suffix for w in written] == [".svg", ".pdf", ".png"]
     figure.canvas.draw()
     assert legend.get_window_extent().y1 < axes[1].get_window_extent().y0  # below the axes
     plt.close(figure)

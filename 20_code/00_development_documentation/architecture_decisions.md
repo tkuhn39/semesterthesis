@@ -1626,10 +1626,12 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     synthetic line underestimates the 8 Nm test by about 70× with W2,
     E8 follows. (f) Rates (the pilot DY1/DY2 at A to E of the same morning, section 8 of its
     analysis against the QS series): DY1 lowers the rotation by 5 to 10 % and raises σ1 by 0
-    to 10 %, DY2 lowers the rotation by 23 to 41 % and raises σ1 by 1 to 8 % at B to E but by
-    20 to 32 % at A and the contact pressure at C by up to 40 %, alike for the four steps: the
-    rate acts on the deflection, little on the root maximum of the mid-path, strongly at the
-    edge contacts. (g) "W1 (Hill, Vergleich)" is the isotropic linear step W1 checked against
+    to 10 %, DY2 lowers the rotation by 23 to 41 % and raises σ1 by 1 to 12 % at A, B, D and E
+    but by 20 to 32 % at C, where the contact pressure rises by up to 40 %, alike for the four
+    steps (corrected 2026-10-17 while drafting thesis section 4.3: the first wording placed the
+    σ1 rise at A, the tables of section 8 put it at C, the point of single contact with the
+    extended engagement of the neighbouring teeth): the rate acts on the deflection and, at C,
+    on the share of the middle tooth, little on σ1 at the double-contact points. (g) "W1 (Hill, Vergleich)" is the isotropic linear step W1 checked against
     the Hill strengths of the fibre frame (the card's orientation read, the stresses of the
     isotropic solution): a method comparison on the same stress state, no material statement;
     it sits above the W3 Hill values because W1 lacks the anisotropic stress redistribution.
@@ -2693,6 +2695,43 @@ Findings (16 Nm; 8 Nm alike; at 12 Nm the own check has no node table, stresses 
    trace to the reports; the parser now reads the text layer as UTF-8, matches rows on one
    line only and leaves h and K_AK out (their rows were mis-assigned for the compressive
    nodes in the first version).
+
+### Amendment of 2026-10-17 (T5: every thesis figure a vector PDF twin, no titles, the drawings of 3.1)
+
+1. **Decision (user, 2026-10-17 evening).** Every figure of the thesis goes in as a vector PDF
+   with embedded fonts; nothing is rasterised. `plot_style.save` writes three files from the
+   same figure: the SVG (editable), the PDF twin (`pdf.fonttype` 42, TUM Neue Helvetica and
+   TeX Gyre Heros as subsets) and the 300 dpi PNG (preview). `build_thesis_figures.py` takes
+   the twin; Inkscape converts only an SVG without a current twin. Reason: Inkscape renders
+   the matplotlib SVGs unfaithfully (symbol face substituted, mathtext glyphs lost, the lines
+   of multi-line titles shifted onto each other), found by rasterising every figure PDF and
+   comparing it with the PNG. Two defects of the figures themselves surfaced in the same
+   check: the hatch of the nomogram was absent in every SVG because matplotlib's SVG backend
+   paints the hatch tile's background opaque when the artist carries an alpha (face and hatch
+   are two artists now), and the fillet figure drew every variant solid (one dash pattern per
+   variant now).
+2. **Figure rules extended (user).** No title inside a figure; every value in the legend; the
+   panel name is the only text a multi-panel figure keeps above a panel. The load case
+   picture of the convergence study and the tip corner figures of the contour scans follow
+   this (`fe_mesh_convergence.py load-case`, `measurements.py`).
+3. **Drawings of 3.1 and the mesh pictures.** `scripts/thesis_figures.py` draws the pair in
+   the position C with the circles of Tabelle 3.1 and the points A to E (`fe.placement`),
+   the wheel tooth with the 30° tangent construction (`tangent_point`: the fillet point where
+   the tangent angle to the centre line falls to 30°, the chord s_Fn and the circumradius;
+   the STplus result list of kst-E is reproduced, s_Fn 2,197 mm and rho_F/m_n 0,38, which is
+   the first independent check of the fillet of the geometry chain against STplus at the
+   critical section), the body section of the drawing with its corner radii and dimensions,
+   and the frozen pocket mesh rebuilt from the counts of the manifest without the titles of
+   the deck builder. The preview picture of the placement (`eingriff_stellung_c`) is replaced
+   by the pair picture of the mesh, which carries the line of action and A to E.
+4. **Consequence.** The analysis folders whose figures the thesis uses were regenerated in
+   place with their original arguments so that every figure has a twin; their reports were
+   compared with saved copies and differ only in the file lists, the seconds column and one
+   reworded header (`bilder_V2/convergence`, `vergleich_koerper_AtoE`, `fussrundung_sweep`,
+   `vergleich_fussrundung_AtoE`, `faserorientierung`). Poppler prints "Mismatch between font
+   type and embedded font file" for the OpenType symbol face embedded under Type 42; the
+   glyphs render correctly in every check, and Type 3 embedding (`pdf.fonttype` 3) is the
+   fallback should a print service object.
 
 ## ADR-119 — Fibre orientation of the moulding simulation, evaluated on the mapped FE mesh and compared with the CT zones of FVA 856 I (2026-10-13)
 

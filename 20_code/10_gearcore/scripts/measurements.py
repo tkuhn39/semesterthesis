@@ -1396,13 +1396,9 @@ def plot_corners(evaluation: cs.ScanEvaluation, title: str, stem: Path) -> list[
         axis.set_aspect("equal")
         axis.set_xlim(-200.0, 200.0)
         axis.set_ylim(-220.0, 40.0)
-        axis.set_title(
-            f"Kopf {c.tip_index} {SIDE_LABELS[c.side]}"
-            + chr(10)
-            + f"ρ {_n(c.arc_radius_mm, 3)} mm ({_n(c.arc_rms_um, 1)} µm)"
-            + chr(10)
-            + f"c {_n(c.chamfer_length_mm, 3)} mm ({_n(c.chamfer_rms_um, 1)} µm)"
-        )
+        # the panel's name only; the fitted radii, chamfer legs and their RMS stand in the
+        # tables and the text (figures carry no titles and no values inside, user 2026-10-17)
+        axis.set_title(f"Kopf {c.tip_index} {SIDE_LABELS[c.side]}")
         decimal_comma(axis)
     for axis in axes_list[len(corners) :]:
         axis.set_visible(False)
@@ -1411,7 +1407,7 @@ def plot_corners(evaluation: cs.ScanEvaluation, title: str, stem: Path) -> list[
             axis.set_ylabel("Längs der Halbierenden in µm")
         if k >= len(corners) - cols:
             axis.set_xlabel("Quer in µm")
-    figure.suptitle(f"{title}: Kopfkanten (Bogen ρ gegen Fase c, RMS in Klammern)")
+    del title  # the part and the tooth name the file and the caption, not the figure
     legend_outside(figure, axes_list[0], where="bottom", ncol=4)
     written = save(figure, stem)
     plt.close(figure)

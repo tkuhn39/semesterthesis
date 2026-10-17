@@ -731,30 +731,26 @@ def _reduction_panel(
             hatch = LOAD_CASE_HATCHES[case]
             low, high = bounds.minimum * k_value, bounds.maximum * k_value
             if high > low:
-                axes.bar(
-                    column,
-                    high - low,
-                    bottom=low,
-                    width=0.6,
-                    facecolor=colour,
-                    edgecolor=colour,
-                    alpha=alpha,
-                    hatch=hatch,
-                    linewidth=0,
-                )
+                height, bottom = high - low, low
             else:
                 # a single value (A_min = A_max): a thin bar of the common width with the hatch
-                axes.bar(
-                    column,
-                    0.03 * k_value,
-                    bottom=low - 0.015 * k_value,
-                    width=0.6,
-                    facecolor=colour,
-                    edgecolor=colour,
-                    alpha=alpha,
-                    hatch=hatch,
-                    linewidth=0,
-                )
+                height, bottom = 0.03 * k_value, low - 0.015 * k_value
+            # the transparent face and the hatch as two artists: in one artist the SVG backend
+            # paints the hatch tile's background with the opaque face colour, so that the hatch
+            # vanished in the SVG and in every PDF made from it (2026-10-17)
+            axes.bar(
+                column, height, bottom=bottom, width=0.6, facecolor=colour, alpha=alpha, linewidth=0
+            )
+            axes.bar(
+                column,
+                height,
+                bottom=bottom,
+                width=0.6,
+                facecolor="none",
+                edgecolor=colour,
+                hatch=hatch,
+                linewidth=0,
+            )
             if own:
                 starts[case] = (column + 0.3, high)
                 starts[case + "_min"] = (column + 0.3, low)
@@ -763,8 +759,9 @@ def _reduction_panel(
                     if high > low
                     else f"$A$ = {_g(bounds.maximum, 2)}"
                 )
-                handle = Patch(
-                    facecolor=colour, edgecolor=colour, alpha=alpha, hatch=hatch, linewidth=0
+                handle = (
+                    Patch(facecolor=colour, alpha=alpha, linewidth=0),
+                    Patch(facecolor="none", edgecolor=colour, hatch=hatch, linewidth=0),
                 )
                 legend.append(
                     (
@@ -951,6 +948,8 @@ def _figure_nomogram(
                 f"{_sigma(sub)}({t_hot} °C) = {_g(sigma_t, 1)} MPa"
             ),
         )
+    from matplotlib.legend_handler import HandlerTuple
+
     handles, labels = right.get_legend_handles_labels()
     for handle, label in case_legend:
         handles.append(handle)
@@ -964,7 +963,14 @@ def _figure_nomogram(
     right.spines["right"].set_visible(True)
     right.set_xlim(0.0, x_max)
     right.set_ylim(0.0, y_max)
-    figure.legend(handles, labels, loc="outside lower center", ncol=1)
+    figure.legend(
+        handles,
+        labels,
+        loc="outside lower center",
+        ncol=1,
+        # a bar's face and hatch are two patches drawn on top of each other in one entry
+        handler_map={tuple: HandlerTuple(ndivide=1, pad=0.0)},
+    )
     decimal_comma(right)
     stem = f"nomogramm_{CARD_LABELS[material.name]}"
     _save(figure, out / stem)

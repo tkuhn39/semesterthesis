@@ -1,31 +1,152 @@
-\textcolor{red}{Nomenklautur wird in \texttt{Nomenklatur.tex} zusammengefasst und automatisch eingebunden. So sieht es beispielhaft aus:}\footnote{Fußnutten sind generell zulässig, sollten aber nur in Ausnahmefällen verwendet werden.}
+% Erzeugt von scripts/build_nomenclature.py aus quantities.yaml und nomenklatur.yaml;
+% nicht von Hand ändern. Zeichen kursiv, Indizes und Einheiten aufrecht (DIN 1338).
+\begin{longtable}{llL{0.66\textwidth}}
+    \textbf{Zeichen} & \textbf{Einheit} & \textbf{Benennung} \\
+    \endhead
+    $A$ & -- & Abminderungsfaktor im Nomogramm, bezogen auf den statischen Werkstoffkennwert K \\
+    $A_{\mathrm{S}}$ & -- & Abminderungsfaktor für einmalige statische Belastung \\
+    $A_{\mathrm{W}}$ & -- & zyklischer Abminderungsfaktor \\
+    $a_{\mathrm{B,Mises}}$ & -- & Vergleichsauslastungsgrad (nach von-Mises-Spannung) \\
+    $a_{\mathrm{B,NH}}$ & -- & Vergleichsauslastungsgrad (nach Normalspannungshypothese) \\
+    $a_{\mathrm{B,V}}$ & -- & Vergleichsauslastungsgrad der Betriebsfestigkeit \\
+    $a_{\mathrm{ij}}$ & -- & Eigenwerte des Faserorientierungstensors (Index 11 größter, 22 zweitgrößter Eigenwert) \\
+    $a_{\sigma}$ & -- & Einzelauslastungsgrade \\
+    $a_{\mathrm{stat}}$ & -- & statischer Auslastungsgrad \\
+    $a_{\mathrm{w}}$ & mm & Achsabstand \\
+    $a/b$ & -- & Achsenverhältnis der Ellipse \\
+    $b$ & mm & Zahnbreite \\
+    $C$ & -- & Konstante des Richardson-Ansatzes \\
+    $C_{\mathrm{a}}$ & \textmu m & Kopfrücknahme \\
+    $c$ & mm & Schenkel der symmetrischen Fase an der Kopfkante (Konturscan) \\
+    $D_{\mathrm{M}}$ & mm & Messkugeldurchmesser \\
+    $d$ & mm & Teilkreisdurchmesser \\
+    $d_{\mathrm{Ca}}$ & mm & Durchmesser am Beginn der Kopfrücknahme \\
+    $d_{\mathrm{FR}}$ & mm & tiefster Durchmesser, den der Kopf des Gegenrades erreicht (Patentkonturen) \\
+    $d_{\mathrm{Fa}}$ & mm & Kopf-Formkreisdurchmesser \\
+    $d_{\mathrm{Ff}}$ & mm & Fußformkreisdurchmesser \\
+    $d_{\mathrm{N}}$ & mm & Durchmesser am Beginn des nutzbaren Profils (Patentkonturen) \\
+    $d_{\mathrm{a}}$ & mm & Kopfkreisdurchmesser \\
+    $d_{\mathrm{b}}$ & mm & Grundkreisdurchmesser \\
+    $d_{\mathrm{f}}$ & mm & Fußkreisdurchmesser \\
+    $d_{\mathrm{fE}}$ & mm & erzeugter Fußkreisdurchmesser \\
+    $d_{\mathrm{r}}$ & mm & maßgebender Durchmesser des Übergangs der Patentkonturen, Mittel aus Nutzkreisdurchmesser und tiefstem Durchmesser des Gegenradkopfes \\
+    $d_{\mathrm{w}}$ & mm & Wälzkreisdurchmesser \\
+    $E$ & MPa & Elastizitätsmodul \\
+    $E_{\mathrm{i}}$ & MPa & Elastizitätsmodul in Richtung i des Faserkoordinatensystems \\
+    $F$ & -- & Konstante des Hill-Potentials \\
+    $F_{\alpha}$ & \textmu m & Profil-Gesamtabweichung \\
+    $F_{\beta}$ & \textmu m & Flankenlinien-Gesamtabweichung \\
+    $F_{\mathrm{p}}$ & \textmu m & Teilungs-Gesamtabweichung \\
+    $F_{\mathrm{pSk}}$ & \textmu m & Teilungs-Spannenabweichung über k-Zähne \\
+    $F_{\pi}$ & \textmu m & Einzelwert der Teilungs-Gesamtabweichung \\
+    $F_{\mathrm{pk}}$ & \textmu m & Teilungs-Sektorabweichung \\
+    $F_{\mathrm{r}}$ & \textmu m & Rundlaufabweichung \\
+    $f$ & -- & Steuerfaktor der Bézierkurve \\
+    $f_{\mathrm{0}}$ & -- & Grenzwert einer Ergebnisgröße für die Elementgröße null (Richardson-Ansatz) \\
+    $f_{\mathrm{H}\alpha}$ & \textmu m & Profil-Winkelabweichung \\
+    $f_{\mathrm{H}\beta}$ & \textmu m & Flankenlinien-Winkelabweichung \\
+    $f_{\mathrm{f}\alpha}$ & \textmu m & Profil-Formabweichung \\
+    $f_{\mathrm{f}\beta}$ & \textmu m & Flankenlinien-Formabweichung \\
+    $f_{\mathrm{p}}$ & \textmu m & Teilungs-Einzelabweichung \\
+    $f_{\sigma}$ & -- & Druckfestigkeitsfaktor \\
+    $f_{\tau}$ & -- & Schubfestigkeitsfaktor \\
+    $f_{\mathrm{u}}$ & \textmu m & Teilungssprung \\
+    $G$ & -- & Konstante des Hill-Potentials \\
+    $G_{\mathrm{ij}}$ & MPa & Schubmodul in der Ebene ij des Faserkoordinatensystems \\
+    $g_{\alpha}$ & mm & Länge der Eingriffsstrecke \\
+    $H$ & -- & Konstante des Hill-Potentials \\
+    $h$ & -- & Mehraxialitätsgrad \\
+    $h$ & -- & relative Elementgröße (Richardson-Ansatz) \\
+    $h_{\mathrm{FfP0}}$ & mm & (lettering of Bild 36 a), without designation: height of the straight part of the tool flank above the datum line, where an edge break flank starts) \\
+    $h_{\mathrm{K}}$ & mm & Radiale Höhe des Kopfkantenbruchs oder der Kopfkantenrundung \\
+    $h_{\mathrm{aP0}}$ & mm & Kopfhöhe des Werkzeug-Bezugsprofils \\
+    $K$ & MPa & statischer Werkstoffkennwert \\
+    $K_{\mathrm{B}}$ & -- & Betriebsfestigkeitsfaktor \\
+    $K_{\mathrm{M}}$ & -- & Mittelspannungsfaktor \\
+    $k$ & -- & Messzähnezahl \\
+    $k$ & -- & Neigungsexponent der Wöhlerlinie \\
+    $L$ & -- & Konstante des Hill-Potentials \\
+    $l$ & mm & Abstand des Hauptpunkts der Bézierkontur vom Schnittpunkt der Flankentangenten \\
+    $M$ & -- & Mittelspannungsempfindlichkeit \\
+    $M$ & -- & Konstante des Hill-Potentials \\
+    $M_{\mathrm{dK}}$ & mm & Diametrales Zweikugelmaß \\
+    $m_{\mathrm{n}}$ & mm & Normalmodul \\
+    $N$ & -- & geforderte Lastspielzahl \\
+    $N$ & -- & Konstante des Hill-Potentials \\
+    $N_{\mathrm{G}}$ & -- & Grenzlastspielzahl \\
+    $n$ & 1/min & Drehzahl \\
+    $p$ & -- & Konvergenzordnung (Richardson-Ansatz) \\
+    $p_{\mathrm{bt}}$ & mm & Grundkreisteilung im Stirnschnitt \\
+    $Q$ & -- & Verzahnungsqualität \\
+    $q$ & -- & Steuergröße \\
+    $R_{\mathrm{a}}$ & \textmu m & arithmetischer Mittenrauwert \\
+    $R_{\mathrm{ij}}$ & -- & Fließspannungsverhältnisse nach Hill \\
+    $R_{\mathrm{z}}$ & \textmu m & gemittelte Rautiefe \\
+    $r$ & mm & Radius des Fußkreisbogens der bionischen Kontur \\
+    $S$ & -- & ggf. Sicherheitsfaktor (hier 1) \\
+    $S_{\mathrm{L}}$ & mm & Sehnenlänge der Zahnlücke am maßgeblichen Durchmesser (bionische Fußrundung) \\
+    $s_{\mathrm{aK}}$ & mm & Restzahndicke am Zahnkopf bei Kopfkantenbruch oder Kopfkantenrundung \\
+    $s_{\mathrm{b}}$ & mm & Zahndicke am Grundkreis (Konturscan) \\
+    $T$ & N m & Drehmoment (Index 1 Ritzel, 2 Rad) \\
+    $u$ & -- & Zähnezahlverhältnis \\
+    $v$ & m/s & Umfangsgeschwindigkeit am Teilkreis \\
+    $W_{\mathrm{k}}$ & mm & Zahnweite über k Zähne \\
+    $x$ & -- & Profilverschiebungsfaktor \\
+    $x_{\mathrm{E}}$ & -- & Erzeugungs-Profilverschiebungsfaktor \\
+    $x_{\mathrm{Ei}}$ & -- & Erzeugungs-Profilverschiebungsfaktor am unteren Zahndickenabmaß \\
+    $x_{\mathrm{Em}}$ & -- & mittlerer Erzeugungs-Profilverschiebungsfaktor \\
+    $x_{\mathrm{Es}}$ & -- & Erzeugungs-Profilverschiebungsfaktor am oberen Zahndickenabmaß \\
+    $z$ & -- & Zähnezahl \\
+    $\alpha_{\mathrm{P}}$ & \textdegree  & Profilwinkel des Bezugsprofils \\
+    $\alpha_{\mathrm{n}}$ & \textdegree  & Normaleingriffswinkel \\
+    $\alpha_{\mathrm{wt}}$ & \textdegree  & Betriebseingriffswinkel des Radpaares \\
+    $\beta$ & \textdegree  & Schrägungswinkel \\
+    $\varepsilon_{\mathrm{V}}$ & \% & Vergleichsdehnung \\
+    $\varepsilon_{\alpha}$ & -- & Profilüberdeckung \\
+    $\varepsilon_{\mathrm{zul}}$ & \% & zulässige Dehnung \\
+    $\gamma$ & \textdegree  & Neigungswinkel der Ellipse \\
+    $\nu$ & -- & Querkontraktionszahl \\
+    $\nu_{\mathrm{ij}}$ & -- & Querkontraktionszahl in der Ebene ij des Faserkoordinatensystems \\
+    $\varphi$ & \textdegree  & Steigungswinkel der Tangensfunktion auf der Lückenmitte \\
+    $\rho_{\mathrm{aP0}}$ & mm & Kopfkantenrundungsradius des Werkzeug-Bezugsprofils \\
+    $\sigma_{\mathrm{1}}$ & MPa & größte Hauptnormalspannung \\
+    $\sigma_{\mathrm{3}}$ & MPa & kleinste Hauptnormalspannung \\
+    $\sigma_{\mathrm{B}}$ & MPa & statische Festigkeit \\
+    $\sigma_{\mathrm{V}}$ & MPa & Vergleichsspannung (aus FEM) \\
+    $\sigma_{\mathrm{V,Hill}}$ & MPa & Hill-Vergleichsspannung im Faserkoordinatensystem \\
+    $\sigma_{\mathrm{V,Mises}}$ & MPa & von-Mises-Spannung \\
+    $\sigma_{\mathrm{V,NH}}$ & MPa & Vergleichsspannung aus der Normalspannungshypothese \\
+    $\sigma_{\mathrm{W}}$ & MPa & Bauteil-Wechselfestigkeit \\
+    $\sigma_{\mathrm{Y}}$ & MPa & Streckspannung (statisch) \\
+    $\sigma_{\mathrm{a}}$ & MPa & Spannungsamplitude \\
+    $\sigma_{\mathrm{a,i}}$ & MPa & vorliegende Spannungsamplitude der Spannungskomponente \\
+    $\sigma_{\mathrm{ij}}$ & MPa & Komponenten des Spannungstensors im Faserkoordinatensystem \\
+    $\sigma_{\mathrm{m}}$ & MPa & Mittelspannung \\
+    $\sigma_{\mathrm{stat}}$ & MPa & statische Bauteilfestigkeit \\
+\end{longtable}
 
-\begin{tabular}{llp{0.7\textwidth}}
-    \textbf{Zeichen} & \textbf{Einheit}                      & \textbf{Benennung}     \\
-    $a$              & m                                     & Achsabstand            \\
-    $c_\gamma$       & $\text{N}/\mu\text{m}\cdot \text{mm}$ & Verzahnungssteifigkeit \\
-    $d_\mathrm{b}$   & mm                                    & Grundkreisdurchmesser  \\
-    \ldots
-\end{tabular}
-\vfill
-\textcolor{red}{!!! Hinweis !!! Nur Größe bzw. Variable darf kursiv geschrieben werden. Dies gilt auch für Indizes. So schreibt man $d_\mathrm{b}$ und nicht $d_b$ für Grundkreisdurchmesser. (Achte auf $\mathrm{b}$).}
+\vspace{1em}
+\begin{longtable}{L{0.1\textwidth}L{0.34\textwidth}L{0.1\textwidth}L{0.34\textwidth}}
+    \multicolumn{4}{l}{\textbf{Indizes}} \\
+    \endhead
+    $\mathrm{1}$ & Ritzel & $\mathrm{2}$ & Rad \\
+    $\mathrm{a}$ & Kopf & $\mathrm{f}$ & Fuß \\
+    $\mathrm{b}$ & Grundkreis & $\mathrm{n}$ & Normalschnitt \\
+    $\mathrm{t}$ & Stirnschnitt & $\mathrm{w}$ & Wälzkreis, Betrieb \\
+    $\mathrm{max}$ & Größtwert & $\mathrm{min}$ & Kleinstwert \\
+    $\mathrm{i}$ & Zählindex (Hauptrichtung, Zahn, Komponente) & $\mathrm{ij}$ & Komponente im Faserkoordinatensystem \\
+    $\mathrm{stat}$ & statisch & $\mathrm{V}$ & Vergleichsgröße \\
+\end{longtable}
 
-\textcolor{red}{Auch die Einheiten dürfen nicht kursiv geschrieben werden. Dokumentation dazu ist in FZGltx Doku Ordner zu finden in \texttt{typefaces.pdf}.}
-
-\textcolor{red}{Auch Einheiten werden ohne Klammer geschrieben, s. DIN 1313.}
-\vfill
-\begin{tabular}{lp{0.4\textwidth}lp{0.4\textwidth}}
-    \multicolumn{4}{l}{\textbf{Indizes}}                                                            \\
-    $\mathrm{1}$  & Ritzel bzw. unterer Wälzkörper & $\mathrm{2}$   & Ratzel bzw. oberer Wälzkörper \\
-    $\mathrm{Bl}$ & Berührlinie                    & $\mathrm{dyn}$ & Dynamisch                     \\
-    \ldots
-\end{tabular}
-\vfill
-\begin{tabular}{lp{0.4\textwidth}lp{0.4\textwidth}}
-    \multicolumn{4}{l}{\textbf{Abkürzungen}}                                                                                 \\
-    DZP     & Däs Zöhnrad Progrömm                               & DIN   & Deutsche Innovativste Nachzumachende Vorschriften \\
-    \FzGeIl & \textbf{FZG e}lektronische \textbf{I}llustrationen & \FzGl & Spitzname von \FzGeIl                             \\
-
-    \ldots
-\end{tabular}
-\vfill
+\vspace{1em}
+\begin{longtable}{L{0.1\textwidth}L{0.34\textwidth}L{0.1\textwidth}L{0.34\textwidth}}
+    \multicolumn{4}{l}{\textbf{Abkürzungen}} \\
+    \endhead
+    CT & Computertomographie & DIN & Deutsches Institut für Normung \\
+    DY1, DY2 & Werkstoffkarten der Dehnraten 3 1/s und 60 1/s & FE, FEM & Finite Elemente, Finite-Elemente-Methode \\
+    FVA & Forschungsvereinigung Antriebstechnik e. V. & FZG & Forschungsstelle für Zahnräder und Getriebesysteme \\
+    GF & Glasfaser & ISO & International Organization for Standardization \\
+    PA46 & Polyamid 46 & PEEK & Polyetheretherketon \\
+    POM & Polyoxymethylen & QS & quasistatische Werkstoffkarte \\
+    VDI & Verein Deutscher Ingenieure & W1 bis W4 & Werkstoffstufen des FE-Modells \\
+\end{longtable}

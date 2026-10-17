@@ -294,7 +294,7 @@ def test_figures_on_a_single_series(script: ModuleType, tmp_path: Path) -> None:
     written = script.figure_effect(
         baseline, [variant], "QS", "LOAD_16NM", "s1_max", tmp_path / "effekt"
     )
-    assert {p.suffix for p in written} == {".svg", ".png"}
+    assert {p.suffix for p in written} == {".svg", ".pdf", ".png"}
     sweep = {
         "bezier_f1": script.SweepRow(
             "bezier", "bezier_f1", 98.4, -0.322, 51.21, 50.216, 0.633, 0.203
