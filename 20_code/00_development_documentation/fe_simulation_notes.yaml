@@ -387,15 +387,6 @@ folders:
     outcome: "keine Warnung, beide durch"
     machine: "Learning Edition"
     findings: [FE-14]
-    outcome: "Vorlage; Teil der Kette nachtlauf_2026-10-14_fussrundungen_tasche"
-    machine: "-"
-    findings: [FE-05]
-    outcome: "Vorlage; Teil der Kette nachtlauf_2026-10-14_fussrundungen_tasche"
-    machine: "-"
-    findings: [FE-05]
-    outcome: "Vorlage; Teil der Kette nachtlauf_2026-10-14_fussrundungen_tasche"
-    machine: "-"
-    findings: [FE-05]
   nachtlauf_2026-10-14_fussrundungen_tasche:
     purpose: "Lange Kette ab 2026-10-14 mit einem Starter, alles Taschenkörper: sechs Fußrundungsvarianten (Literaturwerte und Sweep-Optima) mit W1 bis W4 und QS/DY1/DY2 an A bis E, dann die Taschen-Grundserie W1 bis W4 bei QS, dann die Vollserie des bionischen Optimums (rund 116 h); Sperrdateien-Bereinigung und Autostart für den Neustart des Rechners"
     outcome: "an den Nutzer übergeben 2026-10-14 abends, Start mit abq2025 und 4 Kernen"
@@ -445,24 +436,6 @@ folders:
     outcome: "Literaturwerte −13 % (Ellipse 30°/3,0), −32 % (Bézier f 1), −32 % (bionisch Anspruch 5, r 0,3); Optima −25 % (Ellipse 25°/2,0), −35 % (f 2,5), −38 % (bionisch 35°, r 0,2); Vorschlag: Literaturordner behalten, zwei Optima nach Freigabe ergänzen"
     machine: "eigener Löser"
     findings: [FE-05]
-    outcome: "Vorlage; wird nach dem Mapping mit W1 bis W4 neu geschrieben und in die Kette aufgenommen"
-    machine: "-"
-    findings: [FE-05]
-    outcome: "Vorlage; wird nach dem Mapping mit W1 bis W4 neu geschrieben und in die Kette aufgenommen"
-    machine: "-"
-    findings: [FE-05]
-    outcome: "Vorlage; wird nach dem Mapping mit W1 bis W4 neu geschrieben und in die Kette aufgenommen"
-    machine: "-"
-    findings: [FE-05]
-    outcome: "Vorlage; wird nach dem Mapping mit W1 bis W4 neu geschrieben und in die Kette aufgenommen"
-    machine: "-"
-    findings: [FE-05]
-    outcome: "Vorlage; wird nach dem Mapping mit W1 bis W4 neu geschrieben und in die Kette aufgenommen"
-    machine: "-"
-    findings: [FE-05]
-    outcome: "Vorlage; wird nach dem Mapping mit W1 bis W4 neu geschrieben und in die Kette aufgenommen"
-    machine: "-"
-    findings: [FE-05]
   pilot_20layers_bore33_pocket_fillet_ellipse_g30_ab3_round0p1f12_qsdy1dy2_AtoE:
     purpose: "Fußrundungsvariante Ellipse nach Frühe (gamma 30°, a/b 3,0; Literaturwert) am Rad, Taschenkörper: W1 bis W4, QS/DY1/DY2, A bis E, Kante 0,1 mm der Serie, Orientierung aus dem CONVERSE-Mapping des Nutzers auf das Netz der Variante (ADR-116 Punkte 52 und 53)"
     outcome: "Vorlage; Teil der Kette nachtlauf_2026-10-14_fussrundungen_tasche"
@@ -498,3 +471,33 @@ folders:
     outcome: "Vorlage; dritter Block der Kette nachtlauf_2026-10-14_fussrundungen_tasche"
     machine: "-"
     findings: [FE-05]
+  pilot_20layers_bore33_pocket_fillet_ellipse_g30_ab3_round0p1f12_qsdy1dy2_AtoE_gerechnet:
+    purpose: "Fußrundungsvariante Ellipse nach Frühe (gamma 30°, a/b 3,0; Literaturwert), Taschenkörper, W1 bis W4 × QS/DY1/DY2 an A bis E; erster Block der Kette vom 2026-10-14 (ADR-116 Punkt 53)"
+    outcome: "60 von 60 Jobs (7,9 h, 14.10. 18:28 bis 15.10. 02:51); gegen die Trochoide an C bei 16 Nm σ1 −16 % (W1), −6 % (W2), −4 % (W3), −8 % (W4); an A, B, D und E steigt σ1 dagegen um bis zu +17 % (W1), +22 % (W2), +33 % (W3), +20 % (W4) und |σ3| um bis zu +30 % (W1, W2) und +51 % (W3), der Größtwert sitzt in der Lückenmitte am Krümmungsradius 0,083 mm (unter der Netzauflösung, FE-05); Zahn nachgiebiger: Drehung +5 bis +11 %; ebenes Modell −13 % an B, 3D an B +14 % (vergleich_fussrundung_AtoE)"
+    machine: "Vollversion"
+    findings: [FE-05, FE-25]
+  pilot_20layers_bore33_pocket_fillet_ellipse_g25_ab2_round0p1f12_qsdy1dy2_AtoE_gerechnet:
+    purpose: "Fußrundungsvariante Ellipse nach Frühe (gamma 25°, a/b 2,0; Optimum der ebenen Studie), Taschenkörper, W1 bis W4 × QS/DY1/DY2 an A bis E; Kette vom 2026-10-14"
+    outcome: "60 von 60 Jobs (7,8 h); an C bei 16 Nm σ1 −24 % (W1), −13 % (W2), −15 % (W3), −12 % (W4); an A, B, D, E −3 bis −20 % (W1), unter W2 bis W4 aber bis +6 %, +15 % und +7 %; Drehung +4 bis +9 %; ebenes Modell −25 % an B, 3D an B −6 %, an C −24 % (vergleich_fussrundung_AtoE)"
+    machine: "Vollversion"
+    findings: [FE-05, FE-25]
+  pilot_20layers_bore33_pocket_fillet_bezier_f1_round0p1f12_qsdy1dy2_AtoE_gerechnet:
+    purpose: "Fußrundungsvariante Bézier nach DE 10 2013 004 861 B3 (f 1,0; Literaturwert), Taschenkörper, W1 bis W4 × QS/DY1/DY2 an A bis E; Kette vom 2026-10-14"
+    outcome: "60 von 60 Jobs (8,1 h); σ1 an allen fünf Punkten −25 bis −34 % (W1), −16 bis −27 % (W2), −25 bis −33 % (W3), −1 bis −19 % (W4), |σ3| bis −44 %; Zahn steifer: Drehung −9 bis −22 %, Kopfweg bis −26 %; Kontaktdruck an der Ritzelkante (B, E) +21 bis +29 %; ebenes Modell −32 % an B, 3D an B −31 %, an C −25 % (vergleich_fussrundung_AtoE)"
+    machine: "Vollversion"
+    findings: [FE-05, FE-25]
+  pilot_20layers_bore33_pocket_fillet_bezier_f2.5_round0p1f12_qsdy1dy2_AtoE_gerechnet:
+    purpose: "Fußrundungsvariante Bézier (f 2,5; Optimum der ebenen Studie), Taschenkörper, W1 bis W4 × QS/DY1/DY2 an A bis E; Kette vom 2026-10-14"
+    outcome: "60 von 60 Jobs (8,2 h); σ1 −28 bis −33 % (W1), −19 bis −21 % (W2), −27 bis −32 % (W3), −11 bis −25 % (W4); Drehung −5 bis −14 %; Kontaktdruck an B/E +23 bis +30 %, an C bei 16 Nm +52 % (W1); ebenes Modell −35 % an B, 3D an B −33 %, an C −28 % (vergleich_fussrundung_AtoE)"
+    machine: "Vollversion"
+    findings: [FE-05, FE-25]
+  pilot_20layers_bore33_pocket_fillet_bionic_phiauto_r0.3_round0p1f12_qsdy1dy2_AtoE_gerechnet:
+    purpose: "Fußrundungsvariante bionisch nach DE 10 2008 045 318 B3 (phi nach Anspruch 5, r 0,3 S_L; Literaturwert), Taschenkörper, W1 bis W4 × QS/DY1/DY2 an A bis E; Kette vom 2026-10-14"
+    outcome: "60 von 60 Jobs (8,9 h, Ende 16.10. 13:42); σ1 −27 bis −35 % (W1), −16 bis −26 % (W2), −25 bis −33 % (W3), −3 bis −20 % (W4); Drehung −8 bis −21 %; Kontaktdruck an B/E +21 bis +29 %; zwei W1-Jobs an E brauchten 25 und 27 min (Rückschritte im 16-Nm-Schritt, durchgelaufen); ebenes Modell −32 % an B, 3D an B −31 %, an C −27 % (vergleich_fussrundung_AtoE)"
+    machine: "Vollversion"
+    findings: [FE-05, FE-25]
+  vergleich_fussrundung_AtoE:
+    purpose: "Auswertung der Fußrundungsvarianten gegen die Taschen-Grundlinie an A bis E (`scripts/fe_fillet_comparison.py`, C8 des Thesis-Plans): Änderung je Stufe, Rate, Last und Punkt, Ort des Größtwerts, ebenes Sektormodell gegen 3D; Bilder fusseffekt_sigma1/drehung/uebersicht je Last und Rate"
+    outcome: "Stand 2026-10-17 mit fünf von sechs Varianten (bionisches Optimum steht aus): die Reihenfolge der ebenen Studie bleibt, die Beträge an C sind kleiner (W1: −16/−24/−25/−28/−27 % gegen −13/−25/−32/−35/−32 % eben); die Patentkonturen senken σ1 an allen fünf Punkten und machen den Zahn 4 bis 22 % steifer, die Ellipsen senken σ1 nur an C und erhöhen es an den Doppeleingriffspunkten (Lückenmitte); Plastizität halbiert den Nutzen bei der isotropen Stufe (W2 gegen W1) und mindert ihn bei der anisotropen um 10 bis 30 % (W4 gegen W3); die Raten verschieben die Effekte um höchstens 3 Punkte, bei den Ellipsen unter W3 bis 6 Punkte; mit der Last nimmt der Nutzen der Patentkonturen um bis zu 6 Punkte ab (Bézier f 1, W1: −32 % bei 8 Nm, −25 % bei 16 Nm)"
+    machine: "Auswertung"
+    findings: [FE-05, FE-25]

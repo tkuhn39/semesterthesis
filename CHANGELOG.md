@@ -9,6 +9,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (FE: the first five root fillet variants of the chain of 2026-10-14 evaluated, ADR-116 item 53 amendment of 2026-10-17)
+- **`scripts/fe_fillet_comparison.py`** (+ `tests/test_fe_fillet_comparison.py`): the root fillet
+  variants against the trochoid of the generation at A to E per material step, rate and load step
+  (pattern of `fe_body_comparison.py`). Folders must share body, pinion tip edge, load steps and
+  positions (typed refusals); the point of the largest root stress is taken from the baseline;
+  tables of the contours (manifest `wheel_mesh.fillet`), the run, the effects at that point, over
+  the rates and over the loads, the plane-strain sweep against the 3D result (`bericht.md` parsed),
+  the location of the σ1 maximum (fillet, r, z) at the peak point and at A to E, and every value;
+  figures `fusseffekt_sigma1|drehung_<step>_<rate>` (four panels W1 to W4, markers per variant) and
+  `fusseffekt_uebersicht_<step>_<rate>` (Δσ1 per variant and material step, the sweep as a marker
+  row at 16 Nm QS); legend symbols in mathtext (the house font has no φ glyph).
+- Results (`80_output/fe/kst_e/vergleich_fussrundung_AtoE`, ADR-116 item 53): the ranking of the
+  sweep holds, W1 at C −16 / −24 / −25 / −28 / −27 % for ellipse 30°/3,0, ellipse 25°/2,0, Bézier
+  f 1, Bézier f 2,5 and bionic; the patent contours lower σ1 at every point and stiffen the tooth
+  (edge pressure +21 to +30 %), the ellipse of Frühe lowers it at C only and raises it at the
+  double-contact points (up to +33 % under W3), the rounder ellipse under W2 to W4 (up to +15 %),
+  both with the maximum at the gap centre (FE-25).
+- The five night-run folders renamed to `<origin>_gerechnet` (byte-identical to their templates),
+  diary notes added; the orphaned duplicate `outcome`/`machine`/`findings` rows of deleted folder
+  keys in `fe_simulation_notes.yaml` removed (they had overwritten the entries of
+  `le_tests/element_nlgeom/c3d8r` and `fussrundung_sweep` in the generated diary).
+
 ### Added (FE: root fillet variants of the wheel, the night run of 2026-10-13 brought home, the long chain of 2026-10-14, ADR-116 item 52)
 - **`gearcore.fillet`**: three alternative root fillets as contour replacements of the trochoid,
   each from its primary source with one traced function per equation: the inclined ellipse of

@@ -19,7 +19,9 @@ from gearcore.parity import compute_generation_from_data, generation_data
 @pytest.fixture(scope="module")
 def kst_e() -> GenerationResult:
     data = generation_data("kst_e")
-    return compute_generation_from_data(data, data.values)
+    result = compute_generation_from_data(data, data.values)
+    assert isinstance(result, GenerationResult)
+    return result
 
 
 VARIANTS = [
@@ -71,7 +73,7 @@ def test_bezier_control_distance_is_the_patent_formula() -> None:
 
 def test_bezier_points_interpolate_the_end_points() -> None:
     p = [np.array(v, dtype=float) for v in ((0.0, 0.0), (1.0, 2.0), (3.0, 2.0), (4.0, 0.0))]
-    curve = fl.bezier_points(*p, np.array([0.0, 0.5, 1.0]))
+    curve = fl.bezier_points(p[0], p[1], p[2], p[3], np.array([0.0, 0.5, 1.0]))
     assert curve[0] == pytest.approx(p[0])
     assert curve[-1] == pytest.approx(p[3])
     assert curve[1] == pytest.approx([2.0, 1.5])

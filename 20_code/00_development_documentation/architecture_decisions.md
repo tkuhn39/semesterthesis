@@ -1909,6 +1909,40 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     `fe_body_comparison.py`), the Stommel check on the variant series against the baseline
     series. M7 (the drawing and manufacturing variants) is not in the chain; it follows after
     the pre-version of the thesis or goes to the outlook.
+    **Evaluated (2026-10-17; five of the six variants back, the bionic optimum, the pocket
+    baseline series and the bionic series still on the machine).** All 300 jobs completed
+    (7,8 to 8,9 h per variant; W1 4,0 to 4,6 and W4 12,7 to 13,3 min per job, except two W1
+    jobs of the bionic variant at E that took 25 and 27 min through cut-backs in the 16 Nm
+    step and completed; folders renamed
+    to `<origin>_gerechnet`, byte-identical decks, meshes and orientation pieces checked).
+    `scripts/fe_fillet_comparison.py` (pattern of `fe_body_comparison.py`; refuses folders that
+    differ in body, pinion edge, load steps or positions; `vergleich_fussrundung_AtoE/analyse.md`,
+    figures `fusseffekt_sigma1|drehung|uebersicht_<step>_<rate>`) against the pocket pilot of
+    2026-10-12 as the trochoid baseline, the point of the largest root stress (C) taken from
+    the baseline. Findings: (a) the ranking of the plane-strain sweep holds, the magnitudes at
+    C are smaller: W1 at 16 Nm −15,9 % (ellipse 30°/3,0), −24,4 % (ellipse 25°/2,0), −25,2 %
+    (Bézier f 1), −27,6 % (Bézier f 2,5), −27,4 % (bionic by Anspruch 5) against −13 / −25 /
+    −32 / −35 / −32 % of the plane model; at B, where the plane model was loaded, the patent
+    contours agree with it within 3 points (−31 / −33 / −31 %), the ellipses do not (+14 % and
+    −6 %), because their maximum sits at the gap centre and not on the flank part of the
+    fillet. (b) The patent contours lower σ1 at all five points (W1 −25 to −35 %, W3 −25 to
+    −33 %, W2 −16 to −27 %, W4 −1 to −25 %) and |σ3| by up to 43 %, and stiffen the tooth
+    (rotation −4 to −22 %, head displacement to −26 %), so the pinion tip edge presses harder
+    at B and E (contact pressure +21 to +30 %; at C, 16 Nm, W1, Bézier f 2,5 +52 % on a lower
+    level). (c) The ellipses lower σ1 only at C; at the double-contact points A, B, D and E
+    the ellipse of Frühe raises σ1 by up to +17 % (W1), +22 % (W2), +33 % (W3) and +20 % (W4)
+    and |σ3| by up to +30 % (W1, W2), +47 % (W3) and +51 % (W3 at DY1), the rounder ellipse
+    25°/2,0 by up to +6 / +15 / +7 % under W2 to W4 (W1 −3 to −20 %); their maximum sits at
+    the gap centre (r 24,48 to 24,49 and 24,52 to 24,60 mm against 24,83 mm for the
+    trochoid), on the 0,083 and 0,170 mm radius at or below the mesh resolution (FE-25); the
+    ellipses make the tooth more compliant (rotation +5 to +11 %). (d) Plasticity halves the
+    benefit of the isotropic step (W2 against W1) and trims it by 10 to 30 % for the
+    anisotropic one (W4 against W3; the ellipse of Frühe gains instead); the rates shift the
+    effects by at most 3 points, for the ellipses under W3 by up to 6 points; the benefit
+    of the patent contours shrinks with the load by up to 6 points (Bézier f 1, W1: −32 % at
+    8 Nm, −25 % at 16 Nm). For the text (5.4): the patent contours are the candidates, the
+    ellipse of Frühe is reported as a literature contour whose optimum was found on other
+    gears; the Stommel check of the variants waits for the two full series of the chain.
 
 ## ADR-117 — Measurement data of the manufactured gears: parsers in `io`, pure evaluation in `gearcore.measurement`, the user's decisions in `parts.yaml`, text exports versioned (2026-10-10)
 
