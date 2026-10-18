@@ -1,0 +1,32 @@
+\section{Vergleich der Berechnungsverfahren}
+\label{sec:verfahrensvergleich}
+
+\tabref{tab:verfahrensvergleich} stellt je Drehmomentstufe die Zahnfußspannung der Verfahren aus \secref{sec:analytik} und dem FE-Modell nebeneinander: die Nennspannung nach VDI 2736 Blatt 2 mit den Faktoren nach ISO 6336-3, die Werte von RIKOR und der FVA-Workbench, die größte Zugspannung $\sigma_{\mathrm{1}}$ des FE-Modells am Normpunkt C je Werkstoffstufe aus \secref{sec:waelzweg} sowie die vorhergesagte Lastwechselzahl des Nachweises nach Stommel et al. mit W2 aus \secref{sec:stommel_ergebnis} neben der gemessenen Bruchlinie aus \secref{sec:woehlerlinien}. \Note{PH: Werte nach VDI 2736 Blatt 2 mit $Y_{\mathrm{Fa}}$ und $Y_{\mathrm{Sa}}$ nach ISO 6336-3 (L6b), RIKOR-Werte der Betreuerin und FVA-Workbench-Werte (L6a) mit Programm, Version und Datum; das Vergleichsbild (L8) folgt mit den Werten.}
+
+\begin{table}[htbp]
+    \caption{Zahnfußspannung je Drehmomentstufe nach Verfahren in MPa und Lastwechselzahlen: Nennspannung nach VDI 2736 Blatt 2, RIKOR, FVA-Workbench, FE-Modell am Normpunkt C je Werkstoffstufe (quasistatisch), vorhergesagte Lastwechselzahl nach Stommel et al. mit W2 und gemessene Lastwechselzahl für $50$\,\% Ausfallwahrscheinlichkeit.}
+    \label{tab:verfahrensvergleich}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{L{1.0cm}L{1.6cm}L{1.2cm}L{1.5cm}L{1.0cm}L{1.0cm}L{1.0cm}L{1.0cm}L{1.7cm}L{1.7cm}}
+        $T_{2}$ in Nm & $\sigma_{\mathrm{F}}$ nach VDI 2736 & RIKOR & Workbench & FE W1 & FE W2 & FE W3 & FE W4 & $N_{\mathrm{pred}}$ W2 & $N_{\mathrm{L},50\%}$ \\
+        \hline
+        $8$ & PH & PH & PH & $56{,}1$ & $38{,}3$ & $65{,}1$ & $48{,}6$ & $3{,}5 \cdot 10^{5}$ & $2{,}67 \cdot 10^{7}$ \\
+        $12$ & PH & PH & PH & $70{,}4$ & $43{,}7$ & $81{,}9$ & $56{,}9$ & $2{,}2 \cdot 10^{4}$ & $5{,}96 \cdot 10^{6}$ \\
+        $16$ & PH & PH & PH & $82{,}9$ & $48{,}9$ & $97{,}4$ & $65{,}2$ & $1{,}7 \cdot 10^{3}$ & $1{,}36 \cdot 10^{6}$ \\
+    \end{tabular}
+\end{table}
+
+Die FE-Spannung am Normpunkt C wächst mit dem Moment unterproportional: Von $8$ auf $16$\,Nm verdoppelt sich die Umfangskraft, die Zugspannung steigt bei W1 um den Faktor $1{,}48$, bei W2 um $1{,}28$, bei W3 um $1{,}50$ und bei W4 um $1{,}34$. Der Grund liegt in der Lastaufteilung des verformten Zahns, bei den plastischen Stufen zusätzlich im Fließen. Die Nennspannung nach VDI 2736 Blatt 2 wächst dagegen proportional zur Umfangskraft, weil ihre Faktoren nur von der Geometrie abhängen. \Note{PH: Verhältnis FE zu Nennspannung je Stufe, sobald die Nennspannung vorliegt; Einordnung der Steigung der Bruchlinie mit $k = 4{,}40$ gegen die Steigung der Nennspannungslinie.}
+
+% Herkunft:
+% FE-Werte an C: series analyse.md Abschnitt 2 (σ1 C: W1 56,09/70,43/82,87, W2 38,27/43,74/48,90, W3 65,07/81,87/
+%   97,35, W4 48,58/56,92/65,23); Faktoren 16 gegen 8 Nm: 82,87/56,09 = 1,48, 48,90/38,27 = 1,28, 97,35/65,07 =
+%   1,50, 65,23/48,58 = 1,34; N_pred: analyse.md Abschnitt 7 (W2 3,54e5/2,24e4/1,65e3); N_L,50 %: woehler.md.
+%   VDI 2736: Y_Fa/Y_Sa offen (L6b, kap3_4); RIKOR/Workbench: Nutzer liefert 2026-10-19 (L6a); Bild L8 und Skript
+%   root_stress_comparison.py (C7) folgen.
+% Bildwunsch: L8-Bild nach C7.
+% Bibwunsch: keiner.
+% Nomenklatur: sigma_F, N_pred, N_L.
+% Offen: alle Platzhalter dieses Abschnitts.

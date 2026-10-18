@@ -1,3 +1,27 @@
 \section{Einstellungen des FE-Modells}
 \label{sec:anhang_c}
 % Inhalt: Netz, Elementtypen je Stufe, Kontakt, Schritte, Iterationsgrenzen, Werkstoffkarten je Rate (simulation_toolchain.md, Manifest der Serie).
+
+\tabref{tab:anhang_fe_einstellungen} fasst die Einstellungen der Serie aus \secref{sec:fe_modell} zusammen, wie das Manifest der Serie sie festhält. \Note{PH: Werte gegen das Manifest der Serie und die Werkzeugkarte (T6) prüfen; Versionen von Abaqus, CADMOULD und CONVERSE ergänzen.}
+
+\begin{table}[htbp]
+    \caption{Einstellungen des FE-Modells der Serie über dem Wälzweg.}
+    \label{tab:anhang_fe_einstellungen}
+    \centering
+    \footnotesize
+    \begin{tabular}{L{5.0cm}L{10.0cm}}
+        Einstellung & Wert \\
+        \hline
+        Sektor & fünf Zähne des Rades, mittlerer Zahn T3 ausgewertet \\
+        Netzvorlage & $20$ Schichten über die Zahnbreite, Bohrung $33$\,mm, Ringkörper (Serie) und Taschenkörper (Varianten) \\
+        Elementtyp je Stufe & W1 und W3 linear mit C3D8I; W2 und W4 mit C3D8 und geometrischer Nichtlinearität \\
+        Ritzel & starre Fläche, Kopfkante mit $r = 0{,}10$\,mm und 12 Facetten, Kopfrücknahme der Zeichnung 2022 \\
+        Kontakt & Knoten-auf-Fläche, reibungsfrei; Anfangsspalt $25$\,µm, Moment schließt den Kontakt vor der Drehung \\
+        Fesselung & Bohrung und Schnittflächen des Sektors, jeder Knoten \\
+        Stellungen & $30$ je Teilung, Rand eine Teilung vor A und hinter E, 99 Stellungen je Serie \\
+        Lastschritte & $8$, $12$ und $16$\,Nm am Rad, eine Analyse je Stellung \\
+        Iterationsgrenzen & $20$ / $30$ / $100$ je Stufe der Wiederholung \\
+        Werkstoffkarten & PA46-GF30 bei $80$\,\textdegree C, quasistatisch (Serie), Dehnraten $3$ und $60$\,s$^{-1}$ (Piloten an A bis E) \\
+        Orientierung & CONVERSE-Zuordnung der CADMOULD-Rechnung je Element (W3, W4) \\
+    \end{tabular}
+\end{table}

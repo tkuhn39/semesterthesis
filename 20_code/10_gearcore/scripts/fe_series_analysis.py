@@ -452,7 +452,8 @@ def figure_series_comparison(
         ax.set_ylabel(ylabel)
         for x, _ in named:
             ax.axvline(x, color=SHEET.colour("tum_grau_50"), linewidth=0.6)
-    legend_beside(axes[0])
+    # legend below the axes so that the path of contact spans the text width (user, 2026-10-18)
+    legend_outside(fig, axes[0], where="bottom", ncol=2)
     for x, label in named:
         axes[0].text(x, axes[0].get_ylim()[1], label, ha="center", va="bottom")
     axes[-1].set_xlabel("Wälzweg ab A in mm")

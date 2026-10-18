@@ -130,6 +130,40 @@ bilder:
     kapitel: 5
     quelle: fe/faserorientierung/vergleich_T3.svg
     unterschrift: "Anisotropie-Index je Zone: Spritzgießsimulation gegen den CT-Befund aus FVA 856 I."
+  - name: faserorientierung_schnitt
+    kapitel: 5
+    quelle: fe/faserorientierung/schnitt_T3.svg
+    unterschrift: "Faserrichtung je Element in zwei Stirnschnitten des Zahns T3 (Zahnmitte und Stirnseite), Linienrichtung = Hauptachse, Farbe = Orientierungsgrad a_11, Zonen wie Bild 17 in Anlehnung an [FVA856-I] S. 17 und 19."
+  - name: faserorientierung_drittel
+    kapitel: 5
+    quelle: fe/faserorientierung/drittel_T3.svg
+    unterschrift: "Anisotropie-Index je Zone über die ganze Zahnbreite und in den Dritteln der Zahnbreite, in Anlehnung an [FVA856-I] Bild 23 S. 24."
+  - name: orientierungseffekt_16nm_qs
+    kapitel: 5
+    quelle: fe/kst_e/vergleich_orientierung_AtoE/orientierungseffekt_LOAD_16NM_QS.svg
+    unterschrift: "Orientierungseffekt: CT-Zonen gegen CONVERSE-Zuordnung bei gleichem Netz und gleicher Karte an den Normpunkten A bis E, relative Änderung je Werkstoffstufe, 16 Nm, quasistatisch."
+  # Kapitel 5.2, Serie über dem Wälzweg (fe_series_analysis.py)
+  - name: vergleich_stufen_16nm
+    kapitel: 5
+    quelle: fe/kst_e/series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet/analyse/vergleich_stufen_LOAD_16NM.svg
+    unterschrift: "Werkstoffstufen W1 bis W4 über dem Wälzweg bei 16 Nm, Ringkörper, Kopfkante r = 0,10 mm, quasistatisch: Verdrehweg, Kopfverschiebung, größter Kontaktdruck und die Fußspannungen als Größtwerte über die Zahnbreite."
+  - name: vergleich_stufen_8nm
+    kapitel: 5
+    quelle: fe/kst_e/series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet/analyse/vergleich_stufen_LOAD_8NM.svg
+    unterschrift: "Werkstoffstufen W1 bis W4 über dem Wälzweg bei 8 Nm, Ringkörper, Kopfkante r = 0,10 mm, quasistatisch."
+  # Kapitel 5.3, Nachweis nach Stommel et al. (fe_fatigue.py stommel)
+  - name: stommel_karte_8nm_w2
+    kapitel: 5
+    quelle: fe/kst_e/series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet/stommel_W2_QS/karte_LOAD_8NM_T3_T4.svg
+    unterschrift: "Zyklische Auslastung a_B,V über der Fußrundung T3/T4 (Winkel um die Radachse über der Zahnbreite), W2, quasistatisch, 8 Nm."
+  - name: stommel_verlauf_8nm_w2
+    kapitel: 5
+    quelle: fe/kst_e/series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet/stommel_W2_QS/verlauf_LOAD_8NM.svg
+    unterschrift: "Vergleichsspannung und vorzeichenbehaftete von-Mises-Spannung der beiden kritischen Knoten über dem Wälzweg, W2, quasistatisch, 8 Nm."
+  - name: stommel_verlauf_16nm_w4hill
+    kapitel: 5
+    quelle: fe/kst_e/series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet/stommel_hill_W4_QS/verlauf_LOAD_16NM.svg
+    unterschrift: "Hill-Vergleichsspannung der beiden kritischen Knoten über dem Wälzweg, W4, quasistatisch, 16 Nm."
   - name: fusseffekt_sigma1_16nm_qs
     kapitel: 5
     quelle: fe/kst_e/vergleich_fussrundung_AtoE/fusseffekt_sigma1_LOAD_16NM_QS.svg

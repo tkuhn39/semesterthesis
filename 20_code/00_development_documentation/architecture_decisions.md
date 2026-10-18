@@ -2854,6 +2854,19 @@ track L:
    abscissae σ_F and FE σ1 follow once C7 gives the stresses per torque. Sources: Hasl 2018,
    Illenberger 2022 and MA-0296 are registered without an identifier and cited in docstrings,
    DIN 50100 and VDI 2736 Blatt 4 through `@eq`.
+7. **Thesis text of the night (T4) and the user's structure decisions.** Chapters 1, 5.1 to
+   5.3, 5.5, 7 and 8 and the appendix stubs were drafted from the result files; chapter 7
+   compares in the three tiers of point 1 and reads a local slope k from the FE stress at C
+   against the measured counts (W2 12, W4 10, W1 7,6, W3 7,4; the synthetic line of the book
+   14,8 to 15,8). The user decided the same night: chapter 1 holds the motivation and the
+   structure only, 2.7 holds the problem statement and the goal once, after the state of the
+   art; the texts stay concise; the history is named, namely that the Bachelor thesis of the
+   author (BA-0486, `Kuh24`) applied the Stommel check to plastic gears by calculation and
+   left its experimental validation open (p. 71), which this thesis takes up. The
+   `vergleich_stufen_*` figures carry their legend below the axes in two rows of two entries
+   so the path spans the text width (`fe_series_analysis.py`); marker size unchanged until the
+   user judges the print. The programming assistance is named once, in 3.5, and nowhere else
+   (chapter 8 refers to 3.5).
 
 ## ADR-119 — Fibre orientation of the moulding simulation, evaluated on the mapped FE mesh and compared with the CT zones of FVA 856 I (2026-10-13)
 

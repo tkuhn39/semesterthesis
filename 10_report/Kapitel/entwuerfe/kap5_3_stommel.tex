@@ -1,0 +1,133 @@
+\section{Bemessung nach Stommel et al.}
+\label{sec:stommel_ergebnis}
+
+\subsection{Methode wie veröffentlicht}
+\label{sec:stommel_veroeffentlicht}
+
+Der Nachweis nach \secref{sec:auswertung_beanspruchung} wurde auf alle 99 Stellungen je Serie angewendet, je Knoten mit der Lastgeschichte aus dem unbelasteten Zustand und den Stellungen eines Lastschritts, Überlastfall F2, Hauptspannungsroute, Abminderungsklasse teilkristallin verstärkt für die veröffentlichte Route. Berichtet werden die beiden Fußrundungen des mittleren Zahns T3 mit 2562 Knoten; die Randzähne tragen den Sektorrand. \tabref{tab:stommel_veroeffentlicht} nennt je Lastschritt den Knoten der größten zyklischen Auslastung $a_{\mathrm{B,V}}$ mit seiner statischen Auslastung $a_{\mathrm{stat}}$ und der vorhergesagten Lastwechselzahl auf der synthetischen Wöhlerlinie. W2 ist die Hauptlinie, W1 die lineare Referenz.
+
+\begin{table}[htbp]
+    \caption{Nachweis nach Stommel et al. wie veröffentlicht an den Fußrundungen des Zahns T3, quasistatische Karte bei $80$\,\textdegree C, Überlastfall F2: kritischer Knoten mit Lage, zyklische Auslastung $a_{\mathrm{B,V}}$, statische Auslastung $a_{\mathrm{stat}}$ dort, Zahl der Fußknoten über $1$ und vorhergesagte Lastwechselzahl $N_{\mathrm{pred}}$; daneben die gemessene Lastwechselzahl $N_{\mathrm{L},50\%}$ der Bruchlinie aus \secref{sec:woehlerlinien}.}
+    \label{tab:stommel_veroeffentlicht}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{L{0.8cm}L{1.0cm}L{2.9cm}L{1.1cm}L{1.1cm}L{1.5cm}L{1.5cm}L{1.5cm}L{1.8cm}}
+        Stufe & $T_{2}$ in Nm & kritischer Knoten & $a_{\mathrm{B,V}}$ & $a_{\mathrm{stat}}$ & Fußknoten $a_{\mathrm{B,V}} > 1$ & Fußknoten $a_{\mathrm{stat}} > 1$ & $N_{\mathrm{pred}}$ & $N_{\mathrm{L},50\%}$ gemessen \\
+        \hline
+        W1 & $8$ & Fuß T2/T3, $z = -5{,}25$ & $1{,}63$ & $0{,}81$ & $1438$ & $0$ & $3{,}9 \cdot 10^{3}$ & $2{,}67 \cdot 10^{7}$ \\
+        W1 & $12$ & Fuß T3/T4, $z = -6{,}75$ & $2{,}03$ & $0{,}94$ & $2295$ & $256$ & sofort & $5{,}96 \cdot 10^{6}$ \\
+        W1 & $16$ & Fuß T3/T4, $z = -6{,}75$ & $4{,}47$ & $1{,}31$ & $2479$ & $920$ & sofort & $1{,}36 \cdot 10^{6}$ \\
+        W2 & $8$ & Fuß T3/T4, $z = -6{,}00$ & $1{,}24$ & $0{,}48$ & $660$ & $0$ & $3{,}5 \cdot 10^{5}$ & $2{,}67 \cdot 10^{7}$ \\
+        W2 & $12$ & Fuß T3/T4, $z = -6{,}00$ & $1{,}47$ & $0{,}58$ & $1489$ & $0$ & $2{,}2 \cdot 10^{4}$ & $5{,}96 \cdot 10^{6}$ \\
+        W2 & $16$ & Fuß T3/T4, $z = -6{,}00$ & $1{,}74$ & $0{,}68$ & $2097$ & $0$ & $1{,}7 \cdot 10^{3}$ & $1{,}36 \cdot 10^{6}$ \\
+    \end{tabular}
+\end{table}
+
+Mit der plastischen isotropen Stufe W2 besteht der statische Nachweis an allen Fußknoten, die zyklische Auslastung liegt bei $1{,}24$, $1{,}47$ und $1{,}74$ und die vorhergesagte Lastwechselzahl fällt mit dem Moment von $3{,}5 \cdot 10^{5}$ auf $1{,}7 \cdot 10^{3}$. Die lineare Stufe W1 verletzt bei $12$ und $16$\,Nm an 256 und 920 Fußknoten den statischen Nachweis und sagt bei diesen Momenten sofortiges Versagen vorher. Der kritische Knoten liegt bei beiden Stufen in der Fußrundung zwischen T3 und T4 nahe der Stirnseite, bei $z = -6{,}0$ bis $-6{,}75$\,mm von $\pm 7{,}5$\,mm. Er ist die Druckseite des Zahns T3. Unter dem eigenen Zahn steht er im Zug, unter dem Nachbarzahn im Druck; die vorzeichenbehaftete Vergleichsspannung bei $8$\,Nm reicht von $+32$ bis $-14$\,MPa, also $R \approx -0{,}4$. \figref{fig:stommel_karte_8nm} zeigt die zyklische Auslastung über dieser Fußrundung bei $8$\,Nm, \figref{fig:stommel_verlauf_8nm} die Vergleichsspannung der beiden kritischen Knoten über dem Wälzweg.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{kap5/stommel_karte_8nm_w2}
+    \caption{Zyklische Auslastung $a_{\mathrm{B,V}}$ über der Fußrundung zwischen T3 und T4, Winkel um die Radachse über der Zahnbreite, W2 elastisch-plastisch isotrop, quasistatisch, $8$\,Nm.}
+    \label{fig:stommel_karte_8nm}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{kap5/stommel_verlauf_8nm_w2}
+    \caption{Vergleichsspannung $\sigma_{\mathrm{V}}$ und vorzeichenbehaftete von-Mises-Spannung der beiden kritischen Knoten der größten zyklischen und der größten statischen Auslastung über dem Wälzweg, W2, quasistatisch, $8$\,Nm; senkrechte Linien an den Normpunkten A bis E.}
+    \label{fig:stommel_verlauf_8nm}
+\end{figure}
+
+Gegen die Bruchlinie des Laufversuchs liegt die Vorhersage mit W2 bei $8$\,Nm um den Faktor $75$, bei $12$\,Nm um $270$ und bei $16$\,Nm um $820$ zu niedrig; das Verhältnis wächst mit dem Moment. Der Nachweis endet beim ersten makroskopischen Anriss, der Laufversuch beim Bruch. Die Anrissfenster aus \secref{sec:woehlerlinien} verkleinern den Abstand bei $8$\,Nm auf den Faktor $9$ bis $22$ und lassen ihn bei $12$ und $16$\,Nm nur als obere Schranke zu. Die Einordnung dieser Abstände folgt in \secref{sec:genauigkeit}.
+
+\subsection{Anisotrope Erweiterung}
+\label{sec:stommel_anisotrop}
+
+Für die anisotropen Stufen W3 und W4 wurde die Vergleichsspannung durch die Hill-Vergleichs\-spannung im Faserrahmen mit allen sechs Verhältnissen der Karte ersetzt, nach \secref{sec:auswertung_beanspruchung}. Die Abminderungsfaktoren nehmen die Klasse teilkristallin unverstärkt, weil die Klasse der verstärkten Werkstoffe die Querschwäche bereits enthält und sonst doppelt zählte. \Note{PH: Klassenwahl unter Hill (verstärkt gegen duktil), Entscheidung des Nutzers; die Begründung im Text folgt der Entscheidung.} \tabref{tab:stommel_hill} nennt die Ergebnisse an den Fußrundungen des Zahns T3, dazu W1 unter Hill als Methodenvergleich mit denselben Spannungen wie in \tabref{tab:stommel_veroeffentlicht}.
+
+\begin{table}[htbp]
+    \caption{Nachweis mit der Hill-Vergleichs\-spannung im Faserrahmen an den Fußrundungen des Zahns T3, Klasse teilkristallin unverstärkt, quasistatisch, Überlastfall F2: kritischer Knoten, zyklische und statische Auslastung, Fußknoten über $1$; $\infty$ bedeutet eine Vergleichsspannung jenseits des Endes der Isotherme bei $80$\,\textdegree C.}
+    \label{tab:stommel_hill}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{L{1.6cm}L{1.2cm}L{3.4cm}L{1.3cm}L{1.3cm}L{1.8cm}L{1.8cm}L{1.6cm}}
+        Stufe & $T_{2}$ in Nm & kritischer Knoten & $a_{\mathrm{B,V}}$ & $a_{\mathrm{stat}}$ & Fußknoten $a_{\mathrm{B,V}} > 1$ & Fußknoten $a_{\mathrm{stat}} > 1$ & $N_{\mathrm{pred}}$ \\
+        \hline
+        W3 Hill & $8$ & Fuß T2/T3, $z = -0{,}75$ & $3{,}12$ & $\infty$ & $2326$ & $74$ & sofort \\
+        W3 Hill & $12$ & Fuß T2/T3, $z = -0{,}75$ & $3{,}85$ & $\infty$ & $2518$ & $530$ & sofort \\
+        W3 Hill & $16$ & Fuß T3/T4, $z = -3{,}75$ & $10{,}38$ & $\infty$ & $2560$ & $1138$ & sofort \\
+        W4 Hill & $8$ & Fuß T3/T4, $z = 2{,}25$ & $2{,}16$ & $0{,}44$ & $1954$ & $0$ & $1{,}2 \cdot 10^{3}$ \\
+        W4 Hill & $12$ & Fuß T3/T4, $z = -3{,}00$ & $2{,}58$ & $0{,}53$ & $2358$ & $0$ & sofort \\
+        W4 Hill & $16$ & Fuß T3/T4, $z = -3{,}00$ & $3{,}03$ & $0{,}73$ & $2495$ & $4$ & sofort \\
+        W1 Hill & $8$ & Fuß T2/T3, $z = 0{,}75$ & $3{,}07$ & $\infty$ & $2173$ & $79$ & sofort \\
+        W1 Hill & $12$ & Fuß T3/T4, $z = -3{,}00$ & $3{,}96$ & $\infty$ & $2469$ & $570$ & sofort \\
+        W1 Hill & $16$ & Fuß T3/T4, $z = -3{,}00$ & $16{,}64$ & $\infty$ & $2543$ & $1054$ & sofort \\
+    \end{tabular}
+\end{table}
+
+Unter Hill wandert der kritische Knoten von der Stirnseite in die Zahnmitte, bei W4 nach $z = -3{,}0$\,mm und bei W3 nach $-0{,}75$\,mm, dorthin, wo die Faserorientierung aus \secref{sec:faserorientierung} die Querrichtung schwächt. Die Hill-Vergleichs\-spannung liegt an der Stellung C im Median beim $1{,}74$-Fachen der von-Mises-Spannung; die Schubspannung im Faserrahmen von rund $37$\,MPa mit dem Verhältnis $R_{13} = 0{,}53$ bestimmt den Wert. Bei W3 und bei W1 unter Hill überschreitet die Vergleichsspannung an 74 bis 1138 Fußknoten das Ende der Isotherme, so dass dort keine Dehnung abgelesen werden kann und der statische Nachweis entfällt. Die plastische anisotrope Stufe W4 besteht den statischen Nachweis bis $12$\,Nm und liegt zyklisch mit $2{,}2$ bis $3{,}0$ um den Faktor $1{,}7$ über W2. \figref{fig:stommel_verlauf_16nm_w4} zeigt den Verlauf der Vergleichsspannung der kritischen Knoten von W4 bei $16$\,Nm. Welche Klasse die Erweiterung tragen soll, entscheidet über ihre Höhe; mit der Klasse der verstärkten Werkstoffe läge die Auslastung noch höher. Die Erweiterung ist damit ein Werkzeug für die Lage des kritischen Knotens und für den Vergleich der Stufen, nicht für die Höhe der Lebensdauer.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{kap5/stommel_verlauf_16nm_w4hill}
+    \caption{Hill-Vergleichs\-spannung und vorzeichenbehaftete Vergleichsspannung der beiden kritischen Knoten über dem Wälzweg, W4 elastisch-plastisch anisotrop, quasistatisch, $16$\,Nm; senkrechte Linien an den Normpunkten A bis E.}
+    \label{fig:stommel_verlauf_16nm_w4}
+\end{figure}
+
+\subsection{Globalmaxima, Überlastfälle und Vergleich mit S-Life Plastics}
+\label{sec:stommel_global_slife}
+
+Über alle 82\,425 Knoten des Rades liegen die größten Auslastungen nicht in den Fußrundungen, sondern an den Kopfknoten der Zähne auf dem Radius $25{,}80$\,mm, wo die gerundete Ritzelkopfkante die Radflanke belastet. Dort geht $a_{\mathrm{B,V}}$ für W1 gegen unendlich, für W2 bei $16$\,Nm auf $1{,}84$ am Kopf von T2. Unter Hill kommt die erste Knotenreihe unter dieser Spur auf $25{,}78$\,mm hinzu, mit Vergleichsspannungen von $93$ bis $105$\,MPa jenseits der Isotherme. Beide Orte sind Kontaktspannungszustände und keine Aussage zur Zahnfußermüdung; die Tabellen dieses Abschnitts beziehen sich deshalb auf die Fußrundungen des Zahns T3 und nennen das Globalmaximum daneben. Die Überlastfälle F1 bis F4 beschreiben den Lastpfad und nicht den Knoten. Das Rad hat mit dem Drehmoment einen Lastparameter, und jede Spannung des linearen Modells skaliert mit ihm. Das Spannungsverhältnis $R$ jedes Knotens bleibt unter einer Überlast konstant, was F2 entspricht. Die plastischen Stufen biegen diese Proportionalität leicht. \Note{PH: Empfindlichkeit der kritischen Knoten gegen die Fälle F1 bis F4 nebeneinander (E2), Tabelle und Zahlen.}
+
+Als Gegenprobe wurde die Stellung C der eingefrorenen Netzvariante mit W1 in S-Life Plastics 4.0.0 auf dem ganzen Rad ausgewertet: rein schwellend mit $R = 0$, Überlastfall F2, Grenzlastspielzahl $10^{7}$, Karte bei $80$\,\textdegree C, Spannungen ungemittelt als Elementknotenwert eines Elements, kritische Ebene mit $11{,}25$° Schritt. Verglichen wurden vier Knoten: zwei Zugknoten der Fußrundung in Zahnmitte und nahe der Stirnseite, ein Druckknoten der gegenüberliegenden Fußrundung und ein Kopfknoten. \tabref{tab:slife_vergleich} nennt die Werte bei $16$\,Nm. Die Hauptspannungen stimmen bis auf die Mittelung überein, mit $82{,}84$ gegen $82{,}85$\,MPa am Zugknoten der Zahnmitte und bis $5$\,\% am Kopfknoten. Der statische Nachweis stimmt auf $5$\,\%: Die verbleibende Differenz stammt aus der Dehnung, die S-Life auf seiner angepassten Isotherme liest, $2{,}49$ gegen $2{,}62$\,\% der interpolierten Punkte der Karte. Am Kopfknoten unter Druck mit $h = -1{,}3$ gibt S-Life $1{,}01$ gegen $0{,}42$ des eigenen Nachweises, der die Druckhauptspannungen nach Gleichung (6.17) durch $1{,}3$ teilt und die zulässige Dehnung bei $h = -1{,}3$ liest; S-Life wendet dort ein anderes Kriterium an. Im zyklischen Nachweis sind Amplitude, Wechselfestigkeit und Mittelspannungsfaktor gleich, mit $41{,}41$ gegen $41{,}42$\,MPa, $20{,}12$ gegen $20{,}19$\,MPa und $0{,}82$ gegen $0{,}815$. Der einzige Unterschied ist die statische Kappe der zulässigen Amplitude: S-Life begrenzt mit der statischen Zulässigkeit des unbelasteten Extremzustands von $47{,}32$\,MPa abzüglich der Mittelspannung, am Zugknoten $5{,}91$\,MPa, der eigene Nachweis mit $\sigma_{\mathrm{stat}}(h)$ des maßgebenden Zustands abzüglich der Mittelspannung, $13{,}27$\,MPa. Daraus folgen $a_{\mathrm{B,V}}$ von $6{,}53$ gegen $2{,}67$. Auf der Druckseite übersteigt die Mittelspannung von $49{,}6$\,MPa die Kappe von S-Life, so dass dessen Auslastung ins Unendliche läuft, während der eigene Nachweis $10$\,MPa behält. Die Umsetzung ist damit in Spannungen, statischem Nachweis, Amplitude und Festigkeit bestätigt; der Unterschied in der Kappe ist benannt und reproduzierbar. \Note{PH: Welche Lesart der Kappe das Buch in den Gleichungen (6.24) bis (6.26), S.~365 bis 367, vorschreibt, ist für den Text zu entscheiden; die Option, beide Konventionen nebeneinander zu drucken, ist vorbereitet.}
+
+\begin{table}[htbp]
+    \caption{S-Life Plastics 4.0.0 gegen den eigenen Nachweis an vier Knoten der Stellung C, W1, quasistatische Karte, $16$\,Nm: größte Hauptspannung, statische Auslastung, Amplitude, Wechselfestigkeit, angewandte zulässige Amplitude und zyklische Auslastung; S-Life mit ungemittelten Elementwerten, eigener Nachweis mit gemittelten Elementknotenwerten.}
+    \label{tab:slife_vergleich}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{L{2.6cm}L{1.9cm}L{1.6cm}L{1.9cm}L{1.8cm}L{2.0cm}L{1.6cm}}
+        Knoten & $\sigma_{\mathrm{1}}$ bzw. $\sigma_{\mathrm{3}}$ in MPa & $a_{\mathrm{stat}}$ & $\sigma_{\mathrm{a}}$ in MPa & $\sigma_{\mathrm{W}}$ in MPa & $\sigma_{\mathrm{B}}$ angewandt in MPa & $a_{\mathrm{B,V}}$ \\
+        \hline
+        Zug, Zahnmitte & $82{,}84$ / $82{,}85$ & $1{,}39$ / $1{,}45$ & $41{,}41$ / $41{,}42$ & $20{,}12$ / $20{,}19$ & $5{,}91$ / $13{,}27$ & $6{,}53$ / $2{,}67$ \\
+        Zug, nahe Stirnseite & $84{,}19$ / $81{,}67$ & $1{,}42$ / $1{,}49$ & $42{,}06$ / $40{,}84$ & $20{,}12$ / $20{,}19$ & $5{,}26$ / $14{,}80$ & $7{,}52$ / $2{,}42$ \\
+        Druck, Fußrundung & $-99{,}12$ / $-99{,}17$ & $1{,}08$ / $1{,}11$ & -- / $3{,}62$ & $20{,}12$ / $20{,}19$ & $0$ / $26{,}12$ & $\infty$ / $4{,}60$ \\
+        Kopf & $-79{,}88$ / $-76{,}29$ & $1{,}01$ / $0{,}42$ & -- / $14{,}47$ & $20{,}12$ / $20{,}19$ & -- / $26{,}12$ & $4{,}23$ / $1{,}07$ \\
+    \end{tabular}
+\end{table}
+
+% Herkunft:
+% 5.3.1: analyse.md Abschnitt 7 (Tabelle je Serie: W1 8/12/16 Nm 1,63/2,03/4,47, a_stat 0,81/0,94/1,31, Knoten > 1
+%   1438/2295/2479 und 0/256/920, N 3,91e3/0/0, kritische Knoten 13999 (T2_T3, z −5,25), 5817 (T3_T4, z −6,75);
+%   W2 1,24/1,47/1,74, 0,48/0,58/0,68, 660/1489/2097, 0/0/0, 3,54e5/2,24e4/1,65e3, Knoten 10852/10853 (T3_T4,
+%   z −6,00)); ADR-118 Amendment 2026-10-12 Punkt 2 (Einstellungen: F2, Hauptspannungsroute, Klasse verstärkt),
+%   Punkt 4 (Druckseite, R < 0, z −6,0 bis −6,75), Amendment 2026-10-13 (R ≈ −0,4: +32/−14 MPa bei 8 Nm);
+%   N_L,50 % aus 80_output/messungen/woehler/woehler.md (2,671e7, 5,964e6, 1,357e6); Faktoren 2,671e7/3,54e5 =
+%   75, 5,964e6/2,24e4 = 266, 1,357e6/1,65e3 = 822; Anrissfenster 8 Nm: 3,22e6/3,54e5 = 9,1 bis 7,66e6/3,54e5
+%   = 21,6 (kst-E_69), 3,65e6/3,54e5 = 10,3 bis 6,61e6/3,54e5 = 18,7 (kst-E_75).
+% 5.3.2: analyse.md Abschnitt 7 (W3 Hill 3,12/3,85/10,38 mit ∞, Knoten 37549 (T2_T3, z −0,75), 21518 (T3_T4, z
+%   −3,75), > 1: 2326/2518/2560 und 74/530/1138; W4 Hill 2,16/2,58/3,03, 0,44/0,53/0,73, 54026 (z 2,25), 26552
+%   (z −3,00), 1954/2358/2495 und 0/0/4, N 1,22e3/0/0; W1 Hill 3,07/3,96/16,64 mit ∞, 2173/2469/2543 und
+%   79/570/1054); ADR-118 Amendment E7 (σ_Hill = 1,74 σ_Mises im Median an C, σ_13 ≈ 37 MPa mit R_13 0,53; Klasse
+%   teilkristallin unverstärkt, kein doppeltes Zählen, Buch S. 346); W4 gegen W2: 2,16/1,24 = 1,74, 2,58/1,47 =
+%   1,76, 3,03/1,74 = 1,74.
+% 5.3.3: ADR-118 Amendment 2026-10-12 Punkt 3 (Kopfknoten r 25,80, a_B,V → ∞ für W1, W2 16 Nm 1,84 T2 head;
+%   Hill: Knotenreihe r 25,78, σ_V 93 bis 105 MPa; FE-22), Amendment 2026-10-13 (Überlastfall als Lastpfad, F2,
+%   E2 offen); S-Life: 80_output/fe/kst_e/frozen_mesh_20layers_bore33_gerechnet/stommel/vergleich_slife.md 16 Nm
+%   (41472: 82,84/82,85, a_SK 1,388/1,452, σ_a 41,41/41,42, σ_WK 20,12/20,19, Kappe 5,91/13,27, a_BK 6,53/2,671;
+%   6147: 84,19/81,67, 1,420/1,489, 42,06/40,84, 5,26/14,80, 7,52/2,416; 41143: −99,12/−99,17, 1,079/1,114, σ_a
+%   eigen 3,62, Kappe 0 → a_BK 49 641 (als ∞ geschrieben), eigen 26,12/4,602; 5741: −79,88/−76,29, 1,010/0,425,
+%   14,47, 26,12, 4,23/1,066); ADR-118 Amendment 2026-10-14 Findings 1 bis 4 (Dehnung 2,49 gegen 2,62 %, K_AK 0,82
+%   gegen K_M 0,815, Kappe σ_S,allow,min 47,32 MPa, Gl. (6.17) Faktor 1,3, Lesart Gl. (6.24) bis (6.26) S. 365 bis
+%   367 offen, Option cap = min_state).
+% Bildwunsch: kap5/stommel_karte_8nm_w2 (stommel_W2_QS/karte_LOAD_8NM_T3_T4.svg), stommel_verlauf_8nm_w2
+%   (stommel_W2_QS/verlauf_LOAD_8NM.svg), stommel_verlauf_16nm_w4hill (stommel_hill_W4_QS/verlauf_LOAD_16NM.svg).
+% Bibwunsch: Sto18 vorhanden (Gl. (6.17), (6.24) bis (6.26)).
+% Nomenklatur: a_B_V, a_stat, N_pred (prüfen: N_pred als vorhergesagte Lastwechselzahl, neu), sigma_a, sigma_W,
+%   sigma_B, h, R, R_13 (Hill-Verhältnis, prüfen), sigma_stat, sigma_V vorhanden (3.7).
+% Offen: Klassenwahl unter Hill; Überlastfälle F1 bis F4 (E2); Lesart der Kappe; die 12-Nm-Knotentabelle des
+%   eigenen Nachweises fehlt in der S-Life-Datei (nur Spannungen).

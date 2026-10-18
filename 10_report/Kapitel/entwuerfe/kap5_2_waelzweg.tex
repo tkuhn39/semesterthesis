@@ -1,0 +1,69 @@
+\section{Beanspruchung über dem Wälzweg}
+\label{sec:waelzweg}
+
+Die Serie aus \secref{sec:fe_modell} umfasst je Werkstoffstufe 99 Stellungen über $3{,}3$ Teilungen bei $8$, $12$ und $16$\,Nm. 395 der 396 Rechnungen liefen vollständig; eine Stellung von W1 bei $16$\,Nm brach im Kantenkontakt mit flatternden Kontaktknoten ab und fehlt in ihren Kurven. \figref{fig:vergleich_stufen_16nm} zeigt für $16$\,Nm den Verdrehweg des Ritzels, die Kopfverschiebung, den größten Kontaktdruck und die Fußspannungen $\sigma_{\mathrm{1}}$ und $|\sigma_{\mathrm{3}}|$ für W1 bis W4. Alle Werte sind Größtwerte über die Zahnbreite. \figref{fig:vergleich_stufen_8nm} zeigt dasselbe für $8$\,Nm. \tabref{tab:waelzweg_normpunkte} nennt die Werte an den Normpunkten A bis E und die Maxima mit ihrem Ort.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{kap5/vergleich_stufen_16nm}
+    \caption{Werkstoffstufen W1 bis W4 über dem Wälzweg bei $16$\,Nm, Ringkörper, Kopfkante $r = 0{,}10$\,mm, quasistatisch: Verdrehweg, Kopfverschiebung, größter Kontaktdruck und die Fußspannungen $\sigma_{\mathrm{1}}$ und $|\sigma_{\mathrm{3}}|$ als Größtwerte über die Zahnbreite; senkrechte Linien an den Normpunkten A bis E.}
+    \label{fig:vergleich_stufen_16nm}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{kap5/vergleich_stufen_8nm}
+    \caption{Werkstoffstufen W1 bis W4 über dem Wälzweg bei $8$\,Nm, Ringkörper, Kopfkante $r = 0{,}10$\,mm, quasistatisch; Größen und Skalierung wie in \figref{fig:vergleich_stufen_16nm}.}
+    \label{fig:vergleich_stufen_8nm}
+\end{figure}
+
+\begin{table}[htbp]
+    \caption{Beanspruchung an den Normpunkten A, C und E und Maximum über den Wälzweg je Werkstoffstufe, quasistatische Karte, Größtwerte über die Zahnbreite: größte Zugspannung $\sigma_{\mathrm{1}}$ und größte Druckspannung $|\sigma_{\mathrm{3}}|$ der Fußrundung in MPa, Verdrehweg des Ritzels $\varphi_{\mathrm{1}}$ in mrad an C und größter Kontaktdruck $p_{\mathrm{max}}$ in MPa über den Wälzweg.}
+    \label{tab:waelzweg_normpunkte}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{L{1.0cm}L{0.8cm}L{1.0cm}L{1.0cm}L{1.0cm}L{1.1cm}L{1.0cm}L{1.0cm}L{1.0cm}L{1.1cm}L{1.1cm}L{1.1cm}}
+        $T_{2}$ & Stufe & $\sigma_{\mathrm{1}}$ A & $\sigma_{\mathrm{1}}$ C & $\sigma_{\mathrm{1}}$ E & $\sigma_{\mathrm{1}}$ max & $|\sigma_{\mathrm{3}}|$ A & $|\sigma_{\mathrm{3}}|$ C & $|\sigma_{\mathrm{3}}|$ E & $|\sigma_{\mathrm{3}}|$ max & $\varphi_{\mathrm{1}}$ C & $p_{\mathrm{max}}$ \\
+        \hline
+        $8$\,Nm & W1 & $35{,}2$ & $56{,}1$ & $31{,}4$ & $58{,}7$ & $43{,}4$ & $68{,}0$ & $38{,}6$ & $71{,}3$ & $2{,}34$ & $112{,}7$ \\
+         & W2 & $26{,}7$ & $38{,}3$ & $26{,}1$ & $40{,}0$ & $32{,}9$ & $44{,}6$ & $30{,}4$ & $46{,}2$ & $2{,}54$ & $78{,}1$ \\
+         & W3 & $41{,}4$ & $65{,}1$ & $36{,}1$ & $66{,}9$ & $47{,}1$ & $75{,}9$ & $42{,}8$ & $80{,}2$ & $2{,}40$ & $125{,}6$ \\
+         & W4 & $33{,}1$ & $48{,}6$ & $32{,}0$ & $49{,}3$ & $39{,}9$ & $55{,}6$ & $36{,}6$ & $57{,}7$ & $2{,}55$ & $88{,}5$ \\
+        $12$\,Nm & W1 & $52{,}3$ & $70{,}4$ & $46{,}5$ & $72{,}1$ & $64{,}5$ & $85{,}3$ & $58{,}5$ & $87{,}6$ & $2{,}96$ & $151{,}6$ \\
+         & W2 & $36{,}5$ & $43{,}7$ & $36{,}4$ & $45{,}9$ & $44{,}7$ & $50{,}3$ & $41{,}7$ & $53{,}6$ & $3{,}21$ & $93{,}5$ \\
+         & W3 & $62{,}2$ & $81{,}9$ & $53{,}6$ & $82{,}3$ & $70{,}7$ & $94{,}5$ & $64{,}8$ & $98{,}4$ & $3{,}01$ & $166{,}5$ \\
+         & W4 & $45{,}8$ & $56{,}9$ & $46{,}2$ & $57{,}9$ & $56{,}0$ & $64{,}0$ & $51{,}9$ & $68{,}9$ & $3{,}22$ & $104{,}5$ \\
+        $16$\,Nm & W1 & $69{,}4$ & $82{,}9$ & $61{,}6$ & $86{,}0$ & $85{,}8$ & $99{,}2$ & $77{,}9$ & $107{,}5$ & $3{,}50$ & $184{,}6$ \\
+         & W2 & $44{,}7$ & $48{,}9$ & $45{,}6$ & $52{,}9$ & $54{,}5$ & $55{,}6$ & $51{,}6$ & $61{,}7$ & $3{,}96$ & $99{,}7$ \\
+         & W3 & $82{,}5$ & $97{,}4$ & $71{,}3$ & $101{,}2$ & $93{,}7$ & $111{,}1$ & $86{,}0$ & $122{,}5$ & $3{,}57$ & $203{,}7$ \\
+         & W4 & $57{,}3$ & $65{,}2$ & $59{,}2$ & $67{,}6$ & $69{,}9$ & $71{,}9$ & $65{,}7$ & $79{,}6$ & $3{,}98$ & $109{,}7$ \\
+    \end{tabular}
+\end{table}
+
+Die größte Zugspannung der Fußrundung erreichen die isotropen Stufen W1 und W2 nicht an einem Normpunkt, sondern $1{,}1$ bis $1{,}5$\,mm hinter E im verlängerten Eingriff, wo die Ritzelkopfkante den Zahn trägt; die anisotropen Stufen W3 und W4 erreichen sie nahe C. Der mittlere Zahn trägt vom $0{,}47$ bis $0{,}60$ Teilungen vor A bis $0{,}35$ bis $0{,}48$ Teilungen hinter E, bei den plastischen Stufen und bei $16$\,Nm am längsten. Die Kraft des Nebenzahns im Kantenkontakt erreicht bei $8$, $12$ und $16$\,Nm $168$, $257$ und $336$\,N. Gegenüber der scharfen Ritzelkopfkante der Referenz ändert die Rundung von $0{,}10$\,mm die Maxima um höchstens $5$\,\%. An B und E, wo die Kante im Eingriff ist, sinkt die Fußspannung um $5$ bis $9$\,\% und der Kontaktdruck um $8$ bis $11$\,\%; die Kraft des Nebenzahns steigt um $4$ bis $5$\,\%. Die Auflösung von 30 Stellungen je Teilung ist ausreichend: Mit 15 Stellungen ändern sich die Maxima um höchstens $2{,}5$\,\%, mit sechs um bis zu $15$\,\%.
+
+Die Werkstoffstufen wirken in zwei Richtungen. Die Anisotropie erhöht gegenüber der isotropen linearen Stufe die Zugspannung an den Normpunkten um $15$ bis $20$\,\% und die Druckspannung um $9$ bis $12$\,\%; der Verdrehweg wächst nur um $2$ bis $5$\,\%. Der Kontaktdruck verschiebt sich mit $-12$\,\% an C und $+12$ bis $+15$\,\% an E. Die Plastizität senkt die Spannungen. Von W1 auf W2 fällt die Zugspannung an C um $32$, $38$ und $41$\,\% bei $8$, $12$ und $16$\,Nm, die Druckspannung um $34$ bis $44$\,\% und der größte Kontaktdruck um $31$ bis $46$\,\%. Der Verdrehweg wächst dabei um $8$ bis $13$\,\% an C und um bis zu $27$\,\% an A. Zwischen W3 und W4 wirkt die Plastizität ebenso, mit $25$ bis $33$\,\% an C. Unter den plastischen Stufen bleibt die Anisotropie mit $+23$ bis $+35$\,\% in der Zugspannung erhalten, bei nahezu gleichem Verdrehweg. Die Reihenfolge der Stufen ist damit an jedem Normpunkt dieselbe: W3 über W1 über W4 über W2 in den Spannungen, W2 und W4 über W1 und W3 in den Verformungen. \Note{PH: Karte von $\sigma_{\mathrm{1}}$ über Fußrundung und Zahnbreite in der Stellung des Maximums (prüfen, ob das Bild aus dem Pfadbericht trägt).}
+
+% Herkunft:
+% Absatz 1 (Serie, Abbruch): 80_output/fe/kst_e/series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet/
+%   analyse/analyse.md Kopf und Abschnitt 1 (396 Stellungsdateien, 99 je Serie, pos_073_W1_QS abgebrochen bei
+%   LOAD_16NM, flatternde Kontaktknoten, FE-19); Gitter 30 je Teilung, Rand 1,00 Teilungen, Wälzweg A bis E 3,406 mm,
+%   Teilung 2,952 mm (Abschnitt 4).
+% Tabelle: analyse.md Abschnitt 2 (8/12/16 Nm, Spalten A, C, E, Maximum; Verdrehweg an C; Kontaktdruck Maximum).
+% Absatz 2 (Ort der Maxima, Eingriff, Kante, Auflösung): Abschnitt 2 (Ort ab A: σ1 W1/W2 4,533 bis 4,884 mm = 1,1 bis
+%   1,5 mm hinter E = 3,406 mm; W3/W4 1,165 bis 1,882 mm nahe C = 1,703 mm); Abschnitt 4 (trägt ab −1,378 bis −1,771
+%   = 0,47 bis 0,60 Teilungen vor A, bis 4,428 bis 4,822 = 0,35 bis 0,48 hinter E); Abschnitt 5 (Nebenzahn 168,3/
+%   256,6/336,3 N gegen 162,4/243,6/322,2 N = +3,7/+5,3/+4,4 %; Maxima +0,1 bis +4,9 %; B und E σ1 −7,5/−4,7,
+%   −8,3/−5,3, −8,7/−5,7 %, Kontaktdruck −9,9/−9,0, −10,8/−9,5, −9,1/−8,0 %); Abschnitt 6 (15 je Teilung ≤ 2,5 %,
+%   6 je Teilung bis 14,7 %).
+% Absatz 3 (Stufen): Abschnitt 3 (W1 → W3 σ1 A bis E +15,0 bis +19,9 %, |σ3| +8,5 bis +11,9 %, Drehung +1,6 bis
+%   +4,7 %, Kontaktdruck C −7,7/−11,1/−11,5 %, E +12,3/+12,3/+14,5 %; W1 → W2 σ1 C −31,8/−37,9/−41,0 %, |σ3| C
+%   −34,4/−41,1/−44,0 %, Kontaktdruck max −30,7/−38,3/−46,0 %, Drehung C +8,4/+8,4/+12,9 %, A +8,2/+16,0/+26,6 %;
+%   W3 → W4 σ1 C −25,3/−30,5/−33,0 %; W2 → W4 σ1 +22,7 bis +34,8 %, Drehung −0,7 bis +4,0 %).
+% Bildwunsch: kap5/vergleich_stufen_16nm und vergleich_stufen_8nm (analyse/vergleich_stufen_LOAD_16NM.svg,
+%   vergleich_stufen_LOAD_8NM.svg); gleiche Skalierung beider Bilder prüfen (Hausregel).
+% Bibwunsch: keiner.
+% Nomenklatur: sigma_1, sigma_3 (vorhanden), varphi_1 (Verdrehweg des Ritzels, mrad; prüfen), p_max (größter
+%   Kontaktdruck; prüfen).
+% Offen: σ1-Karte; die Serien der Dehnratenkarten DY1/DY2 liegen nur an A bis E vor (4.3).

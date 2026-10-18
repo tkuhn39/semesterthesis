@@ -9,6 +9,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (thesis: chapters 1, 5, 7, 8 and the appendix stubs, 2026-10-18 night)
+- Drafts `kap1_einleitung.tex`, `kap5_1_faserorientierung.tex`, `kap5_2_waelzweg.tex`,
+  `kap5_3_stommel.tex`, `kap5_5_verfahrensvergleich.tex`, `kap7_diskussion.tex` and
+  `kap8_zusammenfassung.tex` from the result files of the FE and Stommel tracks
+  (`faserorientierung/bericht.md`, `vergleich_orientierung_*_AtoE/analyse.md`, the series
+  `analyse.md` sections 2 to 7, `stommel/vergleich_slife.md`, ADR-118 and ADR-119) and from the
+  running tests; every number carries its source in the `% Herkunft:` block. Chapter 7 compares
+  in three tiers (safety against the breakage line, accuracy against the crack windows, the local
+  line at the critical node with k = 7,4 to 12 from the FE stresses at C) and separates the
+  geometry effect of the fillet variants from the manufacturing effect of the orientation.
+  Appendices A to G as stubs with placeholders, C with the settings table of the series. Nine
+  figures of chapter 5 added to `bilder.yaml` (six of them converted from older SVGs by Inkscape,
+  fonts checked with `pdffonts`); the nomenclature rows `N_pred`, `p_max`, `rho_min`. User's
+  structure decision of the same night: chapter 1 holds motivation and structure only, 2.7 holds
+  the problem statement and the goal after the state of the art, both concise, and the history
+  is named: the Bachelor thesis of the author (`Kuh24`, BA-0486, title page) applied the Stommel
+  check to plastic gears by calculation only and left its experimental validation open (p. 71),
+  which this thesis takes up. PDF 141 pages, latexmk clean.
+- `scripts/fe_series_analysis.py`: the figures `vergleich_stufen_<Schritt>` carry their legend
+  below the axes in two rows of two entries, so that the path of contact spans the text width
+  (user, 2026-10-18); the series analysis of the weekend run redrawn, the thesis takes the vector
+  twins (Bild 5.5 and 5.6).
+
 ### Added (running tests: Wöhler lines L2 to L4, 2026-10-18 evening)
 - **`gearcore/measurement/woehler.py`** and `scripts/measurements.py woehler`: the test points of
   a material and campaign from the workbook (`points_from_runs`; planned rows, rows without a
