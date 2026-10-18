@@ -9,13 +9,16 @@
     $a_{\mathrm{B,Mises}}$ & -- & Vergleichsauslastungsgrad (nach von-Mises-Spannung) \\
     $a_{\mathrm{B,NH}}$ & -- & Vergleichsauslastungsgrad (nach Normalspannungshypothese) \\
     $a_{\mathrm{B,V}}$ & -- & Vergleichsauslastungsgrad der Betriebsfestigkeit \\
-    $a_{\mathrm{ij}}$ & -- & Eigenwerte des Faserorientierungstensors (Index 11 größter, 22 zweitgrößter Eigenwert) \\
+    $a_{\mathrm{c}}$ & -- & Achsabschnitt der halblogarithmischen Zeitfestigkeitsgeraden \\
+    $a_{\mathrm{ij}}$ & -- & Faserorientierungstensor zweiter Stufe; im Hauptachsensystem stehen die Eigenwerte auf der Diagonalen (Index 11 größter, 22 zweitgrößter Eigenwert) \\
     $a_{\sigma}$ & -- & Einzelauslastungsgrade \\
     $a_{\mathrm{stat}}$ & -- & statischer Auslastungsgrad \\
     $a_{\mathrm{w}}$ & mm & Achsabstand \\
     $a/b$ & -- & Achsenverhältnis der Ellipse \\
+    $AI$ & -- & Anisotropie-Index aus den Eigenwerten des Orientierungstensors \\
     $b$ & mm & Zahnbreite \\
-    $C$ & -- & Konstante des Richardson-Ansatzes \\
+    $b_{\mathrm{c}}$ & -- & Steigung der halblogarithmischen Zeitfestigkeitsgeraden \\
+    $C$ & -- & Konstante des Richardson-Ansatzes; Lageparameter der Zeitfestigkeitsgeraden nach DIN 50100 (Achsabschnitt für die Lastamplitude 1) \\
     $C_{\mathrm{a}}$ & \textmu m & Kopfrücknahme \\
     $c$ & mm & Schenkel der symmetrischen Fase an der Kopfkante (Konturscan) \\
     $D_{\mathrm{M}}$ & mm & Messkugeldurchmesser \\
@@ -41,10 +44,12 @@
     $F_{\pi}$ & \textmu m & Einzelwert der Teilungs-Gesamtabweichung \\
     $F_{\mathrm{pk}}$ & \textmu m & Teilungs-Sektorabweichung \\
     $F_{\mathrm{r}}$ & \textmu m & Rundlaufabweichung \\
+    $F_{\mathrm{t}}$ & N & Nennumfangskraft am Teilzylinder \\
     $f$ & -- & Steuerfaktor der Bézierkurve \\
     $f_{\mathrm{0}}$ & -- & Grenzwert einer Ergebnisgröße für die Elementgröße null (Richardson-Ansatz) \\
     $f_{\mathrm{H}\alpha}$ & \textmu m & Profil-Winkelabweichung \\
     $f_{\mathrm{H}\beta}$ & \textmu m & Flankenlinien-Winkelabweichung \\
+    $f_{\varepsilon}$ & -- & Faktor der Lastaufteilung im Formfaktor nach ISO 6336-3 \\
     $f_{\mathrm{f}\alpha}$ & \textmu m & Profil-Formabweichung \\
     $f_{\mathrm{f}\beta}$ & \textmu m & Flankenlinien-Formabweichung \\
     $f_{\mathrm{p}}$ & \textmu m & Teilungs-Einzelabweichung \\
@@ -57,15 +62,22 @@
     $H$ & -- & Konstante des Hill-Potentials \\
     $h$ & -- & Mehraxialitätsgrad \\
     $h$ & -- & relative Elementgröße (Richardson-Ansatz) \\
+    $h_{\mathrm{Fe}}$ & mm & Biegehebelarm bei Kraftangriff am äußeren Einzeleingriffspunkt \\
     $h_{\mathrm{FfP0}}$ & mm & (lettering of Bild 36 a), without designation: height of the straight part of the tool flank above the datum line, where an edge break flank starts) \\
     $h_{\mathrm{K}}$ & mm & Radiale Höhe des Kopfkantenbruchs oder der Kopfkantenrundung \\
     $h_{\mathrm{aP0}}$ & mm & Kopfhöhe des Werkzeug-Bezugsprofils \\
+    $h_{\mathrm{fP}}$ & mm & Fußhöhe des Bezugsprofils \\
+    $j$ & -- & Ordnungszahl eines Versuchspunkts nach der Laufzeit \\
     $K$ & MPa & statischer Werkstoffkennwert \\
+    $K_{\mathrm{A}}$ & -- & Anwendungsfaktor \\
     $K_{\mathrm{B}}$ & -- & Betriebsfestigkeitsfaktor \\
+    $K_{\mathrm{F}}$ & -- & Faktor für Zahnfußbeanspruchung \\
     $K_{\mathrm{M}}$ & -- & Mittelspannungsfaktor \\
     $k$ & -- & Messzähnezahl \\
     $k$ & -- & Neigungsexponent der Wöhlerlinie \\
-    $L$ & -- & Konstante des Hill-Potentials \\
+    $L$ & -- & Konstante des Hill-Potentials; in ISO 6336-3 das Verhältnis von Zahnfußdickensehne zu Biegehebelarm \\
+    $L_{\mathrm{a}}$ & -- & Lastamplitude der Zeitfestigkeitsgeraden (Lastgröße der Wöhlerlinie) \\
+    $L_{\mathrm{ij}}$ & -- & dekadischer Logarithmus der Lastwechselzahl des j-ten Versuchs auf dem i-ten Parameterpaar \\
     $l$ & mm & Abstand des Hauptpunkts der Bézierkontur vom Schnittpunkt der Flankentangenten \\
     $M$ & -- & Mittelspannungsempfindlichkeit \\
     $M$ & -- & Konstante des Hill-Potentials \\
@@ -74,44 +86,86 @@
     $N$ & -- & geforderte Lastspielzahl \\
     $N$ & -- & Konstante des Hill-Potentials \\
     $N_{\mathrm{G}}$ & -- & Grenzlastspielzahl \\
+    $N_{\mathrm{L}}$ & -- & Lastwechselzahl \\
     $n$ & 1/min & Drehzahl \\
+    $n$ & -- & Stichprobenumfang \\
+    $n_{\mathrm{i}}$ & -- & Anzahl der Wiederholungen des i-ten Parameterpaars \\
+    $n_{\mathrm{p}}$ & -- & Anzahl der Parameterpaare aus Temperatur und Drehmoment \\
+    $P_{\mathrm{A}}$ & \% & Ausfallwahrscheinlichkeit (VDI 2736 Blatt 4: Schadenswahrscheinlichkeit) \\
     $p$ & -- & Konvergenzordnung (Richardson-Ansatz) \\
     $p_{\mathrm{bt}}$ & mm & Grundkreisteilung im Stirnschnitt \\
     $Q$ & -- & Verzahnungsqualität \\
     $q$ & -- & Steuergröße \\
+    $q_{\mathrm{s}}$ & -- & Kerbparameter \\
+    $R$ & -- & Spannungsverhältnis \\
     $R_{\mathrm{a}}$ & \textmu m & arithmetischer Mittenrauwert \\
     $R_{\mathrm{ij}}$ & -- & Fließspannungsverhältnisse nach Hill \\
     $R_{\mathrm{z}}$ & \textmu m & gemittelte Rautiefe \\
     $r$ & mm & Radius des Fußkreisbogens der bionischen Kontur \\
     $S$ & -- & ggf. Sicherheitsfaktor (hier 1) \\
+    $S_{\mathrm{Fmin}}$ & -- & geforderte Mindestsicherheit gegen Zahnfußbruch \\
     $S_{\mathrm{L}}$ & mm & Sehnenlänge der Zahnlücke am maßgeblichen Durchmesser (bionische Fußrundung) \\
+    $S_{\mathrm{ij}}$ & MPa & Schubfestigkeit in der Ebene ij (Tsai-Hill) \\
+    $s_{\mathrm{Fn}}$ & mm & Zahnfußdickensehne im kritischen Querschnitt (30°-Tangente) \\
     $s_{\mathrm{aK}}$ & mm & Restzahndicke am Zahnkopf bei Kopfkantenbruch oder Kopfkantenrundung \\
     $s_{\mathrm{b}}$ & mm & Zahndicke am Grundkreis (Konturscan) \\
+    $s_{\mathrm{i}}$ & -- & Standardabweichung der logarithmierten Lastwechselzahlen des i-ten Parameterpaars \\
+    $s_{\mathrm{lgN}}$ & -- & Standardabweichung der Logarithmen der Schwingspielzahlen (mit Tilde: Schätzung im Perlenschnurverfahren; Index korr: für den Stichprobenumfang korrigiert) \\
     $T$ & N m & Drehmoment (Index 1 Ritzel, 2 Rad) \\
     $u$ & -- & Zähnezahlverhältnis \\
+    $u$ & -- & Quantil der Standardnormalverteilung für die Ausfallwahrscheinlichkeit \\
     $v$ & m/s & Umfangsgeschwindigkeit am Teilkreis \\
     $W_{\mathrm{k}}$ & mm & Zahnweite über k Zähne \\
+    $X$ & MPa & Zugfestigkeit in der Orthotropierichtung 1 (Tsai-Hill) \\
     $x$ & -- & Profilverschiebungsfaktor \\
     $x_{\mathrm{E}}$ & -- & Erzeugungs-Profilverschiebungsfaktor \\
     $x_{\mathrm{Ei}}$ & -- & Erzeugungs-Profilverschiebungsfaktor am unteren Zahndickenabmaß \\
     $x_{\mathrm{Em}}$ & -- & mittlerer Erzeugungs-Profilverschiebungsfaktor \\
     $x_{\mathrm{Es}}$ & -- & Erzeugungs-Profilverschiebungsfaktor am oberen Zahndickenabmaß \\
+    $Y$ & MPa & Zugfestigkeit in der Orthotropierichtung 2 (Tsai-Hill) \\
+    $Y_{\mathrm{F}}$ & -- & Formfaktor für Kraftangriff im äußeren Einzeleingriffspunkt (Methode B) \\
+    $Y_{\mathrm{Fa}}$ & -- & Formfaktor bei Kraftangriff am Zahnkopf \\
+    $Y_{\mathrm{S}}$ & -- & Spannungskorrekturfaktor für Kraftangriff im äußeren Einzeleingriffspunkt (Methode B) \\
+    $Y_{\mathrm{Sa}}$ & -- & Spannungskorrekturfaktor bei Kraftangriff am Zahnkopf \\
+    $Y_{\mathrm{St}}$ & -- & Spannungskorrekturfaktor des Prüfrades \\
+    $Y_{\beta}$ & -- & Schrägenfaktor \\
+    $Y_{\varepsilon}$ & -- & Überdeckungsfaktor \\
+    $Z$ & MPa & Zugfestigkeit in der Orthotropierichtung 3 (Tsai-Hill) \\
     $z$ & -- & Zähnezahl \\
+    $z_{\mathrm{n}}$ & -- & Ersatzzähnezahl \\
+    $\alpha_{\mathrm{Fen}}$ & \textdegree  & Kraftangriffswinkel im äußeren Einzeleingriffspunkt \\
     $\alpha_{\mathrm{P}}$ & \textdegree  & Profilwinkel des Bezugsprofils \\
     $\alpha_{\mathrm{n}}$ & \textdegree  & Normaleingriffswinkel \\
+    $\alpha_{\mathrm{r}}$ & \textdegree  & Eingriffswinkel am relevanten Durchmesser (bionische Fußrundung) \\
     $\alpha_{\mathrm{wt}}$ & \textdegree  & Betriebseingriffswinkel des Radpaares \\
     $\beta$ & \textdegree  & Schrägungswinkel \\
     $\varepsilon_{\mathrm{V}}$ & \% & Vergleichsdehnung \\
     $\varepsilon_{\alpha}$ & -- & Profilüberdeckung \\
+    $\varepsilon_{\alpha\mathrm{w}}$ & -- & Profilüberdeckung unter Last \\
+    $\varepsilon_{\mathrm{ij}}$ & -- & Dehnungskomponenten im Faserkoordinatensystem \\
+    $\varepsilon_{\mathrm{max}}$ & \% & obere zulässige Dehnung aus dem Bereich des Abminderungsfaktors \\
+    $\varepsilon_{\mathrm{min}}$ & \% & untere zulässige Dehnung aus dem Bereich des Abminderungsfaktors \\
     $\varepsilon_{\mathrm{zul}}$ & \% & zulässige Dehnung \\
     $\gamma$ & \textdegree  & Neigungswinkel der Ellipse \\
+    $\gamma_{\mathrm{ij}}$ & -- & Gleitung in der Ebene ij des Faserkoordinatensystems \\
+    $\lambda_{\mathrm{max}}$ & -- & größter Eigenwert des Orientierungstensors \\
+    $\lambda_{\mathrm{min}}$ & -- & kleinster Eigenwert des Orientierungstensors \\
     $\nu$ & -- & Querkontraktionszahl \\
     $\nu_{\mathrm{ij}}$ & -- & Querkontraktionszahl in der Ebene ij des Faserkoordinatensystems \\
     $\varphi$ & \textdegree  & Steigungswinkel der Tangensfunktion auf der Lückenmitte \\
+    $\rho_{\mathrm{F}}$ & mm & Krümmungsradius der Fußrundung am Berührpunkt der 30°-Tangente \\
     $\rho_{\mathrm{aP0}}$ & mm & Kopfkantenrundungsradius des Werkzeug-Bezugsprofils \\
+    $\rho_{\mathrm{fP}}$ & mm & Fußrundungsradius des Bezugsprofils \\
+    $\sigma'_{\mathrm{W}}$ & MPa & mittelspannungskorrigierte Bauteil-Wechselfestigkeit \\
     $\sigma_{\mathrm{1}}$ & MPa & größte Hauptnormalspannung \\
+    $\sigma_{\mathrm{2}}$ & MPa & mittlere Hauptnormalspannung \\
     $\sigma_{\mathrm{3}}$ & MPa & kleinste Hauptnormalspannung \\
     $\sigma_{\mathrm{B}}$ & MPa & statische Festigkeit \\
+    $\sigma_{\mathrm{F}}$ & N/mm² & Zahnfußspannung \\
+    $\sigma_{\mathrm{FG}}$ & N/mm² & Zahnfußgrenzfestigkeit \\
+    $\sigma_{\mathrm{FP}}$ & N/mm² & zulässige Zahnfußspannung \\
+    $\sigma_{\mathrm{FlimN}}$ & N/mm² & Zeitschwellfestigkeit, ausgedrückt durch die Nennspannung \\
+    $\sigma_{\mathrm{H}}$ & MPa & hydrostatische Spannung \\
     $\sigma_{\mathrm{V}}$ & MPa & Vergleichsspannung (aus FEM) \\
     $\sigma_{\mathrm{V,Hill}}$ & MPa & Hill-Vergleichsspannung im Faserkoordinatensystem \\
     $\sigma_{\mathrm{V,Mises}}$ & MPa & von-Mises-Spannung \\
@@ -122,7 +176,11 @@
     $\sigma_{\mathrm{a,i}}$ & MPa & vorliegende Spannungsamplitude der Spannungskomponente \\
     $\sigma_{\mathrm{ij}}$ & MPa & Komponenten des Spannungstensors im Faserkoordinatensystem \\
     $\sigma_{\mathrm{m}}$ & MPa & Mittelspannung \\
+    $\sigma_{\mathrm{max}}$ & MPa & Maximalspannung des Lastspiels \\
+    $\sigma_{\mathrm{min}}$ & MPa & Minimalspannung des Lastspiels \\
     $\sigma_{\mathrm{stat}}$ & MPa & statische Bauteilfestigkeit \\
+    $\theta$ & \textdegree  & Tangentenwinkel der Fußrundung (iterativ nach ISO 6336-3) \\
+    $\vartheta_{\mathrm{F}}$ & \textdegree C & Zahnfußtemperatur (in der Richtlinie mit dem Index Fuß) \\
 \end{longtable}
 
 \vspace{1em}
@@ -142,11 +200,15 @@
 \begin{longtable}{L{0.1\textwidth}L{0.34\textwidth}L{0.1\textwidth}L{0.34\textwidth}}
     \multicolumn{4}{l}{\textbf{Abkürzungen}} \\
     \endhead
-    CT & Computertomographie & DIN & Deutsches Institut für Normung \\
-    DY1, DY2 & Werkstoffkarten der Dehnraten 3 1/s und 60 1/s & FE, FEM & Finite Elemente, Finite-Elemente-Methode \\
-    FVA & Forschungsvereinigung Antriebstechnik e. V. & FZG & Forschungsstelle für Zahnräder und Getriebesysteme \\
-    GF & Glasfaser & ISO & International Organization for Standardization \\
-    PA46 & Polyamid 46 & PEEK & Polyetheretherketon \\
-    POM & Polyoxymethylen & QS & quasistatische Werkstoffkarte \\
-    VDI & Verein Deutscher Ingenieure & W1 bis W4 & Werkstoffstufen des FE-Modells \\
+    ACORA & Verfahren zur Berechnung der Überdeckung unter Last nach Hasl & CAO & Computer Aided Optimization, biologische Formoptimierung \\
+    CT & Computertomographie & FKM & Forschungskuratorium Maschinenbau (Richtlinie Rechnerischer Festigkeitsnachweis) \\
+    LDP & Load Distribution Program (Ohio State University) & OeZS & Örtliche Zahnfußspannung (Modul in RIKOR) \\
+    RIKOR & Ritzelkorrekturprogramm der FVA & STIRAK & Stirnradkontaktanalyse der FVA \\
+    DIN & Deutsches Institut für Normung & DY1, DY2 & Werkstoffkarten der Dehnraten 3 1/s und 60 1/s \\
+    FE, FEM & Finite Elemente, Finite-Elemente-Methode & FVA & Forschungsvereinigung Antriebstechnik e. V. \\
+    FZG & Forschungsstelle für Zahnräder und Getriebesysteme & GF & Glasfaser \\
+    ISO & International Organization for Standardization & PA46 & Polyamid 46 \\
+    PEEK & Polyetheretherketon & POM & Polyoxymethylen \\
+    QS & quasistatische Werkstoffkarte & VDI & Verein Deutscher Ingenieure \\
+    W1 bis W4 & Werkstoffstufen des FE-Modells &  &  \\
 \end{longtable}

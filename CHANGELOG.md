@@ -9,6 +9,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (thesis: chapter 2 from the Bachelor thesis, the sections 3.2, 3.4 and 3.8, figures cut from sources, ADR-118 amendment of 2026-10-18)
+- Drafts `Kapitel/entwuerfe/kap2_1_thermoplaste.tex` to `kap2_7_problemstellung.tex`,
+  `kap3_2_pruefstand.tex`, `kap3_4_analytik.tex` and `kap3_8_auswertung_laufversuche.tex`, wired
+  by `\input` into `kap2_stand.tex` and `kap3_methoden.tex` (112 pages, latexmk clean). Chapter 2
+  takes the text of BA-0486 chapter 2 as raw material only: every statement, formula and number
+  re-checked at the page of the primary source, BA sources without a PDF under `00_literatur`
+  dropped or re-based on a source at hand (listed per draft under `% Offen:`), Ehrenstein 2007
+  not cited because the scan carries no impressum. 3.2 describes the rig after SA 1272 and
+  MA-0296 with the test plan from the rig workbook (wheel torque = pinion torque × 52/51,
+  3058 1/min at the pinion = 3000 1/min at the wheel), 3.4 the inputs of VDI 2736 Blatt 2 with
+  the Y factors after ISO 6336-3 Method B beside FVA-Workbench, RIKOR and S-Life Plastics, 3.8 the
+  planned evaluation of the running tests after DIN 50100, VDI 2736 Blatt 4 and Hasl (method
+  only). Findings for the user stand in the drafts and in ADR-118: the running 8 Nm wheel is
+  97364 in the workbook and 97361 in `parts.yaml`, three of five broken teeth lie outside the
+  failure window 36 to 40.
+- **`scripts/thesis_source_figures.py`** (T5): figures "nach [..]" cut from the source PDFs as
+  vector PDFs. `10_report/bilder/quellbilder.yaml` names the PDF under `00_literatur`, the page
+  and a box in bp (bottom-left origin); `build` runs a pdflatex wrapper (`graphicx` with page,
+  viewport and clip, `preview` with tightpage) into `80_output/thesis/quellen/`, `find` lists the
+  text blocks of a page (`pdftotext -bbox-layout`) and the gap above a caption, `preview` renders
+  a page or a box at 72 dpi so one pixel is one bp. Nine cuts (SA 1272 Bild 2, FVA 856 I Bild 16
+  to 18, MA-0296 Abb. 54 and 55, DIN 50100 Bild 8, Frühe Abb. 41, Fig. 2 of both Voith patents)
+  listed in `bilder.yaml` and copied like every other figure.
+- `10_report/litbib.bib`: 51 entries, 44 cited; eleven transcribed from the title pages (FVA 30 XI
+  and XII, FVA 484 V, FVA 892 I, FVA 241 XII, Erhard 2008, Niemann/Winter Band 2, Fürstenberger
+  as the draft PDF of 2013-03-01, Sanders, the Kassem manuscript as `@unpublished`, the Envalior
+  datasheet as `@report`).
+- `10_report/nomenklatur.yaml`: about 45 symbols of chapter 2, 3.2, 3.4 and 3.8 as extras with
+  their source pages (VDI 2736 Blatt 2 factors, ISO 6336-3 Method B, DIN 50100 statistics,
+  Tsai-Hill, anisotropy index), the abbreviations ACORA, CAO, FKM, LDP, OeZS, RIKOR and STIRAK;
+  `C` and `L` stand for two quantities each. `scripts/build_nomenclature.py` reads `\varepsilon`
+  and `\varphi` back to the registry names and knows `\vartheta`.
+
+### Fixed (2026-10-18)
+- `data/fe/fva856_table4.yaml`: Tabelle 4 of FVA 856 I stands on printed page 23 (PDF page 37),
+  not 22; `test_fe_deck_elastic_constants.py` expects 23. Roadmap L7: Stommel's failure
+  definition (first macroscopic crack) stands on p. 204, not p. 221. `bilder.yaml`: the caption of
+  `orientierungszustaende_qs` described a figure the file does not show.
+
 ### Added (thesis: outline, writing rules, LaTeX skeleton, generators and the first ten section drafts, T0 to T6 of ADR-118, 2026-10-17)
 - `10_report/00_gliederung.md` (T0) and `00_schreibregeln.md` (T1) from the plan of 2026-10-14; the
   Abaqus exercise chapters, the exercise pictures and the template's example appendix deleted

@@ -1,0 +1,26 @@
+\section{Problemstellung und Zielsetzung}
+\label{sec:problemstellung}
+
+Thermoplastische Kunststoffe werden zunehmend als Zahnradwerkstoff eingesetzt, wie \secref{sec:thermoplaste} zeigt, und die Zahnfußtragfähigkeit ist nach \secref{sec:schaeden} ein wesentlicher Faktor für die Lebensdauer solcher Räder. Bei kurzfaserverstärkten Thermoplasten bestimmt die Ausrichtung der Fasern die mechanischen Eigenschaften des Zahns, und diese Ausrichtung entsteht erst beim Spritzgießen (\secref{sec:spritzgiessen}). Die Berechnungsverfahren des Standes der Technik gehen damit unterschiedlich um. Die Richtlinie VDI 2736 Blatt 2 rechnet mit Nennspannung und Faktoren, kennt die Faserorientierung nicht und nennt Festigkeitswerte nur für wenige unverstärkte Werkstoffe (\secref{sec:vdi2736}). RIKOR und die FVA-Workbench erfassen die Lastverteilung unter Verformung, rechnen aber mit der Nenngeometrie und einem richtungsunabhängigen Werkstoff (\secref{sec:numerik_fussgeometrien}). Der vereinfachte Festigkeitsnachweis nach Stommel et al. schreibt für kurzfaserverstärkte Werkstoffe ein isotropes Modell vor und erfasst die Festigkeitsminderung quer zur Faser pauschal über die Werkstoffklasse (\secref{sec:stommel_stand}). Für die Fußrundung liegen Vorschläge mit elliptischer, Bézier- und bionischer Kontur vor, deren Wirkung überwiegend an Stahlrädern und unverstärkten Kunststoffen nachgewiesen wurde (\secref{sec:numerik_fussgeometrien}). Präzise Aussagen zur Gültigkeit und zu den Grenzen dieser Verfahren für kurzfaserverstärkte Kunststoffzahnräder fehlen bislang, und Laufversuche an der Prüfverzahnung kst-E liegen für PA46-GF30 nicht vor (\secref{sec:experiment_stand}).
+
+Ziel dieser Arbeit ist es, die Zahnfußtragfähigkeit kurzfaserverstärkter Kunststoffzahnräder am Beispiel der Paarung Stahl gegen PA46-GF30 theoretisch und experimentell zu untersuchen. Daraus soll das Potenzial der Faserverstärkung für die Zahnfußtragfähigkeit beurteilt werden. Die Zahnfußspannungen werden nach VDI 2736 Blatt 2, mit der FVA-Workbench, mit RIKOR und mit einem eigenen FE-Modell berechnet. Das FE-Modell übernimmt die Faserorientierung aus der Spritzgießsimulation in vier Werkstoffstufen vom isotropen bis zum anisotropen Modell. Die Beanspruchung wird nach Stommel et al. bewertet, wie das Verfahren veröffentlicht ist und mit einer eigenen Erweiterung auf die anisotropen Stufen; S-Life Plastics dient als Gegenprobe. Optimierte Fußgeometrien mit elliptischer, Bézier- und bionischer Kontur werden in dieselbe Kette eingesetzt. Am FZG-Kleinverspannungsprüfstand mit dem Achsabstand $52$\,mm werden Laufversuche bei drei Drehmomenten gefahren, die Prüfräder werden vor und nach dem Versuch vermessen. Auf Basis der Ergebnisse werden die Verfahren hinsichtlich ihrer Genauigkeit und Anwendbarkeit verglichen und bewertet.
+
+Die Arbeit ist wie folgt aufgebaut. \chapref{chap:methoden} beschreibt den Untersuchungsgegenstand mit Prüfverzahnung, Prüfstand und Dokumentation der Prüfräder. Dort stehen auch die analytischen Verfahren, die Geometrie- und Simulationskette sowie die Auswertung von Beanspruchung und Laufversuchen. \chapref{chap:voruntersuchungen} stellt die Voruntersuchungen zum FE-Modell und zu den Prüfrädern zusammen. \chapref{chap:berechnung} enthält die Ergebnisse der Berechnung, \chapref{chap:laufversuche} die der Laufversuche. In \chapref{chap:diskussion} werden Genauigkeit, Anwendbarkeit und Grenzen der Verfahren diskutiert, \chapref{chap:zusammenfassung} fasst die Arbeit zusammen und gibt einen Ausblick.
+
+% Herkunft:
+% Absatz 1 (Lücke): 10_report/aufgabenstellung.tex Absatz 1 (zunehmende Verwendung, Zahnfußtragfähigkeit
+%   wesentlich, Faserausrichtung bestimmt die Festigkeit, keine präzisen Aussagen zu Gültigkeit und
+%   Grenzen der Verfahren); die Einordnung der Verfahren verweist auf die Abschnitte 2.1 bis 2.6
+%   (Entwürfe kap2_1 bis kap2_6), deren Quellen dort stehen: VDI 2736 Blatt 2 ohne Orientierung und
+%   ohne sigma_FlimN für PA46 (VDI 2736 Blatt 2 S. 14), RIKOR/Workbench Nenngeometrie und
+%   richtungsunabhängiger Werkstoff (FVA 30 XI, FVA 892 I Überblick), Stommel Isotropie-Vorschrift
+%   (Sto18 S. 343 bis 346), Fußrundungsvarianten (Frühe 2012, Roth/Opferkuch 2017, Patente, Kassem
+%   2022/2023), keine kst-E-Laufversuche mit PA46-GF30 (Arbeitsmappe der Laufversuche: 2023 POM/PEEK,
+%   MA-0296; 2026 erste PA46-GF30-Läufe dieser Arbeit).
+% Absatz 2 (Ziel): aufgabenstellung.tex Absatz 2 und Arbeitspakete (S-Life, FVA Workbench, RIKOR,
+%   Fußgeometrien elliptisch/bionisch/Bezier, Prüfstand a = 52 mm, Dokumentation der Prüfräder vor
+%   und nach dem Versuch); vier Werkstoffstufen und anisotrope Erweiterung: ADR-116/ADR-118,
+%   Entwürfe 3.6 und 3.7; drei Drehmomente: Arbeitsmappe der Laufversuche.
+% Absatz 3 (Aufbau): 10_report/00_gliederung.md; Kapitel-Labels aus kap3 bis kap8 (chap:methoden,
+%   chap:voruntersuchungen, chap:berechnung, chap:laufversuche, chap:diskussion, chap:zusammenfassung);
+%   \chapref prüfen, ob die Klasse den Befehl kennt, sonst "Kapitel~\ref{}".

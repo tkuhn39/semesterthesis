@@ -1,6 +1,8 @@
 # Elastic constants of the skin layers of PA46-GF30 from FVA 856 I (FVA-Heft 1491, 2022),
 # Tabelle 4 "Per GeoDict umgerechnete elastische Konstatanten der Randschichten
-# (konditioniert)", printed page 22 (PDF page 35), transcribed by pdftotext on 2026-10-13 and
+# (konditioniert)", printed page 23 (PDF page 37; the page was recorded as 22/35 on 2026-10-13 and
+# corrected on 2026-10-18 against the page marker of the text layer, printed 23 = PDF 37, offset 14;
+# printed page 22 carries Tabelle 3), transcribed by pdftotext on 2026-10-13 and
 # checked digit by digit against the layout extraction; the thousands separator of the report
 # (6.277) is dropped, the decimal comma becomes a point. The report converts the tensile tests
 # (0 degree and 90 degree specimens, three temperatures, three test speeds) with a micro-
@@ -15,8 +17,8 @@
 # (converse_rates.yaml): the rows of Tabelle 4 carry the same names.
 source: "FVA856-I:2022"
 table: "Tabelle 4"
-printed_page: 22
-pdf_page: 35
+printed_page: 23
+pdf_page: 37
 state: "konditioniert"
 frame:
   "1": "Faservorzugsrichtung (Hauptrichtung des Orientierungstensors; so im Bericht)"

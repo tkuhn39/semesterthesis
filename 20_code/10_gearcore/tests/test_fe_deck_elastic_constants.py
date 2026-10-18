@@ -55,7 +55,7 @@ def script() -> ModuleType:
 def test_table4_is_transcribed_with_nine_stable_rows() -> None:
     table = data.load_fva856_table4()
     assert table["source"] == "FVA856-I:2022" and table["table"] == "Tabelle 4"
-    assert table["printed_page"] == 22 and table["state"] == "konditioniert"
+    assert table["printed_page"] == 23 and table["state"] == "konditioniert"
     assert len(table["rows"]) == 9
     assert data.fva856_table4_row(80.0, "QS") == TABLE4_80C_QS
     assert data.fva856_table4_row(80.0, "dy2") == TABLE4_80C_DY2

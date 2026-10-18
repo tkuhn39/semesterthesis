@@ -16,7 +16,7 @@ bilder:
   - name: orientierungszustaende_qs
     kapitel: 2
     quelle: fe/stommel_methode_V2/orientierungszustaende_qs.svg
-    unterschrift: "Orientierungszustände der Werkstoffkarte: Elastizitätsmodul und Festigkeit über dem Orientierungsgrad bei 80 °C."
+    unterschrift: "Gemessene Richtungen und Orientierungszustände der quasistatischen Werkstoffkarte von PA46-GF30 bei 23 und 80 °C (Matscape-Karte; Zustandskurven aus der Referenzkurve in Fließrichtung mit R_11 und E_1 des Zustands)."
   - name: nomogramm_qs
     kapitel: 2
     quelle: fe/stommel_methode_V2/nomogramm_qs.svg
@@ -25,6 +25,44 @@ bilder:
     kapitel: 2
     quelle: fe/stommel_methode_V2/haigh_qs_80C.svg
     unterschrift: "Haigh-Diagramm der zyklischen Bemessung für PA46-GF30 bei 80 °C, quasistatische Karte, in Anlehnung an [Sto18]."
+  # Kapitel 2, Quellbilder (scripts/thesis_source_figures.py, quellbilder.yaml)
+  - name: quelle_fva856_bild16
+    kapitel: 2
+    quelle: thesis/quellen/quelle_fva856_bild16.pdf
+    unterschrift: "Auswertung der Faserorientierung in einer Zone am linken Zahnfuß aus der Computertomographie, nach [FVA856-I] Bild 16 S. 18."
+  - name: quelle_fva856_bild17
+    kapitel: 2
+    quelle: thesis/quellen/quelle_fva856_bild17.pdf
+    unterschrift: "Zonen des Zahns mit den Eigenwerten des Orientierungstensors und dem Anisotropie-Index, nach [FVA856-I] Bild 17 S. 19."
+  - name: quelle_fva856_bild18
+    kapitel: 2
+    quelle: thesis/quellen/quelle_fva856_bild18.pdf
+    unterschrift: "Der FE-Analyse übergebene Zonenkarte mit der Faservorzugsrichtung in der Frontebene, nach [FVA856-I] Bild 18 S. 19."
+  - name: quelle_fie23_zahnfussbruch
+    kapitel: 2
+    quelle: thesis/quellen/quelle_fie23_zahnfussbruch.pdf
+    unterschrift: "Zahnfußbruch an der Verzahnung kst-E aus POM im Laufversuch bei 8 Nm und Anriss bei 18 Nm, nach [Fie23] Abbildung 54 und 55 S. 66."
+  - name: quelle_fruehe_ellipse
+    kapitel: 2
+    quelle: thesis/quellen/quelle_fruehe_ellipse.pdf
+    unterschrift: "Zahnfußausrundung mit tangentenstetigen Ellipsen, nach [Frue12] Abbildung 41 S. 93."
+  - name: quelle_patent_bezier
+    kapitel: 2
+    quelle: thesis/quellen/quelle_patent_bezier.pdf
+    unterschrift: "Fußrundung aus einer kubischen Bézierkurve, nach [DE102013004861B3] Fig. 2."
+  - name: quelle_patent_bionisch
+    kapitel: 2
+    quelle: thesis/quellen/quelle_patent_bionisch.pdf
+    unterschrift: "Bionische Fußrundung aus Tangensfunktion und Kreisbahn, nach [DE102008045318B3] Fig. 2."
+  - name: quelle_din50100_perlenschnur
+    kapitel: 2
+    quelle: thesis/quellen/quelle_din50100_perlenschnur.pdf
+    unterschrift: "Schema des Perlenschnurverfahrens im Wöhlerdiagramm, nach [DIN50100] Bild 8 S. 29."
+  # Kapitel 3, Methoden: Quellbild des Prüfstands (scripts/thesis_source_figures.py, quellbilder.yaml)
+  - name: quelle_pruefstand_sa1272
+    kapitel: 3
+    quelle: thesis/quellen/quelle_pruefstand_sa1272.pdf
+    unterschrift: "Verspannungsprüfstand mit dem Achsabstand 52 mm als Konstruktionsmodell mit den Bauteilen 1 bis 12, nach [Schu09] S. 9."
   # Kapitel 3, Methoden: Zeichnungen aus der Geometriekette (scripts/thesis_figures.py)
   - name: stirnschnitt_kste
     kapitel: 3

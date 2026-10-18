@@ -1,0 +1,148 @@
+\section{Werkstoffverhalten und Materialmodelle}
+\label{sec:materialmodelle}
+
+Das Spannungs-Dehnungs-Verhalten eines Kunststoffs wird im Zugversuch an Probekörpern ermittelt. Die Richtlinie VDI 2736 Blatt 1 nennt als Kennwerte für die Zahnradberechnung die Streckspannung, die Zugfestigkeit, die Dehnspannung und die Bruchspannung \cite[S.~6]{VDI2736-1}. Amorphe Thermoplaste zeigen im Kurzzeit-Zugversuch ein sprödes, teilkristalline bei Raumtemperatur ein eher duktiles Verhalten \cite[S.~30]{Sto18}. Aufgetragen werden technische Größen, die Kraft bezogen auf den Ausgangsquerschnitt und die Längenänderung bezogen auf die Ausgangslänge. FE-Programme geben in der Regel wahre Größen aus, so dass die Kurven für die Kalibrierung und für die Bewertung der Ergebnisse umzurechnen sind \cite[S.~14 und 16]{Sto18}.
+
+Bei kurzfaserverstärkten Thermoplasten werden die Probekörper aus spritzgegossenen Platten in Fließrichtung, quer dazu und unter $45$\textdegree{} herauspräpariert, weil die Faservorzugsrichtung der Platte die Richtungsabhängigkeit sichtbar macht \cite[S.~106 bis 108]{Sto18}. Ein solcher Probekörper ist kein homogener Werkstoff, sondern ein Schichtverbund. Randschichten mit Fasern in Fließrichtung umschließen eine Mittelschicht mit um $90$\textdegree{} gedrehter Vorzugsrichtung, und die Anteile der Schichten hängen von Dicke und Prozess ab \cite[S.~107]{Sto18}. Die gemessene Steifigkeit ist die Parallelschaltung der Schichtsteifigkeiten, und Probekörper verschiedener Dicke liefern verschiedene Kennwerte. Der Zugversuch ist damit ein Bauteilversuch, und die orthotropen Werkstoffkennwerte lassen sich nur mittelbar durch Nachrechnen des Versuchs gewinnen \cite[S.~107 bis 108]{Sto18}. Diesen Dreischichtaufbau bestätigt der Abschlussbericht FVA 856 I an CT-Aufnahmen der Zugproben aus PA46-GF30. Mit einer mikromechanischen Zelle rechnet der Bericht die gemessenen Moduln auf die Kennwerte der orientierten Randschicht um; der Unterschied zwischen Verbund und Randschicht beträgt dort $5$ bis $15$\,\% \cite[S.~20 bis 22]{FVA856-I}.
+
+Die Datenbasis dieser Arbeit sind Zugversuche am konditionierten PA46-GF30 bei $23$ und $80$\,\textdegree C in drei Richtungen zur Fließrichtung und bei drei Prüfgeschwindigkeiten. Aus ihnen erzeugt Matscape je Prüfgeschwindigkeit eine Werkstoffkarte; die Zuordnung der Karten zu den Werkstoffstufen steht in \secref{sec:fe_modell}. \figref{fig:spannung_dehnung_qs} zeigt die Kurven der quasistatischen Karte. Quer zur Fließrichtung liegt die Kurve deutlich unter der in Fließrichtung. Die Erwärmung auf $80$\,\textdegree C senkt Steifigkeit und größte Spannung in beiden Richtungen, und keine der Kurven zeigt einen ausgeprägten Streckpunkt.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{kap2/spannung_dehnung_qs}
+    \caption{Spannungs-Dehnungs-Kurven der quasistatischen Werkstoffkarte von PA46-GF30 nach Orientierungszustand und Temperatur (Matscape-Karte).}
+    \label{fig:spannung_dehnung_qs}
+\end{figure}
+
+Stommel et al. ordnen das Verhalten polymerer Werkstoffe vier Grundformen zu \cite[S.~23 bis 25]{Sto18}. Elastisch heißt, dass jeder Belastung eindeutig eine Dehnung zugeordnet ist; der Körper verformt sich unmittelbar, speichert die aufgewendete Energie und gibt sie bei Entlastung vollständig zurück. Dieses Verhalten hängt von der Temperatur ab, nicht aber von der Belastungsgeschwindigkeit, und wird durch eine Feder dargestellt \cite[S.~23]{Sto18}. Plastisch verformt sich ein Körper bleibend, sobald eine Grenzspannung, die Fließspannung, überschritten ist. Die Verformungsenergie wird in Wärme umgesetzt, die elastischen Anteile stellen sich bei Entlastung zurück, das Symbol ist ein Reibelement, und allein die Lasthöhe bestimmt das Verhalten \cite[S.~24]{Sto18}. Viskos ist eine irreversible Verformung, die von der Zeit abhängt; die Viskosität verknüpft Spannung und Verformungsgeschwindigkeit, das Symbol ist ein Dämpfer \cite[S.~24]{Sto18}. Reale Polymere zeigen stets eine Überlagerung dieser Anteile. Weil elastische und viskose Effekte bei Kunststoffen schon bei Raumtemperatur und geringen Lasten zusammenwirken, gelten sie als viskoelastisch und werden durch Feder-Dämpfer-Kombinationen nach Kelvin-Voigt, Maxwell oder Burgers veranschaulicht \cite[S.~24 bis 26]{Sto18}. Unter konstanter Last wächst die Dehnung verzögert, was Retardation oder Kriechen heißt, unter konstanter Dehnung fällt die Spannung ab, was Relaxation heißt \cite[S.~25 bis 26]{Sto18}.
+
+In der FEM wird das Werkstoffverhalten über eine mathematische Formulierung beschrieben, das Materialmodell, das Spannung und Dehnung mit Zeit und Temperatur über werkstoffspezifische Parameter verknüpft \cite[S.~49]{Sto18}. Die Wahl ist ein Kompromiss zwischen der Genauigkeit der Beschreibung und dem Aufwand für die Bestimmung der Parameter, und der eingeschränkte Gültigkeitsbereich des Modells ist zu beachten \cite[S.~49 bis 50]{Sto18}. Als erste Einordnung dient der Zeitraum der Belastung. Für kurzzeitige, monoton steigende Lasten zwischen einer Sekunde und einer Stunde sind elastische und elastoplastische Modelle vorgesehen, für langzeitige Lasten Kriechmodelle und viskoelastische Modelle, für periodische Lastverläufe viskoelastische Modelle \cite[S.~50]{Sto18}. Die vier Modellklassen, die in dieser Arbeit als Werkstoffstufen dienen, werden im Folgenden beschrieben.
+
+Das einfachste Modell ist das linear-elastische Hookesche Gesetz, das mit dem Elastizitätsmodul $E$ und der Querkontraktionszahl $\nu$ ein ideal-elastisches, isotropes Verhalten beschreibt \cite[S.~51]{Sto18}. In Abaqus folgt die Spannung aus der elastischen Dehnung über den Elastizitätstensor; die Form gilt für kleine elastische Dehnungen unter etwa $5$\,\%, und der Schubmodul ergibt sich aus $E/(2(1+\nu))$ \cite{AbaqusLinElast25}. Unter kurzzeitiger Belastung kann dieser Ansatz auch für Kunststoffe ausreichen, etwa für vergleichende Rechnungen an Geometrievarianten. Der Modul ist dann als Ursprungsmodul passend zur Betriebstemperatur und zur repräsentativen Dehngeschwindigkeit im Bauteil zu wählen \cite[S.~51]{Sto18}. Ob die berechneten Dehnungen noch im annähernd linearen Anfangsbereich der Kurve liegen, ist anschließend zu prüfen \cite[S.~51 bis 52]{Sto18}. Elastische Modelle erfassen weder plastische noch viskose Effekte und kennen keine Zeitabhängigkeit. Der Modul muss deshalb bei der Belastungsgeschwindigkeit des Bauteils ermittelt werden, die im Bauteil selbst nicht konstant ist, so dass ein konstanter Modul nur eine Näherung bleibt \cite[S.~52 bis 53]{Sto18}. Die Querkontraktionszahl liegt bei kurzen Zeiten um $0{,}3$ und nähert sich bei hohen Temperaturen und langen Belastungszeiten dem Wert $0{,}5$ \cite[S.~52]{Sto18}.
+
+Elasto-plastische Modelle verhalten sich bis zur Fließspannung ideal elastisch und fließen darüber. Die Gesamtdehnung teilt sich in einen elastischen und einen plastischen Anteil, von denen nur der elastische Spannung erzeugt und nach Entlastung zurückgeht \cite[S.~53]{Sto18}. Im mehraxialen Fall entscheidet eine Vergleichsspannung über den Fließbeginn; FE-Programme verwenden dafür die für duktile Metalle entwickelte von-Mises-Spannung \cite[S.~54]{Sto18}. Für Kunststoffe nennen Stommel et al. drei Erweiterungen. Die Verfestigung wird als Tabelle der Fließspannung über der plastischen Dehnung hinterlegt und vergrößert die Fließfläche gleichmäßig, was isotrope Verfestigung heißt \cite[S.~55]{Sto18}. Zudem steigt die Fließgrenze mit der Dehnrate, was durch Skalieren der Verfestigungskurve erfasst wird, und unter hydrostatischem Druck liegt sie höher als unter Zug, was das Drucker-Prager-Modell beschreibt \cite[S.~57 bis 59]{Sto18}. Elasto-plastische Modelle sind bei Kunststoffen nur für monotone Lastverläufe sinnvoll; an einer Spannungs-Dehnungs-Kurve kalibriert, zählen sie viskoelastische Dehnungsanteile als plastisch und berechnen die bleibende Dehnung zu groß \cite[S.~56 bis 57]{Sto18}. Bei der Kalibrierung über mehrere Dehnraten lässt Abaqus nur einen elastischen Parametersatz zu. Der Abschlussbericht FVA 856 I wählt deshalb den Ursprungsmodul der niedrigsten Dehnrate und nimmt in Kauf, dass das Bauteil im elastischen Bereich zu weich abgebildet wird \cite[S.~63]{FVA856-I}.
+
+Kurzfaserverstärkte Thermoplaste lassen sich unter bestimmten Bedingungen ebenfalls linear-elastisch beschreiben, doch genügen ein Modul und eine Querkontraktionszahl nicht mehr, weil die Steifigkeit in Faserrichtung höher ist als quer dazu \cite[S.~75]{Sto18}. Mit den Kennwerten in und quer zur Faserhauptrichtung ist der Werkstoff orthotrop und wird durch neun Ingenieurskonstanten beschrieben \cite[S.~75]{Sto18}. Das sind drei Moduln $E_{i}$, drei Querkontraktionszahlen $\nu_{ij}$ und drei Schubmoduln $G_{ij}$ im Faserkoordinatensystem, dessen Richtung 1 die Richtung der meisten Fasern ist \cite[S.~75]{Sto18}. Die Konstanten definieren die Nachgiebigkeit des Werkstoffs. Für die Dehnung in Richtung 1 und die Gleitung in der Ebene 12 gilt nach \cite{AbaqusLinElast25}
+\begin{equation}
+\varepsilon_{11} = \frac{\sigma_{11}}{E_{1}} - \frac{\nu_{21}}{E_{2}}\,\sigma_{22} - \frac{\nu_{31}}{E_{3}}\,\sigma_{33} , \qquad
+\gamma_{12} = \frac{\sigma_{12}}{G_{12}} , \qquad
+\frac{\nu_{ij}}{E_{i}} = \frac{\nu_{ji}}{E_{j}} ,
+\label{eq:orthotrop}
+\end{equation}
+die übrigen Komponenten folgen durch Vertauschen der Indizes. Alle Moduln müssen positiv sein und Stabilitätsbedingungen wie $|\nu_{12}| < (E_{1}/E_{2})^{1/2}$ erfüllen \cite{AbaqusLinElast25}. Im transversal isotropen Sonderfall mit gleichem Verhalten in allen Richtungen quer zur Faser verbleiben fünf Konstanten \cite[S.~76]{Sto18}. In Spritzgussbauteilen liegen die Fasern lokal in verschiedene Raumrichtungen verteilt, so dass die Konstanten an jeder Formteilposition anders ausfallen und die Berechnung die lokale Faserausrichtung berücksichtigen muss \cite[S.~39 und 75]{Sto18}. Sind Aussagen zur Bauteilsteifigkeit gefragt und bleibt die Beanspruchung in den tragenden Querschnitten annähernd linear-elastisch, so ist die elastische Betrachtung für kurzfaserverstärkte Werkstoffe ausreichend genau. Lokal überelastische Beanspruchungen in Kerben ändern daran nichts \cite[S.~61 bis 62]{Sto18}.
+
+Ein Beispiel für zonenweise bestimmte orthotrope Konstanten gibt der Abschlussbericht FVA 856 I. Aus den Zugversuchen an $0$\textdegree- und $90$\textdegree-Proben bei drei Temperaturen und drei Prüfgeschwindigkeiten wurde mit einer mikromechanischen Zelle der Matrixmodul bestimmt, der die Messungen am besten trifft. Mit ihm wurden die neun Konstanten der orientierten Randschicht berechnet, darunter die Schubmoduln und Querkontraktionszahlen, die experimentell nicht zugänglich waren \cite[S.~21 bis 22]{FVA856-I}. In \tabref{tab:fva856_tab4_rt} stehen die Konstanten für Raumtemperatur und $-20$\,\textdegree C, die Werte bei $80$\,\textdegree C in \tabref{tab:fva856_tab4}. Für die im CT des Zahnrads unterschiedenen Zonen wurden die Eigenwerte des Orientierungstensors auf die Diagonale gelegt und je Zone Zellen gerechnet (vgl. \secref{sec:spritzgiessen}). $E_{1}$ reicht dabei von $4{,}38$\,GPa in der nahezu isotropen Zone M bis $6{,}41$\,GPa in der Zone LF, $E_{2}$ von $3{,}21$ bis $3{,}70$\,GPa. Stärker anisotrope Zonen zeigen einen höheren Modul $E_{1}$ und einen geringeren Modul $E_{2}$ \cite[S.~23]{FVA856-I}. Im mittleren Drittel der Zahnbreite liegt $E_{1}$ der äußeren Zonen um $5$ bis $15$\,\% niedriger als in den äußeren Dritteln, in den Übergangszonen bis etwa $20$\,\% \cite[S.~24]{FVA856-I}.
+
+\begin{table}[htbp]
+    \caption{Elastische Konstanten der konditionierten Randschicht von PA46-GF30 bei Raumtemperatur und $-20$\,\textdegree C nach Tabelle~4 des Berichts FVA 856 I \cite[S.~23]{FVA856-I}; Richtung 1 Faservorzugsrichtung, QS, DY1 und DY2 die drei Prüfgeschwindigkeiten.}
+    \label{tab:fva856_tab4_rt}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{L{2.1cm}L{1.2cm}L{1.2cm}L{1.2cm}L{1.1cm}L{1.1cm}L{1.1cm}L{1.2cm}L{1.2cm}L{1.2cm}}
+        Zeile & $E_{1}$ & $E_{2}$ & $E_{3}$ & $\nu_{12}$ & $\nu_{13}$ & $\nu_{23}$ & $G_{12}$ & $G_{13}$ & $G_{23}$ \\
+         & MPa & MPa & MPa & & & & MPa & MPa & MPa \\
+        \hline
+        RT, QS   & $6277$  & $3000$  & $2929$  & $0{,}403$ & $0{,}380$ & $0{,}489$ & $1266$ & $1149$ & $998$ \\
+        RT, DY1  & $8296$  & $4850$  & $4795$  & $0{,}394$ & $0{,}378$ & $0{,}476$ & $1937$ & $1814$ & $1641$ \\
+        RT, DY2  & $11\,030$ & $7655$ & $7619$ & $0{,}387$ & $0{,}377$ & $0{,}458$ & $2942$ & $2823$ & $2635$ \\
+        $-20$\,\textdegree C, QS  & $8155$  & $4713$  & $4656$  & $0{,}394$ & $0{,}378$ & $0{,}477$ & $1888$ & $1765$ & $1593$ \\
+        $-20$\,\textdegree C, DY1 & $10\,306$ & $6887$ & $6846$ & $0{,}388$ & $0{,}377$ & $0{,}463$ & $2669$ & $2547$ & $2363$ \\
+        $-20$\,\textdegree C, DY2 & $13\,639$ & $10\,487$ & $10\,467$ & $0{,}383$ & $0{,}376$ & $0{,}444$ & $3952$ & $3840$ & $3646$ \\
+    \end{tabular}
+\end{table}
+
+Nach dem Einsetzen des Fließens richten sich die Molekülketten aus, und das Fließverhalten wird richtungsabhängig; eine von-Mises-Bedingung beschreibt die Fließfläche dann nicht mehr ausreichend genau \cite[S.~60]{Sto18}. Hill erweiterte die von-Mises-Spannung auf anisotrope Werkstoffe \cite[S.~60]{Sto18}. Abaqus formuliert das quadratische Potential in den Spannungskomponenten des lokalen Werkstoffsystems als Hill-Vergleichsspannung \cite{AbaqusHill25}
+\begin{equation}
+\sigma_{\mathrm{V,Hill}}^{2} = F\left(\sigma_{22} - \sigma_{33}\right)^{2} + G\left(\sigma_{33} - \sigma_{11}\right)^{2} + H\left(\sigma_{11} - \sigma_{22}\right)^{2} + 2L\,\sigma_{23}^{2} + 2M\,\sigma_{13}^{2} + 2N\,\sigma_{12}^{2}
+\label{eq:hill_potential}
+\end{equation}
+mit den Konstanten
+\begin{equation}
+F = \frac{1}{2}\left(\frac{1}{R_{22}^{2}} + \frac{1}{R_{33}^{2}} - \frac{1}{R_{11}^{2}}\right) , \qquad
+L = \frac{3}{2\,R_{23}^{2}} ,
+\label{eq:hill_konstanten}
+\end{equation}
+wobei die übrigen Konstanten durch Vertauschen der Indizes folgen. Die Fließspannungsverhältnisse $R_{ij}$ setzen die bei alleiniger Wirkung der Komponente $ij$ gemessene Fließspannung ins Verhältnis zur Referenz-Fließspannung der Fließkurve, bei Schub zu deren Wert geteilt durch $\sqrt{3}$ \cite{AbaqusHill25}. Zur Bestimmung der sechs Verhältnisse sind sechs unabhängige Werkstoffprüfungen nötig. Als Referenz dient zum Beispiel die Probe mit Faserhauptrichtung in Zugrichtung, und mit allen $R_{ij}$ gleich eins ergibt sich wieder die isotrope von-Mises-Spannung \cite[S.~61]{Sto18}. Zug und Druck bewertet die Hill-Fließfläche gleich \cite[S.~61]{Sto18}. Abaqus verlangt für das Potential eine lokale Orientierung, die die Richtungen der Anisotropie festlegt, und verwendet es zusammen mit der Metallplastizität \cite{AbaqusHill25}. Stommel et al. sehen im Hill-Potential eine sehr effektive Methode für das anisotrop elastisch-plastische Verhalten kurzfaserverstärkter Kunststoffe, weil die geschlossene Lösbarkeit Rechenzeit und Stabilität zugutekommt. Die Schwierigkeit liegt in der Bestimmung der $R_{ij}$, die je Werkstoff und je Orientierungsgrad für alle sechs Komponenten anzugeben sind und meist über kalibrierte mikromechanische Modelle gewonnen werden \cite[S.~129 bis 130]{Sto18}. Der Abschlussbericht FVA 856 I kalibrierte die Verhältnisse für PA46-GF30 an einem Einheitswürfel in Abaqus. Bei Schubverhältnissen von eins ergab sich $R_{22} = R_{33} = 0{,}66$ bei $23$\,\textdegree C und $0{,}6$ bei $80$\,\textdegree C \cite[S.~64]{FVA856-I}. Als Versagenskriterium für kurzfaserverstärkte Kunststoffe nennt das Buch das Tsai-Hill-Kriterium gleicher Bauform. Seine Koeffizienten werden aus Zug- und Schubfestigkeiten je Orientierungsgrad gebildet, und es unterscheidet nicht zwischen Zug- und Druckfestigkeit \cite[S.~231 bis 233]{Sto18}.
+
+Die Werkstoffkarte dieser Arbeit enthält die elastischen Konstanten und die Fließspannungsverhältnisse als Gitter über dem Orientierungszustand und der Temperatur (vgl. \secref{sec:fe_modell}). In \figref{fig:orientierungszustaende_qs} stehen die gemessenen Kurven in und quer zur Fließrichtung neben den Kurven dreier Orientierungszustände der quasistatischen Karte. Jede Zustandskurve entsteht aus der Referenzkurve in Fließrichtung durch Skalieren mit dem Fließspannungsverhältnis und dem Modul des Zustands. Der isotrope Zustand liegt nahe der Messung quer zur Fließrichtung, der ausgerichtete Zustand deutlich über der Messung in Fließrichtung. Annähernd trifft der Zustand des Zahnfußes aus der Übertragung die Messung in Fließrichtung. Die Zuordnung der Karten zu den vier Werkstoffstufen W1 bis W4 des FE-Modells steht in \secref{sec:fe_modell}, die Auswertung der anisotropen Stufen in \secref{sec:auswertung_beanspruchung}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{kap2/orientierungszustaende_qs}
+    \caption{Gemessene Richtungen und Orientierungszustände der quasistatischen Werkstoffkarte von PA46-GF30 bei $23$ und $80$\,\textdegree C (Matscape-Karte; Zustandskurven aus der Referenzkurve in Fließrichtung mit $R_{\mathrm{11}}$ und $E_{\mathrm{1}}$ des Zustands).}
+    \label{fig:orientierungszustaende_qs}
+\end{figure}
+
+% Herkunft:
+% Absatz 1 (Zugversuch, Kennwerte): VDI2736-1 S. 6 (5.1, Kennwerte sigma_Y, sigma_M, sigma_x, sigma_B, Bild 1);
+%   Sto18 S. 30 (Kurzzeit-Verhalten amorph spröde, teilkristallin duktil), S. 14 (technische Spannung),
+%   S. 16 (technische und wahre Dehnung, FEM gibt wahre Größen aus, Umrechnung).
+% Absatz 2 (Probekörper, Schichtaufbau): Sto18 S. 106 (Bild 2.53 Probekörper 0°, 45°, 90°, Film-Anguss),
+%   S. 107 (Schichtstruktur, Vorzugsrichtung dreht um 90°, Parallelschaltung), S. 108 (Probekörper verschiedener
+%   Dicke, Zugversuch ist Bauteilversuch, orthotrope Kennwerte nur mittelbar, Platten mit Vorzugsrichtung);
+%   FVA856-I S. 20 bis 22 (6.3.1 Zugproben 3-Schicht-Aufbau, GeoDict, Matrixmodul, 5 bis 15 %, Tabelle 3).
+% Absatz 3 und Bild fig:spannung_dehnung_qs: kap3_6_fe_modell.tex Absatz 2 (Zugversuche 23 und 80 °C, drei
+%   Richtungen, drei Prüfgeschwindigkeiten, Matscape); Bild 80_output/fe/stommel_methode_V2/spannung_dehnung_qs
+%   (Kurven 23/80 °C, 0°/90°); Streckpunkt: kap3_7_auswertung.tex Absatz 4 und stommel_materials.yaml
+%   (static_characteristic_value maximum); Bildunterschrift aus bilder.yaml (Eintrag spannung_dehnung_qs).
+% Absatz 4 (vier Grundverhalten): Sto18 S. 23 (elastisch, Feder), S. 24 (plastisch, Reibelement; viskos,
+%   Dämpfer), S. 24 bis 25 (viskoelastisch, Kelvin-Voigt, Maxwell, Burgers), S. 25 bis 26 (Retardation,
+%   Relaxation); BA-0486 Zeilen 975 bis 1019 als Rohtext, am Buch geprüft.
+% Absatz 5 (Materialmodell, Tabelle 2.3): Sto18 S. 49 (Definition Materialmodell), S. 49 bis 50 (Kompromiss,
+%   Gültigkeitsbereich), S. 50 (Tabelle 2.3 Klassifizierung nach Zeitraum); BA-0486 Zeilen 969 bis 972.
+% Absatz 6 (isotrop linear-elastisch): Sto18 S. 51 (Hookesches Gesetz, Gestaltoptimierung, Ursprungsmodul,
+%   Gl. 2.37), S. 51 bis 52 (Prüfung des linearen Bereichs, Sekantenmodul), S. 52 (Querkontraktionszahl 0,3 bis
+%   0,5), S. 52 bis 53 (Grenzen, keine Zeitabhängigkeit, Dehngeschwindigkeit im Bauteil nicht konstant);
+%   AbaqusLinElast25 (simamat-c-linearelastic.htm: sigma = D^el eps^el, Dehnungen unter 5 %, isotrop G = E/2(1+nu)).
+% Absatz 7 (elastisch-plastisch): Sto18 S. 53 (Fließspannung, Aufteilung der Dehnung, Bild 2.32), S. 54
+%   (Vergleichsspannung, von Mises), S. 55 (Verfestigung tabellarisch, isotrope Verfestigung), S. 56 (nur
+%   monotone Lastverläufe), S. 57 (viskoelastische Anteile als plastisch), S. 57 bis 58 (Ratenabhängigkeit,
+%   Gl. 2.38), S. 58 bis 59 (Druckabhängigkeit, Drucker-Prager, Gl. 2.40); FVA856-I S. 63 (8.1.4.4, nur ein
+%   elastischer Parametersatz in Abaqus, geringste Dehnrate als Basis, zu weich).
+% Absatz 8 und Formel eq:orthotrop: Sto18 S. 75 (21 Modulwerte, orthotrop, neun Ingenieurskonstanten Gl. 2.58,
+%   1-Richtung, Gl. 2.59), S. 76 (transversal isotrop Gl. 2.60 und 2.61), S. 39 (lokale Faserausrichtung
+%   unbedingt beachten), S. 61 bis 62 (elastische Betrachtung ausreichend bei Grundsteifigkeit, Kerben);
+%   AbaqusLinElast25 (Defining Orthotropic Elasticity by Specifying the Engineering Constants: Nachgiebigkeits-
+%   matrix erste Zeile eps11 = sigma11/E1 - nu21 sigma22/E2 - nu31 sigma33/E3, gamma12 = sigma12/G12,
+%   nu_ij/E_i = nu_ji/E_j, Stabilität E_i, G_ij > 0, |nu12| < (E1/E2)^(1/2)).
+% Absatz 9 und Tabelle tab:fva856_tab4_rt: FVA856-I S. 21 bis 22 (Matrixmodul, Randschicht, Schubmoduln und
+%   Poissonzahlen nicht experimentell), S. 23 (Tabelle 4 Zeilen RT und -20 °C; 6.3.2 Eigenwerte auf der
+%   Diagonale, E1 4,38 bis 6,41 GPa, E2 3,21 bis 3,70 GPa), S. 24 (Drittelzonen 5 bis 15 %, bis ca. 20 %);
+%   Werte der Tabelle aus data/fe/fva856_table4.yaml, Ziffer für Ziffer gegen FVA856-I.txt Zeilen 1729 bis
+%   1818 verglichen; Seite 23 mit pdftotext an PDF-Seite 37 bestätigt (fva856_table4.yaml nennt S. 22, das
+%   ist die Seite der Tabelle 3).
+% Absatz 10 und Formeln eq:hill_potential, eq:hill_konstanten: Sto18 S. 60 (Bild 2.37, Hill [HIL47],
+%   Erweiterung der von-Mises-Spannung, Gl. 2.41), S. 61 (Gl. 2.42, R-Werte, sechs Prüfungen, Referenz
+%   Faserhauptausrichtung, Zug und Druck gleich, R_ij = 1 von Mises), S. 129 bis 130 (Verwendung der
+%   Fließbedingung nach Hill, R_ij je Orientierungsgrad, Mori-Tanaka), S. 231 bis 233 (Tsai-Hill Gl. 3.34 bis
+%   3.36, keine Unterscheidung Zug/Druck); AbaqusHill25 (simamat-c-anisoyield.htm: f(sigma), F bis N aus R_ij,
+%   tau0 = sigma0/sqrt(3), lokale Orientierung, nur mit Metallplastizität); FVA856-I S. 64 (Tabelle 9
+%   Hill-Parameter PA46GF30: R11 1, R22 0,66, R33 0,66, R12 R13 R23 1 bei 23 °C; 0,6 bei 80 °C). Die
+%   Schreibweise sigma_V,Hill statt f(sigma) folgt Sto18 Gl. 2.41 und der Nomenklatur; die Formel in 3.7
+%   (eq:hill) ist dieselbe Funktion ohne Wurzel.
+% Absatz 11 und Bild fig:orientierungszustaende_qs: kap3_6_fe_modell.tex Absatz 2 (Gitter über Orientierungs-
+%   zustand und Temperatur); bildunterschriften.md Eintrag orientierungszustaende_qs (Referenzkurve 0° mit R_11
+%   und E_1 des Zustands skaliert, Zustand des Zahnfußes aus dem Mapping); Bild selbst (Lage der Kurven);
+%   Bildunterschrift aus bilder.yaml (Eintrag orientierungszustaende_qs).
+% Seitenzuordnung: Sto18 Druckseite = PDF-Seite - 18 (Kopfzeilen der Textdatei); FVA856-I Druckseite =
+%   PAGE-Marker - 14 (PAGE 37 = S. 23 mit pdftotext bestätigt); VDI2736-1 Kopfzeile "– 6 –".
+% Bildwunsch: keiner aus Quellen; die beiden eigenen Bilder liegen unter 10_report/bilder/kap2/ (PDF).
+% Bibwunsch: keine neuen Schlüssel in diesem Abschnitt (Sto18, VDI2736-1, FVA856-I, AbaqusLinElast25,
+%   AbaqusHill25 liegen in litbib.bib).
+% Nomenklatur: E, MPa, Elastizitätsmodul (steht); nu, -, Querkontraktionszahl (steht); E_i, MPa (steht);
+%   G_ij, MPa (steht); nu_ij, - (steht; hier auch nu_21, nu_31 als Komponenten); sigma_ij, MPa (steht);
+%   R_ij, - (steht); F, G, H, L, M, N, - Konstanten des Hill-Potentials (stehen; M und N kollidieren mit
+%   Mittelspannungsempfindlichkeit und Lastspielzahl, wie in 3.7 vermerkt); sigma_V,Hill, MPa (steht).
+%   NEU: epsilon_ij, -, Dehnungskomponenten im Faserkoordinatensystem, Abaqus 2025 Linear Elastic Behavior
+%   (Nachgiebigkeitsmatrix) und Sto18 S. 15 Gl. 2.13; gamma_ij, -, Gleitung in der Ebene ij, Sto18 S. 14 bis
+%   15 Gl. 2.12 und Abaqus 2025 Linear Elastic Behavior.
+% Offen: BA-0486 2.2.2 Zeilen 992 bis 994 (Spannung bei einem Prozent plastischer Dehnung als Ersatz der
+%   Streckgrenze) nicht im Buch gefunden, gestrichen; BA Zeilen 1023 bis 1030 (Motorrad-Steuertrieb, lineares
+%   Modell, DIN EN ISO 527 [ISO19b]) themenfremd, nicht übernommen; Bezug auf Abschnitt 2.3.3 der BA
+%   entfällt. Die Bildunterschrift aus bilder.yaml zu orientierungszustaende_qs ("Elastizitätsmodul und
+%   Festigkeit über dem Orientierungsgrad bei 80 °C") passt nicht zum Bild, das Spannungs-Dehnungs-Kurven
+%   dreier Orientierungszustände bei 23 und 80 °C zeigt; Vorschlag nach bildunterschriften.md: "Gemessene
+%   Richtungen und Orientierungszustände der quasistatischen Werkstoffkarte von PA46-GF30 bei 23 und 80 °C
+%   (Matscape-Karte)." Die Formel eq:hill in 3.7 wiederholt eq:hill_potential; dort könnte ein Verweis
+%   stehen. tab:fva856_tab4 (3.6) ist ein Vorwärtsverweis auf Kapitel 3.

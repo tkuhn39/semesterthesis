@@ -36,7 +36,7 @@ SELECTION = REPORT / "nomenklatur.yaml"
 TARGET = REPORT / "Nomenklatur.tex"
 GREEK = {
     "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta", "kappa", "lambda",
-    "mu", "nu", "xi", "pi", "rho", "sigma", "tau", "phi", "chi", "psi", "omega",
+    "mu", "nu", "xi", "pi", "rho", "sigma", "tau", "phi", "chi", "psi", "omega", "vartheta",
     "Gamma", "Delta", "Theta", "Lambda", "Xi", "Pi", "Sigma", "Phi", "Psi", "Omega",
 }  # fmt: skip
 WORDS = {"inv", "pr", "Mises", "NH", "Hill", "stat", "zul", "max", "min", "el"}
@@ -74,6 +74,9 @@ class Row:
 
 GREEK_TEX = {name: "\\" + name for name in GREEK} | {"epsilon": "\\varepsilon", "phi": "\\varphi"}
 """Greek letters as the German texts print them (ε and φ in their cursive forms)."""
+VARIANT_GREEK = {"varepsilon": "epsilon", "varphi": "phi"}
+"""The cursive forms read back to the registry name in the scan (``Y_{\\varepsilon}`` is the
+row ``Y_epsilon``)."""
 
 
 def _letter(text: str) -> str:
@@ -299,13 +302,15 @@ def _two_columns(items: Sequence[tuple[str, str]]) -> list[str]:
 def canonical(base: str, prime: str, subscript: str | None) -> str:
     """A token of the text in the registry spelling (``\\sigma_{\\mathrm{V,Mises}}`` →
     ``sigma_V_Mises``), so that it compares with the selection."""
-    letter = base.lstrip("\\")
+    letter = VARIANT_GREEK.get(base.lstrip("\\"), base.lstrip("\\"))
     out = letter + prime
     if subscript:
         inner = (
             subscript[1:-1] if subscript.startswith("{") and subscript.endswith("}") else subscript
         )
         inner = re.sub(r"\\mathrm\{([^}]*)\}", r"\1", inner)
+        for variant, name in VARIANT_GREEK.items():
+            inner = inner.replace("\\" + variant, "\\" + name)
         inner = inner.replace("\\", "").replace(",", "_").replace(" ", "")
         if inner:
             out += "_" + inner
@@ -323,7 +328,7 @@ def tokens_of_text(text: str) -> set[str]:
             base, prime, subscript = token.groups()
             if base.startswith("\\") and base[1:] in IGNORED_COMMANDS:
                 continue
-            if base.startswith("\\") and base[1:] not in GREEK:
+            if base.startswith("\\") and VARIANT_GREEK.get(base[1:], base[1:]) not in GREEK:
                 continue
             found.add(canonical(base, prime, subscript))
     return found

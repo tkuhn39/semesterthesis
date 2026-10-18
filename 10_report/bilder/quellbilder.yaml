@@ -1,0 +1,51 @@
+# Bilder aus Quellen für den Stand der Technik und die Methoden ("nach [..]" in der Unterschrift):
+# scripts/thesis_source_figures.py build schneidet je Eintrag einen Bereich einer PDF-Seite unter
+# 00_literatur als Vektor-PDF nach 80_output/thesis/quellen/<name>.pdf; bilder.yaml listet die Datei
+# dann wie jedes andere Bild (quelle: thesis/quellen/<name>.pdf). `page` ist die PDF-Seite, `box` das
+# Viewport x1 y1 x2 y2 in bp mit Ursprung links unten (find/preview des Skripts helfen beim Festlegen).
+quellbilder:
+  - name: quelle_pruefstand_sa1272
+    pdf: 01_beispielarbeiten/SA-1272_Schurer_unlocked.pdf
+    page: 9
+    box: [71, 93, 524, 471]
+    # Bild 2 "3D-Modell des fertigen Prüfstandes", Druckseite 9 (Schurer 2009)
+  - name: quelle_fva856_bild16
+    pdf: 07_themis/KST_856_I_AB_1491_unlocked.pdf
+    page: 32
+    box: [57, 464, 539, 784]
+    # Bild 16 "Exemplarische Ergebnisse der Faserorientierungsanalyse in einer Zone am linken Zahnfuß", Druckseite 18
+  - name: quelle_fie23_zahnfussbruch
+    pdf: 01_beispielarbeiten/MA-0296.pdf
+    page: 79
+    box: [71, 139, 524, 379]
+    # Abbildung 54 und 55 "Kompletter Zahnfußbruch ... 8 Nm" und "Zahnfußanriss ... 18 Nm", Druckseite 66 (Fiederling 2023)
+  - name: quelle_fva856_bild17
+    pdf: 07_themis/KST_856_I_AB_1491_unlocked.pdf
+    page: 33
+    box: [57, 521, 539, 782]
+    # Bild 17 "Definierte Zonen im Zahnrad und deren Eigenwerte aus dem Orientierungstensor", Druckseite 19
+  - name: quelle_fva856_bild18
+    pdf: 07_themis/KST_856_I_AB_1491_unlocked.pdf
+    page: 33
+    box: [57, 174, 340, 402]
+    # Bild 18 "Der FE-Analyse übergebene Zonenkarte mit Faservorzugsrichtung", Druckseite 19
+  - name: quelle_fruehe_ellipse
+    pdf: 02_dissertationen/914751_Fruehe_2012.pdf
+    page: 105
+    box: [65, 134, 530, 450]
+    # Abbildung 41 "Zahnfußausrundung mit tangentenstetigen Ellipsen", Druckseite 93 (Frühe 2012)
+  - name: quelle_patent_bionisch
+    pdf: 08_patentschriften/DE102008045318B3.pdf
+    page: 11
+    box: [130, 100, 500, 460]
+    # Fig. 2 der Patentschrift DE 10 2008 045 318 B3, Zeichnungsblatt 11/12 (untere Hälfte)
+  - name: quelle_patent_bezier
+    pdf: 08_patentschriften/DE102013004861B3.pdf
+    page: 12
+    box: [75, 162, 510, 762]
+    # Fig. 2 der Patentschrift DE 10 2013 004 861 B3, Zeichnungsblatt 12/15
+  - name: quelle_din50100_perlenschnur
+    pdf: 05_normen_und_richtlinien/DIN_50100_2022-12-00_DE_3337109.pdf
+    page: 29
+    box: [100, 468, 522, 762]
+    # Bild 8 "Wöhlerdiagramm (schematisch), Perlenschnurverfahren", Druckseite 29

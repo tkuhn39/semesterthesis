@@ -2733,6 +2733,46 @@ Findings (16 Nm; 8 Nm alike; at 12 Nm the own check has no node table, stresses 
    glyphs render correctly in every check, and Type 3 embedding (`pdf.fonttype` 3) is the
    fallback should a print service object.
 
+### Amendment of 2026-10-18 (T2, T3, T5: chapter 2 and the sections 3.2, 3.4, 3.8; figures from sources)
+
+1. **Drafting mode.** Chapter 2 (2.1 to 2.7), 3.2, 3.4 and 3.8 were drafted from a common
+   briefing: BA-0486 chapter 2 serves as raw text only, every statement, formula and number
+   is re-checked at the primary source with its page, and a BA statement whose source is not
+   a PDF in `00_literatur` is re-based on a present source or dropped (listed per draft in
+   the `% Offen:` block). The sources were read as `pdftotext -layout` extracts; the four
+   scans without a text layer (Ehrenstein 2007, Erhard/Strickle, Siedke, Weber/Banaschek)
+   only through rendered pages.
+2. **Bibliography decisions.** Entries only from title pages: `FVA30-XI` (Schweigert/Hofer
+   2023; the cover's text layer is shift-encoded, the inner title was read as a PNG),
+   `FVA30-XII`, `FVA484-V`, `FVA892-I`, `FVA241-XII`, `Erh08`, `NieWin03`, `San10`, `Env25`;
+   `Fuer13` is cited from the PDF that is the draft "Stand 01.03.2013" (said in the entry);
+   `Kas24` is an `@unpublished` manuscript whose year is the file date (conference open,
+   user). Ehrenstein 2007 is NOT cited: the scan carries no impressum and its edition cannot
+   be verified, so its two statements were re-based on VDI 2736 Blatt 1 (S. 5, 19).
+3. **Figures from sources ("nach [..]").** `scripts/thesis_source_figures.py` cuts a viewport
+   of a PDF page under `00_literatur` as a vector PDF through a pdflatex wrapper (graphicx
+   `page`/`viewport`/`clip` with `preview` `tightpage`), listed in
+   `10_report/bilder/quellbilder.yaml` (name, pdf, page, box in bp with the bottom-left
+   origin); `find` lists the text blocks of a page with `pdftotext -bbox-layout` and the gap
+   above a caption, `preview` renders a page or box at 72 dpi. The cut keeps the fonts of
+   the source; no Ghostscript or pypdf is needed. `build_thesis_figures.py` copies the cuts
+   like every other PDF. Nine cuts: SA 1272 Bild 2, FVA 856 I Bild 16 to 18, MA-0296
+   Abb. 54/55, DIN 50100 Bild 8, Frühe Abb. 41, Fig. 2 of DE 10 2008 045 318 B3 and of
+   DE 10 2013 004 861 B3.
+4. **Nomenclature.** The symbols of the new sections are `extra` rows with their source
+   pages; the scan reads `\varepsilon`/`\varphi` back to the registry names and knows
+   `\vartheta`; ϑ_Fuß of VDI 2736 is set as ϑ_F (ß in a math subscript); the ISO 6336-3
+   ratio L and the DIN 50100 location parameter C share their letters with the Hill constant
+   and the Richardson constant (one row each, both meanings named).
+5. **Corrections found while drafting.** FVA 856 I Tabelle 4 stands on printed page 23 (PDF
+   page 37), not 22 as `fva856_table4.yaml` recorded (fixed); Stommel's definition of failure
+   as the first macroscopic crack stands on p. 204, not p. 221 as roadmap L7 said (fixed); the
+   caption of `orientierungszustaende_qs` in `bilder.yaml` described a different figure
+   (fixed). Open for the user: the running 8 Nm wheel is 97364 in the rig workbook but 97361
+   in `parts.yaml`/3.1 (97361 does not occur in the workbook); three of the five recorded
+   broken teeth (34, 31, 39) lie outside the failure window 36 to 40; the 2023 speed
+   2250 1/min is not labelled pinion or wheel.
+
 ## ADR-119 — Fibre orientation of the moulding simulation, evaluated on the mapped FE mesh and compared with the CT zones of FVA 856 I (2026-10-13)
 
 **Context.** The user wants a short thesis chapter on the injection-moulding simulation: does

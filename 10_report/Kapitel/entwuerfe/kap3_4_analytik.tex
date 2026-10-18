@@ -1,0 +1,98 @@
+\section{Analytische Berechnung}
+\label{sec:analytik}
+
+Neben der eigenen Simulationskette wird die Zahnfußspannung je Laststufe mit weiteren Verfahren bestimmt und in \secref{sec:verfahrensvergleich} nebeneinander gestellt. Das sind die Berechnung nach VDI 2736 Blatt 2 \cite{VDI2736-2} mit der Geometriekette dieser Arbeit, die FVA-Workbench und das FZG-Programm RIKOR; S-Life Plastics bewertet FE-Spannungen und wird am Ende dieses Abschnitts eingeordnet. Jeder Fremdwert wird mit Programm, Version, Bericht, Datum und Geometriefall in einer Eingabedatei der Werkzeugkette festgehalten, damit die Vergleichsbilder aus einer Quelle entstehen. Geometriefall ist in allen Verfahren die Nenngeometrie des STplus-Falls kst-E aus \tabref{tab:geometrie_kste}, Last sind die drei Drehmomente $8$, $12$ und $16$\,Nm am Rad.
+
+Die Richtlinie VDI 2736 Blatt 2 geht beim Nachweis der Zahnfußtragfähigkeit von der Zahnfußspannung bei Kraftangriff am Zahnkopf und von reiner Biegebeanspruchung aus \cite[S.~11]{VDI2736-2}. Mit der Nennumfangskraft $F_{\mathrm{t}}$ am Teilzylinder, der tragenden Zahnbreite $b$ und dem Normalmodul $m_{\mathrm{n}}$ lautet die örtliche Zahnfußspannung nach Gleichung (10) der Richtlinie
+\begin{equation}
+\sigma_{\mathrm{F}} = K_{\mathrm{F}}\,Y_{\mathrm{Fa}}\,Y_{\mathrm{Sa}}\,Y_{\varepsilon}\,Y_{\beta}\,\frac{F_{\mathrm{t}}}{b\,m_{\mathrm{n}}} \leq \sigma_{\mathrm{FP}} .
+\label{eq:vdi2736_sigma_f}
+\end{equation}
+Der Faktor $K_{\mathrm{F}}$ fasst Anwendungs-, Dynamik-, Breiten- und Stirnfaktor zusammen; wegen der elastischen Eigenschaften der Thermoplaste setzt die Richtlinie vereinfacht $K_{\mathrm{F}} \approx K_{\mathrm{A}}$ \cite[S.~11]{VDI2736-2}, und ihre Rechenbeispiele arbeiten mit $K_{\mathrm{F}} = K_{\mathrm{A}} = 1{,}0$ \cite[Anhang~A, S.~25 bis 28]{VDI2736-2}. Am Verspannungsprüfstand wird das Drehmoment ohne äußere Stöße aufgebracht, deshalb gilt hier ebenfalls $K_{\mathrm{A}} = 1{,}0$. Der Überdeckungsfaktor $Y_{\varepsilon} = 0{,}25 + 0{,}75/\varepsilon_{\alpha}$ nach Gleichung (11) berücksichtigt den geänderten Hebelarm bei Lastangriff am Kopf, die Profilüberdeckung wird ohne Verformung berechnet; der Schrägenfaktor $Y_{\beta}$ ist bei Geradverzahnung eins \cite[S.~13]{VDI2736-2}. Die zulässige Spannung $\sigma_{\mathrm{FP}} = Y_{\mathrm{St}}\,\sigma_{\mathrm{FlimN}}/S_{\mathrm{Fmin}}$ nach Gleichung (13) folgt aus der Zeitschwellfestigkeit $\sigma_{\mathrm{FlimN}}$ des Werkstoffs bei Zahntemperatur und Lastspielzahl und dem Spannungskorrekturfaktor $Y_{\mathrm{St}} \approx 2{,}0$ \cite[S.~13]{VDI2736-2}. Als Mindestsicherheit $S_{\mathrm{Fmin}}$ nennt die Richtlinie $2{,}0$ bei Dauerbetrieb und $1{,}6$ bei zeitweisem Betrieb \cite[S.~14]{VDI2736-2}. Werte von $\sigma_{\mathrm{FlimN}}$ sind für POM und PA66 angegeben \cite[S.~14, Bild~3 und Tabelle~5]{VDI2736-2}, für PA46-GF30 nicht. In dieser Arbeit wird deshalb allein die Spannung nach \eqref{eq:vdi2736_sigma_f} berechnet und in \secref{sec:verfahrensvergleich} über der gemessenen Lastspielzahl aufgetragen; ein Sicherheitsnachweis entfällt.
+
+Den Formfaktor $Y_{\mathrm{Fa}}$ und den Spannungskorrekturfaktor $Y_{\mathrm{Sa}}$ gibt die Richtlinie in Bild 1 und Bild 2 für das Bezugsprofil nach DIN 867 mit der Fußrundung $0{,}25\,m_{\mathrm{n}}$ an \cite[S.~12 bis 13]{VDI2736-2}. Ihre Fußnoten lassen daneben die Berechnung nach DIN 3990-3 zu. Das Werkzeug der Prüfverzahnung trägt eine Kopfrundung von $0{,}20\,m_{\mathrm{n}}$ (\tabref{tab:geometrie_kste}), so dass die Bilder die Fußrundung des Rades nicht treffen. Beide Faktoren werden deshalb nach den Gleichungen der ISO 6336-3 \cite{ISO6336-3} aus der erzeugten Fußrundung berechnet. Die Sehne zwischen den Berührpunkten der $30$°-Tangenten legt den kritischen Querschnitt fest \cite[Abschnitt~6.1, S.~14]{ISO6336-3}. Aus der Zahnfußdickensehne $s_{\mathrm{Fn}}$, dem Biegehebelarm $h_{\mathrm{Fe}}$ und dem Krümmungsradius $\rho_{\mathrm{F}}$ an diesem Punkt folgen der Formfaktor nach Gleichung (9) und der Spannungskorrekturfaktor nach Gleichung (62) bis (64) mit dem Kerbparameter $q_{\mathrm{s}} = s_{\mathrm{Fn}}/(2\,\rho_{\mathrm{F}})$ \cite[S.~17 und 24 bis 25]{ISO6336-3}. Die Geometriekette liefert $s_{\mathrm{Fn}}$ und $\rho_{\mathrm{F}}$ der Trochoide an der $30$°-Tangente (\figref{fig:zahnkontur_kste}, \secref{sec:werkzeugkette}); für die Fußrundungsvarianten aus \secref{sec:werkzeugkette} wird dieselbe Auswertung auf die ersetzte Kontur angewendet. \Note{PH: Werte von Y Fa, Y Sa und der Zahnfußspannung je Laststufe nach VDI 2736 Blatt 2, Berechnung in der Geometriekette noch offen.} \tabref{tab:vdi2736_eingaben} stellt die Eingaben zusammen.
+
+\begin{table}[htbp]
+    \caption{Eingaben der Berechnung nach VDI 2736 Blatt 2 für das Rad der Prüfverzahnung kst-E; Geometrie nach \tabref{tab:geometrie_kste}, Faktoren nach den genannten Stellen der Richtlinie.}
+    \label{tab:vdi2736_eingaben}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{L{4.6cm}L{1.6cm}L{3.6cm}L{4.9cm}}
+        Größe & Zeichen & Wert & Herkunft \\
+        \hline
+        Zähnezahl des Rades & $z_{\mathrm{2}}$ & $52$ & \tabref{tab:geometrie_kste} \\
+        Normalmodul in mm & $m_{\mathrm{n}}$ & $1{,}0$ & \tabref{tab:geometrie_kste} \\
+        tragende Zahnbreite in mm & $b$ & $15$ & Radbreite, Ritzel $17$\,mm \\
+        Teilkreisdurchmesser des Rades in mm & $d_{\mathrm{2}}$ & $52{,}000$ & \tabref{tab:geometrie_kste} \\
+        Profilüberdeckung & $\varepsilon_{\alpha}$ & $1{,}154$ & \tabref{tab:geometrie_kste} \\
+        Drehmoment am Rad in Nm & $T_{\mathrm{2}}$ & $8$; $12$; $16$ & Versuchsplan, \secref{sec:pruefstand} \\
+        Nennumfangskraft in N & $F_{\mathrm{t}}$ & $307{,}7$; $461{,}5$; $615{,}4$ & $F_{\mathrm{t}} = 2\,T_{\mathrm{2}}/d_{\mathrm{2}}$, Gleichung (2) \cite{VDI2736-2} \\
+        Faktor für Zahnfußbeanspruchung & $K_{\mathrm{F}}$ & $1{,}0$ & $K_{\mathrm{F}} \approx K_{\mathrm{A}}$, Prüfstand ohne Stöße \cite[S.~11]{VDI2736-2} \\
+        Überdeckungsfaktor & $Y_{\varepsilon}$ & $0{,}900$ & Gleichung (11) \cite[S.~13]{VDI2736-2} \\
+        Schrägenfaktor & $Y_{\beta}$ & $1{,}0$ & Geradverzahnung \cite[S.~13]{VDI2736-2} \\
+        Formfaktor & $Y_{\mathrm{Fa}}$ & offen & ISO 6336-3 Gleichung (9) aus der erzeugten Fußrundung \\
+        Spannungskorrekturfaktor & $Y_{\mathrm{Sa}}$ & offen & ISO 6336-3 Gleichung (62) bis (64) \\
+        Spannungskorrekturfaktor des Prüfrades & $Y_{\mathrm{St}}$ & $2{,}0$ & \cite[S.~13]{VDI2736-2}, nur zur Einordnung \\
+        Zeitschwellfestigkeit & $\sigma_{\mathrm{FlimN}}$ & keine für PA46-GF30 & \cite[S.~14]{VDI2736-2} \\
+    \end{tabular}
+\end{table}
+
+In der FVA-Workbench steht für Kunststoffzahnräder eine quasistatische Abwälzsimulation auf Basis von Abaqus zur Verfügung, die materielle und geometrische Nichtlinearität berücksichtigt \cite[Überblick]{FVA892-I}. Der Werkstoff wird dort über eine Spannungs-Dehnungs-Kurve vorgegeben, Radkörper und Verlagerungen des Wellen-Lager-Systems können eingehen; Eingabedateien, Rechnung und Auswertung laufen aus wenigen Eingabeparametern automatisiert ab \cite[Überblick]{FVA892-I}. Die Werte der Prüfverzahnung wurden am Lehrstuhl mit der dort installierten Version für die drei Laststufen ermittelt. \Note{PH: Version der FVA-Workbench, Eingabefall und Datum der Berechnung.} RIKOR berechnet die Lastverteilung im Zahneingriff aus den elastischen Verformungen des gesamten Getriebeumfelds, also der Zähne, der Wellen, der Lager und des Gehäuses \cite[S.~1]{FVA30-XI}. Aus der Beanspruchung über der Eingriffsfläche gibt das Programm die Zahnfußspannungsverteilung aus \cite[S.~2]{FVA30-XI}; seit dem Vorhaben FVA 732 I ist eine numerische Berechnung der örtlichen Zahnfußspannung in beliebigen Zahnquerschnitten integriert \cite[S.~11 bis 12]{FVA30-XI}. Die RIKOR-Werte dieser Arbeit stammen aus einer Berechnung der Betreuerin mit den Daten des STplus-Falls. \Note{PH: RIKOR-Werte der Betreuerin mit Version, Bericht und Datum.} Beide Programme rechnen mit der Nenngeometrie, und die Faserorientierung des gespritzten Rades geht in keines von beiden ein. Ihr Beitrag zum Vergleich ist die Lastverteilung unter Verformung, die das Richtlinienverfahren über die Faktoren pauschal erfasst.
+
+S-Life Plastics (PART Engineering) bewertet FE-Ergebnisse nach dem Verfahren von Stommel et al., auf das das Buch für die Anwendung verweist \cite[S.~375]{Sto18}. In dieser Arbeit dient die Version 4.0.0 der Prüfung der eigenen Umsetzung des Nachweises. Geprüft wurde an der Stellung C des eingefrorenen Netzes mit der Werkstoffstufe W1 bei den drei Laststufen; die Einstellungen und der Vergleich an fünf benannten Knoten sind in \secref{sec:auswertung_beanspruchung} beschrieben. Im Verfahrensvergleich steht S-Life Plastics damit nicht als weiteres Spannungsverfahren, sondern als Gegenprobe des Nachweises auf denselben FE-Spannungen.
+
+% Herkunft:
+% Absatz 1 (vier Programme, Eingabedatei, Geometriefall): ADR-116 Punkt 7 (architecture_decisions.md
+%   Zeile 2214 bis 2218: RIKOR-Werte der Betreuerin, Workbench-Werte des Nutzers, je mit Programm,
+%   Version und Bericht; VDI 2736 Blatt 2 Gl. 10 in gearcore mit Formfaktoren nach ISO 6336-3 Methode B);
+%   Roadmap L6a (data/strength/root_stress_external.yaml mit Programm, Version, Bericht, Datum,
+%   Geometriefall), L6b, L8; Aufgabenstellung (S-Life, FVA Workbench, RIKOR); Laststufen aus der
+%   Arbeitsmappe der Laufversuche (Radmoment 8/12/16 Nm).
+% Absatz 2 (Gleichung 10, K_F, Y_eps, Y_beta, sigma_FP, S_Fmin, sigma_FlimN): VDI 2736 Blatt 2:2014-06
+%   S. 11 (Abschnitt 3.2.2, Gl. 10, K_F = K_A K_v K_Fbeta K_Falpha, K_F ≈ K_A bei b/m_n ≤ 12; hier
+%   b/m_n = 15, die Vereinfachung wird wie in den Beispielen der Richtlinie übernommen), S. 13
+%   (Gl. 11, 12, 13; Y_St ≈ 2,0), S. 14 (sigma_FlimN Bild 3 und Tabelle 5; S_Fmin 2,0 / 1,6),
+%   Anhang A S. 25 bis 28 (Beispiele mit K_F = K_A = 1,0). K_A = 1,0 am Prüfstand: eigene Festlegung
+%   nach dem Muster der Beispiele (prüfen, ob die Betreuerin einen anderen Wert wünscht).
+% Absatz 3 (Y_Fa, Y_Sa, Bezugsprofil, ISO 6336-3): VDI 2736 Blatt 2 S. 12 (Bild 1a: DIN 867 mit
+%   h_fP = 1,25 m_n, h_aP = 1,0 m_n, rho_fP = 0,25 m_n; Fußnote 5: alternativ DIN 3990-3), S. 13
+%   (Bild 2, Fußnote 6); Werkzeugkopfrundung 0,20 m_n aus tab:geometrie_kste (kap3_1); ISO 6336-3:2019
+%   Abschnitt 6.1 S. 14 (30°-Tangente, kritischer Querschnitt), 6.2 S. 15 bis 17 (Gl. 9 mit s_Fn,
+%   h_Fe, alpha_Fen), 7.2 S. 24 bis 25 (Gl. 62 bis 64, q_s = s_Fn/(2 rho_F), 1 ≤ q_s < 8);
+%   s_Fn und rho_F aus der Geometriekette: scripts/thesis_figures.py (tangent_point, zahnkontur_kste,
+%   s_Fn 2,197 mm, rho_F/m_n 0,38 gegen STplus) und tests/test_thesis_figures.py; Berechnung der
+%   Y-Faktoren selbst noch offen (Roadmap L6b), daher Platzhalter.
+% Tabelle: Werte aus tab:geometrie_kste (z_2 52, m_n 1, b 15 Rad / 17 Ritzel, d_2 52,000, eps_alpha
+%   1,154); F_t = 2 T_2 / d_2: 2·8000/52 = 307,7 N, 2·12000/52 = 461,5 N, 2·16000/52 = 615,4 N
+%   (VDI 2736 Blatt 2 Gl. 2: F_t = T_d/(d/2)); Y_eps = 0,25 + 0,75/1,154 = 0,900.
+% Absatz 4 (Workbench, RIKOR): FVA 892 I Abschlussbericht Heft 1493 (2022), Seite "Überblick" (PDF-Seite 3,
+%   unpaginiert): quasistatische Abwälzsimulation in der FVA-WORKBENCH auf Basis von ABAQUS, materielle
+%   und geometrische Nichtlinearitäten, Spannungs-Dehnungskurve, Radkörper, Wellen-Lager-Verlagerungen,
+%   automatisierte Eingabedateierstellung/Berechnung/Auswertung; FVA 30 XI Heft 1586 S. 1 (1.1 Zweck:
+%   Lastverteilung infolge Durchbiegung/Verlagerung, elastische Verformungen des gesamten
+%   Getriebeumfeldes, Zähne, Wellen, Lager, Gehäuse), S. 2 (1.2: Zahnfußspannungsverteilung,
+%   Beurteilung der Zahnradtragfähigkeit), S. 11 bis 12 (1.5.12.3 FVA 732/I und 1.5.13.2 FVA 732/II
+%   Örtliche Zahnfußspannung in beliebigen Zahnquerschnitten); Versionen und Berichte: offen
+%   (Zulieferung Betreuerin / Nutzer).
+% Absatz 5 (S-Life): Sto18 S. 375 (Hinweis auf S-Life); ADR-118 Amendment 2026-10-14 (S-Life Plastics
+%   4.0.0, Stellung C, W1, drei Laststufen, fünf Knoten); BA-0486 S. 17 (PART Engineering GmbH als
+%   Hersteller; Firmenname, keine Zitatquelle).
+% Verweise: sec:verfahrensvergleich muss in kap5_berechnung.tex (5.5) vergeben werden.
+% Nomenklatur: sigma_F, N/mm², Zahnfußspannung, VDI 2736 Blatt 2 Formelzeichen (fehlt)
+% Nomenklatur: sigma_FP, N/mm², zulässige Zahnfußspannung, VDI 2736 Blatt 2 (fehlt)
+% Nomenklatur: sigma_FlimN, N/mm², Zeitschwellfestigkeit (Nennspannung), VDI 2736 Blatt 2 S. 14 (fehlt)
+% Nomenklatur: K_F, -, Faktor für Zahnfußbeanspruchung, VDI 2736 Blatt 2 S. 11 (fehlt)
+% Nomenklatur: K_A, -, Anwendungsfaktor, VDI 2736 Blatt 2 S. 11 (fehlt)
+% Nomenklatur: Y_Fa, -, Formfaktor (Kraftangriff am Zahnkopf), VDI 2736 Blatt 2 S. 11 (fehlt)
+% Nomenklatur: Y_Sa, -, Spannungskorrekturfaktor (Kraftangriff am Zahnkopf), VDI 2736 Blatt 2 S. 13 (fehlt)
+% Nomenklatur: Y_epsilon, -, Überdeckungsfaktor, VDI 2736 Blatt 2 S. 13 (fehlt)
+% Nomenklatur: Y_beta, -, Schrägenfaktor, VDI 2736 Blatt 2 S. 13 (fehlt)
+% Nomenklatur: Y_St, -, Spannungskorrekturfaktor des Prüfrades, VDI 2736 Blatt 2 S. 13 (fehlt)
+% Nomenklatur: S_Fmin, -, geforderte Mindestsicherheit gegen Zahnfußbruch, VDI 2736 Blatt 2 S. 14 (fehlt)
+% Nomenklatur: F_t, N, Nennumfangskraft am Teilzylinder, VDI 2736 Blatt 2 Gl. 2 (fehlt)
+% Nomenklatur: s_Fn, mm, Zahnfußdickensehne an der 30°-Tangente, ISO 6336-3 Abschnitt 6.2 (fehlt)
+% Nomenklatur: h_Fe, mm, Biegehebelarm, ISO 6336-3 Abschnitt 6.2 (fehlt)
+% Nomenklatur: rho_F, mm, Krümmungsradius der Fußrundung an der 30°-Tangente, ISO 6336-3 Abschnitt 6.2 (fehlt)
+% Nomenklatur: q_s, -, Kerbparameter, ISO 6336-3 Gl. 64 (fehlt)
+% Nomenklatur: T, N m, Drehmoment (Index 2 Rad): vorhanden (extra); z, m_n, b, d, eps_alpha: vorhanden.
