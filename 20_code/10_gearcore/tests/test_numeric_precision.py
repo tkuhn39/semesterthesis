@@ -107,11 +107,14 @@ INTEGER_OF_THE_NORM: dict[str, set[str]] = {
         "max_number_of_teeth_spanned",
     },
     "stplus_program.py": {"stplus_number_of_teeth_spanned"},
+    "measurement/test_rig.py": {"level_Nm"},
 }
 """Functions whose result is an integer by the norm itself: DIN 21773:2014-08 Eq. (9), (12)
 and (13) take INT, "die nächste ganze Zahl, die kleiner oder gleich dem Wert in der Klammer
 ist" (footnote 1, p. 12). A number of teeth is a count, not a length that loses digits. The
-rule of STplus for k halves the sum of two such counts."""
+rule of STplus for k halves the sum of two such counts. The level key of the running tests
+(``level_Nm``) is the nominal torque level of the test plan, an integer by the plan; the wheel
+torque itself stays a float beside the key."""
 
 
 def _without_the_integers_of_the_norm(name: str, source: str, found: list[str]) -> list[str]:

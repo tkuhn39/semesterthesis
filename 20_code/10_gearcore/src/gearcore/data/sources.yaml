@@ -505,6 +505,62 @@ sources:
       }
     confirmed_by_user: true
     notes: "PDF page = printed page + 6. Tab. 13.1 (p. 372): Hertz'sche Pressung p_H = sqrt(K E'/pi) with K = F_N / (D_1 l_eff), halbe Druckbreite b = 2 D_1 p_H / E', D_1 = D_1 D_2 / (D_1 + D_2) for line contact; Eq. (13.5) (p. 376): 1/E' = 1/2 ((1 - nu_1^2)/E_1 + (1 - nu_2^2)/E_2); Eq. (13.6) (p. 376): R = R_1 R_2 / (R_1 + R_2). Used by fe.convergence for the pressure patch of the mesh convergence study (rigid steel pinion: E' = 2 E / (1 - nu^2))."
+  DIN50100:2022:
+    type: norm
+    title: "DIN 50100:2022-12 Schwingfestigkeitsversuch – Durchführung und Auswertung von zyklischen Versuchen mit konstanter Lastamplitude für metallische Werkstoffproben und Bauteile"
+    edition: "2022-12"
+    file: "00_literatur/05_normen_und_richtlinien/DIN_50100_2022-12-00_DE_3337109.pdf"
+    verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-10-17" }
+    confirmed_by_user: true
+    notes: "Cover: Dezember 2022, Ersatz für DIN 50100:2016-12. Used for the Perlenschnur evaluation of the running tests (Gl. (30), (36), (38), (39), (67), Tabelle 11), registered 2026-10-18 for track L."
+  Hasl2018:
+    type: thesis
+    title: "Zur Zahnfußtragfähigkeit von Kunststoffstirnrädern – Einflüsse von Verzahnungsgeometrie und Werkstoffverhalten auf die Zahnfußtragfähigkeit von Kunststoffstirnrädern in der Paarung Stahl-Kunststoff"
+    authors: ["Hasl, Christian"]
+    venue: "Dissertation, Technische Universität München (eingereicht 22.05.2018, angenommen 20.11.2018)"
+    year: 2018
+    status: missing
+    file: "00_literatur/02_dissertationen/HaslChristian_Diss_Druckversion.pdf"
+    verified:
+      {
+        method: null,
+        by: "claude/pdftotext (title page 2026-10-17)",
+        date: "2026-10-18",
+      }
+    confirmed_by_user: true
+    notes: "The file is present; 'status: missing' marks that the print version carries no DOI, ISBN or URN that could be verified. Used for Gl. (51) (semi-logarithmic Wöhler line, S. 110), the lower bound s_lgN ≥ 0,1 (S. 118) and the 1 % quantile 2,33 (S. 9)."
+  Illenberger2022:
+    type: thesis
+    title: "Zahnflankentragfähigkeit ölgeschmierter Kunststoffverzahnungen"
+    authors: ["Illenberger, Christopher Martin"]
+    venue: "Dissertation, Technische Universität München, Einreichversion (eingereicht 10.03.2022)"
+    year: 2022
+    status: missing
+    file: "00_literatur/02_dissertationen/Illenberger Dissertation_Einreichversion_Christopher_Illenberger.pdf"
+    verified:
+      {
+        method: null,
+        by: "claude/pdftotext (title page 2026-10-17)",
+        date: "2026-10-18",
+      }
+    confirmed_by_user: true
+    notes: "The file is present; 'status: missing' marks that the submission version carries no DOI, ISBN or URN. Used for the rank estimate P_A = j/(n+1) (Gl. (19), S. 19) and the Weibull reference values of Tabelle 7-2 (S. 96)."
+  MA-0296:2023:
+    type: thesis
+    title: "Untersuchungen zum Betriebsverhalten von Kunststoffzahnrädern im Pulsator- und Laufversuch"
+    authors: ["Fiederling, Elisabeth"]
+    venue: "Masterarbeit Nr. 0296, Technische Universität München, Lehrstuhl für Maschinenelemente, Forschungsstelle für Zahnräder und Getriebesysteme (eingereicht 01.12.2023)"
+    year: 2023
+    status: missing
+    file: "00_literatur/01_beispielarbeiten/MA-0296.pdf"
+    verified:
+      {
+        method: null,
+        by: "claude/pdftotext (title page 2026-10-17)",
+        date: "2026-10-18",
+      }
+    confirmed_by_user: false
+    notes: "The file is present; 'status: missing' marks that a student thesis carries no DOI, ISBN or URN. Used for the Rossow estimate P_A = (3j − 1)/(3n + 1) (Gl. (16), S. 34) and the failure criterion of the rig (S. 65)."
   Stommel2018:
     type: book
     title: "FEM zur Berechnung von Kunststoff- und Elastomerbauteilen"

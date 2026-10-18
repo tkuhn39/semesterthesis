@@ -8,9 +8,14 @@ provenance:
   date: "2026-10-10"
   notes: >
     Core group = the user's own running tests on the KV3 rig (PA46-GF30 wheels of the 2022 drawing
-    20220316_kst-E_Kunststoffrad); 97351 is the running-in test, 97361 still runs (8 Nm);
-    97364 was an extra 12 Nm test with a wheel measured by a student assistant and counts, with every
-    other measured wheel, as manufacturing scatter. The steel pinions 95911 to 95920 are the series the
+    20220316_kst-E_Kunststoffrad); 97351 is the running-in test (temperature matrix kst-E_63,
+    then continued at 12 Nm to failure); 97364 ran the second 8 Nm test (kst-E_75, ended at an
+    estimated 40 million cycles by the failure noise, the speed sensor having failed; corrected
+    2026-10-18 from the rig workbook, the earlier note called it an extra 12 Nm test); 97361 was
+    measured for the third 8 Nm test, which is not run (2026-10-18). 97364 was measured by a
+    student assistant and still counts, with every other measured wheel, as manufacturing
+    scatter; whether it moves into the core group is the user's decision (it changes the group
+    statistics of 4.4). The steel pinions 95911 to 95920 are the series the
     rig pinion comes from (GINA October 2025, "Stahlritzel mit KR"; nominal data of the measuring
     program = 2022 drawing 20220623_kst-E_Stahlritzel with the linear tip relief); 86481 is an older
     pinion with a contour scan of 2023 only. Load levels per ME come from the test-rig file
@@ -29,7 +34,7 @@ parts:
     # labels within the groups (a part may carry several)
     labels:
       running_in: ["97351"]
-      extra_test: ["97364"]
+      second_8nm_test: ["97364"]
   pinion:
     number_of_teeth: 51
     material: "20MnCr5"

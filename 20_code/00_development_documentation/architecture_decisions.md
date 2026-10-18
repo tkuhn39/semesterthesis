@@ -2773,6 +2773,88 @@ Findings (16 Nm; 8 Nm alike; at 12 Nm the own check has no node table, stresses 
    broken teeth (34, 31, 39) lie outside the failure window 36 to 40; the 2023 speed
    2250 1/min is not labelled pinion or wheel.
 
+### Amendment of 2026-10-18 evening (L1: the running-test workbook; the failure definitions of the running tests)
+
+Decisions of the user on 2026-10-18, recorded for the thesis text (3.2, 3.8, 6, 7.1, 8) and
+track L:
+
+1. **Three failure definitions, kept apart with their own symbols.** N_A: the first macroscopic
+   crack, the failure of the method after Stommel et al. (section 3.2, p. 204). N_K: the stop of
+   the rig at a torque loss (2026: 1 Nm, then re-adjusted to at most +5 % of the target; 2023:
+   not documented, presumably 5 Nm; the substitute criterion of MA-0296: more than 1 Nm over
+   100 000 load cycles). N_B: tooth breakage, or the stop at the failure noise. For every run
+   N_A ≤ N_K ≤ N_B, so the rig count is an upper bound of the crack count. The Wöhler line of
+   chapter 6 is a line to breakage (the definition of VDI 2736, Hasl, Illenberger and MA-0296),
+   so 5.5 and 7.1 stay consistent. The comparison with the Stommel method is one-sided and in
+   three tiers: the safety statement N_pred against N_B (the ratio is the total reserve of crack
+   growth and method margin, not separable), the accuracy against the crack window where the
+   remarks bracket it (last stop stating no crack, first stating one), and the local Wöhler
+   line on the breakage counts as an own extension named as such. The table of 6.1 names per
+   run the criterion that acted, whether a crack check is documented and whether the count was
+   measured or estimated.
+2. **The re-adjustment history is no crack indicator** (user): on the torque loop the twist
+   angle holds the torque, and wear, creep, bending and cracks all release twist. kst-E_75 shows
+   the cracks becoming visible while the loss rate falls. The loss per interval against TA and
+   TP (`verlustraten.md`) is reported as a hypothesis-generating table only.
+3. **Inspection plan for the further tests** (the student assistant's series; chapter 8 and the
+   appendix): during the first million cycles a check about every hour (about every 200 000
+   cycles), earlier (100 000 or 50 000) when the first check already shows something; every
+   stop with count, torque, photographs of the marked teeth and a finding per tooth; the first
+   visible crack is documented explicitly. The thesis says only that from kst-E_74 on the marked
+   teeth were photographed at every stop and that the earlier runs carry written findings.
+4. **Workbook rules** (`measurement/test_rig.py`): level = wheel torque of column Q rounded to
+   whole Nm (2023 names levels by the pinion torque, 2026 by the wheel torque); KV3 column R is
+   the pinion speed, KV4 the wheel speed; TA is the aggregate, TP the measuring point before the
+   gearing, a single value is TP, and the oil at the gearing never exceeded 75 °C; kst-E_63 is
+   the run-in matrix (flank temperature by thermal camera to set 80 °C tooth mass temperature)
+   continued at 12 Nm to failure and shown as a stepped run outside the single-level
+   regression; kst-E_71 ended at 1 210 000 (transposed digits in the remark); kst-E_75 (97364)
+   ended at an estimated 40 million by the failure noise without a complete break after the
+   speed sensor failed; the third 8 Nm run is not run; the first 1,25 million cycles of kst-E_69
+   ran at about 10 Nm at the wheel (the remark says the torque was set wrongly), to be judged
+   by the user. The event list and the anomaly list await the user's confirmation.
+5. **Confirmations of the user later that evening** (`data/measurement/test_runs_user.yaml`,
+   applied by `apply_confirmations`): kst-E_69 stays as a data point with a note; kst-E_72 and
+   kst-E_33 corrected in the workbook by the user; the runs 69 to 72 are full-value tests (the
+   volume-flow note was discussed with the supervisor; flag withdrawn); kst-E_66 is a tooth
+   root breakage (the end was not entered cleanly); 97364 stays in the scatter group (not
+   measured by the user before the run); the start torque above the level was the user's
+   practice so that the target lies in the middle of the re-adjustment interval, later fixed as
+   a positive percentage; the thesis states the rules as they finally applied and gives the
+   procedure for the next runs in the outlook (inspection cadence, start torque, torque log).
+   The three observations on the torque signal at 2250 1/min (averaging window, sampling alias,
+   torsional resonance) go into the findings and, as a test instruction (speed variation,
+   analogue log), into the outlook. Later that evening: the counter of the rig counts the
+   revolutions of the pinion shaft while 3000 and 2250 1/min are set at the wheel shaft, so a
+   wheel tooth sees 51/52 of the count; the tables keep the counts, 3.8 states the conversion
+   (0,008 decades, below the resolution), `TestRun.cycles_wheel` carries it. The oil at the
+   measuring point was lowered to 67 °C for the 16 Nm runs because the pre-tests showed clearly
+   higher tooth mass temperatures at higher torque and every test on this gearing, also at other
+   chairs, is to run at 80 °C tooth mass temperature. The emissivity 1 comes from a pre-test of
+   the research institute with a measuring strip (the user would have expected about 0,95 and
+   adopts 1). kst-E_65 ran at 3058 1/min (speed not entered; `speed_pinion_rpm` in
+   `test_runs_user.yaml`, PEEK 2026 then n = 7). The user confirmed DIN 50100, Hasl 2018,
+   Illenberger 2022 and MA-0296 in `sources.yaml`; Rossow's estimate is to be cited from its
+   primary source (Rossow 1964, Qualitätskontrolle 9, Heft 12, S. 146 bis 147; [Ros64] of
+   MA-0296, [29] of DIN 50100), which the user procures. The thermal-camera screenshots of the
+   matrix are cut to image plus legend (`scripts/thesis_thermal_images.py`), one example in 4.5,
+   all six in appendix H. After-test contour scans arrived (`70_input/71_Messungen/Konturscan/
+   Kunststoffrad/9734x_*_gelaufen.DAT`: 97340 at 16 Nm with Z1, Z18 and Z36-Z37 in one file,
+   right tooth 36, left complete tooth 37; 97345 at 8 Nm with Z1, Z18, Z36; 97351 at 12 Nm with
+   Z1, Z18 and Z44 because tooth 36 was broken off entirely); they wait for M5.
+6. **Wöhler evaluation L2 to L4** (`measurement/woehler.py`, `measurements.py woehler`): the
+   line of chapter 6 is a breakage line (decision 1); lg N_L is the dependent variable of both
+   fits; the pooled scatter follows DIN 50100 with the lower bound 0,10 of Hasl; the 1 % line is
+   drawn but named an extrapolation beyond the range of the norm; the VDI 2736 Blatt 4 estimate
+   per level stands beside the norm (s̄ over the levels with repetitions); the distribution is
+   judged by the nets (Gauss R² 0,97 against Weibull 0,96 on nine results, no decision possible
+   with the small sample, stated as such); kst-E_63 (run-in matrix continued at 12 Nm) is a
+   marker only; the comparison figure shows POM and PEEK of 2026 and 2023 at the reference speed
+   of their campaign, runs at 1000, 3000 and 4000 1/min of 2023 are listed, not drawn; the
+   abscissae σ_F and FE σ1 follow once C7 gives the stresses per torque. Sources: Hasl 2018,
+   Illenberger 2022 and MA-0296 are registered without an identifier and cited in docstrings,
+   DIN 50100 and VDI 2736 Blatt 4 through `@eq`.
+
 ## ADR-119 — Fibre orientation of the moulding simulation, evaluated on the mapped FE mesh and compared with the CT zones of FVA 856 I (2026-10-13)
 
 **Context.** The user wants a short thesis chapter on the injection-moulding simulation: does

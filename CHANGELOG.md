@@ -9,6 +9,81 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (running tests: Wöhler lines L2 to L4, 2026-10-18 evening)
+- **`gearcore/measurement/woehler.py`** and `scripts/measurements.py woehler`: the test points of
+  a material and campaign from the workbook (`points_from_runs`; planned rows, rows without a
+  count, dry runs and the first runs with oil below 60 °C give no point; a stepped run is a
+  marker only; runouts never enter the regression, DIN 50100 10.2.1 admits only results above
+  the highest level with a runout). Two lines with lg N_L as the dependent variable: the
+  semi-logarithmic line lg N_L = a_c − b_c · T_2 (Hasl 2018 Gl. (51), the representation of
+  VDI 2736 Blatt 2) and the double-logarithmic Basquin line of DIN 50100 Gl. (30); the pooled
+  scatter after Gl. (36), (38), (39) (residuals around the line equal the shift onto a fictitious
+  horizon), corrected by (n − 1,74)/(n − 2) and bounded below by 0,10 (Hasl S. 118); the lines
+  for 10 % (u = −1,282, Tabelle 11) and 1 % (u = −2,33, Hasl S. 9, marked as outside the range
+  of the norm) after Gl. (67); the estimate of VDI 2736 Blatt 4 Gl. (10) to (15) per level with
+  the normalised scatter s̄ over the levels with repetitions; the Gauss and Weibull nets on the
+  cycles normalised on the line of their level (Hasl S. 109 to 110), P_A after Rossow (MA-0296
+  Gl. (16)) and j/(n + 1) (Illenberger Gl. (19)), with R², the scatter or shape parameter and
+  the factors N_10/N_50 and N_1/N_50. Figures in the house style: T_2 over N_L with the points by
+  criterion (total failure filled, failure noise open, estimated count as a diamond, stepped run
+  as a square) and the lines with their parameters in the legend; the materials beside each
+  other (2026 filled, 2023 open, reference speed only); the two nets; the temperature matrix of
+  the run-in wheel 97351 as bars with the 80 °C reference (L4). PA46-GF30, nine failures:
+  lg N_L = 8,721 − 0,1617 · T_2, s_lgN,korr = 0,129, k = 4,40, s̄ = 0,0165, Gauss R² 0,97,
+  Weibull R² 0,96. `sources.yaml`: DIN 50100:2022 (norm), Hasl 2018, Illenberger 2022 and
+  MA-0296 registered; the three theses carry no DOI, ISBN or URN and are therefore cited in
+  docstrings, not through `@eq` (the trace test forbids it); DIN 50100 awaits the user's
+  confirmation. `tests/test_numeric_precision.py`: the level key and the "2 Mio" count of
+  `test_rig.py` registered as integers of the plan.
+- User's answers of the evening worked in: the counter counts the pinion shaft (`TestRun.cycles_wheel`
+  = count × 51/52, the tables keep the counts, 3.8 states the shift of 0,008 decades), kst-E_65 at
+  3058 1/min through `speed_pinion_rpm` in `test_runs_user.yaml` (PEEK 2026 n = 7), the oil
+  setting 67 °C at 16 Nm and the emissivity 1 from a pre-test with a measuring strip (4.5, 3.8),
+  the four sources confirmed by the user, Rossow to be cited from the 1964 primary source once
+  procured. **`scripts/thesis_thermal_images.py`**: the six thermal-camera screenshots of the
+  run-in matrix cut to image plus legend side by side on white (`80_output/thesis/waermebild/`),
+  one example in 4.5, all six in appendix H (the only raster figures, the source being raster).
+- `measurement/inventory.py`: the file grammar of the contour scans knows the scans after the
+  running test (`<ME>_Z<n>_gelaufen.DAT`, `after_test`) and a pair of teeth in one file
+  (`97340_Z36-Z37_gelaufen.DAT`: right tooth 36, complete left tooth 37, `second_tooth`, noted as
+  an anomaly); the before-test statistics of `measurements.py contour` leave the after-test scans
+  out, the inventory lists them as "gelaufen". First after-test scans of 2026-10-18: 97340 (16 Nm)
+  Z1, Z18, Z36-Z37; 97345 (8 Nm) Z1, Z18, Z36; 97351 (12 Nm, run-in matrix) Z1, Z18, Z44 (tooth
+  36 broken off).
+- Thesis drafts `kap4_5_temperatur.tex`, `kap6_1_versuchsprogramm.tex`, `kap6_3_woehlerlinien.tex`
+  and `kap6_4_vergleichswerkstoffe.tex` (run table with criteria and crack windows, the two
+  observations on the rig with the loss-rate table of kst-E_75, the Wöhler line with horizons
+  and nets, POM and PEEK beside PA46-GF30), the five figures in `bilder.yaml`, 3.8 with the
+  symbols N_A, N_K, N_B and the thermal camera, the nomenclature rows for them.
+
+### Added (running tests: the workbook importer L1, ADR-118 amendment of 2026-10-18 evening)
+- **`gearcore/measurement/test_rig.py`** and `scripts/measurements.py testruns`: the rig workbook
+  `70_input/72_Kleingetriebepruefstand_KV3/kst-E_Laufversuche_KV3.xlsx` read into `TestRun`
+  records (column map in the module docstring; several rows with one id merged, the dated row
+  leads; the continuation rows of the temperature matrix kst-E_63 kept as stages; `kst-E-67`
+  normalised). The remarks column is split into events with their load cycle count, the torque
+  readings, TA and TP, the stated loss and observation tags (re-adjustment, check, no crack,
+  first signs, cracks, wear, pitting, failure noise, break). Derived per run: the level key
+  (wheel torque of column Q rounded to whole Nm; the campaign of 2023 names its levels by the
+  pinion torque, that of 2026 by the wheel torque), the speeds (KV3: column R is the pinion
+  speed, KV4: the wheel speed; user's statement of 2026-10-18), a guess of the failure criterion
+  (total failure, failure noise, torque loss, not documented) that the user confirms, the crack
+  window for the failure definition of Stommel et al. (last stop that states no crack, first
+  stop that states one), the loss per re-adjustment interval and the temperature matrix. Flags:
+  estimated cycles (kst-E_75 after the speed sensor failed), stepped runs (kst-E_22, kst-E_63
+  continued at 12 Nm), dry runs at room temperature, oil below 60 °C, possible lubrication
+  deficit (the note of column U on the runs 69 to 72), duplicate and planned rows. The anomaly
+  list names the start torque above the level (kst-E_69 ran its first 1,25 million cycles at
+  about 10 Nm at the wheel; kst-E_68 and kst-E_73 about 1 Nm high), counts that do not ascend
+  (kst-E_24 counter resets, kst-E_72 1346000 against 1336000), the remark of kst-E_32 copied
+  into kst-E_33, and kst-E_65 and kst-E_67 without a wheel torque. Outputs under
+  `80_output/messungen/laufversuche/` (`laufversuche.md` and `.csv`, `ereignisse.md` and `.csv`,
+  `anrissfenster.md`, `verlustraten.md`, `temperaturmatrix.md`, `anomalien.md`).
+- `data/measurement/parts.yaml`: the note on 97364 corrected (it ran the second 8 Nm test
+  kst-E_75, it was no extra 12 Nm test; 97361 was measured for the third 8 Nm run, which is not
+  run), the label `extra_test` renamed `second_8nm_test`; the groups stay until the user decides
+  whether 97364 joins the core group (that changes the statistics of 4.4).
+
 ### Added (thesis: chapter 2 from the Bachelor thesis, the sections 3.2, 3.4 and 3.8, figures cut from sources, ADR-118 amendment of 2026-10-18)
 - Drafts `Kapitel/entwuerfe/kap2_1_thermoplaste.tex` to `kap2_7_problemstellung.tex`,
   `kap3_2_pruefstand.tex`, `kap3_4_analytik.tex` and `kap3_8_auswertung_laufversuche.tex`, wired

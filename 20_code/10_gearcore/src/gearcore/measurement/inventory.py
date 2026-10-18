@@ -75,7 +75,7 @@ FOLDER_RULES: tuple[tuple[Kind, re.Pattern[str]], ...] = (
     (
         "contour",
         re.compile(
-            rf"^Konturscan/(?P<part>Kunststoffrad|Stahlritzel)/(?:[^/]+/)*{ME}(?P<sep>[-_])(?P<z>[Zz]?)(?P<tooth>\d{{1,2}})\.DAT$"
+            rf"^Konturscan/(?P<part>Kunststoffrad|Stahlritzel)/(?:[^/]+/)*{ME}(?P<sep>[-_])(?P<z>[Zz]?)(?P<tooth>\d{{1,2}})(?:-[Zz](?P<tooth2>\d{{1,2}}))?(?P<after>_gelaufen)?\.DAT$"
         ),
     ),
     (
@@ -126,6 +126,12 @@ class MeasurementFile(FrozenModel):
     repeat: int | None = None
     """1 for the first GINA file of the part in its round, 2 for a repeat measurement, …"""
     tooth: int | None = None
+    second_tooth: int | None = None
+    """Contour scan with two teeth in one file (``97340_Z36-Z37_gelaufen.DAT``): ``tooth`` is the
+    right tooth of the scan, ``second_tooth`` the complete tooth to its left (user, 2026-10-18)."""
+    after_test: bool = False
+    """Contour scan taken after the running test (``_gelaufen``); the before-test statistics of
+    M3 leave these out, the wear comparison of M5 pairs them with the scan before the test."""
     flank: Flank | None = None
     trace: int | None = None
     points: int | None = None
@@ -140,7 +146,7 @@ class MeasuredPart(FrozenModel):
     part: Part
     group: str
     labels: tuple[str, ...]
-    """Labels of parts.yaml within the group (``running_in``, ``extra_test``)."""
+    """Labels of parts.yaml within the group (``running_in``, ``second_8nm_test``)."""
     material: str
     batch_labels: tuple[str, ...]
     files: tuple[MeasurementFile, ...]
@@ -200,6 +206,8 @@ def classify(relative: str, part_of_me: Mapping[str, Part] | None = None) -> Mea
             )
         anomalies: list[str] = []
         tooth: int | None = None
+        second_tooth: int | None = None
+        after_test = False
         flank: Flank | None = None
         trace: int | None = None
         label: str | None = None
@@ -213,6 +221,14 @@ def classify(relative: str, part_of_me: Mapping[str, Part] | None = None) -> Mea
                 anomalies.append("file name without the tooth letter z")
             if tooth < 1:
                 raise ParseError(f"{relative}: tooth number {tooth}")
+            if groups.get("tooth2"):
+                second_tooth = int(groups["tooth2"])
+                if second_tooth < 1:
+                    raise ParseError(f"{relative}: tooth number {second_tooth}")
+                anomalies.append(
+                    f"two teeth in one scan: right tooth {tooth}, complete left tooth {second_tooth}"
+                )
+            after_test = bool(groups.get("after"))
         if kind in ("roughness", "roughness_profile", "roughness_pdf"):
             flank = groups["flank"]  # type: ignore[assignment]
         variant = groups.get("variant")
@@ -229,6 +245,8 @@ def classify(relative: str, part_of_me: Mapping[str, Part] | None = None) -> Mea
             kind=kind,
             variant=variant,
             tooth=tooth,
+            second_tooth=second_tooth,
+            after_test=after_test,
             flank=flank,
             trace=trace,
             batch_label=label,

@@ -1,0 +1,41 @@
+\section{Temperaturverhalten am Prüfstand}
+\label{sec:temperatur}
+
+Vor den Laufversuchen wurde am Rad 97351 im Lauf kst-E\_63 die Zahnflankentemperatur über dem Drehmoment und der Drehzahl aufgenommen, um die Öltemperatur für die Zahnmassentemperatur von $80$\,\textdegree C einzustellen. Die Matrix belegt die Raddrehmomente $8$\,Nm, $12$\,Nm und $16$\,Nm bei $2250$ und $3000$\,1/min am Rad. Die Öltemperatur an der Messstelle vor der Prüfverzahnung betrug $75$\,\textdegree C. Je Zelle wurde nach zwei Stunden Laufzeit die Flankentemperatur mit der Wärmebildkamera bei einem Emissionsgrad von $1$ abgelesen. \figref{fig:temperatur_matrix_97351} zeigt die sechs Werte als Balken gegen den Bezug von $80$\,\textdegree C.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{kap4/temperatur_matrix_97351}
+    \caption{Zahnflankentemperatur nach zwei Stunden am Rad 97351 über dem Raddrehmoment bei $2250$ und $3000$\,1/min am Rad, Öltemperatur $75$\,\textdegree C an der Messstelle, Wärmebildkamera mit Emissionsgrad $1$; Bezug $80$\,\textdegree C.}
+    \label{fig:temperatur_matrix_97351}
+\end{figure}
+
+\figref{fig:waermebild_16nm_3000} zeigt als Beispiel die Aufnahme bei $16$\,Nm und $3000$\,1/min mit dem Messpunkt auf der Zahnflanke; die übrigen fünf Aufnahmen stehen in \secref{sec:anhang_h}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{kap4/waermebild_16nm_3000}
+    \caption{Wärmebildaufnahme des Rades 97351 nach zwei Stunden bei $16$\,Nm und $3000$\,1/min am Rad, Emissionsgrad $1$; der Messpunkt liegt auf der Zahnflanke, die Legende nennt die Temperaturspanne der Aufnahme.}
+    \label{fig:waermebild_16nm_3000}
+\end{figure}
+
+Bei $8$ und $12$\,Nm liegt die Flankentemperatur mit $79{,}5$ bis $81{,}9$\,\textdegree C innerhalb von $2$\,K um den Bezug. Bei $16$\,Nm steigt sie auf $84{,}1$\,\textdegree C bei $2250$\,1/min und auf $87{,}8$\,\textdegree C bei $3000$\,1/min. Die höhere Drehzahl trägt zwischen $0{,}9$\,K bei $12$\,Nm und $3{,}7$\,K bei $16$\,Nm bei; der Schritt von $8$ auf $16$\,Nm bringt bei $3000$\,1/min $6{,}3$\,K. Die Öltemperatur von $75$\,\textdegree C hält den Bezug damit auf den Stufen $8$ und $12$\,Nm, auf der Stufe $16$\,Nm läuft der Zahn wärmer. In den Läufen bei $16$\,Nm wurde die Solltemperatur an der Messstelle deshalb auf $67$\,\textdegree C gesetzt, vgl. \tabref{tab:versuchsprogramm_pa46}. Maßgebend ist die Zahnmassentemperatur von $80$\,\textdegree C, auf die alle Versuche an dieser Verzahnung bezogen sind, auch die anderer Lehrstühle. Der Emissionsgrad $1$ stammt aus einem Vorversuch der Forschungsstelle mit einem Messstreifen. Eine Kastentemperatur wurde in der Matrix nicht aufgezeichnet. Nach der Matrix lief das Rad bei $12$\,Nm weiter und versagte nach insgesamt $2{,}42 \cdot 10^{6}$ Lastwechseln mit fünf bis sechs gebrochenen Zähnen. Dieser Lauf trägt eine gestufte Vorgeschichte und erscheint in \secref{sec:woehlerlinien} nur als Marker.
+
+% Herkunft:
+% Absatz 1 und 2 (Matrix): 70_input/72_Kleingetriebepruefstand_KV3/kst-E_Laufversuche_KV3.xlsx, Zeilen 77 bis 83
+%   (kst-E_63, Rad 97351, Ritzel 95919, Öltemperatur 75, Ziel 80, Ritzelmoment 11,8/7,9/7,8/15,7 Nm, Drehzahl
+%   2294 und 3058 1/min am Ritzel = 2250 und 3000 am Rad, Bemerkung "nach 2h ... °C Zahnflankentemperatur mit
+%   Emissionsgrad 1"); 80_output/messungen/woehler/vergleich.md Tabelle "Temperaturmatrix kst-E_63" (2250:
+%   79,5/81,0/84,1; 3000: 81,5/81,9/87,8 °C); Bild temperatur_matrix_97351 (measurements.py woehler, L4).
+%   Wärmebildkamera, Öltemperatur = Messstelle vor der Prüfverzahnung, Weiterlauf bei 12 Nm bis zum Ende:
+%   Nutzer 2026-10-18 (ADR-118 Amendment vom Abend, Punkt 4 und 5). Differenzen: Drehzahl 2,0/0,9/3,7 K,
+%   Drehmoment bei 3000 1/min 6,3 K. 67 °C der Läufe 70 bis 73: Spalte G der Mappe. Endzahl 2 424 628:
+%   Spalte S Zeile 83; "5-6 kaputte Zähne": Spalte T Zeile 83. VDI 2736 Blatt 4 Abschnitt 8.2: über 3.8.
+%   67 °C und Emissionsgrad: Nutzer 2026-10-18 (Vorversuche zeigten bei erhöhtem Moment deutlich höhere
+%   Zahnmassentemperaturen; Vereinbarung mit anderen Lehrstühlen auf 80 °C; Emissionsgrad 1 aus einem Vorversuch
+%   der Forschungsstelle mit Messstreifen); Wärmebilder: 70_input/72_Kleingetriebepruefstand_KV3/Bilder/
+%   Waermebildaufnahme_Kunststoffraeder/<T>_<n>.png, geschnitten mit scripts/thesis_thermal_images.py.
+% Bildwunsch: kap4/temperatur_matrix_97351, kap4/waermebild_16nm_3000 (bilder.yaml); die übrigen fünf in Anhang H.
+% Bibwunsch: keiner.
+% Nomenklatur: keine neuen Zeichen.
+% Offen: Kastentemperatur der Matrix (nicht aufgezeichnet).

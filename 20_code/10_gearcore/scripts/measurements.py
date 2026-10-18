@@ -42,8 +42,12 @@ figure: the printed protocols go into the appendix (user's decision).
 
 Everything that computes lives in ``gearcore.measurement``; this script reads the folder, calls
 the package, draws in the house style (``gearcore.plot_style``) and writes files below
-``80_output/messungen`` (gitignored). Further subcommands (``compare``, ``report``) follow with
-the later increments of the measurement track.
+``80_output/messungen`` (gitignored). ``testruns`` (L1) reads the running-test workbook
+``70_input/72_Kleingetriebepruefstand_KV3/kst-E_Laufversuche_KV3.xlsx`` through
+``gearcore.measurement.test_rig`` and writes the clean run table, the events of the remarks
+column verbatim, the crack windows, the loss rates of the re-adjustment history, the temperature
+matrix and the anomaly list the user confirms. Further subcommands (``compare``, ``report``)
+follow with the later increments of the measurement track.
 """
 
 from __future__ import annotations
@@ -51,6 +55,7 @@ from __future__ import annotations
 import argparse
 import csv
 import io
+import math
 from collections import Counter
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
@@ -71,6 +76,8 @@ from gearcore.measurement import contour_scan as cs
 from gearcore.measurement import gina
 from gearcore.measurement import report as rp
 from gearcore.measurement import roughness as rg
+from gearcore.measurement import test_rig as tr
+from gearcore.measurement import woehler as wl
 from gearcore.measurement.inventory import (
     Inventory,
     Kind,
@@ -79,6 +86,7 @@ from gearcore.measurement.inventory import (
     scan_folder,
 )
 from gearcore.models.results import GenerationResult
+from gearcore.plot_style import LINE_STYLES, MARKERS
 from gearcore.plot_style import apply as apply_plot_style
 from gearcore.plot_style import decimal_comma, legend_outside, new_figure, save, symbol_label
 from gearcore.quantities import quantity
@@ -98,7 +106,7 @@ KIND_LABELS: dict[Kind, str] = {
     "microscope": "Mikroskop Zahnkopf (JPG)",
 }
 PART_LABELS = {"wheel": "Kunststoffrad (z = 52)", "pinion": "Stahlritzel (z = 51)"}
-LABELS = {"running_in": "Einlauf", "extra_test": "Zusatzversuch 12 Nm"}
+LABELS = {"running_in": "Einlauf", "second_8nm_test": "zweiter 8-Nm-Lauf (kst-E_75)"}
 GROUP_LABELS = {
     "core": "Laufversuch (Kerngruppe)",
     "scatter": "Fertigungsstreuung",
@@ -158,8 +166,11 @@ def inventory_markdown(inventory: Inventory) -> str:
             )
             contours = part.of_kind("contour")
             teeth = ", ".join(
-                f"z{f.tooth}" + ("*" if any("coarse" in a for a in f.anomalies) else "")
-                for f in sorted(contours, key=lambda f: (f.tooth or 0, f.path))
+                f"z{f.tooth}"
+                + (f"-z{f.second_tooth}" if f.second_tooth is not None else "")
+                + (" gelaufen" if f.after_test else "")
+                + ("*" if any("coarse" in a for a in f.anomalies) else "")
+                for f in sorted(contours, key=lambda f: (f.after_test, f.tooth or 0, f.path))
             )
             roughness = part.of_kind("roughness")
             flanks = ", ".join(sorted({f.flank for f in roughness if f.flank}))
@@ -920,6 +931,8 @@ def contour_evaluations(
             coarse = any("coarse" in note for note in file.anomalies)
             if coarse and not include_coarse:
                 continue
+            if file.after_test:
+                continue  # scans after the running test belong to the wear comparison (M5)
             for scan in load_contour_scans(root / file.path):
                 evaluation = cs.evaluate_scan(scan, geometry, settings, tip_radius_mm=tip_radius)
                 out.append((part, file, scan, evaluation))
@@ -1640,6 +1653,560 @@ def run_roughness(
     return written
 
 
+# ---- running tests (L1) ------------------------------------------------------------------------
+
+TESTRUNS = REPO_ROOT / "70_input" / "72_Kleingetriebepruefstand_KV3" / "kst-E_Laufversuche_KV3.xlsx"
+FLAG_LABELS = {
+    "estimated_cycles": "Lastspielzahl geschätzt (Drehzahlsensor)",
+    "cycles_with_text": "Lastspielzahl mit Zusatztext",
+    "stepped": "Stufenlauf",
+    "dry_room_temperature": "Trockenlauf bei Raumtemperatur",
+    "oil_45C": "Öl unter 60 °C",
+    "lubrication_deficit_possible": "Schmierungsdefizit möglich (Notiz Spalte U)",
+    "planned_only": "nur geplant",
+    "no_cycles": "ohne Lastspielzahl",
+    "duplicate_rows": "mehrere Zeilen je Kennung",
+    "id_typo": "Kennung abweichend geschrieben",
+    "wheel_torque_from_pinion": "Radmoment aus dem Ritzelmoment (Spalte Q leer)",
+}
+RUN_COLUMNS = [
+    "Lauf", "Zeilen", "Datum", "Prüfstand", "Werkstoff", "Ritzel", "Rad", "Stufe in Nm",
+    "Radmoment in Nm", "Ritzelmoment Soll in Nm", "Drehzahl Rad in 1/min",
+    "Drehzahl Ritzel in 1/min", "Öltemperatur in °C", "Lastwechsel", "Lastwechsel (Spalte S)",
+    "Lastwechsel Rad (× 51/52)", "Versagensart (Spalte J)", "Kriterium", "letzte Kontrolle ohne Anriss",
+    "erste Kontrolle mit Anriss", "Kennzeichen",
+]
+EVENT_COLUMNS = [
+    "Lauf", "Nr.", "Lastwechsel", "Momente in Nm", "nachgespannt auf Nm", "TA in °C", "TP in °C",
+    "Verlust in Nm", "über Lastwechsel", "Befund", "Text",
+]
+
+
+def _cycles_text(value: int | None) -> str:
+    return "" if value is None else f"{value:,}".replace(",", " ")
+
+
+def _opt(value: float | None, digits: int) -> str:
+    return "" if value is None else rp.german_number(value, digits)
+
+
+def _run_row(run: tr.TestRun) -> list[str]:
+    lower, upper = run.crack_window
+    return [
+        run.run_id, " ".join(str(r) for r in run.rows), run.date or "", run.rig,
+        run.material or "", run.pinion_me or "", run.wheel_me or "",
+        "" if run.level_Nm is None else str(run.level_Nm),
+        _opt(run.wheel_torque_Nm, 2), _opt(run.target_pinion_torque_Nm, 2),
+        _opt(run.speed_wheel_rpm, 0), _opt(run.speed_pinion_rpm, 0),
+        run.oil_temperature_raw or "", _cycles_text(run.cycles), run.cycles_raw or "",
+        _opt(run.cycles_wheel, 0),
+        (run.failure_mode or "").replace("\n", " "),
+        run.criterion + (" (bestätigt)" if run.criterion_confirmed else " (Vorschlag)"),
+        _cycles_text(lower), _cycles_text(upper),
+        "; ".join(
+            ([", ".join(FLAG_LABELS.get(f, f) for f in run.flags)] if run.flags else [])
+            + ([run.user_note] if run.user_note else [])
+        ),
+    ]
+
+
+def _overview(title: str, runs: Sequence[tr.TestRun]) -> list[str]:
+    columns = [
+        "Lauf", "Datum", "Werkstoff", "Rad", "Stufe in Nm", "Radmoment in Nm",
+        "Drehzahl Rad in 1/min", "Öl in °C", "Lastwechsel", "Versagensart",
+        "Kriterium", "ohne Anriss bis", "Anriss ab", "Kennzeichen und Vermerke",
+    ]
+    rows: list[list[str]] = []
+    for run in runs:
+        r = _run_row(run)
+        rows.append([r[0], r[2], r[4], r[6], r[7], r[8], r[10], r[12], r[13], r[16], r[17],
+                     r[18], r[19], r[20]])
+    return [f"## {title}", "", *_table(columns, rows), ""]
+
+
+def _event_row(run: tr.TestRun, number: int, event: tr.RemarkEvent) -> list[str]:
+    after = "" if event.torque_after_Nm is None else (
+        f"{rp.german_number(event.torque_after_Nm[0], 1)} bis "
+        f"{rp.german_number(event.torque_after_Nm[1], 1)}"
+    )
+    return [
+        run.run_id, str(number), _cycles_text(event.cycles),
+        " ".join(rp.german_number(t, 1) for t in event.torques_Nm), after,
+        _opt(event.aggregate_temperature_C, 0), _opt(event.gearing_temperature_C, 0),
+        _opt(event.loss_Nm, 1), _cycles_text(event.loss_over_cycles),
+        ", ".join(tr.OBSERVATION_LABELS[o] for o in event.observations),
+        event.text.replace("|", "/").replace("\n", " "),
+    ]
+
+
+def testruns_tables(book: tr.Workbook) -> dict[str, str]:
+    runs = [r for r in book.runs if "planned_only" not in r.flags]
+    planned = [r.run_id for r in book.runs if "planned_only" in r.flags]
+    core = [r for r in runs if r.rig == "KV3" and (r.material or "").startswith("PA46")]
+    other_2026 = [r for r in runs if r.rig == "KV3" and r not in core]
+    kv4 = [r for r in runs if r.rig == "KV4"]
+    lines = [
+        "# Laufversuche aus `kst-E_Laufversuche_KV3.xlsx`", "",
+        f"Quelle: `{book.path}`, Blatt Tabelle1. Stufe = Radmoment (Spalte Q) auf ganze Nm "
+        "gerundet; 2023 benennt die Stufen nach dem Ritzelmoment (16 Nm = 16,3 Nm am Rad), 2026 "
+        "nach dem Radmoment (15,7 Nm am Ritzel). Drehzahl: auf KV3 steht in Spalte R die "
+        "Ritzeldrehzahl (3058 = 2999 am Rad, 3000 entspräche 3058,8), auf KV4 die Raddrehzahl "
+        "(Nutzer, 18.10.2026). Das Kriterium ist ein Vorschlag aus den Spalten J, T und U und "
+        "wird je Lauf bestätigt. Öltemperatur = Messstelle vor der Prüfverzahnung.", "",
+    ]
+    lines += _overview("PA46-GF30, KV3 (2026)", core)
+    lines += _overview("POM und PEEK, KV3 (2026)", other_2026)
+    lines += _overview("POM und PEEK, KV4 (2023, MA-0296)", kv4)
+    if planned:
+        lines += ["Nur geplante Zeilen ohne Datum und Lastspielzahl: " + ", ".join(planned), ""]
+    ev_rows: list[list[str]] = []
+    ev_lines = [
+        "# Ereignisse aus Spalte T (wörtlich, zur Bestätigung)", "",
+        "Befund: Schlagworte des Segments; ein Nachspannen ohne Befund ist keine Aussage zum "
+        "Anriss. TA Aggregat, TP Messstelle vor der Prüfverzahnung, ein einzelner Wert ist TP.", "",
+    ]
+    for run in core + other_2026 + kv4:
+        if not run.events:
+            continue
+        ev_lines += [
+            f"## {run.run_id} (Rad {run.wheel_me or '?'}, {run.material or '?'}, "
+            f"Stufe {run.level_Nm or '?'} Nm)", "",
+        ]
+        table_rows: list[list[str]] = []
+        for n, e in enumerate(run.events, start=1):
+            row = _event_row(run, n, e)
+            ev_rows.append(row)
+            table_rows.append(row[1:])
+        ev_lines += [*_table(EVENT_COLUMNS[1:], table_rows), ""]
+    cw_lines = [
+        "# Anrissfenster (erster makroskopischer Anriss nach Stommel et al.)", "",
+        "Untere Schranke: letzte Kontrolle, die keinen Anriss nennt; obere Schranke: erste "
+        "Kontrolle mit Anriss oder ersten Anzeichen. Läufe ohne Zeile tragen keine Rissnotiz. "
+        "Die Zeilen von 2023 (KV4) folgen der Lesart der Schlagworte und sind vom Nutzer am "
+        "Text zu prüfen; ein Nachspannen ohne Befund ist keine Aussage.", "",
+    ]
+    cw_rows: list[list[str]] = []
+    for run in core + kv4 + other_2026:
+        lower, upper = run.crack_window
+        if lower is None and upper is None:
+            continue
+        quoted = upper if upper is not None else lower
+        quote = next((e.text for e in run.events if e.cycles == quoted), "")
+        cw_rows.append([
+            run.run_id, run.material or "", str(run.level_Nm or ""), _cycles_text(lower),
+            _cycles_text(upper), _cycles_text(run.cycles),
+            quote[:140].replace("|", "/").replace("\n", " "),
+        ])
+    cw_lines += _table(
+        ["Lauf", "Werkstoff", "Stufe in Nm", "ohne Anriss bis", "Anriss ab", "Ende", "Zitat"],
+        cw_rows,
+    )
+    lr_lines = [
+        "# Nachspannhistorie der PA46-GF30-Läufe: Momentverlust je Intervall", "",
+        "Verlust aus der Notiz (ca. x Nm Verlust über n) oder aus dem Moment nach dem vorherigen "
+        "Nachspannen minus dem Moment vor diesem Halt. TA Aggregat, TP Messstelle vor der "
+        "Prüfverzahnung.", "",
+    ]
+    for run in core:
+        intervals = tr.loss_intervals(run)
+        if not intervals:
+            continue
+        lr_lines += [f"## {run.run_id} (Rad {run.wheel_me}, {run.level_Nm} Nm)", ""]
+        lr_lines += _table(
+            ["von", "bis", "Verlust in Nm", "Nm je Mio. Lastwechsel", "TA in °C", "TP in °C"],
+            [[_cycles_text(a), _cycles_text(b), rp.german_number(loss, 1),
+              rp.german_number(rate, 2), _opt(ta, 0), _opt(tp, 0)]
+             for a, b, loss, rate, ta, tp in intervals],
+        )
+        lr_lines.append("")
+    tm_lines = ["# Temperaturmatrix (Stufenläufe, Zahnflankentemperatur nach 2 h)", ""]
+    for run in book.runs:
+        if not run.stages:
+            continue
+        tm_lines += [f"## {run.run_id} (Rad {run.wheel_me})", ""]
+        tm_lines += _table(
+            ["Zeile", "Datum", "Ritzelmoment Soll in Nm", "Radmoment in Nm",
+             "Drehzahl Rad in 1/min", "Lastwechsel", "Flankentemperatur nach 2 h in °C",
+             "Bemerkung"],
+            [[str(s.row), s.date or "", _opt(s.target_pinion_torque_Nm, 1),
+              _opt(s.wheel_torque_Nm, 2), _opt(s.speed_wheel_rpm, 0), s.cycles_raw or "",
+              _opt(s.flank_temperature_2h_C, 1),
+              (s.remark or "").replace("|", "/").replace("\n", " ")[:110]]
+             for s in run.stages],
+        )
+        tm_lines.append("")
+    an_lines = ["# Anomalien und Annahmen (zur Bestätigung)", "",
+                *[f"- {a}" for a in book.anomalies], ""]
+    return {
+        "laufversuche.md": "\n".join(lines) + "\n",
+        "laufversuche.csv": rp.csv_text(RUN_COLUMNS, [_run_row(r) for r in book.runs]),
+        "ereignisse.md": "\n".join(ev_lines) + "\n",
+        "ereignisse.csv": rp.csv_text(EVENT_COLUMNS, ev_rows),
+        "anrissfenster.md": "\n".join(cw_lines) + "\n",
+        "verlustraten.md": "\n".join(lr_lines) + "\n",
+        "temperaturmatrix.md": "\n".join(tm_lines) + "\n",
+        "anomalien.md": "\n".join(an_lines) + "\n",
+    }
+
+
+def run_testruns(path: Path, out: Path, *, confirmations: Path | None = tr.CONFIRMATIONS) -> list[Path]:
+    book = tr.load_workbook(path)
+    if confirmations is not None and confirmations.is_file():
+        book = tr.apply_confirmations(book, confirmations)
+    out.mkdir(parents=True, exist_ok=True)
+    written: list[Path] = []
+    for name, text in testruns_tables(book).items():
+        target = out / name
+        target.write_text(text, encoding="utf-8", newline="\n")
+        written.append(target)
+    return written
+
+
+# ---- Wöhler lines (L2, L3) and the temperature matrix (L4) -------------------------------------
+
+REFERENCE_SPEED_RPM = {"KV3": 3000.0, "KV4": 2250.0}
+"""Wheel speed of the campaign; runs at another speed stay out of the comparison lines."""
+PROBABILITY_TICKS = (1, 2, 5, 10, 20, 50, 80, 90, 99)
+GREY = "0.45"
+
+
+def _colours() -> list[str]:
+    import matplotlib as mpl
+
+    return [str(c) for c in mpl.rcParams["axes.prop_cycle"].by_key()["color"]]
+
+
+def _close(figure: Any) -> None:
+    import matplotlib.pyplot as plt
+
+    plt.close(figure)
+
+
+def _g(value: float | None, digits: int) -> str:
+    return "" if value is None else rp.german_number(value, digits)
+
+
+def _slug(material: str, campaign: str) -> str:
+    return (material + "_" + campaign).lower().replace("-", "").replace(" ", "_")
+
+
+def _point_groups(points: Sequence[wl.TestPoint]) -> dict[tuple[str, bool, str], list[wl.TestPoint]]:
+    groups: dict[tuple[str, bool, str], list[wl.TestPoint]] = {}
+    for p in points:
+        if p.runout:
+            key = (">", False, "Durchläufer")
+        elif p.stepped:
+            key = (MARKERS[1], False, "Stufenlauf, nicht in der Regression")
+        elif p.estimated:
+            key = (MARKERS[3], False, "Versagensgeräusch, Lastspielzahl geschätzt")
+        elif p.criterion.startswith("Versagensgeräusch"):
+            key = (MARKERS[0], False, "Versagensgeräusch")
+        else:
+            key = (MARKERS[0], True, "Totalausfall")
+        groups.setdefault(key, []).append(p)
+    return groups
+
+
+def _draw_points(axes: Any, points: Sequence[wl.TestPoint], colour: str, prefix: str) -> None:
+    for (marker, filled, suffix), group in _point_groups(points).items():
+        axes.plot(
+            [p.cycles for p in group], [p.load_Nm for p in group], linestyle="none",
+            marker=marker, color=colour, markerfacecolor=colour if filled else "white",
+            label=f"{prefix}: {suffix} (n = {len(group)})",
+        )
+
+
+def _draw_line(axes: Any, fit: wl.LineFit, probability: int, colour: str, style: Any, label: str) -> None:
+    loads = [fit.load_min + i * (fit.load_max - fit.load_min) / 60.0 for i in range(61)]
+    axes.plot([fit.cycles(load, probability) for load in loads], loads, color=colour,
+              linestyle=style, marker="none", label=label)
+
+
+def _axes_woehler(axes: Any, y_max: float) -> None:
+    axes.set_xscale("log")
+    axes.set_xlim(1.0e4, 1.0e8)
+    axes.set_ylim(6.0, y_max)
+    axes.set_xlabel("Lastwechselzahl $N_{\\mathrm{L}}$")
+    axes.set_ylabel("Raddrehmoment $T_{\\mathrm{2}}$ in Nm")
+    decimal_comma(axes, which="y")
+
+
+def woehler_figure(result: wl.WoehlerResult, out: Path) -> list[Path]:
+    """T_2 over N_L: the points by criterion, the semi-logarithmic lines for 50, 10 and 1 %, the
+    double-logarithmic 50 % line and the 10 % values of VDI 2736 Blatt 4 per level."""
+    figure, axes = new_figure("full", 0.62)
+    colours = _colours()
+    _draw_points(axes, result.points, colours[0], f"{result.material}, {result.campaign}")
+    s = result.semilog
+    _draw_line(axes, s, 50, colours[0], LINE_STYLES[0],
+               f"50 % halblogarithmisch: lg $N_{{\\mathrm{{L}}}}$ = {_g(s.intercept, 3)} − "
+               f"{_g(s.slope, 4)} · $T_{{\\mathrm{{2}}}}$, $s_{{\\lg N}}$ = {_g(s.s_used, 3)} (n = {s.n})")
+    _draw_line(axes, s, 10, colours[0], LINE_STYLES[1], "10 % nach DIN 50100 (u = −1,282)")
+    _draw_line(axes, s, 1, colours[0], LINE_STYLES[2], "1 % (u = −2,33, außerhalb des Bereichs der Norm)")
+    ll = result.loglog
+    _draw_line(axes, ll, 50, colours[1], LINE_STYLES[3],
+               f"50 % doppeltlogarithmisch: k = {_g(ll.slope, 2)}, lg C = {_g(ll.intercept, 2)}")
+    if result.vdi_s_bar is not None:
+        load_of = {lvl.level_Nm: lvl.load_Nm for lvl in result.levels}
+        xs = [v.N_i_10 for v in result.vdi if v.N_i_10 is not None]
+        ys = [load_of[v.level_Nm] for v in result.vdi if v.N_i_10 is not None]
+        axes.plot(xs, ys, linestyle="none", marker=MARKERS[5], color=colours[1],
+                  markerfacecolor="white",
+                  label=f"10 % nach VDI 2736 Blatt 4 je Horizont (s̄ = {_g(result.vdi_s_bar, 4)})")
+    _axes_woehler(axes, 18.0)
+    axes.set_yticks([lvl.level_Nm for lvl in result.levels])
+    legend_outside(figure, axes, where="bottom", ncol=1)
+    paths = save(figure, out / f"woehler_T2_{_slug(result.material, result.campaign)}")
+    _close(figure)
+    return paths
+
+
+def comparison_figure(
+    groups: Sequence[tuple[str, Sequence[wl.TestPoint]]], main: wl.WoehlerResult, out: Path,
+) -> list[Path]:
+    """The materials beside each other: points per material and campaign, the 50 % line of the
+    main material only."""
+    figure, axes = new_figure("full", 0.62)
+    colours = _colours()
+    for index, (label, points) in enumerate(groups):
+        colour = colours[index % len(colours)]
+        marker = MARKERS[index % len(MARKERS)]
+        filled = "KV3" in label
+        axes.plot([p.cycles for p in points], [p.load_Nm for p in points], linestyle="none",
+                  marker=marker, color=colour, markerfacecolor=colour if filled else "white",
+                  label=f"{label} (n = {len(points)})")
+    _draw_line(axes, main.semilog, 50, colours[0], LINE_STYLES[0],
+               f"{main.material}, {main.campaign}: 50 %-Linie halblogarithmisch")
+    _axes_woehler(axes, 20.0)
+    axes.set_yticks([8, 10, 12, 14, 16, 18])
+    legend_outside(figure, axes, where="bottom", ncol=1)
+    paths = save(figure, out / "woehler_T2_vergleich_werkstoffe")
+    _close(figure)
+    return paths
+
+
+def net_figures(result: wl.WoehlerResult, out: Path) -> list[Path]:
+    """Gauss and Weibull nets of the normalised cycles with both probability estimates."""
+    from statistics import NormalDist
+
+    paths: list[Path] = []
+    values = [value for _, value in wl.normalised_cycles(result.semilog, result.admitted)]
+    n = len(values)
+    colours = _colours()
+    for kind in ("gauss", "weibull"):
+        def transform(p: float) -> float:
+            return NormalDist().inv_cdf(p) if kind == "gauss" else math.log(-math.log(1.0 - p))
+
+        figure, axes = new_figure("full", 0.62)
+        for index, (estimator, name) in enumerate((("rossow", "Rossow (3j − 1)/(3n + 1)"),
+                                                   ("rank", "j/(n + 1)"))):
+            probabilities = [wl.rossow(j, n) if estimator == "rossow" else wl.rank_estimate(j, n)
+                             for j in range(1, n + 1)]
+            axes.plot(values, [transform(p) for p in probabilities], linestyle="none",
+                      marker=MARKERS[index], color=colours[index],
+                      markerfacecolor=colours[index] if index == 0 else "white",
+                      label=f"Punkte, $P_{{\\mathrm{{A}}}}$ nach {name}")
+            fit = next(f for f in result.nets if f.kind == kind and f.estimator == estimator)
+            grid = [min(values) * (max(values) / min(values)) ** (i / 40.0) for i in range(41)]
+            ratio = "$N_{\\mathrm{L,10\\%}}/N_{\\mathrm{L,50\\%}}$"
+            if kind == "gauss":
+                ys = [(math.log10(x) - fit.intercept) / fit.slope for x in grid]
+                label = (f"Gerade, {name}: $s_{{\\lg N}}$ = {_g(fit.parameter, 3)}, "
+                         f"{ratio} = {_g(fit.factor_10, 2)}, R² = {_g(fit.r_squared, 3)}")
+            else:
+                ys = [(math.log(x) - fit.intercept) / fit.slope for x in grid]
+                label = (f"Gerade, {name}: $k_{{\\mathrm{{W}}}}$ = {_g(fit.parameter, 2)}, "
+                         f"$\\eta$ = {_g(fit.scale, 3)}, "
+                         f"{ratio} = {_g(fit.factor_10, 2)}, R² = {_g(fit.r_squared, 3)}")
+            axes.plot(grid, ys, color=colours[index], linestyle=LINE_STYLES[index], marker="none",
+                      label=label)
+        axes.set_xscale("log")
+        axes.set_yticks([transform(p / 100.0) for p in PROBABILITY_TICKS],
+                        [str(p) for p in PROBABILITY_TICKS])
+        axes.set_xlabel("bezogene Lastwechselzahl $N_{\\mathrm{L}} / N_{\\mathrm{L,50\\%}}$")
+        axes.set_ylabel("Ausfallwahrscheinlichkeit $P_{\\mathrm{A}}$ in %")
+        axes.grid(True, which="major", linewidth=0.4, color="0.85")
+        legend_outside(figure, axes, where="bottom", ncol=1)
+        decimal_comma(axes, which="x")
+        paths += save(figure, out / f"netz_{kind}_{_slug(result.material, result.campaign)}")
+        _close(figure)
+    return paths
+
+
+def temperature_figure(run: tr.TestRun, out: Path) -> tuple[list[Path], list[str]]:
+    """L4: the flank temperature after two hours per wheel torque and wheel speed of the run-in
+    matrix as bars, the 80 °C reference as a line; the table beside it."""
+    cells: dict[tuple[int, int], float] = {}
+    for stage in run.stages:
+        if stage.flank_temperature_2h_C is None or stage.wheel_torque_Nm is None \
+                or stage.speed_wheel_rpm is None:
+            continue
+        cells[(round(stage.wheel_torque_Nm), int(round(stage.speed_wheel_rpm / 10.0)) * 10)] = \
+            stage.flank_temperature_2h_C
+    if not cells:
+        raise InputRangeError(f"{run.run_id}: no flank temperatures in the stages")
+    levels = sorted({level for level, _ in cells})
+    speeds = sorted({speed for _, speed in cells})
+    figure, axes = new_figure("full", 0.5)
+    colours = _colours()
+    width = 0.8 / len(speeds)
+    for index, speed in enumerate(speeds):
+        xs = [i + (index - (len(speeds) - 1) / 2.0) * width for i in range(len(levels))]
+        heights = [cells.get((level, speed), 0.0) for level in levels]
+        axes.bar(xs, heights, width=width * 0.92, color=colours[index],
+                 label=f"{speed} 1/min am Rad: " + " / ".join(_g(h, 1) for h in heights) + " °C")
+    axes.axhline(80.0, color=GREY, linestyle=(0, (1, 2)), linewidth=1.0,
+                 label="Bezugstemperatur 80 °C der Werkstoffkarten")
+    axes.set_xticks(list(range(len(levels))), [str(level) for level in levels])
+    axes.set_xlabel("Raddrehmoment $T_{\\mathrm{2}}$ in Nm")
+    axes.set_ylabel("Zahnflankentemperatur nach 2 h in °C")
+    axes.set_ylim(0.0, 95.0)
+    legend_outside(figure, axes, where="bottom", ncol=1)
+    decimal_comma(axes, which="y")
+    paths = save(figure, out / f"temperatur_matrix_{run.wheel_me or run.run_id}")
+    _close(figure)
+    lines = [f"## Temperaturmatrix {run.run_id} (Rad {run.wheel_me}, Öl {run.oil_temperature_raw} °C)", ""]
+    lines += _table(
+        ["Raddrehmoment in Nm"] + [f"{speed} 1/min am Rad" for speed in speeds],
+        [[str(level)] + [_g(cells.get((level, speed)), 1) for speed in speeds] for level in levels],
+    )
+    return paths, lines
+
+
+def _fit_lines(fit: wl.LineFit, label: str) -> list[str]:
+    if fit.kind == "semilog":
+        form = (f"lg N_L = {_g(fit.intercept, 4)} − {_g(fit.slope, 5)} · T_2 "
+                f"(a_c = {_g(fit.intercept, 4)}, b_c = {_g(fit.slope, 5)} 1/Nm)")
+    else:
+        form = f"lg N_L = {_g(fit.intercept, 4)} − {_g(fit.slope, 3)} · lg T_2 (lg C, k)"
+    return [
+        f"- {label}: {form}; n = {fit.n}; s_lgN = {_g(fit.s_lgN, 4)}, korrigiert "
+        f"{_g(fit.s_lgN_corr, 4)}, verwendet {_g(fit.s_used, 4)} (Untergrenze {_g(wl.SCATTER_FLOOR, 2)}); "
+        f"gültig von {_g(fit.load_min, 2)} bis {_g(fit.load_max, 2)} Nm",
+    ]
+
+
+def woehler_tables(result: wl.WoehlerResult, excluded: Sequence[str]) -> dict[str, str]:
+    lines = [
+        f"# Wöhlerlinie {result.material}, {result.campaign} (Bruchlinie nach Prüfstandskriterium)", "",
+        "Regression mit lg N_L als abhängiger Größe im Zeitfestigkeitsbereich; Streuung gepoolt "
+        "nach DIN 50100 (Perlenschnur, Gl. (36), (38), (39)); Linien nach Gl. (67) mit u = −1,282 "
+        "(10 %) und −2,33 (1 %, Hasl); Untergrenze s_lgN = 0,10 (Hasl S. 118). Keine Durchläufer "
+        "in der Regression; Stufenläufe nur als Marker.", "",
+    ]
+    lines += _fit_lines(result.semilog, "halblogarithmisch (Hasl Gl. (51), Darstellung VDI 2736 Blatt 2)")
+    lines += _fit_lines(result.loglog, "doppeltlogarithmisch (DIN 50100 Gl. (30), Basquin)")
+    if result.all_failures is not None:
+        lines += _fit_lines(result.all_failures, "halblogarithmisch mit allen Ausfällen (ohne Regel 10.2.1)")
+    if excluded:
+        lines += ["", "Nicht in der Auswertung: " + ", ".join(excluded)]
+    lines += ["", "## Horizonte", ""]
+    vdi_of = {v.level_Nm: v for v in result.vdi}
+    rows: list[list[str]] = []
+    for lvl in result.levels:
+        v = vdi_of[lvl.level_Nm]
+        rows.append([
+            str(lvl.level_Nm), _g(lvl.load_Nm, 2), str(lvl.n),
+            " / ".join(f"{c:,}".replace(",", " ") for c in lvl.cycles_measured),
+            f"{lvl.N_50:.3e}", f"{lvl.N_10:.3e}", f"{lvl.N_1:.3e}",
+            f"{v.N_i_50:.3e}", _g(v.s_i, 4) if v.s_i is not None else "–",
+            f"{v.N_i_10:.3e}" if v.N_i_10 is not None else "–",
+        ])
+    lines += _table(
+        ["Stufe in Nm", "Radmoment in Nm", "n", "Lastwechsel gemessen", "N_50 % DIN", "N_10 % DIN",
+         "N_1 % DIN", "N_i,50 % VDI", "s_i VDI", "N_i,10 % VDI"], rows,
+    )
+    lines += ["", f"VDI 2736 Blatt 4: s̄ = {_g(result.vdi_s_bar, 5)} über die Horizonte mit "
+              "Wiederholung; N_i,10 % = 10^((1 − 1,28 s̄) L_i,50 %).", ""]
+    lines += ["## Netze (bezogene Lastwechselzahlen N_L / N_L,50 % der halblogarithmischen Linie)", ""]
+    net_rows = [[
+        "Gauß" if f.kind == "gauss" else "Weibull", f.estimator, str(f.n),
+        _g(f.parameter, 4), _g(f.scale, 4), _g(f.factor_10, 3), _g(f.factor_1, 3), _g(f.r_squared, 4),
+    ] for f in result.nets]
+    lines += _table(["Netz", "P_A nach", "n", "s_lgN bzw. k", "10^μ bzw. η", "N_10/N_50", "N_1/N_50", "R²"],
+                    net_rows)
+    lines += ["", "Illenberger (PEEK, Grübchen, Tabelle 7-2): k = 3,46, N_10/N_50 = 0,58, N_1/N_50 = 0,30.", ""]
+    columns = ["Lauf", "Rad", "Stufe in Nm", "Radmoment in Nm", "Lastwechsel", "Kriterium",
+               "geschätzt", "Durchläufer", "Stufenlauf", "in der Regression"]
+    admitted = {p.run_id for p in result.admitted}
+    point_rows = [[
+        p.run_id, p.wheel or "", str(p.level_Nm), _g(p.load_Nm, 2), str(p.cycles), p.criterion,
+        "ja" if p.estimated else "", "ja" if p.runout else "", "ja" if p.stepped else "",
+        "ja" if p.run_id in admitted else "nein",
+    ] for p in result.points]
+    return {"woehler.md": "\n".join(lines) + "\n", "punkte.csv": rp.csv_text(columns, point_rows)}
+
+
+def _comparison_groups(book: tr.Workbook) -> tuple[list[tuple[str, list[wl.TestPoint]]], list[str]]:
+    """(label, points) per material and campaign at the reference speed; the excluded runs."""
+    runs = list(book.runs)
+    speed_of = {run.run_id: run.speed_wheel_rpm for run in runs}
+    groups: list[tuple[str, list[wl.TestPoint]]] = []
+    excluded: list[str] = []
+    for material, rig in (("PA46-GF30", "KV3"), ("POM", "KV3"), ("PEEK", "KV3"),
+                          ("POM", "KV4"), ("PEEK", "KV4")):
+        points = wl.points_from_runs(runs, material=material, rig=rig)
+        kept: list[wl.TestPoint] = []
+        for p in points:
+            speed = speed_of.get(p.run_id)
+            if not p.stepped and (speed is None or abs(speed - REFERENCE_SPEED_RPM[rig]) > 5.0):
+                excluded.append(f"{p.run_id} ({material}, {rig}, Drehzahl {_g(speed, 0) or '?'} 1/min am Rad)")
+                continue
+            kept.append(p)
+        if kept:
+            groups.append((f"{material}, {kept[0].campaign}", kept))
+    return groups, excluded
+
+
+def run_woehler(
+    path: Path, out: Path, *, confirmations: Path | None = tr.CONFIRMATIONS, plots: bool = True,
+) -> list[Path]:
+    apply_plot_style()
+    book = tr.load_workbook(path)
+    if confirmations is not None and confirmations.is_file():
+        book = tr.apply_confirmations(book, confirmations)
+    groups, excluded = _comparison_groups(book)
+    main_label, main_points = groups[0]
+    result = wl.evaluate(main_points)
+    out.mkdir(parents=True, exist_ok=True)
+    written: list[Path] = []
+    own_excluded = [e for e in excluded if e.split("(", 1)[-1].startswith(result.material)]
+    for name, text in woehler_tables(result, own_excluded).items():
+        target = out / name
+        target.write_text(text, encoding="utf-8", newline="\n")
+        written.append(target)
+    lines = ["# Vergleichswerkstoffe (Punkte bei Referenzdrehzahl; Linien nur, wo drei Ausfälle "
+             "auf zwei Horizonten liegen)", ""]
+    for label, points in groups[1:]:
+        lines.append(f"## {label} (n = {len(points)})")
+        lines.append("")
+        try:
+            other = wl.evaluate(points)
+            lines += _fit_lines(other.semilog, "halblogarithmisch")
+            lines += _fit_lines(other.loglog, "doppeltlogarithmisch")
+        except InputRangeError as error:
+            lines.append(f"- keine Linie: {error}")
+        lines += ["", *_table(
+            ["Lauf", "Rad", "Stufe in Nm", "Lastwechsel", "Kriterium"],
+            [[p.run_id, p.wheel or "", str(p.level_Nm), str(p.cycles), p.criterion] for p in points],
+        ), ""]
+    if excluded:
+        lines += ["Ausgeschlossen (andere Drehzahl): " + ", ".join(excluded), ""]
+    matrix_lines: list[str] = []
+    matrix_run = next((run for run in book.runs if run.stages), None)
+    if plots:
+        written += woehler_figure(result, out)
+        written += comparison_figure(groups, result, out)
+        written += net_figures(result, out)
+        if matrix_run is not None:
+            figure_paths, matrix_lines = temperature_figure(matrix_run, out)
+            written += figure_paths
+    target = out / "vergleich.md"
+    target.write_text("\n".join(lines + matrix_lines) + "\n", encoding="utf-8", newline="\n")
+    written.append(target)
+    return written
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -1675,6 +2242,13 @@ def main() -> None:
     roughness_parser.add_argument("--out", type=Path, default=OUTPUT / "rauheit")
     roughness_parser.add_argument("--part", choices=("wheel", "pinion"), action="append")
     roughness_parser.add_argument("--me", action="append", help="ME numbers to evaluate")
+    testruns_parser = sub.add_parser("testruns", help="read the running-test workbook (L1)")
+    testruns_parser.add_argument("--input", type=Path, default=TESTRUNS, help="workbook")
+    testruns_parser.add_argument("--out", type=Path, default=OUTPUT / "laufversuche")
+    woehler_parser = sub.add_parser("woehler", help="Wöhler lines of the running tests (L2 to L4)")
+    woehler_parser.add_argument("--input", type=Path, default=TESTRUNS, help="workbook")
+    woehler_parser.add_argument("--out", type=Path, default=OUTPUT / "woehler")
+    woehler_parser.add_argument("--no-plots", action="store_true")
     gina_parser.add_argument(
         "--curves",
         action="store_true",
@@ -1694,6 +2268,12 @@ def main() -> None:
             plots=not args.no_plots,
             curves=args.curves,
         ):
+            print(path)
+    elif args.command == "testruns":
+        for path in run_testruns(args.input, args.out):
+            print(path)
+    elif args.command == "woehler":
+        for path in run_woehler(args.input, args.out, plots=not args.no_plots):
             print(path)
     elif args.command == "contour":
         for path in run_contour(

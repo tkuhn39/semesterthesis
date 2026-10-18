@@ -1,0 +1,41 @@
+# Confirmations of the user for the running-test workbook (L1), 2026-10-18. The workbook stays
+# the source of the numbers; this file carries what the workbook does not say: the criterion the
+# user confirms per run, notes for the thesis table, and flags the user withdrew. Applied by
+# gearcore.measurement.test_rig.apply_confirmations.
+date: "2026-10-18"
+runs:
+  kst-E_66:
+    criterion: "Totalausfall"
+    note: "Zahnfußbruch; der Lauf ging bis zum Ende, das Ende wurde nicht sauber eingetragen (Nutzer 2026-10-18)."
+  kst-E_68:
+    note: "Startmoment etwa 1 Nm über der Stufe, damit das Sollmoment in der Mitte des Nachspannintervalls liegt (Nutzer 2026-10-18)."
+  kst-E_69:
+    criterion: "Totalausfall"
+    note: "Die ersten 1 251 000 Lastspiele bei etwa 10 Nm am Rad (Moment versehentlich falsch eingestellt); Datenpunkt mit Vermerk behalten (Nutzer 2026-10-18)."
+    withdraw_flags: ["lubrication_deficit_possible"]
+  kst-E_70:
+    criterion: "Totalausfall"
+    note: "Volumenstrom-Notiz mit der Betreuerin besprochen; vollwertiger Versuch (Nutzer 2026-10-18)."
+    withdraw_flags: ["lubrication_deficit_possible"]
+  kst-E_71:
+    criterion: "Totalausfall"
+    note: "Volumenstrom-Notiz mit der Betreuerin besprochen; vollwertiger Versuch; Ende 1 210 000 (Zahlendreher in der Bemerkung, Nutzer 2026-10-18)."
+    withdraw_flags: ["lubrication_deficit_possible"]
+  kst-E_72:
+    criterion: "Totalausfall"
+    note: "Volumenstrom-Notiz mit der Betreuerin besprochen; vollwertiger Versuch (Nutzer 2026-10-18)."
+    withdraw_flags: ["lubrication_deficit_possible"]
+  kst-E_73:
+    criterion: "Totalausfall"
+    note: "Startmoment etwa 1 Nm über der Stufe (Nutzer 2026-10-18)."
+  kst-E_74:
+    criterion: "Totalausfall"
+  kst-E_75:
+    criterion: "Versagensgeräusch, Lastspielzahl geschätzt"
+    note: "Drehzahlsensor ausgefallen; 40 Mio. ist die Schätzung aus der Laufzeit nach dem letzten bekannten Lastspiel; sehr lautes Versagensgeräusch, kein vollständiger Bruch (Nutzer 2026-10-18)."
+  kst-E_63:
+    criterion: "Totalausfall"
+    note: "Einlaufversuch mit Temperaturmatrix (Wärmebildkamera, Zahnmassentemperatur 80 °C), danach bei 12 Nm bis zum Ende gefahren; Stufenlauf, nicht in der Regression (Nutzer 2026-10-18)."
+  kst-E_65:
+    speed_pinion_rpm: 3058
+    note: "Drehzahl in der Mappe nicht eingetragen; 3058 1/min am Ritzel wie die übrigen Läufe 2026 (Nutzer 2026-10-18)."

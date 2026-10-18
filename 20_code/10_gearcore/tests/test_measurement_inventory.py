@@ -173,7 +173,7 @@ def test_parts_yaml_carries_the_user_groups() -> None:
     wheel = parts["parts"]["wheel"]["groups"]
     assert len(wheel["core"]) == 10 and "97340" in wheel["core"] and "97364" not in wheel["core"]
     labels = parts["parts"]["wheel"]["labels"]
-    assert labels["running_in"] == ["97351"] and labels["extra_test"] == ["97364"]
+    assert labels["running_in"] == ["97351"] and labels["second_8nm_test"] == ["97364"]
     assert set(labels["running_in"]) <= set(wheel["core"])
     pinion = parts["parts"]["pinion"]["groups"]
     assert len(pinion["rig_series"]) == 7 and pinion["older"] == ["86481"]
@@ -185,11 +185,11 @@ def test_scan_of_the_real_folder(measurements_root: Path) -> None:
     inventory = scan_folder(measurements_root)
     assert isinstance(inventory, Inventory) and not inventory.unknown
     groups = Counter((part.part, part.group) for part in inventory.parts)
-    assert groups[("wheel", "core")] == 10 and ("wheel", "extra_test") not in groups
+    assert groups[("wheel", "core")] == 10 and ("wheel", "second_8nm_test") not in groups
     assert groups[("pinion", "rig_series")] == 7 and groups[("pinion", "older")] == 1
     assert groups[("wheel", "scatter")] >= 26
     assert inventory.part("97364").group == "scatter"
-    assert inventory.part("97364").labels == ("extra_test",)
+    assert inventory.part("97364").labels == ("second_8nm_test",)
     assert inventory.part("97351").labels == ("running_in",)
     kinds = Counter(file.kind for part in inventory.parts for file in part.files)
     assert kinds["mew"] == kinds["mka"] and kinds["mew"] >= 68
@@ -214,7 +214,14 @@ def test_scan_of_the_real_folder(measurements_root: Path) -> None:
     wheel_97340 = inventory.part("97340")
     assert wheel_97340.material == "PA46-GF30" and wheel_97340.rounds == (1,)
     assert all(f.measured_on == "2026-05-09" for f in wheel_97340.of_kind("mew"))
-    assert len(wheel_97340.of_kind("contour")) == 1 and wheel_97340.of_kind("contour")[0].points
+    before = [f for f in wheel_97340.of_kind("contour") if not f.after_test]
+    after = [f for f in wheel_97340.of_kind("contour") if f.after_test]
+    assert len(before) == 1 and before[0].points
+    # the after-test scans of 2026-10-18: teeth 1, 18 and the pair 36-37 in one file
+    assert {f.tooth for f in after} == {1, 18, 36}
+    pair = next(f for f in after if f.tooth == 36)
+    assert pair.second_tooth == 37 and any("two teeth" in a for a in pair.anomalies)
+    assert {f.tooth for f in inventory.part("97351").of_kind("contour") if f.after_test} == {1, 18, 44}
     coarse = [a for a in inventory.anomalies if "coarse scan" in a]
     assert len(coarse) >= 30 and all(
         int(a.split("(")[1].split()[0]) < COARSE_SCAN_POINTS for a in coarse

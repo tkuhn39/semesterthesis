@@ -142,3 +142,51 @@ bilder:
     kapitel: 5
     quelle: fe/kst_e/fussrundung_sweep/sigma1_bionic.svg
     unterschrift: "Parameterstudie der bionischen Fußrundung am ebenen Sektormodell: größte Zugspannung über Winkel und Kreisradius."
+  # Kapitel 4, Voruntersuchung Temperatur (scripts/measurements.py woehler, L4)
+  - name: temperatur_matrix_97351
+    kapitel: 4
+    quelle: messungen/woehler/temperatur_matrix_97351.svg
+    unterschrift: "Zahnflankentemperatur nach zwei Stunden am Rad 97351 über dem Raddrehmoment bei 2250 und 3000 1/min am Rad, Öltemperatur 75 °C an der Messstelle, Wärmebildkamera mit Emissionsgrad 1; Bezug 80 °C."
+  # Kapitel 4 und Anhang H: Wärmebildaufnahmen der Temperaturmatrix (scripts/thesis_thermal_images.py; Raster,
+  # weil die Quelle ein Bildschirmfoto der Kamerasoftware ist)
+  - name: waermebild_8nm_2250
+    kapitel: 4
+    quelle: thesis/waermebild/waermebild_8nm_2250.png
+    unterschrift: "Wärmebildaufnahme des Rades 97351 nach zwei Stunden bei 8 Nm und 2250 1/min am Rad, Emissionsgrad 1."
+  - name: waermebild_8nm_3000
+    kapitel: 4
+    quelle: thesis/waermebild/waermebild_8nm_3000.png
+    unterschrift: "Wärmebildaufnahme des Rades 97351 nach zwei Stunden bei 8 Nm und 3000 1/min am Rad, Emissionsgrad 1."
+  - name: waermebild_12nm_2250
+    kapitel: 4
+    quelle: thesis/waermebild/waermebild_12nm_2250.png
+    unterschrift: "Wärmebildaufnahme des Rades 97351 nach zwei Stunden bei 12 Nm und 2250 1/min am Rad, Emissionsgrad 1."
+  - name: waermebild_12nm_3000
+    kapitel: 4
+    quelle: thesis/waermebild/waermebild_12nm_3000.png
+    unterschrift: "Wärmebildaufnahme des Rades 97351 nach zwei Stunden bei 12 Nm und 3000 1/min am Rad, Emissionsgrad 1."
+  - name: waermebild_16nm_2250
+    kapitel: 4
+    quelle: thesis/waermebild/waermebild_16nm_2250.png
+    unterschrift: "Wärmebildaufnahme des Rades 97351 nach zwei Stunden bei 16 Nm und 2250 1/min am Rad, Emissionsgrad 1."
+  - name: waermebild_16nm_3000
+    kapitel: 4
+    quelle: thesis/waermebild/waermebild_16nm_3000.png
+    unterschrift: "Wärmebildaufnahme des Rades 97351 nach zwei Stunden bei 16 Nm und 3000 1/min am Rad, Emissionsgrad 1."
+  # Kapitel 6, Ergebnisse der Laufversuche (scripts/measurements.py woehler, L2 und L3)
+  - name: woehler_T2_pa46gf30_kv3_2026
+    kapitel: 6
+    quelle: messungen/woehler/woehler_T2_pa46gf30_kv3_2026.svg
+    unterschrift: "Wöhlerlinie der Räder aus PA46-GF30 über dem Raddrehmoment: Punkte je Kriterium, halblogarithmische Gerade für 50 % mit den parallelen Linien für 10 und 1 % Ausfallwahrscheinlichkeit nach DIN 50100, doppeltlogarithmische Gerade und die 10-%-Werte nach VDI 2736 Blatt 4 je Horizont."
+  - name: netz_gauss_pa46gf30_kv3_2026
+    kapitel: 6
+    quelle: messungen/woehler/netz_gauss_pa46gf30_kv3_2026.svg
+    unterschrift: "Gauß-Netz der auf die 50-%-Gerade bezogenen Lastwechselzahlen der neun Wöhlerversuche mit PA46-GF30, Ausfallwahrscheinlichkeit nach Rossow und nach j/(n + 1)."
+  - name: netz_weibull_pa46gf30_kv3_2026
+    kapitel: 6
+    quelle: messungen/woehler/netz_weibull_pa46gf30_kv3_2026.svg
+    unterschrift: "Weibull-Netz der auf die 50-%-Gerade bezogenen Lastwechselzahlen der neun Wöhlerversuche mit PA46-GF30, Ausfallwahrscheinlichkeit nach Rossow und nach j/(n + 1)."
+  - name: woehler_T2_vergleich_werkstoffe
+    kapitel: 6
+    quelle: messungen/woehler/woehler_T2_vergleich_werkstoffe.svg
+    unterschrift: "Laufversuche mit PA46-GF30 neben POM und PEEK über dem Raddrehmoment: Prüfstand KV3 im Jahr 2026 bei 3000 1/min (gefüllte Marker) und KV4 im Jahr 2023 bei 2250 1/min (offene Marker), dazu die 50-%-Gerade von PA46-GF30."
