@@ -1343,15 +1343,16 @@ def plot_overlay(
     axes.set_aspect("equal")
     axes.set_xlabel(symbol_label("x", "mm"))
     axes.set_ylabel(symbol_label("y", "mm"))
-    axes.set_title(
-        f"{title}"
-        + chr(10)
-        + (
-            "Abweichung nicht überhöht"
-            if magnify == 1.0
-            else f"Abweichung {magnify:g}-fach überhöht normal zur Sollkontur"
+    if title:
+        axes.set_title(
+            f"{title}"
+            + chr(10)
+            + (
+                "Abweichung nicht überhöht"
+                if magnify == 1.0
+                else f"Abweichung {magnify:g}-fach überhöht normal zur Sollkontur"
+            )
         )
-    )
     decimal_comma(axes)
     legend_outside(figure, axes, where="bottom", ncol=3)
     written = save(figure, stem)
@@ -1366,9 +1367,12 @@ def plot_corners(evaluation: cs.ScanEvaluation, title: str, stem: Path) -> list[
     import matplotlib.pyplot as plt
     import numpy as np
 
-    corners = evaluation.corners
+    corners = list(evaluation.corners)
     if not corners:
         return []
+    # one tip only, both sides (user 2026-10-20: "Kopf 1 rechts und links reicht")
+    first_tip = min(c.tip_index for c in corners)
+    corners = [c for c in corners if c.tip_index == first_tip]
     cols = min(3, len(corners))
     rows = (len(corners) + cols - 1) // cols
     figure, panels = new_figure(
@@ -2021,6 +2025,10 @@ def net_figures(result: wl.WoehlerResult, out: Path) -> list[Path]:
             axes.plot(grid, ys, color=colours[index], linestyle=LINE_STYLES[index], marker="none",
                       label=label)
         axes.set_xscale("log")
+        from matplotlib.ticker import NullFormatter
+
+        axes.set_xticks([0.5, 0.7, 1.0, 1.5, 2.0])
+        axes.xaxis.set_minor_formatter(NullFormatter())
         axes.set_yticks([transform(p / 100.0) for p in PROBABILITY_TICKS],
                         [str(p) for p in PROBABILITY_TICKS])
         axes.set_xlabel("bezogene Lastwechselzahl $N_{\\mathrm{L}} / N_{\\mathrm{L,50\\%}}$")
@@ -2047,19 +2055,21 @@ def temperature_figure(run: tr.TestRun, out: Path) -> tuple[list[Path], list[str
         raise InputRangeError(f"{run.run_id}: no flank temperatures in the stages")
     levels = sorted({level for level, _ in cells})
     speeds = sorted({speed for _, speed in cells})
-    figure, axes = new_figure("full", 0.5)
+    figure, axes = new_figure("full", 0.42)
     colours = _colours()
-    width = 0.8 / len(speeds)
+    width = 0.5 / len(speeds)
+    hatches = ("", "////", "....", "\\\\\\\\")  # a pattern per speed for black-and-white prints
     for index, speed in enumerate(speeds):
         xs = [i + (index - (len(speeds) - 1) / 2.0) * width for i in range(len(levels))]
         heights = [cells.get((level, speed), 0.0) for level in levels]
-        axes.bar(xs, heights, width=width * 0.92, color=colours[index],
+        axes.bar(xs, heights, width=width * 0.85, color=colours[index], edgecolor="#000000",
+                 linewidth=0.5, hatch=hatches[index % len(hatches)],
                  label=f"{speed} 1/min am Rad: " + " / ".join(_g(h, 1) for h in heights) + " °C")
     axes.axhline(80.0, color=GREY, linestyle=(0, (1, 2)), linewidth=1.0,
                  label="Bezugstemperatur 80 °C der Werkstoffkarten")
     axes.set_xticks(list(range(len(levels))), [str(level) for level in levels])
     axes.set_xlabel("Raddrehmoment $T_{\\mathrm{2}}$ in Nm")
-    axes.set_ylabel("Zahnflankentemperatur nach 2 h in °C")
+    axes.set_ylabel("Temperatur nach 2 h in °C")
     axes.set_ylim(0.0, 95.0)
     legend_outside(figure, axes, where="bottom", ncol=1)
     decimal_comma(axes, which="y")
@@ -2143,8 +2153,9 @@ def _comparison_groups(book: tr.Workbook) -> tuple[list[tuple[str, list[wl.TestP
     speed_of = {run.run_id: run.speed_wheel_rpm for run in runs}
     groups: list[tuple[str, list[wl.TestPoint]]] = []
     excluded: list[str] = []
-    for material, rig in (("PA46-GF30", "KV3"), ("POM", "KV3"), ("PEEK", "KV3"),
-                          ("POM", "KV4"), ("PEEK", "KV4")):
+    # the comparison material is POM of 2023 only (user 2026-10-21: the PEEK type of 2023 is not
+    # unambiguous in MA-0296, the POM and PEEK runs of 2026 are not evaluated in the thesis)
+    for material, rig in (("PA46-GF30", "KV3"), ("POM", "KV4")):
         points = wl.points_from_runs(runs, material=material, rig=rig)
         kept: list[wl.TestPoint] = []
         for p in points:
@@ -2154,7 +2165,7 @@ def _comparison_groups(book: tr.Workbook) -> tuple[list[tuple[str, list[wl.TestP
                 continue
             kept.append(p)
         if kept:
-            groups.append((f"{material}, {kept[0].campaign}", kept))
+            groups.append((f"{material}, {kept[0].campaign}, {REFERENCE_SPEED_RPM[rig]:.0f} 1/min am Rad", kept))
     return groups, excluded
 
 
@@ -2175,8 +2186,8 @@ def run_woehler(
         target = out / name
         target.write_text(text, encoding="utf-8", newline="\n")
         written.append(target)
-    lines = ["# Vergleichswerkstoffe (Punkte bei Referenzdrehzahl; Linien nur, wo drei Ausfälle "
-             "auf zwei Horizonten liegen)", ""]
+    lines = ["# Vergleichswerkstoff POM 2023 (Punkte bei Referenzdrehzahl; nur POM KV4 2023, "
+             "Entscheidung des Nutzers 2026-10-21)", ""]
     for label, points in groups[1:]:
         lines.append(f"## {label} (n = {len(points)})")
         lines.append("")

@@ -37,8 +37,11 @@ quellbilder:
   - name: quelle_patent_bionisch
     pdf: 08_patentschriften/DE102008045318B3.pdf
     page: 11
-    box: [130, 100, 500, 460]
-    # Fig. 2 der Patentschrift DE 10 2008 045 318 B3, Zeichnungsblatt 11/12 (untere Hälfte)
+    box: [130, 82, 500, 460]
+    raster: 600
+    # Fig. 2 der Patentschrift DE 10 2008 045 318 B3, Zeichnungsblatt 11/12 (untere Hälfte).
+    # Die Zeichnungsseite ist ein CCITT-Stencil (Scan); der pdf.js-Betrachter des Editors zeigt den
+    # Vektorschnitt leer (2026-10-21), deshalb geht der 600-dpi-Rasterzwilling in die Arbeit.
   - name: quelle_patent_bezier
     pdf: 08_patentschriften/DE102013004861B3.pdf
     page: 12

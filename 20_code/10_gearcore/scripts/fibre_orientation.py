@@ -385,21 +385,24 @@ def _zone_labels(
     *,
     dy: float = 0.0,
     va: str = "center",
+    offsets: Mapping[str, tuple[float, float, str]] | None = None,
 ) -> None:
     """A label per zone at the zone's centroid in the layer ``mask`` (``dy`` shifts it in
-    mm, ``va`` is its vertical anchor)."""
+    mm, ``va`` is its vertical anchor; ``offsets`` overrides (dx, dy, va) per zone so that
+    neighbouring labels do not overlap)."""
     zones = np.array(elements.zones)
     for name in fb.ZONE_ORDER:
         sel = mask & (zones == name)
         if not sel.any():
             continue
+        dx_zone, dy_zone, va_zone = (offsets or {}).get(name, (0.0, dy, va))
         axes.text(
-            float(np.mean(elements.x_mm[sel])),
-            float(np.mean(elements.y_mm[sel])) + dy,
+            float(np.mean(elements.x_mm[sel])) + dx_zone,
+            float(np.mean(elements.y_mm[sel])) + dy_zone,
             text_of(name),
-            fontsize=5.5,
+            fontsize=5.0,
             ha="center",
-            va=va,
+            va=va_zone,
             color="0.15",
             zorder=3,
             bbox={"boxstyle": "round,pad=0.15", "fc": "white", "ec": "none", "alpha": 0.75},
@@ -460,8 +463,26 @@ def figure_sections(
         decimal_comma(ax)
     axes[0].set_ylabel("Über dem Fußkreis in mm")
     bar = figure.colorbar(scatter, ax=list(axes), pad=0.02, shrink=0.85)
+    decimal_comma(bar.ax, which="y")
     bar.set_label("Orientierungsgrad $a_{11}$")
     return save_figure(figure, stem)
+
+
+ZONE_MAP_LABEL_OFFSETS: dict[str, tuple[float, float, str]] = {
+    # (dx, dy, va) in mm: the neighbouring labels of the zone map pulled apart (user 2026-10-20)
+    "LFO": (-0.18, 0.12, "bottom"),
+    "RFO": (0.18, 0.12, "bottom"),
+    "LÜO": (-0.30, -0.22, "top"),
+    "RÜO": (0.30, -0.22, "top"),
+    "LFU": (-0.32, -0.28, "top"),
+    "RFU": (0.32, -0.28, "top"),
+    "LÜM": (0.12, -0.14, "top"),
+    "RÜM": (-0.12, -0.14, "top"),
+    "LF": (-0.15, 0.10, "bottom"),
+    "RF": (0.15, 0.10, "bottom"),
+    "LÜU": (0.15, -0.16, "top"),
+    "RÜU": (-0.15, -0.16, "top"),
+}
 
 
 def figure_zone_map(
@@ -477,7 +498,7 @@ def figure_zone_map(
     z = elements.centroids[:, 2]
     mid = min(sorted(set(np.round(z, 4))), key=lambda v: abs(v))
     mask = np.isclose(z, mid, atol=1e-4)
-    figure, axes = new_figure("half", 1.05)
+    figure, axes = new_figure("full", 0.66)  # full width: the legend below needs the room
     axes.plot(outline[:, 0], outline[:, 1], color="0.15", linewidth=0.8, marker="none")
     _depth_contours(axes, outline, skin_mm)
     for name, result in results.items():
@@ -504,7 +525,21 @@ def figure_zone_map(
         lambda name: f"{name} {_angle_text(results[name])}",
         dy=-0.08,
         va="top",
+        offsets=ZONE_MAP_LABEL_OFFSETS,
     )
+    for colour, width, style, alpha, text in (
+        ("0.15", 0.8, "-", 1.0, "Zahnkontur im Stirnschnitt"),
+        ("0.35", 0.5, "-", 1.0,
+         f"Grenzen von Randstreifen und Übergangsband (Tiefe {_g(skin_mm, 1)} und {_g(2.0 * skin_mm, 1)} mm)"),
+        ("0.35", 0.5, (0, (2, 2)), 1.0, "Fußkreis, halbe Zahnhöhe, Zahnachse"),
+        (_first_colour(), 1.8, "-", 1.0,
+         "Vorzugsrichtung der Zone in der Stirnebene (Anteil in der Ebene mindestens 0,5)"),
+        (_first_colour(), 1.8, "-", 0.35,
+         "Hauptachse der Zone axial, Richtung in der Ebene nachrangig (Anteil unter 0,5)"),
+    ):
+        axes.plot([], [], color=colour, linewidth=width, linestyle=style, alpha=alpha,
+                  marker="none", label=text)
+    legend_outside(figure, axes, where="bottom", ncol=1)
     axes.set_xlabel("Quer zum Zahn in mm")
     axes.set_ylabel("Über dem Fußkreis in mm")
     axes.set_aspect("equal")
@@ -618,6 +653,7 @@ def figure_width(elements: Elements, tooth: Tooth, stem: Path) -> list[Path]:
         linewidths=0,
     )
     bar = figure.colorbar(scatter, ax=axes, pad=0.02)
+    decimal_comma(bar.ax, which="y")
     bar.set_label("$a_{11}$")
     axes.set_xlabel("$z$ in mm")
     axes.set_ylabel("Über dem Fußkreis in mm")

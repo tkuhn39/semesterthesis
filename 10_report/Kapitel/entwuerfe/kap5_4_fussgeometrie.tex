@@ -1,9 +1,11 @@
 \section{Einfluss der Zahnfußgeometrie}
 \label{sec:fussgeometrie}
 
-Die drei Fußrundungsformen aus \secref{sec:werkzeugkette} wurden mit den Parametern ihrer Quellen und mit den Optima der ebenen Parameterstudie am Rad gerechnet. Jede Variante ersetzt die Trochoide der Erzeugung zwischen dem Übergangsdurchmesser und der Lückenmitte; Netzvorlage, Ritzelfläche, Lastschritte und Stellungen bleiben die der Taschen-Grundlinie aus \secref{sec:fe_modell}. Gerechnet wurden die Werkstoffstufen W1 bis W4 mit den Dehnratenkarten QS, DY1 und DY2 an den Normpunkten A bis E, je Variante 60 Rechnungen. Beim Stand dieser Fassung liegen fünf der sechs Varianten vor. \Note{PH: bionisches Optimum (35 Grad, r 0,2) nach dem Ende der Kette ergänzen.}
+Die drei Fußrundungsformen aus \secref{sec:werkzeugkette} wurden mit den Parametern ihrer Quellen und mit den Optima der ebenen Parameterstudie am Rad gerechnet. Jede Variante ersetzt die Trochoide der Erzeugung zwischen dem Übergangsdurchmesser und der Lückenmitte. Netzvorlage, Ritzelfläche, Lastschritte und Stellungen bleiben die der Taschen-Grundlinie aus \secref{sec:fe_modell}. Gerechnet wurden die Werkstoffstufen W1 bis W4 mit den Dehnratenkarten QS, DY1 und DY2 an den Normpunkten A bis E, je Variante 60 Rechnungen. Alle sechs Varianten liegen vor, je 60 Rechnungen vollständig.
 
-\tabref{tab:fussrundung_konturen} stellt die Konturen nebeneinander. Die Ellipse nach Frühe \cite{Frue12} beginnt am Fußformkreis und legt den Fußkreis um $0{,}57$\,mm tiefer als die Trochoide; ihr kleinster Krümmungsradius liegt bei $0{,}083$\,mm in der Lückenmitte. Die beiden Patentkonturen setzen am mittleren Durchmesser zwischen Nutzkreis und Fußformkreis an und füllen den Fuß bis auf $50{,}2$\,mm und $50{,}1$\,mm auf. Dadurch rückt der kleinste Abstand der Ritzelkopfkante zur Fußrundung von $0{,}49$\,mm auf $0{,}20$\,mm. Der Vorauswahl diente eine ebene Parameterstudie am Einzahnsektor mit dem eigenen Löser. Sie trägt das ganze Moment auf einem Zahn mit einem Lastfleck am Normpunkt B und liefert ein relatives Maß (\secref{sec:werkzeugkette}).
+\tabref{tab:fussrundung_konturen} stellt die Konturen nebeneinander. Die Ellipse nach Frühe \cite{Frue12} beginnt am Fußformkreis und legt den Fußkreis um $0{,}57$\,mm tiefer als die Trochoide. Ihr kleinster Krümmungsradius liegt bei $0{,}083$\,mm in der Lückenmitte. Die beiden Patentkonturen setzen am mittleren Durchmesser zwischen Nutzkreis und Fußformkreis an und füllen den Fuß bis auf $50{,}2$\,mm und $50{,}1$\,mm auf. Dadurch rückt der kleinste Abstand der Ritzelkopfkante zur Fußrundung von $0{,}49$\,mm auf $0{,}20$\,mm. Der Vorauswahl diente eine ebene Parameterstudie am Einzahnsektor mit dem eigenen Löser. Sie trägt das ganze Moment auf einem Zahn mit einem Lastfleck am Normpunkt B und liefert ein relatives Maß (\secref{sec:werkzeugkette}).
+
+% TK erledigt (eigener Löser in 3.6 beschrieben: ebener Dehnungszustand, CPE4/CPE4I-Formulierungen, Abgleich mit Abaqus): Mir ist gerade aufgefallen, das noch an keiner Stelle eine Aussage zum eigenen FE Löser gesagt wurde. Wie der aufgebaut ist oder welche Einschränkungen der hat. Das wäre ja wie ein eigenes Abaqus oder wie kann ich mir das vorstellen, darüber hatten wir auch noch nicht gesprochen und du hast den einfach implementiert auf welcher Basis aber?
 
 \begin{table}[htbp]
     \caption{Fußrundungsvarianten am Rad kst-E: Kennwerte der Konturen und Vorhersage der ebenen Parameterstudie (W1, $16$\,Nm, Lastfleck an B) für die größte Zugspannung gegen die Trochoide.}
@@ -12,17 +14,20 @@ Die drei Fußrundungsformen aus \secref{sec:werkzeugkette} wurden mit den Parame
     \footnotesize
     \setlength{\tabcolsep}{4pt}
     \begin{tabular}{L{3.0cm}L{2.9cm}lllll}
-        Kontur & Parameter & Übergang & Fußkreis & $\rho_{\mathrm{min}}$ & Abstand Kopfkante & eben \\
-         & & mm & mm & mm & mm & \\
+        Kontur                  & Parameter                                        & Übergang   & Fußkreis   & $\rho_{\mathrm{min}}$ & Abstand Kopfkante & eben      \\
+                                &                                                  & mm         & mm         & mm                    & mm                &           \\
         \hline
-        Trochoide der Erzeugung & $\rho_{\mathrm{aP0}}$ & $50{,}157$ & $49{,}524$ & $0{,}240$ & $0{,}490$ & $0$ \\
-        Ellipse nach Frühe & $\gamma$ $30$°, $a/b$ $3{,}0$ & $50{,}157$ & $48{,}951$ & $0{,}083$ & $0{,}491$ & $-13$\,\% \\
-        Ellipse, Optimum & $\gamma$ $25$°, $a/b$ $2{,}0$ & $50{,}157$ & $49{,}041$ & $0{,}170$ & $0{,}491$ & $-25$\,\% \\
-        Bézier nach Patent & $f$ $1{,}0$ & $51{,}210$ & $50{,}215$ & $0{,}633$ & $0{,}203$ & $-32$\,\% \\
-        Bézier, Optimum & $f$ $2{,}5$ & $51{,}210$ & $49{,}796$ & $0{,}366$ & $0{,}203$ & $-35$\,\% \\
-        bionisch nach Patent & $\varphi$ $24{,}1$°, $r$ $0{,}3\,S_{\mathrm{L}}$ & $51{,}210$ & $50{,}124$ & $0{,}382$ & $0{,}203$ & $-32$\,\% \\
+        Trochoide der Erzeugung & $\rho_{\mathrm{aP0}}$                            & $50{,}157$ & $49{,}524$ & $0{,}240$             & $0{,}490$         & $0$       \\
+        Ellipse nach Frühe      & $\gamma$ $30$°, $a/b$ $3{,}0$                    & $50{,}157$ & $48{,}951$ & $0{,}083$             & $0{,}491$         & $-13$\,\% \\
+        Ellipse, Optimum        & $\gamma$ $25$°, $a/b$ $2{,}0$                    & $50{,}157$ & $49{,}041$ & $0{,}170$             & $0{,}491$         & $-25$\,\% \\
+        Bézier nach Patent      & $f$ $1{,}0$                                      & $51{,}210$ & $50{,}215$ & $0{,}633$             & $0{,}203$         & $-32$\,\% \\
+        Bézier, Optimum         & $f$ $2{,}5$                                      & $51{,}210$ & $49{,}796$ & $0{,}366$             & $0{,}203$         & $-35$\,\% \\
+        Bionisch nach Patent    & $\varphi$ $24{,}1$°, $r$ $0{,}3\,S_{\mathrm{L}}$ & $51{,}210$ & $50{,}124$ & $0{,}382$             & $0{,}203$         & $-32$\,\% \\
+        Bionisch, Optimum       & $\varphi$ $35$°, $r$ $0{,}2\,S_{\mathrm{L}}$     & $51{,}210$ & $49{,}811$ & $0{,}255$             & $0{,}203$         & $-38$\,\% \\
     \end{tabular}
 \end{table}
+
+% TK (folgt mit Paket E10: Eingriffsstellung C der drei eigenen Optima als Bilder pair_mesh in den Anhang): vielleicht kann man da auch nochmal jeweils Plots der Eingriffsstellung der unterschiedlichen Geometrien (die eigenen optimierten reichen) in den Anhang mit aufnhemn.
 
 \subsection{Zugspannung im Zahnfuß}
 \label{sec:fussgeometrie_sigma1}
@@ -32,44 +37,56 @@ Die drei Fußrundungsformen aus \secref{sec:werkzeugkette} wurden mit den Parame
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.95\textwidth]{kap5/fusseffekt_sigma1_16nm_qs}
-    \caption{Fußrundungsvarianten gegen die Trochoide der Erzeugung: relative Änderung der größten Zugspannung $\sigma_{\mathrm{1}}$ an den Normpunkten A bis E je Werkstoffstufe (W1 bis W4 von oben nach unten), Taschenkörper, $16$\,Nm, quasistatische Karte; Größtwerte über die Zahnbreite, Marker ohne Linie.}
+    \caption{Fußrundungsvarianten gegen die Trochoide der Erzeugung: relative Änderung der größten Zugspannung $\sigma_{\mathrm{1}}$ an den Normpunkten A bis E je Werkstoffstufe (W1 bis W4 von oben nach unten), Taschenkörper, $16$\,Nm, quasistatische Karte. Größtwerte über die Zahnbreite, Marker ohne Linie.}
     \label{fig:fusseffekt_sigma1_16nm_qs}
 \end{figure}
+
+% TK (ja, bleibt das Ziel; Paket E10: Zwillinge für 8 und 12 Nm der Bilder aus Kapitel 5 in den Anhang F): Und allgemein für alle Grafiken, nimmst du dann in den anhang auch jeweils die nicht eingebundenen Zwillinge anderer Drehmomentstufen oder ... auf, die in den Haupttext einfach zu überflutend wären, aber trotzdem natürlich relevante INformationen enthalten? Ist das noch das Ziel für den Anhang?
 
 \begin{table}[htbp]
     \caption{Änderung der größten Zugspannung $\sigma_{\mathrm{1}}$ und der Ritzeldrehung gegen die Trochoide am Normpunkt C, $16$\,Nm, quasistatische Karte, je Werkstoffstufe.}
     \label{tab:fussrundung_sigma1_c}
     \centering
     \begin{tabular}{llllll}
-        Kontur & W1 & W2 & W3 & W4 & Drehung W1 \\
+        Kontur               & W1            & W2            & W3            & W4            & Drehung W1    \\
         \hline
-        Ellipse nach Frühe & $-15{,}9$\,\% & $-6{,}0$\,\% & $-4{,}3$\,\% & $-7{,}8$\,\% & $+6{,}3$\,\% \\
-        Ellipse, Optimum & $-24{,}4$\,\% & $-13{,}4$\,\% & $-15{,}0$\,\% & $-12{,}3$\,\% & $+5{,}4$\,\% \\
-        Bézier nach Patent & $-25{,}2$\,\% & $-15{,}7$\,\% & $-25{,}0$\,\% & $-17{,}2$\,\% & $-11{,}0$\,\% \\
-        Bézier, Optimum & $-27{,}6$\,\% & $-20{,}5$\,\% & $-29{,}1$\,\% & $-25{,}4$\,\% & $-5{,}4$\,\% \\
-        bionisch nach Patent & $-27{,}4$\,\% & $-15{,}7$\,\% & $-26{,}2$\,\% & $-19{,}0$\,\% & $-10{,}2$\,\% \\
+        Ellipse nach Frühe   & $-15{,}9$\,\% & $-6{,}0$\,\%  & $-4{,}3$\,\%  & $-7{,}8$\,\%  & $+6{,}3$\,\%  \\
+        Ellipse, Optimum     & $-24{,}4$\,\% & $-13{,}4$\,\% & $-15{,}0$\,\% & $-12{,}3$\,\% & $+5{,}4$\,\%  \\
+        Bézier nach Patent   & $-25{,}2$\,\% & $-15{,}7$\,\% & $-25{,}0$\,\% & $-17{,}2$\,\% & $-11{,}0$\,\% \\
+        Bézier, Optimum      & $-27{,}6$\,\% & $-20{,}5$\,\% & $-29{,}1$\,\% & $-25{,}4$\,\% & $-5{,}4$\,\%  \\
+        Bionisch nach Patent & $-27{,}4$\,\% & $-15{,}7$\,\% & $-26{,}2$\,\% & $-19{,}0$\,\% & $-10{,}2$\,\% \\
+        Bionisch, Optimum    & $-25{,}4$\,\% & $-15{,}8$\,\% & $-22{,}6$\,\% & $-21{,}2$\,\% & $-6{,}4$\,\%  \\
     \end{tabular}
 \end{table}
 
-Im räumlichen Modell bleibt die Reihenfolge der ebenen Studie erhalten, die Beträge am Normpunkt C fallen kleiner aus. Unter W1 sinkt die größte Zugspannung bei der Ellipse nach Frühe um $16$\,\% und beim Optimum der Ellipse um $24$\,\%. Die Bézierkontur erreicht $25$\,\% und $28$\,\%, die bionische Kontur $27$\,\%. Am Normpunkt B, an dem das ebene Modell belastet war, treffen die drei Patentkonturen dessen Vorhersage auf drei Prozentpunkte. Dort weichen die Ellipsen ab, weil ihr Größtwert nicht auf dem Flankenteil der Fußrundung liegt, sondern in der Lückenmitte.
+Im räumlichen Modell bleibt die Reihenfolge der ebenen Studie im Wesentlichen erhalten, die Beträge am Normpunkt C fallen kleiner aus. Unter W1 sinkt die größte Zugspannung bei der Ellipse nach Frühe um $16$\,\% und beim Optimum der Ellipse um $24$\,\%. Die Bézierkonturen erreichen $25$\,\% und $28$\,\%, die bionische Kontur nach den Patentwerten $27$\,\% und das bionische Optimum der ebenen Studie $25$\,\%. Am Normpunkt B, an dem das ebene Modell belastet war, treffen die beiden Patentkonturen nach den Literaturwerten und das Bézier-Optimum dessen Vorhersage auf drei Prozentpunkte. Das bionische Optimum verfehlt sie. Die ebene Studie sagte ihm mit $38$\,\% die größte Minderung voraus, im räumlichen Modell bleiben an B $24$\,\% und an C $25$\,\%, so dass es hinter die Bézierkontur mit $f = 2{,}5$ zurückfällt. Die ebene Studie mit einem Lastfleck an B überzeichnet den Nutzen des flachen Fußes, weil sie die Lastaufteilung und den Kontakt nicht kennt. Die Ellipsen weichen an B ab, weil ihr Größtwert nicht auf dem Flankenteil der Fußrundung liegt, sondern in der Lückenmitte.
 
-An allen fünf Normpunkten senken die Patentkonturen die Zugspannung. Unter W1 liegen die Änderungen zwischen $-25$\,\% und $-35$\,\%, unter W3 zwischen $-25$\,\% und $-33$\,\%. Die Druckspannung $\sigma_{\mathrm{3}}$ der gegenüberliegenden Fußrundung fällt um bis zu $44$\,\%. Der aufgefüllte Fuß macht den Zahn steifer. Die Ritzeldrehung nimmt um $4$\,\% bis $22$\,\% ab, die Kopfverschiebung um bis zu $26$\,\%. Dadurch drückt die Kante des Ritzelkopfes an den Normpunkten B und E stärker auf die Flanke des Rades, der größte Kontaktdruck steigt dort um $21$\,\% bis $30$\,\%.
+An allen fünf Normpunkten senken die Patentkonturen die Zugspannung. Unter W1 liegen die Änderungen zwischen $-20$\,\% und $-35$\,\%, unter W3 zwischen $-17$\,\% und $-33$\,\%. Das bionische Optimum mit seinem kleinen Radius liegt am unteren Ende dieser Spannen. Die Druckspannung $\sigma_{\mathrm{3}}$ der gegenüberliegenden Fußrundung fällt um bis zu $44$\,\%. Der aufgefüllte Fuß macht den Zahn steifer. Die Ritzeldrehung nimmt um $4$\,\% bis $22$\,\% ab, die Kopfverschiebung um bis zu $26$\,\%. Dadurch drückt die Kante des Ritzelkopfes an den Normpunkten B und E stärker auf die Flanke des Rades. Der größte Kontaktdruck steigt dort bei den Patentwerten um $21$\,\% bis $30$\,\%, bei den Optima der ebenen Studie um bis zu $53$\,\% (Bézier $f = 2{,}5$ und bionisch $\varphi = 35$°). Die Flankenpressung unter der Ritzelkopfkante ist nach \secref{sec:waelzweg} schon bei der Trochoide die höchste Beanspruchung des Rades und nach \secref{sec:schadensbilder} der Ort der Einarbeitung im Versuch. Jede Fußrundung, die den Fuß auffüllt, entlastet den Fuß und belastet die Flanke, so dass der Nutzen am Fuß mit einer höheren Pressung an der Kante erkauft wird.
 
-Anders verhalten sich die Ellipsen. Am Normpunkt C sinkt die Zugspannung. An den Doppeleingriffspunkten A, B, D und E steigt sie bei der Ellipse nach Frühe um bis zu $17$\,\% unter W1, $22$\,\% unter W2, $33$\,\% unter W3 und $20$\,\% unter W4. Die Druckspannung wächst dort um bis zu $30$\,\% unter W1 und W2 und um bis zu $51$\,\% unter W3. Beim Optimum der Ellipse bleiben die Änderungen an diesen Punkten unter W1 negativ; unter W2 bis W4 erreichen sie bis zu $+6$\,\%, $+15$\,\% und $+7$\,\%. In beiden Fällen sitzt der Größtwert in der Lückenmitte auf dem kleinsten Krümmungsradius der Kontur, bei der Trochoide dagegen auf dem Flankenteil der Fußrundung. Der Radius von $0{,}083$\,mm liegt unter der Auflösung der Netzvorlage, so dass die Zahlen der Ellipsen an der Lückenmitte netzbegrenzt sind. Die Reihenfolge gegenüber den Patentkonturen bleibt davon unberührt. Mit dem tieferen Fuß wird der Zahn nachgiebiger, die Ritzeldrehung wächst um $5$\,\% bis $11$\,\%.
+Anders verhalten sich die Ellipsen. Am Normpunkt C sinkt die Zugspannung. An den Doppeleingriffspunkten A, B, D und E steigt sie bei der Ellipse nach Frühe um bis zu $17$\,\% unter W1, $22$\,\% unter W2, $33$\,\% unter W3 und $20$\,\% unter W4. Die Druckspannung wächst dort um bis zu $30$\,\% unter W1 und W2 und um bis zu $51$\,\% unter W3. Beim Optimum der Ellipse bleiben die Änderungen an diesen Punkten unter W1 negativ. Unter W2 bis W4 erreichen sie bis zu $+6$\,\%, $+15$\,\% und $+7$\,\%. In beiden Fällen sitzt der Größtwert in der Lückenmitte auf dem kleinsten Krümmungsradius der Kontur, bei der Trochoide dagegen auf dem Flankenteil der Fußrundung. Der Radius von $0{,}083$\,mm liegt unter der Auflösung der Netzvorlage, so dass die Zahlen der Ellipsen an der Lückenmitte netzbegrenzt sind. Die Reihenfolge gegenüber den Patentkonturen bleibt davon unberührt. Mit dem tieferen Fuß wird der Zahn nachgiebiger, die Ritzeldrehung wächst um $5$\,\% bis $11$\,\%.
+
+% TK erledigt (Satz zur Flankenpressung als Grenze im Absatz darüber, Aufnahme in 7.3): Kommt dann irgendwo in der Auswertung auch ein Satz dazu, dass eh schon die Flankenpressung sehr sehr hoch ist und limitierend und eine Optimierung des Fußes die Flanke noch mehr beansprucht. Das ist ja mehr oder weniger auch das Ergebnis dieser Fußoptimierungsfestellung, richtig? Ich schreibe es nur hier schonmal mit hin, dass ich es nicht vergesse, mit aufzunehmen.
 
 \subsection{Werkstoffstufen, Dehnraten und Last}
 \label{sec:fussgeometrie_stufen}
 
-\figref{fig:fusseffekt_uebersicht_16nm_qs} ordnet die Änderung am Normpunkt C je Variante und Werkstoffstufe; die Vorhersage des ebenen Modells steht als eigene Markerreihe daneben. Die Plastizität der isotropen Karte halbiert den Nutzen der Varianten: unter W2 bleiben von den $25$\,\% bis $28$\,\% der Patentkonturen $16$\,\% bis $21$\,\%. Unter der anisotropen Karte fällt die Minderung mit $10$\,\% bis $30$\,\% geringer aus, bei der Ellipse nach Frühe wächst der Nutzen von W3 zu W4 sogar. Die Dehnrate verschiebt die Änderungen um höchstens drei Prozentpunkte. Nur bei den Ellipsen unter W3 verschieben DY1 und DY2 die Werte um bis zu sechs Prozentpunkte zu kleineren Minderungen. Mit der Last nimmt der Nutzen der Patentkonturen ab. Die Bézierkontur nach Patent mindert die Zugspannung unter W1 bei $8$\,Nm um $32$\,\% und bei $16$\,Nm um $25$\,\%, die bionische Kontur um $33$\,\% und $27$\,\%.
+\figref{fig:fusseffekt_raten_16nm} ordnet die Änderung am Normpunkt C je Variante, Werkstoffstufe und Dehnratenkarte. Die Plastizität der isotropen Karte halbiert den Nutzen der Varianten. Unter W2 bleiben von den $25$\,\% bis $28$\,\% der Patentkonturen $16$\,\% bis $21$\,\%. Unter der anisotropen Karte fällt die Minderung mit $10$\,\% bis $30$\,\% geringer aus, bei der Ellipse nach Frühe wächst der Nutzen von W3 zu W4 sogar. Die Dehnrate verschiebt die Änderungen bei den Patentkonturen nach den Literaturwerten um höchstens zwei Prozentpunkte. Bei den Ellipsen und beim bionischen Optimum unter W3 nehmen die Minderungen von QS zu DY2 um vier bis sechs Prozentpunkte ab, weil die steifere Karte die Lastaufteilung zum Nachbarzahn verschiebt. Mit der Last nimmt der Nutzen der Patentkonturen nach den Literaturwerten ab. Die Bézierkontur mindert die Zugspannung unter W1 bei $8$\,Nm um $32$\,\% und bei $16$\,Nm um $25$\,\%, die bionische Kontur um $33$\,\% und $27$\,\%. Das bionische Optimum bleibt unter W1 bei $25$\,\% auf allen drei Stufen, unter W3 wächst sein Nutzen mit der Last von $17$\,\% auf $23$\,\%.
+
+% TK erledigt (Bild gegen das Dehnratenbild fusseffekt_raten_16nm getauscht): Ich vermute, du hast eine falsche Grafik. Die Grafik beinhaltet gar nicht die Dehnraten sondern ist mehr oder weniger eine Dopplung von Bild 5.10 oder? nur eben über Normpunkte geplottet und dann allgemein. Das würde ich nicht machen bzw. eher dann eine Grafik mit den Dehnraten. Dann passt es auch zur aussage des Texts, da die Werkstoffstufen mehr oder weniger davor schon eingearbeitet werden. also bitte korrigieren.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{kap5/fusseffekt_uebersicht_16nm_qs}
-    \caption{Änderung der größten Zugspannung $\sigma_{\mathrm{1}}$ gegen die Trochoide am Normpunkt C je Variante und Werkstoffstufe, Taschenkörper, $16$\,Nm, quasistatische Karte; dazu die Vorhersage des ebenen Sektormodells (eigener Löser, W1, $16$\,Nm, Lastfleck an B).}
-    \label{fig:fusseffekt_uebersicht_16nm_qs}
+    \includegraphics[width=0.95\textwidth]{kap5/fusseffekt_raten_16nm}
+    \caption{Änderung der größten Zugspannung $\sigma_{\mathrm{1}}$ gegen die Trochoide am Normpunkt C je Variante, Werkstoffstufe (W1 bis W4 von oben nach unten) und Dehnratenkarte, Taschenkörper, $16$\,Nm. Marker ohne Linie.}
+    \label{fig:fusseffekt_raten_16nm}
 \end{figure}
 
-Für den Nachweis nach Stommel et al. an der Fußrundung einer Variante ist die Lastgeschichte über alle Stellungen nötig. Dafür laufen die Taschen-Grundserie und die Vollserie des bionischen Optimums mit je 99 Stellungen und W1 bis W4 bei quasistatischer Karte. \Note{PH: Stommel-Nachweis der Variante gegen die Grundserie, sobald beide Serien vorliegen (Kette bis Montag).}
+Für den Nachweis nach Stommel et al. an der Fußrundung einer Variante ist die Lastgeschichte über alle Stellungen nötig. Die Grundserie des Taschenkörpers mit 99 Stellungen und W1 bis W4 bei quasistatischer Karte liegt vor und trägt den Nachweis in \secref{sec:stommel_ergebnis}. Die Vollserie des bionischen Optimums wurde zugunsten der Serien mit gemessener Geometrie zurückgestellt und bleibt Ausblick.
+
+\subsection{Fertigungseinfluss der gemessenen Geometrie}
+\label{sec:fussgeometrie_fertigung}
+
+Die Verzahnungsmessung in \secref{sec:pruefraeder_vorher} liefert die Abweichungen der gefertigten Teile von der Nenngeometrie, die Profilwinkelabweichung, die Kopfrücknahme des Ritzels, die Kopfrundung des Rades von $0{,}21$\,mm und die Zahndicken. Daraus sind drei Rechenvarianten des Taschenkörpers aufgebaut, das Ritzel wie gemessen mit dem Rad der Nenngeometrie, das Rad wie gemessen mit dem Ritzel der Nenngeometrie und beide wie gemessen, jeweils mit den Medianen der GINA-Messung über die Serie der Prüfstandsritzel und die Kernräder, mit W1 bis W4 und den drei Karten an den Normpunkten A bis E. \Note{PH: Die drei Varianten sind als Eingabedateien aufgebaut und werden bis zur finalen Abgabe gerechnet und hier ausgewertet (Stand 2026-10-21).}
 
 % Herkunft:
 % Absatz 1 und 2: 80_output/fe/kst_e/vergleich_fussrundung_AtoE/analyse.md Kopf und Abschnitt 1 (Konturen);

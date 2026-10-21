@@ -204,8 +204,8 @@ def figure_fillets(generation: GenerationResult, out: Path) -> list[Path]:
     ax.set_xlim(-1.65, -0.35)
     ax.set_ylim(root - 0.45, root + 1.55)
     ax.set_aspect("equal")
-    ax.set_xlabel("x in mm, Lückenmitte bei $x$ = $-$1,51 mm")
-    ax.set_ylabel("y in mm, Radachse bei 0")
+    ax.set_xlabel("$x$ in mm, Lückenmitte bei $x$ = $-$1,51 mm")
+    ax.set_ylabel("$y$ in mm, Radachse bei 0")
     decimal_comma(ax)
     legend_outside(figure, ax, where="bottom", ncol=2)
     return save_figure(figure, out / "konturen")
@@ -923,7 +923,7 @@ def figure_mesh(built: bd.BodyMesh, generation: GenerationResult, out: Path) -> 
         corners = solid.hexes[element]
         lower = sorted(corners[:4][mask[element, :4]].tolist(), key=lambda k: node_radius[k])
         upper = sorted(corners[4:][mask[element, 4:]].tolist(), key=lambda k: -node_radius[k])
-        polygons.append([(node_radius[k], z[k]) for k in (*lower, *upper)])
+        polygons.append([(z[k], node_radius[k]) for k in (*lower, *upper)])  # z horizontal
     figure, ax = new_figure("full", 0.6)
     r, g, b, _ = to_rgba(SHEET.colour("tum_grau_20"))
     ax.add_collection(
@@ -945,23 +945,40 @@ def figure_mesh(built: bd.BodyMesh, generation: GenerationResult, out: Path) -> 
     )
     outline = body_outline(body)
     ax.plot(
-        outline[:, 0],
         outline[:, 1],
+        outline[:, 0],
         color=MARK_COLOUR,
         linestyle="-",
         linewidth=1.0,
         marker="none",
         label=(
-            "Zeichnung: Nabenwand, Taschengrund und Felgenwand\n"
+            "Zeichnung: Nabenwand, Taschengrund und Profilwand\n"
             "mit den Rundungen R 0,5 (nicht vernetzt)"
         ),
     )
     half = 0.5 * body.face_width_mm
-    ax.set_xlim(body.bore_radius_mm - 0.5, body.tip_radius_mm + 0.5)
-    ax.set_ylim(-half - 0.5, half + 0.5)
+    root = 0.5 * generation.gears.wheel.generated_root_diameter_mm
+    depth = body.pocket_depth_mm
+    pocket_mid = 0.5 * (body.hub_wall_radius_at(0.5 * depth) + body.rim_wall_radius_at(0.5 * depth))
+    web_mid = 0.5 * (body.hub_wall_radius_at(depth) + body.rim_wall_radius_at(depth))
+    # the regions of the body as the thesis names them (z horizontal, r upwards; user 2026-10-20)
+    for name, z_mm, r_mm in (
+        ("Nabe", 0.0, 0.5 * (body.bore_radius_mm + body.hub_wall_radius_mm)),
+        ("Steg", 0.0, web_mid),
+        ("Tasche", 0.6 * half, pocket_mid),
+        ("Tasche", -0.6 * half, pocket_mid),
+        ("I-Profil", 0.0, 0.5 * (body.rim_wall_radius_mm + root)),
+        ("Zahn", 0.0, 0.5 * (root + body.tip_radius_mm)),
+    ):
+        ax.text(
+            z_mm, r_mm, name, ha="center", va="center", fontsize="small",
+            bbox={"boxstyle": "round,pad=0.15", "fc": "white", "ec": "none", "alpha": 0.8},
+        )
+    ax.set_xlim(-half - 0.5, half + 0.5)
+    ax.set_ylim(body.bore_radius_mm - 0.5, body.tip_radius_mm + 0.5)
     ax.set_aspect("equal")
-    ax.set_xlabel("$r$ in mm")
-    ax.set_ylabel("$z$ in mm")
+    ax.set_xlabel("$z$ in mm, Mittelebene bei 0")
+    ax.set_ylabel("$r$ in mm, Radachse bei 0")
     decimal_comma(ax)
     legend_outside(figure, ax, where="bottom", ncol=1)
     written += save_figure(figure, out / "netz_koerper")
@@ -1024,6 +1041,83 @@ def figure_mesh(built: bd.BodyMesh, generation: GenerationResult, out: Path) -> 
     return written
 
 
+
+
+# --- the simulation chain as a flow chart ---------------------------------------------------------
+
+
+def figure_flussbild(out: Path) -> list[Path]:
+    """The simulation chain of section 3.6: the programs as boxes, the data handed over on the
+    arrows (user's wish of 2026-10-20, T6)."""
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+
+    cols = (0.0, 1.45, 2.9)
+    boxes = {  # name: (x, y, title, body)
+        "zug": (cols[0], 2.0, "Zugversuche (MEGT)", "PA46-GF30, 0°, 45°, 90°,\n23 und 80 °C,\nQS, DY1, DY2"),
+        "mat": (cols[0], 1.0, "Matscape 2.8.0", "Werkstoffkarte je Rate:\n$E$, $\\nu$, Fließkurve, $R_{ij}$\nüber ($a_{11}$, $a_{22}$, $T$)"),
+        "cad": (cols[1], 2.0, "CADMOULD Flex 19", "Füllsimulation des Rades,\nOrientierungstensor\nje Element"),
+        "con": (cols[1], 1.0, "CONVERSE 5.2.0", "Orientierung auf das FE-Netz,\nOrientierungsdatei\nje Rate"),
+        "geo": (cols[2], 2.0, "STplus-Fall, Zeichnung", "Nenngeometrie kst-E,\nRadkörper,\nFußrundungsvarianten"),
+        "gc": (cols[2], 1.0, "Eigenes Programm", "Geometriekette, Sektornetz,\nStellungen, Eingabedateien\nje Stufe und Rate"),
+        "aba": (cols[2], 0.0, "Abaqus/Standard 2025", "statische Analyse je Stellung,\nvier Lastschritte,\nErgebnisdatenbank"),
+        "aus": (cols[1], 0.0, "Auswertung (Python)", "Spannungsgeschichte je Knoten,\nNachweis nach Stommel et al.,\nHill-Erweiterung"),
+    }
+    arrows = (  # (from, to, label, side offset of a horizontal arrow)
+        ("zug", "mat", "Kurven", 0.0),
+        ("cad", "con", "Tensoren", 0.0),
+        ("geo", "gc", "", 0.0),
+        ("mat", "con", "Karte", 0.0),
+        ("gc", "con", "Netz", -0.22),
+        ("con", "gc", "Orientierung", 0.22),
+        ("gc", "aba", "Eingabedateien", 0.18),
+        ("aba", "aus", "Ergebnisse", 0.18),
+    )
+    w, h = 1.12, 0.64
+    figure, ax = new_figure("full", 0.72)
+    for key, (x, y, title, body) in boxes.items():
+        ax.add_patch(
+            FancyBboxPatch(
+                (x - w / 2, y - h / 2), w, h, boxstyle="round,pad=0.02,rounding_size=0.04",
+                facecolor="white", edgecolor=BLACK, linewidth=0.9,
+            )
+        )
+        ax.text(x, y + 0.21, title, ha="center", va="center", fontsize=7, fontweight="bold")
+        ax.text(x, y - 0.08, body, ha="center", va="center", fontsize=5.8, linespacing=1.3)
+    gap = 0.03
+    for start, end, label, side in arrows:
+        x0, y0 = boxes[start][:2]
+        x1, y1 = boxes[end][:2]
+        if abs(x1 - x0) < 1e-9:  # vertical arrow, label to its right
+            down = y1 < y0
+            p0 = (x0, y0 - h / 2 - gap if down else y0 + h / 2 + gap)
+            p1 = (x1, y1 + h / 2 + gap if down else y1 - h / 2 - gap)
+        else:  # horizontal arrow in one row, label above (or below for a negative offset)
+            sign = 1.0 if x1 > x0 else -1.0
+            p0 = (x0 + sign * (w / 2 + gap), y0 + side)
+            p1 = (x1 - sign * (w / 2 + gap), y1 + side)
+        ax.add_patch(
+            FancyArrowPatch(p0, p1, arrowstyle="-|>", mutation_scale=8, color=BLACK, linewidth=0.8,
+                            shrinkA=0, shrinkB=0)
+        )
+        if not label:
+            continue
+        mx, my = 0.5 * (p0[0] + p1[0]), 0.5 * (p0[1] + p1[1])
+        if abs(x1 - x0) < 1e-9:
+            ax.text(mx + 0.04, my, label, ha="left", va="center", fontsize=5.8)
+        elif side < 0:
+            ax.text(mx, my - 0.04, label, ha="center", va="top", fontsize=5.8)
+        else:
+            ax.text(mx, my + 0.04, label, ha="center", va="bottom", fontsize=5.8)
+    ax.set_xlim(cols[0] - w / 2 - 0.1, cols[2] + w / 2 + 0.1)
+    ax.set_ylim(-h / 2 - 0.1, 2.0 + h / 2 + 0.1)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    written = save_figure(figure, out / "flussbild_kette")
+    plt.close(figure)
+    return written
+
+
 # --- command line ----------------------------------------------------------------------------------
 
 CAPTIONS = {
@@ -1053,7 +1147,14 @@ CAPTIONS = {
         "(Taschenkörper, 20 Schichten über der Zahnbreite)."
     ),
     "netz_zahn": "Netz eines Zahns im Stirnschnitt: Randschicht an Flanke und Fußrundung, Vergröberung zum Körper.",
-    "netz_koerper": "Radkörper des Taschennetzes im Meridianschnitt mit den Linien der Zeichnung.",
+    "netz_koerper": (
+        "Radkörper des Taschennetzes im Meridianschnitt durch die Zahnmitte, z-Achse horizontal: "
+        "Nabe, Steg, Taschen mit Formschräge und I-Profil mit den Linien der Zeichnung."
+    ),
+    "flussbild_kette": (
+        "Simulationskette von den Zugversuchen zum Nachweis: Programme als Kästen, die "
+        "übergebenen Daten an den Pfeilen."
+    ),
     "paarung_netz": (
         "Radsektor und starre Ritzelfläche in der Stellung C mit Eingriffslinie und den "
         "Normpunkten A bis E."
@@ -1066,14 +1167,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "what", choices=["fillets", "stirnschnitt", "zahnkontur", "radkoerper", "mesh", "all"]
+        "what",
+        choices=["fillets", "stirnschnitt", "zahnkontur", "radkoerper", "mesh", "flussbild", "all"],
     )
     parser.add_argument("--out", type=Path, default=OUT, help="folder of the thesis drawings")
     args = parser.parse_args(argv)
     generation = kst_e()
     written: list[Path] = []
     wanted = (
-        ["fillets", "stirnschnitt", "zahnkontur", "radkoerper", "mesh"]
+        ["fillets", "stirnschnitt", "zahnkontur", "radkoerper", "mesh", "flussbild"]
         if args.what == "all"
         else [args.what]
     )
@@ -1094,6 +1196,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         written += figure_radkoerper(bd.body_section(CASE, "wheel"), generation, out)
     if "mesh" in wanted:
         written += figure_mesh(frozen_mesh(generation), generation, out)
+    if "flussbild" in wanted:
+        written += figure_flussbild(out)
     stems = sorted({path.stem for path in written if path.parent == out})
     if stems:
         lines = ["# Bildunterschriften", ""] + [f"- `{stem}`: {CAPTIONS[stem]}" for stem in stems]

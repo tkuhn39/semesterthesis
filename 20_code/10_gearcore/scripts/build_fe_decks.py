@@ -26,7 +26,7 @@ import math
 import re
 import subprocess
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from pathlib import Path
 
@@ -47,6 +47,7 @@ from gearcore import contour as ct
 from gearcore import data
 from gearcore import fillet as fl
 from gearcore import involute as iv
+from gearcore import manufactured as mf
 from gearcore._safe import finite_input, integer_input
 from gearcore.errors import GeometryInfeasibleError, InputRangeError, NotSupportedError
 from gearcore.fe import abaqus as ab
@@ -90,6 +91,33 @@ def _tint(name: str, alpha: float) -> tuple[float, float, float, float]:
 
 def _generation(case: str) -> GenerationResult:
     return compute_generation(pair_input_from_ste(load_ste(data.stplus_input_path(case))).pair)
+
+
+@dataclass(frozen=True)
+class CaseGeometry:
+    """The generation a folder is built from and the measured deviations of its flanks: the
+    STplus case as it is (``manufactured`` None) or one of the as-manufactured variants of
+    ``data/fe/as_manufactured.yaml`` (``--as-manufactured``, ``gearcore.manufactured``)."""
+
+    case: str
+    generation: GenerationResult
+    manufactured: mf.ManufacturedResult | None = None
+
+    def modification(self, role: ct.Role) -> ct.ProfileModification | None:
+        return None if self.manufactured is None else self.manufactured.modification(role)
+
+    @property
+    def label(self) -> str | None:
+        return None if self.manufactured is None else self.manufactured.variant.label
+
+
+def _geometry(case: str, as_manufactured: str | None = None) -> CaseGeometry:
+    """The geometry of a case, with the measured numbers of a variant when one is named."""
+    pair = pair_input_from_ste(load_ste(data.stplus_input_path(case))).pair
+    if as_manufactured is None:
+        return CaseGeometry(case=case, generation=compute_generation(pair))
+    result = mf.apply(pair, mf.load_variant(case, as_manufactured))
+    return CaseGeometry(case=case, generation=result.generation, manufactured=result)
 
 
 def _number(value: float, digits: int) -> str:
@@ -607,6 +635,8 @@ class MeshResult:
     """Set when the trochoid of the wheel was replaced by a root fillet variant (``--fillet``)."""
     fillet_clearance_mm: float | None = None
     """Smallest radial clearance of the pinion tip corners to that variant."""
+    geometry: CaseGeometry | None = None
+    """The geometry the mesh was built from (its measured deviations, if any)."""
 
 
 def mesh(
@@ -626,6 +656,7 @@ def mesh(
     closed: bool = False,
     pictures: bool = True,
     fillet: fl.FilletVariant | None = None,
+    geometry: CaseGeometry | None = None,
 ) -> MeshResult:
     """Write the mesh file of one gear sector and its pictures (``pictures_only``: only the
     pictures, nothing of the deck); ``closed`` meshes the full wheel (every tooth, no shoulder
@@ -650,11 +681,22 @@ def mesh(
                 f"level_counts give {level_counts.layers} layers (web {level_counts.web_layers} + "
                 f"2 x {level_counts.flange_layers}), layers is {layers}"
             )
-    generation = _generation(case)
+    geometry = geometry if geometry is not None else _geometry(case)
+    generation = geometry.generation
+    modification = geometry.modification(role)
     gear = generation.inputs.gears.pinion if role == "pinion" else generation.inputs.gears.wheel
     fillet_info: fl.FilletResult | None = None
     clearance: float | None = None
     fillet_lines: list[str] = []
+    if modification is not None:
+        fillet_lines.append(
+            f"measured geometry of the {role} (variant {geometry.label}): "
+            + ", ".join(
+                f"{key} {value:g}"
+                for key, value in modification.model_dump().items()
+                if value is not None and value != 0.0
+            )
+        )
     if fillet is not None:
         if role != "wheel":
             raise NotSupportedError("root fillet variants are built for the wheel")
@@ -683,6 +725,7 @@ def mesh(
         counts=counts,
         closed=closed,
         fillet=fillet,
+        modification=modification,
     )
     effective = rf.effective_counts(section)
     prefix = role.upper()
@@ -694,6 +737,16 @@ def mesh(
                 f"the drawing has the face width {shape.face_width_mm:g} mm, the STplus file "
                 f"{gear.face_width_mm:g} mm"
             )
+        if geometry.manufactured is not None:
+            # the body of the drawing on the measured tooth: its tip is the measured tip circle
+            measured_tip = section.tip_radius_mm
+            if abs(measured_tip - shape.tip_radius_mm) > 1.0e-9:
+                fillet_lines.append(
+                    f"body of the drawing on the measured tooth: tip radius {measured_tip:.4f} mm "
+                    f"instead of the drawing's {shape.tip_radius_mm:.4f} mm (the body below the "
+                    "root circle is unchanged)"
+                )
+                shape = replace(shape, tip_radius_mm=measured_tip)
         built = bd.body_mesh(section, shape, body_counts or bd.BodyCounts(), prefix)
         section, solid, sets = built.section, built.solid, built.sets
     elif level_counts is not None:
@@ -788,6 +841,7 @@ def mesh(
         level_counts=level_counts,
         fillet=fillet_info,
         fillet_clearance_mm=clearance,
+        geometry=geometry,
     )
 
 
@@ -801,11 +855,15 @@ def surface(
     out: Path,
     tip_rounding_mm: float = 0.0,
     rounding_facets: int = rsf.ROUNDING_FACETS,
+    geometry: CaseGeometry | None = None,
 ) -> list[str]:
     """Write the rigid tooth surface of the gear ``role`` and a picture of it in mesh with the
     sector of the mating gear; returns the lines of the report. ``tip_rounding_mm`` > 0 rounds
-    the corners of the tip land of the rigid surface (``rigid_surface``)."""
-    generation = _generation(case)
+    the corners of the tip land of the rigid surface (``rigid_surface``); ``geometry`` carries
+    the measured deviations of the flanks (tip relief of the pinion among them)."""
+    geometry = geometry if geometry is not None else _geometry(case)
+    generation = geometry.generation
+    modification = geometry.modification(role)
     gears = generation.inputs.gears
     mating_role: ct.Role = "wheel" if role == "pinion" else "pinion"
     gear, mating = (gears.pinion, gears.wheel) if role == "pinion" else (gears.wheel, gears.pinion)
@@ -820,21 +878,38 @@ def surface(
         z_levels_mm=levels,
         tip_rounding_mm=tip_rounding_mm,
         rounding_facets=rounding_facets,
+        modification=modification,
     )
     out.mkdir(parents=True, exist_ok=True)
     target = out / f"{role}_surface.inp"
     rounding_note = f", tip rounding {tip_rounding_mm:g} mm" if tip_rounding_mm > 0.0 else ""
+    measured_note = (
+        ", measured flank: "
+        + ", ".join(
+            f"{key} {value:g}"
+            for key, value in modification.model_dump().items()
+            if value is not None and value != 0.0
+        )
+        if modification is not None
+        else ""
+    )
     target.write_text(
         ab.rigid_surface_text(
             rigid,
             role.upper(),
-            title=f"{case}: {role}, face width {gear.face_width_mm:g} mm{rounding_note}, "
-            "built by gearcore",
+            title=f"{case}: {role}, face width {gear.face_width_mm:g} mm{rounding_note}"
+            f"{measured_note}, built by gearcore",
         ),
         encoding="ascii",
     )
     # the pair in the middle of the path of contact: both parts have their middle tooth on +y
-    section = sm.sector_mesh(generation, mating_role, teeth=mating_teeth, rim_rings=12)
+    section = sm.sector_mesh(
+        generation,
+        mating_role,
+        teeth=mating_teeth,
+        rim_rings=12,
+        modification=geometry.modification(mating_role),
+    )
     rho_a, rho_e = pl.path_of_contact_limits(generation)
     flank = pl.working_flank_of_the_driving_pinion(rotation)
     place = pl.fixed_axes(pl.mesh_position(generation, 0.5 * (rho_a + rho_e), working_flank=flank))
@@ -991,6 +1066,120 @@ def _fillet_manifest(built: MeshResult) -> dict[str, object] | None:
         "clearance_mm": built.fillet_clearance_mm,
         "details": dict(info.details),
     }
+
+
+def _geometry_manifest(geometry: CaseGeometry) -> dict[str, object]:
+    """The geometry of the pair the folder is built from: the generated circles of both gears,
+    the path of contact, and the measured variant with every change (``gearcore.manufactured``)."""
+    generation = geometry.generation
+    gears: dict[str, object] = {}
+    for role in ("pinion", "wheel"):
+        gear = generation.gears.pinion if role == "pinion" else generation.gears.wheel
+        allowance = gear.tooth_thickness_allowance_um
+        gears[role] = {
+            "tip_diameter_mm": gear.tip_diameter_mm,
+            "tip_form_diameter_mm": gear.tip_form_diameter_mm,
+            "generated_root_diameter_mm": gear.generated_root_diameter_mm,
+            "root_form_diameter_mm": gear.root_form_diameter_mm,
+            "generating_profile_shift_coefficient": gear.generating_profile_shift_coefficient,
+            "tool_addendum_mm": gear.tool_addendum_mm,
+            "tooth_thickness_allowance_um": None if allowance is None else list(allowance),
+        }
+    rho_a, rho_e = pl.path_of_contact_limits(generation)
+    active = generation.pair_geometry.active_tip_diameter_mm
+    out: dict[str, object] = {
+        "case": geometry.case,
+        "as_manufactured": None,
+        "gears": gears,
+        "path_of_contact": {
+            "rho_A1_mm": rho_a,
+            "rho_E1_mm": rho_e,
+            "transverse_contact_ratio": generation.pair_geometry.transverse_contact_ratio,
+            "active_tip_diameter_mm": {"pinion": active.pinion, "wheel": active.wheel},
+        },
+    }
+    if geometry.manufactured is not None:
+        result = geometry.manufactured
+        out["as_manufactured"] = {
+            "file": "gearcore/data/fe/as_manufactured.yaml",
+            "label": result.variant.label,
+            "description": result.variant.description,
+            "set_names": dict(result.variant.set_names),
+            "changes": {role: change.as_dict() for role, change in result.changes.items()},
+        }
+    return out
+
+
+def _geometry_readme(geometry: CaseGeometry) -> str:
+    """The paragraph of the README that names the geometry the folder is built from."""
+    generation = geometry.generation
+    eps = generation.pair_geometry.transverse_contact_ratio
+    if geometry.manufactured is None:
+        return (
+            f"Geometrie: der STplus-Fall `{geometry.case}` unverändert (Nenngeometrie, "
+            f"Profilüberdeckung {eps:.4f})."
+        )
+    result = geometry.manufactured
+    parts = [
+        f"Gemessene Geometrie, Variante `{result.variant.label}`: {result.variant.description}. "
+        "Zahlen = Median der letzten GINA-Runde je Teil (Ritzelserie 95911 bis 95920, Kernräder "
+        "der Laufversuche), Kopfkantenrundung = Median der Bögen aller gescannten Räder "
+        "(`gearcore/data/fe/as_manufactured.yaml`, Entscheidungen des Nutzers 2026-10-19, ADR-116)."
+    ]
+    for role in ("pinion", "wheel"):
+        name = "Ritzel" if role == "pinion" else "Rad"
+        change = result.changes.get(role)
+        if change is None:
+            parts.append(f"{name}: nach dem STplus-Fall, unverändert.")
+            continue
+        items: list[str] = []
+        if change.span_target_mm is not None:
+            items.append(
+                f"Zahnweite W_k {change.span_target_mm:g} mm über {change.number_of_teeth_spanned} "
+                f"Zähne (Zahnweitenabmaß {change.span_allowance_um:+.1f} µm auf die Nennzahnweite "
+                f"{change.span_nominal_mm:.4f} mm, erzeugt {change.span_generated_mm:.4f} mm)"
+            )
+        if change.tip_diameter_mm is not None:
+            items.append(f"Kopfkreis d_a {change.tip_diameter_mm:g} mm")
+        if change.root_diameter_mm is not None:
+            items.append(
+                f"Fußkreis d_fE {change.root_diameter_mm:g} mm über die Werkzeugkopfhöhe "
+                f"h_aP0* {change.addendum_factor:.4f} (Fußformkreis {change.root_form_diameter_mm:.4f} mm)"
+            )
+        if change.dedendum_factor is not None:
+            items.append(
+                f"Werkzeugfußhöhe h_fP0* {change.dedendum_factor:.4f} statt der des Falls, damit das "
+                "Werkzeug den gemessenen Kopfkreis nicht beschneidet (STplus-Regel ADR-114, ohne "
+                "andere Wirkung)"
+            )
+        mod = change.modification
+        if mod is not None and mod.tip_relief_um > 0.0:
+            items.append(
+                f"lineare Kopfrücknahme C_a {mod.tip_relief_um:g} µm ab d_Ca "
+                f"{mod.tip_relief_start_diameter_mm:g} mm bis zum Kopfkreis (GINA fKo)"
+            )
+        if mod is not None and mod.profile_slope_um != 0.0:
+            items.append(
+                f"Profil-Winkelabweichung f_Hα {mod.profile_slope_um:+g} µm (Material zum Kopf hin, "
+                "DIN ISO 1328-1 4.4.8.2) linear über der Wälzlänge von d_Cf "
+                f"{mod.profile_control_diameter_mm:g} mm bis zum Kopfkreis, null am Messkreis der "
+                f"Zahnweite d_M {mod.profile_slope_pivot_diameter_mm:.4f} mm; die Fußrundung dreht "
+                "mit dem Evolventenanfang"
+            )
+        if mod is not None and mod.tip_edge_radius_mm > 0.0:
+            items.append(
+                f"Kopfkantenrundung r_K {mod.tip_edge_radius_mm:g} mm (Bogen, tangential an Flanke "
+                "und Kopfkreis) statt der 45°-Fase des Werkzeugs: Kopfformkreis "
+                f"{change.tip_form_diameter_mm:.4f} mm, Restzahndicke s_aK "
+                f"{change.residual_tip_thickness_mm:.4f} mm; im Netz drei Elementreihen auf dem Bogen"
+            )
+        parts.append(f"{name} (`{change.set_name}`): " + "; ".join(items) + ".")
+    parts.append(
+        f"Die Normpunkte A bis E sind die der geänderten Paarung (Profilüberdeckung {eps:.4f}); die "
+        "Kopfkanten der starren Ritzelfläche bleiben die Modellrundung (FE-19, die reale Kante ist "
+        "scharf), die Flankenlinienabweichungen bleiben außen vor (Entscheidung 2026-10-19)."
+    )
+    return " ".join(parts)
 
 
 def _fillet_readme(built: MeshResult) -> str:
@@ -1257,9 +1446,16 @@ def decks(
     level_counts: bd.BodyCounts | None = None,
     elastic_constants: str | None = None,
     fillet: fl.FilletVariant | None = None,
+    as_manufactured: str | None = None,
+    named_points_only: bool = False,
 ) -> list[str]:
     """Write the wheel mesh, the pinion surface, one position file per position and
     combination, the manifest and the runner into ``out``; returns the lines of the report.
+    ``as_manufactured`` names a variant of ``data/fe/as_manufactured.yaml``: the measured
+    numbers of the rig parts replace those of the case (``gearcore.manufactured``; the manifest
+    key ``geometry`` records every change). ``named_points_only`` keeps of the grid only the
+    positions that carry a name (A to E), with the numbering of the full grid, so that the
+    points of a changed geometry are found by the generator and not by a fixed index.
     ``elastic_constants`` (one of ``ELASTIC_CONSTANT_SOURCES``) replaces the field-dependent
     elastic block of the card in the model piece of the step W3 by the nine engineering
     constants of that table at ``temperature_c`` and each rate (``fva856_table4``: FVA 856 I
@@ -1337,7 +1533,8 @@ def decks(
         for s in material_steps
     }
     main_type = types_of_step[material_steps[0]]
-    generation = _generation(case)
+    geometry = _geometry(case, as_manufactured)
+    generation = geometry.generation
     gears = generation.gears
     flank = pl.working_flank_of_the_driving_pinion(rotation)
     sign = pl.pinion_torque_sign(flank)
@@ -1356,6 +1553,7 @@ def decks(
         body_counts=body_counts,
         level_counts=level_counts,
         fillet=fillet,
+        geometry=geometry,
     )
     report = list(built.lines)
     report += surface(
@@ -1368,6 +1566,7 @@ def decks(
         out,
         tip_rounding_mm=tip_rounding_mm,
         rounding_facets=rounding_facets,
+        geometry=geometry,
     )
     section = built.section
     layers = built.solid.layers
@@ -1473,6 +1672,14 @@ def decks(
     seating = dk.seating_angle_rad(seating_arc_mm, r_b1)
     step_names = tuple(f"LOAD_{t:g}NM".replace(".", "P") for t in torques_wheel_nm)
     chosen = _positions(generation, positions, steps_per_pitch, margin)
+    if named_points_only:
+        if grid_indices is not None:
+            raise InputRangeError("named_points_only and grid_indices exclude each other")
+        grid_indices = [k for k, (label, _) in enumerate(chosen, start=1) if label]
+        report.append(
+            "named points of the grid: "
+            + ", ".join(f"{chosen[k - 1][0]} = pos_{k:03d}" for k in grid_indices)
+        )
     if enforcement not in dk.ENFORCEMENT_KEYWORDS:
         raise InputRangeError(f"enforcement {enforcement!r} is not known")
     if grid_indices is not None:
@@ -1568,6 +1775,7 @@ def decks(
     first_card = cards[rates[0]]
     manifest = {
         "case": case,
+        "geometry": _geometry_manifest(geometry),
         "pinion_rotation": rotation,
         "working_flank_of_the_pinion": flank,
         "torque_sign_about_z": sign,
@@ -1715,6 +1923,8 @@ def decks(
                 "Momente am Rad " + ", ".join(f"{t:g}" for t in torques_wheel_nm) + " Nm.",
                 "",
                 _body_readme(built.body),
+                "",
+                _geometry_readme(geometry),
                 "",
                 _fillet_readme(built),
                 "",
@@ -3356,6 +3566,19 @@ def main() -> None:
         "flank node on the kink of the rigid surface), 'direct', 'augmented_lagrange'",
     )
     decks_parser.add_argument(
+        "--as-manufactured",
+        metavar="VARIANT",
+        default=None,
+        help="measured geometry of the rig parts in place of the case's numbers: a variant of "
+        "gearcore/data/fe/as_manufactured.yaml (stahl, kunststoff, beide for kst_e)",
+    )
+    decks_parser.add_argument(
+        "--named-points-only",
+        action="store_true",
+        help="write only the named positions A to E of the grid (their indices are found by the "
+        "generator, the file names keep the numbering of the full grid)",
+    )
+    decks_parser.add_argument(
         "--grid-indices",
         type=int,
         nargs="+",
@@ -3526,6 +3749,10 @@ def main() -> None:
             folder += f"_{args.elastic_constants}"
         if fillet_variant is not None:
             folder += f"_fillet_{fillet_variant.label()}"
+        if args.as_manufactured:
+            folder += f"_gemessen_{args.as_manufactured}"
+        if args.named_points_only:
+            folder += "_AtoE"
         out = args.out if args.out is not None else OUTPUT / args.case / folder
         for line in decks(
             args.case,
@@ -3560,6 +3787,8 @@ def main() -> None:
             level_counts=level_counts,
             elastic_constants=args.elastic_constants,
             fillet=fillet_variant,
+            as_manufactured=args.as_manufactured,
+            named_points_only=args.named_points_only,
         ):
             print(line)
     if args.command == "report":

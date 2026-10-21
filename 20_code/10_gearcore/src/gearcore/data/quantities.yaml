@@ -3272,3 +3272,42 @@ quantities:
     note: "Radius des Kreises auf der Symmetrieachse der Zahnlücke, der den Fußkreis im Fußpunkt berührt und tangentenstetig in die Tangensfunktion übergeht; 0,1 bis 0,6 des Moduls oder der Zahnlückenbreite (Sehne) am relevanten Durchmesser, Beispiel des Patents 0,3 S_L. Fußrundungsvariante bionic (gearcore.fillet)."
     since: 4
     status: verified
+  tip_relief_start_diameter:
+    symbol: "d_Ca"
+    unit: "mm"
+    description: "Kopfrücknahme – Bezugsdurchmesser"
+    source: "ISO21771:2014"
+    location: "Bild 25, Legende, p. 56"
+    english: null
+    also: []
+    stplus: null
+    replaced: []
+    note: "Durchmesser, ab dem die Kopfrücknahme beginnt; Bild 25 druckt d_Ca mit dem Index Ca (ohne alpha), den Betrag C_alpha_a mit alpha (Seite gerendert am 2026-10-19). Das Klingelnberg-Protokoll druckt Beginn und Ende der Zone als Durchmesser (Kopfzeilen 431, 432, siehe tip_relief_length), die Ritzelzeichnung 20220623 schreibt 'ab Ø 51,946'. Profilmodifikation der gemessenen Geometrie (gearcore.contour.ProfileModification, 2026-10-19)."
+    since: 4
+    status: verified
+  profile_control_diameter:
+    symbol: "d_Cf"
+    unit: "mm"
+    description: "Profilkontrolldurchmesser"
+    source: "DINISO1328-1:2018"
+    location: "3.4.1.1, p. 18"
+    english: { text: "profile control diameter", source: "DINISO1328-1:2018-EN", location: "3.4.1.1, p. 16" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Beginn des Profil-Auswertebereichs (3.4.1.4, p. 18); ohne andere Festlegung der Durchmesser am Beginn des aktiven Profils d_Nf (Anmerkung 1). Das Klingelnberg-Protokoll druckt Beginn und Ende der Profilauswertung als Durchmesser (Kopfzeilen 42, 43; Rad 50,3 bis 54,022, Ritzel 50,4 bis 51,946). Die Profil-Winkelabweichung f_H_alpha gilt vom Profilkontrolldurchmesser bis zum Kopfkreisdurchmesser, bis zu dem sie extrapoliert wird (4.4.8.2, p. 32): Bezugslänge der Profilmodifikation der gemessenen Geometrie (gearcore.contour.ProfileModification, 2026-10-19)."
+    since: 4
+    status: verified
+  tip_edge_radius:
+    symbol: "r_K"
+    unit: "mm"
+    description: "Kopfkantenradius"
+    source: "DINISO1328-1:2018"
+    location: "3.4.1.2, Anmerkung 1 und 2, p. 18"
+    english: { text: "tip corner radius", source: "DINISO1328-1:2018-EN", location: "3.4.1.2, Note 1 and 2, p. 16" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Radius der Kopfkantenrundung im Stirnschnitt. DIN ISO 1328-1 nennt den Kopfkantenradius ohne Formelzeichen (der Kopf-Formkreisdurchmesser ist der Kopfkreisdurchmesser abzüglich des doppelten Kopfkantenradius); r_K ist das Zeichen dieses Projekts neben h_K. DIN ISO 21771 §6.1.2 bemaßt die Kopfkantenrundung über h_K und s_aK, nicht über den Radius. Die Radzeichnung 20220316 gibt R 0,2, die Konturscans der Räder einen Bogen von 0,21 mm im Median (kanten.csv, 2026-10-11). Profilmodifikation der gemessenen Geometrie (gearcore.contour.ProfileModification, 2026-10-19)."
+    since: 4
+    status: verified

@@ -129,3 +129,55 @@ def test_tip_rounding_reaches_the_rigid_surface_and_the_manifest(
     assert "mindestens 12 Facetten" in (rounded / "README.md").read_text(encoding="utf-8")
     assert "0.05 mm gerundet" in (rounded / "README.md").read_text(encoding="utf-8")
     assert "scharfe Kopfkanten" in (sharp / "README.md").read_text(encoding="utf-8")
+
+
+def test_the_measured_geometry_reaches_mesh_surface_manifest_and_readme(
+    script: ModuleType, tmp_path: Path
+) -> None:
+    nominal = tmp_path / "nominal"
+    measured = tmp_path / "measured"
+    _decks(script, nominal, named_points_only=True)
+    lines = _decks(script, measured, as_manufactured="beide", named_points_only=True)
+    assert any("measured geometry of the wheel (variant beide)" in line for line in lines)
+    assert any(line.startswith("named points of the grid: A = pos_") for line in lines)
+    # only the named points A to E are written, numbered as in the full grid
+    manifest = json.loads((measured / "manifest.json").read_text(encoding="utf-8"))
+    points = [e["point"] for e in manifest["positions"]]
+    assert points == ["A", "B", "C", "D", "E"]
+    assert manifest["grid"]["indices"] == [e["index"] for e in manifest["positions"]]
+    assert all(
+        f"pos_{k:03d}" in (measured / e["file"]).name
+        for k, e in zip(manifest["grid"]["indices"], manifest["positions"], strict=True)
+    )
+    base = json.loads((nominal / "manifest.json").read_text(encoding="utf-8"))
+    assert [e["point"] for e in base["positions"]] == ["A", "B", "C", "D", "E"]
+    assert base["geometry"]["as_manufactured"] is None
+    # the geometry block names the variant and every change
+    geometry = manifest["geometry"]
+    assert geometry["as_manufactured"]["label"] == "beide"
+    changes = geometry["as_manufactured"]["changes"]
+    assert changes["pinion"]["modification"]["tip_relief_um"] == 23.6
+    assert changes["wheel"]["modification"]["tip_edge_radius_mm"] == 0.21
+    assert geometry["gears"]["wheel"]["tip_diameter_mm"] == 54.0515
+    assert geometry["gears"]["pinion"]["tip_diameter_mm"] == 52.879
+    assert base["geometry"]["gears"]["wheel"]["tip_diameter_mm"] == 54.022
+    assert (
+        geometry["path_of_contact"]["rho_A1_mm"] < base["geometry"]["path_of_contact"]["rho_A1_mm"]
+    )
+    # the wheel mesh and the pinion surface differ from the nominal ones
+    for name in ("wheel_mesh.inp", "pinion_surface.inp"):
+        assert (measured / name).read_bytes() != (nominal / name).read_bytes()
+    assert "measured flank: tip_relief_um 23.6" in (measured / "pinion_surface.inp").read_text(
+        encoding="ascii"
+    )
+    readme = (measured / "README.md").read_text(encoding="utf-8")
+    assert "Gemessene Geometrie, Variante `beide`" in readme
+    assert "Kopfkantenrundung r_K 0.21 mm" in readme and "Kopfrücknahme C_a 23.6 µm" in readme
+    assert "Profil-Winkelabweichung f_Hα +10.25 µm" in readme
+    assert "Geometrie: der STplus-Fall `kst_e` unverändert" in (nominal / "README.md").read_text(
+        encoding="utf-8"
+    )
+    with pytest.raises(InputRangeError):
+        _decks(script, tmp_path / "bad", as_manufactured="alles")
+    with pytest.raises(InputRangeError):
+        _decks(script, tmp_path / "bad", named_points_only=True, grid_indices=[2])

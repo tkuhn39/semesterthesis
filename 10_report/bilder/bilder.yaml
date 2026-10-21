@@ -52,7 +52,8 @@ bilder:
     unterschrift: "Fußrundung aus einer kubischen Bézierkurve, nach [DE102013004861B3] Fig. 2."
   - name: quelle_patent_bionisch
     kapitel: 2
-    quelle: thesis/quellen/quelle_patent_bionisch.pdf
+    quelle: thesis/quellen/quelle_patent_bionisch.png
+    format: png   # Rasterzwilling des Scans, siehe quellbilder.yaml
     unterschrift: "Bionische Fußrundung aus Tangensfunktion und Kreisbahn, nach [DE102008045318B3] Fig. 2."
   - name: quelle_din50100_perlenschnur
     kapitel: 2
@@ -92,6 +93,10 @@ bilder:
     kapitel: 3
     quelle: thesis/paarung_netz.svg
     unterschrift: "Radsektor und starre Ritzelfläche in der Stellung C mit Eingriffslinie und den Normpunkten A bis E."
+  - name: flussbild_kette
+    kapitel: 3
+    quelle: thesis/flussbild_kette.svg
+    unterschrift: "Simulationskette von den Zugversuchen zum Nachweis: Programme als Kästen, die übergebenen Daten an den Pfeilen."
   - name: fussrundungsvarianten
     kapitel: 3
     quelle: fe/kst_e/fussrundung_konturen/konturen.svg
@@ -145,32 +150,32 @@ bilder:
   # Kapitel 5.2, Serie über dem Wälzweg (fe_series_analysis.py)
   - name: vergleich_stufen_16nm
     kapitel: 5
-    quelle: fe/kst_e/series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet/analyse/vergleich_stufen_LOAD_16NM.svg
-    unterschrift: "Werkstoffstufen W1 bis W4 über dem Wälzweg bei 16 Nm, Ringkörper, Kopfkante r = 0,10 mm, quasistatisch: Verdrehweg, Kopfverschiebung, größter Kontaktdruck und die Fußspannungen als Größtwerte über die Zahnbreite."
+    quelle: fe/kst_e/tasche_serie_w1w4_qs_gerechnet/analyse/vergleich_stufen_LOAD_16NM.svg
+    unterschrift: "Werkstoffstufen W1 bis W4 über dem Wälzweg bei 16 Nm, Taschenkörper, Kopfkante r = 0,10 mm, quasistatisch: Verdrehweg, Kopfverschiebung, größter Kontaktdruck und die Fußspannungen als Größtwerte über die Zahnbreite."
   - name: vergleich_stufen_8nm
     kapitel: 5
-    quelle: fe/kst_e/series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet/analyse/vergleich_stufen_LOAD_8NM.svg
-    unterschrift: "Werkstoffstufen W1 bis W4 über dem Wälzweg bei 8 Nm, Ringkörper, Kopfkante r = 0,10 mm, quasistatisch."
+    quelle: fe/kst_e/tasche_serie_w1w4_qs_gerechnet/analyse/vergleich_stufen_LOAD_8NM.svg
+    unterschrift: "Werkstoffstufen W1 bis W4 über dem Wälzweg bei 8 Nm, Taschenkörper, Kopfkante r = 0,10 mm, quasistatisch."
   # Kapitel 5.3, Nachweis nach Stommel et al. (fe_fatigue.py stommel)
   - name: stommel_karte_8nm_w2
     kapitel: 5
-    quelle: fe/kst_e/series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet/stommel_W2_QS/karte_LOAD_8NM_T3_T4.svg
+    quelle: fe/kst_e/tasche_serie_w1w4_qs_gerechnet/stommel_W2_QS/karte_LOAD_8NM_T3_T4.svg
     unterschrift: "Zyklische Auslastung a_B,V über der Fußrundung T3/T4 (Winkel um die Radachse über der Zahnbreite), W2, quasistatisch, 8 Nm."
   - name: stommel_verlauf_8nm_w2
     kapitel: 5
-    quelle: fe/kst_e/series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet/stommel_W2_QS/verlauf_LOAD_8NM.svg
+    quelle: fe/kst_e/tasche_serie_w1w4_qs_gerechnet/stommel_W2_QS/verlauf_LOAD_8NM.svg
     unterschrift: "Vergleichsspannung und vorzeichenbehaftete von-Mises-Spannung der beiden kritischen Knoten über dem Wälzweg, W2, quasistatisch, 8 Nm."
   - name: stommel_verlauf_16nm_w4hill
     kapitel: 5
-    quelle: fe/kst_e/series_20layers_bore33_round0p1f12_30perpitch_margin1_qs_gerechnet/stommel_hill_W4_QS/verlauf_LOAD_16NM.svg
+    quelle: fe/kst_e/tasche_serie_w1w4_qs_gerechnet/stommel_hill_W4_QS/verlauf_LOAD_16NM.svg
     unterschrift: "Hill-Vergleichsspannung der beiden kritischen Knoten über dem Wälzweg, W4, quasistatisch, 16 Nm."
   - name: fusseffekt_sigma1_16nm_qs
     kapitel: 5
-    quelle: fe/kst_e/vergleich_fussrundung_AtoE/fusseffekt_sigma1_LOAD_16NM_QS.svg
+    quelle: fe/kst_e/vergleich_fussrundung_AtoE_V2/fusseffekt_sigma1_LOAD_16NM_QS.svg
     unterschrift: "Fußrundungsvarianten gegen die Trochoide: relative Änderung der größten Zugspannung an A bis E je Werkstoffstufe, Taschenkörper, 16 Nm, quasistatisch."
-  - name: fusseffekt_uebersicht_16nm_qs
+  - name: fusseffekt_raten_16nm
     kapitel: 5
-    quelle: fe/kst_e/vergleich_fussrundung_AtoE/fusseffekt_uebersicht_LOAD_16NM_QS.svg
+    quelle: fe/kst_e/vergleich_fussrundung_AtoE_V2/fusseffekt_raten_LOAD_16NM.svg
     unterschrift: "Änderung der größten Zugspannung am Normpunkt C je Variante und Werkstoffstufe, 16 Nm, quasistatisch, mit der Vorhersage des ebenen Sektormodells."
   - name: sweep_bionisch
     kapitel: 5
@@ -208,6 +213,55 @@ bilder:
     quelle: thesis/waermebild/waermebild_16nm_3000.png
     unterschrift: "Wärmebildaufnahme des Rades 97351 nach zwei Stunden bei 16 Nm und 3000 1/min am Rad, Emissionsgrad 1."
   # Kapitel 6, Ergebnisse der Laufversuche (scripts/measurements.py woehler, L2 und L3)
+  - name: vergleich_stufen_12nm
+    kapitel: 5
+    quelle: fe/kst_e/tasche_serie_w1w4_qs_gerechnet/analyse/vergleich_stufen_LOAD_12NM.svg
+    unterschrift: "Werkstoffstufen W1 bis W4 über dem Wälzweg bei 12 Nm, Taschenkörper, quasistatisch (Zwilling von Bild 5.5)."
+  - name: koerpereffekt_8nm_qs
+    kapitel: 4
+    quelle: fe/kst_e/vergleich_koerper_AtoE/koerpereffekt_LOAD_8NM_QS.svg
+    unterschrift: "Körpereffekt an den Normpunkten A bis E, 8 Nm, quasistatisch (Zwilling von Bild 4.x)."
+  - name: koerpereffekt_12nm_qs
+    kapitel: 4
+    quelle: fe/kst_e/vergleich_koerper_AtoE/koerpereffekt_LOAD_12NM_QS.svg
+    unterschrift: "Körpereffekt an den Normpunkten A bis E, 12 Nm, quasistatisch."
+  - name: orientierungseffekt_8nm_qs
+    kapitel: 5
+    quelle: fe/kst_e/vergleich_orientierung_AtoE/orientierungseffekt_LOAD_8NM_QS.svg
+    unterschrift: "Orientierungseffekt CT-Zonen gegen Zuordnung, 8 Nm, quasistatisch."
+  - name: orientierungseffekt_12nm_qs
+    kapitel: 5
+    quelle: fe/kst_e/vergleich_orientierung_AtoE/orientierungseffekt_LOAD_12NM_QS.svg
+    unterschrift: "Orientierungseffekt CT-Zonen gegen Zuordnung, 12 Nm, quasistatisch."
+  - name: fusseffekt_sigma1_8nm_qs
+    kapitel: 5
+    quelle: fe/kst_e/vergleich_fussrundung_AtoE_V2/fusseffekt_sigma1_LOAD_8NM_QS.svg
+    unterschrift: "Fußrundungsvarianten gegen die Trochoide an A bis E, 8 Nm, quasistatisch."
+  - name: fusseffekt_sigma1_12nm_qs
+    kapitel: 5
+    quelle: fe/kst_e/vergleich_fussrundung_AtoE_V2/fusseffekt_sigma1_LOAD_12NM_QS.svg
+    unterschrift: "Fußrundungsvarianten gegen die Trochoide an A bis E, 12 Nm, quasistatisch."
+  # Kapitel 6, Schadensbilder (Fotos des Nutzers, 70_input/71_Messungen/Mikroskop/Bilder, verkleinert auf 1400 px)
+  - name: schaden_8nm_170824
+    kapitel: 6
+    quelle: thesis/schadensbilder/schaden_8nm_170824.png
+    format: png
+    unterschrift: "Gelaufenes Rad der Stufe 8 Nm im Stirnschnitt, Maßstab 2 mm."
+  - name: schaden_12nm_170817
+    kapitel: 6
+    quelle: thesis/schadensbilder/schaden_12nm_170817.png
+    format: png
+    unterschrift: "Gelaufenes Rad der Stufe 12 Nm im Stirnschnitt, Maßstab 2 mm."
+  - name: schaden_16nm_170820
+    kapitel: 6
+    quelle: thesis/schadensbilder/schaden_16nm_170820.png
+    format: png
+    unterschrift: "Gelaufenes Rad der Stufe 16 Nm im Stirnschnitt, Maßstab 2 mm."
+  - name: schaden_16nm_170810
+    kapitel: 6
+    quelle: thesis/schadensbilder/schaden_16nm_170810.png
+    format: png
+    unterschrift: "Aufgeraute Flanke eines Rades der Stufe 16 Nm, Maßstab 2 mm."
   - name: woehler_T2_pa46gf30_kv3_2026
     kapitel: 6
     quelle: messungen/woehler/woehler_T2_pa46gf30_kv3_2026.svg
@@ -224,3 +278,16 @@ bilder:
     kapitel: 6
     quelle: messungen/woehler/woehler_T2_vergleich_werkstoffe.svg
     unterschrift: "Laufversuche mit PA46-GF30 neben POM und PEEK über dem Raddrehmoment: Prüfstand KV3 im Jahr 2026 bei 3000 1/min (gefüllte Marker) und KV4 im Jahr 2023 bei 2250 1/min (offene Marker), dazu die 50-%-Gerade von PA46-GF30."
+  # Kapitel 6 und Anhang G, Konturscans nach dem Lauf (scripts/contour_wear.py, M5, 2026-10-21)
+  - name: verschleiss_profil
+    kapitel: 6
+    quelle: messungen/konturscan/wheel_gelaufen/verschleiss_profil.svg
+    unterschrift: "Abweichung der gelaufenen Flanken von der Sollkontur über dem Radius, Räder 97345 (8 Nm), 97351 (12 Nm) und 97340 (16 Nm), belastete und unbelastete Flanke je Zahn, Band der 49 Flanken vor dem Lauf; Marken: rechnerischer Fußnutzkreis, Knotenreihe des Kantenkontakts im FE-Modell, Wälzkreis."
+  - name: ueberlagerung_97340_z1
+    kapitel: 6
+    quelle: messungen/konturscan/wheel_gelaufen/ueberlagerung_97340_Z1_vorher_nachher.svg
+    unterschrift: "Zahn 1 des Rades 97340 vor und nach dem Lauf bei 16 Nm auf dem Sollzahn, Abweichung nicht überhöht."
+  - name: verschleiss_kontur
+    kapitel: 6
+    quelle: messungen/konturscan/wheel_gelaufen/verschleiss_kontur.svg
+    unterschrift: "Gelaufene Zähne auf dem Sollzahn der Erzeugung, Abweichung nicht überhöht, Räder 97345 (8 Nm), 97351 (12 Nm) und 97340 (16 Nm); beim Rad 97340 dazu der Zahn 1 vor dem Lauf."

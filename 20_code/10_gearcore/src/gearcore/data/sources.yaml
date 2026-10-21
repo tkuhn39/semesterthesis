@@ -670,4 +670,19 @@ sources:
         date: "2026-10-11",
       }
     confirmed_by_user: true
+  Abaqus2025:Solid:
+    type: manual
+    title: "Solid (Continuum) Elements (Abaqus 2025 documentation, Elements)"
+    publisher: "Dassault Systèmes SIMULIA"
+    edition: "Abaqus 2025 documentation, SIMULIA Established Products"
+    url: "https://help.3ds.com/2025/english/dssimulia_established/SIMACAEELMRefMap/simaelm-c-solidcont.htm"
+    accessed: "2026-10-21"
+    file: "C:/SIMULIA/Documentation/2025LE/English/SIMACAEELMRefMap/simaelm-c-solidcont.htm"
+    verified:
+      {
+        method: html-title,
+        by: "claude/title of the HTML page of the local installation (incompatible mode elements, small compressive strains), 2026-10-21; the user confirmed the Abaqus documentation as source in his TK remark of 2026-10-20",
+        date: "2026-10-21",
+      }
+    confirmed_by_user: true
     notes: "Cite the official site with the access date (user decision 2026-10-13); the page is behind the 3DEXPERIENCE login, the content was read in the local Abaqus 2025 Learning Edition installation (same page name, `file`). Confirmed by the user on 2026-10-11 (the formulas render slightly shifted in his browser, the content reads correctly). Quadratic Hill potential with the yield stress ratios R_11 to R_23 relative to the reference yield stress (F, G, H, L, M, N from the ratios); the equivalent plastic strain is defined through the plastic work (PEEQ). Used by fatigue.anisotropy (ADR-118, E7)."

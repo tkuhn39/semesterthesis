@@ -1,3 +1,6 @@
+% todonotes wird in FZGdef.sty mit der Option shadow geladen; ohne loadshadowlibrary warnt das Paket bei
+% jeder Notiz ("Trying to put a shadow below a todonote"). Die Option muss vor der Klasse stehen (2026-10-21).
+\PassOptionsToPackage{loadshadowlibrary}{todonotes}
 \documentclass[entwurf,nokeys]{FZGdasa}
 % {Klassen} entspr. *.cls Dateien:
 % FZGdasa > arbeitet mit \chapter als höchste Ebene
@@ -63,16 +66,28 @@
 % Tabellenspalten mit Umbruch linksbündig statt im Blocksatz (Nutzer, 2026-10-17): L{Breite}.
 \usepackage{array}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+% Absätze mit unbrechbaren Zahlen und fetten Verweisen liefen bis 12 pt über den Rand (Probebau
+% 2026-10-21); ein wenig Notdehnung lässt TeX dort lockerer umbrechen.
+\setlength{\emergencystretch}{2em}
+% Inhaltsverzeichnis wie in der Bachelorarbeit des Verfassers (Nutzer, 2026-10-21): Kapitelzeilen fett,
+% Abschnitte und Unterabschnitte je eine Stufe eingerückt; die Klasse setzt alles normal ohne Einzug.
+\renewcommand{\cftchapfont}{\bfseries}
+\renewcommand{\cftchappagefont}{\bfseries}
+\cftsetindents{section}{0.5cm}{1.4cm}
+\cftsetindents{subsection}{1.0cm}{1.4cm}
+\cftsetindents{subsubsection}{1.5cm}{1.4cm}
 
 % Die Gruppen des Literaturverzeichnisses wie in FZGdef.sty, nur mit gültigen Filtern: dort
 % stehen nottype={manual,online} und notkeyword={norm,web} als Listen, die biblatex nicht
 % kennt, so dass Patente (keyword norm) unter den Büchern und Internetseiten doppelt erschienen.
 \renewcommand{\insertbib}{%
+    \begingroup\sloppy\hbadness=10000 % lange Normtitel und Dateinamen im Verzeichnis
     \printbibliography[type=manual,title={\titleNormen},heading=subbibliography]
     \printbibliography[nottype=manual,keyword={norm},heading=none]
     \printbibliography[nottype=manual,nottype=online,notkeyword={norm},notkeyword={web},title={\titleJournals},heading=subbibliography]
     \printbibliography[type=online,title={\titleURLS},heading=subbibliography]
     \printbibliography[nottype=manual,nottype=online,keyword={web},heading=none]
+    \endgroup
 }
 
 % Platzhalter-Notizen in der Hausschrift statt in der fehlenden Handschrift ECFAugie (Schriftfamilie
@@ -85,6 +100,18 @@
         \begin{spacing}{1}\small\sffamily #2\end{spacing}}}
 \fi
 \makeatother
+
+% Orange Markierung der Überarbeitung nach der ersten Lesung (Nutzer, 2026-10-21): jeder umgeschriebene
+% Satz, Absatz oder Tabellenwert steht in \rev{...}; \revmarkfalse baut die Abgabefassung schwarz.
+\newif\ifrevmark
+\revmarktrue
+\ifrevmark
+    \newcommand{\rev}[1]{{\color{tumdiag3}#1}}
+\else
+    \newcommand{\rev}[1]{#1}
+\fi
+% Anhangverweise fett wie die übrigen Verweismakros der Klasse (Nutzer, 2026-10-21).
+\newcommand{\anhref}[1]{\textbf{Anhang~\ref{#1}}}
 
 \begin{document}
 

@@ -2,7 +2,7 @@
 (user, 2026-10-18): only the image and the temperature legend on its right remain, set side by
 side on white; one example goes into 4.5, every image into appendix H.
 
-The six screenshots under ``70_input/72_Kleingetriebepruefstand_KV3/Bilder/
+The six screenshots under ``70_input/71_Messungen/Mikroskop/Bilder/
 Waermebildaufnahme_Kunststoffraeder`` (``<torque>_<speed>.png``, torque at the wheel in Nm,
 speed at the wheel in 1/min) are 2940 × 1912 pixel captures of the camera software with the same
 layout; the boxes below are pixel coordinates of that layout and are checked against the image
@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from gearcore.errors import InputRangeError  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[3]
-INPUT = REPO / "70_input" / "72_Kleingetriebepruefstand_KV3" / "Bilder" / "Waermebildaufnahme_Kunststoffraeder"
+INPUT = REPO / "70_input" / "71_Messungen" / "Mikroskop" / "Bilder" / "Waermebildaufnahme_Kunststoffraeder"
 OUTPUT = REPO / "80_output" / "thesis" / "waermebild"
 EXPECTED_SIZE = (2940, 1912)
 IMAGE_BOX = (722, 390, 2161, 1470)

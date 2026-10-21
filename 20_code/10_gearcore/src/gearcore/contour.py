@@ -38,8 +38,16 @@ from gearcore.trace import eq
 SOURCE = "ISO21771:2014"
 OLD = "DIN3960:1987"
 
-EQ_EXEMPT = ("tooth_contour", "gear_polygon", "compare", "distances", "stplus_contour")
-"""Orchestrators of traced functions (sampling, assembly, measurement) and the fixture loader."""
+EQ_EXEMPT = (
+    "tooth_contour",
+    "gear_polygon",
+    "compare",
+    "distances",
+    "stplus_contour",
+    "tip_edge_arc",
+)
+"""Orchestrators of traced functions (sampling, assembly, measurement), the fixture loader and
+the construction of the tip corner arc (tangent to two curves, no equation of a norm)."""
 
 Array = NDArray[np.float64]
 Role = Literal["pinion", "wheel"]
@@ -205,6 +213,188 @@ def chamfer_flank(
     return radius, np.arctan2(line[:, 0], line[:, 1])
 
 
+# --- deviations of a manufactured flank -----------------------------------------------------------
+
+
+class ProfileModification(FrozenModel):
+    """Deviations of a manufactured flank from the generated profile of one gear, as the P40
+    measures them: normal to the flank, positive where material stands proud of the generated
+    profile (DIN ISO 1328-1:2018-03, 4.4.8.2, p. 32), linear in the roll length. They hold for
+    both flanks of the tooth (the measured gears show them on both, 2026-10-19).
+
+    ``tip_relief_um`` is C_a, the material removed at the tip circle, growing linearly in the
+    roll length from the diameter ``tip_relief_start_diameter_mm`` (d_Ca, DIN ISO 21771 Bild 25)
+    to the tip circle. ``profile_slope_um`` is f_H_alpha: the rise of the mean profile line from
+    the profile control diameter ``profile_control_diameter_mm`` (d_Cf) to the tip circle, to
+    which the norm extrapolates it (4.4.8.2); the deviation is zero on the measuring circle of
+    the span ``profile_slope_pivot_diameter_mm`` (d_M, DIN 21773 Eq. (17)), so that the span the
+    gear was measured with keeps its value. ``tip_edge_radius_mm`` is r_K, the tip corner radius
+    (DIN ISO 1328-1 3.4.1.2): an arc tangent to the flank and to the tip circle in place of the
+    tip chamfer of the generation; the tip form diameter is then that of its tangent point.
+
+    On an involute a deviation normal to the flank is a turn of the flank about the gear axis
+    by delta / r_b, because the normal of every involute point is a tangent of the base circle;
+    the deviations are therefore applied as a change of the tooth thickness half angle of each
+    flank point (``flank_deviation_turn``), and the fillet is turned with the first point of the
+    involute, so that the contour stays continuous at the root form circle.
+    """
+
+    tip_relief_um: float = Q("tip_relief", default=0.0, ge=0.0)
+    tip_relief_start_diameter_mm: float | None = Q(
+        "tip_relief_start_diameter", default=None, gt=0.0
+    )
+    profile_slope_um: float = Q("profile_slope_deviation", default=0.0)
+    profile_control_diameter_mm: float | None = Q("profile_control_diameter", default=None, gt=0.0)
+    profile_slope_pivot_diameter_mm: float | None = Q(
+        "span_measuring_circle_diameter", default=None, gt=0.0
+    )
+    tip_edge_radius_mm: float = Q("tip_edge_radius", default=0.0, ge=0.0)
+
+    @model_validator(mode="after")
+    def _complete(self) -> Self:
+        if self.tip_relief_um > 0.0 and self.tip_relief_start_diameter_mm is None:
+            raise ValueError(
+                "a tip relief needs the diameter it starts at (tip_relief_start_diameter_mm)"
+            )
+        if self.profile_slope_um != 0.0 and (
+            self.profile_control_diameter_mm is None or self.profile_slope_pivot_diameter_mm is None
+        ):
+            raise ValueError(
+                "a profile slope needs the profile control diameter (its start) and the pivot "
+                "diameter (where the deviation is zero)"
+            )
+        return self
+
+    @property
+    def is_empty(self) -> bool:
+        """True when nothing is modified."""
+        return (
+            self.tip_relief_um == 0.0
+            and self.profile_slope_um == 0.0
+            and self.tip_edge_radius_mm == 0.0
+        )
+
+    @property
+    def turns_the_flank(self) -> bool:
+        """True when a relief or a slope turns the involute (the arc alone does not)."""
+        return self.tip_relief_um > 0.0 or self.profile_slope_um != 0.0
+
+
+def _roll_length(d_mm: float, d_b_mm: float) -> float:
+    """Roll length of the involute point at the diameter; zero at or below the base circle."""
+    return iv.radius_of_curvature(d_mm, d_b_mm) if d_mm > d_b_mm else 0.0
+
+
+@eq(
+    SOURCE,
+    "(17)",
+    section="4.3.8",
+    page=30,
+    note="measured flank deviations: linear in the roll length, normal to the flank, a turn by delta / r_b",
+)
+def flank_deviation_turn(
+    radius_mm: Array, d_b_mm: float, d_a_mm: float, modification: ProfileModification
+) -> Array:
+    """Turn (rad) of every involute point at the radii ``radius_mm`` about the gear axis that
+    puts the tip relief and the profile slope of ``modification`` onto the flank: positive
+    towards more material (a larger tooth thickness half angle), delta / r_b for a deviation
+    delta normal to the flank. The slope rises linearly in the roll length from the profile
+    control diameter to the tip circle d_a and is zero on the pivot diameter; the relief grows
+    linearly from its start diameter to the tip circle, where it reaches C_a."""
+    d_b = positive_input(d_b_mm, "base diameter d_b")
+    d_a = positive_input(d_a_mm, "tip diameter d_a")
+    if not isinstance(modification, ProfileModification):
+        raise InputRangeError(
+            f"a ProfileModification is required, got {type(modification).__name__}"
+        )
+    radius = np.asarray(radius_mm, dtype=np.float64)
+    r_b = 0.5 * d_b
+    rho = np.sqrt(np.maximum(radius * radius - r_b * r_b, 0.0))
+    rho_a = _roll_length(d_a, d_b)
+    delta_um = np.zeros_like(rho)
+    if modification.profile_slope_um != 0.0:
+        assert modification.profile_control_diameter_mm is not None
+        assert modification.profile_slope_pivot_diameter_mm is not None
+        rho_c = _roll_length(modification.profile_control_diameter_mm, d_b)
+        rho_m = _roll_length(modification.profile_slope_pivot_diameter_mm, d_b)
+        if not rho_c < rho_a:
+            raise GeometryInfeasibleError(
+                f"the profile control diameter {modification.profile_control_diameter_mm!r} mm "
+                f"must lie below the tip circle {d_a!r} mm"
+            )
+        delta_um += modification.profile_slope_um * (rho - rho_m) / (rho_a - rho_c)
+    if modification.tip_relief_um > 0.0:
+        assert modification.tip_relief_start_diameter_mm is not None
+        rho_s = _roll_length(modification.tip_relief_start_diameter_mm, d_b)
+        if not rho_s < rho_a:
+            raise GeometryInfeasibleError(
+                f"the tip relief must start below the tip circle: d_Ca = "
+                f"{modification.tip_relief_start_diameter_mm!r} mm, d_a = {d_a!r} mm"
+            )
+        delta_um -= modification.tip_relief_um * np.maximum(rho - rho_s, 0.0) / (rho_a - rho_s)
+    turn: Array = delta_um * 1.0e-3 / r_b
+    return turn
+
+
+def tip_edge_arc(flank_xy: Array, r_a_mm: float, r_K_mm: float, n: int) -> tuple[int, Array, float]:
+    """The tip corner rounding of a left flank: the arc of the radius r_K tangent to the flank
+    polyline ``flank_xy`` (points from the root towards the tip, x < 0, y outwards) and to the
+    tip circle of the radius r_a. Returns the number of flank points that lie below the tangent
+    point on the flank, the ``n`` points of the arc from that tangent point to the tangent point
+    on the tip circle, and the tooth thickness half angle of the latter (the end of the tip
+    land). The centre of the arc lies r_K inside the flank, on the circle r_a - r_K; the tangent
+    point is where the flank's inward normal reaches that circle, found on the polyline."""
+    points = np.asarray(flank_xy, dtype=np.float64)
+    r_a = positive_input(r_a_mm, "tip radius r_a")
+    r_K = positive_input(r_K_mm, "tip corner radius r_K")
+    count = integer_input(n, "number of points of the arc")
+    if count < 2:
+        raise InputRangeError(f"the arc needs at least 2 points, got {n!r}")
+    if points.ndim != 2 or points.shape[1] != 2 or len(points) < 3:
+        raise InputRangeError("the flank must be an (N, 2) array of at least 3 points")
+    if r_K >= r_a:
+        raise GeometryInfeasibleError(f"the tip corner radius {r_K!r} mm exceeds the tip radius")
+    tangent = np.gradient(points, axis=0)
+    length = np.hypot(tangent[:, 0], tangent[:, 1])
+    if not bool(np.all(length > 0.0)):
+        raise GeometryInfeasibleError("the flank polyline repeats a point")
+    tangent = tangent / length[:, None]
+    # the tooth lies to the right of the way up the left flank: the inward normal is the
+    # tangent turned clockwise
+    inward = np.column_stack((tangent[:, 1], -tangent[:, 0]))
+    centres = points + r_K * inward
+    gap = np.hypot(centres[:, 0], centres[:, 1]) - (r_a - r_K)
+    above = np.flatnonzero(gap >= 0.0)
+    if len(above) == 0:
+        raise GeometryInfeasibleError(
+            f"tip corner radius {r_K!r} mm: the flank ends below the arc, no tangent point"
+        )
+    k = int(above[0])
+    if k == 0:
+        raise GeometryInfeasibleError(
+            f"tip corner radius {r_K!r} mm: the arc would start below the first flank point"
+        )
+    g_0, g_1 = float(gap[k - 1]), float(gap[k])
+    s = g_0 / (g_0 - g_1)  # g_0 < 0 <= g_1: the sign change between the two points
+    touch = points[k - 1] + s * (points[k] - points[k - 1])
+    normal = inward[k - 1] + s * (inward[k] - inward[k - 1])
+    normal = normal / float(np.hypot(*normal))
+    centre = touch + r_K * normal
+    top = centre * (r_a / float(np.hypot(*centre)))
+    if top[0] >= 0.0:
+        raise GeometryInfeasibleError(
+            f"tip corner radius {r_K!r} mm: the arcs of both corners overlap, the tip is too narrow"
+        )
+    theta_1 = math.atan2(*(touch - centre)[::-1])
+    theta_2 = math.atan2(*(top - centre)[::-1])
+    sweep = math.remainder(theta_2 - theta_1, 2.0 * math.pi)
+    angles = theta_1 + sweep * np.linspace(0.0, 1.0, count)
+    arc = centre + r_K * np.column_stack((np.cos(angles), np.sin(angles)))
+    arc[0] = touch
+    arc[-1] = top
+    return k, arc, math.atan2(-float(top[0]), float(top[1]))
+
+
 def _gear(generation: GenerationResult, role: Role) -> tuple[PairInput, GearGeneration, float]:
     if not isinstance(generation, GenerationResult):
         raise InputRangeError(
@@ -254,19 +444,32 @@ def _joined(blocks: list[Array]) -> tuple[Array, list[tuple[int, int]]]:
 
 
 def tooth_contour(
-    generation: GenerationResult, role: Role, *, points: int = DEFAULT_POINTS
+    generation: GenerationResult,
+    role: Role,
+    *,
+    points: int = DEFAULT_POINTS,
+    modification: ProfileModification | None = None,
 ) -> ToothContour:
     """The transverse contour of one tooth of a generated gear.
 
     ``generation`` is ``compute_generation(pair)``; it carries the pair as validated. The contour
     recomputes the fillet of the tool tip rounding and the involutes from it. A chamfer given by
     h_K needs its residual thickness s_aK (``GearInput.residual_tip_thickness_mm``), else
-    ``InputRangeError``: the shape of the chamfer is not known.
+    ``InputRangeError``: the shape of the chamfer is not known. ``modification`` puts the
+    deviations of a manufactured flank onto both flanks (``ProfileModification``: tip relief,
+    profile slope, tip corner radius); a tip corner radius replaces the tip chamfer of the
+    generation, and the tip form diameter is then that of the arc's tangent point.
     """
     pair, gear, beta = _gear(generation, role)
     count = integer_input(points, "points per segment")
     if count < 8:
         raise InputRangeError(f"points per segment must be >= 8, got {points!r}")
+    if modification is not None and not isinstance(modification, ProfileModification):
+        raise InputRangeError(
+            f"a ProfileModification is required, got {type(modification).__name__}"
+        )
+    if modification is not None and modification.is_empty:
+        modification = None
     z = gear.number_of_teeth
     m_n = pair.normal_module_mm
     alpha_n = math.radians(pair.normal_pressure_angle_deg)
@@ -290,13 +493,29 @@ def tooth_contour(
         theta_end = rounding.flank_parameter_rad
     _, fillet_r, fillet_psi = tr.fillet_curve(rounding, theta_end, count)
 
-    # involute: from the root form circle to the tip form circle
+    # involute: from the root form circle to the tip form circle (to the tip circle when a tip
+    # corner radius replaces the chamfer: the arc cuts it where it is tangent)
     d_Ff, d_Fa, d_a = gear.root_form_diameter_mm, gear.tip_form_diameter_mm, gear.tip_diameter_mm
-    inv_r, inv_psi = involute_flank(d_b, psi_b, d_Ff, d_Fa, count)
+    rounded = modification is not None and modification.tip_edge_radius_mm > 0.0
+    inv_r, inv_psi = involute_flank(d_b, psi_b, d_Ff, d_a if rounded else d_Fa, count)
+    if modification is not None and modification.turns_the_flank:
+        # the measured deviations turn every involute point; the fillet turns with the first one
+        inv_psi = inv_psi + flank_deviation_turn(inv_r, d_b, d_a, modification)
+        fillet_psi = fillet_psi + flank_deviation_turn(inv_r[:1], d_b, d_a, modification)
 
-    # tip flank: edge break involute of the tool, or a chamfer given by h_K and s_aK, or nothing
+    # tip flank: the arc of the tip corner radius, the edge break involute of the tool, a chamfer
+    # given by h_K and s_aK, or nothing
     quarter = max(divmod(count, 4)[0], 2)  # a quarter of the points for the tip elements
-    if d_Fa < d_a * (1.0 - EPS):
+    left_flank = _polar(inv_r, inv_psi, -1.0)
+    if rounded:
+        assert modification is not None
+        kept, arc, psi_tip = tip_edge_arc(
+            left_flank, 0.5 * d_a, modification.tip_edge_radius_mm, quarter
+        )
+        left_flank = np.concatenate((left_flank[:kept], arc[:1]))
+        left_tip = arc
+        d_Fa = 2.0 * float(np.hypot(*arc[0]))
+    elif d_Fa < d_a * (1.0 - EPS):
         if gear.tool_edge_break_angle_deg is not None and gear.tool_root_form_height_mm is not None:
             alpha_tK = gn.edge_break_transverse_angle(
                 math.radians(gear.tool_edge_break_angle_deg), beta
@@ -307,6 +526,9 @@ def tooth_contour(
             )
             psi_bK = gn.edge_break_base_half_angle(s_tK, d, alpha_tK)
             tip_r, tip_psi = involute_flank(d_bK, psi_bK, d_Fa, d_a, quarter)
+            if modification is not None and modification.turns_the_flank:
+                # the edge break of the tool follows the turned end of the involute
+                tip_psi = tip_psi + flank_deviation_turn(inv_r[-1:], d_b, d_a, modification)
         elif gear.residual_tip_thickness_mm is not None:
             tip_r, tip_psi = chamfer_flank(
                 0.5 * d_Fa, float(inv_psi[-1]), 0.5 * d_a, gear.residual_tip_thickness_mm, quarter
@@ -316,23 +538,21 @@ def tooth_contour(
                 f"{role}: the contour needs the shape of the tip chamfer: give the residual tip "
                 "thickness s_aK (residual_tip_thickness_mm) with the radial height h_K"
             )
+        left_tip = _polar(tip_r, tip_psi, -1.0)
         psi_tip = float(tip_psi[-1])
     else:
-        tip_r = tip_psi = np.empty(0)
+        left_tip = np.empty((0, 2))
         psi_tip = float(inv_psi[-1])
 
     # tip circle from the left tip point to the right tip point
     tip_angle = np.linspace(-psi_tip, psi_tip, quarter)
     tip = np.column_stack((0.5 * d_a * np.sin(tip_angle), 0.5 * d_a * np.cos(tip_angle)))
 
-    left = [
-        _polar(fillet_r, fillet_psi, -1.0),
-        _polar(inv_r, inv_psi, -1.0),
-        _polar(tip_r, tip_psi, -1.0),
-    ]
+    mirror = np.array([-1.0, 1.0])
+    left = [_polar(fillet_r, fillet_psi, -1.0), left_flank, left_tip]
     right = [
-        _polar(tip_r, tip_psi, 1.0)[::-1],
-        _polar(inv_r, inv_psi, 1.0)[::-1],
+        left_tip[::-1] * mirror,
+        left_flank[::-1] * mirror,
         _polar(fillet_r, fillet_psi, 1.0)[::-1],
     ]
     blocks = [*left, tip, *right]
@@ -508,13 +728,16 @@ def stplus_contour(case: str, gear: int) -> Array:
 __all__ = [
     "ContourDiff",
     "ContourSegment",
+    "ProfileModification",
     "ToothContour",
     "chamfer_flank",
     "compare",
     "distances",
+    "flank_deviation_turn",
     "gear_polygon",
     "involute_flank",
     "stplus_contour",
+    "tip_edge_arc",
     "tooth_contour",
 ]
 

@@ -323,11 +323,32 @@ def _fillet_map(
     stem: Path,
     step: str,
 ) -> list[Path]:
-    """a_B,V over the fillet surface: arc position (angle about the wheel axis in the part
-    frame) over the face width."""
-    index = [i for i, zone in enumerate(zones) if zone == f"fillet {fillet}"]
-    if not index:
+    """a_B,V over the surface between the centres of the two teeth that bound the fillet: the
+    fillet itself, the two flanks facing it and the tip lands up to the tooth centres (user
+    2026-10-21: the map up to the tooth centres, 90° and just under 97° for T3 to T4), arc
+    position (angle about the wheel axis in the part frame) over the face width."""
+    fillet_index = [i for i, zone in enumerate(zones) if zone == f"fillet {fillet}"]
+    if not fillet_index:
         return []
+    teeth = fillet.split("_")
+    # the tooth centres of the two teeth that bound the fillet, as vertical lines with their
+    # names, so that the reader can place the angle (user 2026-10-20); the heads' nodes give the
+    # centre angle of each tooth
+    centres: list[float] = []
+    for tooth in teeth:
+        head = [i for i, zone in enumerate(zones) if zone == f"{tooth} head"]
+        if head:
+            head_xy = file.coordinates[head].astype(float)
+            centres.append(float(np.degrees(np.arctan2(head_xy[:, 1].mean(), head_xy[:, 0].mean()))))
+    all_angle = np.degrees(np.arctan2(file.coordinates[:, 1], file.coordinates[:, 0]))
+    index = list(fillet_index)
+    if len(centres) == 2:
+        lo, hi = min(centres), max(centres)
+        wanted = {f"{tooth} {part}" for tooth in teeth for part in ("flank", "head")}
+        index += [
+            i for i, zone in enumerate(zones)
+            if zone in wanted and lo - 1.0e-6 <= all_angle[i] <= hi + 1.0e-6
+        ]
     coordinates = file.coordinates[index].astype(float)
     angle = np.degrees(np.arctan2(coordinates[:, 1], coordinates[:, 0]))
     values = result.cyclic.a_B_V[index]
@@ -335,10 +356,34 @@ def _fillet_map(
     scatter = axes.scatter(
         angle, coordinates[:, 2], c=values, s=9, cmap=DEGREE_COLOURMAP, marker="s", linewidths=0
     )
+    for k, (tooth, centre) in enumerate(zip(teeth, centres, strict=False)):
+        axes.axvline(centre, color="0.25", linewidth=0.6, linestyle=(0, (3, 2)))
+        axes.text(
+            centre + (0.08 if k == 0 else -0.08), coordinates[:, 2].max() + 0.3,
+            f"Zahnmitte {tooth}", ha="left" if k == 0 else "right", va="bottom",
+            fontsize="small", color="0.25",
+        )
+    if centres:
+        axes.set_xlim(min(centres) - 0.15, max(centres) + 0.15)
+    # the line a_B,V = 1 in black, so that the limit stays readable in a black-and-white print
+    finite = np.isfinite(values)
+    if finite.sum() > 3 and values[finite].min() < 1.0 < values[finite].max():
+        try:
+            axes.tricontour(
+                angle[finite], coordinates[finite, 2], values[finite], levels=[1.0],
+                colors="black", linewidths=0.7,
+            )
+            axes.plot([], [], color="black", linewidth=0.7, marker="none",
+                      label="$a_{\\mathrm{B,V}} = 1$")
+            axes.legend(loc="upper center", fontsize="small", frameon=True)
+        except (ValueError, RuntimeError):
+            pass
     bar = figure.colorbar(scatter, ax=axes, pad=0.02)
     bar.set_label("$a_{\\mathrm{B,V}}$")
+    decimal_comma(bar.ax, which="y")
     axes.set_xlabel("Winkel um die Radachse in °")
     axes.set_ylabel("$z$ in mm")
+    axes.set_ylim(coordinates[:, 2].min() - 0.3, coordinates[:, 2].max() + 1.6)
     decimal_comma(axes)
     return save_figure(figure, stem)
 
@@ -402,7 +447,8 @@ def _position_curves(
             ax.axvline(x, color=SHEET.colour("tum_grau_50"), linewidth=0.6)
     for x, label in named:
         top.text(x, top.get_ylim()[1], label, ha="center", va="bottom")
-    top.set_ylabel("$\\sigma_{\\mathrm{V}}$ in MPa")
+    equivalent = str(getattr(settings, "equivalent", "mises")).lower()
+    top.set_ylabel("$\\sigma_{\\mathrm{V,Hill}}$ in MPa" if "hill" in equivalent else "$\\sigma_{\\mathrm{V,Mises}}$ in MPa")
     bottom.set_ylabel("$\\sigma_{\\mathrm{V,Mises}}\\,\\mathrm{sgn}\\,I_1$ in MPa")
     bottom.set_xlabel("Wälzweg ab A in mm")
     legend_outside(figure, top, where="bottom", ncol=1)

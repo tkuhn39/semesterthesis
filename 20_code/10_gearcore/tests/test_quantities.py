@@ -180,12 +180,19 @@ NOT_A_QUANTITY = {
     ("tooth_contour", "generation"): "a contract",
     ("tooth_contour", "role"): "pinion or wheel",
     ("tooth_contour", "points"): "number of points",
+    ("tooth_contour", "modification"): "a contract (ProfileModification)",
     ("gear_polygon", "contour"): "a contract",
     ("gear_polygon", "arc_points"): "number of points",
     ("compare", "contour"): "a contract",
     ("compare", "reference"): "reference points",
     ("stplus_contour", "case"): "a fixture case",
     ("stplus_contour", "gear"): "gear number",
+    # the measured deviations of a flank (2026-10-19)
+    ("flank_deviation_turn", "radius_mm"): "radii of the flank points",
+    ("flank_deviation_turn", "modification"): "a contract (ProfileModification)",
+    ("tip_edge_arc", "flank_xy"): "the flank polyline",
+    ("tip_edge_arc", "r_a_mm"): "tip radius",
+    ("tip_edge_arc", "n"): "number of points",
     # inspection dimensions
     ("compute_inspection", "generation"): "a contract",
     ("compute_inspection", "chord_diameter_mm"): "cylinders d_y of the chord, one per gear",
@@ -227,7 +234,7 @@ def _is_numeric(annotation: Any) -> bool:
 def test_registry_is_well_formed() -> None:
     sources = load_sources()
     registry = quantities()
-    assert len(registry) == 233
+    assert len(registry) == 236
     symbols: dict[str, str] = {}
     for name, entry in registry.items():
         current = [entry.source] if entry.source else []

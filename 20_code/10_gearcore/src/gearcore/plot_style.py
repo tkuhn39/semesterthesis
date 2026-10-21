@@ -393,6 +393,7 @@ def apply(*, font_folder_override: Path | None = None) -> StyleSheet:
             "axes.spines.top": False,
             "axes.spines.right": False,
             "axes.grid": True,
+            "axes.axisbelow": True,
             "grid.color": hex_colour(colours["tum_grau_20"]),
             "grid.linewidth": thin,
             "axes.edgecolor": hex_colour(colours["tum_schwarz"]),

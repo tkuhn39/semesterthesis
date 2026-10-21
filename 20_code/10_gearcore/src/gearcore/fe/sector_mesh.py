@@ -417,6 +417,7 @@ def sector_mesh(
     counts: MeshCounts | None = None,
     closed: bool = False,
     fillet: fl.FilletVariant | None = None,
+    modification: ct.ProfileModification | None = None,
 ) -> SectorMesh:
     """The transverse mesh of ``teeth`` teeth of the gear ``role`` between two shoulder pitches,
     or, with ``closed``, of the full wheel: ``teeth`` must then be the number of teeth of the
@@ -428,7 +429,12 @@ def sector_mesh(
     kept blocks of the template are resampled to those numbers of elements
     (``fe.resample``); the rim then has ``counts.rim_rings`` rings over the kept depth.
     With ``fillet`` the trochoid of the tooth is replaced by that root fillet variant
-    (``gearcore.fillet.apply``) before the template is mapped onto the contour.
+    (``gearcore.fillet.apply``) before the template is mapped onto the contour. With
+    ``modification`` the measured deviations of the flank (tip relief, profile slope, tip
+    corner radius; ``contour.ProfileModification``) are put onto the contour; the tip corner
+    arc takes the rows of the tip edge break of the template (``counts.at_tip_edge_break``,
+    three rows resolve a 0,2 mm arc to a few micrometres). A fillet variant together with a
+    modification is not built (``NotSupportedError``: ``fillet.apply`` rebuilds the involute).
     """
     if not isinstance(generation, GenerationResult):
         raise InputRangeError(
@@ -442,7 +448,16 @@ def sector_mesh(
     tpl = template if template is not None else load_sector_template()
     count = integer_input(teeth, "number of teeth of the sector")
     rings = integer_input(rim_rings, "number of rim rings")
-    contour = ct.tooth_contour(generation, role, points=CONTOUR_POINTS)
+    if modification is not None and not isinstance(modification, ct.ProfileModification):
+        raise InputRangeError(
+            f"a ProfileModification is required, got {type(modification).__name__}"
+        )
+    if fillet is not None and modification is not None and not modification.is_empty:
+        raise NotSupportedError(
+            "a root fillet variant together with a profile modification is not built: the "
+            "variant rebuilds the involute above its transition diameter without the deviations"
+        )
+    contour = ct.tooth_contour(generation, role, points=CONTOUR_POINTS, modification=modification)
     if fillet is not None:
         contour = fl.apply(generation, role, fillet, points=CONTOUR_POINTS).contour
     z = contour.number_of_teeth

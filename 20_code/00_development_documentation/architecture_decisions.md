@@ -1946,6 +1946,88 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     ellipse of Frühe is reported as a literature contour whose optimum was found on other
     gears; the Stommel check of the variants waits for the two full series of the chain.
 
+### Amendment of 2026-10-19 (M7: the gears as manufactured, three variants for a night run)
+
+54. **The measured geometry in the FE (2026-10-19; the user's decisions of that day, before the
+    bionic series and before the thesis pre-version).** Three deck folders on the pocket body at
+    A to E, each W1 to W4 × QS/DY1/DY2, in the chain `nachtlauf_2026-10-19_messvarianten`:
+    `variante_stahl_gemessen` (the steel pinion as measured, the wheel of the STplus case),
+    `variante_kunststoff_gemessen` (the pinion of the case, the plastic wheel as measured),
+    `variante_beide_gemessen` (both). Nothing of the STplus case changes on disk.
+    (a) **Numbers** (`gearcore/data/fe/as_manufactured.yaml`, checked against the raw files by
+    `tests/test_manufactured.py`): the median over the parts of the latest P40 round, so that
+    outliers do not count (user); pinion of the rig series 95911 to 95920 (7): span W_k 16,797
+    mm (generated 16,812), tip diameter 52,879 (52,894), root diameter 48,321 (48,394), tip
+    relief 23,6 µm linear from d_Ca 51,946 mm to the tip circle (GINA fKo, median of the 14
+    flank values; the scan's 25 to 27 µm are not taken, user), no profile slope (median 0,0 /
+    1,7 µm, ground flank), the edge stays the 0,1 mm model rounding of the rigid surface
+    (FE-19; the real edge is sharp). Wheel of the core group (10): W_k 16,972 (generated
+    16,973), tip 54,0515 (54,022), root 49,5055 (49,523), profile slope f_Hα +10,25 µm (median
+    of the 20 flank values, all positive = material towards the tip, DIN ISO 1328-1:2018
+    4.4.8.2, p. 32; the user: a manufacturing feature like the others, included), tip corner
+    radius r_K 0,21 mm (median of the arcs of all 163 scanned corners, user: "über alle
+    Räder") in place of the 45° edge break of the tool (h_K 0,117). The lead deviations of
+    both gears stay out (no systematic sign; the user wants them later as a sensitivity: a
+    relative slope of 20 µm over the face width as a twist of the rigid surface, FE-27).
+    (b) **How the numbers enter** (`gearcore.manufactured.apply`, `contour.ProfileModification`):
+    the span sets the span allowance so that the generated span (DIN 21773 Eq. (14) with x_Es)
+    is the measured one, the nominal x of the case stays (pinion −293,1 µm instead of −278,
+    x_E −0,2251; wheel −208,0 instead of −207); the tip diameter is given as it is, and the
+    tool dedendum of the wheel (1,0) is raised to 1,0255, because the STplus rule of ADR-114
+    would top the measured tip circle at 54,020 mm (a moulded wheel has no such tool); the
+    root diameter sets the tool addendum (Eq. (125) solved for h_aP0: pinion 1,1144, wheel
+    1,2575), the fillet keeps the tool tip radius of the case. The flank deviations are
+    applied as turns of the involute points about the axis by delta / r_b (the normal of an
+    involute point is a tangent of the base circle), linear in the roll length: the relief
+    from d_Ca to the tip circle, the slope from the profile control diameter d_Cf 50,3 mm (the
+    P40's evaluation start) to the tip circle (the norm extrapolates to it) with the zero on
+    the measuring circle of the span d_M 51,728 mm (DIN 21773 Eq. (17)), so that the measured
+    span keeps its meaning; the fillet turns with the first involute point (continuity at the
+    root form circle; the root chord of the wheel gets 2 × 5 µm thinner). The tip corner
+    radius is an arc tangent to the (turned) flank and to the tip circle (`contour.tip_edge_arc`,
+    centre on the circle r_a − r_K, tangent point found on the sampled flank); the generation
+    then gets the chamfer of the arc (h_K 0,1235 mm, s_aK 0,5037 mm of its tangent points,
+    DIN ISO 21771 §6.1.2) instead of the tool's edge break, so that d_Fa (53,8044 mm), the
+    start A of the path of contact and ε_α (1,1606; both measured 1,1546; base 1,1539) are
+    those of the rounded tooth. Both flanks carry the deviations (the measurements show them
+    on both). Registry: `tip_relief_start_diameter` (d_Ca, ISO 21771 Bild 25, p. 56, page
+    rendered), `profile_control_diameter` (d_Cf, DIN ISO 1328-1 3.4.1.1, p. 18),
+    `tip_edge_radius` (r_K, the project's symbol for the "Kopfkantenradius" of 3.4.1.2, which
+    the norm names without a symbol).
+    (c) **In the decks** (`build_fe_decks.py decks --as-manufactured <variant>
+    --named-points-only`): the modification reaches the sector mesh (`sector_mesh(...,
+    modification=)`), the rigid surface (before its 0,1 mm rounding) and the pair picture;
+    the body of the drawing is placed on the measured tooth (tip radius 27,0257 instead of
+    27,011, the body below the root circle unchanged); the named points A to E are found by
+    the generator on the grid of the changed geometry (`named_points_only`: the indices of the
+    labelled grid entries, here 31 / 36 / 49 / 63 / 68 in all three variants, the file numbers
+    keep the numbering of the full grid); the manifest records the geometry (`geometry`: the
+    generated circles of both gears, the path of contact, the variant with every change) and
+    the README names every number with its source. A root fillet variant together with a
+    modification is refused (`fillet.apply` rebuilds the involute without the deviations).
+    (d) **Meshes and mapping.** The steel variant keeps the wheel mesh of the pocket series
+    (byte-identical but for the title line, 83 650 nodes), so the user's pocket cards apply
+    and W1 to W4 are written at once (60 jobs). The two variants with the measured wheel share
+    one new wheel mesh (`--at-tip-edge-break 3`: three element rows on the arc, 86 800 nodes,
+    75 732 C3D8I; one row would make the arc one chord, a chamfer of 35 µm sagitta); they are
+    written with W1 and W2 (30 jobs each) and get W3/W4 after the user's CONVERSE mapping of
+    `wheel-pocket_mesh.inp` of either folder (one mapping for both; suggested names
+    `wheel-pocket-messung_mesh_{QS,DY1,DY2}.cof`). The template's corner quad at the junction
+    of the arc and the tip land is a sliver (corner sine 0,19 with three rows, 0,29 with two;
+    the quad spans three nearly collinear surface nodes because the arc runs tangentially into
+    the tip land, where the template expects the kink of a chamfer): one quad per corner, ten
+    per sector, accepted for the night run as FE-26; a smooth-corner topology of the template
+    is the fix.
+    (e) **What the steel side changes and what not.** In the single-flank contact of the model
+    the pinion's thickness and root diameter change nothing (the working flank lies on the same
+    involute, the back flank and the root never touch); they are carried for completeness. The
+    relief unloads the pinion tip edge at E, the smaller tip diameter moves E inwards by 0,018
+    mm of roll length (ρ_E1 11,174 instead of 11,192); the measured wheel moves A outwards by
+    0,020 mm (ρ_A1 7,766 instead of 7,786) and its profile slope puts material on the wheel
+    tip. Positions per variant: steel A/B/C/D/E ρ_1 = 7,786 / 8,222 / 9,421 / 10,738 / 11,174;
+    plastic 7,766 / 8,240 / 9,421 / 10,718 / 11,192; both 7,766 / 8,222 / 9,421 / 10,718 /
+    11,174 mm.
+
 ## ADR-117 — Measurement data of the manufactured gears: parsers in `io`, pure evaluation in `gearcore.measurement`, the user's decisions in `parts.yaml`, text exports versioned (2026-10-10)
 
 **Context.** The running tests of the thesis are accompanied by three kinds of measurement of
@@ -2867,6 +2949,80 @@ track L:
    so the path spans the text width (`fe_series_analysis.py`); marker size unchanged until the
    user judges the print. The programming assistance is named once, in 3.5, and nowhere else
    (chapter 8 refers to 3.5).
+
+### Amendment of 2026-10-21 (the revision after the user's first reading of the whole draft)
+
+The user read the draft of 2026-10-18 in one pass and left 113 `% TK:` remarks and notes. His
+decisions, recorded for the revision and for every later chapter:
+
+1. **Orange marking.** Every rewritten or new sentence, paragraph, table value and caption is set
+   in `\rev{...}` (orange `tumdiag3`); `\revmarkfalse` builds the submission black. Deleted
+   passages stay as `% gestrichen (TK ...)` comments, worked-in remarks as `% TK erledigt (...)`.
+2. **Chronology of the thesis.** The methods part carries no results (no failure window of the
+   teeth 36 to 40 anywhere, no mesh-convergence or pilot numbers in 3.6, no failed teeth in 3.3);
+   the discussion only uses numbers that stand in chapters 5 and 6 first.
+3. **Names and citations.** Wheels by ME number only, never by the run id of the workbook; the
+   torque-loss criterion is Fiederling's (female), adopted under observation; page numbers in every
+   citation, the primary source always (Winkler 2009 and Rossow 1964 as "zitiert nach" until the
+   user procures the title pages; Bathe 1996 and Dahmen/Reusken 2022 are on disk since 2026-10-06 as Bat96 and DahReu22,
+   the Richardson extrapolation cites Dahmen/Reusken S. 523 since 2026-10-21 evening).
+4. **Comparison material.** Only the 14 POM runs of 2023 (KV4, 2250 1/min, oil 73 to 76 °C);
+   no PEEK (the type of 2023 is ambiguous in MA-0296), no POM or PEEK runs of 2026.
+5. **Pocket body as the main case.** The pocket series W1 to W4 QS (99 positions) carries 5.2,
+   5.3 and 7; the ring series of the pre-investigations stays the comparison (appendix F).
+6. **VDI 2736 Blatt 2 nominal stress** from the Y_Fa, Y_Sa, Y_eps of the STplus report of kst-E
+   (CCS 1996, load at the tip) for now; the own ISO 6336-3 computation only with spare budget.
+7. **Manufacturing effects.** The three measured-geometry deck variants are not computed before
+   the pre-version; 5.4.3 holds the description and a note; the tip-cap mesh topology follows
+   after the revision. The RIKOR-versus-W1 modulus question (3900 against 2282 MPa) stays as a
+   marked note until the end (either RIKOR with the card's E, or W1 with 3900 MPa).
+8. **Figures.** Grid behind the data; z-axis horizontal in the body drawings with the region
+   names; bars thin with hatching; legends complete; reference macros bold; the zone map with
+   labels pulled apart; the utilisation map with the tooth centres and the a_B,V = 1 line.
+9. **Answers recorded in the thesis text:** the card of 0° bars of PA46-GF30 IS the book's
+   isotropic prescription (2.5, 2.7); Tsai-Hill and Hill are one quadratic form, the book's L/N
+   naming is a notation, tension and compression are handled by the book's pressure correction
+   and the mean stress, the comprehensive check is out of reach without directional S-N curves
+   (master-Wöhler argument, 3.7); the pearl-string mixed form of DIN 50100 (3.8); the
+   double-log line is a curve over a linear torque axis (6.3); "Ritzeldrehung" is the turn of
+   the rigid pinion to equilibrium (3.6); the strain rate in operation is 45 to 90 1/s, DY2 is the
+   closest card (3.6, 4.3); the edge pressure is no design quantity, three reasons for the 0,1 mm
+   edge (4.2); the Mises maximum at the face is the plane-stress state, Hill moves it to the mid
+   width (5.3); the rate ordering of the orientation effect does not follow E0/E90 of the cards
+   (2,17 / 2,09 / 1,85), cause open (5.1).
+10. **Open for the user:** the cap reading (own against S-Life; a request to PART Engineering is
+    drafted in the interim report), the assignment of the damage photos to the ME numbers, the
+    microscope images of the three flank fractures, the title pages of Winkler, Rossow, Bathe,
+    Dahmen/Reusken.
+11. **After-test scans (M5, evening).** The free involute fit of `contour_scan` diverges on a
+    worn flank and a flank fitted with its own involute hides a uniform removal in the involute
+    angle. A scan after the run is therefore placed with the centre that puts its tip and root
+    runs on the GINA tip and root circles of the same part before the run (robust least
+    squares, radii fixed; with free radii the short arcs of three teeth let the centre slide
+    along the tooth centre line), and every tooth is turned on its two root fillets, which the
+    pinion never touches, onto the nominal tooth. The wear of a flank is the mean of the 49
+    before-test flanks placed the same way minus its own deviation from the nominal outline.
+    Findings for the thesis: only the loaded flank wears, uniformly over the active profile
+    (156 to 197 µm at 8 Nm after 25,0e6 cycles, 95 to 135 µm at 12 Nm after 2,42e6, 46 to
+    89 µm at 16 Nm after 1,92e6); the worn zone begins at r = 25,42 to 25,54 mm, 0,1 to
+    0,2 mm below the computed start of the active profile (25,66 mm) and 0,3 mm below the
+    FE edge-contact node row (25,80 mm), so the engagement starts earlier in the run than in
+    the undeformed geometry; the loaded tip corner is reworked to 0,03 to 0,12 mm. The two
+    root-fractured teeth 36 and 37 of 97340 stay in the tables and out of the figures.
+12. **Second reading (2026-10-21 evening).** The orange of the first revision is turned black,
+    only changes after the user's second message stay orange. His rules: no semicolons and as
+    few colons as possible in the prose; the grid of every figure behind the data (figures older
+    than the rcParams change are regenerated, not patched); the utilisation map reaches the tooth
+    centres; the wear overlay is shown unmagnified and as the worn tooth on the nominal tooth
+    (MA-0296 Abbildung 76); a magnified overlay distorts the tip and is not used again. Answers
+    recorded in the text: the strain rate is one value per load level (60/90 s⁻¹ at 8/16 Nm with
+    the QS modulus, 45/70 with DY2), the rate changes deflections but hardly the stresses because
+    the torque is prescribed (only load sharing at C and the plastic steps respond), the cap
+    reading difference (factor 2,5) lies within the accuracy the book itself calls good (factor 2
+    to 3, S. 375), the FE edge contact reaches 25,60 mm while the worn zone begins at 25,42 to
+    25,45 mm (named teeth only). The W2 critical node at 94,1° belongs to the loaded flank of
+    T4, not T3 (the loaded flank of a wheel tooth lies at the smaller angle, shown by the
+    contact scan); the equations (6.24) to (6.26) of the cap stand on S. 374 of the book.
 
 ## ADR-119 — Fibre orientation of the moulding simulation, evaluated on the mapped FE mesh and compared with the CT zones of FVA 856 I (2026-10-13)
 

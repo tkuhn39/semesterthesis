@@ -1,0 +1,74 @@
+# The gears of the running tests as manufactured: the measured numbers that replace the nominal
+# ones of the STplus case in the FE variants of 2026-10-19 (user decisions of that day, ADR-116).
+#
+# Every number is the MEDIAN over the parts of the group, taken from the latest Klingelnberg P40
+# round of each part (gearcore.measurement.gina, latest_per_part) so that single outliers do not
+# count (user, 2026-10-19: "Median, dass Ausreisser nicht mit reinspielen"); the flank values
+# (left and right of every part) enter one list where a quantity is measured per flank. The
+# groups are those of measurement/parts.yaml: the rig series of the pinion (95911 to 95920, seven
+# parts) and the core group of the wheels (ten parts of the user's own running tests). The tip
+# corner radius of the wheel is the median of the arcs fitted to all 163 scanned tip corners of
+# the 17 contour-scanned wheels (80_output/messungen/konturscan/wheel/kanten.csv, M3). The
+# diameters that bound a modification (start of the tip relief, profile control diameter) are the
+# ones the measuring program printed for every part (identical over the parts). The medians were
+# computed on 2026-10-19 (session script gina_medians.py over 70_input/71_Messungen) and are
+# checked against the raw files by tests/test_manufactured.py.
+#
+# What the FE keeps as a model choice: the tip corners of the rigid pinion surface stay rounded
+# with 0,1 mm (FE-19; the real edge is sharp, scan arc radius at most 0,008 mm, microscope
+# F4092_95912), the pinion flanks carry no profile slope (median 0,0 / 1,7 um, ground flanks),
+# the lead deviations of both gears are left out (no systematic sign; the user wants a separate
+# sensitivity later), the body of the wheel is the one of the drawing.
+provenance:
+  by: "Claude from the user's measurements, numbers computed 2026-10-19"
+  gina: "70_input/71_Messungen/GINA, Klingelnberg P40, latest round per part (October 2025 pinions, May 2026 wheels)"
+  contour: "70_input/71_Messungen/Konturscan, evaluation 80_output/messungen/konturscan (2026-10-11/12)"
+  decisions: "user 2026-10-19: medians; wheel tip corner 0,21 over all wheels; relief from GINA, not the scan; f_H_alpha included; lead deviations out"
+cases:
+  kst_e:
+    gears:
+      pinion_measured:
+        description: "Stahlritzel der Prüfstandsserie 95911 bis 95920 (Median der letzten GINA-Runde, 7 Teile)"
+        span_measurement_mm: 16.797
+        number_of_teeth_spanned: 6
+        tip_diameter_mm: 52.879
+        root_diameter_mm: 48.321
+        tip_relief_um: 23.6
+        tip_relief_start_diameter_mm: 51.946
+        profile_slope_um: 0.0
+        profile_control_diameter_mm: 50.4
+        tip_edge_radius_mm: 0.0
+        sources:
+          - "GINA tabelle_streuung (pinion): W_k 16,772 bis 16,914 (Mittel 16,808), Kopf 52,877 bis 52,888, Fuß 48,299 bis 48,353"
+          - "GINA kopfruecknahme_ritzel: fKo je Flanke -22,4 bis -24,6 um, Zone 51,946 bis 52,880 mm, 14 Flankenwerte, Median -23,6"
+          - "Konturscan 95912 (2026-10-12): Rücknahme 25 bis 27 um am Kopf (Gerade), Kante scharf, nicht übernommen (Nutzer: GINA)"
+          - "Profilauswertung der P40: 50,4 bis 51,946 mm; f_H_alpha Median links 0,0, rechts 1,7 um: keine Modifikation (geschliffene Flanke)"
+        note: "Zahnweite und Fußkreis ändern den Einflankenkontakt des FE nicht (die Arbeitsflanke liegt auf derselben Evolvente); sie sind mitgeführt, damit der Fall vollständig ist. Die Kopfkante der starren Fläche bleibt die Modellrundung 0,1 mm (FE-19)."
+      wheel_measured:
+        description: "Kunststoffrad der Kerngruppe (zehn Laufversuchsräder, Median der letzten GINA-Runde) mit der Kopfkantenrundung aller gescannten Räder"
+        span_measurement_mm: 16.972
+        number_of_teeth_spanned: 6
+        tip_diameter_mm: 54.0515
+        root_diameter_mm: 49.5055
+        tip_relief_um: 0.0
+        profile_slope_um: 10.25
+        profile_control_diameter_mm: 50.3
+        tip_edge_radius_mm: 0.21
+        sources:
+          - "GINA tabelle_streuung (wheel, core): W_k 16,962 bis 16,984 (Mittel 16,973 = erzeugt), Kopf 54,014 bis 54,068, Fuß 49,466 bis 49,520"
+          - "GINA f_H_alpha je Flanke 5,1 bis 13,3 um auf allen Rädern positiv (Material zum Kopf hin, DIN ISO 1328-1 4.4.8.2), 20 Flankenwerte, Median 10,25; Profilauswertung 50,3 bis 54,022 mm"
+          - "Konturscan kanten.csv: Bogen an 163 Ecken von 17 Rädern, Median 0,21 mm (Kerngruppe 0,225), Zeichnung R 0,2; STplus rechnet eine 45°-Fase mit h_K 0,117 (MEAS-11)"
+        note: "Der Fußhöhenfaktor des STplus-Werkzeugs (1,0) würde den gemessenen Kopfkreis auf 54,024 beschneiden (STplus-Regel, ADR-114); das gespritzte Rad hat dieses Werkzeug nicht, die Variante hebt den Faktor an (sonst ohne Wirkung). Die Kopfkantenrundung ersetzt die Fase des Werkzeugs; h_K und s_aK der Erzeugung folgen aus dem Berührpunkt des Bogens (DIN ISO 21771 §6.1.2)."
+    variants:
+      stahl:
+        description: "Stahlritzel wie gefertigt, Kunststoffrad nach dem STplus-Fall"
+        pinion: pinion_measured
+        wheel: null
+      kunststoff:
+        description: "Stahlritzel nach dem STplus-Fall, Kunststoffrad wie gefertigt"
+        pinion: null
+        wheel: wheel_measured
+      beide:
+        description: "Stahlritzel und Kunststoffrad wie gefertigt"
+        pinion: pinion_measured
+        wheel: wheel_measured

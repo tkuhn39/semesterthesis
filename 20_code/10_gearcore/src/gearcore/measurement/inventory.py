@@ -107,8 +107,14 @@ FOLDER_RULES: tuple[tuple[Kind, re.Pattern[str]], ...] = (
 microscope images (tooth tips, 2026-10-12) name no part in their folder: the part comes from the
 ME number through parts.yaml (``classify(..., part_of_me)``)."""
 
-IGNORED = re.compile(r"^(Auswertung/.*|.*/Thumbs\.db)$")
-"""Files of the folder that are not measurements (the Excel macro, thumbnail caches)."""
+IGNORED = re.compile(
+    r"^(Auswertung/.*|.*/Thumbs\.db"
+    r"|Mikroskop/Bilder/(Schadensbilder_Kunststoffraeder|Waermebildaufnahme_Kunststoffraeder)/.*)$"
+)
+"""Files of the folder that are not measurements of a part: the Excel macro, thumbnail caches,
+and the photos the user stores by load level without a part number (the damage pictures of the
+running tests and the thermal-camera screenshots, moved below ``Mikroskop/Bilder`` on
+2026-10-21); the thesis takes them by file name (``thesis_thermal_images.py``, bilder.yaml)."""
 
 
 class MeasurementFile(FrozenModel):

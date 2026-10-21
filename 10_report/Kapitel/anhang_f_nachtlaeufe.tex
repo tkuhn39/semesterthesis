@@ -2,4 +2,75 @@
 \label{sec:anhang_f}
 % Inhalt: Tabellen der Piloten und Nachtläufe (fe_simulation_log.md, Auswahl).
 
-Die Piloten und Nachtläufe des FE-Modells sind in einem Tagebuch mit Ordner, Einstellungen, Rechenzeit und Ergebnis je Job festgehalten. \Note{PH: Auswahl der Tabellen (Kopfkontakt 36/54 Reihen mal $0{,}02$/$0{,}05$/$0{,}1$\,mm, Tabelle-4-Varianten, Taschenserie, Fußrundungsvarianten W1 bis W4) aus dem Tagebuch der Simulationen.}
+Die Piloten und Nachtläufe des FE-Modells sind in einem Tagebuch mit Ordner, Einstellungen, Rechenzeit und Ergebnis je Job festgehalten. \tabref{tab:waelzweg_ring} nennt die Werte der Ringserie der Voruntersuchungen, auf der \secref{sec:kopfkante} und \secref{sec:stufen_raten_koerper} beruhen, in derselben Gliederung wie \tabref{tab:waelzweg_normpunkte} für den Taschenkörper.
+
+\begin{table}[htbp]
+    \caption{Beanspruchung an den Normpunkten A, C und E und Maximum über den Wälzweg je Werkstoffstufe auf dem Ringkörper, quasistatische Karte, Größtwerte über die Zahnbreite: größte Zugspannung $\sigma_{\mathrm{1}}$ und größte Druckspannung $|\sigma_{\mathrm{3}}|$ der Fußrundung in MPa, Ritzeldrehung $\varphi_{\mathrm{1}}$ in mrad an C und größter Kontaktdruck $p_{\mathrm{max}}$ in MPa über den Wälzweg.}
+    \label{tab:waelzweg_ring}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{L{1.0cm}L{0.8cm}L{1.0cm}L{1.0cm}L{1.0cm}L{1.1cm}L{1.0cm}L{1.0cm}L{1.0cm}L{1.1cm}L{1.1cm}L{1.1cm}}
+        $T_{2}$  & Stufe & $\sigma_{\mathrm{1}}$ A & $\sigma_{\mathrm{1}}$ C & $\sigma_{\mathrm{1}}$ E & $\sigma_{\mathrm{1}}$ max & $|\sigma_{\mathrm{3}}|$ A & $|\sigma_{\mathrm{3}}|$ C & $|\sigma_{\mathrm{3}}|$ E & $|\sigma_{\mathrm{3}}|$ max & $\varphi_{\mathrm{1}}$ C & $p_{\mathrm{max}}$ \\
+        \hline
+        $8$\,Nm  & W1    & $35{,}2$                & $56{,}1$                & $31{,}4$                & $58{,}7$                  & $43{,}4$                  & $68{,}0$                  & $38{,}6$                  & $71{,}3$                    & $2{,}34$                 & $112{,}7$          \\
+                 & W2    & $26{,}7$                & $38{,}3$                & $26{,}1$                & $40{,}0$                  & $32{,}9$                  & $44{,}6$                  & $30{,}4$                  & $46{,}2$                    & $2{,}54$                 & $78{,}1$           \\
+                 & W3    & $41{,}4$                & $65{,}1$                & $36{,}1$                & $66{,}9$                  & $47{,}1$                  & $75{,}9$                  & $42{,}8$                  & $80{,}2$                    & $2{,}40$                 & $125{,}6$          \\
+                 & W4    & $33{,}1$                & $48{,}6$                & $32{,}0$                & $49{,}3$                  & $39{,}9$                  & $55{,}6$                  & $36{,}6$                  & $57{,}7$                    & $2{,}55$                 & $88{,}5$           \\
+        $12$\,Nm & W1    & $52{,}3$                & $70{,}4$                & $46{,}5$                & $72{,}1$                  & $64{,}5$                  & $85{,}3$                  & $58{,}5$                  & $87{,}6$                    & $2{,}96$                 & $151{,}6$          \\
+                 & W2    & $36{,}5$                & $43{,}7$                & $36{,}4$                & $45{,}9$                  & $44{,}7$                  & $50{,}3$                  & $41{,}7$                  & $53{,}6$                    & $3{,}21$                 & $93{,}5$           \\
+                 & W3    & $62{,}2$                & $81{,}9$                & $53{,}6$                & $82{,}3$                  & $70{,}7$                  & $94{,}5$                  & $64{,}8$                  & $98{,}4$                    & $3{,}01$                 & $166{,}5$          \\
+                 & W4    & $45{,}8$                & $56{,}9$                & $46{,}2$                & $57{,}9$                  & $56{,}0$                  & $64{,}0$                  & $51{,}9$                  & $68{,}9$                    & $3{,}22$                 & $104{,}5$          \\
+        $16$\,Nm & W1    & $69{,}4$                & $82{,}9$                & $61{,}6$                & $86{,}0$                  & $85{,}8$                  & $99{,}2$                  & $77{,}9$                  & $107{,}5$                   & $3{,}50$                 & $184{,}6$          \\
+                 & W2    & $44{,}7$                & $48{,}9$                & $45{,}6$                & $52{,}9$                  & $54{,}5$                  & $55{,}6$                  & $51{,}6$                  & $61{,}7$                    & $3{,}96$                 & $99{,}7$           \\
+                 & W3    & $82{,}5$                & $97{,}4$                & $71{,}3$                & $101{,}2$                 & $93{,}7$                  & $111{,}1$                 & $86{,}0$                  & $122{,}5$                   & $3{,}57$                 & $203{,}7$          \\
+                 & W4    & $57{,}3$                & $65{,}2$                & $59{,}2$                & $67{,}6$                  & $69{,}9$                  & $71{,}9$                  & $65{,}7$                  & $79{,}6$                    & $3{,}98$                 & $109{,}7$          \\
+    \end{tabular}
+\end{table}
+
+Die Zwillinge der Bilder aus \chapref{chap:voruntersuchungen} und \chapref{chap:berechnung} für die Stufen $8$ und $12$\,Nm stehen hier. Größen, Legenden und Skalierung entsprechen den Bildern des Haupttextes. Die Konturen der Fußrundungsvarianten gegen die Trochoide zeigt \figref{fig:fussrundungsvarianten}, die Kenngrößen der Varianten \tabref{tab:fussrundung_konturen}?
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1.0\textwidth]{kap5/vergleich_stufen_12nm}
+    \caption{Werkstoffstufen W1 bis W4 über dem Wälzweg bei $12$\,Nm, Taschenkörper, Kopfkante $r = 0{,}10$\,mm, quasistatisch. Größen wie in \figref{fig:vergleich_stufen_16nm}, die Achsen je Bild skaliert.}
+    \label{fig:vergleich_stufen_12nm}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{kap4/koerpereffekt_8nm_qs}
+    \caption{Körpereffekt an den Normpunkten A bis E, Taschenkörper gegen Ringkörper gleicher Schichtung, relative Änderung je Werkstoffstufe, $8$\,Nm, quasistatisch.}
+    \label{fig:koerpereffekt_8nm_qs}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{kap4/koerpereffekt_12nm_qs}
+    \caption{Körpereffekt an den Normpunkten A bis E, $12$\,Nm, quasistatisch.}
+    \label{fig:koerpereffekt_12nm_qs}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1.0\textwidth]{kap5/orientierungseffekt_8nm_qs}
+    \caption{Orientierungseffekt CT-Zonen gegen CONVERSE-Zuordnung an den Normpunkten A bis E, $8$\,Nm, quasistatisch.}
+    \label{fig:orientierungseffekt_8nm_qs}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1.0\textwidth]{kap5/orientierungseffekt_12nm_qs}
+    \caption{Orientierungseffekt CT-Zonen gegen CONVERSE-Zuordnung an den Normpunkten A bis E, $12$\,Nm, quasistatisch.}
+    \label{fig:orientierungseffekt_12nm_qs}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{kap5/fusseffekt_sigma1_8nm_qs}
+    \caption{Fußrundungsvarianten gegen die Trochoide, relative Änderung der größten Zugspannung an A bis E je Werkstoffstufe, $8$\,Nm, quasistatisch.}
+    \label{fig:fusseffekt_sigma1_8nm_qs}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{kap5/fusseffekt_sigma1_12nm_qs}
+    \caption{Fußrundungsvarianten gegen die Trochoide, relative Änderung der größten Zugspannung an A bis E je Werkstoffstufe, $12$\,Nm, quasistatisch.}
+    \label{fig:fusseffekt_sigma1_12nm_qs}
+\end{figure}
+% gestrichen (TK 2026-10-21 Abend): die drei Bilder der Eingriffsstellung C der Optima aus pair_mesh.svg, weil der Ausschnitt am Wälzpunkt liegt, wo jede Variante dieselbe Evolvente zeigt; die Konturen stehen in Bild fig:fussrundungsvarianten.
+\Note{PH: Auswahl der Tabellen (Kopfkontakt 36/54 Reihen mal $0{,}02$/$0{,}05$/$0{,}1$\,mm, Tabelle-4-Varianten, Taschenserie, Fußrundungsvarianten W1 bis W4) aus dem Tagebuch der Simulationen.}

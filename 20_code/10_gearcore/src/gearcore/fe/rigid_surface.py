@@ -253,11 +253,15 @@ def rigid_surface(
     z_levels_mm: Array,
     tip_rounding_mm: float = 0.0,
     rounding_facets: int = ROUNDING_FACETS,
+    modification: ct.ProfileModification | None = None,
 ) -> RigidSurface:
     """The swept tooth surface of ``teeth`` teeth of the gear ``role`` on the z-levels
     ``z_levels_mm`` (see ``surface_z_levels``); ``tip_rounding_mm`` > 0 rounds the two corners
     of the tip land with arcs of at least ``rounding_facets`` facets (see the module; 12
-    facets turn the normal by about 5° per facet instead of 12° with the default 4)."""
+    facets turn the normal by about 5° per facet instead of 12° with the default 4).
+    ``modification`` puts the measured deviations of the flank (tip relief, profile slope,
+    tip corner radius; ``contour.ProfileModification``) onto the contour before it is swept;
+    the rounding of the tip corners is applied after it."""
     if not isinstance(generation, GenerationResult):
         raise InputRangeError(
             f"a GenerationResult of compute_generation is required, got {type(generation).__name__}"
@@ -277,7 +281,7 @@ def rigid_surface(
     levels = np.asarray(z_levels_mm, dtype=np.float64).ravel()
     if len(levels) < 2 or not bool(np.all(np.isfinite(levels)) and np.all(np.diff(levels) > 0.0)):
         raise InputRangeError("the z-levels must be at least two rising finite values")
-    contour = ct.tooth_contour(generation, role, points=CONTOUR_POINTS)
+    contour = ct.tooth_contour(generation, role, points=CONTOUR_POINTS, modification=modification)
     z = contour.number_of_teeth
     if not 1 <= count <= z - 1:
         raise InputRangeError(

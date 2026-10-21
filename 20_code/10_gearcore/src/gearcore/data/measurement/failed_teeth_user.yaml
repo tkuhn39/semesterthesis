@@ -1,0 +1,90 @@
+# Versagte Zähne der Prüfräder PA46-GF30 (Prüfstand KV3, 2026) nach der Sichtprüfung des Nutzers
+# am 2026-10-21 (Nachricht an Claude, wörtlich in `note`). Zahnzählung: Zahn 1 ist am Teil markiert und
+# wird von Messmaschine, Konturscan und Prüfstand gleich gezählt. "zerpflückt" = Oberflächenstruktur wie
+# in 70_input/71_Messungen/Mikroskop/Bilder/Schadensbilder_Kunststoffraeder/16Nm/F4092_1_Lw_170810_202610.jpg
+# (Einschätzung des Nutzers: gering / mittel / stark). Laststufe und Lauf aus der Arbeitsmappe (Tabelle 6.1).
+# Flankenbruch-Verdacht: der Nutzer ist unsicher; Mikroskopaufnahmen des Rissausgangs erbeten (2026-10-21).
+date: "2026-10-21"
+wheels:
+  97340:
+    run: kst-E_73
+    level_Nm: 16
+    broken_off: []
+    root_fracture: [36, 37, 38]
+    cracked: [28, 29, 30, 31]
+    flank_fracture_suspect: [39, 40]
+    surface: stark
+    note: "Anriss 28-31, Bruch Fuß 36-38, 39 und 40 sieht eher aus wie bei Flanke - eventuell nochmal unter Mikroskop; Oberfläche stark zerpflückt"
+  97351:
+    run: kst-E_63
+    level_Nm: 12
+    broken_off: [34, 35, 36, 37, 38, 39, 40, 41]
+    cracked: []
+    flank_fracture_suspect: []
+    surface: gering
+    note: "34-41 vollständig ab, Oberfläche zerpflückt leicht"
+  97345:
+    run: kst-E_69
+    level_Nm: 8
+    broken_off: [34]
+    cracked: []
+    flank_fracture_suspect: []
+    surface: kaum
+    note: "34 ab, sonst eher nur Flankenverschleiß, Oberfläche kaum"
+  97346:
+    run: kst-E_70
+    level_Nm: 16
+    broken_off: [40, 41]
+    cracked: [38, 39]
+    flank_fracture_suspect: []
+    surface: stark
+    note: "40, 41 ab, 38 und 39 Anrisse aber mehr Flankenverschleiß, stark zerpflückt über Umfang"
+  97366:
+    run: kst-E_71
+    level_Nm: 16
+    broken_off: [31, 32]
+    root_fracture: [38, 39, 40]
+    cracked: []
+    flank_fracture_suspect: [37]
+    surface: stark
+    note: "31, 32 ab; 38-40 tiefer Bruch hinten; 37 sieht wie Flankenbruch aus an Zahnkante Ritzel; Oberfläche stärker zerpflückt"
+  97350:
+    run: kst-E_66
+    level_Nm: 12
+    broken_off: [37, 38, 39, 40, 41]
+    cracked: []
+    flank_fracture_suspect: []
+    surface: kaum
+    note: "37-41 ab, sonst eher Verschleiß, Oberfläche kaum"
+  97360:
+    run: kst-E_74
+    level_Nm: 12
+    broken_off: []
+    cracked: [38, 39, 40, 41]
+    flank_fracture_suspect: []
+    surface: gering
+    note: "38-41 am Zahnfuß stark angebrochen aber noch dran, sonst eher Verschleiß, Oberfläche wenig zerpflückt"
+  97365:
+    run: kst-E_68
+    level_Nm: 12
+    broken_off: [41]
+    cracked: [39, 40, 44, 45, 46, 47]
+    flank_fracture_suspect: []
+    surface: mittel bis stark
+    note: "39, 40 stark angerissen in Mitte; 41 ab; 44-47 kurz vor ab stark angebrochen; sonst eher Verschleiß; mittel bis stärker zerpflückt"
+  97355:
+    run: kst-E_72
+    level_Nm: 16
+    broken_off: [39, 40]
+    cracked: []
+    flank_fracture_suspect: [38]
+    surface: stark
+    note: "38 Flankenbruch aber eher Mitte Zahn, also über Kante vom Ritzel; 39, 40 ab; sonst eher Verschleiß; stärker zerpflückt"
+  97364:
+    run: kst-E_75
+    level_Nm: 8
+    broken_off: []
+    cracked: []
+    flank_fracture_suspect: []
+    surface: null
+    note: "Lauf beim Versagensgeräusch beendet, kein vollständiger Bruch (Arbeitsmappe); Sichtprüfung des Nutzers steht aus"

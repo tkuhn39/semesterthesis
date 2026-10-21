@@ -9,6 +9,155 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Changed (thesis: the revision after the user's first reading, ADR-118 amendment of 2026-10-21)
+- `10_report/SA_16_03738470.tex`: `\rev{...}` (orange, `tumdiag3`) marks every rewritten
+  sentence, paragraph, table value and caption of this revision; `\revmarkfalse` builds the
+  submission in black; `\anhref` sets appendix references bold like the other reference
+  macros. The 113 `% TK:` remarks of the user are worked in and kept as `% TK erledigt (...)`
+  lines; deleted passages stay as `% gestrichen (TK ...)` comments.
+- The drafts of chapters 2 to 8: primary sources (Winkler and Rossow marked as secondary
+  citations until the title pages arrive, VDI 2736-4 direct), Fiederling female, wheels by ME
+  number only, no "failure window 36 to 40", the comparison material only POM of 2023, the
+  mapping-state paragraph and figure moved from 2.3 to 3.6, the own plane solver and the
+  reason for the own FE model in 3.6, no results in the methods part (3.6 cut to 4.1), the
+  Stommel equations of 3.7 kept but their explanations replaced by references to 2.5, the
+  runout procedure removed from 3.8, 4.1 with "Ausgangsnetz", "Diskretisierung" and
+  "Verfeinerungsreihe", 4.2 with the radii of the contact rows and the three reasons for the
+  0,1 mm edge, 4.4 sorted, 4.5 on the tooth mass temperature.
+- Results on the pocket series (`tasche_serie_w1w4_qs_gerechnet`, 387 of 396 positions): 5.2
+  table and text, 5.3 as published (W2 critical node on the tension side near the face,
+  N_pred 1,7e5 / 4,3e3 / immediate) and under Hill (W3 and W4 in the mid width, class
+  semi-crystalline unreinforced), 5.4 with the bionic optimum as sixth variant and the rate
+  figure `fusseffekt_raten_LOAD_16NM`, 5.4.3 as the placeholder of the measured-geometry
+  variants (computed after the pre-version), 5.5 with the VDI 2736 nominal stress from the
+  STplus factors (Y_Fa 2,211, Y_Sa 1,904, Y_eps 0,9: 77,7 / 116,6 / 155,4 MPa), RIKOR and the
+  slope table `tab:neigung_verfahren` (k per method, step and rate), 6.1 with the failed teeth
+  of the user's inspection (`data/measurement/failed_teeth_user.yaml`) and the crack column
+  as "spätestens ab" / "zwischen", 6.2 new with the damage pictures, 6.3 and 6.4 on POM 2023,
+  7 and 8 rewritten on these numbers; appendix F with the ring table, the 8 and 12 Nm twins
+  and the engagement position of the three own optima.
+- Figures: `plot_style` puts the grid behind the data (`axes.axisbelow`); `thesis_figures.py`
+  draws the body section with the z-axis horizontal and the region names, and the flow chart
+  of the simulation chain (`flussbild_kette`); `measurements.py` draws the temperature bars
+  thin with hatching, the tip corners of the first tip only, and compares PA46-GF30 with POM
+  2023 only; `fibre_orientation.py` pulls the zone labels apart and adds a legend;
+  `fe_fillet_comparison.py` adds the rate figure; `fe_fatigue.py` draws the tooth centres and
+  the a_B,V = 1 contour into the utilisation map; `thesis_thermal_images.py` reads the moved
+  folder `71_Messungen/Mikroskop/Bilder`; the damage photos go in as 1400 px PNG.
+- `SA_16_03738470.tex`: `PassOptionsToPackage{loadshadowlibrary}{todonotes}` before the class, so the
+  `shadow` option of FZGdef.sty no longer warns at every note (25 warnings per build).
+- `litbib.bib` and `sources.yaml`: `AbaqusSolid25` (Solid (Continuum) Elements) for the
+  incompatible-mode limitation cited in 4.1.
+- `thesis_source_figures.py`: a listing entry may carry `raster: <dpi>`; the cut is then also
+  written as a PNG twin. Needed for Fig. 2 of DE 10 2008 045 318 B3 (figure 2.8): the scanned
+  drawing page is a CCITT stencil mask, which the pdf.js viewer of the editor leaves blank,
+  so the thesis takes the 600 dpi PNG (`bilder.yaml` `format: png`).
+- `scripts/contour_wear.py` (new, M5) with `tests/test_contour_wear.py`: the after-test
+  contour scans of the wheels 97340 (16 Nm), 97345 (8 Nm) and 97351 (12 Nm). The free involute
+  fit diverges on a worn flank (axis off by 1 to 3 mm) and a flank's own involute hides a
+  uniform removal, so every scan is placed with the centre that puts its tip and root runs on
+  the GINA tip and root circles of the same part before the run, and every tooth is turned on
+  its two root fillets onto the nominal tooth; the deviation from the nominal outline over the
+  radius against the band of the 49 before-test flanks (placed the same way) is the wear.
+  Outputs `80_output/messungen/konturscan/wheel_gelaufen` (`verschleiss.csv`, `achse.csv`,
+  `bericht.md`, `verschleiss_profil`, the overlays). Findings: only the loaded flank wears,
+  uniformly over the active profile (156 to 197 µm at 8 Nm, 95 to 135 µm at 12 Nm, 46 to 89 µm
+  at 16 Nm), the worn zone begins at r = 25,42 to 25,54 mm, 0,1 to 0,2 mm below the computed
+  start of the active profile (25,66 mm) and 0,3 mm below the FE edge-contact row (25,80 mm).
+  Thesis: 3.3 (method), 6.2 (figure, `tab:verschleiss`, text), 4.4, 7.3, 8, appendix G;
+  `bilder.yaml` with `verschleiss_profil` and `ueberlagerung_97340_z1`.
+- Second reading of the user (2026-10-21 evening): every `\rev{}` of the first revision turned
+  black (`scratchpad/strip_rev.py`, 491 wrappers), only the changes from this round are orange.
+  Figures: every listed figure older than the grid-behind change regenerated (thesis drawings,
+  load case, convergence study into `bilder_V2/convergence`, body and orientation comparisons,
+  fillet sweep and comparison V2, Stommel method curves); the rate figure's axis label as mathtext
+  (`Δσ_1` rendered as a box before); the utilisation map of `fe_fatigue.py` now covers the fillet,
+  the two flanks and the tip lands up to the tooth centres; `stommel_verlauf_16nm_w4hill` from
+  the pocket series; the three `eingriff_*` figures of the appendix dropped (pair_mesh shows the
+  pitch point, where every variant is the same involute). Wear: `contour_wear.py` labels the
+  flanks loaded/unloaded, one dash pattern per tooth, no neighbours, the profile view ends below
+  the tip corner, the overlays are not magnified, and a contour view `verschleiss_kontur` (the
+  worn teeth on the nominal tooth, the style of MA-0296 Abbildung 76) joins 6.2; the FE contact
+  scan (`scratchpad/fe_contact_start.py`: lowest flank node of T3 with σ3 < −15 MPa over the 99
+  positions) gives r = 25,60 mm as the lowest contact of the rounded edge, 0,06 mm below the
+  computed SAP and 0,06 to 0,18 mm above the measured onset (6.2, 7.3). Texts: the strain rate
+  as one value per load level (3.6, 4.3), why the rate changes deflections but hardly the
+  stresses under a prescribed torque (4.3, 5.1), the two figures of W2 described (5.3), the cap
+  reading explained with the book's own accuracy statement (Sto18 S. 375, 5.3), the FE contact
+  finding (6.2, 7.3); semicolons and colons removed from the prose by two sub-agents (every
+  changed sentence orange). An independent reviewer agent (read-only) then checked every
+  figure and the text; of its 63 findings, 50 are fixed in this round (wrong numbers against
+  the output files in 5.2, 5.4, 6.1, 6.2, 7 and 8, the tooth of the W2 critical node is T4,
+  four flank fractures at three wheels, the missing bionic optimum row of the contour table,
+  the outdated rows of the computation table and appendix C, decimal points on colour bars,
+  Abaqus names as axis labels, the map legend over data, the overlay title, the net ticks,
+  the flow-chart labels, the clipped patent figure number); the wear summary excludes the
+  unnamed neighbour teeth (97351 now 95 to 128 µm, onset 25,42 to 25,45 mm). Left for the
+  user: the pinion number 95912 against 95919, the thermal-image values against 4.5, the
+  temperature instrument (IR thermometer or camera), FVA 856 I as the source of the
+  Workbench reference model, wheel 97371 in both roughness groups, the scan count 82
+  against 83, the crack entry of 97364, the °C and µm spellings.
+- Pre-version for the supervisor (2026-10-21, 22:22): every `\rev{}` turned black again
+  (`strip_rev.py`, now stripping nested wrappers pass by pass), the two Y factors of the STplus
+  report in the 3.4 table and the Richardson extrapolation cite Dahmen/Reusken S. 523 and Bathe
+  S. 244 (both books were on disk since 2026-10-06, the note claiming otherwise was wrong), DIN
+  3960, DIN 3977, DIN 21772 and ISO 6336-1 cited where the text names them (52 of 53 entries
+  cited, DIN EN ISO 21920-1 has no place), the cap passage of 5.3 rewritten (the book's factor
+  2 to 3 is calculation against test, our 160 and 1400 lie far outside, the reading difference
+  changes nothing), the empty strip of the utilisation map explained as the STplus tip chamfer,
+  two finished notes removed. Box warnings 39 to 8: `\emergencystretch` 2em, the bibliography
+  sloppy, five tables narrowed (6.1, 6.3, 6.4, 3.6, 5.3, 4.2 with tabcolsep); the eight left are
+  at most 1 mm or sit in the task sheet and a placeholder note. Built in 10_report: 155 pages,
+  0 errors.
+- `measurement/inventory.py`: the photo folders below `Mikroskop/Bilder` are ignored by the
+  inventory (no part number), so `test_scan_of_the_real_folder` holds after the user's move.
+- Finding: latexindent 4.0 (TeX Live 2026) strips the leading zero of `$0{,}5$` to `${,}5$`
+  (a `$0` interpolation); the 454 missing zeros of the drafts came from the editor's
+  format-on-save. `apply_edits.py` (scratchpad) restores them after every latexindent run;
+  latexindent 3.24.7 (GitHub release of cmhughes/latexindent.pl) is pinned for the editor at
+  `C:/Users/kuhnt/tools/latexindent-3.24.7/latexindent.exe` through the VS Code setting
+  `latex-workshop.formatting.latexindent.path` (2026-10-21, verified: 3.24.7 keeps the zero).
+
+### Added (FE: the gears as manufactured, three variants for a night run, ADR-116 item 54, 2026-10-19)
+- `gearcore.contour.ProfileModification` with `flank_deviation_turn` and `tip_edge_arc`:
+  the measured deviations of a flank on the tooth contour, as the P40 measures them (normal
+  to the flank, plus material positive, DIN ISO 1328-1:2018 4.4.8.2): a linear tip relief
+  C_a from d_Ca to the tip circle, a profile slope f_Hα from the profile control diameter
+  d_Cf to the tip circle with the zero on the measuring circle of the span d_M, and a tip
+  corner radius r_K as an arc tangent to the flank and to the tip circle in place of the tip
+  chamfer (the tip form diameter becomes that of the tangent point). On an involute a normal
+  deviation is a turn about the axis by delta / r_b; the fillet turns with the first involute
+  point. `tooth_contour(..., modification=)`, `rigid_surface(..., modification=)` (before its
+  own tip rounding), `sector_mesh(..., modification=)` (the arc takes the rows of the tip
+  edge break; refused together with a root fillet variant).
+- `gearcore.manufactured`: the measured numbers of a variant of
+  `data/fe/as_manufactured.yaml` put onto the STplus case (`apply`): the span as a span
+  allowance on the nominal x, the tip diameter as it is (the tool dedendum raised where the
+  STplus rule of ADR-114 would top it), the root diameter through the tool addendum (Eq.
+  (125) solved for h_aP0), the deviations as a `ProfileModification` per gear; a tip corner
+  radius replaces the edge break of the tool, and the generation gets the chamfer of the arc
+  (h_K, s_aK of its tangent points) so that d_Fa, A and ε_α are those of the rounded tooth;
+  every generated number is checked against its target. The file holds the medians of the
+  latest GINA round (rig pinions 95911 to 95920, core wheels) and the tip corner radius of all
+  scanned wheels with their sources and the user's decisions of 2026-10-19; `data.load_as_manufactured`.
+- `scripts/build_fe_decks.py decks --as-manufactured <variant> --named-points-only`: the
+  geometry of a folder (`CaseGeometry`), the body of the drawing on the measured tooth, the
+  named points A to E found on the grid of the changed geometry, the manifest key `geometry`
+  (generated circles, path of contact, the variant with every change), the README paragraph
+  of the measured geometry. Three folders written: `pilot_20layers_bore33_pocket_gemessen_
+  {stahl,kunststoff,beide}_round0p1f12_qsdy1dy2_AtoE` (steel W1 to W4 on the mesh of the pocket
+  series; the two wheel variants W1/W2 on the new mesh with three rows on the arc, W3/W4 after
+  the user's mapping) and the chain `nachtlauf_2026-10-19_messvarianten`.
+- Registry: `tip_relief_start_diameter` (d_Ca, DIN ISO 21771 Bild 25), `profile_control_diameter`
+  (d_Cf, DIN ISO 1328-1 3.4.1.1), `tip_edge_radius` (r_K, the project's symbol for the
+  norm's "Kopfkantenradius", 3.4.1.2); `quantities.md` regenerated (236 quantities).
+- Tests `test_contour_modification.py` (relief amount and zero below its start, slope with
+  its pivot and the turned fillet, the arc's tangency and symmetry, the reach into the rigid
+  surface and the sector mesh), `test_manufactured.py` (targets reached, the untouched gear
+  stays, refusals, the medians of the file against the raw measurement files when present),
+  the decks test with the measured variant; known limits FE-26 (the sliver at the arc/tip-land
+  junction of the template) and FE-27 (lead deviations left out, the twist sensitivity to come).
+
 ### Added (thesis: chapters 1, 5, 7, 8 and the appendix stubs, 2026-10-18 night)
 - Drafts `kap1_einleitung.tex`, `kap5_1_faserorientierung.tex`, `kap5_2_waelzweg.tex`,
   `kap5_3_stommel.tex`, `kap5_5_verfahrensvergleich.tex`, `kap7_diskussion.tex` and

@@ -132,6 +132,38 @@ def fva856_table4_row(temperature_c: float, rate: str) -> tuple[float, ...]:
     )
 
 
+def load_as_manufactured() -> dict[str, Any]:
+    """The measured numbers of the manufactured gears that the FE variants put onto the STplus
+    case (``fe/as_manufactured.yaml``): the mapping ``cases`` with, per case, ``gears`` (named
+    sets of measured numbers) and ``variants`` (which gear takes which set), plus the
+    ``provenance`` of the numbers (user decisions of 2026-10-19)."""
+    path = data_path("fe", "as_manufactured.yaml")
+    loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, dict) or not isinstance(loaded.get("cases"), dict):
+        raise ParseError("as_manufactured.yaml: expected a mapping 'cases'")
+    if not isinstance(loaded.get("provenance"), dict):
+        raise ParseError("as_manufactured.yaml: expected a mapping 'provenance'")
+    for case, entry in loaded["cases"].items():
+        if not isinstance(entry, dict) or not isinstance(entry.get("gears"), dict):
+            raise ParseError(f"as_manufactured.yaml: case {case!r} needs a mapping 'gears'")
+        if not isinstance(entry.get("variants"), dict):
+            raise ParseError(f"as_manufactured.yaml: case {case!r} needs a mapping 'variants'")
+        for label, variant in entry["variants"].items():
+            if not isinstance(variant, dict) or not {"pinion", "wheel"} <= set(variant):
+                raise ParseError(
+                    f"as_manufactured.yaml: variant {label!r} of {case!r} names pinion and wheel"
+                )
+            for role in ("pinion", "wheel"):
+                name = variant[role]
+                if name is not None and name not in entry["gears"]:
+                    raise ParseError(
+                        f"as_manufactured.yaml: variant {label!r} of {case!r}: unknown gear set "
+                        f"{name!r} for the {role}"
+                    )
+    document: dict[str, Any] = loaded
+    return document
+
+
 def load_stommel_materials() -> dict[str, Any]:
     """The material classes of Stommel et al. (2018), chapter 6, and the materials of the thesis
     (``fatigue/stommel_materials.yaml``): the mappings ``classes``, ``constants`` and

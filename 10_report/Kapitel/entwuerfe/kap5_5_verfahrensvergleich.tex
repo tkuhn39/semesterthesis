@@ -1,24 +1,44 @@
 \section{Vergleich der Berechnungsverfahren}
 \label{sec:verfahrensvergleich}
 
-\tabref{tab:verfahrensvergleich} stellt je Drehmomentstufe die Zahnfußspannung der Verfahren aus \secref{sec:analytik} und dem FE-Modell nebeneinander: die Nennspannung nach VDI 2736 Blatt 2 mit den Faktoren nach ISO 6336-3, die Werte von RIKOR und der FVA-Workbench, die größte Zugspannung $\sigma_{\mathrm{1}}$ des FE-Modells am Normpunkt C je Werkstoffstufe aus \secref{sec:waelzweg} sowie die vorhergesagte Lastwechselzahl des Nachweises nach Stommel et al. mit W2 aus \secref{sec:stommel_ergebnis} neben der gemessenen Bruchlinie aus \secref{sec:woehlerlinien}. \Note{PH: Werte nach VDI 2736 Blatt 2 mit $Y_{\mathrm{Fa}}$ und $Y_{\mathrm{Sa}}$ nach ISO 6336-3 (L6b), RIKOR-Werte der Betreuerin und FVA-Workbench-Werte (L6a) mit Programm, Version und Datum; das Vergleichsbild (L8) folgt mit den Werten.}
+\tabref{tab:verfahrensvergleich} stellt je Drehmomentstufe die Zahnfußspannung der Verfahren aus \secref{sec:analytik} und dem FE-Modell nebeneinander, nämlich die Nennspannung nach VDI 2736 Blatt 2 mit den Faktoren $Y_{\mathrm{Fa}} = 2{,}211$ und $Y_{\mathrm{Sa}} = 1{,}904$ des STplus-Berichts für Kraftangriff am Kopf und $Y_{\varepsilon} = 0{,}900$, die Werte von RIKOR, die größte Zugspannung $\sigma_{\mathrm{1}}$ des FE-Modells am Normpunkt C je Werkstoffstufe auf dem Taschenkörper aus \secref{sec:waelzweg} sowie die vorhergesagte Lastwechselzahl des Nachweises nach Stommel et al. mit W2 aus \secref{sec:stommel_ergebnis} neben der gemessenen Bruchlinie aus \secref{sec:woehlerlinien}. \Note{PH: RIKOR rechnete linear elastisch mit $E = 3900$\,MPa, W1 mit $E = 2282$\,MPa der QS-Karte bei $80$\,°C; zum Schluss entweder RIKOR mit $E$ und $\nu$ der Karte wiederholen oder W1 mit $3900$\,MPa an A bis E rechnen (Stand 2026-10-21).}
 
 \begin{table}[htbp]
-    \caption{Zahnfußspannung je Drehmomentstufe nach Verfahren in MPa und Lastwechselzahlen: Nennspannung nach VDI 2736 Blatt 2, RIKOR, FVA-Workbench, FE-Modell am Normpunkt C je Werkstoffstufe (quasistatisch), vorhergesagte Lastwechselzahl nach Stommel et al. mit W2 und gemessene Lastwechselzahl für $50$\,\% Ausfallwahrscheinlichkeit.}
+    \caption{Zahnfußspannung je Drehmomentstufe nach Verfahren in MPa und Lastwechselzahlen: Nennspannung nach VDI 2736 Blatt 2, RIKOR linear elastisch mit $E = 3900$\,MPa, FE-Modell am Normpunkt C je Werkstoffstufe (Taschenkörper, quasistatisch), vorhergesagte Lastwechselzahl nach Stommel et al. mit W2 und gemessene Lastwechselzahl für $50$\,\% Ausfallwahrscheinlichkeit.}
     \label{tab:verfahrensvergleich}
     \centering
     \footnotesize
     \setlength{\tabcolsep}{4pt}
-    \begin{tabular}{L{1.0cm}L{1.6cm}L{1.2cm}L{1.5cm}L{1.0cm}L{1.0cm}L{1.0cm}L{1.0cm}L{1.7cm}L{1.7cm}}
-        $T_{2}$ in Nm & $\sigma_{\mathrm{F}}$ nach VDI 2736 & RIKOR & Workbench & FE W1 & FE W2 & FE W3 & FE W4 & $N_{\mathrm{pred}}$ W2 & $N_{\mathrm{L},50\%}$ \\
+    \begin{tabular}{L{1.0cm}L{1.6cm}L{1.2cm}L{1.0cm}L{1.0cm}L{1.0cm}L{1.0cm}L{1.7cm}L{1.7cm}}
+        $T_{2}$ in Nm & $\sigma_{\mathrm{F}}$ nach VDI 2736 & RIKOR     & FE W1    & FE W2    & FE W3    & FE W4    & $N_{\mathrm{pred}}$ W2 & $N_{\mathrm{L},50\%}$ \\
         \hline
-        $8$ & PH & PH & PH & $56{,}1$ & $38{,}3$ & $65{,}1$ & $48{,}6$ & $3{,}5 \cdot 10^{5}$ & $2{,}67 \cdot 10^{7}$ \\
-        $12$ & PH & PH & PH & $70{,}4$ & $43{,}7$ & $81{,}9$ & $56{,}9$ & $2{,}2 \cdot 10^{4}$ & $5{,}96 \cdot 10^{6}$ \\
-        $16$ & PH & PH & PH & $82{,}9$ & $48{,}9$ & $97{,}4$ & $65{,}2$ & $1{,}7 \cdot 10^{3}$ & $1{,}36 \cdot 10^{6}$ \\
+        $8$           & $77{,}7$                            & $64{,}2$  & $59{,}4$ & $38{,}8$ & $57{,}6$ & $44{,}3$ & $1{,}7 \cdot 10^{5}$   & $2{,}67 \cdot 10^{7}$ \\
+        $12$          & $116{,}6$                           & $95{,}0$  & $72{,}7$ & $44{,}4$ & $71{,}0$ & $52{,}0$ & $4{,}3 \cdot 10^{3}$   & $5{,}96 \cdot 10^{6}$ \\
+        $16$          & $155{,}4$                           & $107{,}8$ & $86{,}2$ & $50{,}0$ & $84{,}6$ & $59{,}8$ & sofort                 & $1{,}36 \cdot 10^{6}$ \\
     \end{tabular}
 \end{table}
 
-Die FE-Spannung am Normpunkt C wächst mit dem Moment unterproportional: Von $8$ auf $16$\,Nm verdoppelt sich die Umfangskraft, die Zugspannung steigt bei W1 um den Faktor $1{,}48$, bei W2 um $1{,}28$, bei W3 um $1{,}50$ und bei W4 um $1{,}34$. Der Grund liegt in der Lastaufteilung des verformten Zahns, bei den plastischen Stufen zusätzlich im Fließen. Die Nennspannung nach VDI 2736 Blatt 2 wächst dagegen proportional zur Umfangskraft, weil ihre Faktoren nur von der Geometrie abhängen. \Note{PH: Verhältnis FE zu Nennspannung je Stufe, sobald die Nennspannung vorliegt; Einordnung der Steigung der Bruchlinie mit $k = 4{,}40$ gegen die Steigung der Nennspannungslinie.}
+Die FE-Spannung am Normpunkt C wächst mit dem Moment unterproportional. Von $8$ auf $16$\,Nm verdoppelt sich die Umfangskraft, die Zugspannung steigt bei W1 um den Faktor $1{,}45$, bei W2 um $1{,}29$, bei W3 um $1{,}47$ und bei W4 um $1{,}35$. Der Grund liegt in der Lastaufteilung des verformten Zahns, bei den plastischen Stufen zusätzlich im Fließen. Die Nennspannung nach VDI 2736 Blatt 2 wächst dagegen proportional zur Umfangskraft, weil ihre Faktoren nur von der Geometrie abhängen. Sie liegt über jeder FE-Stufe, bei $8$\,Nm um den Faktor $1{,}3$ gegen W1 und $2{,}0$ gegen W2, bei $16$\,Nm um $1{,}8$ und $3{,}1$. RIKOR liegt mit seinem Modul von $3900$\,MPa um $8$ bis $31$\,\% über W1. Trägt man die gemessenen Lastwechselzahlen der $50$\,\%-Linie über der Spannung jedes Verfahrens auf, folgt aus den Werten der Tabelle die Neigung $k$ einer lokalen Wöhlerlinie je Verfahren (\tabref{tab:neigung_verfahren}). Die Nennspannung gibt mit $4{,}3$ fast die Neigung $4{,}40$ der Momentlinie wieder, RIKOR $5{,}8$, die elastischen FE-Stufen $7{,}7$ bis $8{,}0$ und die plastischen Stufen $10$ bis $13$. Die Dehnratenkarten ändern die Neigung über $8$ bis $16$\,Nm um höchstens zwei Einheiten, krümmen die Linie aber, weil die Spannung bei DY2 von $8$ auf $12$\,Nm stärker wächst als von $12$ auf $16$\,Nm. Diese Linien sind keine Werkstoffkennlinien, sondern die gemessene Bruchlinie, über die Spannung des jeweiligen Verfahrens aufgetragen. Mit ihnen wird in \secref{sec:genauigkeit} die synthetische Wöhlerlinie des Nachweises eingeordnet.
+
+\begin{table}[htbp]
+    \caption{Neigung $k$ der gemessenen Bruchlinie für $50$\,\% über der Zahnfußspannung des jeweiligen Verfahrens, aus den Spannungen bei $8$ und $16$\,Nm. FE am Normpunkt C des Taschenkörpers je Werkstoffstufe und Dehnratenkarte.}
+    \label{tab:neigung_verfahren}
+    \centering
+    \footnotesize
+    \begin{tabular}{L{3.2cm}L{1.2cm}L{1.2cm}L{1.2cm}L{1.2cm}}
+        Verfahren                                  & W1                           & W2       & W3      & W4       \\
+        \hline
+        FE, Karte QS                               & $8{,}0$                      & $11{,}8$ & $7{,}7$ & $10{,}0$ \\
+        FE, Karte DY1                              & $8{,}0$                      & $13{,}2$ & $8{,}0$ & $10{,}4$ \\
+        FE, Karte DY2                              & $6{,}4$                      & $12{,}0$ & $6{,}6$ & $10{,}6$ \\
+        \hline
+        VDI 2736 Blatt 2                           & \multicolumn{4}{l}{$4{,}3$}                                  \\
+        RIKOR                                      & \multicolumn{4}{l}{$5{,}8$}                                  \\
+        Raddrehmoment (\secref{sec:woehlerlinien}) & \multicolumn{4}{l}{$4{,}40$}                                 \\
+    \end{tabular}
+\end{table}
+
+% TK erledigt (Workbench aus Text und Bildunterschrift; W1 rechnet mit E 2282 MPa der QS-Karte bei 80 °C, RIKOR mit 3900 MPa: Note mit beiden Optionen bleibt bis zum Schluss stehen): Workbench Vergelich habe ich rausgenommen, da da kein wesentlicher Unterschied noch nennenswert ist. Entsrpechend noch die VDI Kette und Rikor wurde mit 3900 MPa linear elastisch gerechnet. Was hatte unsere W1 zugrundegelegt? Wäre da das gleiche E-Modul und gleiche Qerkontraktion nochmal sinnvoll? 
 
 % Herkunft:
 % FE-Werte an C: series analyse.md Abschnitt 2 (σ1 C: W1 56,09/70,43/82,87, W2 38,27/43,74/48,90, W3 65,07/81,87/

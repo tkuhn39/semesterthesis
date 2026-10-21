@@ -50,8 +50,8 @@ EFFECTS = {
 }
 SHORT_LABELS = (
     ("Drehung", "pinion_rotation_rad"),
-    ("Kopfweg", "u_head_max"),
-    ("CPRESS", "p_max"),
+    ("Kopfverschiebung", "u_head_max"),
+    ("Kontaktdruck", "p_max"),
     (r"$\sigma_{\mathrm{1}}$ max", "s1_max"),
     (r"|$\sigma_{\mathrm{3}}$| max", "s3_min"),
 )

@@ -71,15 +71,15 @@ VARIANT_SHORT: dict[str, str] = {
     "ellipse_g25_ab2": "Ellipse\n25°, 2,0",
     "bezier_f1": "Bézier\nf 1,0",
     "bezier_f2.5": "Bézier\nf 2,5",
-    "bionic_phiauto_r0.3": "bionisch\nA5, 0,3",
+    "bionic_phiauto_r0.3": "bionisch\nPatent, 0,3",
     "bionic_phi35_r0.2": "bionisch\n35°, 0,2",
 }
 """Tick labels of the overview figure."""
 QUANTITIES = fsa.GLOBAL_QUANTITIES
 SHORT_LABELS = {
     "pinion_rotation_rad": "Drehung",
-    "u_head_max": "Kopfweg",
-    "p_max": "CPRESS",
+    "u_head_max": "Kopfverschiebung",
+    "p_max": "Kontaktdruck",
     "s1_max": r"$\sigma_{\mathrm{1}}$ max",
     "s3_min": r"|$\sigma_{\mathrm{3}}$| max",
 }
@@ -402,6 +402,45 @@ def figure_overview(
     decimal_comma(ax, which="y")
     legend_outside(figure, ax, where="bottom", ncol=2)
     return save_figure(figure, stem)
+
+
+def figure_rates(
+    baseline: Folder,
+    variants: Sequence[Folder],
+    rates: Sequence[str],
+    step: str,
+    point: str,
+    stem: Path,
+) -> list[Path]:
+    """Δσ1 at one point for every variant (x), one panel per material step, the three rate cards
+    as markers (user 2026-10-20: the overview over the material steps doubles the effect figure,
+    the rates were missing)."""
+    figure, axes = new_figure("full", 0.95, rows=len(MATERIALS), sharex=True)
+    x = np.arange(len(variants))
+    for ax, material in zip(axes, MATERIALS, strict=True):
+        for rate in rates:
+            series = f"{material}_{rate}"
+            values = [effect(baseline, v, series, step, "s1_max").get(point, np.nan) for v in variants]
+            ax.plot(
+                x,
+                [v * 100.0 for v in values],
+                linestyle="none",
+                label=fsa.RATE_LABELS.get(rate, rate),
+            )
+        ax.axhline(0.0, color="0.5", linewidth=0.5)
+        ax.set_ylabel(rf"{material}: $\Delta\sigma_{{\mathrm{{1}}}}$ in %")
+        decimal_comma(ax, which="y")
+    axes[-1].set_xticks(x, [VARIANT_SHORT.get(v.label, v.label) for v in variants])
+    legend_outside(figure, axes[0], where="bottom", ncol=3)
+    return save_figure(figure, stem)
+
+
+def caption_rates(step: str, point: str) -> str:
+    return (
+        f"Änderung der größten Zugspannung σ1 der Fußrundung gegen die Trochoide am Normpunkt "
+        f"{point} je Variante, Werkstoffstufe (W1 bis W4 von oben nach unten) und Dehnratenkarte, "
+        f"Taschenkörper, {fsa.STEP_LABELS.get(step, step)}; Marker ohne Linie."
+    )
 
 
 def caption_effect(rate: str, step: str, quantity: str) -> str:
@@ -832,6 +871,11 @@ def analyse(
             )
             lines.append(f"{stem.name}: " + ", ".join(p.name for p in pictures))
             captions.append(f"- `{stem.name}`: {caption_overview(rate, step, peak, with_sweep)}")
+    if len(rates) > 1:
+        stem = out / f"fusseffekt_raten_{last_step}"
+        pictures = figure_rates(baseline, variants, rates, last_step, peak, stem)
+        lines.append(f"{stem.name}: " + ", ".join(p.name for p in pictures))
+        captions.append(f"- `{stem.name}`: {caption_rates(last_step, peak)}")
     doc.extend(["## 5 Bilder", ""])
     doc.extend(f"- {line}" for line in lines)
     doc.append("")

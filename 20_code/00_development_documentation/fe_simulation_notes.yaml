@@ -501,3 +501,23 @@ folders:
     outcome: "Stand 2026-10-17 mit fünf von sechs Varianten (bionisches Optimum steht aus): die Reihenfolge der ebenen Studie bleibt, die Beträge an C sind kleiner (W1: −16/−24/−25/−28/−27 % gegen −13/−25/−32/−35/−32 % eben); die Patentkonturen senken σ1 an allen fünf Punkten und machen den Zahn 4 bis 22 % steifer, die Ellipsen senken σ1 nur an C und erhöhen es an den Doppeleingriffspunkten (Lückenmitte); Plastizität halbiert den Nutzen bei der isotropen Stufe (W2 gegen W1) und mindert ihn bei der anisotropen um 10 bis 30 % (W4 gegen W3); die Raten verschieben die Effekte um höchstens 3 Punkte, bei den Ellipsen unter W3 bis 6 Punkte; mit der Last nimmt der Nutzen der Patentkonturen um bis zu 6 Punkte ab (Bézier f 1, W1: −32 % bei 8 Nm, −25 % bei 16 Nm)"
     machine: "Auswertung"
     findings: [FE-05, FE-25]
+  pilot_20layers_bore33_pocket_gemessen_stahl_round0p1f12_qsdy1dy2_AtoE:
+    purpose: "Gemessene Geometrie, Variante stahl (ADR-116 Punkt 54): Stahlritzel wie gefertigt (Median der Prüfstandsserie 95911 bis 95920, letzte GINA-Runde: Zahnweite 16,797, Kopfkreis 52,879, Fußkreis 48,321 mm, lineare Kopfrücknahme 23,6 µm ab d 51,946 bis zum Kopfkreis), Kunststoffrad nach dem STplus-Fall; Taschenkörper, Netz der Taschenserie (titelgleich bis auf die Zeile 1), Ritzelkante 0,1 mm, W1 bis W4 × QS/DY1/DY2 an A bis E (pos_031/036/049/063/068), 60 Jobs"
+    outcome: "Vorlage; erster Unterordner der Kette nachtlauf_2026-10-19_messvarianten"
+    machine: "-"
+    findings: [FE-19]
+  pilot_20layers_bore33_pocket_gemessen_kunststoff_round0p1f12_qsdy1dy2_AtoE:
+    purpose: "Gemessene Geometrie, Variante kunststoff (ADR-116 Punkt 54): Stahlritzel nach dem STplus-Fall, Kunststoffrad wie gefertigt (Median der Kerngruppe: Zahnweite 16,972, Kopfkreis 54,0515, Fußkreis 49,5055 mm, Profil-Winkelabweichung +10,25 µm ab d_Cf 50,3 mit Nullpunkt am Messkreis d_M 51,728, Kopfkantenrundung r_K 0,21 mm statt der 45°-Fase); Taschenkörper auf dem gemessenen Zahn, drei Elementreihen auf dem Bogen (86 800 Knoten, 75 732 C3D8I), Ritzelkante 0,1 mm, A bis E (pos_031/036/049/063/068); W1 und W2 × QS/DY1/DY2 (30 Jobs), W3/W4 nach dem CONVERSE-Mapping des Nutzers auf wheel-pocket_mesh.inp"
+    outcome: "Vorlage; zweiter Unterordner der Kette nachtlauf_2026-10-19_messvarianten"
+    machine: "-"
+    findings: [FE-19, FE-26]
+  pilot_20layers_bore33_pocket_gemessen_beide_round0p1f12_qsdy1dy2_AtoE:
+    purpose: "Gemessene Geometrie, Variante beide (ADR-116 Punkt 54): Stahlritzel und Kunststoffrad wie gefertigt (die Zahlen der beiden Einzelvarianten); Radnetz byteidentisch mit der Variante kunststoff, Ritzelfläche byteidentisch mit der Variante stahl; A bis E (pos_031/036/049/063/068); W1 und W2 × QS/DY1/DY2 (30 Jobs), W3/W4 nach dem Mapping"
+    outcome: "Vorlage; dritter Unterordner der Kette nachtlauf_2026-10-19_messvarianten"
+    machine: "-"
+    findings: [FE-19, FE-26]
+  nachtlauf_2026-10-19_messvarianten:
+    purpose: "Kette der drei Messvarianten (ADR-116 Punkt 54) für den Lizenzrechner: variante_stahl_gemessen (60 Jobs), variante_kunststoff_gemessen und variante_beide_gemessen (je 30 Jobs W1/W2, nach dem Mapping je 60); Starter wie die Kette vom 2026-10-14 (Sperrdateien, pid-Wächter, Autostart)"
+    outcome: "übergeben 2026-10-19; rund 6 h (W1 bis W4) je Variante nach den Serienzeiten, mit W3/W4 der Radvarianten rund 18 h"
+    machine: "Vollversion"
+    findings: [FE-26, FE-27]

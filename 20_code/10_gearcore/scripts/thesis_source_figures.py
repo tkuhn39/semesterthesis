@@ -7,6 +7,7 @@ The list ``10_report/bilder/quellbilder.yaml`` names every cut:
         pdf: 07_themis/KST_856_I_AB_1491_unlocked.pdf   # below 00_literatur
         page: 57                     # PDF page (1-based), not the printed number
         box: [70, 400, 540, 700]     # x1 y1 x2 y2 in bp, origin bottom left (graphicx viewport)
+        raster: 600                  # optional: a PNG twin in dpi for a scanned page (stencil mask)
 
 ``build`` writes every cut through a small pdflatex document (``graphicx`` with ``page``,
 ``viewport`` and ``clip``, ``preview`` with ``tightpage``), so the result stays a vector
@@ -67,6 +68,11 @@ class Cut:
     pdf: Path
     page: int
     box: tuple[float, float, float, float]
+    raster: int | None = None
+    """Resolution in dpi of an additional PNG twin (``raster:`` in the listing); for a scanned
+    source whose page is a CCITT stencil mask, which the pdf.js viewer of the editor leaves
+    blank (seen 2026-10-21 with Fig. 2 of DE 10 2008 045 318 B3). The vector cut is still
+    written; the thesis takes the PNG through ``bilder.yaml`` (``format: png``)."""
 
 
 def read_listing(path: Path = LISTING) -> list[Cut]:
@@ -88,7 +94,11 @@ def read_listing(path: Path = LISTING) -> list[Cut]:
         values = [float(v) for v in entry["box"]]
         if len(values) != 4 or values[0] >= values[2] or values[1] >= values[3]:
             raise InputRangeError(f"{where}: box must be x1 y1 x2 y2 with x1 < x2 and y1 < y2")
-        cuts.append(Cut(name=name, pdf=pdf, page=page, box=(values[0], values[1], values[2], values[3])))
+        raster = entry.get("raster")
+        if raster is not None and not (isinstance(raster, int) and 72 <= raster <= 1200):
+            raise InputRangeError(f"{where}: raster must be a resolution in dpi between 72 and 1200")
+        cuts.append(Cut(name=name, pdf=pdf, page=page, box=(values[0], values[1], values[2], values[3]),
+                        raster=raster))
     return cuts
 
 
@@ -193,6 +203,15 @@ def build(cuts: Sequence[Cut], output: Path = OUTPUT) -> list[Path]:
             shutil.copyfile(work / "cut.pdf", target)
             written.append(target)
             print(f"{cut.name}: {cut.pdf.name} Seite {cut.page} -> {target.relative_to(REPO)}")
+            if cut.raster is not None:
+                subprocess.run(
+                    ["pdftoppm", "-r", str(cut.raster), "-gray", "-png", "-singlefile",
+                     str(work / "cut.pdf"), str(output / cut.name)],
+                    check=True,
+                )
+                twin = output / f"{cut.name}.png"
+                written.append(twin)
+                print(f"{cut.name}: Rasterzwilling {cut.raster} dpi -> {twin.relative_to(REPO)}")
     return written
 
 
