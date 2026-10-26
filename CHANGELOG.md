@@ -52,6 +52,13 @@ Dates are ISO 8601 (YYYY-MM-DD).
   empty notes list is gone), the italic rights notice of the task description on its own page,
   the empty "web" bibliography list removed, the first task paragraph with `\hbadness=2000` for
   two lines of the supervisor's text, zero boxes and zero warnings in the log; `~$*` ignored.
+- 2026-10-26, frozen hand-in version (user: plagiarism check below 3 %, only norms and proper
+  citations, AI check 0 %, content frozen): the class option `entwurf` removed from the main file
+  (no red footer), the main file renamed by the user to `SA_1999_03738470.tex`, the class no
+  longer loads the obsolete `fleqn` package, table KI.1 black (the last orange), the 32 draft
+  files of `10_report/Kapitel/entwuerfe/` pulled into the eight chapter files (text unchanged,
+  comments kept, session script `merge_chapters.py`) and the draft folder removed; the PDF text
+  of the build is identical to the previous build.
 - 2026-10-26, appendix and wording (user's reading of 7, 8 and the appendix): every appendix
   section starts on a new page (`\clearpage` between the `\input`s of `Kapitel/anhang.tex`), so
   the tables and figures of one appendix stand before the text of the next; the generated

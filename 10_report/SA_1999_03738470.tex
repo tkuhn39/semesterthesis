@@ -1,7 +1,9 @@
 % todonotes wird in FZGdef.sty mit der Option shadow geladen; ohne loadshadowlibrary warnt das Paket bei
 % jeder Notiz ("Trying to put a shadow below a todonote"). Die Option muss vor der Klasse stehen (2026-10-21).
 \PassOptionsToPackage{loadshadowlibrary}{todonotes}
-\documentclass[entwurf,nokeys,notodolist]{FZGdasa}
+% Abgabefassung ohne die Option entwurf (keine rote Fußzeile "Entwurf Stand", keine Notizen); für eine
+% Arbeitsfassung die Option wieder in die eckige Klammer setzen: [entwurf,nokeys,notodolist] (2026-10-26).
+\documentclass[nokeys,notodolist]{FZGdasa}
 % {Klassen} entspr. *.cls Dateien:
 % FZGdasa > arbeitet mit \chapter als höchste Ebene
 %

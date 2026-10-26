@@ -5,7 +5,7 @@ mentions of AI-assisted programming.
 
     uv run --all-extras python scripts/check_thesis_text.py [FILE ...]
 
-Without files every ``.tex`` below ``10_report/Kapitel`` (and ``entwuerfe``) is checked. The
+Without files every ``.tex`` below ``10_report/Kapitel`` is checked. The
 checks are heuristics on the prose (comments, mathematics, figure and table environments and
 commands are removed first); every hit names file and line, nothing is edited.
 """

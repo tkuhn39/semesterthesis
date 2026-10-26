@@ -2,10 +2,373 @@
 \label{chap:laufversuche}
 % Inhalt (Gliederung Kapitel 6, etwa 6 S.; nach L1 bis L4).
 
-\input{Kapitel/entwuerfe/kap6_1_versuchsprogramm.tex}
+\section{Versuchsprogramm und Übersicht}
+\label{sec:versuchsprogramm}
 
-\input{Kapitel/entwuerfe/kap6_2_schadensbilder.tex}
+Mit den Rädern aus PA46-GF30 wurden zehn Laufversuche auf dem Prüfstand KV3 gefahren, der Vorversuch zur Temperatur aus \secref{sec:temperatur} und neun Wöhlerversuche auf den Stufen $8$, $12$ und $16$\,Nm am Rad mit zwei, drei und vier Rädern. Alle Läufe sind beendet, ein Durchläufer liegt nicht vor. Die Drehzahl betrug $3058$\,1/min am Ritzel, also $3000$\,1/min am Rad, die Öltemperatur an der Messstelle vor der Prüfverzahnung $74$ bis $75$\,\textdegree C und in den Läufen bei $16$\,Nm $67$\,\textdegree C. Der Prüfstand hält bei einem Abfall des Moments um $1$\,Nm an. Bei jedem Halt wurde nachgespannt, wobei das Moment um höchstens $5$\,\% über dem Sollwert eingestellt wurde. Ab dem Lauf mit dem Rad 97360 wurden bei jedem Halt die markierten Zähne fotografiert. \figref{fig:risswachstum_97364} zeigt diese Dokumentation am Rad 97364 bei $8$\,Nm, dem am längsten gelaufenen Rad, als Ausschnitt gleicher Größe um die markierten Zähne. Die Reihe deckt das Anrissfenster zwischen $3{,}65$ und $6{,}61 \cdot 10^{6}$ Lastwechseln und das Risswachstum bis zum Ende des Laufs ab, bei dem kein Zahn brach. Die früheren Läufe tragen schriftliche Befunde zum Zustand der Fußrundungen. \tabref{tab:versuchsprogramm_pa46} nennt je Rad die Stufe, die Öltemperatur und die Lastwechselzahl am Ende. Dazu kommen die versagten Zähne nach der Sichtprüfung der gelaufenen Räder (\secref{sec:schadensbilder}), das wirksame Kriterium nach \secref{sec:auswertung_laufversuche} und der Zählerstand der ersten sichtbaren Anrisse. Die Lastwechselzahlen sind die Zählerstände der Ritzelwelle aus der Arbeitsmappe des Prüfstands nach \secref{sec:auswertung_laufversuche}.
 
-\input{Kapitel/entwuerfe/kap6_3_woehlerlinien.tex}
+\begin{figure}[!htbp]
+	\centering
+	\begin{subfigure}[t]{0.30\textwidth}
+		\includegraphics[width=\textwidth]{kap6/risswachstum_97364_3653000}
+		\caption{$3{,}65 \cdot 10^{6}$}
+	\end{subfigure}\hfill
+	\begin{subfigure}[t]{0.30\textwidth}
+		\includegraphics[width=\textwidth]{kap6/risswachstum_97364_6610000}
+		\caption{$6{,}61 \cdot 10^{6}$}
+	\end{subfigure}\hfill
+	\begin{subfigure}[t]{0.30\textwidth}
+		\includegraphics[width=\textwidth]{kap6/risswachstum_97364_8410000}
+		\caption{$8{,}41 \cdot 10^{6}$}
+	\end{subfigure}\\[4pt]
+	\begin{subfigure}[t]{0.30\textwidth}
+		\includegraphics[width=\textwidth]{kap6/risswachstum_97364_11161000}
+		\caption{$11{,}16 \cdot 10^{6}$}
+	\end{subfigure}\hfill
+	\begin{subfigure}[t]{0.30\textwidth}
+		\includegraphics[width=\textwidth]{kap6/risswachstum_97364_14810000}
+		\caption{$14{,}81 \cdot 10^{6}$}
+	\end{subfigure}\hfill
+	\begin{subfigure}[t]{0.30\textwidth}
+		\includegraphics[width=\textwidth]{kap6/risswachstum_97364_18365000}
+		\caption{$18{,}37 \cdot 10^{6}$}
+	\end{subfigure}\\[4pt]
+	\begin{subfigure}[t]{0.30\textwidth}
+		\includegraphics[width=\textwidth]{kap6/risswachstum_97364_23770000}
+		\caption{$23{,}77 \cdot 10^{6}$}
+	\end{subfigure}\hfill
+	\begin{subfigure}[t]{0.30\textwidth}
+		\includegraphics[width=\textwidth]{kap6/risswachstum_97364_32015000}
+		\caption{$32{,}02 \cdot 10^{6}$}
+	\end{subfigure}\hfill
+	\begin{subfigure}[t]{0.30\textwidth}
+		\includegraphics[width=\textwidth]{kap6/risswachstum_97364_40000000}
+		\caption{$40 \cdot 10^{6}$ (geschätzt)}
+	\end{subfigure}
+	\caption{Rad 97364 bei $8$\,Nm, markierte Zähne bei jedem Halt des Prüfstands, Ausschnitt gleicher Größe um die Markierung (links die belastete Flanke mit dem Zahnfuß): keine Anrisse bei $3{,}65 \cdot 10^{6}$, leichte Haarrisse bei $6{,}61 \cdot 10^{6}$, Anrisse einzeln sichtbar ab $8{,}41 \cdot 10^{6}$, deutlich sichtbar ab $14{,}81 \cdot 10^{6}$ Lastwechseln, Ende beim lauten Versagensgeräusch ohne vollständigen Zahnfußbruch.}
+	\label{fig:risswachstum_97364}
+\end{figure}
 
-\input{Kapitel/entwuerfe/kap6_4_vergleichswerkstoffe.tex}
+\begin{table}[htbp]
+	\caption{Laufversuche mit PA46-GF30 auf dem Prüfstand KV3 im Jahr 2026: ME-Nummer des Rades, Stufe des Raddrehmoments, Öltemperatur an der Messstelle, Lastwechselzahl am Ende, versagte Zähne nach der Sichtprüfung, wirksames Kriterium und erste sichtbare Anrisse (spätestens ab: erste Kontrolle mit Befund, zwischen: letzte Kontrolle ohne und erste Kontrolle mit Befund).}
+	\label{tab:versuchsprogramm_pa46}
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{L{1.3cm}L{0.8cm}L{0.8cm}L{1.9cm}L{2.5cm}L{1.7cm}L{2.2cm}L{2.4cm}}
+		ME-Nummer & $T_{2}$ in Nm & Öl in \textdegree C & Lastwechsel                 & versagte Zähne                                                & Kriterium           & erste Anrisse                               & Vermerk                                                   \\
+		\hline
+		\arrayrulecolor{black!30}
+		97351     & $12$          & $75$                & $2{,}42 \cdot 10^{6}$       & 34 bis 41 abgebrochen                                         & Totalausfall        & keine bis $2{,}20 \cdot 10^{6}$             & Stufenlauf nach der Temperaturmatrix                      \\
+		\hline
+		97350     & $12$          & $74$                & $6{,}21 \cdot 10^{6}$       & 37 bis 41 abgebrochen                                         & Totalausfall        & nicht dokumentiert                          & Ende nicht im Protokoll notiert                           \\
+		\hline
+		97365     & $12$          & $74$                & $3{,}78 \cdot 10^{6}$       & 41 abgebrochen; 39, 40 und 44 bis 47 angerissen               & Totalausfall        & nicht dokumentiert                          &                                                           \\
+		\hline
+		97345     & $8$           & $74$                & $24{,}96 \cdot 10^{6}$      & 34 abgebrochen                                                & Totalausfall        & zwischen $3{,}22$ und $7{,}66 \cdot 10^{6}$ & erste $1{,}25 \cdot 10^{6}$ Lastwechsel bei etwa $10$\,Nm \\
+		\hline
+		97346     & $16$          & $67$                & $1{,}51 \cdot 10^{6}$       & 40, 41 abgebrochen; 38, 39 angerissen                         & Totalausfall        & spätestens ab $1{,}40 \cdot 10^{6}$         &                                                           \\
+		\hline
+		97366     & $16$          & $67$                & $1{,}21 \cdot 10^{6}$       & 31, 32 abgebrochen; 38 bis 40 Fußbruch; 37 Flankenbruch       & Totalausfall        & spätestens ab $0{,}96 \cdot 10^{6}$         & abrasiver Verschleiß vor dem Bruch                        \\
+		\hline
+		97355     & $16$          & $67$                & $1{,}37 \cdot 10^{6}$       & 39, 40 abgebrochen; 38 Flankenbruch                           & Totalausfall        & spätestens ab $0{,}95 \cdot 10^{6}$         & Verschleiß vor dem Bruch                                  \\
+		\hline
+		97340     & $16$          & $67$                & $1{,}92 \cdot 10^{6}$       & 36 bis 38 Fußbruch; 39, 40 Flankenbruch; 28 bis 31 angerissen & Totalausfall        & spätestens ab $1{,}72 \cdot 10^{6}$         & Anrisse an allen Zähnen                                   \\
+		\hline
+		97360     & $12$          & $74$                & $4{,}57 \cdot 10^{6}$       & 38 bis 41 angebrochen                                         & Totalausfall        & spätestens ab $2{,}53 \cdot 10^{6}$         & Bilder je Halt                                            \\
+		\hline
+		97364     & $8$           & $75$                & $40 \cdot 10^{6}$ geschätzt & kein Bruch                                                    & Versagens\-geräusch & zwischen $3{,}65$ und $6{,}61 \cdot 10^{6}$ & Drehzahlsensor ausgefallen                                \\
+		\hline
+		\arrayrulecolor{black}
+	\end{tabular}
+\end{table}
+
+% TK erledigt (Zähne nach der Liste des Nutzers vom 2026-10-21 eingetragen, Anrissspalte mit "spätestens ab" und "zwischen", Spalte Lauf gestrichen): Tim liefert noch die genauen Zähne nach, die abgebrochen sind. Aber die Tabelle enthält eine merkwürdige Aufschlüsselung der Anrisse. das bis deutet hin, bis dahin schadensfrei, aber das würde ich umformulieren. Also nicht bis ohne und dann in allen anderen Zeilen nur noch bis, sondern eher ab
+
+Beim Rad 97345 war das Moment nach dem Start versehentlich auf etwa $10$\,Nm am Rad eingestellt und wurde beim ersten Halt nach $1{,}25 \cdot 10^{6}$ Lastwechseln auf die Stufe gesetzt. Der Punkt wird mit diesem Vermerk geführt. Beim Rad 97364 fiel der Drehzahlsensor nach $32 \cdot 10^{6}$ Lastwechseln aus. Die Endzahl von $40 \cdot 10^{6}$ ist aus der Laufzeit nach dem letzten bekannten Zählerstand geschätzt. Der Lauf wurde beim lauten Versagensgeräusch beendet, bevor ein Zahn brach. Die abgebrochenen und angebrochenen Zähne liegen bei sieben der neun gebrochenen Räder vollständig zwischen den Zähnen 31 und 41, also in einem Fünftel des Umfangs von 52 Zähnen. Außerhalb liegen nur die Anrisse der Zähne 28 bis 31 am Rad 97340 und 44 bis 47 am Rad 97365. An drei Rädern der Stufe $16$\,Nm liegt der Bruch einzelner Zähne nicht im Fuß, sondern in der Flanke über der Spur der Ritzelkopfkante (\secref{sec:schadensbilder}).
+
+Als Vergleich dienen die 14 Laufversuche mit POM auf derselben Verzahnung aus dem Jahr 2023, die Fiederling auf dem Prüfstand KV4 bei $2250$\,1/min am Rad und $73$ bis $76$\,\textdegree C Öltemperatur ausgewertet hat \cite[S.~43 und 65]{Fie23}. Dort sind die Stufen nach dem Ritzelmoment benannt, so dass die Stufe $16$\,Nm am Rad $16{,}3$\,Nm trägt. Die Bilder und Tabellen dieser Arbeit führen das Raddrehmoment. Außerhalb bleiben nach \secref{sec:pruefstand} die Läufe des Jahres 2023 mit $45$\,\textdegree C Öltemperatur, die Stufenläufe, die Läufe bei anderen Drehzahlen und alle Läufe mit PEEK.
+
+Zwei Beobachtungen am Prüfstand gehören zur Übersicht. Erstens schwankte das angezeigte Moment bei $2250$\,1/min auch bei frischer Verzahnung deutlich, bei $3000$\,1/min dagegen nicht. Ein größeres Flankenspiel oder eine Zahnverformung scheidet bei frischer Verzahnung als Ursache aus. Als Ursachen kommen das Mittelungsfenster der Anzeige, eine Faltung der umlaufperiodischen Anteile durch die Abtastung der Steuerung oder eine Torsionsresonanz des Verspannungskreises nahe einer Harmonischen von $37{,}5$\,Hz in Frage. In das Mittelungsfenster passen bei $3000$\,1/min ganze Radumdrehungen von $20$\,ms, bei $2250$\,1/min mit $26{,}7$\,ms nicht. Die Messwelle erfasst das Moment mit Dehnmessstreifen und gibt ein Analogsignal an die Steuerung \cite[S.~52]{Schu09}. Eine Abtastrate ist in der Quelle nicht genannt. Zweitens ist die Nachspannhistorie eine Überlagerung aus Verschleiß, Kriechen, Zahnbiegung und Rissen, weil jeder Weg im Verspannungskreis das Moment senkt. \tabref{tab:verlustraten_97364} zeigt das am Beispiel des Rades 97364, des am längsten gelaufenen und am dichtesten protokollierten Rades. Der Momentverlust je Intervall zwischen zwei Halten fällt nach dem Einlauf von $5{,}5$ auf $0{,}2$\,Nm je $10^{6}$ Lastwechsel, während die Anrisse ab $8{,}4 \cdot 10^{6}$ Lastwechseln einzeln und ab $14{,}8 \cdot 10^{6}$ deutlich sichtbar wurden. Bei diesem Rad treiben die Risse den Momentverlust nicht. Die Rate folgt eher der Aggregattemperatur, die zwischen $8$ und $15 \cdot 10^{6}$ Lastwechseln $91$ bis $93$\,\textdegree C erreichte. Für die übrigen Räder liegen die Halte zu weit auseinander, um die Rate so aufzulösen. Eine Prüfanweisung für die weiteren Läufe folgt in \chapref{chap:zusammenfassung}.
+
+% TK erledigt (Beobachtungen neu: Schwankung als Beobachtung, Nachspannhistorie nur als Beispiel 97364): Der Abschnitt ist mehr oder weniger falsch dargestellt. Bitte nochmal mit meinen Anmerkungen gegenprüfen, die ich jetzt über den gesametn Text verteitl habe und wenn dir nichts auffält, dann an mich fragen, Aber der Abschnitt ist nicht ordentlich und korrekt formuliert. Und Tabelle 6 ist jetzt einfach verwendet, da ich da sehr viel protokolliert habe, aber das sollte dann auch exemplarisch verwednet werden und nicht als pauschale textfeststellung so übernommen werden, dass das eine generelle Aussage der Raten ist.
+
+\begin{table}[htbp]
+	\caption{Momentverlust je Nachspannintervall am Rad 97364 ($8$\,Nm) als Beispiel: Verlust aus dem Protokoll, Rate je $10^{6}$ Lastwechsel, Temperatur des Aggregats $\vartheta_{\mathrm{A}}$ und der Messstelle vor der Prüfverzahnung $\vartheta_{\mathrm{P}}$.}
+	\label{tab:verlustraten_97364}
+	\centering
+	\footnotesize
+	\begin{tabular}{L{2.4cm}L{2.4cm}L{2.0cm}L{2.8cm}L{1.7cm}L{1.7cm}}
+		von                    & bis                    & Verlust in Nm & Nm je $10^{6}$ Lastwechsel & $\vartheta_{\mathrm{A}}$ in \textdegree C & $\vartheta_{\mathrm{P}}$ in \textdegree C \\
+		\hline
+		\arrayrulecolor{black!30}
+		$0{,}05 \cdot 10^{6}$  & $0{,}27 \cdot 10^{6}$  & $1{,}2$       & $5{,}45$                   & $80$                                      & $75$                                      \\
+		\hline
+		$0{,}27 \cdot 10^{6}$  & $3{,}65 \cdot 10^{6}$  & $1{,}0$       & $0{,}30$                   & $83$                                      & $75$                                      \\
+		\hline
+		$3{,}65 \cdot 10^{6}$  & $6{,}61 \cdot 10^{6}$  & $1{,}0$       & $0{,}34$                   & $86$                                      & $76$                                      \\
+		\hline
+		$6{,}61 \cdot 10^{6}$  & $8{,}41 \cdot 10^{6}$  & $1{,}7$       & $0{,}94$                   & $91$                                      & $77$                                      \\
+		\hline
+		$8{,}41 \cdot 10^{6}$  & $11{,}16 \cdot 10^{6}$ & $1{,}8$       & $0{,}65$                   & $93$                                      & $77$                                      \\
+		\hline
+		$11{,}16 \cdot 10^{6}$ & $14{,}81 \cdot 10^{6}$ & $1{,}4$       & $0{,}38$                   & $93$                                      & $77$                                      \\
+		\hline
+		$14{,}81 \cdot 10^{6}$ & $18{,}37 \cdot 10^{6}$ & $1{,}2$       & $0{,}34$                   & $83$                                      & $75$                                      \\
+		\hline
+		$18{,}37 \cdot 10^{6}$ & $23{,}77 \cdot 10^{6}$ & $1{,}7$       & $0{,}31$                   & $84$                                      & $75$                                      \\
+		\hline
+		$23{,}77 \cdot 10^{6}$ & $32{,}02 \cdot 10^{6}$ & $1{,}6$       & $0{,}19$                   & $81$                                      & $75$                                      \\
+		\hline
+		\arrayrulecolor{black}
+	\end{tabular}
+\end{table}
+
+% Herkunft:
+% Absatz 1 (Programm, Regeln): 80_output/messungen/laufversuche/laufversuche.md (Tabelle PA46-GF30, KV3 2026) aus
+%   kst-E_Laufversuche_KV3.xlsx Zeilen 77 bis 95; Regeln: Spalte U Zeile 94 (kst-E_74: "nach 1 Nm Drehmomentabfall
+%   nachverspannt mit max +5 % Drehmomentabweichung vom Sollmoment", Abbruchkriterium Loss of drive, 1 Nm über
+%   100 000 LW), Nutzer 2026-10-18 (Startmoment über der Stufe, damit das Sollmoment in der Mitte liegt; Bilder
+%   der markierten Zähne ab kst-E_74; keine Durchläufer; 3058 = Ritzel, 3000 = Rad; Öl = Messstelle);
+%   ADR-118 Amendment 2026-10-18 Abend Punkt 1, 4, 5. Messwelle: SA-1272.txt Druckseite 52 (4.7.3).
+% Tabelle: laufversuche.md und anrissfenster.md (Anriss: 69 3 223 000 bis 7 658 000; 75 3 653 000 bis 6 610 000;
+%   74 ≤ 2 530 000; 70 ≤ 1 404 000; 71 ≤ 962 000; 72 ≤ 945 000; 73 ≤ 1 719 000; 63 "keine Auffälligkeit" bei
+%   2 198 207); Zähne: Spalte J (34; 40 und 41; 31; 39; 40); Vermerke: test_runs_user.yaml (Nutzer 2026-10-18).
+% Absatz 2 (69, 75, Zähne): Spalte T Zeile 89 (1251000 9,6 Nm, "falsches Drehmoment eingestellt"), Spalte M 10,3 Nm
+%   am Ritzel = 10,5 am Rad; Zeile 95 (Drehzahlsensor ausgefallen bei 32 015 000, Schätzung 40 000 000, "sehr
+%   laut", "noch keine Zähne locker"); Fenster 36 bis 40: parts.yaml failure_window, kap3_3 und kap4_4.
+% Absatz 3 (Vergleich): 80_output/messungen/woehler/vergleich.md (POM KV3 n = 6: 53, 54, 55, 56, 57, 67; PEEK KV3
+%   n = 6: 58 bis 62, 64; POM KV4 n = 14; PEEK KV4 n = 12; ausgeschlossen 65, 29 ohne Drehzahl, 32/34 4000, 33/35
+%   1000, 39 3000 1/min); laufversuche.md (kst-E_1 bis 7 Öl 45 °C, kst-E_22 Stufenlauf, 50 bis 52 Trockenlauf RT);
+%   Stufenbenennung 2023 nach Ritzelmoment: Spalte K gegen Q (16 → 16,3136); MA-0296 = Fie23.
+% Absatz 4 (Beobachtungen): Nutzer 2026-10-18 (Schwankung bei 2250 1/min bei frischer Verzahnung; Nachspannhistorie
+%   als Überlagerung); Hypothesen: Antwort vom 2026-10-18 (ADR-118 Amendment Abend Punkt 5); SA-1272.txt
+%   Druckseite 52 (DMS, Analogsignal, keine Abtastrate); 80_output/messungen/laufversuche/verlustraten.md
+%   (kst-E_75: 5,45/0,30/0,34/0,94/0,65/0,38/0,34/0,31/0,19 Nm je Mio., TA 80 bis 93, TP 74 bis 77);
+%   Anrisse: Spalte T Zeile 95 (8410000 "Anrisse einzeln sichtbar", 14810000 "deutlich sichtbar").
+% Bild fig:risswachstum_97364 (2026-10-25): neun Fotos des Nutzers je Halt (Dateiname = Lastwechsel), Befunde aus
+%   Spalte T Zeile 95 der Arbeitsmappe (3653000 keine Anrisse; 6610000 leichte Haarrisse; 8410000 Anrisse einzeln
+%   sichtbar; 11161000 keine große Veränderung; 14810000 deutlich sichtbar; 18365000, 23770000, 32015000 deutlich
+%   sichtbar, Versagensgeräusch ab 27160000; 40000000 geschätzt, Ende sehr laut, keine Zähne locker).
+%   2026-10-25 Abend: die Rohfotos 11161000 und 14810000 waren beim Beschriften vertauscht und wurden vom Nutzer
+%   benannt zurückgetauscht (Umbenennung in 70_input); Ausschnitt des letzten Fotos unter dem Ritzel (WINDOW_TOP).
+% Bibwunsch: Fie23, Schu09 vorhanden.
+% Nomenklatur: vartheta_A, °C, Temperatur des Ölaggregats (Mappe "TA"); vartheta_P, °C, Öltemperatur an der
+%   Messstelle vor der Prüfverzahnung (Mappe "TP"); T_2 vorhanden.
+% Offen: Welle des Lastwechselzählers; Fenster 36 bis 40; PEEK-Typ; Zitierweise der Versuche 2026; die
+%   Prüfanweisung steht in Kapitel 8 (noch nicht entworfen).
+
+\section{Schadensbilder}
+\label{sec:schadensbilder}
+% Entwurf 2026-10-21 nach der Sichtprüfung des Nutzers (failed_teeth_user.yaml) und den drei von ihm
+% genannten Fotos; Nachher-Scans (M5) am 2026-10-21 ausgewertet (scripts/contour_wear.py).
+
+Nach dem Lauf wurden die Räder mit Isopropanol gereinigt und unter dem Mikroskop untersucht sowie in einer Sichtprüfung bewertet. \figref{fig:schaden_16nm} zeigt je eine Aufnahme der Räder 97345, 97360 und 97340 der Stufen $8$, $12$ und $16$\,Nm im Stirnschnitt der Verzahnung, \figref{fig:schaden_oberflaeche} eine Flanke des Rades 97340 der Stufe $16$\,Nm mit der stark aufgerauten Oberfläche. Drei Befunde kehren an allen Rädern wieder. Erstens trägt die belastete Flanke jedes Zahns am unteren Ende des aktiven Profils, $0{,}7$ bis $0{,}8$\,mm über dem Fußkreis, eine Stufe. Die Kopfkante des Ritzels hat sich dort in die Flanke eingearbeitet. Das FE-Modell legt den Kontakt der Ritzelkopfkante bei den isotropen Stufen auf den Radius $25{,}8$\,mm, also $1{,}0$\,mm über den erzeugten Fußkreis von $24{,}76$\,mm, und findet dort die größten Auslastungen des Nachweises (\secref{sec:stommel_global_slife}). Die Konturscans nach dem Lauf legen den Beginn der Stufe rund $0{,}4$\,mm darunter. Zweitens sind die Kopfkanten der Räder bei $16$\,Nm ausgefranst und die Flanken mit freiliegenden Fasern aufgeraut. Die Sichtprüfung stuft die Oberfläche der vier Räder der Stufe $16$\,Nm als stark, der Räder bei $12$\,Nm als gering bis mittel und des Rades 97345 bei $8$\,Nm als kaum aufgeraut ein. Drittens brechen die Zähne im Fuß, einzeln wie beim Rad 97345 oder in Gruppen von bis zu acht benachbarten Zähnen (\tabref{tab:versuchsprogramm_pa46}). An drei Rädern der Stufe $16$\,Nm brechen vier Zähne nicht im Fuß, sondern in der Flanke über der Spur der Ritzelkopfkante (97340 Zähne 39 und 40, 97366 Zahn 37, 97355 Zahn 38). Ob der Riss dort in der Stufe beginnt, ist am Mikroskop noch zu klären.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.48\textwidth]{kap6/schaden_8nm_170824}\hfill
+	\includegraphics[width=0.48\textwidth]{kap6/schaden_12nm_170817}\\[2pt]
+	\includegraphics[width=0.48\textwidth]{kap6/schaden_16nm_170820}
+	\caption{Gelaufene Räder aus PA46-GF30 im Stirnschnitt unter dem Mikroskop, Maßstab $2$\,mm: Rad 97345 der Stufe $8$\,Nm (oben links), Rad 97360 der Stufe $12$\,Nm (oben rechts) und Rad 97340 der Stufe $16$\,Nm (unten). An jedem Zahn die Stufe der eingearbeiteten Ritzelkopfkante am unteren Ende des aktiven Profils, bei $16$\,Nm dazu die ausgefransten Kopfkanten.}
+	\label{fig:schaden_16nm}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.62\textwidth]{kap6/schaden_16nm_170810}
+	\caption{Aufgeraute Flanke des Rades 97340 der Stufe $16$\,Nm mit freiliegenden Fasern, Maßstab $2$\,mm. Bezug der Einstufung gering, mittel und stark nach der Sichtprüfung in \secref{sec:versuchsprogramm}.}
+	\label{fig:schaden_oberflaeche}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{kap6/verschleiss_profil}
+	\caption{Abweichung der gelaufenen Flanken von der Sollkontur über dem Radius für die Räder 97345 ($8$\,Nm), 97351 ($12$\,Nm) und 97340 ($16$\,Nm), je gescannter Zahn ein Strichmuster, die belastete Flanke farbig und die unbelastete grau, dahinter das Band aus Mittel und Standardabweichung der 49 Flanken vor dem Lauf. Senkrecht der rechnerische Fußnutzkreis, die Knotenreihe des Kantenkontakts im FE-Modell und der Wälzkreis.}
+	\label{fig:verschleiss_profil}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{kap6/verschleiss_kontur}
+	\caption{Gelaufene Zähne auf dem Sollzahn der Erzeugung, Abweichung nicht überhöht, für die Räder 97345 ($8$\,Nm), 97351 ($12$\,Nm) und 97340 ($16$\,Nm), je gescannter Zahn ein Strichmuster, beim Rad 97340 dazu der Zahn 1 vor dem Lauf in Grau.}
+	\label{fig:verschleiss_kontur}
+\end{figure}
+
+\begin{table}[htbp]
+	\caption{Verschleiß der belasteten Flanke aus den Konturscans nach dem Lauf, je Rad über die unversehrten gescannten Zähne: Mittel über das aktive Profil, Maximum, Radius des Beginns der Verschleißzone, Mittel der unbelasteten Flanke und Änderung der Grundzahndicke gegen das Mittel der Räder vor dem Lauf.}
+	\label{tab:verschleiss}
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{L{1.3cm}L{0.9cm}L{1.9cm}L{1.0cm}L{1.6cm}L{1.6cm}L{1.6cm}L{1.9cm}L{1.6cm}}
+		ME-Nummer & $T_{2}$ in Nm & Lastwechsel            & Zähne & Mittel in µm & Maximum in µm & Beginn $r$ in mm        & unbelastet in µm & $\Delta s_{\mathrm{b}}$ in µm \\
+		\hline
+		\arrayrulecolor{black!30}
+		97345     & $8$           & $24{,}96 \cdot 10^{6}$ & 3     & $156$ bis $197$ & $199$ bis $256$ & $25{,}44$ bis $25{,}45$ & $-1$ bis $3$     & $-235$ bis $-188$             \\
+		\hline
+		97351     & $12$          & $2{,}42 \cdot 10^{6}$  & 3     & $95$ bis $128$ & $127$ bis $171$ & $25{,}42$ bis $25{,}43$ & $-25$ bis $-13$  & $-125$ bis $-101$             \\
+		\hline
+		97340     & $16$          & $1{,}92 \cdot 10^{6}$  & 2     & $46$ bis $89$ & $79$ bis $125$ & $25{,}42$ bis $25{,}43$ & $-23$ bis $-17$  & $-95$ bis $-16$               \\
+		\hline
+		\arrayrulecolor{black}
+	\end{tabular}
+\end{table}
+% Herkunft: 80_output/messungen/konturscan/wheel_gelaufen/bericht.md (Je Rad), verschleiss.csv, achse.csv;
+% Fußnutzkreis 25,657 mm aus pair.sap_diameter der Erzeugung (scripts/contour_wear.py), FE-Knotenreihe 25,80 mm aus 5.3.
+
+Die Konturscans der Räder 97345 ($8$\,Nm, $24{,}96 \cdot 10^{6}$ Lastwechsel), 97351 ($12$\,Nm, $2{,}42 \cdot 10^{6}$) und 97340 ($16$\,Nm, $1{,}92 \cdot 10^{6}$) nach dem Lauf, gelagert nach \secref{sec:dokumentation_pruefraeder}, machen die Stufe messbar. \figref{fig:verschleiss_profil} trägt die Abweichung der gelaufenen Flanken von der Sollkontur über dem Radius auf, dahinter das Band der 49 Flanken vor dem Lauf, das dieselbe Lagerung mit $6$\,µm RMS in den Fußrundungen trifft. \figref{fig:verschleiss_kontur} zeigt dieselben Zähne auf dem Sollzahn, nicht überhöht. Nur die belastete Flanke ist abgetragen. Die unbelastete Flanke liegt im Mittel innerhalb von $25$\,µm am Band. Der Abtrag beginnt an allen Zähnen zwischen $r = 25{,}42$ und $25{,}45$\,mm mit einer steilen Stufe und bleibt von dort bis zum Kopf nahezu gleichmäßig. Im Mittel über das aktive Profil beträgt er $156$ bis $197$\,µm bei $8$\,Nm, $95$ bis $128$\,µm bei $12$\,Nm und $46$ bis $89$\,µm bei $16$\,Nm (\tabref{tab:verschleiss}). Das Maximum liegt $10$ bis $60$\,µm über dem Mittel zwischen $r = 25{,}7$ und $26{,}4$\,mm. Die Grundzahndicke aus den Evolventen bestätigt den Betrag des Abtrags. Sie ist um $16$ bis $235$\,µm kleiner als das Mittel der Räder vor dem Lauf. Auf die Lastwechsel bezogen trägt der Lauf bei $8$\,Nm $6$ bis $8$\,µm je Million ab, bei $12$\,Nm $39$ bis $53$\,µm und bei $16$\,Nm $24$ bis $46$\,µm. Die Kopfrundung der belasteten Seite misst nach dem Lauf $0{,}03$ bis $0{,}12$\,mm statt $0{,}21$\,mm, die der unbelasteten Seite ist unverändert. Der Beginn der Verschleißzone liegt rund $0{,}2$\,mm unter dem rechnerischen Fußnutzkreis von $25{,}66$\,mm und rund $0{,}4$\,mm unter der Knotenreihe des Kantenkontakts im FE-Modell ($25{,}80$\,mm). Der Eingriff beginnt im Lauf also tiefer auf der Flanke, als die Geometrie der unverformten Paarung angibt. Im FE-Modell reicht der Kontakt der gerundeten Ritzelkopfkante über alle 99 Stellungen bis $r = 25{,}60$\,mm hinab, gelesen an den Flankenknoten des Zahns T3 mit einer kleinsten Hauptspannung unter $-15$\,MPa. Zahnverformung und Kantenrundung verlegen den Beginn dort um $0{,}06$\,mm unter den Nutzkreis, der Lauf um weitere $0{,}15$ bis $0{,}18$\,mm. Die im Fuß gebrochenen Zähne 36 und 37 des Rades 97340 zeigen im Scan Bruchflächen und bleiben außer Betracht.
+
+% Herkunft der Fotos: 70_input/71_Messungen/Mikroskop/Bilder/Schadensbilder_Kunststoffraeder/<T>Nm_<ME>
+%   (Ordnernamen mit ME-Nummer, Nutzer 2026-10-26): 170824 in 8Nm_97345, 170817 in 12Nm_97360,
+%   170820 und 170810 in 16Nm_97340. Mikroskopaufnahmen der Flankenbrüche (97340 Z39/40, 97366 Z37,
+%   97355 Z38) liegen nicht vor.
+
+\section{Wöhlerlinien}
+\label{sec:woehlerlinien}
+
+Die neun Wöhlerversuche mit PA46-GF30 wurden nach \secref{sec:auswertung_laufversuche} ausgewertet. Die Regression nimmt die Lastwechselzahl am Ende des Laufs nach dem Prüfstandskriterium. Die Linie ist damit eine Bruchlinie. \figref{fig:woehler_T2_pa46gf30} zeigt die Punkte je Kriterium über dem Raddrehmoment und die halblogarithmische Gerade für $50$\,\% mit den parallelen Linien für $10$ und $1$\,\% Ausfallwahrscheinlichkeit. Dazu kommen die doppeltlogarithmische Gerade und die Werte für $10$\,\% nach VDI 2736 Blatt 4 je Horizont. Der Stufenlauf des Rades 97351 steht als Marker außerhalb der Regression.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{kap6/woehler_T2_pa46gf30_kv3_2026}
+	\caption{Wöhlerlinie der Räder aus PA46-GF30 über dem Raddrehmoment: Punkte je Kriterium, halblogarithmische Gerade für $50$\,\% mit den parallelen Linien für $10$ und $1$\,\% Ausfallwahrscheinlichkeit nach DIN 50100, doppeltlogarithmische Gerade und die Werte für $10$\,\% nach VDI 2736 Blatt 4 je Horizont.}
+	\label{fig:woehler_T2_pa46gf30}
+\end{figure}
+
+% TK erledigt (Erklärung im Absatz nach dem Bild: die doppeltlogarithmische Linie ist über T2 linear eine schwach gekrümmte Kurve, 0,06 Dekaden Abweichung von der Sehne): Ich dachte immer, dass bei doppeltlogarithmisch es eine gerade ist. Aber jetzt ist das Raddrehmoment liniear aufgetragen und es handelt sich um geraden. Müssten es dan nicht gebogene Linien sein? Kannst du mir das bitte nochmal erklären?
+
+Die Momentachse des Bildes ist linear geteilt, die Lastwechselachse logarithmisch. Die halblogarithmische Gerade ist deshalb im Bild eine Gerade. Die doppeltlogarithmische Gerade ist nur über $\lg T_{2}$ gerade und erscheint hier als schwach gekrümmte Kurve, weil $\lg T_{2}$ in diesem Bereich fast linear in $T_{2}$ verläuft. Die halblogarithmische Gerade nach \eqref{eq:halblog_gerade} lautet mit $T_{2}$ in Nm
+\begin{equation}
+	\lg N_{\mathrm{L},50\%} = 8{,}721 - 0{,}1617 \, T_{2} ,
+	\label{eq:woehler_pa46_halblog}
+\end{equation}
+gültig zwischen $8$ und $16$\,Nm. Die Werte in \tabref{tab:woehler_horizonte} folgen aus den ungerundeten Koeffizienten, bei $12$\,Nm ergibt die gerundete Gleichung $6{,}0 \cdot 10^{6}$ statt $5{,}96 \cdot 10^{6}$ Lastwechsel. Die gepoolte Standardabweichung von $\lg N_{\mathrm{L}}$ beträgt $0{,}125$ und nach der Korrektur für den Stichprobenumfang $0{,}129$. Sie liegt über der Untergrenze von $0{,}10$. Die doppeltlogarithmische Gerade nach \eqref{eq:zeitfestigkeitsgerade} liefert den Neigungsexponenten $k = 4{,}40$ mit $\lg C = 11{,}46$ und eine korrigierte Standardabweichung von $0{,}100$. Beide Geraden fallen bei $12$\,Nm zusammen. An den Rändern des belegten Bereichs weichen sie um höchstens $0{,}06$ Dekaden voneinander ab. \tabref{tab:woehler_horizonte} stellt je Horizont die gemessenen Lastwechselzahlen den Werten der Geraden für $50$, $10$ und $1$\,\% nach DIN 50100 gegenüber, daneben die Schätzwerte nach VDI 2736 Blatt 4. Die Richtlinie mittelt die normierten Standardabweichungen der Horizonte zu $\bar{s} = 0{,}0165$. Daraus folgen Faktoren von $0{,}70$ bis $0{,}74$ zwischen $10$ und $50$\,\%, die Norm liefert mit der gepoolten Standardabweichung $0{,}68$. Die Linie für $1$\,\% ist eine Extrapolation über den Bereich der Norm hinaus und wird nur zum Vergleich mit den Festigkeitswerten der Stahlräder geführt.
+
+\begin{table}[htbp]
+	\caption{Horizonte der Wöhlerversuche mit PA46-GF30: gemessene Lastwechselzahlen, Werte der halblogarithmischen Geraden für $50$, $10$ und $1$\,\% nach DIN 50100 sowie Schätzwerte nach VDI 2736 Blatt 4 mit der Standardabweichung $s_{i}$ des Horizonts. Lastwechsel in $10^{6}$.}
+	\label{tab:woehler_horizonte}
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{L{1.2cm}L{0.6cm}L{3.2cm}L{1.3cm}L{1.3cm}L{1.3cm}L{1.5cm}L{1.2cm}L{1.5cm}}
+		$T_{2}$ in Nm & $n$ & gemessen                                  & $N_{\mathrm{L},50\%}$ & $N_{\mathrm{L},10\%}$ & $N_{\mathrm{L},1\%}$ & $N_{i,50\%}$ VDI & $s_{i}$   & $N_{i,10\%}$ VDI \\
+		\hline
+		\arrayrulecolor{black!30}
+		$8$           & $2$ & $24{,}96$ / $40{,}0$ geschätzt            & $26{,}7$              & $18{,}2$              & $13{,}3$             & $31{,}6$         & $0{,}145$ & $22{,}0$         \\
+		\hline
+		$12$          & $3$ & $3{,}78$ / $4{,}57$ / $6{,}21$            & $5{,}96$              & $4{,}07$              & $2{,}98$             & $4{,}75$         & $0{,}109$ & $3{,}44$         \\
+		\hline
+		$16$          & $4$ & $1{,}21$ / $1{,}37$ / $1{,}51$ / $1{,}92$ & $1{,}36$              & $0{,}93$              & $0{,}68$             & $1{,}48$         & $0{,}085$ & $1{,}10$         \\
+		\hline
+		\arrayrulecolor{black}
+	\end{tabular}
+\end{table}
+
+Zur Streuung auf dem Horizont $8$\,Nm tragen die geschätzte Lastwechselzahl des Rades 97364 und das erhöhte Moment des Rades 97345 in der ersten Million Lastwechsel bei. Beide Punkte gehen ohne Gewichtung ein. Mit zwei Rädern auf dieser Stufe stützt sich die Lage der Geraden bei $8$\,Nm auf die Neigung aus den Stufen $12$ und $16$\,Nm. Die Linie wird nicht über $8$\,Nm hinaus verlängert, und ein Abknicken in eine Langzeitfestigkeit ist mit den Daten nicht belegbar.
+
+% TK erledigt (ME-Nummern): Anstatt Lauf mit der Kennummer aus der Excel immer auf die ME Nummer beziehen bitte.
+
+\begin{table}[htbp]
+	\caption{Geraden in den Wahrscheinlichkeitsnetzen der bezogenen Lastwechselzahlen: Standardabweichung $s_{\lg N}$ des Gauß-Netzes, Formparameter $k_{\mathrm{W}}$ und charakteristische Lebensdauer $\eta$ des Weibull-Netzes, Faktoren von $50$ auf $10$ und $1$\,\% sowie Bestimmtheitsmaß $R^{2}$.}
+	\label{tab:woehler_netze}
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{L{1.6cm}L{2.4cm}L{2.5cm}L{2.1cm}L{1.9cm}L{1.9cm}L{1.4cm}}
+		Netz    & $P_{\mathrm{A}}$ nach & $s_{\lg N}$ bzw. $k_{\mathrm{W}}$ & $10^{\mu}$ bzw. $\eta$ & $N_{10\%}/N_{50\%}$ & $N_{1\%}/N_{50\%}$ & $R^{2}$   \\
+		\hline
+		\arrayrulecolor{black!30}
+		Gauß    & Rossow                & $0{,}125$                         & $1{,}000$              & $0{,}69$            & $0{,}51$           & $0{,}971$ \\
+		\hline
+		Gauß    & $j/(n+1)$             & $0{,}140$                         & $1{,}000$              & $0{,}66$            & $0{,}47$           & $0{,}969$ \\
+		\hline
+		Weibull & Rossow                & $4{,}25$                          & $1{,}131$              & $0{,}64$            & $0{,}37$           & $0{,}962$ \\
+		\hline
+		Weibull & $j/(n+1)$             & $3{,}73$                          & $1{,}140$              & $0{,}60$            & $0{,}32$           & $0{,}965$ \\
+		\hline
+		\arrayrulecolor{black}
+	\end{tabular}
+\end{table}
+
+Zur Prüfung der Verteilung wurden die Lastwechselzahlen auf den Wert der halblogarithmischen Geraden ihres Horizonts bezogen und nach der Größe geordnet. Mit den Ausfallwahrscheinlichkeiten nach Rossow und nach $j/(n+1)$ stehen sie im Gauß-Netz in \figref{fig:netz_gauss_pa46gf30} und im Weibull-Netz in \figref{fig:netz_weibull_pa46gf30}. \tabref{tab:woehler_netze} nennt die Geraden der Netze. Beide Verteilungen beschreiben die neun Punkte mit Bestimmtheitsmaßen zwischen $0{,}962$ und $0{,}971$. Der Unterschied trägt bei diesem Stichprobenumfang keine Entscheidung. Die logarithmische Normalverteilung wird beibehalten, wie DIN 50100 sie vorsieht, und die Streuung aus dem Gauß-Netz mit $0{,}125$ stimmt mit der gepoolten Standardabweichung der Regression überein. Der Formparameter der Weibull-Verteilung liegt mit $3{,}7$ bis $4{,}3$ nahe dem Wert $3{,}46$, den Illenberger für die Grübchentragfähigkeit von PEEK-Rädern findet, und nahe dem Wert $3{,}6$, bei dem die Weibull-Verteilung der Normalverteilung entspricht \cite[S.~96 bis 97]{Ill22}. Die Faktoren von $50$ auf $10$\,\% betragen $0{,}66$ bis $0{,}69$ nach dem Gauß-Netz und $0{,}60$ bis $0{,}64$ nach dem Weibull-Netz, gegenüber $0{,}58$ bei Illenberger und $0{,}70$ bis $0{,}74$ nach VDI 2736 Blatt 4.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{kap6/netz_gauss_pa46gf30_kv3_2026}
+	\caption{Gauß-Netz der auf die Gerade für $50$\,\% bezogenen Lastwechselzahlen der neun Wöhlerversuche mit PA46-GF30, Ausfallwahrscheinlichkeit nach Rossow und nach $j/(n+1)$.}
+	\label{fig:netz_gauss_pa46gf30}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{kap6/netz_weibull_pa46gf30_kv3_2026}
+	\caption{Weibull-Netz der auf die Gerade für $50$\,\% bezogenen Lastwechselzahlen der neun Wöhlerversuche mit PA46-GF30, Ausfallwahrscheinlichkeit nach Rossow und nach $j/(n+1)$.}
+	\label{fig:netz_weibull_pa46gf30}
+\end{figure}
+
+Für die Versagensdefinition des Nachweises nach Stommel et al. liefern die Sichtkontrollen die Anrissfenster aus \tabref{tab:versuchsprogramm_pa46}. Auf der Stufe $8$\,Nm lagen die ersten sichtbaren Anrisse beim Rad 97345 zwischen $13$ und $31$\,\% der Lastwechsel bis zum Ende, beim Rad 97364 zwischen $9$ und $17$\,\%. Mehr als zwei Drittel der Laufzeit vergingen auf dieser Stufe mit sichtbaren Rissen. Auf den Stufen $12$ und $16$\,Nm ist in der ersten Million Lastwechsel keine Kontrolle ohne Befund dokumentiert. Die erste Kontrolle mit Befund nennt dort nur eine obere Schranke, die zwischen $55$ und $93$\,\% der Laufzeit liegt. Der Vergleich mit dem Nachweis folgt in \secref{sec:genauigkeit}. Über der Zahnfußspannung je Verfahren wird dieselbe Linie in \secref{sec:verfahrensvergleich} als Neigung $k$ je Verfahren und Werkstoffstufe ausgewertet. Weil jede Spannung dort eine eindeutige Funktion des Moments ist, ändert sich an den Lastwechselzahlen nichts.
+
+% Herkunft:
+% Absatz 1 bis 3 (Geraden, Horizonte): 80_output/messungen/woehler/woehler.md (measurements.py woehler, L2):
+%   halblogarithmisch a_c 8,7205, b_c 0,16166, s 0,1247, korrigiert 0,1293; doppeltlogarithmisch lg C 11,4617,
+%   k 4,404, s 0,0965, korrigiert 0,1001; Horizonte 8 Nm 24 956 000 / 40 000 000, N50 2,671e7, N10 1,823e7, N1
+%   1,334e7, VDI 3,159e7, s_i 0,1449, N10 2,195e7; 12 Nm 3 776 250 / 4 570 000 / 6 213 262, 5,964e6, 4,071e6,
+%   2,980e6, 4,751e6, 0,1091, 3,435e6; 16 Nm 1 210 000 / 1 366 000 / 1 512 000 / 1 920 000, 1,357e6, 9,266e5,
+%   6,782e5, 1,480e6, 0,0851, 1,097e6; s quer 0,01648. Faktoren VDI: 10^(−1,28 · 0,01648 · L_i,50) = 0,695/0,723/
+%   0,741; DIN 10^(−1,282 · 0,1293) = 0,683. Abstand der Geraden: bei 8 Nm lg 2,671e7 = 7,427 gegen
+%   11,4617 − 4,404 · lg 8,00 = 7,484 (0,057 Dekaden); bei 16 Nm 6,133 gegen 6,158 (0,025).
+% Absatz 4 (8 Nm): test_runs_user.yaml (69, 75); DIN 50100 S. 16 und 59 über 2.6.
+% Absatz 5 bis 7 (Netze): woehler.md Tabelle Netze (Gauß rossow 0,1249/1,0000/0,692/0,512/0,9707; rank
+%   0,1400/0,661/0,472/0,9690; Weibull rossow 4,2539/1,1308/0,642/0,370/0,9623; rank 3,7342/1,1403/0,604/0,322/
+%   0,9648); Illenberger2022.txt Druckseite 96 (k = 3,46, f10 0,58), 97 (k = 3,602 ≈ Normalverteilung).
+% Absatz 8 (Anrissfenster): anrissfenster.md; Anteile: 69 3,223/24,956 = 0,13 und 7,658/24,956 = 0,31; 75
+%   3,653/40 = 0,09 und 6,610/40 = 0,17; 74 2,53/4,57 = 0,55; 70 1,404/1,512 = 0,93; 71 0,962/1,210 = 0,79; 72
+%   0,945/1,366 = 0,69; 73 1,719/1,920 = 0,90; ADR-118 Amendment 2026-10-18 Abend Punkt 1 (dreistufiger
+%   Vergleich in 7.1).
+% Bildwunsch: kap6/woehler_T2_pa46gf30_kv3_2026, kap6/netz_gauss_pa46gf30_kv3_2026, kap6/netz_weibull_pa46gf30_kv3_2026
+%   (bilder.yaml).
+% Bibwunsch: Ill22 vorhanden.
+% Nomenklatur: k_W, -, Formparameter der Weibull-Verteilung (Illenberger S. 96: k); eta, -, charakteristische
+%   Lebensdauer der Weibull-Verteilung, bezogen (63,2 %); mu, -, Lage der bezogenen Lastwechselzahl im Gauß-Netz
+%   (lg); R^2, -, Bestimmtheitsmaß; N_L,50 % usw. über N_L; s_lgN, P_A, j, n, u, s_i, s quer, C, k aus 2.6.
+% Offen: Abszissen sigma_F und sigma_1 (nach C7 und L6b); Verweis sec:genauigkeit (7.1, noch nicht entworfen).
+
+\section{Vergleichswerkstoffe}
+\label{sec:vergleichswerkstoffe}
+
+\figref{fig:woehler_vergleich_werkstoffe} stellt die Läufe mit PA46-GF30 neben die 14 Läufe mit POM aus dem Jahr 2023 aus \secref{sec:versuchsprogramm}. Eingetragen sind nur Läufe bei der Referenzdrehzahl ihres Prüfstands, $3000$\,1/min am Rad auf dem Prüfstand KV3 und $2250$\,1/min auf dem Prüfstand KV4. Die Geraden stehen in \tabref{tab:vergleich_geraden}, angepasst wie in \secref{sec:woehlerlinien} mit der Untergrenze $0{,}10$ der Standardabweichung.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{kap6/woehler_T2_vergleich_werkstoffe}
+    \caption{Laufversuche mit PA46-GF30 (Prüfstand KV3, 2026, $3000$\,1/min, gefüllte Marker) neben POM (Prüfstand KV4, 2023, $2250$\,1/min, offene Marker) über dem Raddrehmoment, dazu die Gerade für $50$\,\% von PA46-GF30.}
+    \label{fig:woehler_vergleich_werkstoffe}
+\end{figure}
+
+\begin{table}[htbp]
+    \caption{Halblogarithmische Geraden $\lg N_{\mathrm{L},50\%} = a_{\mathrm{c}} - b_{\mathrm{c}} \, T_{2}$ von PA46-GF30 und POM mit der korrigierten Standardabweichung $s_{\lg N}$, dem Neigungsexponenten $k$ der doppeltlogarithmischen Geraden und dem belegten Bereich. $T_{2}$ in Nm.}
+    \label{tab:vergleich_geraden}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{L{2.0cm}L{3.4cm}L{0.6cm}L{1.2cm}L{1.7cm}L{1.4cm}L{1.1cm}L{2.2cm}}
+        Werkstoff & Prüfstand, Jahr, Drehzahl & $n$  & $a_{\mathrm{c}}$ & $b_{\mathrm{c}}$ in 1/Nm & $s_{\lg N}$ & $k$      & Bereich in Nm        \\
+        \hline
+        \arrayrulecolor{black!30}
+        PA46-GF30 & KV3, 2026, $3000$\,1/min  & $9$  & $8{,}72$         & $0{,}162$                & $0{,}129$   & $4{,}40$ & $8$ bis $16$         \\
+        \hline
+        POM       & KV4, 2023, $2250$\,1/min  & $14$ & $8{,}95$         & $0{,}176$                & $0{,}100$   & $5{,}20$ & $8{,}2$ bis $18{,}4$ \\
+        \hline
+        \arrayrulecolor{black}
+    \end{tabular}
+\end{table}
+
+Auf der Stufe $16$\,Nm erreichen die Räder aus PA46-GF30 $1{,}21$ bis $1{,}92 \cdot 10^{6}$ Lastwechsel, die Räder aus POM bei $16{,}3$\,Nm $0{,}98$ bis $1{,}27 \cdot 10^{6}$. Auf der Stufe $12$\,Nm liegen $3{,}8$ bis $6{,}2 \cdot 10^{6}$ Lastwechsel von PA46-GF30 im Bereich der POM-Räder bei $12{,}2$\,Nm mit $4{,}8$ bis $6{,}3 \cdot 10^{6}$. Bei $8$\,Nm stehen $25$ und geschätzt $40 \cdot 10^{6}$ Lastwechsel neben $39 \cdot 10^{6}$ des einen POM-Rades bei $8{,}2$\,Nm. Die Gerade von PA46-GF30 verläuft mit $b_{\mathrm{c}} = 0{,}162$\,1/Nm flacher als die von POM mit $0{,}176$\,1/Nm. Bei $16$\,Nm liegt sie um den Faktor $1{,}15$ über der POM-Geraden, bei $12$\,Nm gleichauf und bei $8$\,Nm um den Faktor $0{,}83$ darunter. Innerhalb der Streuung beider Reihen unterscheiden sich die Lebensdauern damit kaum. Den Vorteil der Faserverstärkung, den die Steifigkeit und die Zugfestigkeit des Werkstoffs erwarten lassen, zeigt dieser Vergleich nicht. Er steht allerdings unter Vorbehalt. Die POM-Räder liefen auf einem anderen Prüfstand mit einem anderen Ritzel, bei $2250$ statt $3000$\,1/min und mit $4{,}0$ statt $1{,}5$\,l/min Öl. Die Räder aus POM versagten bei Fiederling durch Zahnfußbruch nach schleichendem Risswachstum \cite[S.~66]{Fie23}, während die Räder aus PA46-GF30 nach \secref{sec:schadensbilder} eine Stufe der eingearbeiteten Ritzelkopfkante und aufgeraute Flanken tragen. Welcher dieser Einflüsse den Abstand trägt, lässt sich aus den Läufen nicht trennen. Die Läufe mit POM und PEEK auf dem Prüfstand KV3 im Jahr 2026 werden nach \secref{sec:pruefstand} nicht herangezogen.
+
+% TK erledigt (nur POM 2023, Tabelle auf zwei Zeilen, Vorbehalte benannt): Bitte nochmal den gesamten Abschnitt Überarbeiten, auf aktuelle Informationene, die dir vorliegen und bitte gib mir Bescheid, wenn ich dir aus der Excel helfen soll, da ich einige Formulierungen im Text sehe, die darauf aufbauen, was wirklich aus der Excel ausgewertet wird. Da nicht ganz bekannt es, welches Peek früher gefarhen wurde, bitte nur die POM Läufe gegenüberstellen und auch nicht die POM Läufe von 2026. Also rein die von 2023 verwenden.
+
+% Herkunft: 80_output/messungen/woehler/vergleich.md (POM KV4 2023 n = 14: a_c 8,9482, b_c 0,17639, s 0,0913 → 0,100,
+%   k 5,199, 8,16 bis 18,35 Nm; Punkte kst-E_10 bis 41), woehler.md (PA46-GF30); Faktoren: 10^(8,721−0,1617·T) gegen
+%   10^(8,9482−0,17639·T') mit T' = T·52/51 (16: 1,36e6/1,18e6 = 1,15; 12: 5,96e6/6,25e6 = 0,95; 8: 26,7e6/32,3e6 = 0,83);
+%   Öldurchfluss 4,0 (2023, Fie23 S. 40) und 1,5 l/min (2026, kap3_2); Versagensart POM: MA-0296 S. 66.

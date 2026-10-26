@@ -57,7 +57,7 @@
 \RequirePackage{afterpage}
 \RequirePackage{titlesec}
 \RequirePackage[titles]{tocloft}
-\RequirePackage{fleqn}
+%\RequirePackage{fleqn}
 \RequirePackage{lastpage}
 \RequirePackage{longtable}
 \RequirePackage[final]{pdfpages}

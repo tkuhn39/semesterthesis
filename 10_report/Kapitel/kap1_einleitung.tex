@@ -4,4 +4,26 @@
 % Motivation, Lücke laut Aufgabenstellung, Ziel, Aufbau. Quellen VDI 2736 Blatt 1/2, Hasl,
 % Illenberger, FVA 856 I, Kassem 2022. Keine Bilder.
 
-\input{Kapitel/entwuerfe/kap1_einleitung.tex}
+\section{Motivation}
+\label{sec:motivation}
+
+Zahnräder aus Kunststoff werden seit Jahrzehnten industriell eingesetzt, überwiegend im trockenen Betrieb, in dem der Wärmeeintrag aus der Reibung die übertragbare Leistung begrenzt. Unter Ölschmierung lassen sich deutlich höhere Drehmomente übertragen. Maßgebend für die Lebensdauer werden dann Ermüdungsschäden an Zahnfuß und Zahnflanke wie bei Stahlrädern \cite[S.~1]{Has18}. Die Tragfähigkeitsberechnung nach VDI 2736 Blatt 2 stützt sich auf Festigkeitswerte für PA66 und POM, die aus den 1960er Jahren und von spanend hergestellten Prüfrädern stammen. Für andere Werkstoffe fehlen sie, und verformungsbedingte Einflüsse bleiben in den analytischen Ansätzen unberücksichtigt \cite[S.~1 bis 2]{Has18}. Kurzfaserverstärkte Thermoplaste erhöhen Steifigkeit und Festigkeit, nehmen beim Spritzgießen aber eine orts- und richtungsabhängige Faserstruktur an, die nach FVA 856 I die örtliche Steifigkeit des Zahns bestimmt (\secref{sec:spritzgiessen}). Ob ein Berechnungsverfahren die Zahnfußtragfähigkeit eines solchen Rades trifft, lässt sich nur am Versuch entscheiden.
+
+In der Bachelorarbeit des Verfassers wurde der vereinfachte Festigkeitsnachweis nach Stommel et al. erstmals rechnerisch auf Kunststoffzahnräder angewendet und der Richtlinie VDI 2736 gegenübergestellt. Die experimentelle Prüfung des Verfahrens blieb dort als Forschungsbedarf offen \cite[S.~71]{Kuh24}. Diese Arbeit greift das auf. Sie wendet den Nachweis mit einem FE-Modell, das die Faserorientierung der Spritzgießsimulation übernimmt, auf die Prüfverzahnung kst-E aus PA46-GF30 an und stellt ihn Laufversuchen auf dem FZG-Kleinverspannungsprüfstand gegenüber. Die Problemstellung und die Zielsetzung folgen in \secref{sec:problemstellung} aus dem Stand der Wissenschaft und Technik.
+
+\section{Aufbau der Arbeit}
+\label{sec:aufbau}
+
+\chapref{chap:stand} fasst den Stand der Wissenschaft und Technik zusammen und leitet daraus Problemstellung und Zielsetzung ab. \chapref{chap:methoden} beschreibt Prüfverzahnung, Prüfstand und Prüfräder, die analytischen Verfahren, die Geometrie- und Simulationskette sowie die Auswertung von Beanspruchung und Laufversuchen. \chapref{chap:voruntersuchungen} enthält die Voruntersuchungen zum FE-Modell, zu den Prüfrädern und zur Temperatur am Prüfstand. \chapref{chap:berechnung} und \chapref{chap:laufversuche} stellen die Ergebnisse der Berechnung und der Laufversuche dar. \chapref{chap:diskussion} bewertet Genauigkeit, Anwendbarkeit und Grenzen der Verfahren, \chapref{chap:zusammenfassung} fasst die Arbeit zusammen und gibt einen Ausblick.
+
+% Herkunft:
+% Absatz 1: Hasl2018.txt Druckseite 1 (Trockenlauf, Wärmeeintrag; Ölschmierung, Ermüdung an Fuß und Flanke wie
+%   Stahl), Druckseite 1 bis 2 (PA66/POM-Werte 1960er Jahre, spanend; verformungsbedingte Einflüsse
+%   unberücksichtigt); FVA 856 I über kap2_2_spritzgiessen.tex.
+% Absatz 2 (Vorgeschichte): BA-0486.txt Druckseite 24 (2.4: Nachweis nach Stommel et al. für PA66/PEEK,
+%   Gegenüberstellung VDI 2736), Druckseite 71 (6: "Um ... Tragfähigkeit zu validieren, sollten experimentelle
+%   Untersuchungen folgen"; "Weiterer Forschungsbedarf besteht darin, ein geeignetes Bemessungsverfahren zu
+%   validieren"); Nutzer 2026-10-18 (persönliches Anliegen: Verfahren für diese Anwendung experimentell
+%   validieren). Zielsetzung steht nach Wunsch des Nutzers in 2.7, nicht hier.
+% Absatz 3: Gliederung; Labels chap:stand bis chap:zusammenfassung.
+% Bibwunsch: Kuh24 neu (Titelblatt BA-0486.pdf). Nomenklatur: keine. Offen: keine.
