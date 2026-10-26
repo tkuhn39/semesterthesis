@@ -241,27 +241,83 @@ bilder:
     kapitel: 5
     quelle: fe/kst_e/vergleich_fussrundung_AtoE_V2/fusseffekt_sigma1_LOAD_12NM_QS.svg
     unterschrift: "Fußrundungsvarianten gegen die Trochoide an A bis E, 12 Nm, quasistatisch."
+  # Kapitel 5, gemessene Geometrie (scripts/as_manufactured_figures.py, 2026-10-25)
+  - name: kontur_zaehne_gemessen
+    kapitel: 5
+    quelle: fe/kst_e/geometrie_gemessen/kontur_zaehne.svg
+    unterschrift: "Ritzel und Rad wie gefertigt gegen die STplus-Erzeugung, ganzer Zahn im Stirnschnitt in wahrem Maßstab."
+  - name: vergleich_referenz_w2_12nm
+    kapitel: 5
+    quelle: fe/kst_e/serie_beide_gemessen_gerechnet/analyse/vergleich_referenz_W2_QS_LOAD_12NM.svg
+    unterschrift: "Gemessene Geometrie gegen die Nenngeometrie über dem Wälzweg, W2, quasistatisch, 12 Nm: Verdrehweg, Fußspannung, Kontaktdruck, Kraft des Nebenzahns."
   # Kapitel 6, Schadensbilder (Fotos des Nutzers, 70_input/71_Messungen/Mikroskop/Bilder, verkleinert auf 1400 px)
   - name: schaden_8nm_170824
     kapitel: 6
     quelle: thesis/schadensbilder/schaden_8nm_170824.png
     format: png
-    unterschrift: "Gelaufenes Rad der Stufe 8 Nm im Stirnschnitt, Maßstab 2 mm."
+    unterschrift: "Gelaufenes Rad 97345 der Stufe 8 Nm im Stirnschnitt, Maßstab 2 mm."
   - name: schaden_12nm_170817
     kapitel: 6
     quelle: thesis/schadensbilder/schaden_12nm_170817.png
     format: png
-    unterschrift: "Gelaufenes Rad der Stufe 12 Nm im Stirnschnitt, Maßstab 2 mm."
+    unterschrift: "Gelaufenes Rad 97360 der Stufe 12 Nm im Stirnschnitt, Maßstab 2 mm."
   - name: schaden_16nm_170820
     kapitel: 6
     quelle: thesis/schadensbilder/schaden_16nm_170820.png
     format: png
-    unterschrift: "Gelaufenes Rad der Stufe 16 Nm im Stirnschnitt, Maßstab 2 mm."
+    unterschrift: "Gelaufenes Rad 97340 der Stufe 16 Nm im Stirnschnitt, Maßstab 2 mm."
   - name: schaden_16nm_170810
     kapitel: 6
     quelle: thesis/schadensbilder/schaden_16nm_170810.png
     format: png
-    unterschrift: "Aufgeraute Flanke eines Rades der Stufe 16 Nm, Maßstab 2 mm."
+    unterschrift: "Aufgeraute Flanke des Rades 97340 der Stufe 16 Nm, Maßstab 2 mm."
+  # Kapitel 6, Risswachstum am Rad 97364 (Fotos des Nutzers je Halt, 70_input/72_Kleingetriebepruefstand_KV3/
+  # Risswachstum_8-Nm_97364, einheitlicher Ausschnitt um die markierten Zähne, 2026-10-25)
+  - name: risswachstum_97364_3653000
+    kapitel: 6
+    quelle: thesis/risswachstum_97364/risswachstum_97364_3653000.png
+    format: png
+    unterschrift: "Rad 97364 bei 3 653 000 Lastwechseln  markierte Zähne  Ausschnitt gleicher Größe (scripts/thesis_crack_photos.py)."
+  - name: risswachstum_97364_6610000
+    kapitel: 6
+    quelle: thesis/risswachstum_97364/risswachstum_97364_6610000.png
+    format: png
+    unterschrift: "Rad 97364 bei 6 610 000 Lastwechseln  markierte Zähne  Ausschnitt gleicher Größe (scripts/thesis_crack_photos.py)."
+  - name: risswachstum_97364_8410000
+    kapitel: 6
+    quelle: thesis/risswachstum_97364/risswachstum_97364_8410000.png
+    format: png
+    unterschrift: "Rad 97364 bei 8 410 000 Lastwechseln  markierte Zähne  Ausschnitt gleicher Größe (scripts/thesis_crack_photos.py)."
+  - name: risswachstum_97364_11161000
+    kapitel: 6
+    quelle: thesis/risswachstum_97364/risswachstum_97364_11161000.png
+    format: png
+    unterschrift: "Rad 97364 bei 11 161 000 Lastwechseln  markierte Zähne  Ausschnitt gleicher Größe (scripts/thesis_crack_photos.py)."
+  - name: risswachstum_97364_14810000
+    kapitel: 6
+    quelle: thesis/risswachstum_97364/risswachstum_97364_14810000.png
+    format: png
+    unterschrift: "Rad 97364 bei 14 810 000 Lastwechseln  markierte Zähne  Ausschnitt gleicher Größe (scripts/thesis_crack_photos.py)."
+  - name: risswachstum_97364_18365000
+    kapitel: 6
+    quelle: thesis/risswachstum_97364/risswachstum_97364_18365000.png
+    format: png
+    unterschrift: "Rad 97364 bei 18 365 000 Lastwechseln  markierte Zähne  Ausschnitt gleicher Größe (scripts/thesis_crack_photos.py)."
+  - name: risswachstum_97364_23770000
+    kapitel: 6
+    quelle: thesis/risswachstum_97364/risswachstum_97364_23770000.png
+    format: png
+    unterschrift: "Rad 97364 bei 23 770 000 Lastwechseln  markierte Zähne  Ausschnitt gleicher Größe (scripts/thesis_crack_photos.py)."
+  - name: risswachstum_97364_32015000
+    kapitel: 6
+    quelle: thesis/risswachstum_97364/risswachstum_97364_32015000.png
+    format: png
+    unterschrift: "Rad 97364 bei 32 015 000 Lastwechseln  markierte Zähne  Ausschnitt gleicher Größe (scripts/thesis_crack_photos.py)."
+  - name: risswachstum_97364_40000000
+    kapitel: 6
+    quelle: thesis/risswachstum_97364/risswachstum_97364_40000000.png
+    format: png
+    unterschrift: "Rad 97364 bei 40 000 000 Lastwechseln  markierte Zähne  Ausschnitt gleicher Größe (scripts/thesis_crack_photos.py)."
   - name: woehler_T2_pa46gf30_kv3_2026
     kapitel: 6
     quelle: messungen/woehler/woehler_T2_pa46gf30_kv3_2026.svg

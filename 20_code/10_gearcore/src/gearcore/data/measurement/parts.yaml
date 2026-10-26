@@ -47,6 +47,25 @@ parts:
 # tooth 1 is marked on the parts and counted the same way by the P40, the contour scans and the rig.
 failure_window:
   wheel: { first_tooth: 36, last_tooth: 40 }
+# Quality the drawings demand (user, 2026-10-25, after the supervisor's remark on DIN 3962): the
+# measuring program checks against the tables of DIN 3962 Teil 1 and Teil 2 (grade 7 wheels, grade 6
+# pinions; its header values are exactly those tables, read on the norm 2026-10-25). The wheel
+# drawing demands Q10 after DIN ISO 1328-1:2018-03, whose classes are stepped differently, so the
+# protocol computes the class-10 tolerances (gearcore.measurement.tolerances) and counts the
+# exceedances against them; the pinion drawing of 2022 demands "Qualität besser als 6 nach
+# DIN 3961 bis 3967", which is the check the measuring program already runs.
+drawing_quality:
+  wheel:
+    norm: "DINISO1328-1:2018"
+    accuracy_class: 10
+    reference_diameter_mm: 52.0
+    normal_module_mm: 1.0
+    face_width_mm: 15.0
+    drawing: "Rr.F4028-Kunst_52Z_neu, Ausgabe 28.02.2022"
+  pinion:
+    norm: "DIN3962-1:1978"
+    grade: 6
+    drawing: "Zeichnung 2022: Qualität besser als 6 nach DIN 3961 bis 3967"
 # Labels the roughness protocols print in "Prüfteil/Zustand" (file names of Rauheit/*/PDF), kept as
 # batch labels; the user has not explained the two labels other than PA46-GF30 yet.
 batch_labels:

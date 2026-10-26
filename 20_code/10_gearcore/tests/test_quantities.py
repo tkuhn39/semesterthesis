@@ -234,7 +234,7 @@ def _is_numeric(annotation: Any) -> bool:
 def test_registry_is_well_formed() -> None:
     sources = load_sources()
     registry = quantities()
-    assert len(registry) == 236
+    assert len(registry) == 241  # 2026-10-25: + 5 tolerances of DIN ISO 1328-1 (profile/helix form and total, runout)
     symbols: dict[str, str] = {}
     for name, entry in registry.items():
         current = [entry.source] if entry.source else []

@@ -1,0 +1,54 @@
+% erzeugt von 20_code/10_gearcore/scripts/thesis_appendix_tables.py, nicht von Hand ändern
+\begin{table}[htbp]
+    \caption{Extrapolation nach Richardson für den ebenen Radsektor, Formulierung von CPE4 und C3D8 (selektiv reduzierte Integration): Werte je Stufe, Ordnung $p$ und Grenzwert aus den letzten drei Stufen nach \eqref{eq:richardson} und Fehler jeder Stufe gegen den Grenzwert. Ohne monotonen Verlauf über die letzten drei Stufen wird nicht extrapoliert.}
+    \label{tab:anhang_extrapolation_cpe4}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{L{2.5cm}L{4.6cm}lL{1.5cm}L{4.0cm}}
+        Größe & Werte je Stufe & $p$ & Grenzwert & Fehler je Stufe in \% \\
+        \hline
+        \arrayrulecolor{black!30}
+        \multicolumn{5}{l}{Reihe gleichmäßig, Stufen 1, 2, 3, 4} \\
+        \hline
+        $\sigma_{\mathrm{1,max}}$ Fuß in MPa & $125{,}42$ / $135{,}11$ / $138{,}89$ / $140{,}89$ & $0{,}84$ & $148{,}22$ & $-15{,}38$ / $-8{,}85$ / $-6{,}29$ / $-4{,}94$ \\
+        \hline
+        $u$ Kopfmitte in \textmu m & $203{,}80$ / $203{,}61$ / $203{,}65$ / $203{,}69$ & \multicolumn{3}{l}{keine monotone Konvergenz, keine Extrapolation} \\
+        \hline
+        $u$ Kopfecke in \textmu m & $203{,}85$ / $204{,}04$ / $204{,}12$ / $204{,}17$ & $0{,}12$ & $205{,}68$ & $-0{,}89$ / $-0{,}80$ / $-0{,}76$ / $-0{,}73$ \\
+        \hline
+        $U$ in N\,mm/mm & $3{,}5776$ / $3{,}5790$ / $3{,}5810$ / $3{,}5825$ & \multicolumn{3}{l}{keine monotone Konvergenz, keine Extrapolation} \\
+        \hline
+        \multicolumn{5}{l}{Reihe Zahnhöhe, Stufen 1, 2, 3} \\
+        \hline
+        $\sigma_{\mathrm{1,max}}$ Fuß in MPa & $125{,}42$ / $125{,}37$ / $125{,}38$ & \multicolumn{3}{l}{keine monotone Konvergenz, keine Extrapolation} \\
+        \hline
+        $u$ Kopfmitte in \textmu m & $203{,}80$ / $203{,}69$ / $203{,}70$ & \multicolumn{3}{l}{keine monotone Konvergenz, keine Extrapolation} \\
+        \hline
+        $u$ Kopfecke in \textmu m & $203{,}85$ / $204{,}05$ / $204{,}10$ & $1{,}61$ & $204{,}15$ & $-0{,}15$ / $-0{,}05$ / $-0{,}03$ \\
+        \hline
+        $U$ in N\,mm/mm & $3{,}5776$ / $3{,}5768$ / $3{,}5777$ & \multicolumn{3}{l}{keine monotone Konvergenz, keine Extrapolation} \\
+        \hline
+        \multicolumn{5}{l}{Reihe Zahnfuß, Stufen 1, 2, 3} \\
+        \hline
+        $\sigma_{\mathrm{1,max}}$ Fuß in MPa & $125{,}42$ / $125{,}46$ / $125{,}46$ & \multicolumn{3}{l}{keine monotone Konvergenz, keine Extrapolation} \\
+        \hline
+        $u$ Kopfmitte in \textmu m & $203{,}80$ / $203{,}97$ / $204{,}00$ & $2{,}08$ & $204{,}02$ & $-0{,}11$ / $-0{,}03$ / $-0{,}01$ \\
+        \hline
+        $u$ Kopfecke in \textmu m & $203{,}85$ / $204{,}02$ / $204{,}05$ & $2{,}08$ & $204{,}07$ & $-0{,}11$ / $-0{,}03$ / $-0{,}01$ \\
+        \hline
+        $U$ in N\,mm/mm & $3{,}5776$ / $3{,}5805$ / $3{,}5810$ & $2{,}08$ & $3{,}5814$ & $-0{,}10$ / $-0{,}02$ / $-0{,}01$ \\
+        \hline
+        \multicolumn{5}{l}{Reihe Zahndicke, Stufen 1, 2, 3, 4} \\
+        \hline
+        $\sigma_{\mathrm{1,max}}$ Fuß in MPa & $125{,}42$ / $135{,}13$ / $138{,}91$ / $140{,}91$ & $0{,}85$ & $148{,}14$ & $-15{,}34$ / $-8{,}78$ / $-6{,}23$ / $-4{,}88$ \\
+        \hline
+        $u$ Kopfmitte in \textmu m & $203{,}80$ / $203{,}49$ / $203{,}47$ / $203{,}47$ & $4{,}25$ & $203{,}47$ & $0{,}17$ / $0{,}01$ / $0{,}00$ / $0{,}00$ \\
+        \hline
+        $u$ Kopfecke in \textmu m & $203{,}85$ / $203{,}57$ / $203{,}55$ / $203{,}55$ & $5{,}79$ & $203{,}55$ & $0{,}15$ / $0{,}01$ / $0{,}00$ / $0{,}00$ \\
+        \hline
+        $U$ in N\,mm/mm & $3{,}5776$ / $3{,}5758$ / $3{,}5761$ / $3{,}5763$ & $0{,}87$ & $3{,}5769$ & $0{,}02$ / $-0{,}03$ / $-0{,}02$ / $-0{,}02$ \\
+        \hline
+        \arrayrulecolor{black}
+    \end{tabular}
+\end{table}

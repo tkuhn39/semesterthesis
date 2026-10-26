@@ -187,6 +187,23 @@ def test_run_log_in_utf16(script: ModuleType, tmp_path: Path) -> None:
     assert script.read_run_log(tmp_path / "none", {}) == ()
 
 
+def test_run_log_of_the_parallel_runner(script: ModuleType, tmp_path: Path) -> None:
+    """The parallel runner (ADR-116 item 55 (f)) writes no exit code and a core note."""
+    text = (
+        "2026-10-22T11:38:44 start pos_001_W1_DY1 (4 cores, 3 at a time)\n"
+        "2026-10-22T11:38:44 start pos_001_W1_DY2 (4 cores, 3 at a time)\n"
+        "2026-10-22T11:43:08 end pos_001_W1_DY1, completed\n"
+        "SEAT: 21 closed contact nodes, largest CPRESS 12.42 MPa at node 44420 (r 26.902, z 0.000)\n"
+        "2026-10-22T11:43:09 fields of pos_001_W1_DY1 written to pos_001_W1_DY1_fields.json\n"
+        "2026-10-22T11:44:00 end pos_001_W1_DY2, NOT completed (see pos_001_W1_DY2.msg)\n"
+    )
+    (tmp_path / "run_log.txt").write_bytes(b"\xff\xfe" + text.encode("utf-16-le"))
+    runs = script.read_run_log(tmp_path, {"pos_001_W1_DY1": "W1_DY1", "pos_001_W1_DY2": "W1_DY2"})
+    assert [r.job for r in runs] == ["pos_001_W1_DY1", "pos_001_W1_DY2"]
+    assert runs[0].completed and runs[0].wall_s == 264.0 and runs[0].series == "W1_DY1"
+    assert not runs[1].completed and runs[1].wall_s == 316.0
+
+
 def test_chattering_nodes_of_a_message_file(script: ModuleType, tmp_path: Path) -> None:
     msg = tmp_path / "pos_073_W1_QS.msg"
     lines = ["noise"] * 10 + [

@@ -1,0 +1,28 @@
+% erzeugt von 20_code/10_gearcore/scripts/thesis_appendix_tables.py, nicht von Hand ändern
+\begin{table}[htbp]
+    \caption{Dokumentierte Unterschiede zwischen der Geometriekette und STplus: Größen, die STplus unter dem Namen der Norm anders definiert und die der Vergleich deshalb nach der Programmregel rechnet oder ausnimmt, sowie die bewusste Abweichung der Kette von der Norm. Werte in mm, Faktoren ohne Einheit.}
+    \label{tab:anhang_normabweichungen}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{L{3.1cm}L{4.5cm}L{3.6cm}L{3.0cm}}
+        Größe & Norm (Gleichung, Abschnitt, Seite) und Regel & Regel von STplus & Beispiel \\
+        \hline
+        \arrayrulecolor{black!30}
+        \multicolumn{4}{l}{Aus dem Vergleich ausgenommen} \\
+        \hline
+        $E_{\mathrm{MdK}}^{*}$, Abmaßfaktor des diametralen Zweikugel- bzw. Zweirollenmaßes & DIN 21773:2014-08, Gl. (60), Abschnitt 14.6, S.~26, Ableitung des Zweikugelmaßes $M_{\mathrm{dK}}$ nach der Zahndicke & Verhältnis der oberen Abmaße $A_{\mathrm{Mde}} / A_{\mathrm{sne}}$ & kst-B, Ritzel: Kette $2{,}3087$, STplus $2{,}287$ \\
+        \hline
+        $s_{\mathrm{cy}}$, Zahndickensehne am Y-Zylinder & DIN 21773:2014-08, Gl. (48) bis (53), Abschnitt 14.3, S.~25, Grenzmaße der Sehne aus ihrem Abmaßfaktor & druckt die Zahndickenabmaße $A_{\mathrm{sne}}$ und $A_{\mathrm{sni}}$ selbst & kein Zahlenbeispiel, verglichen werden Nennmaß und Höhe der Sehne \\
+        \hline
+        $k$, Anzahl der Zähne, Lücken oder Teilungen in einem Bereich (z. B. Messzähnezahl) & DIN 21773:2014-08, Gl. (9), Abschnitt 7.2, S.~12, Berührung nahe dem V-Zylinder, Bereich nach Gl. (12) und (13) & $k = \min(\mathrm{INT}((k_{\mathrm{min}} + k_{\mathrm{max}}) / 2) + 1, k_{\mathrm{max}})$ & der Vergleich rechnet $k$ nach der Regel von STplus \\
+        \hline
+        $D_{\mathrm{M}}$, Messkugeldurchmesser & DIN 3977:1981-02, Tabelle 1, Abschnitt 4, S.~1, nächstgrößerer Tabellenwert über der idealen Kugel nach DIN 21773, Gl. (26) und (27) & Tabelle des Programms, größte Kugel über dem Kopfkreis, zwei Werte darunter für die Mitte der Formkreise & der Vergleich rechnet $D_{\mathrm{M}}$ nach der Regel von STplus \\
+        \hline
+        \multicolumn{4}{l}{Bewusste Abweichung der Kette von der Norm} \\
+        \hline
+        $h_{\mathrm{w}}$, Gemeinsame Zahnhöhe eines Radpaares & DIN ISO 21771:2014-08, Gl. (59), Abschnitt 5.2.6, S.~41, $h_{\mathrm{w}} = (d_{\mathrm{a1}} + d_{\mathrm{a2}}) / 2 - a_{\mathrm{w}}$, ebenso DIN 3960:1987-03, Gl. (4.2.08), S.~31 & Kette $h_{\mathrm{w}} = (d_{\mathrm{Fa1}} + d_{\mathrm{Fa2}}) / 2 - a_{\mathrm{w}}$, STplus $h_{\mathrm{gem}} = (d_{\mathrm{Fa1}} + d_{\mathrm{Fa2}}) / 2 - a$ & kst-B: Norm $3{,}205$\,mm, Kette $2{,}918$\,mm, STplus $2{,}918$\,mm \\
+        \hline
+        \arrayrulecolor{black}
+    \end{tabular}
+\end{table}

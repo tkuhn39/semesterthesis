@@ -95,6 +95,30 @@ sources:
     file: "00_literatur/05_normen_und_richtlinien/DIN_ISO_1328-1_2018-03-00_DE_2773568.pdf"
     verified: { method: pdf-header, by: "claude/pdftotext", date: "2026-09-28" }
     confirmed_by_user: true
+  DIN3962-1:1978:
+    type: norm
+    title: "DIN 3962 Teil 1:1978-08 Toleranzen für Stirnradverzahnungen; Toleranzen für Abweichungen einzelner Bestimmungsgrößen"
+    edition: "1978-08"
+    file: "00_literatur/05_normen_und_richtlinien/DIN_3962-1_1978-08-00_DE_1103153.pdf"
+    verified: { method: pdf-header, by: "claude/rendered page", date: "2026-10-25" }
+    confirmed_by_user: true
+    notes: "Withdrawn ('zurückgezogen - withdrawn' watermark), successor DIN ISO 1328-1 (2018-03) per the Nautos stamp; the German foreword of DIN ISO 1328-1:2018 names DIN 3962-1:1978-08 as replaced (transition until 2020-01-31). Placed by the user on 2026-10-25 (18 pages, scanned). Content: tolerances in µm per Verzahnungsqualität 1 to 12, per Normalmodul range and Teilkreisdurchmesser range, for f_f, f_Halpha, F_f (profile), f_p/f_pe, f_u, F_p, F_pz/8, F_r, R_s. Normalmodul von 1 bis 2 mm: Qualität 1 to 6 on S. 2, 7 to 12 on S. 3. The Klingelnberg P40 headers of the user's GINA files hold exactly these values (wheel d über 50 bis 125, Qualität 7: f_p 10, f_u 12, F_p 32, F_pz/8 22, F_r 22, R_s 14, f_Halpha 7 µm; pinion Qualität 6: 7, 9, 25, 16, 16, 10, 5 µm), checked 2026-10-25."
+  DIN3962-2:1978:
+    type: norm
+    title: "DIN 3962 Teil 2:1978-08 Toleranzen für Stirnradverzahnungen; Toleranzen für Flankenlinienabweichungen"
+    edition: "1978-08"
+    file: "00_literatur/05_normen_und_richtlinien/DIN_3962-2_1978-08-00_DE_1103171.pdf"
+    verified: { method: pdf-header, by: "claude/rendered page", date: "2026-10-25" }
+    confirmed_by_user: true
+    notes: "Withdrawn, successor DIN ISO 1328-1 (2018-03). Two pages: one table of F_beta, f_Hbeta, f_fbeta in µm per Verzahnungsqualität 1 to 12 and Zahnbreite range (bis 20, über 20 bis 40, über 40 bis 100, über 100 bis 160, über 160 mm). b bis 20 mm: f_Hbeta Qualität 7 = 11 µm, Qualität 6 = 8 µm (the P40 header values of the user's wheels and pinions), F_beta 13/9, f_fbeta 7/5,5 µm. Checked 2026-10-25."
+  DIN3962-3:1978:
+    type: norm
+    title: "DIN 3962 Teil 3:1978-08 Toleranzen für Stirnradverzahnungen; Toleranzen für Teilungs-Spannenabweichungen"
+    edition: "1978-08"
+    file: "00_literatur/05_normen_und_richtlinien/DIN_3962-3_1978-08-00_DE_1103199.pdf"
+    verified: { method: pdf-header, by: "claude/rendered page", date: "2026-10-25" }
+    confirmed_by_user: true
+    notes: "Withdrawn, successor DIN ISO 1328-1 (2018-03). Two pages: a nomogram for the tolerance of the Teilungs-Spannenabweichung F_pk over the arc length L (Zentriwinkel phi, Teilkreisdurchmesser d, Normalmodul m_n, Verzahnungsqualität). Not used for numbers; names the sector quantity the thesis compares with Anhang D.2 of DIN ISO 1328-1."
   DINISO1328-1:2018-EN:
     type: norm
     title: "DIN ISO 1328-1:2018-03 Cylindrical gears – ISO system of flank tolerance classification – Part 1: Definitions and allowable values of deviations relevant to flanks of gear teeth (ISO 1328-1:2013), English translation of DIN ISO 1328-1:2018-03"

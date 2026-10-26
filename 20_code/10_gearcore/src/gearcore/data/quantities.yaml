@@ -1205,7 +1205,7 @@ quantities:
   single_pitch_tolerance:
     symbol: "f_pT"
     unit: "µm"
-    description: "Single pitch tolerance (see ISO 1328-1:2013, ISO 6336 refers to f_pT as f_pt)"
+    description: "Toleranz der Teilungs-Einzelabweichung (ISO 6336 schreibt f_pt; Gl. (5) von DIN ISO 1328-1:2018, p. 36)"
     source: "ISOTR6336-30:2022"
     location: "Table 2, p. 3"
     english: { text: "Single pitch tolerance", source: "ISOTR6336-30:2022", location: "Table A.2, p. 43" }
@@ -2394,6 +2394,71 @@ quantities:
     stplus: null
     replaced: []
     note: "Not what the P40 header codes 216/217 store: that is the tolerance of the program's own Fpz/8 (a sliding pitch span, see pitch_span_deviation), kept raw by the evaluation."
+    since: 4
+    status: verified
+  profile_form_tolerance:
+    symbol: "f_f_alpha_T"
+    unit: "µm"
+    description: "Toleranz der Profil-Formabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11; Gl. (8), p. 37"
+    english: { text: "Profile form tolerance", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Computed by gearcore.measurement.tolerances (2026-10-25) to place the measured gears against the drawing's class; the P40 header stores no value for it."
+    since: 4
+    status: verified
+  total_profile_tolerance:
+    symbol: "F_alpha_T"
+    unit: "µm"
+    description: "Toleranz der Profil-Gesamtabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11; Gl. (9), p. 37"
+    english: { text: "Total profile tolerance", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (9): root of the squared unrounded slope and form tolerances (2026-10-25)."
+    since: 4
+    status: verified
+  helix_form_tolerance:
+    symbol: "f_f_beta_T"
+    unit: "µm"
+    description: "Toleranz der Flankenlinien-Formabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11; Gl. (11), p. 37"
+    english: { text: "Helix form tolerance", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Computed by gearcore.measurement.tolerances (2026-10-25); the P40 header stores no value for it."
+    since: 4
+    status: verified
+  total_helix_tolerance:
+    symbol: "F_beta_T"
+    unit: "µm"
+    description: "Toleranz der Flankenlinien-Gesamtabweichung"
+    source: "DINISO1328-1:2018"
+    location: "Tabelle 1, p. 11; Gl. (12), p. 37"
+    english: { text: "Total helix tolerance", source: "DINISO1328-1:2018-EN", location: "Table 1, p. 9" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Gl. (12): root of the squared unrounded slope and form tolerances (2026-10-25)."
+    since: 4
+    status: verified
+  runout_tolerance:
+    symbol: "F_rT"
+    unit: "µm"
+    description: "Toleranz des Rundlaufs"
+    source: "DINISO1328-1:2018"
+    location: "Anhang E.4 (informativ), Gl. (E.1), p. 53"
+    english: { text: "Runout tolerance", source: "DINISO1328-1:2018-EN", location: "Annex E.4" }
+    also: []
+    stplus: null
+    replaced: []
+    note: "Informative: F_rT = 0,9 F_pT (Gl. (E.1)); Tabelle 1 prints no tolerance symbol for the runout. The P40 header code 218 'Fr' stores the value of DIN 3962 Teil 1 (grade 7: 22 µm for d 50 to 125 mm, m_n 1 to 2 mm; checked 2026-10-25)."
     since: 4
     status: verified
   arithmetic_mean_roughness:

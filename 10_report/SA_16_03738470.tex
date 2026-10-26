@@ -1,7 +1,7 @@
 % todonotes wird in FZGdef.sty mit der Option shadow geladen; ohne loadshadowlibrary warnt das Paket bei
 % jeder Notiz ("Trying to put a shadow below a todonote"). Die Option muss vor der Klasse stehen (2026-10-21).
 \PassOptionsToPackage{loadshadowlibrary}{todonotes}
-\documentclass[entwurf,nokeys]{FZGdasa}
+\documentclass[entwurf,nokeys,notodolist]{FZGdasa}
 % {Klassen} entspr. *.cls Dateien:
 % FZGdasa > arbeitet mit \chapter als höchste Ebene
 %
@@ -16,7 +16,7 @@
 
 % Schlüsselwörter:
 \Arbeit{Semesterarbeit}
-\Nummer{16}
+\Nummer{1999}
 \ThemaDeutsch{Berechnung und experimentelle Untersuchung der Zahnfußspannung kurzfaserverstärkter Kunststoffzahnräder}
 % \ThemaEnglisch{Titel in Englisch (entfällt bei Semesterarbeit)}
 \ErlangungGrad{M.Sc.}
@@ -84,9 +84,9 @@
     \begingroup\sloppy\hbadness=10000 % lange Normtitel und Dateinamen im Verzeichnis
     \printbibliography[type=manual,title={\titleNormen},heading=subbibliography]
     \printbibliography[nottype=manual,keyword={norm},heading=none]
-    \printbibliography[nottype=manual,nottype=online,notkeyword={norm},notkeyword={web},title={\titleJournals},heading=subbibliography]
+    \printbibliography[nottype=manual,nottype=online,notkeyword={norm},title={\titleJournals},heading=subbibliography]
     \printbibliography[type=online,title={\titleURLS},heading=subbibliography]
-    \printbibliography[nottype=manual,nottype=online,keyword={web},heading=none]
+    % Liste mit dem Schlüsselwort web entfällt, kein Eintrag trägt es (leere Liste und Warnung im Log, 2026-10-26).
     \endgroup
 }
 
@@ -110,6 +110,15 @@
 \else
     \newcommand{\rev}[1]{#1}
 \fi
+% Bilder und Tabellen nahe am nennenden Absatz (Nutzer, 2026-10-25), geprüft mit scripts/thesis_float_distances.py.
+% Keine Float-Barriere vor Abschnitten: ein Abschnitt beginnt nicht auf einer neuen Seite (Nutzer, 2026-10-25
+% Abend); die Nähe der Floats kommt aus ihrer Lage im Quelltext (vor dem nennenden Absatz) und den Zählern unten.
+% Mehr Gleitobjekte je Seite, damit Bilder und Tabellen nicht hinter dem Absatz zurückbleiben, der sie nennt
+% (Klasse: topfraction 0,9, floatpagefraction 0,9, textfraction 0,1).
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+\renewcommand{\bottomfraction}{0.7}
 % Anhangverweise fett wie die übrigen Verweismakros der Klasse (Nutzer, 2026-10-21).
 \newcommand{\anhref}[1]{\textbf{Anhang~\ref{#1}}}
 
@@ -137,5 +146,11 @@
 \appendix
 \addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
 \input{Kapitel/anhang.tex}
+
+%==== Einsatz generativer KI-Systeme (gesondertes Verzeichnis nach der Erklärung; Nutzer, 2026-10-25) ====
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{Einsatz generativer KI-Systeme}
+\input{Kapitel/kap9_ki_verzeichnis.tex}
 
 \end{document}

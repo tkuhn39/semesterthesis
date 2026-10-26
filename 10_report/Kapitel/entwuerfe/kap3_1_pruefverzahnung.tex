@@ -1,7 +1,7 @@
 \section{Prüfverzahnung kst-E und Prüfräder}
 \label{sec:pruefverzahnung}
 
-Die Laufversuche und die Berechnungen dieser Arbeit beziehen sich auf die Prüfverzahnung kst-E der FZG, eine geradverzahnte Stahl-Kunststoff-Paarung mit dem Normalmodul $m_{\mathrm{n}} = 1$\,mm. Sie ist für den Verspannungsprüfstand mit dem Achsabstand $a_{\mathrm{w}} = 52$\,mm ausgelegt (\secref{sec:pruefstand}). Das Stahlritzel mit $z_{\mathrm{1}} = 51$ Zähnen treibt das Kunststoffrad mit $z_{\mathrm{2}} = 52$ Zähnen. Die Benennung lehnt sich an frühere Prüfverzahnungen des Lehrstuhls an \cite[S.~42 und 46]{Fie23}. Als Nenngeometrie dient der STplus-Fall kst-E, dessen Ergebnisliste (STplus 11.1F, 14.02.2025) am Lehrstuhl als Referenz dieser Paarung geführt wird. In \tabref{tab:geometrie_kste} stehen die Werte für Ritzel und Rad nebeneinander, wie sie die Geometriekette dieser Arbeit aus den Eingaben des Falls ausgibt (\secref{sec:werkzeugkette}). Die Bezeichnungen folgen DIN ISO 21771 \cite{DINISO21771}. Aus den Profilverschiebungsfaktoren $0{,}2034$ und $0{,}3143$ ergeben sich ein Betriebseingriffswinkel von $21{,}463$° und eine Profilüberdeckung von $1{,}154$. \figref{fig:stirnschnitt_kste} zeigt den Stirnschnitt der Paarung in der Stellung C mit den Kreisen der Tabelle, der Eingriffslinie und den Normpunkten A bis E.
+Die Laufversuche und die Berechnungen dieser Arbeit beziehen sich auf die Prüfverzahnung kst-E der FZG, eine geradverzahnte Stahl-Kunststoff-Paarung mit dem Normalmodul $m_{\mathrm{n}} = 1$\,mm. Sie ist für den Verspannungsprüfstand mit dem Achsabstand $a_{\mathrm{w}} = 52$\,mm ausgelegt (\secref{sec:pruefstand}). Das Stahlritzel mit $z_{\mathrm{1}} = 51$ Zähnen treibt das Kunststoffrad mit $z_{\mathrm{2}} = 52$ Zähnen. Die Benennung lehnt sich an frühere Prüfverzahnungen des Lehrstuhls an \cite[S.~42 und 46]{Fie23}. Als Nenngeometrie dient der STplus-Fall kst-E, dessen Ergebnisliste aus STplus 11.1F vom 14.02.2025 am Lehrstuhl als Referenz dieser Paarung geführt wird. In \tabref{tab:geometrie_kste} stehen die Werte für Ritzel und Rad nebeneinander, wie sie die Geometriekette dieser Arbeit aus den Eingaben des Falls ausgibt (\secref{sec:werkzeugkette}). Die Bezeichnungen folgen DIN ISO 21771 \cite{DINISO21771}. Aus den Profilverschiebungsfaktoren $0{,}2034$ und $0{,}3143$ ergeben sich ein Betriebseingriffswinkel von $21{,}463$° und eine Profilüberdeckung von $1{,}154$. \figref{fig:stirnschnitt_kste} zeigt den Stirnschnitt der Paarung in der Stellung C mit den Kreisen der Tabelle, der Eingriffslinie und den Normpunkten A bis E.
 
 \begin{figure}[htbp]
     \centering
@@ -17,28 +17,52 @@ Die Laufversuche und die Berechnungen dieser Arbeit beziehen sich auf die Prüfv
     \begin{tabular}{llcc}
         Größe                               & Zeichen                              & Ritzel                         & Rad        \\
         \hline
+        \arrayrulecolor{black!30}
         Zähnezahl                           & $z$                                  & $51$                           & $52$       \\
+        \hline
         Normalmodul in mm                   & $m_{\mathrm{n}}$                     & \multicolumn{2}{c}{$1{,}0$}                 \\
+        \hline
         Normaleingriffswinkel in °          & $\alpha_{\mathrm{n}}$                & \multicolumn{2}{c}{$20{,}000$}              \\
+        \hline
         Schrägungswinkel in °               & $\beta$                              & \multicolumn{2}{c}{$0$}                     \\
+        \hline
         Achsabstand in mm                   & $a_{\mathrm{w}}$                     & \multicolumn{2}{c}{$52{,}000$}              \\
+        \hline
         Profilverschiebungsfaktor           & $x$                                  & $0{,}2034$                     & $0{,}3143$ \\
+        \hline
         Zahnbreite in mm                    & $b$                                  & $17$                           & $15$       \\
+        \hline
         Teilkreisdurchmesser in mm          & $d$                                  & $51{,}000$                     & $52{,}000$ \\
+        \hline
         Grundkreisdurchmesser in mm         & $d_{\mathrm{b}}$                     & $47{,}924$                     & $48{,}864$ \\
+        \hline
         Wälzkreisdurchmesser in mm          & $d_{\mathrm{w}}$                     & $51{,}495$                     & $52{,}505$ \\
+        \hline
         Kopfkreisdurchmesser in mm          & $d_{\mathrm{a}}$                     & $52{,}894$                     & $54{,}022$ \\
+        \hline
         Fußformkreisdurchmesser in mm       & $d_{\mathrm{Ff}}$                    & $49{,}081$                     & $50{,}157$ \\
+        \hline
         erzeugter Fußkreisdurchmesser in mm & $d_{\mathrm{fE}}$                    & $48{,}394$                     & $49{,}524$ \\
+        \hline
         Kopfhöhenfaktor des Werkzeugs       & $h_{\mathrm{aP0}}/m_{\mathrm{n}}$    & $1{,}10$                       & $1{,}25$   \\
+        \hline
         Kopfrundungsfaktor des Werkzeugs    & $\rho_{\mathrm{aP0}}/m_{\mathrm{n}}$ & $0{,}20$                       & $0{,}20$   \\
+        \hline
         Fußformhöhenfaktor des Werkzeugs    & $h_{\mathrm{FfP0}}/m_{\mathrm{n}}$   & $1{,}30$                       & $0{,}8456$ \\
+        \hline
         Erzeugungsprofilverschiebungsfaktor & $x_{\mathrm{E}}$                     & $-0{,}203$                     & $0{,}012$  \\
+        \hline
         Zahnweite über $k = 6$ Zähne in mm  & $W_{\mathrm{k}}$                     & $17{,}090$                     & $17{,}180$ \\
+        \hline
         Zahnweitenabmaß in mm               &                                      & $-0{,}278$                     & $-0{,}207$ \\
+        \hline
         Betriebseingriffswinkel in °        & $\alpha_{\mathrm{wt}}$               & \multicolumn{2}{c}{$21{,}463$}              \\
+        \hline
         Profilüberdeckung                   & $\varepsilon_{\alpha}$               & \multicolumn{2}{c}{$1{,}154$}               \\
+        \hline
         Werkstoff nach Zeichnung            &                                      & 20MnCr5                        & PA46-GF30  \\
+        \hline
+        \arrayrulecolor{black}
     \end{tabular}
 \end{table}
 
@@ -53,15 +77,15 @@ Beide Räder sind im STplus-Fall über zahnstangenförmige Bezugsprofile erzeugt
     \label{fig:zahnkontur_kste}
 \end{figure}
 
-Das Ritzel besteht nach beiden Zeichnungsständen aus dem Einsatzstahl 20MnCr5, der gasaufgekohlt und in Öl abgeschreckt wird. Gefordert sind eine Randhärte von $670$ + $100$\,HV\,1 und eine Einhärtetiefe von $0{,}3$ + $0{,}1$\,mm bei der Grenzhärte $550$\,HV\,1. Die Kernfestigkeit liegt zwischen $900$\,N/mm$^{2}$ und $1300$\,N/mm$^{2}$. Die Zeichnung von 2022 verlangt profilgeschliffene Flanken mit $R_{\mathrm{a}}$ von $0{,}20$\,\textmu m bis $0{,}25$\,\textmu m und eine Qualität besser als 6 nach DIN 3961 bis 3967. Dazu kommt eine lineare Kopfrücknahme $C_{\mathrm{a}} = 25$\,\textmu m ab dem Durchmesser $51{,}946$\,mm. Der Zeichnungsstand von 2025 beschreibt nur die Vorverzahnung mit einem Protuberanzfräser (Kopfhöhe $1{,}34\,m_{\mathrm{n}}$, Kopfrundung $0{,}25\,m_{\mathrm{n}}$) sowie geschliffene Bohrung und Planflächen. Die Endbearbeitung steht nicht auf der Zeichnung, weil sie in der Werkstatt des Lehrstuhls erfolgt. Dort werden die Flanken nachgeschliffen und die Kopfrücknahme eingebracht. In der Verzahnungsmessung zeigen die Prüfstandsritzel deshalb die Kopfrücknahme und die Zahnweite der Zeichnung von 2022 (\secref{sec:pruefraeder_vorher}). Im FE-Modell wird das Ritzel als Modellwahl ohne Kopfrücknahme nach der Nenngeometrie des STplus-Falls abgebildet (\secref{sec:fe_modell}). Im STplus-Fall selbst ist das Ritzel mit der Werkstoffkarte 16MnCr5 und das Rad mit einer Karte für PA66 belegt. Beide Karten dienen allein der Geometrie. Die Werkstoffdaten der Berechnung stammen aus den Zugversuchen in \secref{sec:fe_modell}.
+Für das Rad liegt ein Zeichnungsstand vom 28.02.2022 vor, für das Ritzel die Stände vom 08.06.2022 und vom 02.04.2025. Das Ritzel besteht nach beiden Zeichnungsständen aus dem Einsatzstahl 20MnCr5, der gasaufgekohlt und in Öl abgeschreckt wird. Gefordert sind eine Randhärte von $670$ bis $770$\,HV\,1 und eine Einhärtetiefe von $0{,}3$ bis $0{,}4$\,mm bei der Grenzhärte $550$\,HV\,1. Die Kernfestigkeit liegt zwischen $900$\,N/mm$^{2}$ und $1300$\,N/mm$^{2}$. Die Zeichnung von 2022 verlangt profilgeschliffene Flanken mit $R_{\mathrm{a}}$ von $0{,}20$\,\textmu m bis $0{,}25$\,\textmu m und eine Qualität besser als 6 nach DIN 3961 bis 3967. Dazu kommt eine lineare Kopfrücknahme $C_{\mathrm{a}} = 25$\,\textmu m ab dem Durchmesser $51{,}946$\,mm. Der Zeichnungsstand von 2025 beschreibt nur die Vorverzahnung mit einem Protuberanzfräser mit der Kopfhöhe $1{,}34\,m_{\mathrm{n}}$ und der Kopfrundung $0{,}25\,m_{\mathrm{n}}$ sowie geschliffene Bohrung und Planflächen. Die Endbearbeitung steht nicht auf der Zeichnung, weil sie in der Werkstatt des Lehrstuhls erfolgt. Dort werden die Flanken nachgeschliffen und die Kopfrücknahme eingebracht. In der Verzahnungsmessung zeigen die Prüfstandsritzel deshalb die Kopfrücknahme und die Zahnweite der Zeichnung von 2022 (\secref{sec:pruefraeder_vorher}). Im FE-Modell wird das Ritzel als Modellwahl ohne Kopfrücknahme nach der Nenngeometrie des STplus-Falls abgebildet (\secref{sec:fe_modell}). Der Einfluss dieser Mikrogeometrie wird in \secref{sec:fussgeometrie_fertigung} gerechnet. Im STplus-Fall selbst ist das Ritzel mit der Werkstoffkarte 16MnCr5 und das Rad mit einer Karte für PA66 belegt. Beide Karten dienen allein der Geometrie. Die Werkstoffdaten der Berechnung stammen aus den Zugversuchen in \secref{sec:fe_modell}.
 
-Das Rad wird aus dem glasfaserverstärkten Polyamid 46 PA46-GF30 (Stanyl TW200F6 von Envalior) auf einen Stahleinleger gespritzt. Die Zeichnung des Rades nennt als Fertigung Spritzgießen und als Verzahnungsqualität Q10 nach DIN ISO 1328-1:2018-03. Die Bohrung 20 G6 mit der Passfedernut 6 J8 liegt im Einleger. Der Kunststoff ist in den Nuten des Einlegers eingespritzt und so gegen axiales Verschieben gesichert, das Rad sitzt über eine Passfeder auf der Welle \cite[S.~47]{Fie23}. Die Räder dieser Arbeit tragen dieselben Einleger aus 16MnCr5 wie die Räder der Laufversuche 2023. Der Kunststoffkörper beginnt beim Durchmesser $33$\,mm, die Nabe reicht in voller Breite bis zum Radius $19{,}107$\,mm. Von beiden Stirnseiten ist je eine $5{,}5$\,mm tiefe Tasche bis zum Radius $22{,}168$\,mm ausgespart. Ihre Wände stehen unter $93$° zur Stirnseite, so dass die Tasche mit der Tiefe schmaler wird. Drei der Ecken tragen den Radius $0{,}5$\,mm. Zwischen den Taschengründen bleibt ein Steg von $4$\,mm Dicke, außen trägt die Felge die Verzahnung über die volle Zahnbreite von $15$\,mm (\figref{fig:netz_koerper} in \secref{sec:fe_modell}). Für das Rad liegt ein Zeichnungsstand vor (Ausgabe 28.02.2022), für das Ritzel die Stände vom 08.06.2022 und vom 02.04.2025.
+Das Rad wird aus dem glasfaserverstärkten Polyamid 46 PA46-GF30 (Stanyl TW200F6 von Envalior) auf einen Stahleinleger gespritzt. Die Zeichnung des Rades nennt als Fertigung Spritzgießen und als Verzahnungsqualität Q10 nach DIN ISO 1328-1:2018-03. Die Bohrung 20 G6 mit der Passfedernut 6 J8 liegt im Einleger. Der Kunststoff ist in den Nuten des Einlegers eingespritzt und so gegen axiales Verschieben gesichert, das Rad sitzt über eine Passfeder auf der Welle \cite[S.~47]{Fie23}. Die Räder dieser Arbeit tragen dieselben Einleger aus C45 wie die Räder der Laufversuche 2023. Der Kunststoffkörper beginnt beim Durchmesser $33$\,mm, die Nabe reicht in voller Breite bis zum Radius $19{,}107$\,mm. Von beiden Stirnseiten ist je eine $5{,}5$\,mm tiefe Tasche bis zum Radius $22{,}168$\,mm ausgespart. Ihre Wände stehen unter $93$° zur Stirnseite, so dass die Tasche mit der Tiefe schmaler wird. Drei der Ecken tragen den Radius $0{,}5$\,mm. Zwischen den Taschengründen bleibt ein Steg von $4$\,mm Dicke, außen trägt die Felge die Verzahnung über die volle Zahnbreite von $15$\,mm (\figref{fig:netz_koerper} in \secref{sec:fe_modell}).
 
 % gestrichen (TK kap3_6:87): Bild radkoerper_kste; der Radkörper steht nur noch in 3.6 als Bild netz_koerper, dort mit der z-Achse horizontal.
 
 % TK erledigt (Bild hier gestrichen; netz_koerper in 3.6 mit z horizontal und weniger Maßen neu gezeichnet): Bitte die z-Achse auf die horizontale Ordinate, dann kann man sich den Zahnradkörper im Werschnitt besser vorstellen. Bitte weniger Radius und rundungsbemaßungen, die sind über die ordinaten ersichtlich, dann ist die Zeichnung auch aufgeräumter und überlappt nicht so stark. Entsprechend die Zeichnung überarbeiten.
 
-Für die Laufversuche und die Messungen stehen 36 Räder und 8 Ritzel mit fünfstelligen Teilenummern der Stückliste zur Verfügung (\tabref{tab:teilegruppen_kste}). Zehn Räder bilden die Kerngruppe der eigenen Laufversuche auf dem Prüfstand KV3. Darunter diente 97351 dem Vorversuch zur Temperatur, und 97361 wurde nicht mehr gefahren, weil der Prüfstand nach dem Ausfall des Drehzahlsensors gewartet wird. Alle übrigen 26 vermessenen Räder bilden die Gruppe der Fertigungsstreuung. Dazu zählt das Rad 97364, das als zweites Rad der Stufe $8$\,Nm lief und von einer studentischen Hilfskraft vermessen wurde. Sieben Ritzel der Nummern 95911 bis 95920 gehören zur Serie, aus der das Prüfstandsritzel stammt. Sie wurden im Oktober 2025 vermessen. Das Ritzel 86481 ist ein älteres Stück mit einem Konturscan aus dem Jahr 2023. Sein Fußkreis liegt $0{,}17$\,mm unter dem der Serie, es ist anders geschnitten und dient nicht als Referenz. Der Zahn 1 ist auf den Teilen markiert und wird von Messmaschine, Konturscan und Prüfstand gleich gezählt. Die Laststufen je Teil stammen aus der Versuchsdatei des Prüfstands (\secref{sec:pruefstand}). Der Messumfang je Gruppe folgt in \secref{sec:dokumentation_pruefraeder}.
+Für die Laufversuche und die Messungen stehen 36 Räder und 8 Ritzel mit fünfstelligen Teilenummern der Stückliste zur Verfügung (\tabref{tab:teilegruppen_kste}). Zehn Räder bilden die Kerngruppe der eigenen Laufversuche auf dem Prüfstand KV3. Darunter diente 97351 dem Vorversuch zur Temperatur, und 97361 wurde nicht mehr gefahren, weil der Prüfstand nach dem Ausfall des Drehzahlsensors gewartet wird. Alle übrigen 26 vermessenen Räder bilden die Gruppe der Fertigungsstreuung. Dazu zählt das Rad 97364, das als zweites Rad der Stufe $8$\,Nm lief und von einer studentischen Hilfskraft vermessen wurde. Sieben Ritzel der Nummern 95911 bis 95920 gehören zur Serie, aus der das Prüfstandsritzel stammt. Sie wurden im Oktober 2025 vermessen. Das Ritzel 86481 ist ein älteres Stück mit einem Konturscan aus dem Jahr 2023. Sein Fußkreis liegt $0{,}17$\,mm unter dem der Serie, es ist anders geschnitten und dient nicht als Referenz. Der Zahn 1 ist auf den Teilen markiert und wird von Messmaschine, Konturscan und Prüfstand gleich gezählt. Die Laststufen je Teil stammen aus der Arbeitsmappe des Prüfstands (\secref{sec:pruefstand}). Der Messumfang je Gruppe folgt in \secref{sec:dokumentation_pruefraeder}.
 
 % TK erledigt (97351 Vorversuch, 97361 nicht gefahren, 97364 bei 8 Nm): Bitte den Absatz auf aktuellen Stand bringen
 
@@ -70,14 +94,21 @@ Für die Laufversuche und die Messungen stehen 36 Räder und 8 Ritzel mit fünfs
     \label{tab:teilegruppen_kste}
     \centering
     \small
-    \begin{tabular}{L{3.4cm}L{5.6cm}lL{4.4cm}}
-        Gruppe                      & Teilenummern                                                         & Anzahl & Bemerkung                                                                          \\
+    \begin{tabular}{L{3.4cm}L{5.4cm}lL{4.4cm}}
+        Gruppe                      & Teilenummern                                                        & Anzahl & Bemerkung                                                                          \\
         \hline
-        Kernräder der Laufversuche  & 97340, 97345, 97346, 97350, 97351, 97355, 97360, 97361, 97365, 97366 & 10     & 97351 Vorversuch, 97361 ($8$\,Nm) aufgrund Prüfstandswartung noch nicht untersucht \\
+        \arrayrulecolor{black!30}
+        Kernräder der Laufversuche  & 97340, 97345, 97346, 97350, 97351, 97355, 97360, 97361, 97365, 97366 & 10     & 97351 Vorversuch, 97361 ($8$\,Nm) wegen der Prüfstandswartung nicht gefahren \\
+        \hline
         Fertigungsstreuung          & 97341 bis 97375 ohne Kernräder                                       & 26     & einschließlich 97364                                                               \\
+        \hline
         Zusatzversuch               & 97364                                                                & 1      & $8$\,Nm, zweites Rad der Stufe, zählt zur Streuung                                 \\
+        \hline
         Serie des Prüfstandsritzels & 95911, 95912, 95915, 95917, 95918, 95919, 95920                      & 7      & Verzahnungsmessung Oktober 2025                                                    \\
+        \hline
         älteres Ritzel              & 86481                                                                & 1      & Konturscan 2023                                                                    \\
+        \hline
+        \arrayrulecolor{black}
     \end{tabular}
 \end{table}
 

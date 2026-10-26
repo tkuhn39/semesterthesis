@@ -2028,6 +2028,160 @@ Elset-Umschreiben, dann das Simulationstagebuch").**
     plastic 7,766 / 8,240 / 9,421 / 10,718 / 11,192; both 7,766 / 8,222 / 9,421 / 10,718 /
     11,174 mm.
 
+### Amendment of 2026-10-22 (item 55: the cap of the tooth tip for the rounded wheel corner, FE-26 resolved; the variant "beide" as a series)
+
+55. **The cap of the tooth tip** (`gearcore.fe.resample.TipCap`, `MeshCounts.cap_layers`,
+    `decks --cap-layers`; user's decision of 2026-10-19 evening, "gleich ordentlich", built
+    2026-10-22 on his instruction not to wait for the budget reset).
+    (a) **Why the template cannot do it.** The head of the template is one logical rectangle
+    per half tooth whose corner node is the tip corner; a surface node that is a block corner
+    carries one quad, and that quad takes the full interior angle of the contour there. At the
+    kink of a chamfer this is about 135°, on the tangential arc of the measured wheel 180°, a
+    sliver whatever the number of rows (FE-26, sine 0,19). The fix therefore has to remove
+    every block corner from the arc and the tip land: the layers along the surface must turn
+    the corner, which puts the irregular node of the block structure inside the tooth.
+    (b) **The topology** (candidate (b) of the plan, the boundary layer around the corner;
+    candidate (a), a fan at the tangent point, would have put a node of valence five onto the
+    contact surface). Rows up to the tangency row (the row through the tip form point, now
+    the tangent point of the arc) stay the template's. Above it three blocks per half:
+    the corner block under the arc (depth `cap_layers` layers taken from the first columns of
+    the tangency row, `at_tip_edge_break` segments along the arc), the land block under the tip
+    circle (the same depth, `over_tooth_thickness / 2 - cap_layers` segments along the land)
+    and the core between the tangency row and the inner row of the land block
+    (`at_tip_edge_break` rows). The diagonal from the foot of the layers on the tangency row
+    to the inner corner is shared by the corner block and the core; the inner corner, where
+    the ray under the arc end meets the inner row, is the one node of valence 3; every surface
+    node keeps two quads. The land loses `cap_layers` segments per half (one node per half
+    tooth less in the surface path).
+    (c) **Why one layer, and why the rows are divided evenly.** On the measured wheel the arc
+    turns only 66° (the flank meets it at the pressure angle of the tip, 24° from the radial),
+    its tangent point lies 0,124 mm below the tip circle and the head columns are nearly
+    uniform (0,065 mm; the fine root layers do not continue as fine head columns), so a cap
+    as deep as the four root layers (0,27 mm) would reach below the tangency row. One layer
+    (0,077 mm) fits; the centre line between the tangency row and the tip is divided evenly
+    into the chamfer rows of the core and the land layer (0,031 mm each), the inner corner lies
+    radially under the arc end at that depth, and the diagonal then leaves the tangency row
+    at about 45°, which gives the two blocks at the foot angles of 66° and 114° and at the
+    inner corner 90° and 135°. With two layers the corner block's angle at the inner corner
+    would open to about 160°.
+    (d) **Placement.** In the template's reference coordinates the new nodes are transfinite
+    interpolations of their sides (`resample.cap_points`), which only have to be distinct and
+    mirror symmetric; after the surface nodes are put on the contour and the interior is
+    continued harmonically and smoothed as before, the cap is placed again from the contour
+    (`sector_mesh._cap_on_contour`, step 5 of the module), so that its quality is a matter of
+    construction, not of smoothing, and the other half is the mirror image. Numbers on the
+    measured wheel with the series counts (18 + 3 rows, 14 columns, 4 root layers): smallest
+    corner sine in the head 0,643 against 0,192 (no head quad below 0,5 against ten), the
+    arc nodes on the arc to 1e-7 mm, 4375 nodes per level in the sector of five teeth against
+    4320 (the cap adds eleven nodes per tooth). Without the option the hashes of the series
+    mesh and of the measured wheel's mesh are those of before (checked). Sets, surface path,
+    pictures, extraction: nothing else changes in meaning (`quad_head` marks the cap, the first
+    layer under the arc and the land is the HEAD_LAYER1 of the half). Refinement factors of
+    `fe.refine` are not meant for a capped mesh (the decks never use them).
+    (e) **The variant "beide" as a series, complete** (user's decisions of 2026-10-22, "um
+    nochmal besseren Einblick in die Fertigverzahnungen zu bekommen", then "vollständig, also
+    W1 bis W4, QS, DY1 und DY2 bei allen Unterordnern"): the variant with pinion and wheel as
+    measured is written only as a full series like the pocket series (30 per pitch, margin
+    1,0, 99 positions with A to E at 31/36/49/63/68) with all three rates, W1 and W2 now
+    (594 jobs, about 36 h) and W3/W4 after the user's mapping of the new wheel mesh (1188
+    jobs, about 120 h), folder
+    `series_20layers_bore33_pocket_gemessen_beide_cap1_round0p1f12_30perpitch_margin1_qsdy1dy2`;
+    a separate A-to-E folder of "beide" is dropped as redundant. The variant kunststoff (the
+    pinion of the STplus case, surface byte-identical to the pocket pilot, with the measured
+    wheel) is regenerated with the cap as
+    `pilot_20layers_bore33_pocket_gemessen_kunststoff_cap1_round0p1f12_qsdy1dy2_AtoE`, the
+    variant stahl (the measured pinion with the wheel of the STplus case, mesh identical to
+    the pocket series but for its title line) stays; the folders of 2026-10-19 without the
+    cap are deleted (never computed), the chain `nachtlauf_2026-10-19_messvarianten` carries
+    the three sub-folders. The user mapped `wheel-pocket_mesh.inp` of the capped folder the
+    same day as `wheel-pocketlevels-fertigung_mesh_{QS,DY1,DY2}.cof` (the orientation guard
+    accepts all three: 76 932 elements, 87 955 nodes by their labels), so both wheel folders
+    are written with W1 to W4 (kunststoff 60 jobs, the series 1188 jobs, about 120 h) and the
+    chain runs the series first on his instruction, then kunststoff, then stahl.
+    (f) **Jobs in parallel** (the user got twelve cores, 2026-10-22 midday). A job of this size
+    (88 000 nodes) gains little beyond four cores, so the runner of a deck folder takes
+    `-Parallel N`: N positions at a time, each in a background PowerShell job that makes the
+    same interactive Abaqus call as before with `-Cpus` cores and then the extraction of the
+    fields in the same slot; a queue waits while N jobs run, refills a slot the moment its job
+    has ended (the slots do not wait for each other; the user's question of 2026-10-22, the
+    first version had extracted in the starter's own thread, which left a slot empty for the
+    length of an extraction), logs the .sta verdict and the skip of completed positions keeps
+    the chain restartable. A position counts as done only when the .sta reports completion
+    AND both extraction files exist; a run cut short during the extraction (the user's
+    question of 2026-10-22) is extracted again on the restart without solving again, and the
+    extraction script writes both files under a `.part` name and renames them at the end, so
+    a cut-short file never passes as complete (`build_fe_decks.py extract` keeps the same
+    rule for the local pass with the Learning Edition's Python). The licence needs
+    tokens for every running job (5 N^0.422: 9 for four cores, 27 for three such jobs); if the
+    pool is smaller, the second job fails with a licence error and `-Parallel` is lowered. The
+    chain starter and the autostart pass `-Parallel` through; the call for the user's machine
+    is `run_all.ps1 -Launcher abq2025 -Cpus 4 -Parallel 3`, expected about a third of the
+    sequential time.
+
+### Amendment of 2026-10-25 (the series of the gears as manufactured computed and evaluated)
+
+56. **The series "beide" (both gears as manufactured, item 55 (e)) ran on the licence machine from
+    2026-10-22 11:38 to 2026-10-25 17:16** with `-Cpus 4 -Parallel 3`: 1188 jobs, every `.sta`
+    COMPLETED SUCCESSFULLY, mean increments ≈ 24 per job, 49 cutbacks (the nominal pocket series
+    had 411 and 9 aborted jobs), wall times per job W1 6 to 7 min, W2 8, W3 14, W4 18 to 20 min
+    with three jobs sharing the machine; 77,6 h in total. The ODBs stayed on the server (the user
+    copied `.sta`, `.dat`, `.msg`, `.prt`, `_fields.json`, `_stress.npz`, 55 GiB; the `.dat` are
+    41 GiB of it, 89 % node and element maps of the instances). The server volume of about 400 GB
+    the user saw is the ODBs: 263 to 406 MiB per job (measured on the pocket series, whose ODBs
+    are still local, 139,6 GiB for 396 jobs), three times the jobs and a 5 % larger mesh give
+    ≈ 440 GiB. The output requests of both series are identical line for line (one frame per
+    step, no restart, no `.fil`); nothing was added.
+    (a) **Evaluation** with `fe_series_analysis.py --reference tasche_serie_w1w4_qs_gerechnet`:
+    section 5 now compares every series both folders share, the named points are paired by
+    name (the measured pairing's B, C and E lie 0,002, 0,020 and 0,002 mm beside the nominal
+    ones, so a tolerance of 1 µm matched 96 of 99 positions and a tolerance of 10 µm 98), the
+    legend names "Nenngeometrie" against "Stahlritzel und Kunststoffrad wie gefertigt". The
+    run-log parser reads the parallel runner's lines (item 55 (f)), which it could not before.
+    (b) **Findings** (QS, against the nominal pocket series): σ1 max over the path +8,0/+7,3/
+    +4,7 % (W1), +6,8/+3,3/+3,2 % (W2), +9,9/+9,5/+8,3 % (W3), +6,3/+6,2/+3,1 % (W4) at 8/12/
+    16 Nm; at C −2 to +8 %, at B and E +5 to +33 %; contact pressure max −8 to −36 %, at B and
+    E −16 to −58 %, at C +5 to +29 % at 8 and 12 Nm and −7 to −16 % at 16 Nm under W2/W4;
+    rotation max +6 to +9 %, at A/B/D/E +6 to +23 %; edge-tooth force −1 to −6 %. Reading (corrected
+    on the user's question of 2026-10-25 evening): the teeth are NOT thinner in the model, the
+    STplus generation of the nominal series already carries the drawing's allowance (wheel span
+    16,973 against the measured median 16,972 mm, pinion 16,812 against 16,797 mm; the −293/−208 µm
+    of the manifest refer to the zero-allowance nominal span). The pinion tip relief (23,6 µm from
+    d 51,946, a relief zone of 1,15 mm on the path before E, 14 µm at D) and the wheel tip arc
+    (0,29 mm of the path at A) lower the load share of the second pair at the ends of the path, so
+    the main pair carries a larger share at the double-contact points: higher root stress and
+    rotation. The second pair is not load-free (the deflection of 90 to 150 µm exceeds the relief;
+    the edge-tooth force drops only 1 to 6 %), and the geometric contact ratio does not see any of
+    it (it counts the involutes up to the tip circles and rises from 1,1539 to 1,1546 with the
+    larger measured wheel tip circle 54,0515 mm; the user's question of 2026-10-25 night). The
+    relief and the arc soften the edge contacts, the wheel's f_Hα (+10,25 µm, material to the tip)
+    tightens the flanks near C.
+    (c) **Design check** (`fe_fatigue.py stommel`, W2 QS): the same critical node (fillet T3/T4,
+    z −5,93 mm), a_B,V 1,377/1,701/1,995 (nominal 1,298/1,636/1,956), N_pred 6,51e4/2,3e3/0;
+    W2 DY2 (new, the card nearest the rig's strain rate): 0,935/1,172/1,332, N_pred 3,51e7/
+    5,19e5/4,65e4 (8 Nm above the measured 50 % line of 2,67e7); W1 QS and the Hill variants as
+    on the nominal geometry (W3 static check fails beyond the isotherm, W4 critical node in the
+    fillet T2/T3 at the same place, 2,574 against 2,449 at 8 Nm).
+    (d) **Closed 2026-10-26.** The A-to-E variants `variante_stahl_gemessen_gerechnet` (60 jobs,
+    2026-10-25 21:24 to 2026-10-26 01:06, 3,7 h with three jobs in parallel) and
+    `variante_kunststoff_gemessen_gerechnet` (60 jobs, 17:16 to 21:24, 4,1 h, cap mesh with
+    87 955 nodes) are complete without negative eigenvalues and compared with the nominal pocket
+    pilot at A to E (`fe_series_analysis.py --reference`, `analyse/analyse.md` section 5 of each
+    folder). The pinion carries the whole effect of the series "beide": at 12 Nm QS the pinion
+    alone raises σ1 at C by +7,6 % (W1) and +4,7 % (W2), at B and E by +7 to +18 %, lowers the
+    largest contact pressure by 21 to 32 % and turns the pinion at C by +11 % more. The wheel
+    alone changes σ1 at C by less than 1 %, at B and E by +2 to +5 % (8 Nm up to +8 %) and the
+    largest pressure by 2 to 4 % (its own tip edge at A and D by 13 to 17 %). The two parts add
+    within one percentage point at the fillet (B: 17,9 + 5,1 = 23,0 against 22,6 of the series).
+    The pressure rise at C of 5.4.3 (+5 to +29 % at 8 and 12 Nm) comes from the pinion, not from
+    the wheel's profile slope as the text had guessed: the relief takes the load share of the
+    following tooth's tip at C (the extended path of contact), the main pair carries more;
+    corrected in 5.4.3. The cap mesh does not shift the fillet values (the wheel variant stays
+    within 1 % of the 83 650-node pilot at C). User decisions 2026-10-26: no extra table or
+    figure (page budget), the result as sentences in 5.4.3, 7.3 and 8.1 with the general term
+    "Mikrogeometrie", the outlook 8.2 asks every further FE model to carry the micro-geometry of
+    the manufactured parts through the GINA and contour-scan chain, the row of table 3.6 with the
+    run times, a forward reference in 3.1. FE-27 (lead deviations) stays open.
+
 ## ADR-117 — Measurement data of the manufactured gears: parsers in `io`, pure evaluation in `gearcore.measurement`, the user's decisions in `parts.yaml`, text exports versioned (2026-10-10)
 
 **Context.** The running tests of the thesis are accompanied by three kinds of measurement of
@@ -2230,6 +2384,26 @@ case is untouched; variants are separate cases (M7).
    test is a lower bound. Left as documented: the pinion scans are constrained too (the steel
    cross-check is their validation), the tip-land fallback of `constrain_axis` (no complete
    tooth) has no test.
+
+### Amendment of 2026-10-25 (DIN 3962 identified as the measuring program's tolerance tables; the drawing's class 10)
+
+The supervisor's remark on 4.4 ("DIN 3962") was checked on the norm, which the user placed in
+`00_literatur/05_normen_und_richtlinien` the same evening (Teil 1, 2, 3 of 1978-08, scanned,
+read as rendered pages): the P40 header values are exactly the tables of DIN 3962 Teil 1
+(S. 3: Qualität 7, Normalmodul 1 bis 2 mm, d über 50 bis 125 mm: f_p 10, f_u 12, F_p 32,
+F_pz/8 22, F_r 22, R_s 14, f_Hα 7 µm; S. 2: Qualität 6: 7, 9, 25, 16, 16, 10, 5 µm) and Teil 2
+(S. 1, b bis 20 mm: f_Hβ 11 and 8 µm). The classes of DIN ISO 1328-1:2018 differ in every pitch
+and runout value (class 7: f_pT 11, F_pT 34, F_rT 30, f_HαT 9, f_uT 15 µm; only f_HβT 11
+coincides), DIN ISO 1328-2:2021 holds no runout tolerance (moved to part 1, Annex E) and no
+R_s. Decisions: (1) the thesis cites DIN 3962 Teil 1 and 2 with pages for the program's
+tolerances and the national foreword of DIN ISO 1328-1 (S. 4 to 5) for the replacement;
+(2) the drawing's quality (wheel Q10 after DIN ISO 1328-1, pinion "besser als 6 nach DIN 3961
+bis 3967") is computed by `gearcore.measurement.tolerances` and reported in the tolerance
+protocol (`parts.yaml` block `drawing_quality`): pitch and runout within class 10 for every
+core wheel but 97345 (F_p 136,0/122,9, f_p 43,1 µm) and for the scatter wheels but 97342,
+97348, 97369 (F_p) and 97342 (F_r 88,7 µm); f_Hβ per tooth (referred to b) above 32 µm on 8 of
+10 core wheels and all 26 scatter wheels, f_Hα per tooth above 25 µm on 97345 and three
+scatter wheels; F_α and F_β within 40 and 48 µm everywhere. MEAS-05 closed.
 
 ## ADR-118 — Thesis text, node-wise design check after Stommel et al. and the running tests: three tracks beside the FE batches (2026-10-11)
 
@@ -3023,6 +3197,97 @@ decisions, recorded for the revision and for every later chapter:
     25,45 mm (named teeth only). The W2 critical node at 94,1° belongs to the loaded flank of
     T4, not T3 (the loaded flank of a wheel tooth lies at the smaller angle, shown by the
     contact scan); the equations (6.24) to (6.26) of the cap stand on S. 374 of the book.
+
+### Amendment of 2026-10-25 (the revision after the supervisor's feedback on the pre-version)
+
+The supervisor read the pre-version of 2026-10-21 ("passt soweit, nur Kleinigkeiten") and asked
+for a separate record of the AI use; the user's decisions of 2026-10-25:
+
+1. **Orange again.** Everything changed after the pre-version is `\rev{}` (the pre-version was
+   all black); the style rules of the amendment of 2026-10-21 stay.
+2. **AI record.** An unnumbered chapter "Einsatz generativer KI-Systeme" at the very end after
+   the appendix, listed in the table of contents, matching the sentence the user added to the
+   declaration (`FZGdasa.cls`): product designation (Claude Code, Anthropic, model Claude
+   Fable 5.1, June to October 2026), the functions used for the pre- and post-processing code and
+   for the writing (spelling, grammar, structure, drafts from the author's material, the chain of
+   argument made traceable, references and numbers checked against the result files, bibliography
+   entries transcribed from title pages), the working method (equations with their sources,
+   data and acceptance criteria given by the author, checked against worked examples, STplus,
+   measurements, RIKOR and S-Life, decisions recorded), the mapping to the sections as a table,
+   and what the system was not used for. Never the statement that texts were invented or
+   written by the system alone (the user: that is not what happened). Writing rule 2.4 holds.
+3. **RIKOR** recomputed by the supervisor with RIKOR N 3.0 and E 2282 MPa (56,6/73,3/91,3 MPa):
+   the text of 5.5 and 7.1 follows the new deviations (−5/+1/+6 % against W1, slope 6,2).
+4. **DIN 3962** (ADR-117 amendment of 2026-10-25).
+5. **Crack growth of the wheel 97364** (8 Nm, the user's nine photos per stop, pre-cut and named
+   by load cycles): one figure of nine crops of the same window around the marked teeth after
+   the sentence in 6.1 that names the photographs per stop; the findings of the workbook row
+   (no cracks at 3,65e6, light hairline cracks at 6,61e6, single cracks from 8,41e6, clearly
+   visible from 14,81e6, the run ended at the loud failure noise without a broken tooth,
+   40e6 estimated) in the caption and two sentences. The user: zoom uniformly on the teeth and
+   the cracks so the figure takes little room.
+6. **Appendix notes.** A.1 the three drawings as pages, A.2/A.4/A.5 tables generated from the
+   data files by `scripts/thesis_appendix_tables.py` (norm mapping, documented deviations,
+   geometry of the kst-E case; material cards and class tables; convergence ladder,
+   extrapolation, element types), A.6 the placeholder replaced by a sentence (the diary of the
+   simulations carries the tables), A.7 one GINA sheet (97364, four pages) and one roughness
+   protocol as examples (the user: one of each suffices).
+7. **Floats near their mention** (new request): a float barrier before every `\section`;
+   `scripts/thesis_float_distances.py` measures the distance between every float and its nearest
+   mention; the baseline of 2026-10-21 had 9 floats two to four pages behind their mention.
+8. **The measured-geometry series** in 5.4.3, 3.6, 7.3, 8 and A.3 (ADR-116 item 56); the two
+   A-to-E variants follow when the user has copied them from the server.
+
+### Amendment of 2026-10-26 (the single variants in the text; the user's reading of 7, 8 and the appendix)
+
+1. **The two A-to-E variants** (ADR-116 item 56 (d)) enter the text as sentences only, no extra
+   table or figure (user: the thesis and the appendix are long enough): 5.4.3 (the result and the
+   corrected cause of the pressure rise at C), 7.3, 8.1, the row of table 3.6 with the run times,
+   a forward reference in 3.1. The general term is "Mikrogeometrie" (user): the STplus case does
+   not carry it, the FE model shows its influence, and the outlook 8.2 asks every further FE
+   model to take the micro-geometry of the manufactured parts from the GINA and contour-scan chain.
+2. **"Vorhersage"** stands for the predicted load-cycle number of the check after Stommel et al.
+   In 7.1, 7.3 and 8.1 it is spelled out as "die vorhergesagte Lastwechselzahl nach Stommel et
+   al." where the context did not say so, and the plane study's "Vorhersage von 38 %" in 7.3
+   became "die 38 % der ebenen Studie" (user: no room for misunderstanding in the discussion).
+3. **Double citations.** Rossow 1964 (general statistics literature) and Winkler 2009 (TU
+   Chemnitz dissertation) are not accessible; they stay "zitiert bei Fiederling / Hasl", the two
+   `\Note{PH}` placeholders are removed (user's decision, supersedes the primary-source wish of
+   the amendment of 2026-10-21 for these two).
+4. **Damage photos of 6.2** assigned to the wheels by the user's folder names
+   (`Schadensbilder_Kunststoffraeder/<T>Nm_<ME>`): 97345 at 8 Nm, 97360 at 12 Nm, 97340 at
+   16 Nm; captions, text and `bilder.yaml` name them, the placeholder paragraph is gone.
+5. **Appendix layout** (user: the appendix looked chaotic, rows of A.2 hard to tell apart):
+   unlike the main text, every appendix section starts on a new page (`\clearpage` between the
+   `\input`s of `Kapitel/anhang.tex`), so the tables and figures of one appendix stand before
+   the text of the next (checked on the build: A.2 to A.8 each with their floats in order, one
+   page more, 180 pages). The generated tables carry a light rule between the body rows
+   (`RULE_COLOUR = black!30` via `\arrayrulecolor` of colortbl, the header rule stays black;
+   `body_rows()` counts row lines only), the hand table A.3 likewise. After seeing the result
+   the user asked for the same rules in every table of the thesis: applied to all 37 hand-written
+   tables of the chapters and the appendix (header rule black, light rules between the body
+   rows, a closing rule where one existed stays black); the symbol list (`longtable`) stays
+   without rules; rule 5.7 of `10_report/00_schreibregeln.md`.
+6. The user edits chapters 7 and 8 himself between the rounds; Claude re-reads them before
+   every edit and keeps his wording (three typos of his outlook paragraph corrected).
+7. **Final round (user, 2026-10-26 afternoon).** The orange of the revision becomes black (all
+   `\rev{}` unwrapped), only the small fixes of the final reviewers are orange, so the PDF shows
+   what changed after his reading. Three read-only reviewer agents check language only (grammar,
+   sentence structure, duplicated explanations, ambiguous passages, the style rules), never the
+   content; small findings are applied directly, large ones (duplications between the discussion
+   and the summary, sentences over 30 words, paragraph breaks, term unification) go into a
+   scratch file for his decision first. Every overfull or underfull box is fixed, every figure
+   and table is referenced, the protocol pages of A.7 sit between header and footer. The thesis
+   then goes to an AI-detection and plagiarism check (Scribbr); image files are reduced only
+   losslessly (measured 0 %, so the photos stay as they are unless he decides for JPEG).
+   Second pass (his go on the scratch file): the large findings implemented by three editing
+   agents, one per chapter block, with the rule "shorter, never longer, nothing added but
+   references"; his decisions: the proof is "on the safe side" only with the quasistatic card
+   (DY2 fails it at 8 Nm), the ring anisotropy at C is 16 to 18 %, the term is
+   "CONVERSE-Mapping" (not Zuordnung or Übertragung), "Verdrehwinkel des Ritzels" for φ1 in
+   mrad while "Verdrehweg" stays for the path, "Überlastungsfall", "1/s"; open table cells
+   ("offen") are deleted, not kept as a state; DIN EN ISO 21920-1 is the roughness norm of
+   table 3.3; the microscope images of the pinion look at the end face.
 
 ## ADR-119 — Fibre orientation of the moulding simulation, evaluated on the mapped FE mesh and compared with the CT zones of FVA 856 I (2026-10-13)
 

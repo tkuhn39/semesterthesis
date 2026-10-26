@@ -58,6 +58,12 @@ registry:
   - profile_form_deviation
   - total_helix_deviation
   - helix_slope_deviation
+  # Toleranzen nach DIN ISO 1328-1 (Zeichnungsqualität in 4.4, 2026-10-25)
+  - single_pitch_tolerance
+  - total_cumulative_pitch_tolerance
+  - profile_slope_tolerance
+  - helix_slope_tolerance
+  - runout_tolerance
   - helix_form_deviation
   - arithmetic_mean_roughness
   - mean_peak_to_valley_roughness

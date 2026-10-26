@@ -101,6 +101,10 @@ def test_gina_writes_tables_and_figures(
     )
     assert "| 97340 | -neu | Rs |  | 17,6 | 14,0 |" in tolerances  # Rs above the program value
     assert "Fpz/8 | Fpz/8 (Messprogramm) | 22,0 | 22,0 | 7 |" in tolerances
+    assert "## Zeichnungsqualität" in tolerances and "Klasse 10 nach" in tolerances
+    assert "| Fp | F_pT | 95,0 | 32,0 |" in tolerances  # class 10 against the DIN 3962 grade 7
+    assert "| fHb | f_HβT (je Zahn, auf b bezogen) | 32,0 | 11,0 |" in tolerances
+    assert "| 97340 | -neu | fHb | links Zahn 12 | 55,9 | 32,0 |" in tolerances
     assert "core_me_max" in rows[0]
     svg = (tmp_path / "gina" / "wheel" / "zaehne_97340-neu.svg").read_text(encoding="utf-8")
     assert "<text" in svg and "Ausfallfenster" in svg

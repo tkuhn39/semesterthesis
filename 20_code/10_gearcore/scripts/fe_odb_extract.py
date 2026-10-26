@@ -637,8 +637,11 @@ def extract(
                 stress_arrays["set__" + name] = np.array(
                     [n.label for n in node_set.nodes], dtype=np.int32
                 )
+            # written under a .part name and renamed when complete, so that a run cut short
+            # during the extraction never leaves a file that passes as complete
+            stress_part = stress_path[:-4] + ".part.npz"
             np.savez_compressed(
-                stress_path,
+                stress_part,
                 format=np.int32(STRESS_FORMAT_VERSION),
                 odb=np.str_(odb_path),
                 components=np.array(STRESS_COMPONENTS),
@@ -655,10 +658,12 @@ def extract(
                 step_time=np.array(step_times, dtype=np.float64),
                 **stress_arrays,
             )
+            os.replace(stress_part, stress_path)
     finally:
         odb.close()
-    with open(out_path, "w") as handle:
+    with open(out_path + ".part", "w") as handle:
         json.dump(document, handle, separators=(",", ":"))
+    os.replace(out_path + ".part", out_path)
     if stress_error is not None:
         raise RuntimeError(
             f"stress extraction failed after the fields file was written: {stress_error}"

@@ -1,0 +1,26 @@
+% erzeugt von 20_code/10_gearcore/scripts/thesis_appendix_tables.py, nicht von Hand ändern
+\begin{table}[htbp]
+    \caption{Elementtest in der Abaqus Learning Edition am Grobmodell mit einem Zahn und zwei Schichten, Werkstoffstufe W1, Stellung C, Momente $8$, $12$ und $16$\,Nm am Rad: Status, letzter Schritt und Inkrement, Warnungen negativer Eigenwerte der Systemmatrix und Rechenzeit je Elementtyp mit und ohne geometrische Nichtlinearität.}
+    \label{tab:anhang_elementtest}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{llL{2.2cm}L{1.8cm}L{5.2cm}l}
+        Element & NLGEOM & Status & Schritt / Inkrement & negative Eigenwerte & Zeit \\
+        \hline
+        \arrayrulecolor{black!30}
+        C3D8I & nein & durchgelaufen & 4 / 6 & 0 Warnungen & $4$\,s \\
+        \hline
+        C3D8I & ja & durchgelaufen & 4 / 6 & 29 Warnungen, erste in Schritt 2 ($8$\,Nm) Inkrement 1, Zahl 1 bis 10 & $4$\,s \\
+        \hline
+        C3D8 & nein & durchgelaufen & 4 / 6 & 0 & $3$\,s \\
+        \hline
+        C3D8 & ja & durchgelaufen & 4 / 6 & 0 & $3$\,s \\
+        \hline
+        C3D8R & nein & durchgelaufen & 4 / 6 & 0 & $3$\,s \\
+        \hline
+        C3D8R & ja & durchgelaufen & 4 / 6 & 0 & $3$\,s \\
+        \hline
+        \arrayrulecolor{black}
+    \end{tabular}
+\end{table}

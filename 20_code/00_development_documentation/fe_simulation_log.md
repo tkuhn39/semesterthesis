@@ -1,8 +1,8 @@
 # Simulationstagebuch (generiert)
 
-Stand 2026-10-19 18:45; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
+Stand 2026-10-26 10:30; Quelle `C:/GitHub-tkuhn39/semesterthesis/80_output/fe/kst_e`; Notizen `fe_simulation_notes.yaml`; erzeugt von `build_fe_decks.py log`. Ein Abschnitt je Ordner in der Reihenfolge der letzten Bearbeitung, mit Zweck und Ergebnis aus den Notizen, Netz und Einstellungen aus `manifest.json`, dann zwei Tabellen: **Läufe** je Stellungsdatei mit Status aus `.sta` (complete, not completed mit dem letzten geschriebenen Inkrement, open = ohne Schlusszeile: läuft oder abgestürzt), Inkrementen je Schritt, Rechenzeit (Wanduhr aus `run_log.txt`, sonst aus der Zeitbilanz der `.dat`), Warnungen negativer Eigenwerte aus `.msg` und Endzeit; **Kennwerte** des letzten gedruckten Lastschritts aus `<job>_fields.json` (RM3-Abweichung gegen z_2/z_1·T_1, Drehung des Ritzels am Grundkreis in µm, größter Kontaktdruck mit Zahnhälfte und Ort, größte Fußspannung σ1 mit Fußrundung, Ort und Tangentenwinkel zur Zahnmittellinie, kleinste σ3 mit Fußrundung, größte Kopfverschiebung mit Zahn), für Läufe ohne Felddatei aus der `.dat` (Moment, Drehung, Druck ohne Ort). Löser: linear oder NLGEOM, N2S = Knoten-zu-Fläche mit SMOOTH, S2S = Fläche-zu-Fläche, DIRECT/PENALTY = Zwangsbedingung, LS = Line Search.
 
-Läufe: 1254 vollständig, 32 abgebrochen, 8 offen, 3705 Dateien nicht gerechnet; 129 Ordner.
+Läufe: 2949 vollständig, 41 abgebrochen, 8 offen, 6081 Dateien nicht gerechnet; 133 Ordner.
 
 ## 2026-10-05 16:43 `pinion_surface_7teeth_80layers`
 
@@ -74,7 +74,7 @@ Netz: 81690 Knoten, 71640 Elemente (C3D8I), 20 Schichten, Bohrung r 18.100 mm, K
 
 | Datei     | Stellung | Stufe | Rate | Variante | Löser       | Status                       | Inkremente je Schritt | Wand s | neg. EW | Ende             |
 |-----------|----------|-------|------|----------|-------------|------------------------------|-----------------------|--------|---------|------------------|
-| `pos_001` | C        | W1    | QS   |          | NLGEOM, S2S | not completed (step 3 inc 1) | 6, 6, 5               |        | 37      | 2026-10-06 17:41 |
+| `pos_001` | C        | W1    | QS   |          | NLGEOM, S2S | not completed (step 3 inc 1) | 6, 6, 5               | 217    | 37      | 2026-10-06 17:41 |
 
 **Kennwerte des letzten gedruckten Lastschritts**
 
@@ -3963,22 +3963,6 @@ Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500
 
 Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
 
-## 2026-10-19 18:27 `pilot_20layers_bore33_pocket_gemessen_kunststoff_round0p1f12_qsdy1dy2_AtoE`
-
-**Zweck:** Gemessene Geometrie, Variante kunststoff (ADR-116 Punkt 54): Stahlritzel nach dem STplus-Fall, Kunststoffrad wie gefertigt (Median der Kerngruppe: Zahnweite 16,972, Kopfkreis 54,0515, Fußkreis 49,5055 mm, Profil-Winkelabweichung +10,25 µm ab d_Cf 50,3 mit Nullpunkt am Messkreis d_M 51,728, Kopfkantenrundung r_K 0,21 mm statt der 45°-Fase); Taschenkörper auf dem gemessenen Zahn, drei Elementreihen auf dem Bogen (86 800 Knoten, 75 732 C3D8I), Ritzelkante 0,1 mm, A bis E (pos_031/036/049/063/068); W1 und W2 × QS/DY1/DY2 (30 Jobs), W3/W4 nach dem CONVERSE-Mapping des Nutzers auf wheel-pocket_mesh.inp. **Ergebnis:** Vorlage; zweiter Unterordner der Kette nachtlauf_2026-10-19_messvarianten. (Befunde FE-19, FE-26)
-
-Netz: 86800 Knoten, 75732 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 30 Stellungsdateien (grid, 30 je Teilung)
-
-Nicht gerechnet: 30 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
-
-## 2026-10-19 18:28 `pilot_20layers_bore33_pocket_gemessen_beide_round0p1f12_qsdy1dy2_AtoE`
-
-**Zweck:** Gemessene Geometrie, Variante beide (ADR-116 Punkt 54): Stahlritzel und Kunststoffrad wie gefertigt (die Zahlen der beiden Einzelvarianten); Radnetz byteidentisch mit der Variante kunststoff, Ritzelfläche byteidentisch mit der Variante stahl; A bis E (pos_031/036/049/063/068); W1 und W2 × QS/DY1/DY2 (30 Jobs), W3/W4 nach dem Mapping. **Ergebnis:** Vorlage; dritter Unterordner der Kette nachtlauf_2026-10-19_messvarianten. (Befunde FE-19, FE-26)
-
-Netz: 86800 Knoten, 75732 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 30 Stellungsdateien (grid, 30 je Teilung)
-
-Nicht gerechnet: 30 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
-
 ## 2026-10-19 18:35 `nachtlauf_2026-10-19_messvarianten/variante_stahl_gemessen`
 
 (keine Notiz in fe_simulation_notes.yaml)
@@ -3987,29 +3971,3507 @@ Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500
 
 Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
 
-## 2026-10-19 18:35 `nachtlauf_2026-10-19_messvarianten/variante_kunststoff_gemessen`
+## 2026-10-19 20:43 `tasche_serie_w1w4_qs_gerechnet`
+
+**Zweck:** Serie über dem Wälzweg auf dem Taschenkörper, W1 bis W4, QS, 30 je Teilung, Rand eine Teilung (Hauptfall der Kapitel 5.2 bis 5.5 und 7). **Ergebnis:** 396 Jobs, 387 vollständig (9 Abbrüche in LOAD_16NM: W1 010/040/045/072/077, W3 040/045/072/077), 67,1 h sequentiell 2026-10-16 bis 2026-10-19; ODBs 139,6 GiB lokal (W1 263, W2/W3 370, W4 406 MiB je Job); Auswertung analyse/, stommel_W1_QS, stommel_W2_QS, stommel_hill_W1/W3/W4_QS. (gerechnet: Vollversion; Befunde FE-19)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS; Momente am Rad 8, 12, 16 Nm; 396 Stellungsdateien (grid, 30 je Teilung)
+
+**Läufe**
+
+| Datei           | Stellung  | Stufe | Rate | Variante | Löser           | Status                        | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|-----------------|-----------|-------|------|----------|-----------------|-------------------------------|-----------------------|--------|---------|------------------|
+| `pos_001_W1_QS` | ρ1 4.833  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 237    | 0       | 2026-10-16 22:36 |
+| `pos_001_W2_QS` | ρ1 4.833  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 256    | 0       | 2026-10-16 22:41 |
+| `pos_001_W3_QS` | ρ1 4.833  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 510    | 0       | 2026-10-16 22:50 |
+| `pos_001_W4_QS` | ρ1 4.833  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 640    | 0       | 2026-10-16 23:01 |
+| `pos_002_W1_QS` | ρ1 4.932  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 213    | 0       | 2026-10-16 23:05 |
+| `pos_002_W2_QS` | ρ1 4.932  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 266    | 0       | 2026-10-16 23:10 |
+| `pos_002_W3_QS` | ρ1 4.932  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 512    | 0       | 2026-10-16 23:19 |
+| `pos_002_W4_QS` | ρ1 4.932  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 674    | 0       | 2026-10-16 23:31 |
+| `pos_003_W1_QS` | ρ1 5.030  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 242    | 0       | 2026-10-16 23:35 |
+| `pos_003_W2_QS` | ρ1 5.030  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 297    | 0       | 2026-10-16 23:40 |
+| `pos_003_W3_QS` | ρ1 5.030  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 699    | 0       | 2026-10-16 23:53 |
+| `pos_003_W4_QS` | ρ1 5.030  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 715    | 0       | 2026-10-17 00:05 |
+| `pos_004_W1_QS` | ρ1 5.129  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 260    | 0       | 2026-10-17 00:10 |
+| `pos_004_W2_QS` | ρ1 5.129  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 8            | 347    | 7       | 2026-10-17 00:16 |
+| `pos_004_W3_QS` | ρ1 5.129  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 558    | 0       | 2026-10-17 00:26 |
+| `pos_004_W4_QS` | ρ1 5.129  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 11           | 936    | 11      | 2026-10-17 00:42 |
+| `pos_005_W1_QS` | ρ1 5.227  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 262    | 0       | 2026-10-17 00:47 |
+| `pos_005_W2_QS` | ρ1 5.227  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 317    | 0       | 2026-10-17 00:52 |
+| `pos_005_W3_QS` | ρ1 5.227  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 580    | 0       | 2026-10-17 01:03 |
+| `pos_005_W4_QS` | ρ1 5.227  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 766    | 2       | 2026-10-17 01:16 |
+| `pos_006_W1_QS` | ρ1 5.325  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 254    | 0       | 2026-10-17 01:20 |
+| `pos_006_W2_QS` | ρ1 5.325  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 9            | 341    | 3       | 2026-10-17 01:27 |
+| `pos_006_W3_QS` | ρ1 5.325  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 572    | 0       | 2026-10-17 01:37 |
+| `pos_006_W4_QS` | ρ1 5.325  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 11           | 919    | 6       | 2026-10-17 01:52 |
+| `pos_007_W1_QS` | ρ1 5.424  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 257    | 0       | 2026-10-17 01:57 |
+| `pos_007_W2_QS` | ρ1 5.424  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 289    | 0       | 2026-10-17 02:02 |
+| `pos_007_W3_QS` | ρ1 5.424  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 544    | 0       | 2026-10-17 02:12 |
+| `pos_007_W4_QS` | ρ1 5.424  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 724    | 0       | 2026-10-17 02:24 |
+| `pos_008_W1_QS` | ρ1 5.522  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 245    | 0       | 2026-10-17 02:29 |
+| `pos_008_W2_QS` | ρ1 5.522  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 289    | 0       | 2026-10-17 02:34 |
+| `pos_008_W3_QS` | ρ1 5.522  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 462    | 0       | 2026-10-17 02:42 |
+| `pos_008_W4_QS` | ρ1 5.522  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 660    | 0       | 2026-10-17 02:54 |
+| `pos_009_W1_QS` | ρ1 5.621  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 223    | 0       | 2026-10-17 02:58 |
+| `pos_009_W2_QS` | ρ1 5.621  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 279    | 0       | 2026-10-17 03:03 |
+| `pos_009_W3_QS` | ρ1 5.621  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 488    | 0       | 2026-10-17 03:12 |
+| `pos_009_W4_QS` | ρ1 5.621  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 664    | 0       | 2026-10-17 03:23 |
+| `pos_010_W1_QS` | ρ1 5.719  | W1    | QS   |          | linear, N2S 0.2 | not completed (step 4 inc 20) | 6, 6, 11, 33          | 1592   | 176     | 2026-10-17 03:50 |
+| `pos_010_W2_QS` | ρ1 5.719  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 11, 11          | 523    | 20      | 2026-10-17 03:59 |
+| `pos_010_W3_QS` | ρ1 5.719  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 15           | 1062   | 28      | 2026-10-17 04:18 |
+| `pos_010_W4_QS` | ρ1 5.719  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 11, 9           | 1160   | 20      | 2026-10-17 04:37 |
+| `pos_011_W1_QS` | ρ1 5.817  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 275    | 2       | 2026-10-17 04:42 |
+| `pos_011_W2_QS` | ρ1 5.817  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 15, 6           | 556    | 22      | 2026-10-17 04:52 |
+| `pos_011_W3_QS` | ρ1 5.817  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 8, 6, 6            | 663    | 2       | 2026-10-17 05:04 |
+| `pos_011_W4_QS` | ρ1 5.817  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 10, 13, 15         | 1556   | 22      | 2026-10-17 05:30 |
+| `pos_012_W1_QS` | ρ1 5.916  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 261    | 0       | 2026-10-17 05:35 |
+| `pos_012_W2_QS` | ρ1 5.916  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 8            | 357    | 4       | 2026-10-17 05:41 |
+| `pos_012_W3_QS` | ρ1 5.916  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 552    | 0       | 2026-10-17 05:51 |
+| `pos_012_W4_QS` | ρ1 5.916  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 14           | 1078   | 13      | 2026-10-17 06:09 |
+| `pos_013_W1_QS` | ρ1 6.014  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 217    | 0       | 2026-10-17 06:14 |
+| `pos_013_W2_QS` | ρ1 6.014  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 293    | 0       | 2026-10-17 06:19 |
+| `pos_013_W3_QS` | ρ1 6.014  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 492    | 0       | 2026-10-17 06:27 |
+| `pos_013_W4_QS` | ρ1 6.014  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 705    | 0       | 2026-10-17 06:40 |
+| `pos_014_W1_QS` | ρ1 6.113  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 238    | 0       | 2026-10-17 06:44 |
+| `pos_014_W2_QS` | ρ1 6.113  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 323    | 0       | 2026-10-17 06:50 |
+| `pos_014_W3_QS` | ρ1 6.113  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 538    | 0       | 2026-10-17 06:59 |
+| `pos_014_W4_QS` | ρ1 6.113  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 795    | 0       | 2026-10-17 07:13 |
+| `pos_015_W1_QS` | ρ1 6.211  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 8, 15           | 604    | 24      | 2026-10-17 07:24 |
+| `pos_015_W2_QS` | ρ1 6.211  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 11           | 449    | 16      | 2026-10-17 07:32 |
+| `pos_015_W3_QS` | ρ1 6.211  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 8, 8            | 815    | 9       | 2026-10-17 07:46 |
+| `pos_015_W4_QS` | ρ1 6.211  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 9, 9, 14           | 1307   | 21      | 2026-10-17 08:08 |
+| `pos_016_W1_QS` | ρ1 6.310  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 293    | 0       | 2026-10-17 08:13 |
+| `pos_016_W2_QS` | ρ1 6.310  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 9            | 389    | 10      | 2026-10-17 08:20 |
+| `pos_016_W3_QS` | ρ1 6.310  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 588    | 0       | 2026-10-17 08:30 |
+| `pos_016_W4_QS` | ρ1 6.310  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 13           | 1053   | 10      | 2026-10-17 08:48 |
+| `pos_017_W1_QS` | ρ1 6.408  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 226    | 0       | 2026-10-17 08:53 |
+| `pos_017_W2_QS` | ρ1 6.408  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 288    | 0       | 2026-10-17 08:58 |
+| `pos_017_W3_QS` | ρ1 6.408  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 500    | 0       | 2026-10-17 09:07 |
+| `pos_017_W4_QS` | ρ1 6.408  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 711    | 0       | 2026-10-17 09:19 |
+| `pos_018_W1_QS` | ρ1 6.506  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 228    | 0       | 2026-10-17 09:23 |
+| `pos_018_W2_QS` | ρ1 6.506  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 11           | 406    | 9       | 2026-10-17 09:31 |
+| `pos_018_W3_QS` | ρ1 6.506  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 540    | 0       | 2026-10-17 09:40 |
+| `pos_018_W4_QS` | ρ1 6.506  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 6            | 837    | 4       | 2026-10-17 09:54 |
+| `pos_019_W1_QS` | ρ1 6.605  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 263    | 0       | 2026-10-17 09:59 |
+| `pos_019_W2_QS` | ρ1 6.605  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 8            | 391    | 3       | 2026-10-17 10:06 |
+| `pos_019_W3_QS` | ρ1 6.605  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 542    | 0       | 2026-10-17 10:16 |
+| `pos_019_W4_QS` | ρ1 6.605  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 8            | 817    | 2       | 2026-10-17 10:30 |
+| `pos_020_W1_QS` | ρ1 6.703  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 262    | 0       | 2026-10-17 10:35 |
+| `pos_020_W2_QS` | ρ1 6.703  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 305    | 0       | 2026-10-17 10:40 |
+| `pos_020_W3_QS` | ρ1 6.703  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 556    | 0       | 2026-10-17 10:50 |
+| `pos_020_W4_QS` | ρ1 6.703  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 715    | 0       | 2026-10-17 11:02 |
+| `pos_021_W1_QS` | ρ1 6.802  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 237    | 0       | 2026-10-17 11:07 |
+| `pos_021_W2_QS` | ρ1 6.802  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 280    | 0       | 2026-10-17 11:12 |
+| `pos_021_W3_QS` | ρ1 6.802  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 556    | 0       | 2026-10-17 11:22 |
+| `pos_021_W4_QS` | ρ1 6.802  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 723    | 0       | 2026-10-17 11:34 |
+| `pos_022_W1_QS` | ρ1 6.900  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 239    | 0       | 2026-10-17 11:39 |
+| `pos_022_W2_QS` | ρ1 6.900  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 289    | 0       | 2026-10-17 11:44 |
+| `pos_022_W3_QS` | ρ1 6.900  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 536    | 0       | 2026-10-17 11:53 |
+| `pos_022_W4_QS` | ρ1 6.900  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 715    | 0       | 2026-10-17 12:06 |
+| `pos_023_W1_QS` | ρ1 6.998  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 227    | 0       | 2026-10-17 12:10 |
+| `pos_023_W2_QS` | ρ1 6.998  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 285    | 0       | 2026-10-17 12:15 |
+| `pos_023_W3_QS` | ρ1 6.998  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 536    | 0       | 2026-10-17 12:24 |
+| `pos_023_W4_QS` | ρ1 6.998  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 723    | 0       | 2026-10-17 12:37 |
+| `pos_024_W1_QS` | ρ1 7.097  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 245    | 0       | 2026-10-17 12:42 |
+| `pos_024_W2_QS` | ρ1 7.097  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 292    | 0       | 2026-10-17 12:47 |
+| `pos_024_W3_QS` | ρ1 7.097  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 566    | 0       | 2026-10-17 12:57 |
+| `pos_024_W4_QS` | ρ1 7.097  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 740    | 0       | 2026-10-17 13:10 |
+| `pos_025_W1_QS` | ρ1 7.195  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 258    | 0       | 2026-10-17 13:14 |
+| `pos_025_W2_QS` | ρ1 7.195  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 292    | 0       | 2026-10-17 13:20 |
+| `pos_025_W3_QS` | ρ1 7.195  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 532    | 0       | 2026-10-17 13:29 |
+| `pos_025_W4_QS` | ρ1 7.195  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 733    | 0       | 2026-10-17 13:42 |
+| `pos_026_W1_QS` | ρ1 7.294  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 225    | 0       | 2026-10-17 13:46 |
+| `pos_026_W2_QS` | ρ1 7.294  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 283    | 0       | 2026-10-17 13:51 |
+| `pos_026_W3_QS` | ρ1 7.294  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 494    | 0       | 2026-10-17 14:00 |
+| `pos_026_W4_QS` | ρ1 7.294  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 680    | 0       | 2026-10-17 14:12 |
+| `pos_027_W1_QS` | ρ1 7.392  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 244    | 0       | 2026-10-17 14:16 |
+| `pos_027_W2_QS` | ρ1 7.392  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 296    | 0       | 2026-10-17 14:22 |
+| `pos_027_W3_QS` | ρ1 7.392  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 474    | 0       | 2026-10-17 14:30 |
+| `pos_027_W4_QS` | ρ1 7.392  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 698    | 0       | 2026-10-17 14:42 |
+| `pos_028_W1_QS` | ρ1 7.490  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 232    | 0       | 2026-10-17 14:46 |
+| `pos_028_W2_QS` | ρ1 7.490  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 279    | 0       | 2026-10-17 14:52 |
+| `pos_028_W3_QS` | ρ1 7.490  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 530    | 0       | 2026-10-17 15:01 |
+| `pos_028_W4_QS` | ρ1 7.490  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 709    | 0       | 2026-10-17 15:13 |
+| `pos_029_W1_QS` | ρ1 7.589  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 240    | 0       | 2026-10-17 15:18 |
+| `pos_029_W2_QS` | ρ1 7.589  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 293    | 0       | 2026-10-17 15:23 |
+| `pos_029_W3_QS` | ρ1 7.589  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 488    | 0       | 2026-10-17 15:32 |
+| `pos_029_W4_QS` | ρ1 7.589  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 699    | 0       | 2026-10-17 15:44 |
+| `pos_030_W1_QS` | ρ1 7.687  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 253    | 0       | 2026-10-17 15:48 |
+| `pos_030_W2_QS` | ρ1 7.687  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 313    | 0       | 2026-10-17 15:54 |
+| `pos_030_W3_QS` | ρ1 7.687  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 532    | 0       | 2026-10-17 16:03 |
+| `pos_030_W4_QS` | ρ1 7.687  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 718    | 0       | 2026-10-17 16:16 |
+| `pos_031_W1_QS` | A         | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 239    | 0       | 2026-10-17 16:20 |
+| `pos_031_W2_QS` | A         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 277    | 0       | 2026-10-17 16:25 |
+| `pos_031_W3_QS` | A         | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 540    | 0       | 2026-10-17 16:35 |
+| `pos_031_W4_QS` | A         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 648    | 0       | 2026-10-17 16:46 |
+| `pos_032_W1_QS` | ρ1 7.884  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 247    | 0       | 2026-10-17 16:51 |
+| `pos_032_W2_QS` | ρ1 7.884  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 11           | 385    | 7       | 2026-10-17 16:57 |
+| `pos_032_W3_QS` | ρ1 7.884  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 586    | 0       | 2026-10-17 17:08 |
+| `pos_032_W4_QS` | ρ1 7.884  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 8            | 824    | 5       | 2026-10-17 17:22 |
+| `pos_033_W1_QS` | ρ1 7.982  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 313    | 0       | 2026-10-17 17:28 |
+| `pos_033_W2_QS` | ρ1 7.982  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 9            | 381    | 3       | 2026-10-17 17:34 |
+| `pos_033_W3_QS` | ρ1 7.982  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 624    | 0       | 2026-10-17 17:45 |
+| `pos_033_W4_QS` | ρ1 7.982  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 8            | 811    | 6       | 2026-10-17 17:59 |
+| `pos_034_W1_QS` | ρ1 8.081  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 281    | 0       | 2026-10-17 18:04 |
+| `pos_034_W2_QS` | ρ1 8.081  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 11           | 407    | 6       | 2026-10-17 18:12 |
+| `pos_034_W3_QS` | ρ1 8.081  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 586    | 0       | 2026-10-17 18:22 |
+| `pos_034_W4_QS` | ρ1 8.081  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 13           | 1028   | 7       | 2026-10-17 18:40 |
+| `pos_035_W1_QS` | ρ1 8.179  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 272    | 0       | 2026-10-17 18:45 |
+| `pos_035_W2_QS` | ρ1 8.179  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 8            | 345    | 4       | 2026-10-17 18:51 |
+| `pos_035_W3_QS` | ρ1 8.179  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 588    | 0       | 2026-10-17 19:01 |
+| `pos_035_W4_QS` | ρ1 8.179  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 12           | 958    | 2       | 2026-10-17 19:18 |
+| `pos_036_W1_QS` | B         | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 265    | 0       | 2026-10-17 19:22 |
+| `pos_036_W2_QS` | B         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 315    | 2       | 2026-10-17 19:28 |
+| `pos_036_W3_QS` | B         | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 598    | 0       | 2026-10-17 19:39 |
+| `pos_036_W4_QS` | B         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 12           | 1022   | 7       | 2026-10-17 19:56 |
+| `pos_037_W1_QS` | ρ1 8.278  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 256    | 0       | 2026-10-17 20:01 |
+| `pos_037_W2_QS` | ρ1 8.278  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 314    | 0       | 2026-10-17 20:06 |
+| `pos_037_W3_QS` | ρ1 8.278  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 596    | 0       | 2026-10-17 20:17 |
+| `pos_037_W4_QS` | ρ1 8.278  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 8            | 841    | 3       | 2026-10-17 20:31 |
+| `pos_038_W1_QS` | ρ1 8.376  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 255    | 0       | 2026-10-17 20:36 |
+| `pos_038_W2_QS` | ρ1 8.376  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 298    | 0       | 2026-10-17 20:42 |
+| `pos_038_W3_QS` | ρ1 8.376  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 530    | 0       | 2026-10-17 20:51 |
+| `pos_038_W4_QS` | ρ1 8.376  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 760    | 0       | 2026-10-17 21:04 |
+| `pos_039_W1_QS` | ρ1 8.474  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 253    | 0       | 2026-10-17 21:09 |
+| `pos_039_W2_QS` | ρ1 8.474  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 305    | 0       | 2026-10-17 21:14 |
+| `pos_039_W3_QS` | ρ1 8.474  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 488    | 0       | 2026-10-17 21:23 |
+| `pos_039_W4_QS` | ρ1 8.474  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 708    | 0       | 2026-10-17 21:35 |
+| `pos_040_W1_QS` | ρ1 8.573  | W1    | QS   |          | linear, N2S 0.2 | not completed (step 4 inc 15) | 6, 6, 6, 28           | 1406   | 145     | 2026-10-17 21:59 |
+| `pos_040_W2_QS` | ρ1 8.573  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 11, 20          | 684    | 42      | 2026-10-17 22:11 |
+| `pos_040_W3_QS` | ρ1 8.573  | W3    | QS   |          | linear, N2S 0.2 | not completed (step 4 inc 32) | 6, 6, 6, 46           | 3597   | 180     | 2026-10-17 23:11 |
+| `pos_040_W4_QS` | ρ1 8.573  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 11, 15          | 1334   | 26      | 2026-10-17 23:34 |
+| `pos_041_W1_QS` | ρ1 8.671  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 8, 11, 13          | 726    | 42      | 2026-10-17 23:47 |
+| `pos_041_W2_QS` | ρ1 8.671  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 15, 13          | 646    | 34      | 2026-10-17 23:58 |
+| `pos_041_W3_QS` | ρ1 8.671  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 8, 15           | 1366   | 31      | 2026-10-18 00:21 |
+| `pos_041_W4_QS` | ρ1 8.671  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 11, 16          | 1374   | 19      | 2026-10-18 00:44 |
+| `pos_042_W1_QS` | ρ1 8.770  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 291    | 0       | 2026-10-18 00:50 |
+| `pos_042_W2_QS` | ρ1 8.770  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 12, 12          | 599    | 21      | 2026-10-18 01:00 |
+| `pos_042_W3_QS` | ρ1 8.770  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 610    | 0       | 2026-10-18 01:11 |
+| `pos_042_W4_QS` | ρ1 8.770  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 9, 15           | 1279   | 9       | 2026-10-18 01:33 |
+| `pos_043_W1_QS` | ρ1 8.868  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 261    | 0       | 2026-10-18 01:37 |
+| `pos_043_W2_QS` | ρ1 8.868  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 304    | 0       | 2026-10-18 01:43 |
+| `pos_043_W3_QS` | ρ1 8.868  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 568    | 0       | 2026-10-18 01:53 |
+| `pos_043_W4_QS` | ρ1 8.868  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 8            | 833    | 2       | 2026-10-18 02:07 |
+| `pos_044_W1_QS` | ρ1 8.966  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 232    | 0       | 2026-10-18 02:12 |
+| `pos_044_W2_QS` | ρ1 8.966  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 298    | 0       | 2026-10-18 02:17 |
+| `pos_044_W3_QS` | ρ1 8.966  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 512    | 0       | 2026-10-18 02:26 |
+| `pos_044_W4_QS` | ρ1 8.966  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 719    | 0       | 2026-10-18 02:38 |
+| `pos_045_W1_QS` | ρ1 9.065  | W1    | QS   |          | linear, N2S 0.2 | not completed (step 4 inc 24) | 6, 6, 6, 39           | 1556   | 172     | 2026-10-18 03:05 |
+| `pos_045_W2_QS` | ρ1 9.065  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 9, 15           | 551    | 18      | 2026-10-18 03:14 |
+| `pos_045_W3_QS` | ρ1 9.065  | W3    | QS   |          | linear, N2S 0.2 | not completed (step 4 inc 25) | 6, 6, 6, 41           | 3426   | 180     | 2026-10-18 04:12 |
+| `pos_045_W4_QS` | ρ1 9.065  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 8, 10           | 1169   | 18      | 2026-10-18 04:32 |
+| `pos_046_W1_QS` | ρ1 9.163  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 305    | 2       | 2026-10-18 04:37 |
+| `pos_046_W2_QS` | ρ1 9.163  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 9, 14           | 488    | 17      | 2026-10-18 04:46 |
+| `pos_046_W3_QS` | ρ1 9.163  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 13, 8           | 1156   | 5       | 2026-10-18 05:06 |
+| `pos_046_W4_QS` | ρ1 9.163  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 17           | 1239   | 11      | 2026-10-18 05:27 |
+| `pos_047_W1_QS` | ρ1 9.262  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 275    | 0       | 2026-10-18 05:32 |
+| `pos_047_W2_QS` | ρ1 9.262  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 8            | 347    | 7       | 2026-10-18 05:38 |
+| `pos_047_W3_QS` | ρ1 9.262  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 580    | 0       | 2026-10-18 05:48 |
+| `pos_047_W4_QS` | ρ1 9.262  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 14           | 1095   | 5       | 2026-10-18 06:07 |
+| `pos_048_W1_QS` | ρ1 9.360  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 234    | 0       | 2026-10-18 06:11 |
+| `pos_048_W2_QS` | ρ1 9.360  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 291    | 0       | 2026-10-18 06:17 |
+| `pos_048_W3_QS` | ρ1 9.360  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 528    | 0       | 2026-10-18 06:26 |
+| `pos_048_W4_QS` | ρ1 9.360  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 699    | 0       | 2026-10-18 06:38 |
+| `pos_049_W1_QS` | C         | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 242    | 0       | 2026-10-18 06:43 |
+| `pos_049_W2_QS` | C         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 11           | 426    | 12      | 2026-10-18 06:50 |
+| `pos_049_W3_QS` | C         | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 502    | 0       | 2026-10-18 06:59 |
+| `pos_049_W4_QS` | C         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 11           | 969    | 6       | 2026-10-18 07:16 |
+| `pos_050_W1_QS` | ρ1 9.458  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 243    | 0       | 2026-10-18 07:20 |
+| `pos_050_W2_QS` | ρ1 9.458  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 19           | 516    | 10      | 2026-10-18 07:29 |
+| `pos_050_W3_QS` | ρ1 9.458  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 542    | 0       | 2026-10-18 07:39 |
+| `pos_050_W4_QS` | ρ1 9.458  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 15           | 1122   | 14      | 2026-10-18 07:58 |
+| `pos_051_W1_QS` | ρ1 9.557  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 262    | 0       | 2026-10-18 08:03 |
+| `pos_051_W2_QS` | ρ1 9.557  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 6            | 361    | 2       | 2026-10-18 08:09 |
+| `pos_051_W3_QS` | ρ1 9.557  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 529    | 0       | 2026-10-18 08:18 |
+| `pos_051_W4_QS` | ρ1 9.557  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 9            | 878    | 2       | 2026-10-18 08:34 |
+| `pos_052_W1_QS` | ρ1 9.655  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 245    | 0       | 2026-10-18 08:38 |
+| `pos_052_W2_QS` | ρ1 9.655  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 317    | 0       | 2026-10-18 08:44 |
+| `pos_052_W3_QS` | ρ1 9.655  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 546    | 0       | 2026-10-18 08:53 |
+| `pos_052_W4_QS` | ρ1 9.655  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 725    | 0       | 2026-10-18 09:06 |
+| `pos_053_W1_QS` | ρ1 9.754  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 244    | 0       | 2026-10-18 09:10 |
+| `pos_053_W2_QS` | ρ1 9.754  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 295    | 0       | 2026-10-18 09:16 |
+| `pos_053_W3_QS` | ρ1 9.754  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 570    | 0       | 2026-10-18 09:26 |
+| `pos_053_W4_QS` | ρ1 9.754  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 733    | 0       | 2026-10-18 09:38 |
+| `pos_054_W1_QS` | ρ1 9.852  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 246    | 0       | 2026-10-18 09:43 |
+| `pos_054_W2_QS` | ρ1 9.852  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 289    | 0       | 2026-10-18 09:48 |
+| `pos_054_W3_QS` | ρ1 9.852  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 556    | 0       | 2026-10-18 09:58 |
+| `pos_054_W4_QS` | ρ1 9.852  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 717    | 0       | 2026-10-18 10:10 |
+| `pos_055_W1_QS` | ρ1 9.950  | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 13467  | 0       | 2026-10-18 13:55 |
+| `pos_055_W2_QS` | ρ1 9.950  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 2613   | 0       | 2026-10-18 14:39 |
+| `pos_055_W3_QS` | ρ1 9.950  | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 562    | 0       | 2026-10-18 14:49 |
+| `pos_055_W4_QS` | ρ1 9.950  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 739    | 0       | 2026-10-18 15:02 |
+| `pos_056_W1_QS` | ρ1 10.049 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 263    | 0       | 2026-10-18 15:07 |
+| `pos_056_W2_QS` | ρ1 10.049 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 311    | 0       | 2026-10-18 15:12 |
+| `pos_056_W3_QS` | ρ1 10.049 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 574    | 0       | 2026-10-18 15:23 |
+| `pos_056_W4_QS` | ρ1 10.049 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 723    | 0       | 2026-10-18 15:35 |
+| `pos_057_W1_QS` | ρ1 10.147 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 261    | 0       | 2026-10-18 15:40 |
+| `pos_057_W2_QS` | ρ1 10.147 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 301    | 0       | 2026-10-18 15:45 |
+| `pos_057_W3_QS` | ρ1 10.147 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 548    | 0       | 2026-10-18 15:55 |
+| `pos_057_W4_QS` | ρ1 10.147 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 721    | 0       | 2026-10-18 16:07 |
+| `pos_058_W1_QS` | ρ1 10.246 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 239    | 0       | 2026-10-18 16:12 |
+| `pos_058_W2_QS` | ρ1 10.246 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 285    | 0       | 2026-10-18 16:17 |
+| `pos_058_W3_QS` | ρ1 10.246 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 509    | 0       | 2026-10-18 16:26 |
+| `pos_058_W4_QS` | ρ1 10.246 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 701    | 0       | 2026-10-18 16:38 |
+| `pos_059_W1_QS` | ρ1 10.344 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 245    | 0       | 2026-10-18 16:43 |
+| `pos_059_W2_QS` | ρ1 10.344 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 291    | 0       | 2026-10-18 16:48 |
+| `pos_059_W3_QS` | ρ1 10.344 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 516    | 0       | 2026-10-18 16:57 |
+| `pos_059_W4_QS` | ρ1 10.344 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 685    | 0       | 2026-10-18 17:09 |
+| `pos_060_W1_QS` | ρ1 10.442 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 227    | 0       | 2026-10-18 17:13 |
+| `pos_060_W2_QS` | ρ1 10.442 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 279    | 0       | 2026-10-18 17:18 |
+| `pos_060_W3_QS` | ρ1 10.442 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 524    | 0       | 2026-10-18 17:27 |
+| `pos_060_W4_QS` | ρ1 10.442 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 680    | 0       | 2026-10-18 17:39 |
+| `pos_061_W1_QS` | ρ1 10.541 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 230    | 0       | 2026-10-18 17:44 |
+| `pos_061_W2_QS` | ρ1 10.541 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 282    | 0       | 2026-10-18 17:49 |
+| `pos_061_W3_QS` | ρ1 10.541 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 476    | 0       | 2026-10-18 17:57 |
+| `pos_061_W4_QS` | ρ1 10.541 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 697    | 0       | 2026-10-18 18:09 |
+| `pos_062_W1_QS` | ρ1 10.639 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 251    | 0       | 2026-10-18 18:14 |
+| `pos_062_W2_QS` | ρ1 10.639 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 305    | 0       | 2026-10-18 18:19 |
+| `pos_062_W3_QS` | ρ1 10.639 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 550    | 0       | 2026-10-18 18:29 |
+| `pos_062_W4_QS` | ρ1 10.639 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 722    | 0       | 2026-10-18 18:42 |
+| `pos_063_W1_QS` | D         | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 247    | 0       | 2026-10-18 18:46 |
+| `pos_063_W2_QS` | D         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 12           | 381    | 6       | 2026-10-18 18:53 |
+| `pos_063_W3_QS` | D         | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 562    | 0       | 2026-10-18 19:03 |
+| `pos_063_W4_QS` | D         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 11           | 902    | 4       | 2026-10-18 19:18 |
+| `pos_064_W1_QS` | ρ1 10.836 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 11           | 393    | 0       | 2026-10-18 19:25 |
+| `pos_064_W2_QS` | ρ1 10.836 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 12           | 383    | 6       | 2026-10-18 19:32 |
+| `pos_064_W3_QS` | ρ1 10.836 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 584    | 0       | 2026-10-18 19:42 |
+| `pos_064_W4_QS` | ρ1 10.836 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 11           | 906    | 7       | 2026-10-18 19:58 |
+| `pos_065_W1_QS` | ρ1 10.935 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 335    | 0       | 2026-10-18 20:04 |
+| `pos_065_W2_QS` | ρ1 10.935 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 12           | 413    | 8       | 2026-10-18 20:11 |
+| `pos_065_W3_QS` | ρ1 10.935 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 586    | 0       | 2026-10-18 20:22 |
+| `pos_065_W4_QS` | ρ1 10.935 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 12           | 1153   | 4       | 2026-10-18 20:41 |
+| `pos_066_W1_QS` | ρ1 11.033 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 271    | 0       | 2026-10-18 20:46 |
+| `pos_066_W2_QS` | ρ1 11.033 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 8, 8            | 386    | 6       | 2026-10-18 20:53 |
+| `pos_066_W3_QS` | ρ1 11.033 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 611    | 0       | 2026-10-18 21:04 |
+| `pos_066_W4_QS` | ρ1 11.033 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 8, 10           | 1139   | 11      | 2026-10-18 21:23 |
+| `pos_067_W1_QS` | ρ1 11.131 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 283    | 0       | 2026-10-18 21:29 |
+| `pos_067_W2_QS` | ρ1 11.131 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 8, 6            | 373    | 12      | 2026-10-18 21:35 |
+| `pos_067_W3_QS` | ρ1 11.131 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 596    | 0       | 2026-10-18 21:46 |
+| `pos_067_W4_QS` | ρ1 11.131 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 7            | 843    | 2       | 2026-10-18 22:00 |
+| `pos_068_W1_QS` | E         | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 273    | 0       | 2026-10-18 22:05 |
+| `pos_068_W2_QS` | E         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 8            | 368    | 5       | 2026-10-18 22:12 |
+| `pos_068_W3_QS` | E         | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 608    | 0       | 2026-10-18 22:22 |
+| `pos_068_W4_QS` | E         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 12           | 1038   | 6       | 2026-10-18 22:40 |
+| `pos_069_W1_QS` | ρ1 11.230 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 257    | 0       | 2026-10-18 22:45 |
+| `pos_069_W2_QS` | ρ1 11.230 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 333    | 0       | 2026-10-18 22:51 |
+| `pos_069_W3_QS` | ρ1 11.230 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 587    | 0       | 2026-10-18 23:01 |
+| `pos_069_W4_QS` | ρ1 11.230 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 799    | 2       | 2026-10-18 23:15 |
+| `pos_070_W1_QS` | ρ1 11.328 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 255    | 0       | 2026-10-18 23:20 |
+| `pos_070_W2_QS` | ρ1 11.328 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 305    | 0       | 2026-10-18 23:25 |
+| `pos_070_W3_QS` | ρ1 11.328 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 536    | 0       | 2026-10-18 23:34 |
+| `pos_070_W4_QS` | ρ1 11.328 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 735    | 0       | 2026-10-18 23:47 |
+| `pos_071_W1_QS` | ρ1 11.427 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 15           | 564    | 32      | 2026-10-18 23:57 |
+| `pos_071_W2_QS` | ρ1 11.427 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 19           | 526    | 10      | 2026-10-19 00:06 |
+| `pos_071_W3_QS` | ρ1 11.427 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 534    | 0       | 2026-10-19 00:16 |
+| `pos_071_W4_QS` | ρ1 11.427 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 11           | 968    | 16      | 2026-10-19 00:32 |
+| `pos_072_W1_QS` | ρ1 11.525 | W1    | QS   |          | linear, N2S 0.2 | not completed (step 4 inc 18) | 6, 6, 8, 32           | 1725   | 163     | 2026-10-19 01:02 |
+| `pos_072_W2_QS` | ρ1 11.525 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 20           | 574    | 28      | 2026-10-19 01:12 |
+| `pos_072_W3_QS` | ρ1 11.525 | W3    | QS   |          | linear, N2S 0.2 | not completed (step 4 inc 23) | 6, 6, 9, 38           | 3225   | 131     | 2026-10-19 02:06 |
+| `pos_072_W4_QS` | ρ1 11.525 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 15           | 1100   | 14      | 2026-10-19 02:25 |
+| `pos_073_W1_QS` | ρ1 11.623 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 10           | 540    | 19      | 2026-10-19 02:34 |
+| `pos_073_W2_QS` | ρ1 11.623 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 16, 12          | 606    | 19      | 2026-10-19 02:45 |
+| `pos_073_W3_QS` | ρ1 11.623 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 8            | 860    | 10      | 2026-10-19 02:59 |
+| `pos_073_W4_QS` | ρ1 11.623 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 12, 15          | 1515   | 19      | 2026-10-19 03:25 |
+| `pos_074_W1_QS` | ρ1 11.722 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 295    | 0       | 2026-10-19 03:31 |
+| `pos_074_W2_QS` | ρ1 11.722 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 12, 10          | 600    | 22      | 2026-10-19 03:41 |
+| `pos_074_W3_QS` | ρ1 11.722 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 624    | 0       | 2026-10-19 03:52 |
+| `pos_074_W4_QS` | ρ1 11.722 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 12, 21          | 1787   | 33      | 2026-10-19 04:22 |
+| `pos_075_W1_QS` | ρ1 11.820 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 269    | 0       | 2026-10-19 04:27 |
+| `pos_075_W2_QS` | ρ1 11.820 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 325    | 0       | 2026-10-19 04:33 |
+| `pos_075_W3_QS` | ρ1 11.820 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 586    | 0       | 2026-10-19 04:43 |
+| `pos_075_W4_QS` | ρ1 11.820 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 791    | 0       | 2026-10-19 04:57 |
+| `pos_076_W1_QS` | ρ1 11.919 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 230    | 0       | 2026-10-19 05:01 |
+| `pos_076_W2_QS` | ρ1 11.919 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 11           | 359    | 2       | 2026-10-19 05:08 |
+| `pos_076_W3_QS` | ρ1 11.919 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 546    | 0       | 2026-10-19 05:17 |
+| `pos_076_W4_QS` | ρ1 11.919 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 739    | 0       | 2026-10-19 05:30 |
+| `pos_077_W1_QS` | ρ1 12.017 | W1    | QS   |          | linear, N2S 0.2 | not completed (step 4 inc 20) | 6, 6, 6, 34           | 1454   | 157     | 2026-10-19 05:55 |
+| `pos_077_W2_QS` | ρ1 12.017 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 9, 16           | 578    | 25      | 2026-10-19 06:05 |
+| `pos_077_W3_QS` | ρ1 12.017 | W3    | QS   |          | linear, N2S 0.2 | not completed (step 4 inc 31) | 6, 6, 11, 47          | 4051   | 188     | 2026-10-19 07:13 |
+| `pos_077_W4_QS` | ρ1 12.017 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 9, 18           | 1494   | 27      | 2026-10-19 07:38 |
+| `pos_078_W1_QS` | ρ1 12.115 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 8            | 371    | 0       | 2026-10-19 07:45 |
+| `pos_078_W2_QS` | ρ1 12.115 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 8, 15           | 540    | 16      | 2026-10-19 07:54 |
+| `pos_078_W3_QS` | ρ1 12.115 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 13, 6           | 889    | 2       | 2026-10-19 08:09 |
+| `pos_078_W4_QS` | ρ1 12.115 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 27           | 1534   | 26      | 2026-10-19 08:35 |
+| `pos_079_W1_QS` | ρ1 12.214 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 309    | 0       | 2026-10-19 08:41 |
+| `pos_079_W2_QS` | ρ1 12.214 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 8            | 381    | 4       | 2026-10-19 08:48 |
+| `pos_079_W3_QS` | ρ1 12.214 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 608    | 0       | 2026-10-19 08:58 |
+| `pos_079_W4_QS` | ρ1 12.214 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 12           | 940    | 6       | 2026-10-19 09:15 |
+| `pos_080_W1_QS` | ρ1 12.312 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 239    | 0       | 2026-10-19 09:19 |
+| `pos_080_W2_QS` | ρ1 12.312 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 287    | 0       | 2026-10-19 09:24 |
+| `pos_080_W3_QS` | ρ1 12.312 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 530    | 0       | 2026-10-19 09:34 |
+| `pos_080_W4_QS` | ρ1 12.312 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 717    | 0       | 2026-10-19 09:46 |
+| `pos_081_W1_QS` | ρ1 12.411 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 247    | 0       | 2026-10-19 09:51 |
+| `pos_081_W2_QS` | ρ1 12.411 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 15           | 485    | 15      | 2026-10-19 09:59 |
+| `pos_081_W3_QS` | ρ1 12.411 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 570    | 0       | 2026-10-19 10:09 |
+| `pos_081_W4_QS` | ρ1 12.411 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 16           | 1191   | 10      | 2026-10-19 10:29 |
+| `pos_082_W1_QS` | ρ1 12.509 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 257    | 0       | 2026-10-19 10:34 |
+| `pos_082_W2_QS` | ρ1 12.509 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 8, 6, 6            | 363    | 0       | 2026-10-19 10:41 |
+| `pos_082_W3_QS` | ρ1 12.509 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 526    | 0       | 2026-10-19 10:50 |
+| `pos_082_W4_QS` | ρ1 12.509 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 751    | 0       | 2026-10-19 11:03 |
+| `pos_083_W1_QS` | ρ1 12.607 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 243    | 0       | 2026-10-19 11:07 |
+| `pos_083_W2_QS` | ρ1 12.607 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 301    | 0       | 2026-10-19 11:13 |
+| `pos_083_W3_QS` | ρ1 12.607 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 554    | 0       | 2026-10-19 11:23 |
+| `pos_083_W4_QS` | ρ1 12.607 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 711    | 0       | 2026-10-19 11:35 |
+| `pos_084_W1_QS` | ρ1 12.706 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 245    | 0       | 2026-10-19 11:39 |
+| `pos_084_W2_QS` | ρ1 12.706 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 286    | 0       | 2026-10-19 11:45 |
+| `pos_084_W3_QS` | ρ1 12.706 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 560    | 0       | 2026-10-19 11:54 |
+| `pos_084_W4_QS` | ρ1 12.706 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 708    | 0       | 2026-10-19 12:07 |
+| `pos_085_W1_QS` | ρ1 12.804 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 247    | 0       | 2026-10-19 12:11 |
+| `pos_085_W2_QS` | ρ1 12.804 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 289    | 0       | 2026-10-19 12:17 |
+| `pos_085_W3_QS` | ρ1 12.804 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 561    | 0       | 2026-10-19 12:26 |
+| `pos_085_W4_QS` | ρ1 12.804 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 697    | 0       | 2026-10-19 12:38 |
+| `pos_086_W1_QS` | ρ1 12.903 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 221    | 0       | 2026-10-19 12:43 |
+| `pos_086_W2_QS` | ρ1 12.903 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 238    | 0       | 2026-10-19 12:47 |
+| `pos_086_W3_QS` | ρ1 12.903 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 472    | 0       | 2026-10-19 12:55 |
+| `pos_086_W4_QS` | ρ1 12.903 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 718    | 0       | 2026-10-19 13:08 |
+| `pos_087_W1_QS` | ρ1 13.001 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 264    | 0       | 2026-10-19 13:13 |
+| `pos_087_W2_QS` | ρ1 13.001 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 303    | 0       | 2026-10-19 13:18 |
+| `pos_087_W3_QS` | ρ1 13.001 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 580    | 0       | 2026-10-19 13:28 |
+| `pos_087_W4_QS` | ρ1 13.001 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 707    | 0       | 2026-10-19 13:40 |
+| `pos_088_W1_QS` | ρ1 13.099 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 253    | 0       | 2026-10-19 13:45 |
+| `pos_088_W2_QS` | ρ1 13.099 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 287    | 0       | 2026-10-19 13:50 |
+| `pos_088_W3_QS` | ρ1 13.099 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 564    | 0       | 2026-10-19 14:00 |
+| `pos_088_W4_QS` | ρ1 13.099 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 720    | 0       | 2026-10-19 14:13 |
+| `pos_089_W1_QS` | ρ1 13.198 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 233    | 0       | 2026-10-19 14:17 |
+| `pos_089_W2_QS` | ρ1 13.198 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 277    | 0       | 2026-10-19 14:22 |
+| `pos_089_W3_QS` | ρ1 13.198 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 502    | 0       | 2026-10-19 14:31 |
+| `pos_089_W4_QS` | ρ1 13.198 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 689    | 0       | 2026-10-19 14:43 |
+| `pos_090_W1_QS` | ρ1 13.296 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 240    | 0       | 2026-10-19 14:47 |
+| `pos_090_W2_QS` | ρ1 13.296 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 283    | 0       | 2026-10-19 14:53 |
+| `pos_090_W3_QS` | ρ1 13.296 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 506    | 0       | 2026-10-19 15:01 |
+| `pos_090_W4_QS` | ρ1 13.296 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 679    | 0       | 2026-10-19 15:13 |
+| `pos_091_W1_QS` | ρ1 13.395 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 230    | 0       | 2026-10-19 15:18 |
+| `pos_091_W2_QS` | ρ1 13.395 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 285    | 0       | 2026-10-19 15:23 |
+| `pos_091_W3_QS` | ρ1 13.395 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 532    | 0       | 2026-10-19 15:32 |
+| `pos_091_W4_QS` | ρ1 13.395 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 691    | 0       | 2026-10-19 15:44 |
+| `pos_092_W1_QS` | ρ1 13.493 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 233    | 0       | 2026-10-19 15:48 |
+| `pos_092_W2_QS` | ρ1 13.493 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 279    | 0       | 2026-10-19 15:54 |
+| `pos_092_W3_QS` | ρ1 13.493 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 482    | 0       | 2026-10-19 16:02 |
+| `pos_092_W4_QS` | ρ1 13.493 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 707    | 0       | 2026-10-19 16:14 |
+| `pos_093_W1_QS` | ρ1 13.591 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 259    | 0       | 2026-10-19 16:19 |
+| `pos_093_W2_QS` | ρ1 13.591 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 297    | 0       | 2026-10-19 16:24 |
+| `pos_093_W3_QS` | ρ1 13.591 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 562    | 0       | 2026-10-19 16:34 |
+| `pos_093_W4_QS` | ρ1 13.591 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 727    | 0       | 2026-10-19 16:47 |
+| `pos_094_W1_QS` | ρ1 13.690 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 263    | 0       | 2026-10-19 16:52 |
+| `pos_094_W2_QS` | ρ1 13.690 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 16           | 431    | 6       | 2026-10-19 16:59 |
+| `pos_094_W3_QS` | ρ1 13.690 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 8            | 733    | 0       | 2026-10-19 17:12 |
+| `pos_094_W4_QS` | ρ1 13.690 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 12           | 887    | 6       | 2026-10-19 17:27 |
+| `pos_095_W1_QS` | ρ1 13.788 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 274    | 0       | 2026-10-19 17:32 |
+| `pos_095_W2_QS` | ρ1 13.788 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 12           | 443    | 10      | 2026-10-19 17:40 |
+| `pos_095_W3_QS` | ρ1 13.788 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 9            | 720    | 0       | 2026-10-19 17:53 |
+| `pos_095_W4_QS` | ρ1 13.788 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 12           | 974    | 10      | 2026-10-19 18:09 |
+| `pos_096_W1_QS` | ρ1 13.887 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 297    | 0       | 2026-10-19 18:15 |
+| `pos_096_W2_QS` | ρ1 13.887 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 13           | 399    | 2       | 2026-10-19 18:22 |
+| `pos_096_W3_QS` | ρ1 13.887 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 622    | 0       | 2026-10-19 18:33 |
+| `pos_096_W4_QS` | ρ1 13.887 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 15           | 1044   | 8       | 2026-10-19 18:51 |
+| `pos_097_W1_QS` | ρ1 13.985 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 265    | 0       | 2026-10-19 18:56 |
+| `pos_097_W2_QS` | ρ1 13.985 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 10           | 375    | 3       | 2026-10-19 19:02 |
+| `pos_097_W3_QS` | ρ1 13.985 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 592    | 0       | 2026-10-19 19:13 |
+| `pos_097_W4_QS` | ρ1 13.985 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 15           | 1012   | 4       | 2026-10-19 19:30 |
+| `pos_098_W1_QS` | ρ1 14.083 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 281    | 0       | 2026-10-19 19:35 |
+| `pos_098_W2_QS` | ρ1 14.083 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 347    | 3       | 2026-10-19 19:41 |
+| `pos_098_W3_QS` | ρ1 14.083 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 594    | 0       | 2026-10-19 19:52 |
+| `pos_098_W4_QS` | ρ1 14.083 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 12           | 1000   | 7       | 2026-10-19 20:09 |
+| `pos_099_W1_QS` | ρ1 14.182 | W1    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 273    | 0       | 2026-10-19 20:14 |
+| `pos_099_W2_QS` | ρ1 14.182 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 335    | 0       | 2026-10-19 20:20 |
+| `pos_099_W3_QS` | ρ1 14.182 | W3    | QS   |          | linear, N2S 0.2 | complete                      | 6, 6, 6, 6            | 578    | 0       | 2026-10-19 20:30 |
+| `pos_099_W4_QS` | ρ1 14.182 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete                      | 6, 6, 6, 6            | 771    | 0       | 2026-10-19 20:43 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei           | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|-----------------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_001_W1_QS` | LOAD_16NM | -0.36 %  | 70.6       | 135.3          | T5 RIGHT, r 25.70, z +0.0 | 69.1       | T4_T5, r 24.85, z +0.0, Tangente 40° | -51.5      | T4_T5      | 80.4    | T4   |
+| `pos_001_W2_QS` | LOAD_16NM | -0.24 %  | 91.4       | 85.4           | T5 RIGHT, r 25.70, z +0.0 | 46.2       | T4_T5, r 24.82, z +0.0, Tangente 49° | -47.1      | T4_T5      | 103.6   | T4   |
+| `pos_001_W3_QS` | LOAD_16NM | -0.34 %  | 72.3       | 127.2          | T5 RIGHT, r 25.70, z +7.5 | 72.3       | T4_T5, r 24.83, z +0.7, Tangente 45° | -61.5      | T4_T5      | 81.0    | T4   |
+| `pos_001_W4_QS` | LOAD_16NM | -0.21 %  | 88.8       | 86.4           | T5 RIGHT, r 25.70, z +6.7 | 54.9       | T3_T4, r 24.78, z +5.1, Tangente 63° | -53.3      | T4_T5      | 98.8    | T4   |
+| `pos_002_W1_QS` | LOAD_16NM | -0.28 %  | 70.2       | 145.1          | T5 RIGHT, r 25.70, z +0.0 | 67.9       | T4_T5, r 24.85, z +0.0, Tangente 40° | -52.3      | T4_T5      | 80.3    | T4   |
+| `pos_002_W2_QS` | LOAD_16NM | -0.11 %  | 90.7       | 86.7           | T5 RIGHT, r 25.70, z +0.0 | 45.6       | T4_T5, r 24.83, z +0.0, Tangente 45° | -47.4      | T4_T5      | 103.4   | T4   |
+| `pos_002_W3_QS` | LOAD_16NM | -0.20 %  | 72.1       | 136.0          | T5 RIGHT, r 25.70, z +7.5 | 71.4       | T4_T5, r 24.83, z +0.7, Tangente 45° | -62.3      | T4_T5      | 80.7    | T4   |
+| `pos_002_W4_QS` | LOAD_16NM | -0.07 %  | 88.6       | 87.4           | T5 RIGHT, r 25.70, z +6.7 | 55.3       | T3_T4, r 24.78, z +5.1, Tangente 63° | -53.8      | T4_T5      | 99.2    | T4   |
+| `pos_003_W1_QS` | LOAD_16NM | +0.11 %  | 70.4       | 154.0          | T5 RIGHT, r 25.70, z +0.0 | 66.7       | T4_T5, r 24.85, z +0.0, Tangente 40° | -53.4      | T4_T5      | 80.8    | T4   |
+| `pos_003_W2_QS` | LOAD_16NM | +0.31 %  | 91.2       | 87.4           | T5 RIGHT, r 25.70, z +0.0 | 45.0       | T3_T4, r 24.79, z +0.0, Tangente 58° | -48.0      | T4_T5      | 104.6   | T4   |
+| `pos_003_W3_QS` | LOAD_16NM | +0.19 %  | 72.4       | 139.4          | T5 RIGHT, r 25.70, z +0.0 | 69.4       | T4_T5, r 24.83, z +0.7, Tangente 45° | -63.2      | T4_T5      | 81.0    | T4   |
+| `pos_003_W4_QS` | LOAD_16NM | +0.35 %  | 89.2       | 87.1           | T5 RIGHT, r 25.70, z +0.0 | 55.3       | T3_T4, r 24.78, z +5.1, Tangente 63° | -54.4      | T4_T5      | 99.9    | T4   |
+| `pos_004_W1_QS` | LOAD_16NM | +1.06 %  | 71.9       | 150.9          | T5 RIGHT, r 25.70, z +0.0 | 61.6       | T4_T5, r 24.85, z +0.0, Tangente 40° | -55.0      | T4_T5      | 82.5    | T4   |
+| `pos_004_W2_QS` | LOAD_16NM | +0.95 %  | 92.3       | 88.7           | T5 RIGHT, r 25.80, z -5.9 | 45.6       | T3_T4, r 24.79, z +0.0, Tangente 58° | -48.8      | T4_T5      | 106.2   | T4   |
+| `pos_004_W3_QS` | LOAD_16NM | +1.12 %  | 74.1       | 133.7          | T5 RIGHT, r 25.70, z +0.0 | 62.5       | T4_T5, r 24.83, z +0.7, Tangente 45° | -64.4      | T4_T5      | 83.1    | T4   |
+| `pos_004_W4_QS` | LOAD_16NM | +0.96 %  | 90.4       | 87.9           | T5 RIGHT, r 25.80, z -5.9 | 55.7       | T3_T4, r 24.78, z +5.1, Tangente 63° | -55.3      | T4_T5      | 101.7   | T4   |
+| `pos_005_W1_QS` | LOAD_16NM | +1.47 %  | 73.6       | 151.7          | T5 RIGHT, r 25.80, z -6.7 | 58.5       | T3_T4, r 24.82, z +0.0, Tangente 49° | -57.6      | T4_T5      | 84.8    | T4   |
+| `pos_005_W2_QS` | LOAD_16NM | +1.40 %  | 93.9       | 91.6           | T5 RIGHT, r 25.80, z -5.9 | 46.3       | T3_T4, r 24.79, z +0.0, Tangente 58° | -49.7      | T4_T5      | 108.3   | T4   |
+| `pos_005_W3_QS` | LOAD_16NM | +1.45 %  | 75.7       | 155.8          | T5 RIGHT, r 25.80, z -7.5 | 63.7       | T3_T4, r 24.78, z +4.4, Tangente 63° | -67.0      | T4_T5      | 85.3    | T4   |
+| `pos_005_W4_QS` | LOAD_16NM | +1.41 %  | 92.1       | 91.3           | T5 RIGHT, r 25.80, z -6.7 | 56.6       | T3_T4, r 24.78, z +5.1, Tangente 63° | -56.6      | T4_T5      | 104.0   | T4   |
+| `pos_006_W1_QS` | LOAD_16NM | +1.21 %  | 74.8       | 172.5          | T5 RIGHT, r 25.80, z -6.7 | 61.1       | T3_T4, r 24.82, z +0.0, Tangente 49° | -61.5      | T4_T5      | 87.6    | T4   |
+| `pos_006_W2_QS` | LOAD_16NM | +1.44 %  | 94.9       | 94.2           | T5 RIGHT, r 25.80, z -5.9 | 47.1       | T3_T4, r 24.79, z +0.0, Tangente 58° | -50.9      | T4_T5      | 110.8   | T4   |
+| `pos_006_W3_QS` | LOAD_16NM | +1.13 %  | 76.9       | 179.6          | T5 RIGHT, r 25.80, z -7.5 | 66.8       | T3_T4, r 24.78, z +4.4, Tangente 63° | -70.3      | T4_T5      | 87.0    | T4   |
+| `pos_006_W4_QS` | LOAD_16NM | +1.43 %  | 93.3       | 94.1           | T5 RIGHT, r 25.80, z -6.7 | 57.9       | T3_T4, r 24.78, z +5.1, Tangente 63° | -58.3      | T4_T5      | 105.5   | T4   |
+| `pos_007_W1_QS` | LOAD_16NM | +0.59 %  | 75.7       | 188.1          | T5 RIGHT, r 25.80, z +0.0 | 64.0       | T3_T4, r 24.83, z +0.0, Tangente 45° | -65.9      | T4_T5      | 89.6    | T4   |
+| `pos_007_W2_QS` | LOAD_16NM | +0.95 %  | 95.9       | 96.5           | T5 RIGHT, r 25.80, z -5.9 | 48.0       | T3_T4, r 24.79, z +0.0, Tangente 58° | -52.3      | T4_T5      | 112.9   | T4   |
+| `pos_007_W3_QS` | LOAD_16NM | +0.55 %  | 77.5       | 184.2          | T5 RIGHT, r 25.80, z -7.5 | 69.9       | T3_T4, r 24.78, z +4.4, Tangente 63° | -74.5      | T4_T5      | 88.7    | T4   |
+| `pos_007_W4_QS` | LOAD_16NM | +0.96 %  | 94.1       | 96.2           | T5 RIGHT, r 25.80, z -6.7 | 59.7       | T3_T4, r 24.78, z +5.1, Tangente 63° | -60.4      | T4_T5      | 107.4   | T4   |
+| `pos_008_W1_QS` | LOAD_16NM | +0.53 %  | 76.0       | 193.2          | T5 RIGHT, r 25.80, z +0.0 | 65.2       | T3_T4, r 24.83, z +0.0, Tangente 45° | -68.1      | T4_T5      | 90.3    | T4   |
+| `pos_008_W2_QS` | LOAD_16NM | +0.50 %  | 95.9       | 97.2           | T5 RIGHT, r 25.80, z -5.9 | 48.6       | T3_T4, r 24.79, z +0.0, Tangente 58° | -53.3      | T4_T5      | 113.3   | T4   |
+| `pos_008_W3_QS` | LOAD_16NM | +0.52 %  | 77.9       | 186.1          | T5 RIGHT, r 25.80, z -7.5 | 71.2       | T3_T4, r 24.78, z +4.4, Tangente 63° | -76.4      | T4_T5      | 89.4    | T4   |
+| `pos_008_W4_QS` | LOAD_16NM | +0.52 %  | 94.3       | 97.0           | T5 RIGHT, r 25.80, z -6.7 | 60.6       | T3_T4, r 24.78, z +5.1, Tangente 63° | -62.1      | T4_T5      | 108.0   | T4   |
+| `pos_009_W1_QS` | LOAD_16NM | +0.65 %  | 76.6       | 194.3          | T5 RIGHT, r 25.80, z +0.0 | 66.8       | T3_T4, r 24.83, z +0.0, Tangente 45° | -70.3      | T4_T5      | 91.5    | T4   |
+| `pos_009_W2_QS` | LOAD_16NM | +0.71 %  | 96.4       | 97.1           | T5 RIGHT, r 25.80, z +0.0 | 49.1       | T3_T4, r 24.79, z +0.0, Tangente 58° | -54.0      | T4_T5      | 114.6   | T4   |
+| `pos_009_W3_QS` | LOAD_16NM | +0.66 %  | 78.4       | 185.8          | T5 RIGHT, r 25.80, z -7.5 | 72.1       | T3_T4, r 24.78, z +4.4, Tangente 63° | -77.8      | T4_T5      | 90.0    | T4   |
+| `pos_009_W4_QS` | LOAD_16NM | +0.71 %  | 94.7       | 96.5           | T5 RIGHT, r 25.80, z +0.0 | 60.8       | T3_T4, r 24.78, z +5.1, Tangente 63° | -63.0      | T4_T5      | 108.3   | T4   |
+| `pos_010_W1_QS` | LOAD_12NM | +1.81 %  | 61.4       | 159.9          | T5 RIGHT, r 25.80, z +0.0 | 53.0       | T3_T4, r 24.83, z +0.0, Tangente 45° | -56.6      | T4_T5      | 72.7    | T4   |
+| `pos_010_W2_QS` | LOAD_16NM | +1.80 %  | 98.6       | 97.3           | T5 RIGHT, r 25.90, z -5.9 | 49.9       | T3_T4, r 24.79, z +0.0, Tangente 58° | -54.9      | T4_T5      | 116.9   | T4   |
+| `pos_010_W3_QS` | LOAD_16NM | +2.53 %  | 81.9       | 176.5          | T5 RIGHT, r 25.80, z +0.0 | 72.9       | T3_T4, r 24.80, z -0.7, Tangente 54° | -81.2      | T4_T5      | 93.9    | T4   |
+| `pos_010_W4_QS` | LOAD_16NM | +1.77 %  | 96.9       | 105.5          | T5 RIGHT, r 25.90, z -7.5 | 61.2       | T3_T4, r 24.78, z +4.4, Tangente 63° | -64.6      | T4_T5      | 111.0   | T4   |
+| `pos_011_W1_QS` | LOAD_16NM | +3.21 %  | 83.6       | 156.8          | T5 RIGHT, r 25.90, z -6.7 | 72.7       | T3_T4, r 24.83, z +0.0, Tangente 45° | -78.4      | T4_T5      | 99.6    | T4   |
+| `pos_011_W2_QS` | LOAD_16NM | +2.63 %  | 101.7      | 98.1           | T5 RIGHT, r 25.90, z -5.9 | 50.8       | T3_T4, r 24.79, z +0.0, Tangente 58° | -56.0      | T4_T5      | 120.7   | T4   |
+| `pos_011_W3_QS` | LOAD_16NM | +3.00 %  | 85.3       | 181.5          | T5 RIGHT, r 25.90, z -7.5 | 76.4       | T3_T4, r 24.80, z -0.7, Tangente 54° | -86.5      | T4_T5      | 97.9    | T4   |
+| `pos_011_W4_QS` | LOAD_16NM | +2.52 %  | 100.1      | 108.2          | T5 RIGHT, r 25.90, z -7.5 | 62.3       | T3_T4, r 24.78, z +4.4, Tangente 63° | -66.6      | T4_T5      | 114.8   | T4   |
+| `pos_012_W1_QS` | LOAD_16NM | +1.76 %  | 85.3       | 180.3          | T5 RIGHT, r 25.90, z -6.7 | 76.7       | T3_T4, r 24.83, z +0.0, Tangente 45° | -85.0      | T4_T5      | 102.7   | T4   |
+| `pos_012_W2_QS` | LOAD_16NM | +2.07 %  | 103.3      | 99.0           | T5 RIGHT, r 25.90, z -5.9 | 51.9       | T3_T4, r 24.78, z +0.0, Tangente 63° | -57.4      | T4_T5      | 123.5   | T4   |
+| `pos_012_W3_QS` | LOAD_16NM | +1.66 %  | 86.7       | 204.1          | T5 RIGHT, r 25.90, z -7.5 | 80.8       | T3_T4, r 24.78, z +4.4, Tangente 63° | -92.5      | T4_T5      | 100.1   | T4   |
+| `pos_012_W4_QS` | LOAD_16NM | +2.00 %  | 102.0      | 109.7          | T5 RIGHT, r 25.90, z -7.5 | 63.9       | T3_T4, r 24.78, z +5.1, Tangente 63° | -68.6      | T4_T5      | 117.0   | T4   |
+| `pos_013_W1_QS` | LOAD_16NM | +0.61 %  | 86.3       | 184.7          | T5 RIGHT, r 25.90, z +0.0 | 79.7       | T3_T4, r 24.83, z +0.0, Tangente 45° | -90.4      | T4_T5      | 104.2   | T4   |
+| `pos_013_W2_QS` | LOAD_16NM | +0.51 %  | 102.4      | 98.6           | T5 RIGHT, r 25.90, z -5.9 | 51.8       | T3_T4, r 24.79, z +0.0, Tangente 58° | -58.1      | T4_T5      | 122.5   | T4   |
+| `pos_013_W3_QS` | LOAD_16NM | +0.56 %  | 87.5       | 196.3          | T5 RIGHT, r 25.90, z -7.5 | 83.8       | T3_T4, r 24.78, z +4.4, Tangente 63° | -98.6      | T4_T5      | 101.6   | T4   |
+| `pos_013_W4_QS` | LOAD_16NM | +0.46 %  | 100.7      | 110.1          | T5 RIGHT, r 25.90, z -7.5 | 63.9       | T3_T4, r 24.78, z +5.1, Tangente 63° | -69.8      | T4_T5      | 115.9   | T4   |
+| `pos_014_W1_QS` | LOAD_16NM | +0.70 %  | 86.9       | 174.4          | T5 RIGHT, r 25.90, z +0.0 | 81.1       | T3_T4, r 24.83, z +0.0, Tangente 45° | -92.7      | T4_T5      | 105.0   | T4   |
+| `pos_014_W2_QS` | LOAD_16NM | +0.35 %  | 100.1      | 97.9           | T5 RIGHT, r 25.90, z +0.0 | 50.8       | T3_T4, r 24.79, z +0.0, Tangente 58° | -57.6      | T4_T5      | 118.9   | T4   |
+| `pos_014_W3_QS` | LOAD_16NM | +0.66 %  | 88.0       | 187.8          | T5 RIGHT, r 25.90, z -7.5 | 83.9       | T3_T4, r 24.78, z +4.4, Tangente 63° | -101.0     | T4_T5      | 101.8   | T4   |
+| `pos_014_W4_QS` | LOAD_16NM | +0.33 %  | 98.4       | 104.5          | T5 RIGHT, r 25.90, z -7.5 | 61.9       | T3_T4, r 24.78, z +4.4, Tangente 63° | -69.7      | T4_T5      | 112.7   | T4   |
+| `pos_015_W1_QS` | LOAD_16NM | +3.08 %  | 90.5       | 173.1          | T5 RIGHT, r 25.90, z +0.0 | 82.3       | T3_T4, r 24.83, z +0.0, Tangente 45° | -96.4      | T4_T5      | 109.0   | T4   |
+| `pos_015_W2_QS` | LOAD_16NM | +1.64 %  | 101.3      | 92.3           | T5 RIGHT, r 25.90, z +0.0 | 50.4       | T3_T4, r 24.79, z +0.0, Tangente 58° | -57.8      | T4_T5      | 120.2   | T4   |
+| `pos_015_W3_QS` | LOAD_16NM | +2.63 %  | 90.6       | 151.7          | T5 RIGHT, r 25.90, z +0.0 | 83.2       | T3_T4, r 24.80, z -0.7, Tangente 54° | -103.9     | T4_T5      | 104.2   | T4   |
+| `pos_015_W4_QS` | LOAD_16NM | +1.47 %  | 99.6       | 90.1           | T5 RIGHT, r 25.90, z +0.0 | 60.1       | T3_T4, r 24.78, z +4.4, Tangente 63° | -70.4      | T4_T5      | 113.3   | T4   |
+| `pos_016_W1_QS` | LOAD_16NM | +1.36 %  | 90.9       | 97.8           | T5 RIGHT, r 26.00, z -6.7 | 82.7       | T3_T4, r 24.83, z +0.0, Tangente 45° | -100.8     | T4_T5      | 108.9   | T4   |
+| `pos_016_W2_QS` | LOAD_16NM | +1.43 %  | 103.3      | 90.0           | T5 RIGHT, r 26.00, z -6.7 | 50.2       | T3_T4, r 24.79, z +0.0, Tangente 58° | -58.7      | T4_T5      | 122.3   | T4   |
+| `pos_016_W3_QS` | LOAD_16NM | +1.17 %  | 90.9       | 106.7          | T5 RIGHT, r 26.00, z +7.5 | 83.1       | T3_T4, r 24.80, z -0.7, Tangente 54° | -108.2     | T4_T5      | 104.1   | T4   |
+| `pos_016_W4_QS` | LOAD_16NM | +1.22 %  | 101.3      | 92.1           | T5 RIGHT, r 26.00, z -7.5 | 59.4       | T3_T4, r 24.78, z +4.4, Tangente 63° | -72.0      | T4_T5      | 114.9   | T4   |
+| `pos_017_W1_QS` | LOAD_16NM | -0.73 %  | 90.3       | 90.2           | T5 RIGHT, r 26.00, z +0.0 | 82.8       | T3_T4, r 24.83, z +0.0, Tangente 45° | -104.9     | T4_T5      | 107.6   | T4   |
+| `pos_017_W2_QS` | LOAD_16NM | -0.75 %  | 102.8      | 88.6           | T5 RIGHT, r 26.00, z -5.9 | 50.1       | T3_T4, r 24.80, z +0.0, Tangente 54° | -59.6      | T4_T5      | 121.0   | T4   |
+| `pos_017_W3_QS` | LOAD_16NM | -0.77 %  | 90.2       | 96.7           | T5 RIGHT, r 26.00, z +7.5 | 82.9       | T3_T4, r 24.80, z -0.7, Tangente 54° | -112.5     | T4_T5      | 102.8   | T4   |
+| `pos_017_W4_QS` | LOAD_16NM | -0.78 %  | 100.6      | 91.1           | T5 RIGHT, r 26.00, z -7.5 | 59.2       | T3_T4, r 24.78, z +4.4, Tangente 63° | -73.2      | T4_T5      | 113.8   | T4   |
+| `pos_018_W1_QS` | LOAD_16NM | -0.82 %  | 89.9       | 76.0           | T5 RIGHT, r 26.00, z -5.1 | 82.2       | T3_T4, r 24.83, z +0.0, Tangente 45° | -106.2     | T4_T5      | 107.2   | T4   |
+| `pos_018_W2_QS` | LOAD_16NM | -0.70 %  | 102.4      | 85.2           | T5 RIGHT, r 26.00, z -4.4 | 49.8       | T3_T4, r 24.80, z +0.0, Tangente 54° | -59.6      | T4_T5      | 120.5   | T4   |
+| `pos_018_W3_QS` | LOAD_16NM | -0.88 %  | 89.6       | 81.9           | T5 RIGHT, r 26.00, z +7.5 | 81.9       | T3_T4, r 24.80, z -0.7, Tangente 54° | -113.3     | T4_T5      | 101.5   | T4   |
+| `pos_018_W4_QS` | LOAD_16NM | -0.80 %  | 100.6      | 88.4           | T5 RIGHT, r 26.00, z +7.5 | 58.2       | T3_T4, r 24.78, z +4.4, Tangente 63° | -73.9      | T4_T5      | 113.6   | T4   |
+| `pos_019_W1_QS` | LOAD_16NM | +0.05 %  | 92.6       | 76.1           | T4 RIGHT, r 26.00, z +0.0 | 84.1       | T3_T4, r 24.83, z +0.0, Tangente 45° | -110.9     | T4_T5      | 110.9   | T4   |
+| `pos_019_W2_QS` | LOAD_16NM | +0.74 %  | 105.7      | 83.3           | T5 RIGHT, r 26.00, z +0.0 | 50.3       | T3_T4, r 24.80, z +0.0, Tangente 54° | -60.6      | T4_T5      | 125.0   | T4   |
+| `pos_019_W3_QS` | LOAD_16NM | -0.02 %  | 92.2       | 69.6           | T5 RIGHT, r 26.00, z +0.0 | 83.3       | T3_T4, r 24.80, z -0.7, Tangente 54° | -117.9     | T4_T5      | 105.2   | T4   |
+| `pos_019_W4_QS` | LOAD_16NM | +0.40 %  | 102.9      | 76.0           | T5 RIGHT, r 26.00, z +0.0 | 57.5       | T3_T4, r 24.78, z +4.4, Tangente 63° | -75.6      | T4_T5      | 116.6   | T4   |
+| `pos_020_W1_QS` | LOAD_16NM | -1.62 %  | 95.6       | 81.2           | T4 RIGHT, r 26.00, z +0.0 | 86.9       | T3_T4, r 24.85, z +0.0, Tangente 40° | -119.6     | T4_T5      | 114.0   | T4   |
+| `pos_020_W2_QS` | LOAD_16NM | -0.91 %  | 106.8      | 62.1           | T3 RIGHT, r 26.89, z +0.0 | 50.5       | T3_T4, r 24.80, z +0.0, Tangente 54° | -61.4      | T4_T5      | 125.6   | T4   |
+| `pos_020_W3_QS` | LOAD_16NM | -1.51 %  | 94.8       | 72.2           | T3 RIGHT, r 26.89, z +0.7 | 85.7       | T3_T4, r 24.80, z -0.7, Tangente 54° | -126.0     | T4_T5      | 107.8   | T4   |
+| `pos_020_W4_QS` | LOAD_16NM | -1.03 %  | 103.9      | 60.5           | T3 RIGHT, r 26.89, z -0.7 | 57.5       | T3_T4, r 24.78, z +4.4, Tangente 63° | -77.9      | T4_T5      | 117.5   | T4   |
+| `pos_021_W1_QS` | LOAD_16NM | -1.98 %  | 94.8       | 81.3           | T4 RIGHT, r 26.00, z +0.0 | 86.6       | T3_T4, r 24.85, z +0.0, Tangente 40° | -120.7     | T4_T5      | 113.2   | T4   |
+| `pos_021_W2_QS` | LOAD_16NM | -1.71 %  | 107.1      | 61.1           | T3 RIGHT, r 26.89, z +0.0 | 50.3       | T3_T4, r 24.80, z +0.0, Tangente 54° | -61.8      | T4_T5      | 125.5   | T4   |
+| `pos_021_W3_QS` | LOAD_16NM | -2.00 %  | 94.3       | 78.0           | T3 RIGHT, r 26.89, z +0.7 | 85.5       | T3_T4, r 24.80, z -0.7, Tangente 54° | -127.9     | T4_T5      | 107.1   | T4   |
+| `pos_021_W4_QS` | LOAD_16NM | -1.77 %  | 104.0      | 60.2           | T3 RIGHT, r 26.89, z -0.7 | 56.9       | T3_T4, r 24.78, z +4.4, Tangente 63° | -79.1      | T4_T5      | 117.6   | T4   |
+| `pos_022_W1_QS` | LOAD_16NM | -1.82 %  | 92.3       | 79.9           | T4 RIGHT, r 25.90, z +0.0 | 84.6       | T3_T4, r 24.85, z +0.0, Tangente 40° | -118.0     | T4_T5      | 110.2   | T4   |
+| `pos_022_W2_QS` | LOAD_16NM | -1.62 %  | 108.6      | 60.2           | T3 RIGHT, r 26.89, z +0.0 | 50.3       | T3_T4, r 24.80, z +0.0, Tangente 54° | -62.2      | T4_T5      | 127.9   | T4   |
+| `pos_022_W3_QS` | LOAD_16NM | -1.85 %  | 91.8       | 75.9           | T3 RIGHT, r 26.89, z +0.7 | 83.1       | T3_T4, r 24.86, z -0.7, Tangente 37° | -124.7     | T4_T5      | 104.2   | T4   |
+| `pos_022_W4_QS` | LOAD_16NM | -1.75 %  | 105.1      | 59.4           | T3 RIGHT, r 26.89, z -0.7 | 56.8       | T3_T4, r 24.88, z +6.7, Tangente 33° | -80.4      | T4_T5      | 118.8   | T4   |
+| `pos_023_W1_QS` | LOAD_16NM | -1.68 %  | 90.0       | 81.1           | T4 RIGHT, r 25.90, z +0.0 | 82.6       | T3_T4, r 24.85, z +0.0, Tangente 40° | -115.4     | T4_T5      | 107.2   | T4   |
+| `pos_023_W2_QS` | LOAD_16NM | -1.86 %  | 110.1      | 59.5           | T3 RIGHT, r 26.89, z +0.0 | 50.4       | T3_T4, r 24.80, z +0.0, Tangente 54° | -62.8      | T4_T5      | 129.9   | T4   |
+| `pos_023_W3_QS` | LOAD_16NM | -1.70 %  | 89.5       | 76.5           | T4 RIGHT, r 25.90, z -7.5 | 81.2       | T3_T4, r 24.86, z -0.7, Tangente 37° | -122.1     | T4_T5      | 101.5   | T4   |
+| `pos_023_W4_QS` | LOAD_16NM | -1.83 %  | 105.5      | 58.8           | T3 RIGHT, r 26.89, z -0.7 | 56.8       | T3_T4, r 24.88, z +6.7, Tangente 33° | -81.3      | T4_T5      | 119.4   | T4   |
+| `pos_024_W1_QS` | LOAD_16NM | -1.54 %  | 88.0       | 82.2           | T4 RIGHT, r 25.90, z +0.0 | 80.5       | T3_T4, r 24.85, z +0.0, Tangente 40° | -112.7     | T4_T5      | 104.5   | T4   |
+| `pos_024_W2_QS` | LOAD_16NM | -1.62 %  | 108.3      | 61.6           | T4 RIGHT, r 25.80, z -2.8 | 49.7       | T3_T4, r 24.82, z +0.0, Tangente 49° | -62.2      | T4_T5      | 127.4   | T4   |
+| `pos_024_W3_QS` | LOAD_16NM | -1.55 %  | 87.5       | 77.3           | T4 RIGHT, r 25.90, z -7.5 | 79.4       | T3_T4, r 24.86, z -0.7, Tangente 37° | -119.6     | T4_T5      | 98.9    | T4   |
+| `pos_024_W4_QS` | LOAD_16NM | -1.58 %  | 103.6      | 63.6           | T4 RIGHT, r 25.70, z +7.5 | 56.2       | T3_T4, r 24.88, z +6.7, Tangente 33° | -80.7      | T4_T5      | 117.2   | T4   |
+| `pos_025_W1_QS` | LOAD_16NM | -1.37 %  | 86.2       | 82.9           | T4 RIGHT, r 25.80, z +0.0 | 79.0       | T3_T4, r 24.85, z +0.0, Tangente 40° | -110.6     | T4_T5      | 102.4   | T4   |
+| `pos_025_W2_QS` | LOAD_16NM | -1.39 %  | 106.8      | 66.8           | T4 RIGHT, r 25.70, z -2.0 | 49.0       | T3_T4, r 24.82, z +0.0, Tangente 49° | -61.6      | T4_T5      | 125.1   | T4   |
+| `pos_025_W3_QS` | LOAD_16NM | -1.38 %  | 85.8       | 77.8           | T4 RIGHT, r 25.90, z -7.5 | 77.7       | T3_T4, r 24.86, z -0.7, Tangente 37° | -117.4     | T4_T5      | 96.5    | T4   |
+| `pos_025_W4_QS` | LOAD_16NM | -1.34 %  | 102.1      | 68.6           | T4 RIGHT, r 25.70, z +7.5 | 55.6       | T3_T4, r 24.88, z +6.7, Tangente 33° | -80.1      | T4_T5      | 115.1   | T4   |
+| `pos_026_W1_QS` | LOAD_16NM | -1.20 %  | 84.7       | 87.1           | T4 RIGHT, r 25.80, z +0.0 | 77.7       | T3_T4, r 24.85, z +0.0, Tangente 40° | -108.6     | T4_T5      | 100.3   | T4   |
+| `pos_026_W2_QS` | LOAD_16NM | -1.18 %  | 105.4      | 71.6           | T4 RIGHT, r 25.70, z -2.0 | 48.4       | T3_T4, r 24.82, z +0.0, Tangente 49° | -60.9      | T4_T5      | 123.5   | T4   |
+| `pos_026_W3_QS` | LOAD_16NM | -1.20 %  | 84.4       | 81.5           | T4 RIGHT, r 25.70, z +0.0 | 76.5       | T3_T4, r 24.86, z -0.7, Tangente 37° | -115.8     | T4_T5      | 94.8    | T4   |
+| `pos_026_W4_QS` | LOAD_16NM | -1.14 %  | 100.8      | 73.0           | T4 RIGHT, r 25.70, z +7.5 | 54.9       | T3_T4, r 24.88, z +6.7, Tangente 33° | -79.4      | T4_T5      | 113.0   | T4   |
+| `pos_027_W1_QS` | LOAD_16NM | -1.03 %  | 83.5       | 97.9           | T4 RIGHT, r 25.70, z +0.0 | 76.5       | T3_T4, r 24.85, z +0.0, Tangente 40° | -106.7     | T4_T5      | 98.4    | T4   |
+| `pos_027_W2_QS` | LOAD_16NM | -0.97 %  | 104.3      | 75.9           | T4 RIGHT, r 25.70, z -0.7 | 48.0       | T3_T4, r 24.82, z +0.0, Tangente 49° | -60.4      | T4_T5      | 122.0   | T4   |
+| `pos_027_W3_QS` | LOAD_16NM | -1.00 %  | 83.2       | 91.3           | T4 RIGHT, r 25.70, z +0.0 | 75.4       | T3_T4, r 24.86, z -0.7, Tangente 37° | -114.2     | T4_T5      | 93.2    | T4   |
+| `pos_027_W4_QS` | LOAD_16NM | -0.94 %  | 100.0      | 77.2           | T4 RIGHT, r 25.70, z +7.5 | 54.5       | T3_T4, r 24.88, z +6.7, Tangente 33° | -78.9      | T4_T5      | 111.6   | T4   |
+| `pos_028_W1_QS` | LOAD_16NM | -0.85 %  | 82.5       | 109.9          | T4 RIGHT, r 25.70, z +0.0 | 75.3       | T3_T4, r 24.85, z +0.0, Tangente 40° | -104.9     | T4_T5      | 97.0    | T4   |
+| `pos_028_W2_QS` | LOAD_16NM | -0.76 %  | 103.4      | 79.4           | T4 RIGHT, r 25.70, z +0.0 | 47.6       | T3_T4, r 24.82, z +0.0, Tangente 49° | -59.8      | T4_T5      | 120.4   | T4   |
+| `pos_028_W3_QS` | LOAD_16NM | -0.84 %  | 82.2       | 100.7          | T4 RIGHT, r 25.70, z +0.0 | 74.2       | T3_T4, r 24.86, z -0.7, Tangente 37° | -112.5     | T4_T5      | 91.3    | T4   |
+| `pos_028_W4_QS` | LOAD_16NM | -0.74 %  | 99.1       | 80.5           | T4 RIGHT, r 25.70, z +7.5 | 54.7       | T2_T3, r 24.78, z +4.4, Tangente 63° | -78.4      | T4_T5      | 110.3   | T4   |
+| `pos_029_W1_QS` | LOAD_16NM | -0.69 %  | 81.6       | 120.0          | T4 RIGHT, r 25.70, z +0.0 | 74.3       | T3_T4, r 24.85, z +0.0, Tangente 40° | -103.5     | T4_T5      | 95.6    | T4   |
+| `pos_029_W2_QS` | LOAD_16NM | -0.61 %  | 102.4      | 81.9           | T4 RIGHT, r 25.70, z +0.0 | 47.0       | T3_T4, r 24.83, z +0.0, Tangente 45° | -59.4      | T4_T5      | 118.4   | T4   |
+| `pos_029_W3_QS` | LOAD_16NM | -0.68 %  | 81.4       | 110.3          | T4 RIGHT, r 25.70, z +7.5 | 73.0       | T3_T4, r 24.86, z -0.7, Tangente 37° | -111.0     | T4_T5      | 89.9    | T4   |
+| `pos_029_W4_QS` | LOAD_16NM | -0.57 %  | 98.1       | 83.3           | T4 RIGHT, r 25.70, z +7.5 | 55.4       | T2_T3, r 24.78, z +4.4, Tangente 63° | -77.8      | T4_T5      | 108.6   | T4   |
+| `pos_030_W1_QS` | LOAD_16NM | -0.53 %  | 80.9       | 130.2          | T4 RIGHT, r 25.70, z +0.0 | 73.4       | T3_T4, r 24.85, z +0.0, Tangente 40° | -102.1     | T4_T5      | 94.3    | T4   |
+| `pos_030_W2_QS` | LOAD_16NM | -0.46 %  | 101.8      | 84.4           | T4 RIGHT, r 25.70, z +0.0 | 46.4       | T3_T4, r 24.83, z +0.0, Tangente 45° | -59.1      | T4_T5      | 116.7   | T4   |
+| `pos_030_W3_QS` | LOAD_16NM | -0.51 %  | 80.7       | 120.4          | T4 RIGHT, r 25.70, z +7.5 | 72.2       | T3_T4, r 24.86, z -0.7, Tangente 37° | -109.7     | T4_T5      | 88.8    | T4   |
+| `pos_030_W4_QS` | LOAD_16NM | -0.39 %  | 97.6       | 85.9           | T4 RIGHT, r 25.70, z +7.5 | 56.0       | T2_T3, r 24.78, z +4.4, Tangente 63° | -77.3      | T4_T5      | 106.9   | T4   |
+| `pos_031_W1_QS` | LOAD_16NM | -0.40 %  | 80.4       | 140.2          | T4 RIGHT, r 25.70, z +0.0 | 72.3       | T3_T4, r 24.85, z +0.0, Tangente 40° | -100.5     | T4_T5      | 92.7    | T4   |
+| `pos_031_W2_QS` | LOAD_16NM | -0.28 %  | 101.2      | 86.4           | T4 RIGHT, r 25.70, z +0.0 | 45.8       | T3_T4, r 24.83, z +0.0, Tangente 45° | -58.8      | T4_T5      | 115.0   | T4   |
+| `pos_031_W3_QS` | LOAD_16NM | -0.36 %  | 80.2       | 128.8          | T4 RIGHT, r 25.70, z +7.5 | 71.3       | T3_T4, r 24.86, z -0.7, Tangente 37° | -108.3     | T4_T5      | 87.8    | T3   |
+| `pos_031_W4_QS` | LOAD_16NM | -0.23 %  | 97.1       | 85.7           | T4 RIGHT, r 25.70, z +6.7 | 56.5       | T2_T3, r 24.78, z +4.4, Tangente 63° | -76.6      | T4_T5      | 106.9   | T3   |
+| `pos_032_W1_QS` | LOAD_16NM | -0.11 %  | 80.5       | 150.8          | T4 RIGHT, r 25.70, z +0.0 | 71.4       | T3_T4, r 24.85, z +0.0, Tangente 40° | -99.5      | T4_T5      | 90.8    | T4   |
+| `pos_032_W2_QS` | LOAD_16NM | +0.04 %  | 101.3      | 87.6           | T4 RIGHT, r 25.70, z +0.0 | 45.8       | T2_T3, r 24.79, z +0.0, Tangente 58° | -58.7      | T4_T5      | 113.6   | T3   |
+| `pos_032_W3_QS` | LOAD_16NM | -0.03 %  | 80.4       | 133.9          | T4 RIGHT, r 25.70, z +0.0 | 70.5       | T3_T4, r 24.86, z -0.7, Tangente 37° | -107.8     | T4_T5      | 88.5    | T3   |
+| `pos_032_W4_QS` | LOAD_16NM | +0.11 %  | 97.6       | 83.2           | T4 RIGHT, r 25.70, z +0.0 | 56.8       | T2_T3, r 24.78, z +4.4, Tangente 63° | -76.4      | T4_T5      | 108.0   | T3   |
+| `pos_033_W1_QS` | LOAD_16NM | +0.63 %  | 81.9       | 158.1          | T4 RIGHT, r 25.70, z +0.0 | 67.9       | T3_T4, r 24.85, z +0.0, Tangente 40° | -100.1     | T4_T5      | 91.9    | T3   |
+| `pos_033_W2_QS` | LOAD_16NM | +0.58 %  | 102.5      | 88.4           | T4 RIGHT, r 25.80, z -5.9 | 46.4       | T2_T3, r 24.79, z +0.0, Tangente 58° | -58.7      | T4_T5      | 115.6   | T3   |
+| `pos_033_W3_QS` | LOAD_16NM | +0.65 %  | 81.7       | 138.8          | T4 RIGHT, r 25.70, z +0.0 | 65.6       | T3_T4, r 24.86, z -0.7, Tangente 37° | -107.9     | T4_T5      | 89.9    | T3   |
+| `pos_033_W4_QS` | LOAD_16NM | +0.59 %  | 98.7       | 86.2           | T4 RIGHT, r 25.80, z +6.7 | 57.2       | T2_T3, r 24.78, z +4.4, Tangente 63° | -76.2      | T4_T5      | 109.3   | T3   |
+| `pos_034_W1_QS` | LOAD_16NM | +1.14 %  | 83.2       | 148.5          | T4 RIGHT, r 25.80, z -6.7 | 63.7       | T2_T3, r 24.82, z +0.0, Tangente 49° | -99.5      | T4_T5      | 94.1    | T3   |
+| `pos_034_W2_QS` | LOAD_16NM | +0.99 %  | 103.5      | 91.2           | T4 RIGHT, r 25.80, z -5.9 | 47.0       | T2_T3, r 24.79, z +0.0, Tangente 58° | -58.3      | T4_T5      | 117.5   | T3   |
+| `pos_034_W3_QS` | LOAD_16NM | +1.17 %  | 83.2       | 147.3          | T4 RIGHT, r 25.80, z +7.5 | 66.0       | T2_T3, r 24.78, z +4.4, Tangente 63° | -107.0     | T4_T5      | 92.3    | T3   |
+| `pos_034_W4_QS` | LOAD_16NM | +1.05 %  | 100.1      | 90.9           | T4 RIGHT, r 25.80, z +6.7 | 58.1       | T2_T3, r 24.78, z +4.4, Tangente 63° | -75.8      | T4_T5      | 111.6   | T3   |
+| `pos_035_W1_QS` | LOAD_16NM | +1.05 %  | 83.9       | 167.4          | T4 RIGHT, r 25.80, z -6.7 | 65.7       | T2_T3, r 24.82, z +0.0, Tangente 49° | -97.4      | T4_T5      | 95.5    | T3   |
+| `pos_035_W2_QS` | LOAD_16NM | +1.12 %  | 104.3      | 94.0           | T4 RIGHT, r 25.80, z -5.9 | 47.5       | T2_T3, r 24.78, z +0.0, Tangente 63° | -57.4      | T4_T5      | 119.1   | T3   |
+| `pos_035_W3_QS` | LOAD_16NM | +1.08 %  | 83.9       | 170.8          | T4 RIGHT, r 25.80, z +7.5 | 68.7       | T2_T3, r 24.78, z +4.4, Tangente 63° | -104.1     | T4_T5      | 93.8    | T3   |
+| `pos_035_W4_QS` | LOAD_16NM | +1.22 %  | 101.2      | 94.2           | T4 RIGHT, r 25.80, z +6.7 | 59.3       | T2_T3, r 24.78, z +4.4, Tangente 63° | -74.8      | T4_T5      | 113.5   | T3   |
+| `pos_036_W1_QS` | LOAD_16NM | +0.84 %  | 84.2       | 173.1          | T4 RIGHT, r 25.80, z -5.1 | 67.1       | T2_T3, r 24.82, z +0.0, Tangente 49° | -95.4      | T4_T5      | 96.6    | T3   |
+| `pos_036_W2_QS` | LOAD_16NM | +1.02 %  | 104.5      | 95.5           | T4 RIGHT, r 25.80, z -5.9 | 47.9       | T2_T3, r 24.78, z +0.0, Tangente 63° | -56.8      | T4_T5      | 120.1   | T3   |
+| `pos_036_W3_QS` | LOAD_16NM | +0.86 %  | 84.3       | 176.5          | T4 RIGHT, r 25.80, z +7.5 | 70.4       | T2_T3, r 24.78, z +4.4, Tangente 63° | -101.9     | T4_T5      | 94.4    | T3   |
+| `pos_036_W4_QS` | LOAD_16NM | +1.12 %  | 101.6      | 95.7           | T4 RIGHT, r 25.80, z +6.7 | 60.0       | T2_T3, r 24.78, z +4.4, Tangente 63° | -73.8      | T4_T5      | 114.1   | T3   |
+| `pos_037_W1_QS` | LOAD_16NM | +0.69 %  | 84.3       | 179.4          | T4 RIGHT, r 25.80, z -3.6 | 68.1       | T2_T3, r 24.82, z +0.0, Tangente 49° | -94.1      | T4_T5      | 97.2    | T3   |
+| `pos_037_W2_QS` | LOAD_16NM | +0.92 %  | 104.6      | 95.9           | T4 RIGHT, r 25.80, z -5.9 | 48.1       | T2_T3, r 24.78, z +0.0, Tangente 63° | -56.4      | T4_T5      | 120.7   | T3   |
+| `pos_037_W3_QS` | LOAD_16NM | +0.72 %  | 84.5       | 178.3          | T4 RIGHT, r 25.80, z +7.5 | 71.4       | T2_T3, r 24.78, z +4.4, Tangente 63° | -100.9     | T4_T5      | 94.9    | T3   |
+| `pos_037_W4_QS` | LOAD_16NM | +0.99 %  | 101.8      | 96.3           | T4 RIGHT, r 25.80, z +6.7 | 60.5       | T2_T3, r 24.78, z +4.4, Tangente 63° | -73.1      | T4_T5      | 114.5   | T3   |
+| `pos_038_W1_QS` | LOAD_16NM | +0.44 %  | 84.6       | 195.5          | T4 RIGHT, r 25.80, z +0.0 | 70.1       | T2_T3, r 24.82, z +0.0, Tangente 49° | -92.3      | T4_T5      | 98.1    | T3   |
+| `pos_038_W2_QS` | LOAD_16NM | +0.52 %  | 104.8      | 96.7           | T4 RIGHT, r 25.80, z -5.9 | 48.8       | T2_T3, r 24.78, z +0.0, Tangente 63° | -55.8      | T4_T5      | 121.5   | T3   |
+| `pos_038_W3_QS` | LOAD_16NM | +0.41 %  | 84.7       | 180.1          | T4 RIGHT, r 25.80, z +7.5 | 73.5       | T2_T3, r 24.78, z +4.4, Tangente 63° | -99.1      | T4_T5      | 95.9    | T3   |
+| `pos_038_W4_QS` | LOAD_16NM | +0.59 %  | 101.9      | 97.1           | T4 RIGHT, r 25.80, z +6.7 | 61.7       | T2_T3, r 24.78, z +4.4, Tangente 63° | -71.6      | T4_T5      | 115.6   | T3   |
+| `pos_039_W1_QS` | LOAD_16NM | +0.48 %  | 84.8       | 196.2          | T4 RIGHT, r 25.80, z +0.0 | 71.1       | T2_T3, r 24.82, z +0.0, Tangente 49° | -90.5      | T4_T5      | 98.7    | T3   |
+| `pos_039_W2_QS` | LOAD_16NM | +0.50 %  | 104.7      | 97.0           | T4 RIGHT, r 25.80, z +0.0 | 49.1       | T2_T3, r 24.78, z +0.0, Tangente 63° | -55.3      | T4_T5      | 121.8   | T3   |
+| `pos_039_W3_QS` | LOAD_16NM | +0.48 %  | 84.9       | 181.5          | T4 RIGHT, r 25.80, z +7.5 | 74.5       | T2_T3, r 24.78, z +4.4, Tangente 63° | -97.3      | T4_T5      | 96.4    | T3   |
+| `pos_039_W4_QS` | LOAD_16NM | +0.50 %  | 101.8      | 96.8           | T4 RIGHT, r 25.80, z +6.7 | 62.2       | T2_T3, r 24.78, z +4.4, Tangente 63° | -70.6      | T4_T5      | 115.8   | T3   |
+| `pos_040_W1_QS` | LOAD_12NM | +0.77 %  | 66.3       | 159.9          | T4 RIGHT, r 25.80, z +0.0 | 55.8       | T2_T3, r 24.82, z +0.0, Tangente 49° | -66.6      | T4_T5      | 77.3    | T3   |
+| `pos_040_W2_QS` | LOAD_16NM | +1.22 %  | 106.6      | 96.7           | T4 RIGHT, r 25.80, z +0.0 | 49.9       | T2_T3, r 24.78, z +0.0, Tangente 63° | -55.4      | T4_T5      | 124.7   | T3   |
+| `pos_040_W3_QS` | LOAD_12NM | +0.76 %  | 66.4       | 146.0          | T4 RIGHT, r 25.80, z +7.5 | 57.8       | T2_T3, r 24.78, z +4.4, Tangente 63° | -71.5      | T4_T5      | 75.0    | T3   |
+| `pos_040_W4_QS` | LOAD_16NM | +1.08 %  | 103.1      | 100.8          | T4 RIGHT, r 25.90, z -7.5 | 62.4       | T2_T3, r 24.78, z +4.4, Tangente 63° | -70.4      | T4_T5      | 117.1   | T3   |
+| `pos_041_W1_QS` | LOAD_16NM | +3.01 %  | 91.6       | 182.9          | T4 RIGHT, r 25.80, z +0.0 | 76.8       | T2_T3, r 24.82, z +0.0, Tangente 49° | -89.9      | T4_T5      | 107.4   | T3   |
+| `pos_041_W2_QS` | LOAD_16NM | +2.10 %  | 109.4      | 99.5           | T4 RIGHT, r 25.90, z -5.9 | 50.7       | T2_T3, r 24.78, z +0.0, Tangente 63° | -55.1      | T4_T5      | 128.2   | T3   |
+| `pos_041_W3_QS` | LOAD_16NM | +2.91 %  | 91.5       | 166.0          | T4 RIGHT, r 25.90, z -7.5 | 77.3       | T2_T3, r 24.78, z +4.4, Tangente 63° | -96.6      | T4_T5      | 104.3   | T3   |
+| `pos_041_W4_QS` | LOAD_16NM | +2.07 %  | 106.3      | 108.5          | T4 RIGHT, r 25.90, z -7.5 | 63.4       | T2_T3, r 24.78, z +4.4, Tangente 63° | -70.2      | T4_T5      | 121.3   | T3   |
+| `pos_042_W1_QS` | LOAD_16NM | +2.37 %  | 93.3       | 175.5          | T4 RIGHT, r 25.90, z -6.7 | 80.0       | T2_T3, r 24.82, z +0.0, Tangente 49° | -84.5      | T4_T5      | 110.1   | T3   |
+| `pos_042_W2_QS` | LOAD_16NM | +2.13 %  | 111.3      | 99.2           | T4 RIGHT, r 25.90, z -5.9 | 51.3       | T2_T3, r 24.78, z +0.0, Tangente 63° | -54.5      | T3_T4      | 130.9   | T3   |
+| `pos_042_W3_QS` | LOAD_16NM | +2.34 %  | 92.9       | 196.6          | T4 RIGHT, r 25.90, z -7.5 | 81.3       | T2_T3, r 24.78, z +4.4, Tangente 63° | -91.1      | T4_T5      | 106.3   | T3   |
+| `pos_042_W4_QS` | LOAD_16NM | +2.18 %  | 108.8      | 110.2          | T4 RIGHT, r 25.90, z -7.5 | 64.9       | T2_T3, r 24.78, z +4.4, Tangente 63° | -68.3      | T4_T5      | 124.5   | T3   |
+| `pos_043_W1_QS` | LOAD_16NM | +0.97 %  | 93.6       | 182.9          | T4 RIGHT, r 25.90, z -2.8 | 83.2       | T2_T3, r 24.82, z +0.0, Tangente 49° | -88.0      | T3_T4      | 111.4   | T3   |
+| `pos_043_W2_QS` | LOAD_16NM | +1.26 %  | 111.7      | 99.2           | T4 RIGHT, r 25.90, z -5.9 | 52.0       | T2_T3, r 24.78, z +0.0, Tangente 63° | -55.6      | T3_T4      | 132.1   | T3   |
+| `pos_043_W3_QS` | LOAD_16NM | +1.03 %  | 93.5       | 196.8          | T4 RIGHT, r 25.90, z -7.5 | 85.2       | T2_T3, r 24.78, z +4.4, Tangente 63° | -90.1      | T3_T4      | 107.3   | T3   |
+| `pos_043_W4_QS` | LOAD_16NM | +1.29 %  | 109.6      | 111.0          | T4 RIGHT, r 25.90, z -7.5 | 66.3       | T2_T3, r 24.78, z +4.4, Tangente 63° | -66.2      | T3_T4      | 125.4   | T3   |
+| `pos_044_W1_QS` | LOAD_16NM | +0.54 %  | 94.1       | 186.3          | T4 RIGHT, r 25.90, z +0.0 | 85.2       | T2_T3, r 24.82, z +0.0, Tangente 49° | -91.9      | T3_T4      | 112.1   | T3   |
+| `pos_044_W2_QS` | LOAD_16NM | +0.31 %  | 109.1      | 99.1           | T4 RIGHT, r 25.90, z +0.0 | 51.1       | T2_T3, r 24.78, z +0.0, Tangente 63° | -55.6      | T3_T4      | 128.9   | T3   |
+| `pos_044_W3_QS` | LOAD_16NM | +0.51 %  | 93.8       | 188.6          | T4 RIGHT, r 25.90, z -7.5 | 87.2       | T2_T3, r 24.78, z +4.4, Tangente 63° | -94.0      | T3_T4      | 108.2   | T3   |
+| `pos_044_W4_QS` | LOAD_16NM | +0.25 %  | 106.7      | 110.0          | T4 RIGHT, r 25.90, z -7.5 | 65.1       | T2_T3, r 24.78, z +4.4, Tangente 63° | -66.7      | T3_T4      | 122.2   | T3   |
+| `pos_045_W1_QS` | LOAD_12NM | +0.76 %  | 75.8       | 124.1          | T4 RIGHT, r 25.90, z +0.0 | 68.5       | T2_T3, r 24.82, z +0.0, Tangente 49° | -75.6      | T3_T4      | 90.3    | T3   |
+| `pos_045_W2_QS` | LOAD_16NM | +0.85 %  | 108.4      | 97.9           | T4 RIGHT, r 25.90, z +0.0 | 50.4       | T2_T3, r 24.79, z +0.0, Tangente 58° | -55.5      | T3_T4      | 127.7   | T3   |
+| `pos_045_W3_QS` | LOAD_12NM | +0.74 %  | 75.8       | 126.3          | T4 RIGHT, r 25.90, z -7.5 | 69.4       | T2_T3, r 24.78, z +4.4, Tangente 63° | -77.3      | T3_T4      | 86.9    | T3   |
+| `pos_045_W4_QS` | LOAD_16NM | +0.68 %  | 105.5      | 93.3           | T4 RIGHT, r 25.90, z -7.5 | 63.1       | T2_T3, r 24.78, z +4.4, Tangente 63° | -67.4      | T3_T4      | 120.5   | T3   |
+| `pos_046_W1_QS` | LOAD_16NM | +2.51 %  | 99.0       | 150.5          | T4 RIGHT, r 25.90, z +0.0 | 87.2       | T2_T3, r 24.83, z +0.0, Tangente 45° | -98.3      | T3_T4      | 118.5   | T3   |
+| `pos_046_W2_QS` | LOAD_16NM | +1.52 %  | 110.1      | 88.8           | T4 RIGHT, r 26.00, z -6.7 | 50.1       | T2_T3, r 24.79, z +0.0, Tangente 58° | -55.9      | T3_T4      | 130.1   | T3   |
+| `pos_046_W3_QS` | LOAD_16NM | +2.30 %  | 97.7       | 134.3          | T4 RIGHT, r 25.90, z +0.0 | 85.7       | T2_T3, r 24.82, z +0.0, Tangente 49° | -99.0      | T3_T4      | 112.3   | T3   |
+| `pos_046_W4_QS` | LOAD_16NM | +1.52 %  | 107.9      | 92.1           | T4 RIGHT, r 26.00, z +7.5 | 61.7       | T2_T3, r 24.78, z +4.4, Tangente 63° | -70.8      | T3_T4      | 122.9   | T3   |
+| `pos_047_W1_QS` | LOAD_16NM | +0.27 %  | 97.6       | 96.0           | T4 RIGHT, r 26.00, z -6.7 | 87.2       | T2_T3, r 24.83, z +0.0, Tangente 45° | -102.1     | T3_T4      | 116.2   | T3   |
+| `pos_047_W2_QS` | LOAD_16NM | +0.43 %  | 110.1      | 89.6           | T4 RIGHT, r 26.00, z -5.9 | 50.0       | T2_T3, r 24.88, z +0.0, Tangente 33° | -56.5      | T3_T4      | 129.6   | T3   |
+| `pos_047_W3_QS` | LOAD_16NM | +0.30 %  | 96.5       | 105.1          | T4 RIGHT, r 26.00, z +7.5 | 85.6       | T2_T3, r 24.82, z +0.0, Tangente 49° | -104.8     | T3_T4      | 110.4   | T3   |
+| `pos_047_W4_QS` | LOAD_16NM | +0.39 %  | 107.1      | 92.4           | T4 RIGHT, r 26.00, z -7.5 | 61.0       | T2_T3, r 24.78, z +4.4, Tangente 63° | -73.4      | T3_T4      | 121.6   | T3   |
+| `pos_048_W1_QS` | LOAD_16NM | -0.87 %  | 96.5       | 89.7           | T4 RIGHT, r 26.00, z +0.0 | 86.5       | T2_T3, r 24.83, z +0.0, Tangente 45° | -105.1     | T3_T4      | 114.5   | T3   |
+| `pos_048_W2_QS` | LOAD_16NM | -1.04 %  | 108.9      | 88.8           | T4 RIGHT, r 26.00, z +0.0 | 50.1       | T2_T3, r 24.90, z +0.0, Tangente 30° | -57.1      | T3_T4      | 127.8   | T3   |
+| `pos_048_W3_QS` | LOAD_16NM | -0.86 %  | 95.4       | 89.9           | T4 RIGHT, r 26.00, z +7.5 | 85.1       | T2_T3, r 24.82, z +0.0, Tangente 49° | -106.9     | T3_T4      | 108.8   | T3   |
+| `pos_048_W4_QS` | LOAD_16NM | -1.03 %  | 106.0      | 89.4           | T4 RIGHT, r 26.00, z -7.5 | 60.5       | T2_T3, r 24.78, z +4.4, Tangente 63° | -75.3      | T3_T4      | 120.3   | T3   |
+| `pos_049_W1_QS` | LOAD_16NM | -0.85 %  | 96.3       | 80.6           | T4 RIGHT, r 26.00, z +0.0 | 86.2       | T2_T3, r 24.83, z +0.0, Tangente 45° | -105.9     | T3_T4      | 114.6   | T3   |
+| `pos_049_W2_QS` | LOAD_16NM | -0.82 %  | 108.9      | 86.5           | T4 RIGHT, r 26.00, z +0.0 | 50.0       | T2_T3, r 24.90, z +0.0, Tangente 30° | -57.1      | T3_T4      | 128.0   | T3   |
+| `pos_049_W3_QS` | LOAD_16NM | -0.91 %  | 95.0       | 80.7           | T4 RIGHT, r 26.00, z +7.5 | 84.6       | T2_T3, r 24.82, z +0.0, Tangente 49° | -108.0     | T3_T4      | 108.1   | T3   |
+| `pos_049_W4_QS` | LOAD_16NM | -0.85 %  | 106.2      | 87.1           | T4 RIGHT, r 26.00, z +7.5 | 59.8       | T2_T3, r 24.78, z +4.4, Tangente 63° | -76.1      | T3_T4      | 120.7   | T3   |
+| `pos_050_W1_QS` | LOAD_16NM | -0.58 %  | 96.8       | 77.3           | T4 RIGHT, r 26.00, z +0.0 | 86.6       | T2_T3, r 24.83, z +0.0, Tangente 45° | -107.1     | T3_T4      | 115.6   | T3   |
+| `pos_050_W2_QS` | LOAD_16NM | -0.24 %  | 110.1      | 86.8           | T4 RIGHT, r 26.00, z +0.0 | 50.2       | T2_T3, r 24.90, z +0.0, Tangente 30° | -57.4      | T3_T4      | 130.3   | T3   |
+| `pos_050_W3_QS` | LOAD_16NM | -0.64 %  | 95.4       | 76.5           | T4 RIGHT, r 26.00, z +0.0 | 84.7       | T2_T3, r 24.82, z +0.0, Tangente 49° | -109.3     | T3_T4      | 108.9   | T3   |
+| `pos_050_W4_QS` | LOAD_16NM | -0.42 %  | 107.0      | 82.6           | T4 RIGHT, r 26.00, z +7.5 | 59.4       | T2_T3, r 24.78, z +4.4, Tangente 63° | -76.8      | T3_T4      | 121.9   | T3   |
+| `pos_051_W1_QS` | LOAD_16NM | -0.35 %  | 100.3      | 78.1           | T3 RIGHT, r 26.00, z +0.0 | 89.0       | T2_T3, r 24.83, z +0.0, Tangente 45° | -113.2     | T3_T4      | 120.4   | T3   |
+| `pos_051_W2_QS` | LOAD_16NM | +0.22 %  | 112.4      | 77.9           | T4 RIGHT, r 26.00, z +0.0 | 50.7       | T2_T3, r 24.90, z +0.0, Tangente 30° | -59.1      | T3_T4      | 133.3   | T3   |
+| `pos_051_W3_QS` | LOAD_16NM | -0.19 %  | 99.0       | 71.6           | T4 RIGHT, r 26.00, z +0.0 | 87.1       | T2_T3, r 24.82, z +0.0, Tangente 49° | -119.6     | T3_T4      | 114.0   | T3   |
+| `pos_051_W4_QS` | LOAD_16NM | +0.08 %  | 108.9      | 69.5           | T4 RIGHT, r 26.00, z +0.0 | 58.9       | T2_T3, r 24.79, z -3.6, Tangente 58° | -79.7      | T3_T4      | 124.3   | T3   |
+| `pos_052_W1_QS` | LOAD_16NM | -2.01 %  | 101.2      | 82.1           | T3 RIGHT, r 26.00, z +0.0 | 90.6       | T2_T3, r 24.83, z +0.0, Tangente 45° | -120.3     | T3_T4      | 121.1   | T3   |
+| `pos_052_W2_QS` | LOAD_16NM | -1.50 %  | 112.5      | 63.8           | T2 RIGHT, r 26.89, z +0.0 | 51.0       | T2_T3, r 24.90, z +0.0, Tangente 30° | -60.8      | T3_T4      | 132.7   | T3   |
+| `pos_052_W3_QS` | LOAD_16NM | -1.87 %  | 99.6       | 76.0           | T2 RIGHT, r 26.89, z +0.7 | 88.6       | T2_T3, r 24.82, z +0.0, Tangente 49° | -127.4     | T3_T4      | 114.3   | T3   |
+| `pos_052_W4_QS` | LOAD_16NM | -1.49 %  | 109.0      | 61.3           | T2 RIGHT, r 26.89, z +0.7 | 58.9       | T2_T3, r 24.79, z -3.6, Tangente 58° | -82.4      | T3_T4      | 124.1   | T3   |
+| `pos_053_W1_QS` | LOAD_16NM | -2.01 %  | 99.6       | 81.6           | T3 RIGHT, r 26.00, z +0.0 | 89.4       | T2_T3, r 24.83, z +0.0, Tangente 45° | -119.5     | T3_T4      | 119.5   | T3   |
+| `pos_053_W2_QS` | LOAD_16NM | -1.80 %  | 112.5      | 62.7           | T2 RIGHT, r 26.89, z +0.0 | 50.9       | T2_T3, r 24.90, z +0.0, Tangente 30° | -61.8      | T3_T4      | 132.7   | T3   |
+| `pos_053_W3_QS` | LOAD_16NM | -2.02 %  | 98.7       | 81.2           | T2 RIGHT, r 26.89, z +0.7 | 87.9       | T2_T3, r 24.86, z -0.7, Tangente 37° | -128.9     | T3_T4      | 113.1   | T3   |
+| `pos_053_W4_QS` | LOAD_16NM | -1.80 %  | 109.0      | 61.1           | T2 RIGHT, r 26.89, z +0.7 | 58.4       | T2_T3, r 24.79, z -3.6, Tangente 58° | -83.5      | T3_T4      | 124.1   | T3   |
+| `pos_054_W1_QS` | LOAD_16NM | -1.85 %  | 97.0       | 81.5           | T2 RIGHT, r 26.89, z +0.0 | 87.4       | T2_T3, r 24.83, z +0.0, Tangente 45° | -116.8     | T3_T4      | 116.5   | T3   |
+| `pos_054_W2_QS` | LOAD_16NM | -1.86 %  | 114.5      | 61.9           | T2 RIGHT, r 26.89, z +0.0 | 51.2       | T2_T3, r 24.90, z +0.0, Tangente 30° | -63.7      | T3_T4      | 135.8   | T3   |
+| `pos_054_W3_QS` | LOAD_16NM | -1.88 %  | 96.1       | 77.9           | T2 RIGHT, r 26.89, z +0.7 | 85.6       | T2_T3, r 24.86, z -0.7, Tangente 37° | -126.1     | T3_T4      | 110.2   | T3   |
+| `pos_054_W4_QS` | LOAD_16NM | -1.85 %  | 110.6      | 60.6           | T2 RIGHT, r 26.89, z +0.7 | 58.1       | T2_T3, r 24.79, z -3.6, Tangente 58° | -85.3      | T3_T4      | 125.9   | T3   |
+| `pos_055_W1_QS` | LOAD_16NM | -1.72 %  | 94.7       | 81.7           | T3 RIGHT, r 25.90, z +0.0 | 85.4       | T2_T3, r 24.83, z +0.0, Tangente 45° | -114.1     | T3_T4      | 113.6   | T3   |
+| `pos_055_W2_QS` | LOAD_16NM | -1.90 %  | 114.1      | 60.8           | T3 RIGHT, r 25.80, z -2.0 | 51.0       | T2_T3, r 24.90, z +0.0, Tangente 30° | -64.0      | T3_T4      | 135.5   | T3   |
+| `pos_055_W3_QS` | LOAD_16NM | -1.73 %  | 93.7       | 75.2           | T3 RIGHT, r 25.90, z -7.5 | 83.7       | T2_T3, r 24.86, z -0.7, Tangente 37° | -123.7     | T3_T4      | 107.4   | T3   |
+| `pos_055_W4_QS` | LOAD_16NM | -1.86 %  | 110.1      | 59.9           | T2 RIGHT, r 26.89, z +0.7 | 57.9       | T2_T3, r 24.92, z +6.7, Tangente 26° | -85.6      | T3_T4      | 125.5   | T3   |
+| `pos_056_W1_QS` | LOAD_16NM | -1.58 %  | 92.5       | 82.5           | T3 RIGHT, r 25.90, z +0.0 | 83.2       | T2_T3, r 24.83, z +0.0, Tangente 45° | -111.3     | T3_T4      | 110.9   | T3   |
+| `pos_056_W2_QS` | LOAD_16NM | -1.67 %  | 112.2      | 63.8           | T3 RIGHT, r 25.80, z -2.0 | 50.3       | T2_T3, r 24.90, z +0.0, Tangente 30° | -63.6      | T3_T4      | 132.9   | T3   |
+| `pos_056_W3_QS` | LOAD_16NM | -1.57 %  | 91.6       | 75.8           | T3 RIGHT, r 25.90, z -7.5 | 81.8       | T2_T3, r 24.86, z -0.7, Tangente 37° | -121.3     | T3_T4      | 104.8   | T3   |
+| `pos_056_W4_QS` | LOAD_16NM | -1.61 %  | 108.2      | 63.4           | T3 RIGHT, r 25.70, z +7.5 | 57.3       | T2_T3, r 24.92, z +6.7, Tangente 26° | -85.0      | T3_T4      | 123.4   | T3   |
+| `pos_057_W1_QS` | LOAD_16NM | -1.40 %  | 90.7       | 83.7           | T3 RIGHT, r 25.80, z +0.0 | 81.7       | T2_T3, r 24.83, z +0.0, Tangente 45° | -109.1     | T3_T4      | 108.7   | T3   |
+| `pos_057_W2_QS` | LOAD_16NM | -1.45 %  | 110.6      | 69.0           | T3 RIGHT, r 25.70, z -1.3 | 49.7       | T2_T3, r 24.90, z +0.0, Tangente 30° | -63.2      | T3_T4      | 130.6   | T3   |
+| `pos_057_W3_QS` | LOAD_16NM | -1.40 %  | 89.9       | 75.9           | T3 RIGHT, r 25.90, z -7.5 | 80.1       | T2_T3, r 24.86, z -0.7, Tangente 37° | -119.0     | T3_T4      | 102.5   | T3   |
+| `pos_057_W4_QS` | LOAD_16NM | -1.38 %  | 106.5      | 68.3           | T3 RIGHT, r 25.70, z +7.5 | 56.7       | T2_T3, r 24.92, z +6.7, Tangente 26° | -84.3      | T3_T4      | 121.1   | T3   |
+| `pos_058_W1_QS` | LOAD_16NM | -1.23 %  | 89.1       | 88.0           | T3 RIGHT, r 25.80, z +0.0 | 80.4       | T2_T3, r 24.83, z +0.0, Tangente 45° | -107.1     | T3_T4      | 106.7   | T3   |
+| `pos_058_W2_QS` | LOAD_16NM | -1.24 %  | 109.0      | 73.7           | T3 RIGHT, r 25.70, z -0.7 | 49.2       | T2_T3, r 24.90, z +0.0, Tangente 30° | -62.8      | T3_T4      | 128.9   | T3   |
+| `pos_058_W3_QS` | LOAD_16NM | -1.22 %  | 88.4       | 82.6           | T3 RIGHT, r 25.70, z +0.0 | 78.9       | T2_T3, r 24.86, z -0.7, Tangente 37° | -117.3     | T3_T4      | 100.8   | T3   |
+| `pos_058_W4_QS` | LOAD_16NM | -1.18 %  | 105.2      | 72.8           | T3 RIGHT, r 25.70, z +7.5 | 56.0       | T2_T3, r 24.92, z +6.7, Tangente 26° | -83.5      | T3_T4      | 119.0   | T3   |
+| `pos_059_W1_QS` | LOAD_16NM | -1.05 %  | 87.9       | 99.6           | T3 RIGHT, r 25.70, z +0.0 | 79.1       | T2_T3, r 24.83, z +0.0, Tangente 45° | -105.2     | T3_T4      | 104.8   | T3   |
+| `pos_059_W2_QS` | LOAD_16NM | -1.02 %  | 107.7      | 77.6           | T3 RIGHT, r 25.70, z +0.0 | 49.0       | T2_T3, r 24.90, z +0.0, Tangente 30° | -62.5      | T3_T4      | 127.2   | T3   |
+| `pos_059_W3_QS` | LOAD_16NM | -1.02 %  | 87.1       | 92.2           | T3 RIGHT, r 25.70, z +0.0 | 77.8       | T2_T3, r 24.86, z -0.7, Tangente 37° | -115.6     | T3_T4      | 99.1    | T3   |
+| `pos_059_W4_QS` | LOAD_16NM | -0.99 %  | 104.3      | 76.9           | T3 RIGHT, r 25.70, z +7.5 | 55.5       | T2_T3, r 24.92, z +6.7, Tangente 26° | -82.8      | T3_T4      | 117.7   | T3   |
+| `pos_060_W1_QS` | LOAD_16NM | -0.88 %  | 86.8       | 111.3          | T3 RIGHT, r 25.70, z +0.0 | 77.8       | T2_T3, r 24.83, z +0.0, Tangente 45° | -103.3     | T3_T4      | 103.4   | T3   |
+| `pos_060_W2_QS` | LOAD_16NM | -0.82 %  | 106.7      | 80.4           | T3 RIGHT, r 25.70, z +0.0 | 48.5       | T2_T3, r 24.90, z +0.0, Tangente 30° | -62.1      | T3_T4      | 125.4   | T3   |
+| `pos_060_W3_QS` | LOAD_16NM | -0.86 %  | 86.0       | 101.4          | T3 RIGHT, r 25.70, z +0.0 | 76.5       | T2_T3, r 24.86, z -0.7, Tangente 37° | -113.8     | T3_T4      | 97.2    | T3   |
+| `pos_060_W4_QS` | LOAD_16NM | -0.78 %  | 103.3      | 80.0           | T3 RIGHT, r 25.70, z +7.5 | 55.2       | T2_T3, r 24.92, z +6.7, Tangente 26° | -82.2      | T3_T4      | 116.2   | T3   |
+| `pos_061_W1_QS` | LOAD_16NM | -0.72 %  | 85.8       | 121.3          | T3 RIGHT, r 25.70, z +0.0 | 76.8       | T2_T3, r 24.83, z +0.0, Tangente 45° | -101.7     | T3_T4      | 102.0   | T3   |
+| `pos_061_W2_QS` | LOAD_16NM | -0.66 %  | 105.7      | 83.1           | T3 RIGHT, r 25.70, z +0.0 | 47.9       | T2_T3, r 24.90, z +0.0, Tangente 30° | -61.6      | T3_T4      | 123.3   | T3   |
+| `pos_061_W3_QS` | LOAD_16NM | -0.70 %  | 85.2       | 110.5          | T3 RIGHT, r 25.70, z +0.0 | 75.3       | T2_T3, r 24.86, z -0.7, Tangente 37° | -112.1     | T3_T4      | 95.9    | T3   |
+| `pos_061_W4_QS` | LOAD_16NM | -0.60 %  | 102.2      | 82.8           | T3 RIGHT, r 25.70, z +7.5 | 55.6       | T1_T2, r 24.77, z +5.1, Tangente 68° | -81.5      | T3_T4      | 114.4   | T3   |
+| `pos_062_W1_QS` | LOAD_16NM | -0.55 %  | 85.1       | 131.6          | T3 RIGHT, r 25.70, z +0.0 | 75.8       | T2_T3, r 24.83, z +0.0, Tangente 45° | -100.3     | T3_T4      | 100.6   | T3   |
+| `pos_062_W2_QS` | LOAD_16NM | -0.47 %  | 105.1      | 85.6           | T3 RIGHT, r 25.70, z +0.0 | 47.3       | T2_T3, r 24.88, z +0.0, Tangente 33° | -61.3      | T3_T4      | 121.7   | T3   |
+| `pos_062_W3_QS` | LOAD_16NM | -0.53 %  | 84.4       | 118.4          | T3 RIGHT, r 25.70, z +0.0 | 74.4       | T2_T3, r 24.86, z -0.7, Tangente 37° | -110.7     | T3_T4      | 94.6    | T3   |
+| `pos_062_W4_QS` | LOAD_16NM | -0.42 %  | 101.6      | 84.4           | T3 RIGHT, r 25.70, z +7.5 | 56.2       | T1_T2, r 24.77, z +5.1, Tangente 68° | -80.9      | T3_T4      | 112.7   | T3   |
+| `pos_063_W1_QS` | LOAD_16NM | -0.36 %  | 84.7       | 141.9          | T3 RIGHT, r 25.70, z +0.0 | 74.8       | T2_T3, r 24.83, z +0.0, Tangente 45° | -98.8      | T3_T4      | 99.0    | T3   |
+| `pos_063_W2_QS` | LOAD_16NM | -0.21 %  | 104.9      | 87.6           | T3 RIGHT, r 25.70, z +0.0 | 47.0       | T1_T2, r 24.86, z +0.0, Tangente 37° | -61.1      | T3_T4      | 120.1   | T3   |
+| `pos_063_W3_QS` | LOAD_16NM | -0.33 %  | 84.0       | 126.2          | T3 RIGHT, r 25.70, z +0.0 | 73.6       | T2_T3, r 24.86, z -0.7, Tangente 37° | -109.5     | T3_T4      | 93.1    | T3   |
+| `pos_063_W4_QS` | LOAD_16NM | -0.19 %  | 101.4      | 81.0           | T3 RIGHT, r 25.70, z +0.7 | 56.5       | T1_T2, r 24.77, z +5.1, Tangente 68° | -80.4      | T3_T4      | 111.1   | T2   |
+| `pos_064_W1_QS` | LOAD_16NM | +0.04 %  | 85.2       | 153.0          | T3 RIGHT, r 25.70, z +0.0 | 73.7       | T2_T3, r 24.83, z +0.0, Tangente 45° | -98.3      | T3_T4      | 97.8    | T3   |
+| `pos_064_W2_QS` | LOAD_16NM | +0.15 %  | 105.2      | 87.9           | T3 RIGHT, r 25.70, z +0.0 | 47.4       | T1_T2, r 24.86, z +0.0, Tangente 37° | -60.9      | T3_T4      | 118.8   | T3   |
+| `pos_064_W3_QS` | LOAD_16NM | +0.10 %  | 84.6       | 135.0          | T3 RIGHT, r 25.70, z +0.0 | 72.5       | T2_T3, r 24.86, z -0.7, Tangente 37° | -109.3     | T3_T4      | 92.7    | T2   |
+| `pos_064_W4_QS` | LOAD_16NM | +0.22 %  | 102.2      | 83.9           | T3 RIGHT, r 25.80, z -7.5 | 56.7       | T1_T2, r 24.77, z +5.1, Tangente 68° | -80.2      | T3_T4      | 112.6   | T2   |
+| `pos_065_W1_QS` | LOAD_16NM | +0.69 %  | 86.6       | 153.1          | T3 RIGHT, r 25.70, z +0.0 | 68.6       | T2_T3, r 24.83, z +0.0, Tangente 45° | -98.5      | T3_T4      | 97.7    | T3   |
+| `pos_065_W2_QS` | LOAD_16NM | +0.66 %  | 106.4      | 90.3           | T3 RIGHT, r 25.80, z -5.9 | 48.0       | T1_T2, r 24.86, z +0.0, Tangente 37° | -60.7      | T3_T4      | 119.5   | T2   |
+| `pos_065_W3_QS` | LOAD_16NM | +0.70 %  | 86.0       | 143.3          | T3 RIGHT, r 25.80, z -7.5 | 69.7       | T1_T2, r 24.79, z -0.7, Tangente 58° | -108.9     | T3_T4      | 94.3    | T2   |
+| `pos_065_W4_QS` | LOAD_16NM | +0.68 %  | 103.4      | 92.0           | T3 RIGHT, r 25.80, z -7.5 | 57.2       | T1_T2, r 24.77, z +5.1, Tangente 68° | -79.8      | T3_T4      | 114.1   | T2   |
+| `pos_066_W1_QS` | LOAD_16NM | +0.98 %  | 87.5       | 156.4          | T3 RIGHT, r 25.80, z -6.7 | 68.7       | T1_T2, r 24.82, z +0.0, Tangente 49° | -97.3      | T3_T4      | 98.5    | T2   |
+| `pos_066_W2_QS` | LOAD_16NM | +0.92 %  | 107.0      | 93.1           | T3 RIGHT, r 25.80, z -5.9 | 48.5       | T1_T2, r 24.86, z +0.0, Tangente 37° | -60.0      | T3_T4      | 121.0   | T2   |
+| `pos_066_W3_QS` | LOAD_16NM | +1.02 %  | 87.0       | 171.8          | T3 RIGHT, r 25.80, z -7.5 | 71.5       | T1_T2, r 24.79, z -0.7, Tangente 58° | -107.3     | T3_T4      | 96.3    | T2   |
+| `pos_066_W4_QS` | LOAD_16NM | +1.01 %  | 104.5      | 96.7           | T3 RIGHT, r 25.80, z -7.5 | 58.2       | T1_T2, r 24.77, z +5.1, Tangente 68° | -79.0      | T3_T4      | 116.1   | T2   |
+| `pos_067_W1_QS` | LOAD_16NM | +0.82 %  | 87.8       | 167.8          | T3 RIGHT, r 25.80, z -5.1 | 70.6       | T1_T2, r 24.82, z +0.0, Tangente 49° | -94.7      | T3_T4      | 99.4    | T2   |
+| `pos_067_W2_QS` | LOAD_16NM | +0.94 %  | 107.4      | 95.4           | T3 RIGHT, r 25.80, z -5.9 | 49.0       | T1_T2, r 24.86, z +0.0, Tangente 37° | -59.0      | T3_T4      | 122.1   | T2   |
+| `pos_067_W3_QS` | LOAD_16NM | +0.88 %  | 87.5       | 184.5          | T3 RIGHT, r 25.80, z -7.5 | 73.5       | T1_T2, r 24.79, z -0.7, Tangente 58° | -104.2     | T3_T4      | 97.4    | T2   |
+| `pos_067_W4_QS` | LOAD_16NM | +1.04 %  | 105.1      | 99.7           | T3 RIGHT, r 25.80, z -7.5 | 59.5       | T1_T2, r 24.77, z +5.1, Tangente 68° | -77.5      | T3_T4      | 117.6   | T2   |
+| `pos_068_W1_QS` | LOAD_16NM | +0.62 %  | 87.8       | 177.3          | T3 RIGHT, r 25.80, z -3.6 | 72.0       | T1_T2, r 24.82, z +0.0, Tangente 49° | -92.6      | T3_T4      | 100.2   | T2   |
+| `pos_068_W2_QS` | LOAD_16NM | +0.83 %  | 107.4      | 96.1           | T3 RIGHT, r 25.80, z -5.9 | 49.4       | T1_T2, r 24.88, z +0.0, Tangente 33° | -58.4      | T3_T4      | 122.8   | T2   |
+| `pos_068_W3_QS` | LOAD_16NM | +0.67 %  | 87.6       | 187.7          | T3 RIGHT, r 25.80, z -7.5 | 74.8       | T1_T2, r 24.79, z -0.7, Tangente 58° | -102.0     | T3_T4      | 97.8    | T2   |
+| `pos_068_W4_QS` | LOAD_16NM | +0.90 %  | 105.3      | 100.4          | T3 RIGHT, r 25.80, z -7.5 | 60.3       | T1_T2, r 24.77, z +5.1, Tangente 68° | -76.3      | T3_T4      | 117.9   | T2   |
+| `pos_069_W1_QS` | LOAD_16NM | +0.51 %  | 87.9       | 184.8          | T3 RIGHT, r 25.80, z -2.0 | 72.8       | T1_T2, r 24.82, z +0.0, Tangente 49° | -91.2      | T3_T4      | 100.6   | T2   |
+| `pos_069_W2_QS` | LOAD_16NM | +0.71 %  | 107.3      | 96.6           | T3 RIGHT, r 25.80, z -5.9 | 49.7       | T1_T2, r 24.88, z +0.0, Tangente 33° | -58.1      | T3_T4      | 123.2   | T2   |
+| `pos_069_W3_QS` | LOAD_16NM | +0.54 %  | 87.7       | 189.2          | T3 RIGHT, r 25.80, z -7.5 | 75.6       | T1_T2, r 24.79, z -0.7, Tangente 58° | -101.4     | T3_T4      | 98.2    | T2   |
+| `pos_069_W4_QS` | LOAD_16NM | +0.80 %  | 105.5      | 100.9          | T3 RIGHT, r 25.80, z -7.5 | 60.8       | T1_T2, r 24.77, z +5.1, Tangente 68° | -75.7      | T3_T4      | 118.4   | T2   |
+| `pos_070_W1_QS` | LOAD_16NM | +0.39 %  | 88.0       | 195.8          | T3 RIGHT, r 25.80, z +0.0 | 74.5       | T1_T2, r 24.82, z +0.0, Tangente 49° | -88.6      | T3_T4      | 101.2   | T2   |
+| `pos_070_W2_QS` | LOAD_16NM | +0.38 %  | 107.2      | 97.5           | T3 RIGHT, r 25.80, z -5.9 | 50.4       | T1_T2, r 24.88, z +0.0, Tangente 33° | -57.4      | T3_T4      | 123.6   | T2   |
+| `pos_070_W3_QS` | LOAD_16NM | +0.37 %  | 87.7       | 191.8          | T3 RIGHT, r 25.80, z -7.5 | 77.4       | T1_T2, r 24.79, z -0.7, Tangente 58° | -99.7      | T3_T4      | 98.9    | T2   |
+| `pos_070_W4_QS` | LOAD_16NM | +0.42 %  | 105.2      | 101.8          | T3 RIGHT, r 25.80, z -7.5 | 61.7       | T1_T2, r 24.77, z +5.1, Tangente 68° | -74.2      | T3_T4      | 118.9   | T2   |
+| `pos_071_W1_QS` | LOAD_16NM | +0.58 %  | 88.4       | 197.0          | T3 RIGHT, r 25.80, z +0.0 | 75.7       | T1_T2, r 24.82, z +0.0, Tangente 49° | -87.3      | T3_T4      | 102.2   | T2   |
+| `pos_071_W2_QS` | LOAD_16NM | +0.60 %  | 107.6      | 98.1           | T3 RIGHT, r 25.80, z +0.0 | 50.7       | T1_T2, r 24.88, z +0.0, Tangente 33° | -57.1      | T3_T4      | 124.6   | T2   |
+| `pos_071_W3_QS` | LOAD_16NM | +0.53 %  | 88.1       | 191.0          | T3 RIGHT, r 25.80, z -7.5 | 78.7       | T1_T2, r 24.79, z -0.7, Tangente 58° | -98.2      | T3_T4      | 99.5    | T2   |
+| `pos_071_W4_QS` | LOAD_16NM | +0.58 %  | 105.4      | 97.8           | T3 RIGHT, r 25.80, z -7.5 | 61.9       | T1_T2, r 24.77, z +5.1, Tangente 68° | -73.5      | T3_T4      | 119.5   | T2   |
+| `pos_072_W1_QS` | LOAD_12NM | +1.08 %  | 69.4       | 161.4          | T3 RIGHT, r 25.80, z +0.0 | 59.5       | T1_T2, r 24.82, z +0.0, Tangente 49° | -64.3      | T3_T4      | 80.5    | T2   |
+| `pos_072_W2_QS` | LOAD_16NM | +1.38 %  | 109.9      | 98.6           | T3 RIGHT, r 25.90, z -5.9 | 51.5       | T1_T2, r 24.88, z +0.0, Tangente 33° | -57.1      | T3_T4      | 128.2   | T2   |
+| `pos_072_W3_QS` | LOAD_12NM | +1.02 %  | 69.1       | 147.3          | T3 RIGHT, r 25.80, z -7.5 | 61.3       | T1_T2, r 24.79, z -0.7, Tangente 58° | -72.4      | T3_T4      | 78.0    | T2   |
+| `pos_072_W4_QS` | LOAD_16NM | +1.30 %  | 107.5      | 102.7          | T3 RIGHT, r 25.90, z -7.5 | 62.1       | T1_T2, r 24.77, z +5.1, Tangente 68° | -73.4      | T3_T4      | 122.0   | T2   |
+| `pos_073_W1_QS` | LOAD_16NM | +2.75 %  | 95.5       | 172.5          | T3 RIGHT, r 25.80, z +0.0 | 81.9       | T1_T2, r 24.82, z +0.0, Tangente 49° | -86.7      | T3_T4      | 111.8   | T2   |
+| `pos_073_W2_QS` | LOAD_16NM | +1.97 %  | 112.2      | 100.2          | T3 RIGHT, r 25.90, z -5.9 | 52.2       | T1_T2, r 24.88, z +0.0, Tangente 33° | -56.2      | T3_T4      | 131.2   | T2   |
+| `pos_073_W3_QS` | LOAD_16NM | +2.71 %  | 95.1       | 180.3          | T3 RIGHT, r 25.90, z -7.5 | 84.8       | T1_T2, r 24.79, z -0.7, Tangente 58° | -95.9      | T3_T4      | 108.6   | T2   |
+| `pos_073_W4_QS` | LOAD_16NM | +2.01 %  | 110.4      | 106.6          | T3 RIGHT, r 25.90, z -7.5 | 63.2       | T1_T2, r 24.77, z +5.1, Tangente 68° | -72.4      | T3_T4      | 126.0   | T2   |
+| `pos_074_W1_QS` | LOAD_16NM | +1.88 %  | 96.3       | 176.5          | T3 RIGHT, r 25.90, z -6.7 | 84.8       | T1_T2, r 24.82, z +0.0, Tangente 49° | -83.5      | T2_T3      | 113.4   | T2   |
+| `pos_074_W2_QS` | LOAD_16NM | +1.77 %  | 113.6      | 100.4          | T3 RIGHT, r 25.90, z -5.9 | 52.9       | T1_T2, r 24.88, z +0.0, Tangente 33° | -54.3      | T3_T4      | 133.3   | T2   |
+| `pos_074_W3_QS` | LOAD_16NM | +1.92 %  | 95.8       | 200.2          | T3 RIGHT, r 25.90, z -7.5 | 87.6       | T1_T2, r 24.79, z -0.7, Tangente 58° | -89.7      | T3_T4      | 109.5   | T2   |
+| `pos_074_W4_QS` | LOAD_16NM | +1.86 %  | 112.3      | 108.5          | T3 RIGHT, r 25.90, z -7.5 | 64.9       | T1_T2, r 24.77, z +5.1, Tangente 68° | -69.7      | T3_T4      | 128.5   | T2   |
+| `pos_075_W1_QS` | LOAD_16NM | +0.70 %  | 96.4       | 187.5          | T3 RIGHT, r 25.90, z -1.3 | 87.8       | T1_T2, r 24.82, z +0.0, Tangente 49° | -89.2      | T2_T3      | 114.1   | T2   |
+| `pos_075_W2_QS` | LOAD_16NM | +0.92 %  | 113.4      | 99.7           | T3 RIGHT, r 25.90, z -3.6 | 53.5       | T1_T2, r 24.90, z +0.0, Tangente 30° | -53.7      | T2_T3      | 133.7   | T2   |
+| `pos_075_W3_QS` | LOAD_16NM | +0.77 %  | 96.0       | 194.9          | T3 RIGHT, r 25.90, z -7.5 | 90.3       | T1_T2, r 24.79, z -0.7, Tangente 58° | -92.0      | T2_T3      | 110.2   | T2   |
+| `pos_075_W4_QS` | LOAD_16NM | +0.96 %  | 112.2      | 108.5          | T3 RIGHT, r 25.90, z -7.5 | 65.9       | T1_T2, r 24.77, z +5.1, Tangente 68° | -66.7      | T2_T3      | 128.4   | T2   |
+| `pos_076_W1_QS` | LOAD_16NM | +0.58 %  | 96.8       | 186.0          | T3 RIGHT, r 25.90, z +0.0 | 89.6       | T1_T2, r 24.82, z +0.0, Tangente 49° | -92.4      | T2_T3      | 114.9   | T2   |
+| `pos_076_W2_QS` | LOAD_16NM | +0.28 %  | 110.7      | 99.6           | T3 RIGHT, r 25.90, z +0.0 | 53.1       | T1_T2, r 24.90, z +0.0, Tangente 30° | -53.8      | T2_T3      | 130.5   | T2   |
+| `pos_076_W3_QS` | LOAD_16NM | +0.55 %  | 96.5       | 187.9          | T3 RIGHT, r 25.90, z -7.5 | 92.5       | T1_T2, r 24.79, z -0.7, Tangente 58° | -94.9      | T2_T3      | 111.2   | T2   |
+| `pos_076_W4_QS` | LOAD_16NM | +0.22 %  | 109.1      | 106.6          | T3 RIGHT, r 25.90, z -7.5 | 64.1       | T1_T2, r 24.77, z +5.1, Tangente 68° | -66.7      | T2_T3      | 125.1   | T2   |
+| `pos_077_W1_QS` | LOAD_12NM | +1.13 %  | 78.5       | 126.2          | T3 RIGHT, r 25.90, z +0.0 | 72.3       | T1_T2, r 24.82, z +0.0, Tangente 49° | -76.4      | T2_T3      | 93.4    | T2   |
+| `pos_077_W2_QS` | LOAD_16NM | +0.94 %  | 110.7      | 97.9           | T3 RIGHT, r 25.90, z +0.0 | 52.7       | T1_T2, r 24.90, z +0.0, Tangente 30° | -54.2      | T2_T3      | 130.6   | T2   |
+| `pos_077_W3_QS` | LOAD_12NM | +1.08 %  | 78.3       | 126.3          | T3 RIGHT, r 25.90, z -7.5 | 74.5       | T1_T2, r 24.79, z -0.7, Tangente 58° | -78.1      | T2_T3      | 90.2    | T2   |
+| `pos_077_W4_QS` | LOAD_16NM | +0.84 %  | 108.8      | 89.1           | T3 RIGHT, r 25.90, z +0.7 | 61.6       | T1_T2, r 24.77, z +5.1, Tangente 68° | -67.5      | T2_T3      | 125.0   | T2   |
+| `pos_078_W1_QS` | LOAD_16NM | +1.93 %  | 101.1      | 136.8          | T3 RIGHT, r 25.90, z +0.0 | 90.9       | T1_T2, r 24.82, z +0.0, Tangente 49° | -98.4      | T2_T3      | 120.9   | T2   |
+| `pos_078_W2_QS` | LOAD_16NM | +1.23 %  | 112.0      | 89.6           | T3 RIGHT, r 26.00, z -6.7 | 52.9       | T1_T2, r 24.90, z +0.0, Tangente 30° | -55.3      | T2_T3      | 132.8   | T2   |
+| `pos_078_W3_QS` | LOAD_16NM | +1.89 %  | 100.0      | 122.6          | T3 RIGHT, r 25.90, z +0.0 | 92.0       | T1_T2, r 24.79, z -0.7, Tangente 58° | -102.6     | T2_T3      | 116.0   | T2   |
+| `pos_078_W4_QS` | LOAD_16NM | +1.22 %  | 110.3      | 93.9           | T3 RIGHT, r 26.00, z -7.5 | 60.3       | T1_T2, r 24.78, z +5.1, Tangente 63° | -70.9      | T2_T3      | 126.7   | T2   |
+| `pos_079_W1_QS` | LOAD_16NM | -0.17 %  | 99.2       | 94.8           | T3 RIGHT, r 26.00, z -3.6 | 90.5       | T1_T2, r 24.82, z +0.0, Tangente 49° | -102.3     | T2_T3      | 118.2   | T2   |
+| `pos_079_W2_QS` | LOAD_16NM | -0.03 %  | 111.2      | 89.0           | T3 RIGHT, r 26.00, z -4.4 | 53.0       | T1_T2, r 24.90, z +0.0, Tangente 30° | -56.8      | T2_T3      | 131.4   | T2   |
+| `pos_079_W3_QS` | LOAD_16NM | -0.08 %  | 98.3       | 102.0          | T3 RIGHT, r 26.00, z -7.5 | 91.2       | T1_T2, r 24.79, z -0.7, Tangente 58° | -108.2     | T2_T3      | 113.5   | T2   |
+| `pos_079_W4_QS` | LOAD_16NM | -0.00 %  | 109.0      | 93.0           | T3 RIGHT, r 26.00, z -7.5 | 59.7       | T1_T2, r 24.78, z +5.1, Tangente 63° | -73.5      | T2_T3      | 124.9   | T2   |
+| `pos_080_W1_QS` | LOAD_16NM | -0.94 %  | 98.0       | 87.7           | T3 RIGHT, r 26.00, z +0.0 | 89.6       | T1_T2, r 24.83, z +0.0, Tangente 45° | -104.3     | T2_T3      | 116.7   | T2   |
+| `pos_080_W2_QS` | LOAD_16NM | -1.10 %  | 109.9      | 88.1           | T3 RIGHT, r 26.00, z +0.0 | 53.0       | T1_T2, r 24.90, z +0.0, Tangente 30° | -58.2      | T2_T3      | 129.8   | T2   |
+| `pos_080_W3_QS` | LOAD_16NM | -0.92 %  | 97.0       | 87.3           | T3 RIGHT, r 26.00, z -7.5 | 90.2       | T1_T2, r 24.80, z -0.7, Tangente 54° | -109.9     | T2_T3      | 111.9   | T2   |
+| `pos_080_W4_QS` | LOAD_16NM | -1.07 %  | 107.9      | 90.2           | T3 RIGHT, r 26.00, z -7.5 | 59.0       | T1_T2, r 24.78, z +4.4, Tangente 63° | -74.6      | T2_T3      | 123.6   | T2   |
+| `pos_081_W1_QS` | LOAD_16NM | -0.54 %  | 98.7       | 77.5           | T3 RIGHT, r 26.00, z +0.0 | 90.1       | T1_T2, r 24.83, z +0.0, Tangente 45° | -106.8     | T2_T3      | 118.9   | T2   |
+| `pos_081_W2_QS` | LOAD_16NM | -0.14 %  | 111.8      | 86.5           | T3 RIGHT, r 26.00, z +0.0 | 53.2       | T1_T2, r 24.90, z +0.0, Tangente 30° | -59.3      | T2_T3      | 133.7   | T2   |
+| `pos_081_W3_QS` | LOAD_16NM | -0.53 %  | 97.6       | 76.6           | T3 RIGHT, r 26.00, z +0.0 | 90.1       | T1_T2, r 24.80, z -0.7, Tangente 54° | -112.7     | T2_T3      | 113.2   | T2   |
+| `pos_081_W4_QS` | LOAD_16NM | -0.27 %  | 109.3      | 76.4           | T3 RIGHT, r 26.00, z +0.0 | 58.1       | T1_T2, r 24.79, z +4.4, Tangente 58° | -76.1      | T2_T3      | 126.1   | T2   |
+| `pos_082_W1_QS` | LOAD_16NM | -0.73 %  | 101.7      | 78.9           | T2 RIGHT, r 26.00, z +0.0 | 92.4       | T1_T2, r 24.83, z +0.0, Tangente 45° | -113.0     | T2_T3      | 123.0   | T2   |
+| `pos_082_W2_QS` | LOAD_16NM | -0.25 %  | 113.2      | 73.3           | T3 RIGHT, r 26.00, z +0.0 | 53.7       | T1_T2, r 24.90, z +0.0, Tangente 30° | -61.8      | T2_T3      | 135.2   | T2   |
+| `pos_082_W3_QS` | LOAD_16NM | -0.54 %  | 100.8      | 74.4           | T2 RIGHT, r 26.00, z +7.5 | 92.3       | T1_T2, r 24.86, z -1.3, Tangente 37° | -125.6     | T2_T3      | 117.4   | T2   |
+| `pos_082_W4_QS` | LOAD_16NM | -0.24 %  | 110.7      | 65.4           | T3 RIGHT, r 26.00, z +0.0 | 57.9       | T1_T2, r 24.79, z +4.4, Tangente 58° | -79.2      | T2_T3      | 127.7   | T2   |
+| `pos_083_W1_QS` | LOAD_16NM | -2.10 %  | 102.0      | 82.5           | T2 RIGHT, r 26.00, z +0.0 | 93.6       | T1_T2, r 24.83, z +0.0, Tangente 45° | -119.1     | T2_T3      | 123.3   | T2   |
+| `pos_083_W2_QS` | LOAD_16NM | -1.77 %  | 112.9      | 65.6           | T1 RIGHT, r 26.89, z +0.0 | 54.0       | T1_T2, r 24.90, z +0.0, Tangente 30° | -63.5      | T2_T3      | 134.5   | T2   |
+| `pos_083_W3_QS` | LOAD_16NM | -1.99 %  | 100.8      | 79.3           | T1 RIGHT, r 26.89, z +0.7 | 94.0       | T1_T2, r 24.86, z -1.3, Tangente 37° | -130.4     | T2_T3      | 117.2   | T2   |
+| `pos_083_W4_QS` | LOAD_16NM | -1.70 %  | 110.5      | 62.4           | T1 RIGHT, r 26.89, z +0.7 | 57.8       | T1_T2, r 24.79, z +4.4, Tangente 58° | -81.0      | T2_T3      | 127.2   | T2   |
+| `pos_084_W1_QS` | LOAD_16NM | -2.04 %  | 99.9       | 82.5           | T1 RIGHT, r 26.89, z +0.0 | 91.9       | T1_T2, r 24.83, z +0.0, Tangente 45° | -117.3     | T2_T3      | 121.1   | T2   |
+| `pos_084_W2_QS` | LOAD_16NM | -1.89 %  | 113.0      | 64.3           | T1 RIGHT, r 26.89, z +0.0 | 53.8       | T1_T2, r 24.90, z +0.0, Tangente 30° | -64.7      | T2_T3      | 134.8   | T2   |
+| `pos_084_W3_QS` | LOAD_16NM | -2.04 %  | 99.4       | 83.5           | T1 RIGHT, r 26.89, z +0.7 | 92.9       | T1_T2, r 24.86, z -1.3, Tangente 37° | -130.7     | T2_T3      | 115.5   | T2   |
+| `pos_084_W4_QS` | LOAD_16NM | -1.83 %  | 110.4      | 62.2           | T1 RIGHT, r 26.89, z +0.7 | 57.1       | T1_T2, r 24.79, z +4.4, Tangente 58° | -82.0      | T2_T3      | 127.4   | T2   |
+| `pos_085_W1_QS` | LOAD_16NM | -1.87 %  | 97.3       | 84.7           | T1 RIGHT, r 26.89, z +0.0 | 90.0       | T1_T2, r 24.83, z +0.0, Tangente 45° | -114.7     | T2_T3      | 118.1   | T2   |
+| `pos_085_W2_QS` | LOAD_16NM | -2.05 %  | 114.6      | 63.4           | T1 RIGHT, r 26.89, z +0.0 | 54.1       | T1_T2, r 24.92, z +0.0, Tangente 26° | -66.6      | T2_T3      | 137.5   | T2   |
+| `pos_085_W3_QS` | LOAD_16NM | -1.90 %  | 96.8       | 79.8           | T1 RIGHT, r 26.89, z +0.7 | 90.4       | T1_T2, r 24.86, z -1.3, Tangente 37° | -128.0     | T2_T3      | 112.6   | T2   |
+| `pos_085_W4_QS` | LOAD_16NM | -1.95 %  | 112.0      | 61.8           | T1 RIGHT, r 26.89, z +0.7 | 57.2       | T1_T2, r 24.90, z +7.5, Tangente 30° | -83.8      | T2_T3      | 129.4   | T2   |
+| `pos_086_W1_QS` | LOAD_16NM | -1.74 %  | 94.9       | 81.8           | T2 RIGHT, r 25.90, z +0.0 | 87.8       | T1_T2, r 24.83, z +0.0, Tangente 45° | -111.9     | T2_T3      | 115.1   | T2   |
+| `pos_086_W2_QS` | LOAD_16NM | -1.93 %  | 112.9      | 62.8           | T2 RIGHT, r 25.80, z -2.0 | 53.6       | T1_T2, r 24.90, z +0.0, Tangente 30° | -66.4      | T2_T3      | 135.7   | T2   |
+| `pos_086_W3_QS` | LOAD_16NM | -1.74 %  | 94.4       | 77.5           | T2 RIGHT, r 25.90, z -7.5 | 88.4       | T1_T2, r 24.86, z -1.3, Tangente 37° | -125.5     | T2_T3      | 109.9   | T2   |
+| `pos_086_W4_QS` | LOAD_16NM | -1.88 %  | 110.9      | 62.3           | T2 RIGHT, r 25.70, z -7.5 | 56.9       | T1_T2, r 24.90, z +7.5, Tangente 30° | -83.7      | T2_T3      | 128.4   | T2   |
+| `pos_087_W1_QS` | LOAD_16NM | -1.60 %  | 92.7       | 82.5           | T2 RIGHT, r 25.90, z +0.0 | 85.7       | T1_T2, r 24.83, z +0.0, Tangente 45° | -109.1     | T2_T3      | 112.4   | T2   |
+| `pos_087_W2_QS` | LOAD_16NM | -1.71 %  | 110.9      | 66.0           | T2 RIGHT, r 25.80, z -2.0 | 52.8       | T1_T2, r 24.90, z +0.0, Tangente 30° | -65.9      | T2_T3      | 133.0   | T2   |
+| `pos_087_W3_QS` | LOAD_16NM | -1.59 %  | 92.2       | 77.7           | T2 RIGHT, r 25.90, z -7.5 | 86.5       | T1_T2, r 24.86, z -1.3, Tangente 37° | -123.0     | T2_T3      | 107.2   | T2   |
+| `pos_087_W4_QS` | LOAD_16NM | -1.64 %  | 109.0      | 69.4           | T2 RIGHT, r 25.70, z -7.5 | 56.3       | T1_T2, r 24.90, z +7.5, Tangente 30° | -83.1      | T2_T3      | 126.1   | T2   |
+| `pos_088_W1_QS` | LOAD_16NM | -1.42 %  | 90.7       | 83.8           | T2 RIGHT, r 25.80, z +0.0 | 84.2       | T1_T2, r 24.83, z +0.0, Tangente 45° | -106.9     | T2_T3      | 110.3   | T2   |
+| `pos_088_W2_QS` | LOAD_16NM | -1.49 %  | 109.1      | 71.0           | T2 RIGHT, r 25.70, z +0.0 | 52.1       | T1_T2, r 24.90, z +0.0, Tangente 30° | -65.5      | T2_T3      | 130.8   | T2   |
+| `pos_088_W3_QS` | LOAD_16NM | -1.42 %  | 90.4       | 77.2           | T2 RIGHT, r 25.90, z -7.5 | 84.7       | T1_T2, r 24.86, z -1.3, Tangente 37° | -120.9     | T2_T3      | 105.1   | T2   |
+| `pos_088_W4_QS` | LOAD_16NM | -1.40 %  | 107.2      | 75.7           | T2 RIGHT, r 25.70, z -7.5 | 55.6       | T1_T2, r 24.90, z +7.5, Tangente 30° | -82.5      | T2_T3      | 123.8   | T2   |
+| `pos_089_W1_QS` | LOAD_16NM | -1.25 %  | 89.1       | 88.1           | T2 RIGHT, r 25.80, z +0.0 | 82.8       | T1_T2, r 24.83, z +0.0, Tangente 45° | -104.8     | T2_T3      | 108.3   | T2   |
+| `pos_089_W2_QS` | LOAD_16NM | -1.27 %  | 107.5      | 75.6           | T2 RIGHT, r 25.70, z +0.0 | 51.7       | T1_T2, r 24.90, z +0.0, Tangente 30° | -65.1      | T2_T3      | 129.0   | T2   |
+| `pos_089_W3_QS` | LOAD_16NM | -1.23 %  | 88.9       | 82.7           | T2 RIGHT, r 25.70, z -0.7 | 83.4       | T1_T2, r 24.86, z -1.3, Tangente 37° | -119.2     | T2_T3      | 103.4   | T2   |
+| `pos_089_W4_QS` | LOAD_16NM | -1.21 %  | 105.8      | 81.1           | T2 RIGHT, r 25.70, z -7.5 | 54.8       | T1_T2, r 24.90, z +7.5, Tangente 30° | -81.9      | T2_T3      | 121.8   | T2   |
+| `pos_090_W1_QS` | LOAD_16NM | -1.07 %  | 87.8       | 99.8           | T2 RIGHT, r 25.70, z +0.0 | 81.6       | T1_T2, r 24.83, z +0.0, Tangente 45° | -102.9     | T2_T3      | 106.4   | T2   |
+| `pos_090_W2_QS` | LOAD_16NM | -1.06 %  | 106.1      | 78.9           | T2 RIGHT, r 25.70, z +0.0 | 51.3       | T1_T2, r 24.90, z +0.0, Tangente 30° | -64.7      | T2_T3      | 127.1   | T2   |
+| `pos_090_W3_QS` | LOAD_16NM | -1.04 %  | 87.6       | 92.2           | T2 RIGHT, r 25.70, z -0.7 | 82.3       | T1_T2, r 24.86, z -1.3, Tangente 37° | -117.5     | T2_T3      | 101.6   | T2   |
+| `pos_090_W4_QS` | LOAD_16NM | -1.02 %  | 104.8      | 85.8           | T2 RIGHT, r 25.70, z -7.5 | 54.5       | T1_T2, r 24.90, z +7.5, Tangente 30° | -81.5      | T2_T3      | 120.5   | T2   |
+| `pos_091_W1_QS` | LOAD_16NM | -0.90 %  | 86.6       | 111.4          | T2 RIGHT, r 25.70, z +0.0 | 80.2       | T1_T2, r 24.83, z +0.0, Tangente 45° | -100.9     | T2_T3      | 104.9   | T2   |
+| `pos_091_W2_QS` | LOAD_16NM | -0.85 %  | 105.0      | 81.8           | T2 RIGHT, r 25.70, z +0.0 | 50.7       | T1_T2, r 24.90, z +0.0, Tangente 30° | -64.2      | T2_T3      | 125.3   | T2   |
+| `pos_091_W3_QS` | LOAD_16NM | -0.88 %  | 86.5       | 102.8          | T2 RIGHT, r 25.70, z -7.5 | 80.9       | T1_T2, r 24.86, z -1.3, Tangente 37° | -115.6     | T2_T3      | 99.9    | T2   |
+| `pos_091_W4_QS` | LOAD_16NM | -0.81 %  | 103.7      | 89.9           | T2 RIGHT, r 25.70, z -7.5 | 54.1       | T1_T2, r 24.90, z +7.5, Tangente 30° | -80.9      | T2_T3      | 118.9   | T2   |
+| `pos_092_W1_QS` | LOAD_16NM | -0.74 %  | 85.6       | 121.4          | T2 RIGHT, r 25.70, z +0.0 | 79.1       | T1_T2, r 24.83, z +0.0, Tangente 45° | -99.4      | T2_T3      | 103.5   | T2   |
+| `pos_092_W2_QS` | LOAD_16NM | -0.68 %  | 104.0      | 84.5           | T2 RIGHT, r 25.70, z +0.0 | 50.1       | T1_T2, r 24.90, z +0.0, Tangente 30° | -63.7      | T2_T3      | 123.2   | T2   |
+| `pos_092_W3_QS` | LOAD_16NM | -0.71 %  | 85.6       | 114.9          | T2 RIGHT, r 25.70, z -7.5 | 79.7       | T1_T2, r 24.86, z -1.3, Tangente 37° | -114.3     | T2_T3      | 98.6    | T2   |
+| `pos_092_W4_QS` | LOAD_16NM | -0.63 %  | 102.6      | 93.3           | T2 RIGHT, r 25.70, z -7.5 | 53.3       | T1_T2, r 24.90, z +7.5, Tangente 30° | -80.3      | T2_T3      | 117.0   | T2   |
+| `pos_093_W1_QS` | LOAD_16NM | -0.56 %  | 84.9       | 131.7          | T2 RIGHT, r 25.70, z +0.0 | 78.2       | T1_T2, r 24.83, z +0.0, Tangente 45° | -97.9      | T2_T3      | 102.1   | T2   |
+| `pos_093_W2_QS` | LOAD_16NM | -0.48 %  | 103.5      | 87.2           | T2 RIGHT, r 25.70, z +0.0 | 49.5       | T1_T2, r 24.90, z +0.0, Tangente 30° | -63.4      | T2_T3      | 121.8   | T2   |
+| `pos_093_W3_QS` | LOAD_16NM | -0.54 %  | 84.8       | 125.2          | T2 RIGHT, r 25.70, z -7.5 | 78.7       | T1_T2, r 24.86, z -1.3, Tangente 37° | -113.0     | T2_T3      | 97.3    | T2   |
+| `pos_093_W4_QS` | LOAD_16NM | -0.43 %  | 102.1      | 94.7           | T2 RIGHT, r 25.70, z -7.5 | 51.8       | T1_T2, r 24.90, z -2.0, Tangente 30° | -79.9      | T2_T3      | 115.2   | T2   |
+| `pos_094_W1_QS` | LOAD_16NM | -0.31 %  | 84.7       | 142.3          | T2 RIGHT, r 25.70, z +0.0 | 77.4       | T1_T2, r 24.83, z +0.0, Tangente 45° | -96.7      | T2_T3      | 100.8   | T2   |
+| `pos_094_W2_QS` | LOAD_16NM | -0.19 %  | 103.4      | 89.2           | T2 RIGHT, r 25.70, z +0.0 | 49.0       | T1_T2, r 24.90, z +0.0, Tangente 30° | -63.2      | T2_T3      | 120.5   | T2   |
+| `pos_094_W3_QS` | LOAD_16NM | -0.27 %  | 84.7       | 126.3          | T2 RIGHT, r 25.70, z -0.7 | 78.1       | T1_T2, r 24.86, z -1.3, Tangente 37° | -112.0     | T2_T3      | 95.9    | T2   |
+| `pos_094_W4_QS` | LOAD_16NM | -0.15 %  | 102.1      | 86.4           | T2 RIGHT, r 25.70, z -7.5 | 51.2       | T1_T2, r 24.90, z -2.0, Tangente 30° | -79.5      | T2_T3      | 113.6   | T2   |
+| `pos_095_W1_QS` | LOAD_16NM | +0.12 %  | 85.4       | 153.7          | T2 RIGHT, r 25.70, z +0.0 | 75.8       | T1_T2, r 24.83, z +0.0, Tangente 45° | -96.3      | T2_T3      | 100.0   | T2   |
+| `pos_095_W2_QS` | LOAD_16NM | +0.20 %  | 103.9      | 89.4           | T2 RIGHT, r 25.70, z +0.0 | 48.1       | T1_T2, r 24.90, z +0.0, Tangente 30° | -63.0      | T2_T3      | 119.5   | T2   |
+| `pos_095_W3_QS` | LOAD_16NM | +0.18 %  | 85.3       | 135.0          | T2 RIGHT, r 25.70, z -0.7 | 76.0       | T1_T2, r 24.86, z -1.3, Tangente 37° | -111.1     | T2_T3      | 95.1    | T2   |
+| `pos_095_W4_QS` | LOAD_16NM | +0.24 %  | 102.8      | 90.1           | T2 RIGHT, r 25.80, z -7.5 | 49.9       | T1_T2, r 24.90, z -2.0, Tangente 30° | -79.2      | T2_T3      | 113.1   | T1   |
+| `pos_096_W1_QS` | LOAD_16NM | +0.69 %  | 86.5       | 149.5          | T2 RIGHT, r 25.70, z +0.0 | 70.1       | T1_T2, r 24.83, z +0.0, Tangente 45° | -96.1      | T2_T3      | 99.8    | T2   |
+| `pos_096_W2_QS` | LOAD_16NM | +0.61 %  | 104.6      | 91.8           | T2 RIGHT, r 25.80, z -5.9 | 46.0       | T1_T2, r 24.88, z +0.0, Tangente 33° | -62.4      | T2_T3      | 118.5   | T2   |
+| `pos_096_W3_QS` | LOAD_16NM | +0.74 %  | 86.6       | 154.5          | T2 RIGHT, r 25.80, z -7.5 | 69.3       | T1_T2, r 24.86, z -1.3, Tangente 37° | -110.0     | T2_T3      | 95.2    | T1   |
+| `pos_096_W4_QS` | LOAD_16NM | +0.65 %  | 103.8      | 94.4           | T2 RIGHT, r 25.80, z -7.5 | 47.6       | T1_T2, r 24.90, z -2.0, Tangente 30° | -78.5      | T2_T3      | 114.7   | T1   |
+| `pos_097_W1_QS` | LOAD_16NM | +0.85 %  | 87.1       | 158.0          | T2 RIGHT, r 25.80, z -6.7 | 66.0       | T1_T2, r 24.83, z +0.0, Tangente 45° | -94.4      | T2_T3      | 99.1    | T2   |
+| `pos_097_W2_QS` | LOAD_16NM | +0.83 %  | 105.2      | 94.0           | T2 RIGHT, r 25.80, z -5.9 | 44.0       | T1_T2, r 24.88, z +0.0, Tangente 33° | -61.5      | T2_T3      | 119.2   | T1   |
+| `pos_097_W3_QS` | LOAD_16NM | +0.93 %  | 87.3       | 181.2          | T2 RIGHT, r 25.80, z -7.5 | 66.0       | T1_T2, r 24.86, z -1.3, Tangente 37° | -107.8     | T2_T3      | 96.8    | T1   |
+| `pos_097_W4_QS` | LOAD_16NM | +0.93 %  | 104.8      | 97.6           | T2 RIGHT, r 25.80, z -7.5 | 46.1       | T1_T2, r 24.90, z +7.5, Tangente 30° | -77.4      | T2_T3      | 116.8   | T1   |
+| `pos_098_W1_QS` | LOAD_16NM | +0.69 %  | 87.2       | 169.7          | T2 RIGHT, r 25.80, z -4.4 | 64.5       | T1_T2, r 24.83, z +0.0, Tangente 45° | -91.5      | T2_T3      | 98.9    | T1   |
+| `pos_098_W2_QS` | LOAD_16NM | +0.82 %  | 105.4      | 96.5           | T2 RIGHT, r 25.80, z -5.9 | 42.6       | T1_T2, r 24.88, z +0.0, Tangente 33° | -60.5      | T2_T3      | 120.2   | T1   |
+| `pos_098_W3_QS` | LOAD_16NM | +0.76 %  | 87.5       | 190.0          | T2 RIGHT, r 25.80, z -7.5 | 65.0       | T1_T2, r 24.86, z -1.3, Tangente 37° | -105.5     | T2_T3      | 97.6    | T1   |
+| `pos_098_W4_QS` | LOAD_16NM | +0.91 %  | 105.2      | 100.3          | T2 RIGHT, r 25.80, z -7.5 | 48.1       | T1_T2, r 24.90, z +7.5, Tangente 30° | -75.9      | T2_T3      | 117.8   | T1   |
+| `pos_099_W1_QS` | LOAD_16NM | +0.41 %  | 87.1       | 187.4          | T2 RIGHT, r 25.80, z -1.3 | 66.7       | T1_T2, r 24.85, z +0.0, Tangente 40° | -88.1      | T2_T3      | 99.8    | T1   |
+| `pos_099_W2_QS` | LOAD_16NM | +0.60 %  | 105.2      | 97.7           | T2 RIGHT, r 25.80, z -5.9 | 42.7       | T1_T2, r 24.88, z +0.0, Tangente 33° | -59.7      | T2_T3      | 121.1   | T1   |
+| `pos_099_W3_QS` | LOAD_16NM | +0.44 %  | 87.6       | 194.3          | T2 RIGHT, r 25.80, z -7.5 | 67.9       | T1_T2, r 24.86, z -1.3, Tangente 37° | -103.9     | T2_T3      | 98.6    | T1   |
+| `pos_099_W4_QS` | LOAD_16NM | +0.68 %  | 105.5      | 101.5          | T2 RIGHT, r 25.80, z -7.5 | 48.3       | T1_T2, r 24.90, z +7.5, Tangente 30° | -75.1      | T2_T3      | 119.1   | T1   |
+
+## 2026-10-22 11:00 `pilot_20layers_bore33_pocket_gemessen_kunststoff_cap1_round0p1f12_qsdy1dy2_AtoE`
+
+**Zweck:** Gemessene Geometrie, Variante kunststoff (ADR-116 Punkt 54): Stahlritzel nach dem STplus-Fall, Kunststoffrad wie gefertigt (Median der Kerngruppe: Zahnweite 16,972, Kopfkreis 54,0515, Fußkreis 49,5055 mm, Profil-Winkelabweichung +10,25 µm ab d_Cf 50,3 mit Nullpunkt am Messkreis d_M 51,728, Kopfkantenrundung r_K 0,21 mm statt der 45°-Fase); Taschenkörper auf dem gemessenen Zahn, drei Elementreihen auf dem Bogen und die Kopfkappe (ADR-116 Punkt 55, `--cap-layers 1`: Grenzschicht um Bogen und Kopfkreis, Blockecke im Zahn, kein Elementeck auf dem Bogen; 87 955 Knoten, 76 932 C3D8I, kleinster Eckensinus 0,617 statt 0,192), Ritzelkante 0,1 mm, A bis E (pos_031/036/049/063/068); W1 bis W4 × QS/DY1/DY2 (60 Jobs) mit den Karten des CONVERSE-Mappings des Nutzers auf das Kappennetz (wheel-pocketlevels-fertigung_mesh_{QS,DY1,DY2}.cof, 2026-10-22, Marken geprüft). Ersetzt den Ordner ohne Kappe vom 2026-10-19 (86 800 Knoten, FE-26). **Ergebnis:** Vorlage; zweiter Unterordner der Kette nachtlauf_2026-10-19_messvarianten (variante_kunststoff_gemessen). (Befunde FE-19)
+
+Netz: 87955 Knoten, 76932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+
+## 2026-10-22 11:01 `series_20layers_bore33_pocket_gemessen_beide_cap1_round0p1f12_30perpitch_margin1_qsdy1dy2`
+
+**Zweck:** Gemessene Geometrie, Variante beide als Serie (Entscheidung des Nutzers 2026-10-22, ADR-116 Punkt 55 (e)): Stahlritzel und Kunststoffrad wie gefertigt (die Zahlen der beiden Einzelvarianten), alle 99 Stellungen der Taschenserie (30 je Teilung, Rand 1,0; A bis E = 31/36/49/63/68), QS/DY1/DY2, W1 bis W4 (1188 Jobs, rund 120 h) mit den Karten des Mappings auf das Kappennetz (wheel-pocketlevels-fertigung_mesh_*.cof); Radnetz mit der Kopfkappe byteidentisch mit der Variante kunststoff, Ritzelfläche byteidentisch mit der Variante stahl; ein eigener A-bis-E-Ordner entfällt (Nutzer 2026-10-22). Zweck: der Wälzweg der Fertigverzahnung (Wälzwegbilder, Stommel-Serie) gegen die Taschenserie des STplus-Falls. **Ergebnis:** Vorlage; erster Unterordner der Kette nachtlauf_2026-10-19_messvarianten (serie_beide_gemessen, auf Wunsch des Nutzers zuerst). (Befunde FE-19)
+
+Netz: 87955 Knoten, 76932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 1188 Stellungsdateien (grid, 30 je Teilung)
+
+Nicht gerechnet: 1188 Dateien (`pos_001_W1_QS`, `pos_001_W1_DY1`, `pos_001_W1_DY2`, `pos_001_W2_QS`, `pos_001_W2_DY1`, `pos_001_W2_DY2` …).
+
+## 2026-10-22 11:02 `nachtlauf_2026-10-19_messvarianten/variante_kunststoff_gemessen`
 
 (keine Notiz in fe_simulation_notes.yaml)
 
-Netz: 86800 Knoten, 75732 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 30 Stellungsdateien (grid, 30 je Teilung)
+Netz: 87955 Knoten, 76932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
 
-Nicht gerechnet: 30 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+Nicht gerechnet: 60 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
 
-## 2026-10-19 18:35 `nachtlauf_2026-10-19_messvarianten/variante_beide_gemessen`
+## 2026-10-22 11:02 `nachtlauf_2026-10-19_messvarianten/serie_beide_gemessen`
 
 (keine Notiz in fe_simulation_notes.yaml)
 
-Netz: 86800 Knoten, 75732 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 30 Stellungsdateien (grid, 30 je Teilung)
+Netz: 87955 Knoten, 76932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 1188 Stellungsdateien (grid, 30 je Teilung)
 
-Nicht gerechnet: 30 Dateien (`pos_031_W1_QS`, `pos_031_W1_DY1`, `pos_031_W1_DY2`, `pos_031_W2_QS`, `pos_031_W2_DY1`, `pos_031_W2_DY2` …).
+Nicht gerechnet: 1188 Dateien (`pos_001_W1_QS`, `pos_001_W1_DY1`, `pos_001_W1_DY2`, `pos_001_W2_QS`, `pos_001_W2_DY1`, `pos_001_W2_DY2` …).
 
+## 2026-10-25 17:15 `serie_beide_gemessen_gerechnet`
 
-## 2026-10-21 `tasche_serie_w1w4_qs_gerechnet` ausgewertet (Serie, Nachweis), `vergleich_fussrundung_AtoE_V2`
+**Zweck:** Serie der gefertigten Paarung (Variante beide, ADR-116 Punkt 54 und 55): Taschenkörper, Kopfkappe, 87 955 Knoten, W1 bis W4 × QS/DY1/DY2, 99 Stellungen, gerechnet mit drei Jobs zu je vier Kernen. **Ergebnis:** 1188 Jobs vollständig, 2026-10-22 11:38 bis 2026-10-25 17:16 (77,6 h), ≈ 24 Inkremente je Job, 49 Rückschnitte; ODBs auf dem Server (≈ 440 GiB), 55 GiB kopiert; gegen die Nennserie σ1 max +3 bis +10 %, Kontaktdruck max −8 bis −36 %; Nachweis W2 QS a_B,V 1,38/1,70/2,00, W2 DY2 0,94/1,17/1,33 (ADR-116 Punkt 56); Thesis 5.4.3. (gerechnet: Vollversion; Befunde FE-26, FE-27)
 
-**Zweck:** Die Taschenserie (99 Stellungen × W1 bis W4 × QS, vom Nutzer am 2026-10-21 abgelegt) wird der Hauptfall der Kapitel 5.2, 5.3 und 7 (Entscheidung des Nutzers, ADR-118 Amendment 2026-10-21). `fe_series_analysis.py --folder tasche_serie_w1w4_qs_gerechnet` (387 von 396 vollständig; neun Abbrüche im Schritt 16 Nm: W1 Stellungen 010, 040, 045, 072, 077; W3 040, 045, 072, 077; flatternde Kontaktknoten auf r 25,800 und 25,901 mm, Muster FE-19). `fe_fatigue.py stommel` auf W1_QS und W2_QS (von Mises, Klasse verstärkt) sowie W1_QS, W3_QS, W4_QS unter Hill (`--equivalent hill --cof 91_Converse/wheel-pocket_mesh_QS.cof --reduction-class semi_crystalline_unreinforced`); die Datei `wheel-52-pocket_mesh_QS.cof` gehört zum feineren 750 256-Elemente-Netz und wird vom Skript als fremd erkannt (Prüfung der Elementnummern).
+Netz: 87955 Knoten, 76932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 1188 Stellungsdateien (grid, 30 je Teilung)
 
-**Ergebnis (Fußrundungen des Zahns T3):** W2 kritischer Knoten Fuß T3/T4 bei z = −5,93 mm auf der Zugseite (h 0,49), a_B,V 1,30 / 1,64 / 1,96, N_pred 1,65e5 / 4,33e3 / 0; W1 in der Zahnmitte, 1,72 / 2,69 / 10,4, a_stat > 1 an 0 / 176 / 944 Fußknoten. Hill: W3 Fuß T3/T4 z −0,67 / 1,33 mm, a_B,V 3,25 / 4,67 / 55,1, a_stat ∞ (54 / 614 / 1116 Fußknoten jenseits der Isotherme); W4 Fuß T2/T3 z 2,79 mm, h 0,46, a_B,V 2,45 / 3,01 / 3,55, a_stat 0,45 / 0,66 / ∞ (0 / 0 / 9); W1 Hill Fuß z 0,67 / 2,00 mm, 3,29 / 5,68 / (16 Nm siehe bericht). Auf dem Ring lag der kritische Knoten von W2 auf der Druckseite (R ≈ −0,4); der Steg des Taschenkörpers verschiebt die Lastgeschichte.
+**Läufe**
 
-**Fußrundungsvarianten V2:** `fe_fillet_comparison.py` mit dem bionischen Optimum (φ 35°, r 0,2 S_L) als sechster Variante und dem neuen Ratenbild `fusseffekt_raten_LOAD_16NM`; bionisch φ35 an C: W1 −25,4 %, W2 −15,8 %, W3 −22,6 %, W4 −21,2 %; eben −38,1 % gegen 3D −23,8 % an B; CPRESS an B/E bis +47,8 %.
+| Datei            | Stellung  | Stufe | Rate | Variante | Löser           | Status   | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|------------------|-----------|-------|------|----------|-----------------|----------|-----------------------|--------|---------|------------------|
+| `pos_001_W1_QS`  | ρ1 4.813  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 312    | 0       | 2026-10-22 11:43 |
+| `pos_001_W1_DY1` | ρ1 4.813  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 264    | 0       | 2026-10-22 11:43 |
+| `pos_001_W1_DY2` | ρ1 4.813  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 289    | 0       | 2026-10-22 11:43 |
+| `pos_001_W2_QS`  | ρ1 4.813  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 474    | 0       | 2026-10-22 11:52 |
+| `pos_001_W2_DY1` | ρ1 4.813  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 400    | 0       | 2026-10-22 11:51 |
+| `pos_001_W2_DY2` | ρ1 4.813  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 434    | 0       | 2026-10-22 11:51 |
+| `pos_001_W3_QS`  | ρ1 4.813  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 728    | 0       | 2026-10-22 12:03 |
+| `pos_001_W3_DY1` | ρ1 4.813  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 769    | 0       | 2026-10-22 12:04 |
+| `pos_001_W3_DY2` | ρ1 4.813  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 810    | 0       | 2026-10-22 12:05 |
+| `pos_001_W4_QS`  | ρ1 4.813  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 941    | 0       | 2026-10-22 12:20 |
+| `pos_001_W4_DY1` | ρ1 4.813  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 881    | 0       | 2026-10-22 12:19 |
+| `pos_001_W4_DY2` | ρ1 4.813  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 911    | 0       | 2026-10-22 12:19 |
+| `pos_002_W1_QS`  | ρ1 4.912  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 1807   | 0       | 2026-10-22 12:50 |
+| `pos_002_W1_DY1` | ρ1 4.912  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 269    | 0       | 2026-10-22 12:24 |
+| `pos_002_W1_DY2` | ρ1 4.912  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 243    | 0       | 2026-10-22 12:23 |
+| `pos_002_W2_QS`  | ρ1 4.912  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 443    | 0       | 2026-10-22 12:35 |
+| `pos_002_W2_DY1` | ρ1 4.912  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 469    | 0       | 2026-10-22 12:35 |
+| `pos_002_W2_DY2` | ρ1 4.912  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 444    | 0       | 2026-10-22 12:35 |
+| `pos_002_W3_QS`  | ρ1 4.912  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 767    | 0       | 2026-10-22 13:02 |
+| `pos_002_W3_DY1` | ρ1 4.912  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 796    | 0       | 2026-10-22 13:03 |
+| `pos_002_W3_DY2` | ρ1 4.912  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 813    | 0       | 2026-10-22 13:03 |
+| `pos_002_W4_QS`  | ρ1 4.912  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 924    | 0       | 2026-10-22 13:18 |
+| `pos_002_W4_DY1` | ρ1 4.912  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 937    | 0       | 2026-10-22 13:18 |
+| `pos_002_W4_DY2` | ρ1 4.912  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 928    | 0       | 2026-10-22 13:18 |
+| `pos_003_W1_QS`  | ρ1 5.010  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 316    | 0       | 2026-10-22 13:23 |
+| `pos_003_W1_DY1` | ρ1 5.010  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 302    | 0       | 2026-10-22 13:23 |
+| `pos_003_W1_DY2` | ρ1 5.010  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 294    | 0       | 2026-10-22 13:23 |
+| `pos_003_W2_QS`  | ρ1 5.010  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 371    | 0       | 2026-10-22 13:30 |
+| `pos_003_W2_DY1` | ρ1 5.010  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 343    | 0       | 2026-10-22 13:29 |
+| `pos_003_W2_DY2` | ρ1 5.010  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 337    | 0       | 2026-10-22 13:29 |
+| `pos_003_W3_QS`  | ρ1 5.010  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 717    | 0       | 2026-10-22 13:42 |
+| `pos_003_W3_DY1` | ρ1 5.010  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 708    | 0       | 2026-10-22 13:40 |
+| `pos_003_W3_DY2` | ρ1 5.010  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 659    | 0       | 2026-10-22 13:40 |
+| `pos_003_W4_QS`  | ρ1 5.010  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1086   | 0       | 2026-10-22 14:00 |
+| `pos_003_W4_DY1` | ρ1 5.010  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1072   | 0       | 2026-10-22 13:58 |
+| `pos_003_W4_DY2` | ρ1 5.010  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1042   | 0       | 2026-10-22 13:58 |
+| `pos_004_W1_QS`  | ρ1 5.109  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 402    | 0       | 2026-10-22 14:06 |
+| `pos_004_W1_DY1` | ρ1 5.109  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 386    | 0       | 2026-10-22 14:04 |
+| `pos_004_W1_DY2` | ρ1 5.109  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 376    | 0       | 2026-10-22 14:04 |
+| `pos_004_W2_QS`  | ρ1 5.109  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 445    | 0       | 2026-10-22 14:14 |
+| `pos_004_W2_DY1` | ρ1 5.109  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 456    | 0       | 2026-10-22 14:12 |
+| `pos_004_W2_DY2` | ρ1 5.109  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 440    | 0       | 2026-10-22 14:11 |
+| `pos_004_W3_QS`  | ρ1 5.109  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 885    | 0       | 2026-10-22 14:29 |
+| `pos_004_W3_DY1` | ρ1 5.109  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 923    | 0       | 2026-10-22 14:27 |
+| `pos_004_W3_DY2` | ρ1 5.109  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 887    | 0       | 2026-10-22 14:26 |
+| `pos_004_W4_QS`  | ρ1 5.109  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1122   | 0       | 2026-10-22 14:47 |
+| `pos_004_W4_DY1` | ρ1 5.109  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1112   | 0       | 2026-10-22 14:45 |
+| `pos_004_W4_DY2` | ρ1 5.109  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1083   | 0       | 2026-10-22 14:45 |
+| `pos_005_W1_QS`  | ρ1 5.207  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 403    | 0       | 2026-10-22 14:54 |
+| `pos_005_W1_DY1` | ρ1 5.207  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 384    | 0       | 2026-10-22 14:51 |
+| `pos_005_W1_DY2` | ρ1 5.207  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 355    | 0       | 2026-10-22 14:51 |
+| `pos_005_W2_QS`  | ρ1 5.207  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 444    | 0       | 2026-10-22 15:01 |
+| `pos_005_W2_DY1` | ρ1 5.207  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 454    | 0       | 2026-10-22 14:58 |
+| `pos_005_W2_DY2` | ρ1 5.207  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 461    | 0       | 2026-10-22 14:59 |
+| `pos_005_W3_QS`  | ρ1 5.207  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 856    | 0       | 2026-10-22 15:16 |
+| `pos_005_W3_DY1` | ρ1 5.207  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 855    | 0       | 2026-10-22 15:13 |
+| `pos_005_W3_DY2` | ρ1 5.207  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 820    | 0       | 2026-10-22 15:13 |
+| `pos_005_W4_QS`  | ρ1 5.207  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1098   | 0       | 2026-10-22 15:34 |
+| `pos_005_W4_DY1` | ρ1 5.207  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1094   | 0       | 2026-10-22 15:31 |
+| `pos_005_W4_DY2` | ρ1 5.207  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1105   | 0       | 2026-10-22 15:31 |
+| `pos_006_W1_QS`  | ρ1 5.305  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 370    | 0       | 2026-10-22 15:40 |
+| `pos_006_W1_DY1` | ρ1 5.305  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 368    | 0       | 2026-10-22 15:37 |
+| `pos_006_W1_DY2` | ρ1 5.305  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 370    | 0       | 2026-10-22 15:37 |
+| `pos_006_W2_QS`  | ρ1 5.305  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 7, 6, 6            | 496    | 0       | 2026-10-22 15:48 |
+| `pos_006_W2_DY1` | ρ1 5.305  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 481    | 0       | 2026-10-22 15:45 |
+| `pos_006_W2_DY2` | ρ1 5.305  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 444    | 0       | 2026-10-22 15:45 |
+| `pos_006_W3_QS`  | ρ1 5.305  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 819    | 0       | 2026-10-22 16:02 |
+| `pos_006_W3_DY1` | ρ1 5.305  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 820    | 0       | 2026-10-22 15:58 |
+| `pos_006_W3_DY2` | ρ1 5.305  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 767    | 0       | 2026-10-22 15:58 |
+| `pos_006_W4_QS`  | ρ1 5.305  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1090   | 0       | 2026-10-22 16:20 |
+| `pos_006_W4_DY1` | ρ1 5.305  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1094   | 0       | 2026-10-22 16:16 |
+| `pos_006_W4_DY2` | ρ1 5.305  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1052   | 0       | 2026-10-22 16:16 |
+| `pos_007_W1_QS`  | ρ1 5.404  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 362    | 0       | 2026-10-22 16:26 |
+| `pos_007_W1_DY1` | ρ1 5.404  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 341    | 0       | 2026-10-22 16:22 |
+| `pos_007_W1_DY2` | ρ1 5.404  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 329    | 0       | 2026-10-22 16:21 |
+| `pos_007_W2_QS`  | ρ1 5.404  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 442    | 0       | 2026-10-22 16:34 |
+| `pos_007_W2_DY1` | ρ1 5.404  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 452    | 0       | 2026-10-22 16:29 |
+| `pos_007_W2_DY2` | ρ1 5.404  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 436    | 0       | 2026-10-22 16:29 |
+| `pos_007_W3_QS`  | ρ1 5.404  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 765    | 0       | 2026-10-22 16:46 |
+| `pos_007_W3_DY1` | ρ1 5.404  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 764    | 0       | 2026-10-22 16:42 |
+| `pos_007_W3_DY2` | ρ1 5.404  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 743    | 0       | 2026-10-22 16:41 |
+| `pos_007_W4_QS`  | ρ1 5.404  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1094   | 0       | 2026-10-22 17:05 |
+| `pos_007_W4_DY1` | ρ1 5.404  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1077   | 0       | 2026-10-22 16:59 |
+| `pos_007_W4_DY2` | ρ1 5.404  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1056   | 0       | 2026-10-22 16:59 |
+| `pos_008_W1_QS`  | ρ1 5.502  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 369    | 0       | 2026-10-22 17:11 |
+| `pos_008_W1_DY1` | ρ1 5.502  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 363    | 0       | 2026-10-22 17:05 |
+| `pos_008_W1_DY2` | ρ1 5.502  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 356    | 0       | 2026-10-22 17:05 |
+| `pos_008_W2_QS`  | ρ1 5.502  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 481    | 0       | 2026-10-22 17:19 |
+| `pos_008_W2_DY1` | ρ1 5.502  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 478    | 0       | 2026-10-22 17:13 |
+| `pos_008_W2_DY2` | ρ1 5.502  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 460    | 0       | 2026-10-22 17:13 |
+| `pos_008_W3_QS`  | ρ1 5.502  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 841    | 0       | 2026-10-22 17:33 |
+| `pos_008_W3_DY1` | ρ1 5.502  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 803    | 0       | 2026-10-22 17:26 |
+| `pos_008_W3_DY2` | ρ1 5.502  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 820    | 0       | 2026-10-22 17:27 |
+| `pos_008_W4_QS`  | ρ1 5.502  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1070   | 0       | 2026-10-22 17:51 |
+| `pos_008_W4_DY1` | ρ1 5.502  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1054   | 0       | 2026-10-22 17:44 |
+| `pos_008_W4_DY2` | ρ1 5.502  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1063   | 0       | 2026-10-22 17:45 |
+| `pos_009_W1_QS`  | ρ1 5.601  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 386    | 0       | 2026-10-22 17:56 |
+| `pos_009_W1_DY1` | ρ1 5.601  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 372    | 0       | 2026-10-22 17:50 |
+| `pos_009_W1_DY2` | ρ1 5.601  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 327    | 0       | 2026-10-22 17:50 |
+| `pos_009_W2_QS`  | ρ1 5.601  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 440    | 0       | 2026-10-22 18:04 |
+| `pos_009_W2_DY1` | ρ1 5.601  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 446    | 0       | 2026-10-22 17:58 |
+| `pos_009_W2_DY2` | ρ1 5.601  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 437    | 0       | 2026-10-22 17:58 |
+| `pos_009_W3_QS`  | ρ1 5.601  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 852    | 0       | 2026-10-22 18:18 |
+| `pos_009_W3_DY1` | ρ1 5.601  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 881    | 0       | 2026-10-22 18:12 |
+| `pos_009_W3_DY2` | ρ1 5.601  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 803    | 0       | 2026-10-22 18:11 |
+| `pos_009_W4_QS`  | ρ1 5.601  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1123   | 0       | 2026-10-22 18:37 |
+| `pos_009_W4_DY1` | ρ1 5.601  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1135   | 0       | 2026-10-22 18:30 |
+| `pos_009_W4_DY2` | ρ1 5.601  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1094   | 0       | 2026-10-22 18:30 |
+| `pos_010_W1_QS`  | ρ1 5.699  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 425    | 0       | 2026-10-22 18:44 |
+| `pos_010_W1_DY1` | ρ1 5.699  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 403    | 0       | 2026-10-22 18:37 |
+| `pos_010_W1_DY2` | ρ1 5.699  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 366    | 0       | 2026-10-22 18:37 |
+| `pos_010_W2_QS`  | ρ1 5.699  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 523    | 4       | 2026-10-22 18:52 |
+| `pos_010_W2_DY1` | ρ1 5.699  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 478    | 0       | 2026-10-22 18:45 |
+| `pos_010_W2_DY2` | ρ1 5.699  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 429    | 0       | 2026-10-22 18:44 |
+| `pos_010_W3_QS`  | ρ1 5.699  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 911    | 0       | 2026-10-22 19:08 |
+| `pos_010_W3_DY1` | ρ1 5.699  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 885    | 0       | 2026-10-22 18:59 |
+| `pos_010_W3_DY2` | ρ1 5.699  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 823    | 0       | 2026-10-22 18:58 |
+| `pos_010_W4_QS`  | ρ1 5.699  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 1207   | 0       | 2026-10-22 19:28 |
+| `pos_010_W4_DY1` | ρ1 5.699  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1176   | 0       | 2026-10-22 19:18 |
+| `pos_010_W4_DY2` | ρ1 5.699  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1039   | 0       | 2026-10-22 19:16 |
+| `pos_011_W1_QS`  | ρ1 5.798  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 418    | 0       | 2026-10-22 19:30 |
+| `pos_011_W1_DY1` | ρ1 5.798  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 416    | 0       | 2026-10-22 19:23 |
+| `pos_011_W1_DY2` | ρ1 5.798  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 382    | 0       | 2026-10-22 19:24 |
+| `pos_011_W2_QS`  | ρ1 5.798  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 484    | 0       | 2026-10-22 19:38 |
+| `pos_011_W2_DY1` | ρ1 5.798  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 485    | 0       | 2026-10-22 19:32 |
+| `pos_011_W2_DY2` | ρ1 5.798  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 447    | 0       | 2026-10-22 19:35 |
+| `pos_011_W3_QS`  | ρ1 5.798  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 894    | 0       | 2026-10-22 19:53 |
+| `pos_011_W3_DY1` | ρ1 5.798  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 904    | 0       | 2026-10-22 19:47 |
+| `pos_011_W3_DY2` | ρ1 5.798  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 824    | 0       | 2026-10-22 19:49 |
+| `pos_011_W4_QS`  | ρ1 5.798  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1190   | 0       | 2026-10-22 20:13 |
+| `pos_011_W4_DY1` | ρ1 5.798  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1183   | 0       | 2026-10-22 20:07 |
+| `pos_011_W4_DY2` | ρ1 5.798  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1117   | 0       | 2026-10-22 20:07 |
+| `pos_012_W1_QS`  | ρ1 5.896  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 380    | 0       | 2026-10-22 20:19 |
+| `pos_012_W1_DY1` | ρ1 5.896  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 374    | 0       | 2026-10-22 20:13 |
+| `pos_012_W1_DY2` | ρ1 5.896  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 340    | 0       | 2026-10-22 20:13 |
+| `pos_012_W2_QS`  | ρ1 5.896  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 488    | 0       | 2026-10-22 20:27 |
+| `pos_012_W2_DY1` | ρ1 5.896  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 479    | 0       | 2026-10-22 20:21 |
+| `pos_012_W2_DY2` | ρ1 5.896  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 465    | 0       | 2026-10-22 20:21 |
+| `pos_012_W3_QS`  | ρ1 5.896  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 843    | 0       | 2026-10-22 20:41 |
+| `pos_012_W3_DY1` | ρ1 5.896  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 864    | 0       | 2026-10-22 20:35 |
+| `pos_012_W3_DY2` | ρ1 5.896  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 792    | 0       | 2026-10-22 20:34 |
+| `pos_012_W4_QS`  | ρ1 5.896  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1210   | 0       | 2026-10-22 21:02 |
+| `pos_012_W4_DY1` | ρ1 5.896  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1175   | 0       | 2026-10-22 20:54 |
+| `pos_012_W4_DY2` | ρ1 5.896  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1097   | 0       | 2026-10-22 20:54 |
+| `pos_013_W1_QS`  | ρ1 5.994  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 397    | 0       | 2026-10-22 21:07 |
+| `pos_013_W1_DY1` | ρ1 5.994  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 370    | 0       | 2026-10-22 21:00 |
+| `pos_013_W1_DY2` | ρ1 5.994  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 369    | 0       | 2026-10-22 21:00 |
+| `pos_013_W2_QS`  | ρ1 5.994  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 456    | 0       | 2026-10-22 21:14 |
+| `pos_013_W2_DY1` | ρ1 5.994  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 490    | 0       | 2026-10-22 21:08 |
+| `pos_013_W2_DY2` | ρ1 5.994  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 441    | 0       | 2026-10-22 21:09 |
+| `pos_013_W3_QS`  | ρ1 5.994  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 850    | 0       | 2026-10-22 21:28 |
+| `pos_013_W3_DY1` | ρ1 5.994  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 810    | 0       | 2026-10-22 21:22 |
+| `pos_013_W3_DY2` | ρ1 5.994  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 750    | 0       | 2026-10-22 21:21 |
+| `pos_013_W4_QS`  | ρ1 5.994  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1113   | 0       | 2026-10-22 21:47 |
+| `pos_013_W4_DY1` | ρ1 5.994  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1167   | 0       | 2026-10-22 21:41 |
+| `pos_013_W4_DY2` | ρ1 5.994  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1073   | 0       | 2026-10-22 21:40 |
+| `pos_014_W1_QS`  | ρ1 6.093  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 378    | 0       | 2026-10-22 21:52 |
+| `pos_014_W1_DY1` | ρ1 6.093  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 347    | 0       | 2026-10-22 21:45 |
+| `pos_014_W1_DY2` | ρ1 6.093  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 339    | 0       | 2026-10-22 21:46 |
+| `pos_014_W2_QS`  | ρ1 6.093  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 8, 6, 6            | 544    | 0       | 2026-10-22 22:01 |
+| `pos_014_W2_DY1` | ρ1 6.093  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 8, 6, 6            | 532    | 0       | 2026-10-22 21:55 |
+| `pos_014_W2_DY2` | ρ1 6.093  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 432    | 0       | 2026-10-22 21:54 |
+| `pos_014_W3_QS`  | ρ1 6.093  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 860    | 0       | 2026-10-22 22:15 |
+| `pos_014_W3_DY1` | ρ1 6.093  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 833    | 0       | 2026-10-22 22:08 |
+| `pos_014_W3_DY2` | ρ1 6.093  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 750    | 0       | 2026-10-22 22:08 |
+| `pos_014_W4_QS`  | ρ1 6.093  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1209   | 0       | 2026-10-22 22:35 |
+| `pos_014_W4_DY1` | ρ1 6.093  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1166   | 0       | 2026-10-22 22:27 |
+| `pos_014_W4_DY2` | ρ1 6.093  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1012   | 0       | 2026-10-22 22:25 |
+| `pos_015_W1_QS`  | ρ1 6.191  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 423    | 0       | 2026-10-22 22:38 |
+| `pos_015_W1_DY1` | ρ1 6.191  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 397    | 0       | 2026-10-22 22:31 |
+| `pos_015_W1_DY2` | ρ1 6.191  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 346    | 0       | 2026-10-22 22:33 |
+| `pos_015_W2_QS`  | ρ1 6.191  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 494    | 0       | 2026-10-22 22:47 |
+| `pos_015_W2_DY1` | ρ1 6.191  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 501    | 0       | 2026-10-22 22:41 |
+| `pos_015_W2_DY2` | ρ1 6.191  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 464    | 0       | 2026-10-22 22:43 |
+| `pos_015_W3_QS`  | ρ1 6.191  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 906    | 0       | 2026-10-22 23:02 |
+| `pos_015_W3_DY1` | ρ1 6.191  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 907    | 0       | 2026-10-22 22:57 |
+| `pos_015_W3_DY2` | ρ1 6.191  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 787    | 0       | 2026-10-22 22:56 |
+| `pos_015_W4_QS`  | ρ1 6.191  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 8, 6, 6            | 1224   | 0       | 2026-10-22 23:22 |
+| `pos_015_W4_DY1` | ρ1 6.191  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1189   | 0       | 2026-10-22 23:16 |
+| `pos_015_W4_DY2` | ρ1 6.191  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1103   | 0       | 2026-10-22 23:15 |
+| `pos_016_W1_QS`  | ρ1 6.290  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 396    | 0       | 2026-10-22 23:28 |
+| `pos_016_W1_DY1` | ρ1 6.290  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 394    | 0       | 2026-10-22 23:21 |
+| `pos_016_W1_DY2` | ρ1 6.290  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 382    | 0       | 2026-10-22 23:22 |
+| `pos_016_W2_QS`  | ρ1 6.290  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 478    | 0       | 2026-10-22 23:36 |
+| `pos_016_W2_DY1` | ρ1 6.290  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 496    | 0       | 2026-10-22 23:30 |
+| `pos_016_W2_DY2` | ρ1 6.290  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 496    | 0       | 2026-10-22 23:31 |
+| `pos_016_W3_QS`  | ρ1 6.290  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 879    | 0       | 2026-10-22 23:51 |
+| `pos_016_W3_DY1` | ρ1 6.290  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 931    | 0       | 2026-10-22 23:46 |
+| `pos_016_W3_DY2` | ρ1 6.290  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 878    | 0       | 2026-10-22 23:45 |
+| `pos_016_W4_QS`  | ρ1 6.290  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1193   | 0       | 2026-10-23 00:11 |
+| `pos_016_W4_DY1` | ρ1 6.290  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1180   | 0       | 2026-10-23 00:05 |
+| `pos_016_W4_DY2` | ρ1 6.290  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1223   | 0       | 2026-10-23 00:06 |
+| `pos_017_W1_QS`  | ρ1 6.388  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 353    | 0       | 2026-10-23 00:16 |
+| `pos_017_W1_DY1` | ρ1 6.388  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 340    | 0       | 2026-10-23 00:11 |
+| `pos_017_W1_DY2` | ρ1 6.388  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 340    | 0       | 2026-10-23 00:12 |
+| `pos_017_W2_QS`  | ρ1 6.388  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 8, 6, 6            | 545    | 0       | 2026-10-23 00:26 |
+| `pos_017_W2_DY1` | ρ1 6.388  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 467    | 0       | 2026-10-23 00:18 |
+| `pos_017_W2_DY2` | ρ1 6.388  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 445    | 0       | 2026-10-23 00:19 |
+| `pos_017_W3_QS`  | ρ1 6.388  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 770    | 0       | 2026-10-23 00:38 |
+| `pos_017_W3_DY1` | ρ1 6.388  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 764    | 0       | 2026-10-23 00:31 |
+| `pos_017_W3_DY2` | ρ1 6.388  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 785    | 0       | 2026-10-23 00:33 |
+| `pos_017_W4_QS`  | ρ1 6.388  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1171   | 0       | 2026-10-23 00:58 |
+| `pos_017_W4_DY1` | ρ1 6.388  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1128   | 0       | 2026-10-23 00:50 |
+| `pos_017_W4_DY2` | ρ1 6.388  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1063   | 0       | 2026-10-23 00:50 |
+| `pos_018_W1_QS`  | ρ1 6.486  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 337    | 0       | 2026-10-23 01:01 |
+| `pos_018_W1_DY1` | ρ1 6.486  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 343    | 0       | 2026-10-23 00:56 |
+| `pos_018_W1_DY2` | ρ1 6.486  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 319    | 0       | 2026-10-23 00:56 |
+| `pos_018_W2_QS`  | ρ1 6.486  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 453    | 0       | 2026-10-23 01:09 |
+| `pos_018_W2_DY1` | ρ1 6.486  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 471    | 0       | 2026-10-23 01:03 |
+| `pos_018_W2_DY2` | ρ1 6.486  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 405    | 0       | 2026-10-23 01:05 |
+| `pos_018_W3_QS`  | ρ1 6.486  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 773    | 0       | 2026-10-23 01:22 |
+| `pos_018_W3_DY1` | ρ1 6.486  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 749    | 0       | 2026-10-23 01:16 |
+| `pos_018_W3_DY2` | ρ1 6.486  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 661    | 0       | 2026-10-23 01:16 |
+| `pos_018_W4_QS`  | ρ1 6.486  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1037   | 0       | 2026-10-23 01:39 |
+| `pos_018_W4_DY1` | ρ1 6.486  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1082   | 0       | 2026-10-23 01:34 |
+| `pos_018_W4_DY2` | ρ1 6.486  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 960    | 0       | 2026-10-23 01:32 |
+| `pos_019_W1_QS`  | ρ1 6.585  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 334    | 0       | 2026-10-23 01:43 |
+| `pos_019_W1_DY1` | ρ1 6.585  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 335    | 0       | 2026-10-23 01:38 |
+| `pos_019_W1_DY2` | ρ1 6.585  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 298    | 0       | 2026-10-23 01:39 |
+| `pos_019_W2_QS`  | ρ1 6.585  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 530    | 3       | 2026-10-23 01:52 |
+| `pos_019_W2_DY1` | ρ1 6.585  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 462    | 0       | 2026-10-23 01:46 |
+| `pos_019_W2_DY2` | ρ1 6.585  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 432    | 0       | 2026-10-23 01:46 |
+| `pos_019_W3_QS`  | ρ1 6.585  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 818    | 0       | 2026-10-23 02:06 |
+| `pos_019_W3_DY1` | ρ1 6.585  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 889    | 0       | 2026-10-23 02:01 |
+| `pos_019_W3_DY2` | ρ1 6.585  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 710    | 0       | 2026-10-23 01:58 |
+| `pos_019_W4_QS`  | ρ1 6.585  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1173   | 0       | 2026-10-23 02:25 |
+| `pos_019_W4_DY1` | ρ1 6.585  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1118   | 0       | 2026-10-23 02:17 |
+| `pos_019_W4_DY2` | ρ1 6.585  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1114   | 0       | 2026-10-23 02:20 |
+| `pos_020_W1_QS`  | ρ1 6.683  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 376    | 0       | 2026-10-23 02:29 |
+| `pos_020_W1_DY1` | ρ1 6.683  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 342    | 0       | 2026-10-23 02:22 |
+| `pos_020_W1_DY2` | ρ1 6.683  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 328    | 0       | 2026-10-23 02:25 |
+| `pos_020_W2_QS`  | ρ1 6.683  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 498    | 0       | 2026-10-23 02:37 |
+| `pos_020_W2_DY1` | ρ1 6.683  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 509    | 0       | 2026-10-23 02:33 |
+| `pos_020_W2_DY2` | ρ1 6.683  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 465    | 0       | 2026-10-23 02:33 |
+| `pos_020_W3_QS`  | ρ1 6.683  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 845    | 0       | 2026-10-23 02:51 |
+| `pos_020_W3_DY1` | ρ1 6.683  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 843    | 0       | 2026-10-23 02:47 |
+| `pos_020_W3_DY2` | ρ1 6.683  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 721    | 0       | 2026-10-23 02:45 |
+| `pos_020_W4_QS`  | ρ1 6.683  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1207   | 0       | 2026-10-23 03:11 |
+| `pos_020_W4_DY1` | ρ1 6.683  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1222   | 0       | 2026-10-23 03:06 |
+| `pos_020_W4_DY2` | ρ1 6.683  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1103   | 0       | 2026-10-23 03:05 |
+| `pos_021_W1_QS`  | ρ1 6.782  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 377    | 0       | 2026-10-23 03:18 |
+| `pos_021_W1_DY1` | ρ1 6.782  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 374    | 0       | 2026-10-23 03:12 |
+| `pos_021_W1_DY2` | ρ1 6.782  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 326    | 0       | 2026-10-23 03:11 |
+| `pos_021_W2_QS`  | ρ1 6.782  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 476    | 0       | 2026-10-23 03:25 |
+| `pos_021_W2_DY1` | ρ1 6.782  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 520    | 0       | 2026-10-23 03:20 |
+| `pos_021_W2_DY2` | ρ1 6.782  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 440    | 0       | 2026-10-23 03:19 |
+| `pos_021_W3_QS`  | ρ1 6.782  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 776    | 0       | 2026-10-23 03:38 |
+| `pos_021_W3_DY1` | ρ1 6.782  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 805    | 0       | 2026-10-23 03:32 |
+| `pos_021_W3_DY2` | ρ1 6.782  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 677    | 0       | 2026-10-23 03:31 |
+| `pos_021_W4_QS`  | ρ1 6.782  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1121   | 0       | 2026-10-23 03:57 |
+| `pos_021_W4_DY1` | ρ1 6.782  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1152   | 0       | 2026-10-23 03:50 |
+| `pos_021_W4_DY2` | ρ1 6.782  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1042   | 0       | 2026-10-23 03:50 |
+| `pos_022_W1_QS`  | ρ1 6.880  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 365    | 0       | 2026-10-23 04:02 |
+| `pos_022_W1_DY1` | ρ1 6.880  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 353    | 0       | 2026-10-23 03:56 |
+| `pos_022_W1_DY2` | ρ1 6.880  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 330    | 0       | 2026-10-23 03:56 |
+| `pos_022_W2_QS`  | ρ1 6.880  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 493    | 0       | 2026-10-23 04:10 |
+| `pos_022_W2_DY1` | ρ1 6.880  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 495    | 0       | 2026-10-23 04:04 |
+| `pos_022_W2_DY2` | ρ1 6.880  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 467    | 0       | 2026-10-23 04:05 |
+| `pos_022_W3_QS`  | ρ1 6.880  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 880    | 0       | 2026-10-23 04:25 |
+| `pos_022_W3_DY1` | ρ1 6.880  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 856    | 0       | 2026-10-23 04:18 |
+| `pos_022_W3_DY2` | ρ1 6.880  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 828    | 0       | 2026-10-23 04:19 |
+| `pos_022_W4_QS`  | ρ1 6.880  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1203   | 0       | 2026-10-23 04:45 |
+| `pos_022_W4_DY1` | ρ1 6.880  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1182   | 0       | 2026-10-23 04:38 |
+| `pos_022_W4_DY2` | ρ1 6.880  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1200   | 0       | 2026-10-23 04:39 |
+| `pos_023_W1_QS`  | ρ1 6.978  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 362    | 0       | 2026-10-23 04:50 |
+| `pos_023_W1_DY1` | ρ1 6.978  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 327    | 0       | 2026-10-23 04:44 |
+| `pos_023_W1_DY2` | ρ1 6.978  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 333    | 0       | 2026-10-23 04:44 |
+| `pos_023_W2_QS`  | ρ1 6.978  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 473    | 0       | 2026-10-23 04:58 |
+| `pos_023_W2_DY1` | ρ1 6.978  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 476    | 0       | 2026-10-23 04:52 |
+| `pos_023_W2_DY2` | ρ1 6.978  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 443    | 0       | 2026-10-23 04:52 |
+| `pos_023_W3_QS`  | ρ1 6.978  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 849    | 0       | 2026-10-23 05:12 |
+| `pos_023_W3_DY1` | ρ1 6.978  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 859    | 0       | 2026-10-23 05:06 |
+| `pos_023_W3_DY2` | ρ1 6.978  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 784    | 0       | 2026-10-23 05:05 |
+| `pos_023_W4_QS`  | ρ1 6.978  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1118   | 0       | 2026-10-23 05:30 |
+| `pos_023_W4_DY1` | ρ1 6.978  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1108   | 0       | 2026-10-23 05:24 |
+| `pos_023_W4_DY2` | ρ1 6.978  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1085   | 0       | 2026-10-23 05:24 |
+| `pos_024_W1_QS`  | ρ1 7.077  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 415    | 0       | 2026-10-23 05:37 |
+| `pos_024_W1_DY1` | ρ1 7.077  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 381    | 0       | 2026-10-23 05:30 |
+| `pos_024_W1_DY2` | ρ1 7.077  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 361    | 0       | 2026-10-23 05:30 |
+| `pos_024_W2_QS`  | ρ1 7.077  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 463    | 0       | 2026-10-23 05:45 |
+| `pos_024_W2_DY1` | ρ1 7.077  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 486    | 0       | 2026-10-23 05:38 |
+| `pos_024_W2_DY2` | ρ1 7.077  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 458    | 0       | 2026-10-23 05:38 |
+| `pos_024_W3_QS`  | ρ1 7.077  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 873    | 0       | 2026-10-23 05:59 |
+| `pos_024_W3_DY1` | ρ1 7.077  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 851    | 0       | 2026-10-23 05:52 |
+| `pos_024_W3_DY2` | ρ1 7.077  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 791    | 0       | 2026-10-23 05:52 |
+| `pos_024_W4_QS`  | ρ1 7.077  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1064   | 0       | 2026-10-23 06:17 |
+| `pos_024_W4_DY1` | ρ1 7.077  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1060   | 0       | 2026-10-23 06:09 |
+| `pos_024_W4_DY2` | ρ1 7.077  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1103   | 0       | 2026-10-23 06:11 |
+| `pos_025_W1_QS`  | ρ1 7.175  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 366    | 0       | 2026-10-23 06:22 |
+| `pos_025_W1_DY1` | ρ1 7.175  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 378    | 0       | 2026-10-23 06:16 |
+| `pos_025_W1_DY2` | ρ1 7.175  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 372    | 0       | 2026-10-23 06:17 |
+| `pos_025_W2_QS`  | ρ1 7.175  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 450    | 0       | 2026-10-23 06:29 |
+| `pos_025_W2_DY1` | ρ1 7.175  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 452    | 0       | 2026-10-23 06:24 |
+| `pos_025_W2_DY2` | ρ1 7.175  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 431    | 0       | 2026-10-23 06:24 |
+| `pos_025_W3_QS`  | ρ1 7.175  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 838    | 0       | 2026-10-23 06:43 |
+| `pos_025_W3_DY1` | ρ1 7.175  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 856    | 0       | 2026-10-23 06:38 |
+| `pos_025_W3_DY2` | ρ1 7.175  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 811    | 0       | 2026-10-23 06:38 |
+| `pos_025_W4_QS`  | ρ1 7.175  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1081   | 0       | 2026-10-23 07:01 |
+| `pos_025_W4_DY1` | ρ1 7.175  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1056   | 0       | 2026-10-23 06:55 |
+| `pos_025_W4_DY2` | ρ1 7.175  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1050   | 0       | 2026-10-23 06:56 |
+| `pos_026_W1_QS`  | ρ1 7.274  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 376    | 0       | 2026-10-23 07:07 |
+| `pos_026_W1_DY1` | ρ1 7.274  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 367    | 0       | 2026-10-23 07:02 |
+| `pos_026_W1_DY2` | ρ1 7.274  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 354    | 0       | 2026-10-23 07:02 |
+| `pos_026_W2_QS`  | ρ1 7.274  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 454    | 0       | 2026-10-23 07:15 |
+| `pos_026_W2_DY1` | ρ1 7.274  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 427    | 0       | 2026-10-23 07:09 |
+| `pos_026_W2_DY2` | ρ1 7.274  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 420    | 0       | 2026-10-23 07:09 |
+| `pos_026_W3_QS`  | ρ1 7.274  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 758    | 0       | 2026-10-23 07:28 |
+| `pos_026_W3_DY1` | ρ1 7.274  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 785    | 0       | 2026-10-23 07:22 |
+| `pos_026_W3_DY2` | ρ1 7.274  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 757    | 0       | 2026-10-23 07:21 |
+| `pos_026_W4_QS`  | ρ1 7.274  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1094   | 0       | 2026-10-23 07:46 |
+| `pos_026_W4_DY1` | ρ1 7.274  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1110   | 0       | 2026-10-23 07:40 |
+| `pos_026_W4_DY2` | ρ1 7.274  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 976    | 0       | 2026-10-23 07:38 |
+| `pos_027_W1_QS`  | ρ1 7.372  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 370    | 0       | 2026-10-23 07:50 |
+| `pos_027_W1_DY1` | ρ1 7.372  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 368    | 0       | 2026-10-23 07:44 |
+| `pos_027_W1_DY2` | ρ1 7.372  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 338    | 0       | 2026-10-23 07:46 |
+| `pos_027_W2_QS`  | ρ1 7.372  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 483    | 0       | 2026-10-23 07:58 |
+| `pos_027_W2_DY1` | ρ1 7.372  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 481    | 0       | 2026-10-23 07:54 |
+| `pos_027_W2_DY2` | ρ1 7.372  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 452    | 0       | 2026-10-23 07:53 |
+| `pos_027_W3_QS`  | ρ1 7.372  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 875    | 0       | 2026-10-23 08:13 |
+| `pos_027_W3_DY1` | ρ1 7.372  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 838    | 0       | 2026-10-23 08:07 |
+| `pos_027_W3_DY2` | ρ1 7.372  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 817    | 0       | 2026-10-23 08:07 |
+| `pos_027_W4_QS`  | ρ1 7.372  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1112   | 0       | 2026-10-23 08:31 |
+| `pos_027_W4_DY1` | ρ1 7.372  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1129   | 0       | 2026-10-23 08:26 |
+| `pos_027_W4_DY2` | ρ1 7.372  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1096   | 0       | 2026-10-23 08:26 |
+| `pos_028_W1_QS`  | ρ1 7.470  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 398    | 0       | 2026-10-23 08:38 |
+| `pos_028_W1_DY1` | ρ1 7.470  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 350    | 0       | 2026-10-23 08:31 |
+| `pos_028_W1_DY2` | ρ1 7.470  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 323    | 0       | 2026-10-23 08:31 |
+| `pos_028_W2_QS`  | ρ1 7.470  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 459    | 0       | 2026-10-23 08:46 |
+| `pos_028_W2_DY1` | ρ1 7.470  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 476    | 0       | 2026-10-23 08:39 |
+| `pos_028_W2_DY2` | ρ1 7.470  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 446    | 0       | 2026-10-23 08:39 |
+| `pos_028_W3_QS`  | ρ1 7.470  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 855    | 0       | 2026-10-23 09:00 |
+| `pos_028_W3_DY1` | ρ1 7.470  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 810    | 0       | 2026-10-23 08:52 |
+| `pos_028_W3_DY2` | ρ1 7.470  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 730    | 0       | 2026-10-23 08:52 |
+| `pos_028_W4_QS`  | ρ1 7.470  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1134   | 0       | 2026-10-23 09:19 |
+| `pos_028_W4_DY1` | ρ1 7.470  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1167   | 0       | 2026-10-23 09:11 |
+| `pos_028_W4_DY2` | ρ1 7.470  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1075   | 0       | 2026-10-23 09:10 |
+| `pos_029_W1_QS`  | ρ1 7.569  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 381    | 0       | 2026-10-23 09:23 |
+| `pos_029_W1_DY1` | ρ1 7.569  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 359    | 0       | 2026-10-23 09:16 |
+| `pos_029_W1_DY2` | ρ1 7.569  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 346    | 0       | 2026-10-23 09:17 |
+| `pos_029_W2_QS`  | ρ1 7.569  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 472    | 0       | 2026-10-23 09:31 |
+| `pos_029_W2_DY1` | ρ1 7.569  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 506    | 0       | 2026-10-23 09:25 |
+| `pos_029_W2_DY2` | ρ1 7.569  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 456    | 0       | 2026-10-23 09:26 |
+| `pos_029_W3_QS`  | ρ1 7.569  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 848    | 0       | 2026-10-23 09:45 |
+| `pos_029_W3_DY1` | ρ1 7.569  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 846    | 0       | 2026-10-23 09:39 |
+| `pos_029_W3_DY2` | ρ1 7.569  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 813    | 0       | 2026-10-23 09:40 |
+| `pos_029_W4_QS`  | ρ1 7.569  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1142   | 0       | 2026-10-23 10:04 |
+| `pos_029_W4_DY1` | ρ1 7.569  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1147   | 0       | 2026-10-23 09:58 |
+| `pos_029_W4_DY2` | ρ1 7.569  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1049   | 0       | 2026-10-23 09:57 |
+| `pos_030_W1_QS`  | ρ1 7.667  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 416    | 0       | 2026-10-23 10:11 |
+| `pos_030_W1_DY1` | ρ1 7.667  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 389    | 0       | 2026-10-23 10:04 |
+| `pos_030_W1_DY2` | ρ1 7.667  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 357    | 0       | 2026-10-23 10:04 |
+| `pos_030_W2_QS`  | ρ1 7.667  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 455    | 0       | 2026-10-23 10:18 |
+| `pos_030_W2_DY1` | ρ1 7.667  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 452    | 0       | 2026-10-23 10:11 |
+| `pos_030_W2_DY2` | ρ1 7.667  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 444    | 0       | 2026-10-23 10:12 |
+| `pos_030_W3_QS`  | ρ1 7.667  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 873    | 0       | 2026-10-23 10:33 |
+| `pos_030_W3_DY1` | ρ1 7.667  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 852    | 0       | 2026-10-23 10:26 |
+| `pos_030_W3_DY2` | ρ1 7.667  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 793    | 0       | 2026-10-23 10:25 |
+| `pos_030_W4_QS`  | ρ1 7.667  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1152   | 0       | 2026-10-23 10:52 |
+| `pos_030_W4_DY1` | ρ1 7.667  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1102   | 0       | 2026-10-23 10:43 |
+| `pos_030_W4_DY2` | ρ1 7.667  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1137   | 0       | 2026-10-23 10:45 |
+| `pos_031_W1_QS`  | A         | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 374    | 0       | 2026-10-23 10:56 |
+| `pos_031_W1_DY1` | A         | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 396    | 0       | 2026-10-23 10:50 |
+| `pos_031_W1_DY2` | A         | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 370    | 0       | 2026-10-23 10:51 |
+| `pos_031_W2_QS`  | A         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 451    | 0       | 2026-10-23 11:04 |
+| `pos_031_W2_DY1` | A         | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 447    | 0       | 2026-10-23 10:58 |
+| `pos_031_W2_DY2` | A         | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 453    | 0       | 2026-10-23 10:59 |
+| `pos_031_W3_QS`  | A         | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 809    | 0       | 2026-10-23 11:17 |
+| `pos_031_W3_DY1` | A         | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 831    | 0       | 2026-10-23 11:12 |
+| `pos_031_W3_DY2` | A         | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 820    | 0       | 2026-10-23 11:13 |
+| `pos_031_W4_QS`  | A         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1116   | 0       | 2026-10-23 11:36 |
+| `pos_031_W4_DY1` | A         | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1128   | 0       | 2026-10-23 11:31 |
+| `pos_031_W4_DY2` | A         | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1149   | 0       | 2026-10-23 11:32 |
+| `pos_032_W1_QS`  | ρ1 7.864  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 410    | 0       | 2026-10-23 11:43 |
+| `pos_032_W1_DY1` | ρ1 7.864  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 402    | 0       | 2026-10-23 11:38 |
+| `pos_032_W1_DY2` | ρ1 7.864  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 390    | 0       | 2026-10-23 11:39 |
+| `pos_032_W2_QS`  | ρ1 7.864  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 474    | 0       | 2026-10-23 11:50 |
+| `pos_032_W2_DY1` | ρ1 7.864  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 500    | 0       | 2026-10-23 11:46 |
+| `pos_032_W2_DY2` | ρ1 7.864  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 456    | 0       | 2026-10-23 11:46 |
+| `pos_032_W3_QS`  | ρ1 7.864  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 855    | 0       | 2026-10-23 12:05 |
+| `pos_032_W3_DY1` | ρ1 7.864  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 848    | 0       | 2026-10-23 12:00 |
+| `pos_032_W3_DY2` | ρ1 7.864  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 876    | 0       | 2026-10-23 12:01 |
+| `pos_032_W4_QS`  | ρ1 7.864  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1118   | 0       | 2026-10-23 12:23 |
+| `pos_032_W4_DY1` | ρ1 7.864  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1152   | 0       | 2026-10-23 12:19 |
+| `pos_032_W4_DY2` | ρ1 7.864  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1112   | 0       | 2026-10-23 12:20 |
+| `pos_033_W1_QS`  | ρ1 7.962  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 423    | 0       | 2026-10-23 12:30 |
+| `pos_033_W1_DY1` | ρ1 7.962  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 426    | 0       | 2026-10-23 12:26 |
+| `pos_033_W1_DY2` | ρ1 7.962  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 410    | 0       | 2026-10-23 12:26 |
+| `pos_033_W2_QS`  | ρ1 7.962  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 502    | 0       | 2026-10-23 12:39 |
+| `pos_033_W2_DY1` | ρ1 7.962  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 497    | 0       | 2026-10-23 12:35 |
+| `pos_033_W2_DY2` | ρ1 7.962  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 471    | 0       | 2026-10-23 12:34 |
+| `pos_033_W3_QS`  | ρ1 7.962  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 850    | 0       | 2026-10-23 12:53 |
+| `pos_033_W3_DY1` | ρ1 7.962  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 874    | 0       | 2026-10-23 12:49 |
+| `pos_033_W3_DY2` | ρ1 7.962  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 853    | 0       | 2026-10-23 12:49 |
+| `pos_033_W4_QS`  | ρ1 7.962  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1153   | 0       | 2026-10-23 13:12 |
+| `pos_033_W4_DY1` | ρ1 7.962  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1096   | 0       | 2026-10-23 13:07 |
+| `pos_033_W4_DY2` | ρ1 7.962  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1026   | 0       | 2026-10-23 13:06 |
+| `pos_034_W1_QS`  | ρ1 8.061  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 408    | 0       | 2026-10-23 13:19 |
+| `pos_034_W1_DY1` | ρ1 8.061  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 382    | 0       | 2026-10-23 13:12 |
+| `pos_034_W1_DY2` | ρ1 8.061  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 363    | 0       | 2026-10-23 13:13 |
+| `pos_034_W2_QS`  | ρ1 8.061  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 481    | 0       | 2026-10-23 13:27 |
+| `pos_034_W2_DY1` | ρ1 8.061  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 488    | 0       | 2026-10-23 13:20 |
+| `pos_034_W2_DY2` | ρ1 8.061  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 434    | 0       | 2026-10-23 13:20 |
+| `pos_034_W3_QS`  | ρ1 8.061  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 927    | 0       | 2026-10-23 13:42 |
+| `pos_034_W3_DY1` | ρ1 8.061  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 927    | 0       | 2026-10-23 13:36 |
+| `pos_034_W3_DY2` | ρ1 8.061  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 857    | 0       | 2026-10-23 13:35 |
+| `pos_034_W4_QS`  | ρ1 8.061  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1127   | 0       | 2026-10-23 14:01 |
+| `pos_034_W4_DY1` | ρ1 8.061  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1152   | 0       | 2026-10-23 13:54 |
+| `pos_034_W4_DY2` | ρ1 8.061  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1128   | 0       | 2026-10-23 13:55 |
+| `pos_035_W1_QS`  | ρ1 8.159  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 386    | 0       | 2026-10-23 14:07 |
+| `pos_035_W1_DY1` | ρ1 8.159  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 381    | 0       | 2026-10-23 14:00 |
+| `pos_035_W1_DY2` | ρ1 8.159  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 348    | 0       | 2026-10-23 14:00 |
+| `pos_035_W2_QS`  | ρ1 8.159  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 454    | 0       | 2026-10-23 14:14 |
+| `pos_035_W2_DY1` | ρ1 8.159  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 459    | 0       | 2026-10-23 14:08 |
+| `pos_035_W2_DY2` | ρ1 8.159  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 454    | 0       | 2026-10-23 14:09 |
+| `pos_035_W3_QS`  | ρ1 8.159  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 821    | 0       | 2026-10-23 14:28 |
+| `pos_035_W3_DY1` | ρ1 8.159  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 857    | 0       | 2026-10-23 14:22 |
+| `pos_035_W3_DY2` | ρ1 8.159  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 811    | 0       | 2026-10-23 14:22 |
+| `pos_035_W4_QS`  | ρ1 8.159  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1097   | 0       | 2026-10-23 14:46 |
+| `pos_035_W4_DY1` | ρ1 8.159  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1135   | 0       | 2026-10-23 14:41 |
+| `pos_035_W4_DY2` | ρ1 8.159  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1098   | 0       | 2026-10-23 14:41 |
+| `pos_036_W1_QS`  | B         | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 369    | 0       | 2026-10-23 14:52 |
+| `pos_036_W1_DY1` | B         | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 370    | 0       | 2026-10-23 14:47 |
+| `pos_036_W1_DY2` | B         | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 364    | 0       | 2026-10-23 14:47 |
+| `pos_036_W2_QS`  | B         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 473    | 0       | 2026-10-23 15:00 |
+| `pos_036_W2_DY1` | B         | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 487    | 0       | 2026-10-23 14:55 |
+| `pos_036_W2_DY2` | B         | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 455    | 0       | 2026-10-23 14:55 |
+| `pos_036_W3_QS`  | B         | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 945    | 0       | 2026-10-23 15:16 |
+| `pos_036_W3_DY1` | B         | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 898    | 0       | 2026-10-23 15:10 |
+| `pos_036_W3_DY2` | B         | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 830    | 0       | 2026-10-23 15:09 |
+| `pos_036_W4_QS`  | B         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1203   | 0       | 2026-10-23 15:36 |
+| `pos_036_W4_DY1` | B         | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1215   | 0       | 2026-10-23 15:29 |
+| `pos_036_W4_DY2` | B         | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1122   | 0       | 2026-10-23 15:29 |
+| `pos_037_W1_QS`  | ρ1 8.258  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 388    | 0       | 2026-10-23 15:41 |
+| `pos_037_W1_DY1` | ρ1 8.258  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 367    | 0       | 2026-10-23 15:35 |
+| `pos_037_W1_DY2` | ρ1 8.258  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 378    | 0       | 2026-10-23 15:35 |
+| `pos_037_W2_QS`  | ρ1 8.258  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 7, 6, 6            | 525    | 0       | 2026-10-23 15:50 |
+| `pos_037_W2_DY1` | ρ1 8.258  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 477    | 0       | 2026-10-23 15:43 |
+| `pos_037_W2_DY2` | ρ1 8.258  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 450    | 0       | 2026-10-23 15:44 |
+| `pos_037_W3_QS`  | ρ1 8.258  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 877    | 0       | 2026-10-23 16:04 |
+| `pos_037_W3_DY1` | ρ1 8.258  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 861    | 0       | 2026-10-23 15:58 |
+| `pos_037_W3_DY2` | ρ1 8.258  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 826    | 0       | 2026-10-23 15:57 |
+| `pos_037_W4_QS`  | ρ1 8.258  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1117   | 0       | 2026-10-23 16:23 |
+| `pos_037_W4_DY1` | ρ1 8.258  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1104   | 0       | 2026-10-23 16:16 |
+| `pos_037_W4_DY2` | ρ1 8.258  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1077   | 0       | 2026-10-23 16:16 |
+| `pos_038_W1_QS`  | ρ1 8.356  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 381    | 0       | 2026-10-23 16:28 |
+| `pos_038_W1_DY1` | ρ1 8.356  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 378    | 0       | 2026-10-23 16:22 |
+| `pos_038_W1_DY2` | ρ1 8.356  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 362    | 0       | 2026-10-23 16:22 |
+| `pos_038_W2_QS`  | ρ1 8.356  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 464    | 0       | 2026-10-23 16:36 |
+| `pos_038_W2_DY1` | ρ1 8.356  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 474    | 0       | 2026-10-23 16:30 |
+| `pos_038_W2_DY2` | ρ1 8.356  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 460    | 0       | 2026-10-23 16:31 |
+| `pos_038_W3_QS`  | ρ1 8.356  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 803    | 0       | 2026-10-23 16:49 |
+| `pos_038_W3_DY1` | ρ1 8.356  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 806    | 0       | 2026-10-23 16:43 |
+| `pos_038_W3_DY2` | ρ1 8.356  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 799    | 0       | 2026-10-23 16:44 |
+| `pos_038_W4_QS`  | ρ1 8.356  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1160   | 0       | 2026-10-23 17:09 |
+| `pos_038_W4_DY1` | ρ1 8.356  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1175   | 0       | 2026-10-23 17:03 |
+| `pos_038_W4_DY2` | ρ1 8.356  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1105   | 0       | 2026-10-23 17:03 |
+| `pos_039_W1_QS`  | ρ1 8.454  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 389    | 0       | 2026-10-23 17:15 |
+| `pos_039_W1_DY1` | ρ1 8.454  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 366    | 0       | 2026-10-23 17:09 |
+| `pos_039_W1_DY2` | ρ1 8.454  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 360    | 0       | 2026-10-23 17:09 |
+| `pos_039_W2_QS`  | ρ1 8.454  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 492    | 0       | 2026-10-23 17:23 |
+| `pos_039_W2_DY1` | ρ1 8.454  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 506    | 0       | 2026-10-23 17:17 |
+| `pos_039_W2_DY2` | ρ1 8.454  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 478    | 0       | 2026-10-23 17:17 |
+| `pos_039_W3_QS`  | ρ1 8.454  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 876    | 0       | 2026-10-23 17:38 |
+| `pos_039_W3_DY1` | ρ1 8.454  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 852    | 0       | 2026-10-23 17:31 |
+| `pos_039_W3_DY2` | ρ1 8.454  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 857    | 0       | 2026-10-23 17:31 |
+| `pos_039_W4_QS`  | ρ1 8.454  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1158   | 0       | 2026-10-23 17:57 |
+| `pos_039_W4_DY1` | ρ1 8.454  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1135   | 0       | 2026-10-23 17:50 |
+| `pos_039_W4_DY2` | ρ1 8.454  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1104   | 0       | 2026-10-23 17:50 |
+| `pos_040_W1_QS`  | ρ1 8.553  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 423    | 0       | 2026-10-23 18:03 |
+| `pos_040_W1_DY1` | ρ1 8.553  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 416    | 0       | 2026-10-23 17:57 |
+| `pos_040_W1_DY2` | ρ1 8.553  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 373    | 0       | 2026-10-23 17:56 |
+| `pos_040_W2_QS`  | ρ1 8.553  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 15           | 680    | 6       | 2026-10-23 18:14 |
+| `pos_040_W2_DY1` | ρ1 8.553  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 551    | 2       | 2026-10-23 18:06 |
+| `pos_040_W2_DY2` | ρ1 8.553  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 464    | 0       | 2026-10-23 18:05 |
+| `pos_040_W3_QS`  | ρ1 8.553  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 895    | 0       | 2026-10-23 18:29 |
+| `pos_040_W3_DY1` | ρ1 8.553  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 918    | 0       | 2026-10-23 18:20 |
+| `pos_040_W3_DY2` | ρ1 8.553  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 840    | 0       | 2026-10-23 18:20 |
+| `pos_040_W4_QS`  | ρ1 8.553  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 11           | 1487   | 5       | 2026-10-23 18:54 |
+| `pos_040_W4_DY1` | ρ1 8.553  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1222   | 0       | 2026-10-23 18:40 |
+| `pos_040_W4_DY2` | ρ1 8.553  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1144   | 0       | 2026-10-23 18:39 |
+| `pos_041_W1_QS`  | ρ1 8.651  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 428    | 0       | 2026-10-23 18:53 |
+| `pos_041_W1_DY1` | ρ1 8.651  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 413    | 0       | 2026-10-23 18:46 |
+| `pos_041_W1_DY2` | ρ1 8.651  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 383    | 0       | 2026-10-23 18:47 |
+| `pos_041_W2_QS`  | ρ1 8.651  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 556    | 4       | 2026-10-23 19:03 |
+| `pos_041_W2_DY1` | ρ1 8.651  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 504    | 0       | 2026-10-23 18:55 |
+| `pos_041_W2_DY2` | ρ1 8.651  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 457    | 0       | 2026-10-23 19:01 |
+| `pos_041_W3_QS`  | ρ1 8.651  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 928    | 0       | 2026-10-23 19:19 |
+| `pos_041_W3_DY1` | ρ1 8.651  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 894    | 0       | 2026-10-23 19:10 |
+| `pos_041_W3_DY2` | ρ1 8.651  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 855    | 0       | 2026-10-23 19:15 |
+| `pos_041_W4_QS`  | ρ1 8.651  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 1284   | 3       | 2026-10-23 19:40 |
+| `pos_041_W4_DY1` | ρ1 8.651  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 1334   | 0       | 2026-10-23 19:32 |
+| `pos_041_W4_DY2` | ρ1 8.651  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1097   | 0       | 2026-10-23 19:33 |
+| `pos_042_W1_QS`  | ρ1 8.750  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 426    | 0       | 2026-10-23 19:46 |
+| `pos_042_W1_DY1` | ρ1 8.750  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 417    | 0       | 2026-10-23 19:39 |
+| `pos_042_W1_DY2` | ρ1 8.750  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 374    | 0       | 2026-10-23 19:40 |
+| `pos_042_W2_QS`  | ρ1 8.750  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 503    | 0       | 2026-10-23 19:55 |
+| `pos_042_W2_DY1` | ρ1 8.750  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 498    | 0       | 2026-10-23 19:48 |
+| `pos_042_W2_DY2` | ρ1 8.750  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 472    | 0       | 2026-10-23 19:48 |
+| `pos_042_W3_QS`  | ρ1 8.750  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 910    | 0       | 2026-10-23 20:10 |
+| `pos_042_W3_DY1` | ρ1 8.750  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 933    | 0       | 2026-10-23 20:04 |
+| `pos_042_W3_DY2` | ρ1 8.750  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 851    | 0       | 2026-10-23 20:02 |
+| `pos_042_W4_QS`  | ρ1 8.750  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 1250   | 4       | 2026-10-23 20:31 |
+| `pos_042_W4_DY1` | ρ1 8.750  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1187   | 0       | 2026-10-23 20:22 |
+| `pos_042_W4_DY2` | ρ1 8.750  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1127   | 0       | 2026-10-23 20:22 |
+| `pos_043_W1_QS`  | ρ1 8.848  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 374    | 0       | 2026-10-23 20:35 |
+| `pos_043_W1_DY1` | ρ1 8.848  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 391    | 0       | 2026-10-23 20:29 |
+| `pos_043_W1_DY2` | ρ1 8.848  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 360    | 0       | 2026-10-23 20:28 |
+| `pos_043_W2_QS`  | ρ1 8.848  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 508    | 0       | 2026-10-23 20:43 |
+| `pos_043_W2_DY1` | ρ1 8.848  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 502    | 0       | 2026-10-23 20:37 |
+| `pos_043_W2_DY2` | ρ1 8.848  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 478    | 0       | 2026-10-23 20:39 |
+| `pos_043_W3_QS`  | ρ1 8.848  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 877    | 0       | 2026-10-23 20:58 |
+| `pos_043_W3_DY1` | ρ1 8.848  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 892    | 0       | 2026-10-23 20:52 |
+| `pos_043_W3_DY2` | ρ1 8.848  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 820    | 0       | 2026-10-23 20:52 |
+| `pos_043_W4_QS`  | ρ1 8.848  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1267   | 0       | 2026-10-23 21:19 |
+| `pos_043_W4_DY1` | ρ1 8.848  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1222   | 0       | 2026-10-23 21:12 |
+| `pos_043_W4_DY2` | ρ1 8.848  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1135   | 0       | 2026-10-23 21:11 |
+| `pos_044_W1_QS`  | ρ1 8.946  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 406    | 0       | 2026-10-23 21:24 |
+| `pos_044_W1_DY1` | ρ1 8.946  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 377    | 0       | 2026-10-23 21:17 |
+| `pos_044_W1_DY2` | ρ1 8.946  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 378    | 0       | 2026-10-23 21:19 |
+| `pos_044_W2_QS`  | ρ1 8.946  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 500    | 0       | 2026-10-23 21:32 |
+| `pos_044_W2_DY1` | ρ1 8.946  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 527    | 0       | 2026-10-23 21:27 |
+| `pos_044_W2_DY2` | ρ1 8.946  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 473    | 0       | 2026-10-23 21:27 |
+| `pos_044_W3_QS`  | ρ1 8.946  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 883    | 0       | 2026-10-23 21:47 |
+| `pos_044_W3_DY1` | ρ1 8.946  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 845    | 0       | 2026-10-23 21:41 |
+| `pos_044_W3_DY2` | ρ1 8.946  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 780    | 0       | 2026-10-23 21:40 |
+| `pos_044_W4_QS`  | ρ1 8.946  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1208   | 0       | 2026-10-23 22:07 |
+| `pos_044_W4_DY1` | ρ1 8.946  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1215   | 0       | 2026-10-23 22:01 |
+| `pos_044_W4_DY2` | ρ1 8.946  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1139   | 0       | 2026-10-23 22:00 |
+| `pos_045_W1_QS`  | ρ1 9.045  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 419    | 0       | 2026-10-23 22:14 |
+| `pos_045_W1_DY1` | ρ1 9.045  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 9            | 558    | 0       | 2026-10-23 22:09 |
+| `pos_045_W1_DY2` | ρ1 9.045  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 365    | 0       | 2026-10-23 22:07 |
+| `pos_045_W2_QS`  | ρ1 9.045  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 8, 6, 8            | 629    | 5       | 2026-10-23 22:24 |
+| `pos_045_W2_DY1` | ρ1 9.045  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 8, 6, 8            | 608    | 5       | 2026-10-23 22:17 |
+| `pos_045_W2_DY2` | ρ1 9.045  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 460    | 0       | 2026-10-23 22:17 |
+| `pos_045_W3_QS`  | ρ1 9.045  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 923    | 0       | 2026-10-23 22:40 |
+| `pos_045_W3_DY1` | ρ1 9.045  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 897    | 0       | 2026-10-23 22:32 |
+| `pos_045_W3_DY2` | ρ1 9.045  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 801    | 0       | 2026-10-23 22:31 |
+| `pos_045_W4_QS`  | ρ1 9.045  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 8, 6            | 1470   | 5       | 2026-10-23 23:04 |
+| `pos_045_W4_DY1` | ρ1 9.045  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1220   | 0       | 2026-10-23 22:51 |
+| `pos_045_W4_DY2` | ρ1 9.045  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1068   | 0       | 2026-10-23 22:49 |
+| `pos_046_W1_QS`  | ρ1 9.143  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 418    | 0       | 2026-10-23 23:03 |
+| `pos_046_W1_DY1` | ρ1 9.143  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 405    | 0       | 2026-10-23 22:56 |
+| `pos_046_W1_DY2` | ρ1 9.143  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 370    | 0       | 2026-10-23 22:57 |
+| `pos_046_W2_QS`  | ρ1 9.143  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 501    | 0       | 2026-10-23 23:12 |
+| `pos_046_W2_DY1` | ρ1 9.143  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 507    | 0       | 2026-10-23 23:06 |
+| `pos_046_W2_DY2` | ρ1 9.143  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 461    | 0       | 2026-10-23 23:11 |
+| `pos_046_W3_QS`  | ρ1 9.143  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 901    | 0       | 2026-10-23 23:27 |
+| `pos_046_W3_DY1` | ρ1 9.143  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 912    | 0       | 2026-10-23 23:21 |
+| `pos_046_W3_DY2` | ρ1 9.143  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 813    | 0       | 2026-10-23 23:24 |
+| `pos_046_W4_QS`  | ρ1 9.143  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 8, 6, 6            | 1341   | 0       | 2026-10-23 23:50 |
+| `pos_046_W4_DY1` | ρ1 9.143  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1218   | 0       | 2026-10-23 23:41 |
+| `pos_046_W4_DY2` | ρ1 9.143  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1115   | 0       | 2026-10-23 23:43 |
+| `pos_047_W1_QS`  | ρ1 9.242  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 402    | 0       | 2026-10-23 23:55 |
+| `pos_047_W1_DY1` | ρ1 9.242  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 392    | 0       | 2026-10-23 23:48 |
+| `pos_047_W1_DY2` | ρ1 9.242  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 386    | 0       | 2026-10-23 23:49 |
+| `pos_047_W2_QS`  | ρ1 9.242  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 504    | 0       | 2026-10-24 00:03 |
+| `pos_047_W2_DY1` | ρ1 9.242  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 534    | 0       | 2026-10-23 23:58 |
+| `pos_047_W2_DY2` | ρ1 9.242  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 512    | 0       | 2026-10-23 23:58 |
+| `pos_047_W3_QS`  | ρ1 9.242  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 941    | 0       | 2026-10-24 00:19 |
+| `pos_047_W3_DY1` | ρ1 9.242  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 944    | 0       | 2026-10-24 00:14 |
+| `pos_047_W3_DY2` | ρ1 9.242  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 882    | 0       | 2026-10-24 00:13 |
+| `pos_047_W4_QS`  | ρ1 9.242  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1248   | 0       | 2026-10-24 00:39 |
+| `pos_047_W4_DY1` | ρ1 9.242  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1255   | 0       | 2026-10-24 00:34 |
+| `pos_047_W4_DY2` | ρ1 9.242  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1272   | 0       | 2026-10-24 00:35 |
+| `pos_048_W1_QS`  | ρ1 9.340  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 351    | 0       | 2026-10-24 00:45 |
+| `pos_048_W1_DY1` | ρ1 9.340  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 358    | 0       | 2026-10-24 00:40 |
+| `pos_048_W1_DY2` | ρ1 9.340  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 351    | 0       | 2026-10-24 00:41 |
+| `pos_048_W2_QS`  | ρ1 9.340  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 8, 6, 6            | 593    | 0       | 2026-10-24 00:55 |
+| `pos_048_W2_DY1` | ρ1 9.340  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 491    | 0       | 2026-10-24 00:48 |
+| `pos_048_W2_DY2` | ρ1 9.340  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 457    | 0       | 2026-10-24 00:49 |
+| `pos_048_W3_QS`  | ρ1 9.340  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 837    | 0       | 2026-10-24 01:09 |
+| `pos_048_W3_DY1` | ρ1 9.340  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 796    | 0       | 2026-10-24 01:01 |
+| `pos_048_W3_DY2` | ρ1 9.340  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 805    | 0       | 2026-10-24 01:02 |
+| `pos_048_W4_QS`  | ρ1 9.340  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1203   | 0       | 2026-10-24 01:29 |
+| `pos_048_W4_DY1` | ρ1 9.340  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1128   | 0       | 2026-10-24 01:20 |
+| `pos_048_W4_DY2` | ρ1 9.340  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1116   | 0       | 2026-10-24 01:21 |
+| `pos_049_W1_QS`  | C         | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 357    | 0       | 2026-10-24 01:32 |
+| `pos_049_W1_DY1` | C         | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 353    | 0       | 2026-10-24 01:26 |
+| `pos_049_W1_DY2` | C         | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 367    | 0       | 2026-10-24 01:27 |
+| `pos_049_W2_QS`  | C         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 483    | 0       | 2026-10-24 01:40 |
+| `pos_049_W2_DY1` | C         | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 487    | 0       | 2026-10-24 01:35 |
+| `pos_049_W2_DY2` | C         | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 442    | 0       | 2026-10-24 01:36 |
+| `pos_049_W3_QS`  | C         | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 824    | 0       | 2026-10-24 01:54 |
+| `pos_049_W3_DY1` | C         | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 798    | 0       | 2026-10-24 01:48 |
+| `pos_049_W3_DY2` | C         | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 727    | 0       | 2026-10-24 01:49 |
+| `pos_049_W4_QS`  | C         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1198   | 0       | 2026-10-24 02:14 |
+| `pos_049_W4_DY1` | C         | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1164   | 0       | 2026-10-24 02:08 |
+| `pos_049_W4_DY2` | C         | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1015   | 0       | 2026-10-24 02:06 |
+| `pos_050_W1_QS`  | ρ1 9.438  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 364    | 0       | 2026-10-24 02:17 |
+| `pos_050_W1_DY1` | ρ1 9.438  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 348    | 0       | 2026-10-24 02:11 |
+| `pos_050_W1_DY2` | ρ1 9.438  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 323    | 0       | 2026-10-24 02:13 |
+| `pos_050_W2_QS`  | ρ1 9.438  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 490    | 0       | 2026-10-24 02:26 |
+| `pos_050_W2_DY1` | ρ1 9.438  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 482    | 0       | 2026-10-24 02:21 |
+| `pos_050_W2_DY2` | ρ1 9.438  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 429    | 0       | 2026-10-24 02:21 |
+| `pos_050_W3_QS`  | ρ1 9.438  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 816    | 0       | 2026-10-24 02:39 |
+| `pos_050_W3_DY1` | ρ1 9.438  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 793    | 0       | 2026-10-24 02:34 |
+| `pos_050_W3_DY2` | ρ1 9.438  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 713    | 0       | 2026-10-24 02:33 |
+| `pos_050_W4_QS`  | ρ1 9.438  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1146   | 0       | 2026-10-24 02:58 |
+| `pos_050_W4_DY1` | ρ1 9.438  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1103   | 0       | 2026-10-24 02:51 |
+| `pos_050_W4_DY2` | ρ1 9.438  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1016   | 0       | 2026-10-24 02:51 |
+| `pos_051_W1_QS`  | ρ1 9.537  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 347    | 0       | 2026-10-24 03:02 |
+| `pos_051_W1_DY1` | ρ1 9.537  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 345    | 0       | 2026-10-24 02:57 |
+| `pos_051_W1_DY2` | ρ1 9.537  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 325    | 0       | 2026-10-24 02:57 |
+| `pos_051_W2_QS`  | ρ1 9.537  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 475    | 0       | 2026-10-24 03:10 |
+| `pos_051_W2_DY1` | ρ1 9.537  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 490    | 0       | 2026-10-24 03:05 |
+| `pos_051_W2_DY2` | ρ1 9.537  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 447    | 0       | 2026-10-24 03:06 |
+| `pos_051_W3_QS`  | ρ1 9.537  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 847    | 0       | 2026-10-24 03:25 |
+| `pos_051_W3_DY1` | ρ1 9.537  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 876    | 0       | 2026-10-24 03:20 |
+| `pos_051_W3_DY2` | ρ1 9.537  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 736    | 0       | 2026-10-24 03:18 |
+| `pos_051_W4_QS`  | ρ1 9.537  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1192   | 0       | 2026-10-24 03:44 |
+| `pos_051_W4_DY1` | ρ1 9.537  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1187   | 0       | 2026-10-24 03:38 |
+| `pos_051_W4_DY2` | ρ1 9.537  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1145   | 0       | 2026-10-24 03:39 |
+| `pos_052_W1_QS`  | ρ1 9.635  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 404    | 0       | 2026-10-24 03:50 |
+| `pos_052_W1_DY1` | ρ1 9.635  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 351    | 0       | 2026-10-24 03:44 |
+| `pos_052_W1_DY2` | ρ1 9.635  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 326    | 0       | 2026-10-24 03:44 |
+| `pos_052_W2_QS`  | ρ1 9.635  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 511    | 0       | 2026-10-24 03:59 |
+| `pos_052_W2_DY1` | ρ1 9.635  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 525    | 0       | 2026-10-24 03:53 |
+| `pos_052_W2_DY2` | ρ1 9.635  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 483    | 0       | 2026-10-24 03:52 |
+| `pos_052_W3_QS`  | ρ1 9.635  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 867    | 0       | 2026-10-24 04:13 |
+| `pos_052_W3_DY1` | ρ1 9.635  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 876    | 0       | 2026-10-24 04:07 |
+| `pos_052_W3_DY2` | ρ1 9.635  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 732    | 0       | 2026-10-24 04:05 |
+| `pos_052_W4_QS`  | ρ1 9.635  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1231   | 0       | 2026-10-24 04:34 |
+| `pos_052_W4_DY1` | ρ1 9.635  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1243   | 0       | 2026-10-24 04:26 |
+| `pos_052_W4_DY2` | ρ1 9.635  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1159   | 0       | 2026-10-24 04:26 |
+| `pos_053_W1_QS`  | ρ1 9.734  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 386    | 0       | 2026-10-24 04:38 |
+| `pos_053_W1_DY1` | ρ1 9.734  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 393    | 0       | 2026-10-24 04:32 |
+| `pos_053_W1_DY2` | ρ1 9.734  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 336    | 0       | 2026-10-24 04:32 |
+| `pos_053_W2_QS`  | ρ1 9.734  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 477    | 0       | 2026-10-24 04:46 |
+| `pos_053_W2_DY1` | ρ1 9.734  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 506    | 0       | 2026-10-24 04:41 |
+| `pos_053_W2_DY2` | ρ1 9.734  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 434    | 0       | 2026-10-24 04:41 |
+| `pos_053_W3_QS`  | ρ1 9.734  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 815    | 0       | 2026-10-24 05:00 |
+| `pos_053_W3_DY1` | ρ1 9.734  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 829    | 0       | 2026-10-24 04:54 |
+| `pos_053_W3_DY2` | ρ1 9.734  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 693    | 0       | 2026-10-24 04:53 |
+| `pos_053_W4_QS`  | ρ1 9.734  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1137   | 0       | 2026-10-24 05:19 |
+| `pos_053_W4_DY1` | ρ1 9.734  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1124   | 0       | 2026-10-24 05:11 |
+| `pos_053_W4_DY2` | ρ1 9.734  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1068   | 0       | 2026-10-24 05:12 |
+| `pos_054_W1_QS`  | ρ1 9.832  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 376    | 0       | 2026-10-24 05:24 |
+| `pos_054_W1_DY1` | ρ1 9.832  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 355    | 0       | 2026-10-24 05:17 |
+| `pos_054_W1_DY2` | ρ1 9.832  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 330    | 0       | 2026-10-24 05:18 |
+| `pos_054_W2_QS`  | ρ1 9.832  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 487    | 0       | 2026-10-24 05:32 |
+| `pos_054_W2_DY1` | ρ1 9.832  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 496    | 0       | 2026-10-24 05:26 |
+| `pos_054_W2_DY2` | ρ1 9.832  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 490    | 0       | 2026-10-24 05:27 |
+| `pos_054_W3_QS`  | ρ1 9.832  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 949    | 0       | 2026-10-24 05:47 |
+| `pos_054_W3_DY1` | ρ1 9.832  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 891    | 0       | 2026-10-24 05:41 |
+| `pos_054_W3_DY2` | ρ1 9.832  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 852    | 0       | 2026-10-24 05:41 |
+| `pos_054_W4_QS`  | ρ1 9.832  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1181   | 0       | 2026-10-24 06:07 |
+| `pos_054_W4_DY1` | ρ1 9.832  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1229   | 0       | 2026-10-24 06:01 |
+| `pos_054_W4_DY2` | ρ1 9.832  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1218   | 0       | 2026-10-24 06:02 |
+| `pos_055_W1_QS`  | ρ1 9.930  | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 383    | 0       | 2026-10-24 06:13 |
+| `pos_055_W1_DY1` | ρ1 9.930  | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 341    | 0       | 2026-10-24 06:07 |
+| `pos_055_W1_DY2` | ρ1 9.930  | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 323    | 0       | 2026-10-24 06:07 |
+| `pos_055_W2_QS`  | ρ1 9.930  | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 464    | 0       | 2026-10-24 06:21 |
+| `pos_055_W2_DY1` | ρ1 9.930  | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 502    | 0       | 2026-10-24 06:15 |
+| `pos_055_W2_DY2` | ρ1 9.930  | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 458    | 0       | 2026-10-24 06:15 |
+| `pos_055_W3_QS`  | ρ1 9.930  | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 880    | 0       | 2026-10-24 06:36 |
+| `pos_055_W3_DY1` | ρ1 9.930  | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 849    | 0       | 2026-10-24 06:29 |
+| `pos_055_W3_DY2` | ρ1 9.930  | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 792    | 0       | 2026-10-24 06:29 |
+| `pos_055_W4_QS`  | ρ1 9.930  | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1149   | 0       | 2026-10-24 06:55 |
+| `pos_055_W4_DY1` | ρ1 9.930  | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1149   | 0       | 2026-10-24 06:48 |
+| `pos_055_W4_DY2` | ρ1 9.930  | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1099   | 0       | 2026-10-24 06:47 |
+| `pos_056_W1_QS`  | ρ1 10.029 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 408    | 0       | 2026-10-24 07:01 |
+| `pos_056_W1_DY1` | ρ1 10.029 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 399    | 0       | 2026-10-24 06:54 |
+| `pos_056_W1_DY2` | ρ1 10.029 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 372    | 0       | 2026-10-24 06:54 |
+| `pos_056_W2_QS`  | ρ1 10.029 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 473    | 0       | 2026-10-24 07:09 |
+| `pos_056_W2_DY1` | ρ1 10.029 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 502    | 0       | 2026-10-24 07:02 |
+| `pos_056_W2_DY2` | ρ1 10.029 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 453    | 0       | 2026-10-24 07:02 |
+| `pos_056_W3_QS`  | ρ1 10.029 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 889    | 0       | 2026-10-24 07:23 |
+| `pos_056_W3_DY1` | ρ1 10.029 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 873    | 0       | 2026-10-24 07:17 |
+| `pos_056_W3_DY2` | ρ1 10.029 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 814    | 0       | 2026-10-24 07:16 |
+| `pos_056_W4_QS`  | ρ1 10.029 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1114   | 0       | 2026-10-24 07:42 |
+| `pos_056_W4_DY1` | ρ1 10.029 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1105   | 0       | 2026-10-24 07:34 |
+| `pos_056_W4_DY2` | ρ1 10.029 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1125   | 0       | 2026-10-24 07:36 |
+| `pos_057_W1_QS`  | ρ1 10.127 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 393    | 0       | 2026-10-24 07:47 |
+| `pos_057_W1_DY1` | ρ1 10.127 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 391    | 0       | 2026-10-24 07:41 |
+| `pos_057_W1_DY2` | ρ1 10.127 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 386    | 0       | 2026-10-24 07:42 |
+| `pos_057_W2_QS`  | ρ1 10.127 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 458    | 0       | 2026-10-24 07:55 |
+| `pos_057_W2_DY1` | ρ1 10.127 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 459    | 0       | 2026-10-24 07:50 |
+| `pos_057_W2_DY2` | ρ1 10.127 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 442    | 0       | 2026-10-24 07:49 |
+| `pos_057_W3_QS`  | ρ1 10.127 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 839    | 0       | 2026-10-24 08:09 |
+| `pos_057_W3_DY1` | ρ1 10.127 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 854    | 0       | 2026-10-24 08:04 |
+| `pos_057_W3_DY2` | ρ1 10.127 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 805    | 0       | 2026-10-24 08:03 |
+| `pos_057_W4_QS`  | ρ1 10.127 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1123   | 0       | 2026-10-24 08:28 |
+| `pos_057_W4_DY1` | ρ1 10.127 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1096   | 0       | 2026-10-24 08:21 |
+| `pos_057_W4_DY2` | ρ1 10.127 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1050   | 0       | 2026-10-24 08:21 |
+| `pos_058_W1_QS`  | ρ1 10.226 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 392    | 0       | 2026-10-24 08:34 |
+| `pos_058_W1_DY1` | ρ1 10.226 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 368    | 0       | 2026-10-24 08:27 |
+| `pos_058_W1_DY2` | ρ1 10.226 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 352    | 0       | 2026-10-24 08:27 |
+| `pos_058_W2_QS`  | ρ1 10.226 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 432    | 0       | 2026-10-24 08:41 |
+| `pos_058_W2_DY1` | ρ1 10.226 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 432    | 0       | 2026-10-24 08:35 |
+| `pos_058_W2_DY2` | ρ1 10.226 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 426    | 0       | 2026-10-24 08:35 |
+| `pos_058_W3_QS`  | ρ1 10.226 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 810    | 0       | 2026-10-24 08:54 |
+| `pos_058_W3_DY1` | ρ1 10.226 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 794    | 0       | 2026-10-24 08:48 |
+| `pos_058_W3_DY2` | ρ1 10.226 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 755    | 0       | 2026-10-24 08:47 |
+| `pos_058_W4_QS`  | ρ1 10.226 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1103   | 0       | 2026-10-24 09:13 |
+| `pos_058_W4_DY1` | ρ1 10.226 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1118   | 0       | 2026-10-24 09:06 |
+| `pos_058_W4_DY2` | ρ1 10.226 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1037   | 0       | 2026-10-24 09:05 |
+| `pos_059_W1_QS`  | ρ1 10.324 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 382    | 0       | 2026-10-24 09:18 |
+| `pos_059_W1_DY1` | ρ1 10.324 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 378    | 0       | 2026-10-24 09:11 |
+| `pos_059_W1_DY2` | ρ1 10.324 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 360    | 0       | 2026-10-24 09:12 |
+| `pos_059_W2_QS`  | ρ1 10.324 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 495    | 0       | 2026-10-24 09:26 |
+| `pos_059_W2_DY1` | ρ1 10.324 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 519    | 0       | 2026-10-24 09:21 |
+| `pos_059_W2_DY2` | ρ1 10.324 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 478    | 0       | 2026-10-24 09:21 |
+| `pos_059_W3_QS`  | ρ1 10.324 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 901    | 0       | 2026-10-24 09:41 |
+| `pos_059_W3_DY1` | ρ1 10.324 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 881    | 0       | 2026-10-24 09:35 |
+| `pos_059_W3_DY2` | ρ1 10.324 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 850    | 0       | 2026-10-24 09:35 |
+| `pos_059_W4_QS`  | ρ1 10.324 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1160   | 0       | 2026-10-24 10:00 |
+| `pos_059_W4_DY1` | ρ1 10.324 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1193   | 0       | 2026-10-24 09:55 |
+| `pos_059_W4_DY2` | ρ1 10.324 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1100   | 0       | 2026-10-24 09:54 |
+| `pos_060_W1_QS`  | ρ1 10.423 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 404    | 0       | 2026-10-24 10:07 |
+| `pos_060_W1_DY1` | ρ1 10.423 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 370    | 0       | 2026-10-24 10:00 |
+| `pos_060_W1_DY2` | ρ1 10.423 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 348    | 0       | 2026-10-24 10:01 |
+| `pos_060_W2_QS`  | ρ1 10.423 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 480    | 0       | 2026-10-24 10:15 |
+| `pos_060_W2_DY1` | ρ1 10.423 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 503    | 0       | 2026-10-24 10:09 |
+| `pos_060_W2_DY2` | ρ1 10.423 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 459    | 0       | 2026-10-24 10:08 |
+| `pos_060_W3_QS`  | ρ1 10.423 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 851    | 0       | 2026-10-24 10:29 |
+| `pos_060_W3_DY1` | ρ1 10.423 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 852    | 0       | 2026-10-24 10:22 |
+| `pos_060_W3_DY2` | ρ1 10.423 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 776    | 0       | 2026-10-24 10:22 |
+| `pos_060_W4_QS`  | ρ1 10.423 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1119   | 0       | 2026-10-24 10:47 |
+| `pos_060_W4_DY1` | ρ1 10.423 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1181   | 0       | 2026-10-24 10:41 |
+| `pos_060_W4_DY2` | ρ1 10.423 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1115   | 0       | 2026-10-24 10:41 |
+| `pos_061_W1_QS`  | ρ1 10.521 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 404    | 0       | 2026-10-24 10:54 |
+| `pos_061_W1_DY1` | ρ1 10.521 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 386    | 0       | 2026-10-24 10:47 |
+| `pos_061_W1_DY2` | ρ1 10.521 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 367    | 0       | 2026-10-24 10:47 |
+| `pos_061_W2_QS`  | ρ1 10.521 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 508    | 0       | 2026-10-24 11:03 |
+| `pos_061_W2_DY1` | ρ1 10.521 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 513    | 0       | 2026-10-24 10:56 |
+| `pos_061_W2_DY2` | ρ1 10.521 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 462    | 0       | 2026-10-24 10:55 |
+| `pos_061_W3_QS`  | ρ1 10.521 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 897    | 0       | 2026-10-24 11:18 |
+| `pos_061_W3_DY1` | ρ1 10.521 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 894    | 0       | 2026-10-24 11:10 |
+| `pos_061_W3_DY2` | ρ1 10.521 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 814    | 0       | 2026-10-24 11:10 |
+| `pos_061_W4_QS`  | ρ1 10.521 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1169   | 0       | 2026-10-24 11:37 |
+| `pos_061_W4_DY1` | ρ1 10.521 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1223   | 0       | 2026-10-24 11:30 |
+| `pos_061_W4_DY2` | ρ1 10.521 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1104   | 0       | 2026-10-24 11:28 |
+| `pos_062_W1_QS`  | ρ1 10.619 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 434    | 0       | 2026-10-24 11:43 |
+| `pos_062_W1_DY1` | ρ1 10.619 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 413    | 0       | 2026-10-24 11:35 |
+| `pos_062_W1_DY2` | ρ1 10.619 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 382    | 0       | 2026-10-24 11:36 |
+| `pos_062_W2_QS`  | ρ1 10.619 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 464    | 0       | 2026-10-24 11:50 |
+| `pos_062_W2_DY1` | ρ1 10.619 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 481    | 0       | 2026-10-24 11:44 |
+| `pos_062_W2_DY2` | ρ1 10.619 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 452    | 0       | 2026-10-24 11:45 |
+| `pos_062_W3_QS`  | ρ1 10.619 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 890    | 0       | 2026-10-24 12:05 |
+| `pos_062_W3_DY1` | ρ1 10.619 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 903    | 0       | 2026-10-24 11:59 |
+| `pos_062_W3_DY2` | ρ1 10.619 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 841    | 0       | 2026-10-24 11:59 |
+| `pos_062_W4_QS`  | ρ1 10.619 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1160   | 0       | 2026-10-24 12:25 |
+| `pos_062_W4_DY1` | ρ1 10.619 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1166   | 0       | 2026-10-24 12:18 |
+| `pos_062_W4_DY2` | ρ1 10.619 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1149   | 0       | 2026-10-24 12:19 |
+| `pos_063_W1_QS`  | D         | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 395    | 0       | 2026-10-24 12:31 |
+| `pos_063_W1_DY1` | D         | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 415    | 0       | 2026-10-24 12:25 |
+| `pos_063_W1_DY2` | D         | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 389    | 0       | 2026-10-24 12:25 |
+| `pos_063_W2_QS`  | D         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 488    | 0       | 2026-10-24 12:39 |
+| `pos_063_W2_DY1` | D         | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 484    | 0       | 2026-10-24 12:33 |
+| `pos_063_W2_DY2` | D         | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 490    | 0       | 2026-10-24 12:33 |
+| `pos_063_W3_QS`  | D         | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 876    | 0       | 2026-10-24 12:54 |
+| `pos_063_W3_DY1` | D         | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 873    | 0       | 2026-10-24 12:48 |
+| `pos_063_W3_DY2` | D         | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 880    | 0       | 2026-10-24 12:48 |
+| `pos_063_W4_QS`  | D         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1174   | 0       | 2026-10-24 13:13 |
+| `pos_063_W4_DY1` | D         | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1137   | 0       | 2026-10-24 13:07 |
+| `pos_063_W4_DY2` | D         | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1182   | 0       | 2026-10-24 13:08 |
+| `pos_064_W1_QS`  | ρ1 10.816 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 435    | 0       | 2026-10-24 13:21 |
+| `pos_064_W1_DY1` | ρ1 10.816 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 432    | 0       | 2026-10-24 13:14 |
+| `pos_064_W1_DY2` | ρ1 10.816 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 408    | 0       | 2026-10-24 13:14 |
+| `pos_064_W2_QS`  | ρ1 10.816 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 507    | 0       | 2026-10-24 13:29 |
+| `pos_064_W2_DY1` | ρ1 10.816 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 527    | 0       | 2026-10-24 13:23 |
+| `pos_064_W2_DY2` | ρ1 10.816 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 498    | 0       | 2026-10-24 13:23 |
+| `pos_064_W3_QS`  | ρ1 10.816 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 898    | 0       | 2026-10-24 13:44 |
+| `pos_064_W3_DY1` | ρ1 10.816 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 912    | 0       | 2026-10-24 13:38 |
+| `pos_064_W3_DY2` | ρ1 10.816 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 896    | 0       | 2026-10-24 13:38 |
+| `pos_064_W4_QS`  | ρ1 10.816 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1156   | 0       | 2026-10-24 14:03 |
+| `pos_064_W4_DY1` | ρ1 10.816 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1149   | 0       | 2026-10-24 13:57 |
+| `pos_064_W4_DY2` | ρ1 10.816 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1139   | 0       | 2026-10-24 13:57 |
+| `pos_065_W1_QS`  | ρ1 10.915 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 451    | 0       | 2026-10-24 14:11 |
+| `pos_065_W1_DY1` | ρ1 10.915 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 439    | 0       | 2026-10-24 14:04 |
+| `pos_065_W1_DY2` | ρ1 10.915 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 425    | 0       | 2026-10-24 14:04 |
+| `pos_065_W2_QS`  | ρ1 10.915 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 518    | 0       | 2026-10-24 14:19 |
+| `pos_065_W2_DY1` | ρ1 10.915 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 521    | 0       | 2026-10-24 14:13 |
+| `pos_065_W2_DY2` | ρ1 10.915 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 515    | 0       | 2026-10-24 14:13 |
+| `pos_065_W3_QS`  | ρ1 10.915 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 870    | 0       | 2026-10-24 14:34 |
+| `pos_065_W3_DY1` | ρ1 10.915 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 900    | 0       | 2026-10-24 14:28 |
+| `pos_065_W3_DY2` | ρ1 10.915 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 826    | 0       | 2026-10-24 14:26 |
+| `pos_065_W4_QS`  | ρ1 10.915 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1181   | 0       | 2026-10-24 14:54 |
+| `pos_065_W4_DY1` | ρ1 10.915 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1124   | 0       | 2026-10-24 14:45 |
+| `pos_065_W4_DY2` | ρ1 10.915 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1084   | 0       | 2026-10-24 14:46 |
+| `pos_066_W1_QS`  | ρ1 11.013 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 425    | 0       | 2026-10-24 14:59 |
+| `pos_066_W1_DY1` | ρ1 11.013 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 406    | 0       | 2026-10-24 14:52 |
+| `pos_066_W1_DY2` | ρ1 11.013 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 374    | 0       | 2026-10-24 14:52 |
+| `pos_066_W2_QS`  | ρ1 11.013 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 493    | 0       | 2026-10-24 15:07 |
+| `pos_066_W2_DY1` | ρ1 11.013 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 506    | 0       | 2026-10-24 15:00 |
+| `pos_066_W2_DY2` | ρ1 11.013 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 469    | 0       | 2026-10-24 15:01 |
+| `pos_066_W3_QS`  | ρ1 11.013 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 947    | 0       | 2026-10-24 15:23 |
+| `pos_066_W3_DY1` | ρ1 11.013 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 943    | 0       | 2026-10-24 15:16 |
+| `pos_066_W3_DY2` | ρ1 11.013 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 874    | 0       | 2026-10-24 15:16 |
+| `pos_066_W4_QS`  | ρ1 11.013 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1171   | 0       | 2026-10-24 15:42 |
+| `pos_066_W4_DY1` | ρ1 11.013 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1214   | 0       | 2026-10-24 15:36 |
+| `pos_066_W4_DY2` | ρ1 11.013 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1134   | 0       | 2026-10-24 15:35 |
+| `pos_067_W1_QS`  | ρ1 11.111 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 393    | 0       | 2026-10-24 15:48 |
+| `pos_067_W1_DY1` | ρ1 11.111 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 389    | 0       | 2026-10-24 15:41 |
+| `pos_067_W1_DY2` | ρ1 11.111 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 362    | 0       | 2026-10-24 15:42 |
+| `pos_067_W2_QS`  | ρ1 11.111 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 479    | 0       | 2026-10-24 15:56 |
+| `pos_067_W2_DY1` | ρ1 11.111 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 509    | 0       | 2026-10-24 15:51 |
+| `pos_067_W2_DY2` | ρ1 11.111 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 467    | 0       | 2026-10-24 15:50 |
+| `pos_067_W3_QS`  | ρ1 11.111 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 830    | 0       | 2026-10-24 16:10 |
+| `pos_067_W3_DY1` | ρ1 11.111 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 859    | 0       | 2026-10-24 16:05 |
+| `pos_067_W3_DY2` | ρ1 11.111 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 819    | 0       | 2026-10-24 16:04 |
+| `pos_067_W4_QS`  | ρ1 11.111 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1128   | 0       | 2026-10-24 16:29 |
+| `pos_067_W4_DY1` | ρ1 11.111 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1210   | 0       | 2026-10-24 16:25 |
+| `pos_067_W4_DY2` | ρ1 11.111 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1131   | 0       | 2026-10-24 16:23 |
+| `pos_068_W1_QS`  | E         | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 393    | 0       | 2026-10-24 16:35 |
+| `pos_068_W1_DY1` | E         | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 385    | 0       | 2026-10-24 16:30 |
+| `pos_068_W1_DY2` | E         | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 373    | 0       | 2026-10-24 16:31 |
+| `pos_068_W2_QS`  | E         | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 507    | 0       | 2026-10-24 16:44 |
+| `pos_068_W2_DY1` | E         | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 511    | 0       | 2026-10-24 16:38 |
+| `pos_068_W2_DY2` | E         | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 469    | 0       | 2026-10-24 16:39 |
+| `pos_068_W3_QS`  | E         | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 930    | 0       | 2026-10-24 16:59 |
+| `pos_068_W3_DY1` | E         | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 936    | 0       | 2026-10-24 16:54 |
+| `pos_068_W3_DY2` | E         | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 872    | 0       | 2026-10-24 16:53 |
+| `pos_068_W4_QS`  | E         | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1247   | 0       | 2026-10-24 17:20 |
+| `pos_068_W4_DY1` | E         | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1224   | 0       | 2026-10-24 17:14 |
+| `pos_068_W4_DY2` | E         | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1159   | 0       | 2026-10-24 17:13 |
+| `pos_069_W1_QS`  | ρ1 11.210 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 389    | 0       | 2026-10-24 17:26 |
+| `pos_069_W1_DY1` | ρ1 11.210 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 374    | 0       | 2026-10-24 17:19 |
+| `pos_069_W1_DY2` | ρ1 11.210 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 395    | 0       | 2026-10-24 17:20 |
+| `pos_069_W2_QS`  | ρ1 11.210 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 7, 6, 6            | 515    | 0       | 2026-10-24 17:35 |
+| `pos_069_W2_DY1` | ρ1 11.210 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 482    | 0       | 2026-10-24 17:28 |
+| `pos_069_W2_DY2` | ρ1 11.210 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 437    | 0       | 2026-10-24 17:27 |
+| `pos_069_W3_QS`  | ρ1 11.210 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 898    | 0       | 2026-10-24 17:49 |
+| `pos_069_W3_DY1` | ρ1 11.210 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 874    | 0       | 2026-10-24 17:42 |
+| `pos_069_W3_DY2` | ρ1 11.210 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 836    | 0       | 2026-10-24 17:42 |
+| `pos_069_W4_QS`  | ρ1 11.210 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1124   | 0       | 2026-10-24 18:08 |
+| `pos_069_W4_DY1` | ρ1 11.210 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1126   | 0       | 2026-10-24 18:01 |
+| `pos_069_W4_DY2` | ρ1 11.210 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1089   | 0       | 2026-10-24 18:00 |
+| `pos_070_W1_QS`  | ρ1 11.308 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 393    | 0       | 2026-10-24 18:13 |
+| `pos_070_W1_DY1` | ρ1 11.308 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 401    | 0       | 2026-10-24 18:07 |
+| `pos_070_W1_DY2` | ρ1 11.308 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 366    | 0       | 2026-10-24 18:07 |
+| `pos_070_W2_QS`  | ρ1 11.308 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 459    | 0       | 2026-10-24 18:21 |
+| `pos_070_W2_DY1` | ρ1 11.308 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 484    | 0       | 2026-10-24 18:15 |
+| `pos_070_W2_DY2` | ρ1 11.308 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 458    | 0       | 2026-10-24 18:16 |
+| `pos_070_W3_QS`  | ρ1 11.308 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 825    | 0       | 2026-10-24 18:35 |
+| `pos_070_W3_DY1` | ρ1 11.308 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 828    | 0       | 2026-10-24 18:29 |
+| `pos_070_W3_DY2` | ρ1 11.308 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 799    | 0       | 2026-10-24 18:29 |
+| `pos_070_W4_QS`  | ρ1 11.308 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1159   | 0       | 2026-10-24 18:54 |
+| `pos_070_W4_DY1` | ρ1 11.308 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1187   | 0       | 2026-10-24 18:48 |
+| `pos_070_W4_DY2` | ρ1 11.308 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1102   | 0       | 2026-10-24 18:48 |
+| `pos_071_W1_QS`  | ρ1 11.407 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 406    | 0       | 2026-10-24 19:01 |
+| `pos_071_W1_DY1` | ρ1 11.407 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 391    | 0       | 2026-10-24 18:54 |
+| `pos_071_W1_DY2` | ρ1 11.407 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 368    | 0       | 2026-10-24 18:55 |
+| `pos_071_W2_QS`  | ρ1 11.407 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 515    | 0       | 2026-10-24 19:09 |
+| `pos_071_W2_DY1` | ρ1 11.407 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 510    | 0       | 2026-10-24 19:03 |
+| `pos_071_W2_DY2` | ρ1 11.407 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 470    | 0       | 2026-10-24 19:02 |
+| `pos_071_W3_QS`  | ρ1 11.407 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 876    | 0       | 2026-10-24 19:24 |
+| `pos_071_W3_DY1` | ρ1 11.407 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 894    | 0       | 2026-10-24 19:17 |
+| `pos_071_W3_DY2` | ρ1 11.407 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 847    | 0       | 2026-10-24 19:17 |
+| `pos_071_W4_QS`  | ρ1 11.407 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1191   | 0       | 2026-10-24 19:44 |
+| `pos_071_W4_DY1` | ρ1 11.407 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1160   | 0       | 2026-10-24 19:36 |
+| `pos_071_W4_DY2` | ρ1 11.407 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1094   | 0       | 2026-10-24 19:36 |
+| `pos_072_W1_QS`  | ρ1 11.505 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 441    | 0       | 2026-10-24 19:50 |
+| `pos_072_W1_DY1` | ρ1 11.505 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 433    | 0       | 2026-10-24 19:43 |
+| `pos_072_W1_DY2` | ρ1 11.505 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 381    | 0       | 2026-10-24 19:42 |
+| `pos_072_W2_QS`  | ρ1 11.505 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 12           | 615    | 2       | 2026-10-24 20:00 |
+| `pos_072_W2_DY1` | ρ1 11.505 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 502    | 0       | 2026-10-24 19:51 |
+| `pos_072_W2_DY2` | ρ1 11.505 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 457    | 0       | 2026-10-24 19:51 |
+| `pos_072_W3_QS`  | ρ1 11.505 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 922    | 0       | 2026-10-24 20:15 |
+| `pos_072_W3_DY1` | ρ1 11.505 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 959    | 0       | 2026-10-24 20:07 |
+| `pos_072_W3_DY2` | ρ1 11.505 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 890    | 0       | 2026-10-24 20:06 |
+| `pos_072_W4_QS`  | ρ1 11.505 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 11           | 1436   | 2       | 2026-10-24 20:39 |
+| `pos_072_W4_DY1` | ρ1 11.505 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1210   | 0       | 2026-10-24 20:26 |
+| `pos_072_W4_DY2` | ρ1 11.505 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1136   | 0       | 2026-10-24 20:26 |
+| `pos_073_W1_QS`  | ρ1 11.603 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 437    | 0       | 2026-10-24 20:40 |
+| `pos_073_W1_DY1` | ρ1 11.603 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 425    | 0       | 2026-10-24 20:33 |
+| `pos_073_W1_DY2` | ρ1 11.603 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 401    | 0       | 2026-10-24 20:33 |
+| `pos_073_W2_QS`  | ρ1 11.603 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 585    | 5       | 2026-10-24 20:50 |
+| `pos_073_W2_DY1` | ρ1 11.603 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 544    | 0       | 2026-10-24 20:42 |
+| `pos_073_W2_DY2` | ρ1 11.603 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 474    | 0       | 2026-10-24 20:47 |
+| `pos_073_W3_QS`  | ρ1 11.603 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 925    | 0       | 2026-10-24 21:06 |
+| `pos_073_W3_DY1` | ρ1 11.603 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 911    | 0       | 2026-10-24 20:57 |
+| `pos_073_W3_DY2` | ρ1 11.603 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 877    | 0       | 2026-10-24 21:02 |
+| `pos_073_W4_QS`  | ρ1 11.603 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 9            | 1347   | 2       | 2026-10-24 21:28 |
+| `pos_073_W4_DY1` | ρ1 11.603 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 1347   | 2       | 2026-10-24 21:20 |
+| `pos_073_W4_DY2` | ρ1 11.603 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1112   | 0       | 2026-10-24 21:20 |
+| `pos_074_W1_QS`  | ρ1 11.702 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 421    | 0       | 2026-10-24 21:34 |
+| `pos_074_W1_DY1` | ρ1 11.702 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 417    | 0       | 2026-10-24 21:27 |
+| `pos_074_W1_DY2` | ρ1 11.702 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 373    | 0       | 2026-10-24 21:27 |
+| `pos_074_W2_QS`  | ρ1 11.702 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 501    | 0       | 2026-10-24 21:42 |
+| `pos_074_W2_DY1` | ρ1 11.702 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 503    | 0       | 2026-10-24 21:35 |
+| `pos_074_W2_DY2` | ρ1 11.702 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 476    | 0       | 2026-10-24 21:36 |
+| `pos_074_W3_QS`  | ρ1 11.702 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 958    | 0       | 2026-10-24 21:58 |
+| `pos_074_W3_DY1` | ρ1 11.702 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 927    | 0       | 2026-10-24 21:51 |
+| `pos_074_W3_DY2` | ρ1 11.702 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 882    | 0       | 2026-10-24 21:51 |
+| `pos_074_W4_QS`  | ρ1 11.702 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1160   | 0       | 2026-10-24 22:17 |
+| `pos_074_W4_DY1` | ρ1 11.702 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1249   | 0       | 2026-10-24 22:11 |
+| `pos_074_W4_DY2` | ρ1 11.702 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1115   | 0       | 2026-10-24 22:09 |
+| `pos_075_W1_QS`  | ρ1 11.800 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 398    | 0       | 2026-10-24 22:23 |
+| `pos_075_W1_DY1` | ρ1 11.800 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 402    | 0       | 2026-10-24 22:16 |
+| `pos_075_W1_DY2` | ρ1 11.800 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 352    | 0       | 2026-10-24 22:17 |
+| `pos_075_W2_QS`  | ρ1 11.800 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 507    | 0       | 2026-10-24 22:31 |
+| `pos_075_W2_DY1` | ρ1 11.800 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 510    | 0       | 2026-10-24 22:26 |
+| `pos_075_W2_DY2` | ρ1 11.800 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 483    | 0       | 2026-10-24 22:25 |
+| `pos_075_W3_QS`  | ρ1 11.800 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 888    | 0       | 2026-10-24 22:46 |
+| `pos_075_W3_DY1` | ρ1 11.800 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 911    | 0       | 2026-10-24 22:41 |
+| `pos_075_W3_DY2` | ρ1 11.800 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 829    | 0       | 2026-10-24 22:40 |
+| `pos_075_W4_QS`  | ρ1 11.800 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1254   | 0       | 2026-10-24 23:07 |
+| `pos_075_W4_DY1` | ρ1 11.800 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1234   | 0       | 2026-10-24 23:00 |
+| `pos_075_W4_DY2` | ρ1 11.800 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1159   | 0       | 2026-10-24 23:00 |
+| `pos_076_W1_QS`  | ρ1 11.899 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 401    | 0       | 2026-10-24 23:13 |
+| `pos_076_W1_DY1` | ρ1 11.899 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 390    | 0       | 2026-10-24 23:06 |
+| `pos_076_W1_DY2` | ρ1 11.899 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 377    | 0       | 2026-10-24 23:06 |
+| `pos_076_W2_QS`  | ρ1 11.899 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 11           | 695    | 10      | 2026-10-24 23:25 |
+| `pos_076_W2_DY1` | ρ1 11.899 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 530    | 0       | 2026-10-24 23:15 |
+| `pos_076_W2_DY2` | ρ1 11.899 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 467    | 0       | 2026-10-24 23:14 |
+| `pos_076_W3_QS`  | ρ1 11.899 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 869    | 0       | 2026-10-24 23:39 |
+| `pos_076_W3_DY1` | ρ1 11.899 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 883    | 0       | 2026-10-24 23:29 |
+| `pos_076_W3_DY2` | ρ1 11.899 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 799    | 0       | 2026-10-24 23:29 |
+| `pos_076_W4_QS`  | ρ1 11.899 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1225   | 0       | 2026-10-25 00:00 |
+| `pos_076_W4_DY1` | ρ1 11.899 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1218   | 0       | 2026-10-24 23:49 |
+| `pos_076_W4_DY2` | ρ1 11.899 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1100   | 0       | 2026-10-24 23:48 |
+| `pos_077_W1_QS`  | ρ1 11.997 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 9            | 534    | 0       | 2026-10-25 00:03 |
+| `pos_077_W1_DY1` | ρ1 11.997 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 406    | 0       | 2026-10-24 23:54 |
+| `pos_077_W1_DY2` | ρ1 11.997 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 379    | 0       | 2026-10-24 23:55 |
+| `pos_077_W2_QS`  | ρ1 11.997 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 8, 8, 8            | 703    | 9       | 2026-10-25 00:15 |
+| `pos_077_W2_DY1` | ρ1 11.997 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 8, 6, 6            | 569    | 0       | 2026-10-25 00:05 |
+| `pos_077_W2_DY2` | ρ1 11.997 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 523    | 4       | 2026-10-25 00:08 |
+| `pos_077_W3_QS`  | ρ1 11.997 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 892    | 0       | 2026-10-25 00:30 |
+| `pos_077_W3_DY1` | ρ1 11.997 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 887    | 0       | 2026-10-25 00:19 |
+| `pos_077_W3_DY2` | ρ1 11.997 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 792    | 0       | 2026-10-25 00:21 |
+| `pos_077_W4_QS`  | ρ1 11.997 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 11           | 1571   | 9       | 2026-10-25 00:56 |
+| `pos_077_W4_DY1` | ρ1 11.997 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 8, 11           | 1875   | 11      | 2026-10-25 00:51 |
+| `pos_077_W4_DY2` | ρ1 11.997 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1114   | 0       | 2026-10-25 00:40 |
+| `pos_078_W1_QS`  | ρ1 12.095 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 436    | 0       | 2026-10-25 00:58 |
+| `pos_078_W1_DY1` | ρ1 12.095 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 422    | 0       | 2026-10-25 00:47 |
+| `pos_078_W1_DY2` | ρ1 12.095 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 371    | 0       | 2026-10-25 00:53 |
+| `pos_078_W2_QS`  | ρ1 12.095 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 549    | 2       | 2026-10-25 01:07 |
+| `pos_078_W2_DY1` | ρ1 12.095 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 531    | 0       | 2026-10-25 01:02 |
+| `pos_078_W2_DY2` | ρ1 12.095 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 476    | 0       | 2026-10-25 01:04 |
+| `pos_078_W3_QS`  | ρ1 12.095 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 935    | 0       | 2026-10-25 01:23 |
+| `pos_078_W3_DY1` | ρ1 12.095 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 927    | 0       | 2026-10-25 01:18 |
+| `pos_078_W3_DY2` | ρ1 12.095 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 849    | 0       | 2026-10-25 01:18 |
+| `pos_078_W4_QS`  | ρ1 12.095 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 1302   | 4       | 2026-10-25 01:44 |
+| `pos_078_W4_DY1` | ρ1 12.095 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1194   | 0       | 2026-10-25 01:37 |
+| `pos_078_W4_DY2` | ρ1 12.095 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1116   | 0       | 2026-10-25 01:37 |
+| `pos_079_W1_QS`  | ρ1 12.194 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 400    | 0       | 2026-10-25 01:50 |
+| `pos_079_W1_DY1` | ρ1 12.194 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 388    | 0       | 2026-10-25 01:43 |
+| `pos_079_W1_DY2` | ρ1 12.194 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 366    | 0       | 2026-10-25 01:44 |
+| `pos_079_W2_QS`  | ρ1 12.194 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 480    | 0       | 2026-10-25 01:58 |
+| `pos_079_W2_DY1` | ρ1 12.194 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 514    | 0       | 2026-10-25 01:52 |
+| `pos_079_W2_DY2` | ρ1 12.194 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 469    | 0       | 2026-10-25 01:52 |
+| `pos_079_W3_QS`  | ρ1 12.194 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 926    | 0       | 2026-10-25 02:13 |
+| `pos_079_W3_DY1` | ρ1 12.194 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 926    | 0       | 2026-10-25 02:08 |
+| `pos_079_W3_DY2` | ρ1 12.194 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 883    | 0       | 2026-10-25 02:07 |
+| `pos_079_W4_QS`  | ρ1 12.194 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1248   | 0       | 2026-10-25 02:34 |
+| `pos_079_W4_DY1` | ρ1 12.194 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1183   | 0       | 2026-10-25 02:27 |
+| `pos_079_W4_DY2` | ρ1 12.194 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1206   | 0       | 2026-10-25 02:28 |
+| `pos_080_W1_QS`  | ρ1 12.292 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 344    | 0       | 2026-10-25 02:38 |
+| `pos_080_W1_DY1` | ρ1 12.292 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 367    | 0       | 2026-10-25 02:33 |
+| `pos_080_W1_DY2` | ρ1 12.292 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 358    | 0       | 2026-10-25 02:34 |
+| `pos_080_W2_QS`  | ρ1 12.292 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 8, 6, 6            | 568    | 2       | 2026-10-25 02:48 |
+| `pos_080_W2_DY1` | ρ1 12.292 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 472    | 0       | 2026-10-25 02:41 |
+| `pos_080_W2_DY2` | ρ1 12.292 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 457    | 0       | 2026-10-25 02:42 |
+| `pos_080_W3_QS`  | ρ1 12.292 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | -2774  | 0       | 2026-10-25 02:02 |
+| `pos_080_W3_DY1` | ρ1 12.292 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 784    | 0       | 2026-10-25 02:55 |
+| `pos_080_W3_DY2` | ρ1 12.292 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 791    | 0       | 2026-10-25 02:55 |
+| `pos_080_W4_QS`  | ρ1 12.292 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1231   | 0       | 2026-10-25 02:22 |
+| `pos_080_W4_DY1` | ρ1 12.292 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | -2444  | 0       | 2026-10-25 02:14 |
+| `pos_080_W4_DY2` | ρ1 12.292 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | -2497  | 0       | 2026-10-25 02:13 |
+| `pos_081_W1_QS`  | ρ1 12.391 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 380    | 0       | 2026-10-25 02:25 |
+| `pos_081_W1_DY1` | ρ1 12.391 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 346    | 0       | 2026-10-25 02:19 |
+| `pos_081_W1_DY2` | ρ1 12.391 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 331    | 0       | 2026-10-25 02:19 |
+| `pos_081_W2_QS`  | ρ1 12.391 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 484    | 0       | 2026-10-25 02:33 |
+| `pos_081_W2_DY1` | ρ1 12.391 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 460    | 0       | 2026-10-25 02:27 |
+| `pos_081_W2_DY2` | ρ1 12.391 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 417    | 0       | 2026-10-25 02:29 |
+| `pos_081_W3_QS`  | ρ1 12.391 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 823    | 0       | 2026-10-25 02:47 |
+| `pos_081_W3_DY1` | ρ1 12.391 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 769    | 0       | 2026-10-25 02:40 |
+| `pos_081_W3_DY2` | ρ1 12.391 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 704    | 0       | 2026-10-25 02:41 |
+| `pos_081_W4_QS`  | ρ1 12.391 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1115   | 0       | 2026-10-25 03:06 |
+| `pos_081_W4_DY1` | ρ1 12.391 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1105   | 0       | 2026-10-25 02:58 |
+| `pos_081_W4_DY2` | ρ1 12.391 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 979    | 0       | 2026-10-25 02:57 |
+| `pos_082_W1_QS`  | ρ1 12.489 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 357    | 0       | 2026-10-25 03:09 |
+| `pos_082_W1_DY1` | ρ1 12.489 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 346    | 0       | 2026-10-25 03:03 |
+| `pos_082_W1_DY2` | ρ1 12.489 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 318    | 0       | 2026-10-25 03:03 |
+| `pos_082_W2_QS`  | ρ1 12.489 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 471    | 0       | 2026-10-25 03:17 |
+| `pos_082_W2_DY1` | ρ1 12.489 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 480    | 0       | 2026-10-25 03:11 |
+| `pos_082_W2_DY2` | ρ1 12.489 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 435    | 0       | 2026-10-25 03:13 |
+| `pos_082_W3_QS`  | ρ1 12.489 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 824    | 0       | 2026-10-25 03:30 |
+| `pos_082_W3_DY1` | ρ1 12.489 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 897    | 0       | 2026-10-25 03:26 |
+| `pos_082_W3_DY2` | ρ1 12.489 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 726    | 0       | 2026-10-25 03:25 |
+| `pos_082_W4_QS`  | ρ1 12.489 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1154   | 0       | 2026-10-25 03:50 |
+| `pos_082_W4_DY1` | ρ1 12.489 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1219   | 0       | 2026-10-25 03:45 |
+| `pos_082_W4_DY2` | ρ1 12.489 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1118   | 0       | 2026-10-25 03:45 |
+| `pos_083_W1_QS`  | ρ1 12.587 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 391    | 0       | 2026-10-25 03:56 |
+| `pos_083_W1_DY1` | ρ1 12.587 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 353    | 0       | 2026-10-25 03:51 |
+| `pos_083_W1_DY2` | ρ1 12.587 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 327    | 0       | 2026-10-25 03:51 |
+| `pos_083_W2_QS`  | ρ1 12.587 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 497    | 0       | 2026-10-25 04:05 |
+| `pos_083_W2_DY1` | ρ1 12.587 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 515    | 0       | 2026-10-25 03:59 |
+| `pos_083_W2_DY2` | ρ1 12.587 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 459    | 0       | 2026-10-25 03:59 |
+| `pos_083_W3_QS`  | ρ1 12.587 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 849    | 0       | 2026-10-25 04:19 |
+| `pos_083_W3_DY1` | ρ1 12.587 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 842    | 0       | 2026-10-25 04:13 |
+| `pos_083_W3_DY2` | ρ1 12.587 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 734    | 0       | 2026-10-25 04:12 |
+| `pos_083_W4_QS`  | ρ1 12.587 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1167   | 0       | 2026-10-25 04:38 |
+| `pos_083_W4_DY1` | ρ1 12.587 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1223   | 0       | 2026-10-25 04:32 |
+| `pos_083_W4_DY2` | ρ1 12.587 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1118   | 0       | 2026-10-25 04:31 |
+| `pos_084_W1_QS`  | ρ1 12.686 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 384    | 0       | 2026-10-25 04:44 |
+| `pos_084_W1_DY1` | ρ1 12.686 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 380    | 0       | 2026-10-25 04:38 |
+| `pos_084_W1_DY2` | ρ1 12.686 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 336    | 0       | 2026-10-25 04:38 |
+| `pos_084_W2_QS`  | ρ1 12.686 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 474    | 0       | 2026-10-25 04:52 |
+| `pos_084_W2_DY1` | ρ1 12.686 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 482    | 0       | 2026-10-25 04:46 |
+| `pos_084_W2_DY2` | ρ1 12.686 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 432    | 0       | 2026-10-25 04:45 |
+| `pos_084_W3_QS`  | ρ1 12.686 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 841    | 0       | 2026-10-25 05:06 |
+| `pos_084_W3_DY1` | ρ1 12.686 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 834    | 0       | 2026-10-25 04:59 |
+| `pos_084_W3_DY2` | ρ1 12.686 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 701    | 0       | 2026-10-25 04:57 |
+| `pos_084_W4_QS`  | ρ1 12.686 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1121   | 0       | 2026-10-25 05:25 |
+| `pos_084_W4_DY1` | ρ1 12.686 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1121   | 0       | 2026-10-25 05:16 |
+| `pos_084_W4_DY2` | ρ1 12.686 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1046   | 0       | 2026-10-25 05:17 |
+| `pos_085_W1_QS`  | ρ1 12.784 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 378    | 0       | 2026-10-25 05:28 |
+| `pos_085_W1_DY1` | ρ1 12.784 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 365    | 0       | 2026-10-25 05:22 |
+| `pos_085_W1_DY2` | ρ1 12.784 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 328    | 0       | 2026-10-25 05:22 |
+| `pos_085_W2_QS`  | ρ1 12.784 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 484    | 0       | 2026-10-25 05:36 |
+| `pos_085_W2_DY1` | ρ1 12.784 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 488    | 0       | 2026-10-25 05:30 |
+| `pos_085_W2_DY2` | ρ1 12.784 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 466    | 0       | 2026-10-25 05:32 |
+| `pos_085_W3_QS`  | ρ1 12.784 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 905    | 0       | 2026-10-25 05:52 |
+| `pos_085_W3_DY1` | ρ1 12.784 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 896    | 0       | 2026-10-25 05:45 |
+| `pos_085_W3_DY2` | ρ1 12.784 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 830    | 0       | 2026-10-25 05:46 |
+| `pos_085_W4_QS`  | ρ1 12.784 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1160   | 0       | 2026-10-25 06:11 |
+| `pos_085_W4_DY1` | ρ1 12.784 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1206   | 0       | 2026-10-25 06:05 |
+| `pos_085_W4_DY2` | ρ1 12.784 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1143   | 0       | 2026-10-25 06:05 |
+| `pos_086_W1_QS`  | ρ1 12.883 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 377    | 0       | 2026-10-25 06:17 |
+| `pos_086_W1_DY1` | ρ1 12.883 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 349    | 0       | 2026-10-25 06:11 |
+| `pos_086_W1_DY2` | ρ1 12.883 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 326    | 0       | 2026-10-25 06:11 |
+| `pos_086_W2_QS`  | ρ1 12.883 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 454    | 0       | 2026-10-25 06:25 |
+| `pos_086_W2_DY1` | ρ1 12.883 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 473    | 0       | 2026-10-25 06:19 |
+| `pos_086_W2_DY2` | ρ1 12.883 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 451    | 0       | 2026-10-25 06:19 |
+| `pos_086_W3_QS`  | ρ1 12.883 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 844    | 0       | 2026-10-25 06:39 |
+| `pos_086_W3_DY1` | ρ1 12.883 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 861    | 0       | 2026-10-25 06:33 |
+| `pos_086_W3_DY2` | ρ1 12.883 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 762    | 0       | 2026-10-25 06:31 |
+| `pos_086_W4_QS`  | ρ1 12.883 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1118   | 0       | 2026-10-25 06:57 |
+| `pos_086_W4_DY1` | ρ1 12.883 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1142   | 0       | 2026-10-25 06:50 |
+| `pos_086_W4_DY2` | ρ1 12.883 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1100   | 0       | 2026-10-25 06:51 |
+| `pos_087_W1_QS`  | ρ1 12.981 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 416    | 0       | 2026-10-25 07:04 |
+| `pos_087_W1_DY1` | ρ1 12.981 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 387    | 0       | 2026-10-25 06:57 |
+| `pos_087_W1_DY2` | ρ1 12.981 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 353    | 0       | 2026-10-25 06:57 |
+| `pos_087_W2_QS`  | ρ1 12.981 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 450    | 0       | 2026-10-25 07:11 |
+| `pos_087_W2_DY1` | ρ1 12.981 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 480    | 0       | 2026-10-25 07:05 |
+| `pos_087_W2_DY2` | ρ1 12.981 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 429    | 0       | 2026-10-25 07:04 |
+| `pos_087_W3_QS`  | ρ1 12.981 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 872    | 0       | 2026-10-25 07:26 |
+| `pos_087_W3_DY1` | ρ1 12.981 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 874    | 0       | 2026-10-25 07:19 |
+| `pos_087_W3_DY2` | ρ1 12.981 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 803    | 0       | 2026-10-25 07:19 |
+| `pos_087_W4_QS`  | ρ1 12.981 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1095   | 0       | 2026-10-25 07:44 |
+| `pos_087_W4_DY1` | ρ1 12.981 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1105   | 0       | 2026-10-25 07:37 |
+| `pos_087_W4_DY2` | ρ1 12.981 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1130   | 0       | 2026-10-25 07:38 |
+| `pos_088_W1_QS`  | ρ1 13.079 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 395    | 0       | 2026-10-25 07:50 |
+| `pos_088_W1_DY1` | ρ1 13.079 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 386    | 0       | 2026-10-25 07:43 |
+| `pos_088_W1_DY2` | ρ1 13.079 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 361    | 0       | 2026-10-25 07:44 |
+| `pos_088_W2_QS`  | ρ1 13.079 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 436    | 0       | 2026-10-25 07:57 |
+| `pos_088_W2_DY1` | ρ1 13.079 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 437    | 0       | 2026-10-25 07:51 |
+| `pos_088_W2_DY2` | ρ1 13.079 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 424    | 0       | 2026-10-25 07:51 |
+| `pos_088_W3_QS`  | ρ1 13.079 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 853    | 0       | 2026-10-25 08:11 |
+| `pos_088_W3_DY1` | ρ1 13.079 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 859    | 0       | 2026-10-25 08:05 |
+| `pos_088_W3_DY2` | ρ1 13.079 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 793    | 0       | 2026-10-25 08:04 |
+| `pos_088_W4_QS`  | ρ1 13.079 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1093   | 0       | 2026-10-25 08:30 |
+| `pos_088_W4_DY1` | ρ1 13.079 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1058   | 0       | 2026-10-25 08:22 |
+| `pos_088_W4_DY2` | ρ1 13.079 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1039   | 0       | 2026-10-25 08:23 |
+| `pos_089_W1_QS`  | ρ1 13.178 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 396    | 0       | 2026-10-25 08:35 |
+| `pos_089_W1_DY1` | ρ1 13.178 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 391    | 0       | 2026-10-25 08:29 |
+| `pos_089_W1_DY2` | ρ1 13.178 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 363    | 0       | 2026-10-25 08:29 |
+| `pos_089_W2_QS`  | ρ1 13.178 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 427    | 0       | 2026-10-25 08:42 |
+| `pos_089_W2_DY1` | ρ1 13.178 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 423    | 0       | 2026-10-25 08:36 |
+| `pos_089_W2_DY2` | ρ1 13.178 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 412    | 0       | 2026-10-25 08:37 |
+| `pos_089_W3_QS`  | ρ1 13.178 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 818    | 0       | 2026-10-25 08:56 |
+| `pos_089_W3_DY1` | ρ1 13.178 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 818    | 0       | 2026-10-25 08:49 |
+| `pos_089_W3_DY2` | ρ1 13.178 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 787    | 0       | 2026-10-25 08:50 |
+| `pos_089_W4_QS`  | ρ1 13.178 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1109   | 0       | 2026-10-25 09:14 |
+| `pos_089_W4_DY1` | ρ1 13.178 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1094   | 0       | 2026-10-25 09:08 |
+| `pos_089_W4_DY2` | ρ1 13.178 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1043   | 0       | 2026-10-25 09:07 |
+| `pos_090_W1_QS`  | ρ1 13.276 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 387    | 0       | 2026-10-25 09:20 |
+| `pos_090_W1_DY1` | ρ1 13.276 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 387    | 0       | 2026-10-25 09:13 |
+| `pos_090_W1_DY2` | ρ1 13.276 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 354    | 0       | 2026-10-25 09:14 |
+| `pos_090_W2_QS`  | ρ1 13.276 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 494    | 0       | 2026-10-25 09:28 |
+| `pos_090_W2_DY1` | ρ1 13.276 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 492    | 0       | 2026-10-25 09:22 |
+| `pos_090_W2_DY2` | ρ1 13.276 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 466    | 0       | 2026-10-25 09:22 |
+| `pos_090_W3_QS`  | ρ1 13.276 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 883    | 0       | 2026-10-25 09:43 |
+| `pos_090_W3_DY1` | ρ1 13.276 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 874    | 0       | 2026-10-25 09:36 |
+| `pos_090_W3_DY2` | ρ1 13.276 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 868    | 0       | 2026-10-25 09:37 |
+| `pos_090_W4_QS`  | ρ1 13.276 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1152   | 0       | 2026-10-25 10:02 |
+| `pos_090_W4_DY1` | ρ1 13.276 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1189   | 0       | 2026-10-25 09:56 |
+| `pos_090_W4_DY2` | ρ1 13.276 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1097   | 0       | 2026-10-25 09:55 |
+| `pos_091_W1_QS`  | ρ1 13.375 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 408    | 0       | 2026-10-25 10:08 |
+| `pos_091_W1_DY1` | ρ1 13.375 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 376    | 0       | 2026-10-25 10:01 |
+| `pos_091_W1_DY2` | ρ1 13.375 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 344    | 0       | 2026-10-25 10:02 |
+| `pos_091_W2_QS`  | ρ1 13.375 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 479    | 0       | 2026-10-25 10:16 |
+| `pos_091_W2_DY1` | ρ1 13.375 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 507    | 0       | 2026-10-25 10:10 |
+| `pos_091_W2_DY2` | ρ1 13.375 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 464    | 0       | 2026-10-25 10:10 |
+| `pos_091_W3_QS`  | ρ1 13.375 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 868    | 0       | 2026-10-25 10:30 |
+| `pos_091_W3_DY1` | ρ1 13.375 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 845    | 0       | 2026-10-25 10:24 |
+| `pos_091_W3_DY2` | ρ1 13.375 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 788    | 0       | 2026-10-25 10:24 |
+| `pos_091_W4_QS`  | ρ1 13.375 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1161   | 0       | 2026-10-25 10:50 |
+| `pos_091_W4_DY1` | ρ1 13.375 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1176   | 0       | 2026-10-25 10:43 |
+| `pos_091_W4_DY2` | ρ1 13.375 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1092   | 0       | 2026-10-25 10:42 |
+| `pos_092_W1_QS`  | ρ1 13.473 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 402    | 0       | 2026-10-25 10:55 |
+| `pos_092_W1_DY1` | ρ1 13.473 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 382    | 0       | 2026-10-25 10:48 |
+| `pos_092_W1_DY2` | ρ1 13.473 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 368    | 0       | 2026-10-25 10:49 |
+| `pos_092_W2_QS`  | ρ1 13.473 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 496    | 0       | 2026-10-25 11:03 |
+| `pos_092_W2_DY1` | ρ1 13.473 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 514    | 0       | 2026-10-25 10:58 |
+| `pos_092_W2_DY2` | ρ1 13.473 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 461    | 0       | 2026-10-25 10:57 |
+| `pos_092_W3_QS`  | ρ1 13.473 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 905    | 0       | 2026-10-25 11:18 |
+| `pos_092_W3_DY1` | ρ1 13.473 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 878    | 0       | 2026-10-25 11:12 |
+| `pos_092_W3_DY2` | ρ1 13.473 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 831    | 0       | 2026-10-25 11:12 |
+| `pos_092_W4_QS`  | ρ1 13.473 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1185   | 0       | 2026-10-25 11:38 |
+| `pos_092_W4_DY1` | ρ1 13.473 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1199   | 0       | 2026-10-25 11:32 |
+| `pos_092_W4_DY2` | ρ1 13.473 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1107   | 0       | 2026-10-25 11:31 |
+| `pos_093_W1_QS`  | ρ1 13.571 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 436    | 0       | 2026-10-25 11:45 |
+| `pos_093_W1_DY1` | ρ1 13.571 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 419    | 0       | 2026-10-25 11:38 |
+| `pos_093_W1_DY2` | ρ1 13.571 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 387    | 0       | 2026-10-25 11:38 |
+| `pos_093_W2_QS`  | ρ1 13.571 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 469    | 0       | 2026-10-25 11:53 |
+| `pos_093_W2_DY1` | ρ1 13.571 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 497    | 0       | 2026-10-25 11:46 |
+| `pos_093_W2_DY2` | ρ1 13.571 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 459    | 0       | 2026-10-25 11:46 |
+| `pos_093_W3_QS`  | ρ1 13.571 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 897    | 0       | 2026-10-25 12:08 |
+| `pos_093_W3_DY1` | ρ1 13.571 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 925    | 0       | 2026-10-25 12:01 |
+| `pos_093_W3_DY2` | ρ1 13.571 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 879    | 0       | 2026-10-25 12:01 |
+| `pos_093_W4_QS`  | ρ1 13.571 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1153   | 0       | 2026-10-25 12:27 |
+| `pos_093_W4_DY1` | ρ1 13.571 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1140   | 0       | 2026-10-25 12:20 |
+| `pos_093_W4_DY2` | ρ1 13.571 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1132   | 0       | 2026-10-25 12:20 |
+| `pos_094_W1_QS`  | ρ1 13.670 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 412    | 0       | 2026-10-25 12:34 |
+| `pos_094_W1_DY1` | ρ1 13.670 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 423    | 0       | 2026-10-25 12:27 |
+| `pos_094_W1_DY2` | ρ1 13.670 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 406    | 0       | 2026-10-25 12:27 |
+| `pos_094_W2_QS`  | ρ1 13.670 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 461    | 0       | 2026-10-25 12:41 |
+| `pos_094_W2_DY1` | ρ1 13.670 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 479    | 0       | 2026-10-25 12:35 |
+| `pos_094_W2_DY2` | ρ1 13.670 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 490    | 0       | 2026-10-25 12:35 |
+| `pos_094_W3_QS`  | ρ1 13.670 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 908    | 0       | 2026-10-25 12:56 |
+| `pos_094_W3_DY1` | ρ1 13.670 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 891    | 0       | 2026-10-25 12:50 |
+| `pos_094_W3_DY2` | ρ1 13.670 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 863    | 0       | 2026-10-25 12:50 |
+| `pos_094_W4_QS`  | ρ1 13.670 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1122   | 0       | 2026-10-25 13:15 |
+| `pos_094_W4_DY1` | ρ1 13.670 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1126   | 0       | 2026-10-25 13:08 |
+| `pos_094_W4_DY2` | ρ1 13.670 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1194   | 0       | 2026-10-25 13:10 |
+| `pos_095_W1_QS`  | ρ1 13.768 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 422    | 0       | 2026-10-25 13:22 |
+| `pos_095_W1_DY1` | ρ1 13.768 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 414    | 0       | 2026-10-25 13:15 |
+| `pos_095_W1_DY2` | ρ1 13.768 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 409    | 0       | 2026-10-25 13:16 |
+| `pos_095_W2_QS`  | ρ1 13.768 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 472    | 0       | 2026-10-25 13:30 |
+| `pos_095_W2_DY1` | ρ1 13.768 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 507    | 0       | 2026-10-25 13:24 |
+| `pos_095_W2_DY2` | ρ1 13.768 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 467    | 0       | 2026-10-25 13:24 |
+| `pos_095_W3_QS`  | ρ1 13.768 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 887    | 0       | 2026-10-25 13:45 |
+| `pos_095_W3_DY1` | ρ1 13.768 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 866    | 0       | 2026-10-25 13:38 |
+| `pos_095_W3_DY2` | ρ1 13.768 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 856    | 0       | 2026-10-25 13:39 |
+| `pos_095_W4_QS`  | ρ1 13.768 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1155   | 0       | 2026-10-25 14:04 |
+| `pos_095_W4_DY1` | ρ1 13.768 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1143   | 0       | 2026-10-25 13:57 |
+| `pos_095_W4_DY2` | ρ1 13.768 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1131   | 0       | 2026-10-25 13:57 |
+| `pos_096_W1_QS`  | ρ1 13.867 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 447    | 0       | 2026-10-25 14:12 |
+| `pos_096_W1_DY1` | ρ1 13.867 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 422    | 0       | 2026-10-25 14:04 |
+| `pos_096_W1_DY2` | ρ1 13.867 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 419    | 0       | 2026-10-25 14:04 |
+| `pos_096_W2_QS`  | ρ1 13.867 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 486    | 0       | 2026-10-25 14:20 |
+| `pos_096_W2_DY1` | ρ1 13.867 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 493    | 0       | 2026-10-25 14:12 |
+| `pos_096_W2_DY2` | ρ1 13.867 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 491    | 0       | 2026-10-25 14:13 |
+| `pos_096_W3_QS`  | ρ1 13.867 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 870    | 0       | 2026-10-25 14:34 |
+| `pos_096_W3_DY1` | ρ1 13.867 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 878    | 0       | 2026-10-25 14:27 |
+| `pos_096_W3_DY2` | ρ1 13.867 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 854    | 0       | 2026-10-25 14:27 |
+| `pos_096_W4_QS`  | ρ1 13.867 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1124   | 0       | 2026-10-25 14:53 |
+| `pos_096_W4_DY1` | ρ1 13.867 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1132   | 0       | 2026-10-25 14:46 |
+| `pos_096_W4_DY2` | ρ1 13.867 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1074   | 0       | 2026-10-25 14:45 |
+| `pos_097_W1_QS`  | ρ1 13.965 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 422    | 0       | 2026-10-25 14:59 |
+| `pos_097_W1_DY1` | ρ1 13.965 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 405    | 0       | 2026-10-25 14:52 |
+| `pos_097_W1_DY2` | ρ1 13.965 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 373    | 0       | 2026-10-25 14:52 |
+| `pos_097_W2_QS`  | ρ1 13.965 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 474    | 0       | 2026-10-25 15:07 |
+| `pos_097_W2_DY1` | ρ1 13.965 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 479    | 0       | 2026-10-25 15:00 |
+| `pos_097_W2_DY2` | ρ1 13.965 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 442    | 0       | 2026-10-25 15:00 |
+| `pos_097_W3_QS`  | ρ1 13.965 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 881    | 0       | 2026-10-25 15:21 |
+| `pos_097_W3_DY1` | ρ1 13.965 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 930    | 0       | 2026-10-25 15:15 |
+| `pos_097_W3_DY2` | ρ1 13.965 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 868    | 0       | 2026-10-25 15:15 |
+| `pos_097_W4_QS`  | ρ1 13.965 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1128   | 0       | 2026-10-25 15:40 |
+| `pos_097_W4_DY1` | ρ1 13.965 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1178   | 0       | 2026-10-25 15:34 |
+| `pos_097_W4_DY2` | ρ1 13.965 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1139   | 0       | 2026-10-25 15:34 |
+| `pos_098_W1_QS`  | ρ1 14.063 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 397    | 0       | 2026-10-25 15:46 |
+| `pos_098_W1_DY1` | ρ1 14.063 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 348    | 0       | 2026-10-25 15:40 |
+| `pos_098_W1_DY2` | ρ1 14.063 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 330    | 0       | 2026-10-25 15:40 |
+| `pos_098_W2_QS`  | ρ1 14.063 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 458    | 0       | 2026-10-25 15:54 |
+| `pos_098_W2_DY1` | ρ1 14.063 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 486    | 0       | 2026-10-25 15:48 |
+| `pos_098_W2_DY2` | ρ1 14.063 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 459    | 0       | 2026-10-25 15:48 |
+| `pos_098_W3_QS`  | ρ1 14.063 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 812    | 0       | 2026-10-25 16:08 |
+| `pos_098_W3_DY1` | ρ1 14.063 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 841    | 0       | 2026-10-25 16:02 |
+| `pos_098_W3_DY2` | ρ1 14.063 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 805    | 0       | 2026-10-25 16:02 |
+| `pos_098_W4_QS`  | ρ1 14.063 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1131   | 0       | 2026-10-25 16:27 |
+| `pos_098_W4_DY1` | ρ1 14.063 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1151   | 0       | 2026-10-25 16:21 |
+| `pos_098_W4_DY2` | ρ1 14.063 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1093   | 0       | 2026-10-25 16:20 |
+| `pos_099_W1_QS`  | ρ1 14.162 | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 390    | 0       | 2026-10-25 16:33 |
+| `pos_099_W1_DY1` | ρ1 14.162 | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 375    | 0       | 2026-10-25 16:26 |
+| `pos_099_W1_DY2` | ρ1 14.162 | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 393    | 0       | 2026-10-25 16:27 |
+| `pos_099_W2_QS`  | ρ1 14.162 | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 9, 6, 6            | 549    | 0       | 2026-10-25 16:42 |
+| `pos_099_W2_DY1` | ρ1 14.162 | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 484    | 0       | 2026-10-25 16:35 |
+| `pos_099_W2_DY2` | ρ1 14.162 | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 439    | 0       | 2026-10-25 16:35 |
+| `pos_099_W3_QS`  | ρ1 14.162 | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 907    | 0       | 2026-10-25 16:57 |
+| `pos_099_W3_DY1` | ρ1 14.162 | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 894    | 0       | 2026-10-25 16:49 |
+| `pos_099_W3_DY2` | ρ1 14.162 | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 843    | 0       | 2026-10-25 16:49 |
+| `pos_099_W4_QS`  | ρ1 14.162 | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1106   | 0       | 2026-10-25 17:16 |
+| `pos_099_W4_DY1` | ρ1 14.162 | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1129   | 0       | 2026-10-25 17:08 |
+| `pos_099_W4_DY2` | ρ1 14.162 | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1087   | 0       | 2026-10-25 17:08 |
 
-**Dehnrate im Betrieb (E4, k_slopes.py im Scratchpad):** Eingriffslinie 7,7 m/s bei 3000 1/min, Teilung 0,385 ms, Anstieg über ≈ 3,2 mm = 0,42 ms; W1 QS 2,6 bis 3,8 % → 62 bis 91 1/s (DY2-Modul 44 bis 70; 2250 1/min × 0,75). Neigungen k der Bruchlinie über der Spannung je Verfahren (Taschen-Pilot A bis E): W1 8,0 / W2 11,8 / W3 7,7 / W4 10,0 (QS), DY1 8,0 / 13,2 / 8,0 / 10,4, DY2 6,4 / 12,0 / 6,6 / 10,6; VDI 2736 4,30; RIKOR 5,75.
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei            | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|------------------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_001_W1_QS`  | LOAD_16NM | +0.45 %  | 80.8       | 73.2           | T5 RIGHT, r 25.90, z +0.0 | 65.6       | T4_T5, r 24.85, z +0.0, Tangente 37° | -67.2      | T4_T5      | 97.4    | T4   |
+| `pos_001_W1_DY1` | LOAD_16NM | +0.52 %  | 73.9       | 76.3           | T5 RIGHT, r 25.90, z +0.0 | 66.3       | T3_T4, r 24.82, z +0.0, Tangente 45° | -68.7      | T4_T5      | 89.4    | T4   |
+| `pos_001_W1_DY2` | LOAD_16NM | +0.70 %  | 55.2       | 89.7           | T5 RIGHT, r 26.00, z +0.0 | 70.6       | T3_T4, r 24.82, z +0.0, Tangente 45° | -74.2      | T4_T5      | 67.9    | T4   |
+| `pos_001_W2_QS`  | LOAD_16NM | +0.31 %  | 97.6       | 57.7           | T5 RIGHT, r 25.80, z +0.0 | 46.9       | T3_T4, r 24.78, z +0.0, Tangente 59° | -51.2      | T4_T5      | 115.9   | T4   |
+| `pos_001_W2_DY1` | LOAD_16NM | +0.39 %  | 89.2       | 59.8           | T5 RIGHT, r 26.00, z +0.0 | 48.1       | T3_T4, r 24.78, z +0.0, Tangente 59° | -52.6      | T4_T5      | 106.3   | T4   |
+| `pos_001_W2_DY2` | LOAD_16NM | +0.65 %  | 61.4       | 72.8           | T5 RIGHT, r 26.00, z +0.0 | 52.4       | T3_T4, r 24.79, z +0.0, Tangente 54° | -57.6      | T4_T5      | 74.4    | T4   |
+| `pos_001_W3_QS`  | LOAD_16NM | +0.41 %  | 81.8       | 72.6           | T5 RIGHT, r 25.90, z -7.5 | 70.4       | T3_T4, r 24.78, z +4.4, Tangente 59° | -77.2      | T4_T5      | 96.9    | T4   |
+| `pos_001_W3_DY1` | LOAD_16NM | +0.44 %  | 75.7       | 76.9           | T5 RIGHT, r 25.90, z -7.5 | 73.6       | T3_T4, r 24.77, z +5.1, Tangente 64° | -80.6      | T4_T5      | 89.9    | T4   |
+| `pos_001_W3_DY2` | LOAD_16NM | +0.66 %  | 56.3       | 84.8           | T5 RIGHT, r 25.90, z -7.5 | 76.8       | T3_T4, r 24.84, z +5.1, Tangente 41° | -85.3      | T4_T5      | 68.4    | T4   |
+| `pos_001_W4_QS`  | LOAD_16NM | +0.29 %  | 95.2       | 57.4           | T5 RIGHT, r 25.80, z +0.7 | 58.6       | T3_T4, r 24.77, z +5.1, Tangente 64° | -58.6      | T4_T5      | 110.8   | T4   |
+| `pos_001_W4_DY1` | LOAD_16NM | +0.35 %  | 87.7       | 58.4           | T5 RIGHT, r 26.00, z +0.0 | 62.4       | T3_T4, r 24.77, z +5.1, Tangente 64° | -61.9      | T4_T5      | 102.6   | T4   |
+| `pos_001_W4_DY2` | LOAD_16NM | +0.57 %  | 60.7       | 71.2           | T5 RIGHT, r 25.90, z -7.5 | 66.0       | T3_T4, r 24.77, z +5.1, Tangente 64° | -67.4      | T4_T5      | 73.0    | T4   |
+| `pos_002_W1_QS`  | LOAD_16NM | +0.54 %  | 81.0       | 71.4           | T5 RIGHT, r 25.90, z +0.0 | 66.1       | T3_T4, r 24.82, z +0.0, Tangente 45° | -68.6      | T4_T5      | 97.9    | T4   |
+| `pos_002_W1_DY1` | LOAD_16NM | +0.59 %  | 74.1       | 74.2           | T5 RIGHT, r 25.90, z +0.0 | 67.3       | T3_T4, r 24.82, z +0.0, Tangente 45° | -70.1      | T4_T5      | 89.9    | T4   |
+| `pos_002_W1_DY2` | LOAD_16NM | +0.78 %  | 55.8       | 85.8           | T5 RIGHT, r 25.90, z +0.0 | 72.4       | T3_T4, r 24.82, z +0.0, Tangente 45° | -76.8      | T4_T5      | 68.7    | T4   |
+| `pos_002_W2_QS`  | LOAD_16NM | +0.44 %  | 97.3       | 59.2           | T5 RIGHT, r 25.80, z +0.0 | 47.2       | T3_T4, r 24.78, z +0.0, Tangente 59° | -51.6      | T4_T5      | 116.2   | T4   |
+| `pos_002_W2_DY1` | LOAD_16NM | +0.49 %  | 88.8       | 59.6           | T5 RIGHT, r 25.80, z +0.0 | 48.5       | T3_T4, r 24.78, z +0.0, Tangente 59° | -53.1      | T4_T5      | 106.4   | T4   |
+| `pos_002_W2_DY2` | LOAD_16NM | +0.72 %  | 61.3       | 67.9           | T5 RIGHT, r 25.90, z +0.0 | 52.9       | T3_T4, r 24.79, z +0.0, Tangente 54° | -58.3      | T4_T5      | 74.8    | T4   |
+| `pos_002_W3_QS`  | LOAD_16NM | +0.51 %  | 81.9       | 71.6           | T5 RIGHT, r 25.90, z -7.5 | 71.3       | T3_T4, r 24.78, z +4.4, Tangente 59° | -78.6      | T4_T5      | 96.9    | T4   |
+| `pos_002_W3_DY1` | LOAD_16NM | +0.57 %  | 75.9       | 75.9           | T5 RIGHT, r 25.90, z -7.5 | 74.6       | T3_T4, r 24.77, z +5.1, Tangente 64° | -82.1      | T4_T5      | 89.7    | T4   |
+| `pos_002_W3_DY2` | LOAD_16NM | +0.74 %  | 56.6       | 86.0           | T5 RIGHT, r 25.90, z -7.5 | 78.3       | T3_T4, r 24.84, z +5.1, Tangente 41° | -87.5      | T4_T5      | 68.3    | T4   |
+| `pos_002_W4_QS`  | LOAD_16NM | +0.46 %  | 95.2       | 58.8           | T5 RIGHT, r 25.80, z +0.7 | 59.0       | T3_T4, r 24.77, z +5.1, Tangente 64° | -59.1      | T4_T5      | 111.6   | T4   |
+| `pos_002_W4_DY1` | LOAD_16NM | +0.49 %  | 87.5       | 58.8           | T5 RIGHT, r 25.80, z +0.7 | 62.9       | T3_T4, r 24.77, z +5.1, Tangente 64° | -62.5      | T4_T5      | 102.6   | T4   |
+| `pos_002_W4_DY2` | LOAD_16NM | +0.70 %  | 60.7       | 70.4           | T5 RIGHT, r 25.90, z -7.5 | 66.9       | T3_T4, r 24.77, z +5.1, Tangente 64° | -68.3      | T4_T5      | 72.6    | T4   |
+| `pos_003_W1_QS`  | LOAD_16NM | +0.62 %  | 81.2       | 70.5           | T5 RIGHT, r 25.90, z +0.0 | 67.2       | T3_T4, r 24.82, z +0.0, Tangente 45° | -70.2      | T4_T5      | 98.6    | T4   |
+| `pos_003_W1_DY1` | LOAD_16NM | +0.64 %  | 74.3       | 73.3           | T5 RIGHT, r 25.90, z +0.0 | 68.3       | T3_T4, r 24.82, z +0.0, Tangente 45° | -71.8      | T4_T5      | 90.6    | T4   |
+| `pos_003_W1_DY2` | LOAD_16NM | +0.74 %  | 56.3       | 84.7           | T5 RIGHT, r 25.90, z +0.0 | 73.7       | T3_T4, r 24.82, z +0.0, Tangente 45° | -78.9      | T4_T5      | 69.4    | T4   |
+| `pos_003_W2_QS`  | LOAD_16NM | +0.67 %  | 97.7       | 61.8           | T5 RIGHT, r 25.70, z +0.0 | 47.7       | T3_T4, r 24.78, z +0.0, Tangente 59° | -52.2      | T4_T5      | 117.1   | T4   |
+| `pos_003_W2_DY1` | LOAD_16NM | +0.68 %  | 89.2       | 61.8           | T5 RIGHT, r 25.80, z +0.0 | 48.9       | T3_T4, r 24.78, z +0.0, Tangente 59° | -53.6      | T4_T5      | 107.3   | T4   |
+| `pos_003_W2_DY2` | LOAD_16NM | +0.77 %  | 61.7       | 67.6           | T5 RIGHT, r 25.90, z +0.0 | 53.4       | T3_T4, r 24.79, z +0.0, Tangente 54° | -59.0      | T4_T5      | 75.2    | T4   |
+| `pos_003_W3_QS`  | LOAD_16NM | +0.65 %  | 82.3       | 73.1           | T5 RIGHT, r 25.90, z -7.5 | 72.0       | T3_T4, r 24.78, z +4.4, Tangente 59° | -79.9      | T4_T5      | 97.5    | T4   |
+| `pos_003_W3_DY1` | LOAD_16NM | +0.66 %  | 76.2       | 76.6           | T5 RIGHT, r 25.90, z -7.5 | 75.3       | T3_T4, r 24.77, z +5.1, Tangente 64° | -83.4      | T4_T5      | 90.1    | T4   |
+| `pos_003_W3_DY2` | LOAD_16NM | +0.76 %  | 57.1       | 85.5           | T5 RIGHT, r 25.90, z -7.5 | 79.4       | T3_T4, r 24.84, z +5.1, Tangente 41° | -89.1      | T4_T5      | 68.6    | T4   |
+| `pos_003_W4_QS`  | LOAD_16NM | +0.70 %  | 95.5       | 60.5           | T5 RIGHT, r 25.80, z +0.0 | 59.3       | T3_T4, r 24.77, z +5.1, Tangente 64° | -59.8      | T4_T5      | 112.2   | T4   |
+| `pos_003_W4_DY1` | LOAD_16NM | +0.72 %  | 88.0       | 60.7           | T5 RIGHT, r 25.80, z +0.0 | 63.3       | T3_T4, r 24.77, z +5.1, Tangente 64° | -63.3      | T4_T5      | 103.4   | T4   |
+| `pos_003_W4_DY2` | LOAD_16NM | +0.77 %  | 61.1       | 70.5           | T5 RIGHT, r 25.90, z -7.5 | 67.5       | T3_T4, r 24.77, z +5.1, Tangente 64° | -69.3      | T4_T5      | 72.9    | T4   |
+| `pos_004_W1_QS`  | LOAD_16NM | +0.89 %  | 82.3       | 81.3           | T5 RIGHT, r 25.80, z -6.7 | 68.8       | T3_T4, r 24.82, z +0.0, Tangente 45° | -72.4      | T4_T5      | 100.4   | T4   |
+| `pos_004_W1_DY1` | LOAD_16NM | +0.86 %  | 75.3       | 80.0           | T5 RIGHT, r 25.80, z -6.7 | 70.0       | T3_T4, r 24.82, z +0.0, Tangente 45° | -74.1      | T4_T5      | 92.2    | T4   |
+| `pos_004_W1_DY2` | LOAD_16NM | +0.79 %  | 57.1       | 84.9           | T5 RIGHT, r 25.90, z +0.0 | 75.7       | T3_T4, r 24.82, z +0.0, Tangente 45° | -81.8      | T4_T5      | 70.8    | T4   |
+| `pos_004_W2_QS`  | LOAD_16NM | +1.02 %  | 98.7       | 66.9           | T5 RIGHT, r 25.80, z -5.9 | 48.3       | T3_T4, r 24.78, z +0.0, Tangente 59° | -53.1      | T4_T5      | 118.9   | T4   |
+| `pos_004_W2_DY1` | LOAD_16NM | +1.00 %  | 90.2       | 67.0           | T5 RIGHT, r 25.80, z -5.9 | 49.7       | T3_T4, r 24.78, z +0.0, Tangente 59° | -54.6      | T4_T5      | 109.0   | T4   |
+| `pos_004_W2_DY2` | LOAD_16NM | +0.90 %  | 62.4       | 70.3           | T5 RIGHT, r 25.90, z -5.9 | 54.2       | T3_T4, r 24.79, z +0.0, Tangente 54° | -60.2      | T4_T5      | 76.6    | T4   |
+| `pos_004_W3_QS`  | LOAD_16NM | +0.92 %  | 83.4       | 82.8           | T5 RIGHT, r 25.80, z -7.5 | 73.3       | T3_T4, r 24.78, z +4.4, Tangente 59° | -81.7      | T4_T5      | 99.0    | T4   |
+| `pos_004_W3_DY1` | LOAD_16NM | +0.90 %  | 77.3       | 81.7           | T5 RIGHT, r 25.80, z -7.5 | 76.6       | T3_T4, r 24.78, z +4.4, Tangente 59° | -85.1      | T4_T5      | 91.3    | T4   |
+| `pos_004_W3_DY2` | LOAD_16NM | +0.80 %  | 57.8       | 88.3           | T5 RIGHT, r 25.90, z -7.5 | 80.8       | T3_T4, r 24.84, z +5.1, Tangente 41° | -91.3      | T4_T5      | 69.3    | T4   |
+| `pos_004_W4_QS`  | LOAD_16NM | +1.06 %  | 96.7       | 68.0           | T5 RIGHT, r 25.80, z -7.5 | 59.9       | T3_T4, r 24.77, z +5.1, Tangente 64° | -60.6      | T4_T5      | 113.7   | T4   |
+| `pos_004_W4_DY1` | LOAD_16NM | +1.01 %  | 89.0       | 69.4           | T5 RIGHT, r 25.80, z -7.5 | 64.0       | T3_T4, r 24.77, z +5.1, Tangente 64° | -64.4      | T4_T5      | 104.5   | T4   |
+| `pos_004_W4_DY2` | LOAD_16NM | +0.91 %  | 61.9       | 74.1           | T5 RIGHT, r 25.90, z -7.5 | 68.3       | T3_T4, r 24.77, z +5.1, Tangente 64° | -70.9      | T4_T5      | 73.7    | T4   |
+| `pos_005_W1_QS`  | LOAD_16NM | +0.89 %  | 83.5       | 98.5           | T5 RIGHT, r 25.80, z -6.7 | 70.9       | T3_T4, r 24.82, z +0.0, Tangente 45° | -75.5      | T4_T5      | 102.2   | T4   |
+| `pos_005_W1_DY1` | LOAD_16NM | +0.88 %  | 76.6       | 98.0           | T5 RIGHT, r 25.80, z -5.1 | 72.3       | T3_T4, r 24.82, z +0.0, Tangente 45° | -77.4      | T4_T5      | 94.0    | T4   |
+| `pos_005_W1_DY2` | LOAD_16NM | +0.79 %  | 58.1       | 96.2           | T5 RIGHT, r 25.80, z +0.0 | 78.1       | T3_T4, r 24.82, z +0.0, Tangente 45° | -85.6      | T4_T5      | 72.2    | T4   |
+| `pos_005_W2_QS`  | LOAD_16NM | +1.18 %  | 100.2      | 74.3           | T5 RIGHT, r 25.80, z -5.9 | 49.1       | T3_T4, r 24.78, z +0.0, Tangente 59° | -54.0      | T4_T5      | 121.0   | T4   |
+| `pos_005_W2_DY1` | LOAD_16NM | +1.15 %  | 91.7       | 76.1           | T5 RIGHT, r 25.80, z -5.9 | 50.5       | T3_T4, r 24.78, z +0.0, Tangente 59° | -55.6      | T4_T5      | 111.1   | T4   |
+| `pos_005_W2_DY2` | LOAD_16NM | +1.00 %  | 64.0       | 79.9           | T5 RIGHT, r 25.80, z -5.9 | 55.5       | T3_T4, r 24.79, z +0.0, Tangente 54° | -61.9      | T4_T5      | 78.8    | T4   |
+| `pos_005_W3_QS`  | LOAD_16NM | +0.93 %  | 84.7       | 99.6           | T5 RIGHT, r 25.80, z -7.5 | 75.7       | T3_T4, r 24.78, z +4.4, Tangente 59° | -84.6      | T4_T5      | 100.9   | T4   |
+| `pos_005_W3_DY1` | LOAD_16NM | +0.93 %  | 78.6       | 99.3           | T5 RIGHT, r 25.80, z -7.5 | 79.1       | T3_T4, r 24.78, z +4.4, Tangente 59° | -88.1      | T4_T5      | 93.3    | T4   |
+| `pos_005_W3_DY2` | LOAD_16NM | +0.82 %  | 59.1       | 90.9           | T5 RIGHT, r 25.80, z -7.5 | 83.5       | T3_T4, r 24.84, z +5.1, Tangente 41° | -95.1      | T4_T5      | 71.2    | T4   |
+| `pos_005_W4_QS`  | LOAD_16NM | +1.21 %  | 98.0       | 75.6           | T5 RIGHT, r 25.80, z -7.5 | 61.0       | T3_T4, r 24.77, z +5.1, Tangente 64° | -61.9      | T4_T5      | 115.8   | T4   |
+| `pos_005_W4_DY1` | LOAD_16NM | +1.19 %  | 90.6       | 79.4           | T5 RIGHT, r 25.80, z -7.5 | 65.4       | T3_T4, r 24.77, z +5.1, Tangente 64° | -66.3      | T4_T5      | 106.9   | T4   |
+| `pos_005_W4_DY2` | LOAD_16NM | +1.03 %  | 63.5       | 81.1           | T5 RIGHT, r 25.80, z -7.5 | 70.1       | T3_T4, r 24.77, z +5.1, Tangente 64° | -73.6      | T4_T5      | 76.0    | T4   |
+| `pos_006_W1_QS`  | LOAD_16NM | +0.76 %  | 84.7       | 116.9          | T5 RIGHT, r 25.80, z +0.0 | 73.1       | T3_T4, r 24.82, z +0.0, Tangente 45° | -79.3      | T4_T5      | 104.3   | T4   |
+| `pos_006_W1_DY1` | LOAD_16NM | +0.76 %  | 77.6       | 115.4          | T5 RIGHT, r 25.80, z +0.0 | 74.5       | T3_T4, r 24.82, z +0.0, Tangente 45° | -81.2      | T4_T5      | 95.8    | T4   |
+| `pos_006_W1_DY2` | LOAD_16NM | +0.79 %  | 59.2       | 109.1          | T5 RIGHT, r 25.80, z +0.0 | 80.4       | T3_T4, r 24.82, z +0.0, Tangente 45° | -89.2      | T4_T5      | 73.6    | T4   |
+| `pos_006_W2_QS`  | LOAD_16NM | +1.01 %  | 101.4      | 78.7           | T5 RIGHT, r 25.80, z -5.9 | 49.8       | T3_T4, r 24.78, z +0.0, Tangente 59° | -55.2      | T4_T5      | 123.4   | T4   |
+| `pos_006_W2_DY1` | LOAD_16NM | +0.97 %  | 93.0       | 81.7           | T5 RIGHT, r 25.80, z -3.6 | 51.5       | T3_T4, r 24.78, z +0.0, Tangente 59° | -56.9      | T4_T5      | 113.4   | T4   |
+| `pos_006_W2_DY2` | LOAD_16NM | +0.82 %  | 65.3       | 90.5           | T5 RIGHT, r 25.80, z +0.0 | 56.6       | T3_T4, r 24.79, z +0.0, Tangente 54° | -63.6      | T4_T5      | 80.4    | T4   |
+| `pos_006_W3_QS`  | LOAD_16NM | +0.76 %  | 85.9       | 106.9          | T5 RIGHT, r 25.80, z -7.5 | 77.7       | T3_T4, r 24.78, z +4.4, Tangente 59° | -88.0      | T4_T5      | 102.4   | T4   |
+| `pos_006_W3_DY1` | LOAD_16NM | +0.77 %  | 79.8       | 107.4          | T5 RIGHT, r 25.80, z -7.5 | 81.3       | T3_T4, r 24.78, z +4.4, Tangente 59° | -91.6      | T4_T5      | 94.8    | T4   |
+| `pos_006_W3_DY2` | LOAD_16NM | +0.77 %  | 60.1       | 100.7          | T5 RIGHT, r 25.80, z +0.0 | 85.5       | T3_T4, r 24.84, z +5.1, Tangente 41° | -98.5      | T4_T5      | 72.3    | T4   |
+| `pos_006_W4_QS`  | LOAD_16NM | +1.04 %  | 99.3       | 78.7           | T5 RIGHT, r 25.80, z -6.7 | 62.3       | T3_T4, r 24.77, z +5.1, Tangente 64° | -63.6      | T4_T5      | 117.5   | T4   |
+| `pos_006_W4_DY1` | LOAD_16NM | +1.01 %  | 91.8       | 82.9           | T5 RIGHT, r 25.80, z -7.5 | 66.8       | T3_T4, r 24.77, z +5.1, Tangente 64° | -68.4      | T4_T5      | 108.5   | T4   |
+| `pos_006_W4_DY2` | LOAD_16NM | +0.85 %  | 65.0       | 87.5           | T5 RIGHT, r 25.80, z -7.5 | 71.9       | T3_T4, r 24.77, z +5.1, Tangente 64° | -76.7      | T4_T5      | 77.8    | T4   |
+| `pos_007_W1_QS`  | LOAD_16NM | +0.78 %  | 85.4       | 121.3          | T5 RIGHT, r 25.80, z +0.0 | 74.9       | T3_T4, r 24.82, z +0.0, Tangente 45° | -82.1      | T4_T5      | 105.5   | T4   |
+| `pos_007_W1_DY1` | LOAD_16NM | +0.81 %  | 78.6       | 120.9          | T5 RIGHT, r 25.80, z +0.0 | 76.5       | T3_T4, r 24.82, z +0.0, Tangente 45° | -84.1      | T4_T5      | 97.3    | T4   |
+| `pos_007_W1_DY2` | LOAD_16NM | +0.76 %  | 60.1       | 117.1          | T5 RIGHT, r 25.80, z +0.0 | 82.9       | T3_T4, r 24.82, z +0.0, Tangente 45° | -93.1      | T4_T5      | 75.1    | T4   |
+| `pos_007_W2_QS`  | LOAD_16NM | +0.86 %  | 102.6      | 82.7           | T5 RIGHT, r 25.80, z +0.0 | 50.6       | T3_T4, r 24.78, z +0.0, Tangente 59° | -56.4      | T4_T5      | 125.4   | T4   |
+| `pos_007_W2_DY1` | LOAD_16NM | +0.86 %  | 94.2       | 86.7           | T5 RIGHT, r 25.80, z +0.0 | 52.3       | T3_T4, r 24.78, z +0.0, Tangente 59° | -58.1      | T4_T5      | 115.3   | T4   |
+| `pos_007_W2_DY2` | LOAD_16NM | +0.90 %  | 66.3       | 93.8           | T5 RIGHT, r 25.80, z +0.0 | 57.6       | T3_T4, r 24.79, z +0.0, Tangente 54° | -65.0      | T4_T5      | 82.2    | T4   |
+| `pos_007_W3_QS`  | LOAD_16NM | +0.76 %  | 86.6       | 111.6          | T5 RIGHT, r 25.80, z -7.5 | 79.3       | T3_T4, r 24.78, z +4.4, Tangente 59° | -90.2      | T4_T5      | 103.6   | T4   |
+| `pos_007_W3_DY1` | LOAD_16NM | +0.77 %  | 80.6       | 112.3          | T5 RIGHT, r 25.80, z -7.5 | 82.9       | T3_T4, r 24.78, z +4.4, Tangente 59° | -93.7      | T4_T5      | 95.9    | T4   |
+| `pos_007_W3_DY2` | LOAD_16NM | +0.76 %  | 61.1       | 106.8          | T5 RIGHT, r 25.80, z -7.5 | 87.7       | T3_T4, r 24.84, z +5.1, Tangente 41° | -101.4     | T4_T5      | 73.5    | T4   |
+| `pos_007_W4_QS`  | LOAD_16NM | +0.86 %  | 100.4      | 80.5           | T5 RIGHT, r 25.80, z +0.0 | 63.3       | T3_T4, r 24.77, z +5.1, Tangente 64° | -65.5      | T4_T5      | 119.1   | T4   |
+| `pos_007_W4_DY1` | LOAD_16NM | +0.88 %  | 93.0       | 85.3           | T5 RIGHT, r 25.80, z -7.5 | 67.9       | T3_T4, r 24.77, z +5.1, Tangente 64° | -70.3      | T4_T5      | 110.0   | T4   |
+| `pos_007_W4_DY2` | LOAD_16NM | +0.86 %  | 66.1       | 91.3           | T5 RIGHT, r 25.80, z -7.5 | 73.1       | T3_T4, r 24.77, z +5.1, Tangente 64° | -78.6      | T4_T5      | 79.0    | T4   |
+| `pos_008_W1_QS`  | LOAD_16NM | +0.77 %  | 86.3       | 125.2          | T5 RIGHT, r 25.80, z +0.0 | 76.5       | T3_T4, r 24.82, z +0.0, Tangente 45° | -84.6      | T4_T5      | 106.6   | T4   |
+| `pos_008_W1_DY1` | LOAD_16NM | +0.77 %  | 79.4       | 125.1          | T5 RIGHT, r 25.80, z +0.0 | 78.1       | T3_T4, r 24.82, z +0.0, Tangente 45° | -86.9      | T4_T5      | 98.2    | T4   |
+| `pos_008_W1_DY2` | LOAD_16NM | +0.74 %  | 61.3       | 124.7          | T5 RIGHT, r 25.80, z +0.0 | 85.4       | T3_T4, r 24.82, z +0.0, Tangente 45° | -96.8      | T4_T5      | 76.5    | T4   |
+| `pos_008_W2_QS`  | LOAD_16NM | +0.83 %  | 103.1      | 84.2           | T5 RIGHT, r 25.80, z +0.0 | 51.1       | T3_T4, r 24.78, z +0.0, Tangente 59° | -57.0      | T4_T5      | 125.9   | T4   |
+| `pos_008_W2_DY1` | LOAD_16NM | +0.84 %  | 94.9       | 88.6           | T5 RIGHT, r 25.80, z +0.0 | 52.8       | T3_T4, r 24.78, z +0.0, Tangente 59° | -58.9      | T4_T5      | 116.1   | T4   |
+| `pos_008_W2_DY2` | LOAD_16NM | +0.86 %  | 67.3       | 96.6           | T5 RIGHT, r 25.80, z +0.0 | 58.6       | T3_T4, r 24.79, z +0.0, Tangente 54° | -66.3      | T4_T5      | 83.3    | T4   |
+| `pos_008_W3_QS`  | LOAD_16NM | +0.79 %  | 87.5       | 115.9          | T5 RIGHT, r 25.80, z -7.5 | 80.9       | T3_T4, r 24.78, z +4.4, Tangente 59° | -92.4      | T4_T5      | 104.9   | T4   |
+| `pos_008_W3_DY1` | LOAD_16NM | +0.80 %  | 81.5       | 117.1          | T5 RIGHT, r 25.80, z -7.5 | 84.7       | T3_T4, r 24.78, z +4.4, Tangente 59° | -96.4      | T4_T5      | 97.2    | T4   |
+| `pos_008_W3_DY2` | LOAD_16NM | +0.76 %  | 62.2       | 114.1          | T5 RIGHT, r 25.80, z -7.5 | 89.9       | T3_T4, r 24.84, z +5.1, Tangente 41° | -105.6     | T4_T5      | 74.9    | T4   |
+| `pos_008_W4_QS`  | LOAD_16NM | +0.87 %  | 101.0      | 82.1           | T5 RIGHT, r 25.80, z -6.7 | 63.9       | T3_T4, r 24.77, z +5.1, Tangente 64° | -66.6      | T4_T5      | 120.1   | T4   |
+| `pos_008_W4_DY1` | LOAD_16NM | +0.86 %  | 93.7       | 87.4           | T5 RIGHT, r 25.80, z -7.5 | 68.7       | T3_T4, r 24.77, z +5.1, Tangente 64° | -71.7      | T4_T5      | 111.2   | T4   |
+| `pos_008_W4_DY2` | LOAD_16NM | +0.86 %  | 67.0       | 94.7           | T5 RIGHT, r 25.80, z -7.5 | 74.4       | T3_T4, r 24.77, z +5.1, Tangente 64° | -80.8      | T4_T5      | 80.3    | T4   |
+| `pos_009_W1_QS`  | LOAD_16NM | +0.86 %  | 87.4       | 129.3          | T5 RIGHT, r 25.80, z +0.0 | 78.5       | T3_T4, r 24.82, z +0.0, Tangente 45° | -87.6      | T4_T5      | 108.4   | T4   |
+| `pos_009_W1_DY1` | LOAD_16NM | +0.82 %  | 80.6       | 130.0          | T5 RIGHT, r 25.80, z +0.0 | 80.3       | T3_T4, r 24.82, z +0.0, Tangente 45° | -90.0      | T4_T5      | 100.2   | T4   |
+| `pos_009_W1_DY2` | LOAD_16NM | +0.68 %  | 62.3       | 126.8          | T5 RIGHT, r 25.80, z +0.0 | 87.8       | T3_T4, r 24.82, z +0.0, Tangente 45° | -100.7     | T4_T5      | 78.0    | T4   |
+| `pos_009_W2_QS`  | LOAD_16NM | +0.99 %  | 104.2      | 85.8           | T5 RIGHT, r 25.80, z +0.0 | 51.7       | T3_T4, r 24.78, z +0.0, Tangente 59° | -57.7      | T4_T5      | 127.8   | T4   |
+| `pos_009_W2_DY1` | LOAD_16NM | +0.94 %  | 95.6       | 89.6           | T5 RIGHT, r 25.80, z +0.0 | 53.4       | T3_T4, r 24.78, z +0.0, Tangente 59° | -59.6      | T4_T5      | 117.5   | T4   |
+| `pos_009_W2_DY2` | LOAD_16NM | +0.83 %  | 68.6       | 100.2          | T5 RIGHT, r 25.80, z +0.0 | 59.4       | T3_T4, r 24.79, z +0.0, Tangente 54° | -67.4      | T4_T5      | 85.0    | T4   |
+| `pos_009_W3_QS`  | LOAD_16NM | +0.84 %  | 88.4       | 116.7          | T5 RIGHT, r 25.80, z +0.0 | 82.1       | T3_T4, r 24.78, z +4.4, Tangente 59° | -95.2      | T4_T5      | 105.6   | T4   |
+| `pos_009_W3_DY1` | LOAD_16NM | +0.83 %  | 82.5       | 118.9          | T5 RIGHT, r 25.80, z -7.5 | 86.1       | T3_T4, r 24.78, z +4.4, Tangente 59° | -99.5      | T4_T5      | 98.1    | T4   |
+| `pos_009_W3_DY2` | LOAD_16NM | +0.68 %  | 63.3       | 118.6          | T5 RIGHT, r 25.80, z -7.5 | 91.9       | T3_T4, r 24.84, z +5.1, Tangente 41° | -109.6     | T4_T5      | 76.0    | T4   |
+| `pos_009_W4_QS`  | LOAD_16NM | +1.00 %  | 102.1      | 83.2           | T5 RIGHT, r 25.80, z +0.0 | 64.3       | T3_T4, r 24.77, z +5.1, Tangente 64° | -67.9      | T4_T5      | 121.2   | T4   |
+| `pos_009_W4_DY1` | LOAD_16NM | +0.96 %  | 95.0       | 87.3           | T5 RIGHT, r 25.80, z +0.0 | 69.3       | T3_T4, r 24.77, z +5.1, Tangente 64° | -73.1      | T4_T5      | 112.5   | T4   |
+| `pos_009_W4_DY2` | LOAD_16NM | +0.86 %  | 68.3       | 98.5           | T5 RIGHT, r 25.80, z -7.5 | 75.5       | T3_T4, r 24.77, z +5.1, Tangente 64° | -82.9      | T4_T5      | 81.7    | T4   |
+| `pos_010_W1_QS`  | LOAD_16NM | +1.84 %  | 89.9       | 128.3          | T5 RIGHT, r 25.80, z +0.0 | 81.0       | T3_T4, r 24.82, z +0.0, Tangente 45° | -91.0      | T4_T5      | 111.3   | T4   |
+| `pos_010_W1_DY1` | LOAD_16NM | +1.72 %  | 82.9       | 131.7          | T5 RIGHT, r 25.80, z +0.0 | 82.9       | T3_T4, r 24.82, z +0.0, Tangente 45° | -93.8      | T4_T5      | 102.7   | T4   |
+| `pos_010_W1_DY2` | LOAD_16NM | +1.17 %  | 64.0       | 128.3          | T5 RIGHT, r 25.80, z +0.0 | 91.0       | T3_T4, r 24.82, z +0.0, Tangente 45° | -105.2     | T4_T5      | 80.1    | T4   |
+| `pos_010_W2_QS`  | LOAD_16NM | +1.78 %  | 106.5      | 83.6           | T5 RIGHT, r 25.80, z +0.0 | 52.5       | T3_T4, r 24.78, z +0.0, Tangente 59° | -58.7      | T4_T5      | 130.5   | T4   |
+| `pos_010_W2_DY1` | LOAD_16NM | +1.74 %  | 98.1       | 88.1           | T5 RIGHT, r 25.80, z +0.0 | 54.4       | T3_T4, r 24.78, z +0.0, Tangente 59° | -60.7      | T4_T5      | 120.5   | T4   |
+| `pos_010_W2_DY2` | LOAD_16NM | +1.27 %  | 70.4       | 102.4          | T5 RIGHT, r 25.80, z +0.0 | 60.8       | T3_T4, r 24.78, z +0.0, Tangente 59° | -69.2      | T4_T5      | 87.3    | T4   |
+| `pos_010_W3_QS`  | LOAD_16NM | +1.80 %  | 91.1       | 115.2          | T5 RIGHT, r 25.80, z +0.0 | 83.8       | T3_T4, r 24.78, z +4.4, Tangente 59° | -99.0      | T4_T5      | 108.9   | T4   |
+| `pos_010_W3_DY1` | LOAD_16NM | +1.70 %  | 84.9       | 114.6          | T5 RIGHT, r 25.80, z +0.0 | 87.8       | T3_T4, r 24.78, z +4.4, Tangente 59° | -103.5     | T4_T5      | 100.8   | T4   |
+| `pos_010_W3_DY2` | LOAD_16NM | +1.16 %  | 65.0       | 118.3          | T5 RIGHT, r 25.80, z +0.0 | 94.0       | T3_T4, r 24.84, z +5.1, Tangente 41° | -114.5     | T4_T5      | 78.0    | T4   |
+| `pos_010_W4_QS`  | LOAD_16NM | +1.72 %  | 104.5      | 87.2           | T5 RIGHT, r 25.90, z -7.5 | 64.9       | T3_T4, r 24.77, z +5.1, Tangente 64° | -69.3      | T4_T5      | 123.8   | T4   |
+| `pos_010_W4_DY1` | LOAD_16NM | +1.66 %  | 97.2       | 91.7           | T5 RIGHT, r 25.90, z -7.5 | 70.0       | T3_T4, r 24.77, z +5.1, Tangente 64° | -74.9      | T4_T5      | 114.8   | T4   |
+| `pos_010_W4_DY2` | LOAD_16NM | +1.22 %  | 69.9       | 96.4           | T5 RIGHT, r 25.80, z +0.0 | 76.6       | T3_T4, r 24.77, z +5.1, Tangente 64° | -85.4      | T4_T5      | 83.4    | T4   |
+| `pos_011_W1_QS`  | LOAD_16NM | +1.84 %  | 92.7       | 123.3          | T5 RIGHT, r 25.90, z -6.7 | 84.3       | T3_T4, r 24.82, z +0.0, Tangente 45° | -96.1      | T4_T5      | 114.7   | T4   |
+| `pos_011_W1_DY1` | LOAD_16NM | +1.80 %  | 85.7       | 121.9          | T5 RIGHT, r 25.90, z -6.7 | 86.4       | T3_T4, r 24.82, z +0.0, Tangente 45° | -99.2      | T4_T5      | 106.2   | T4   |
+| `pos_011_W1_DY2` | LOAD_16NM | +1.55 %  | 66.9       | 110.1          | T5 RIGHT, r 25.90, z -6.7 | 95.6       | T3_T4, r 24.82, z +0.0, Tangente 45° | -112.4     | T4_T5      | 83.4    | T4   |
+| `pos_011_W2_QS`  | LOAD_16NM | +2.13 %  | 109.7      | 88.8           | T5 RIGHT, r 25.90, z -5.9 | 53.4       | T3_T4, r 24.77, z +0.0, Tangente 64° | -59.7      | T4_T5      | 134.1   | T4   |
+| `pos_011_W2_DY1` | LOAD_16NM | +2.08 %  | 100.9      | 90.4           | T5 RIGHT, r 25.90, z -5.9 | 55.3       | T3_T4, r 24.77, z +0.0, Tangente 64° | -61.9      | T4_T5      | 123.7   | T4   |
+| `pos_011_W2_DY2` | LOAD_16NM | +1.94 %  | 73.4       | 92.8           | T5 RIGHT, r 25.90, z -5.9 | 62.3       | T3_T4, r 24.78, z +0.0, Tangente 59° | -71.1      | T4_T5      | 90.8    | T4   |
+| `pos_011_W3_QS`  | LOAD_16NM | +1.79 %  | 93.6       | 139.3          | T5 RIGHT, r 25.90, z -7.5 | 87.3       | T3_T4, r 24.78, z +4.4, Tangente 59° | -104.3     | T4_T5      | 112.0   | T4   |
+| `pos_011_W3_DY1` | LOAD_16NM | +1.76 %  | 87.5       | 141.7          | T5 RIGHT, r 25.90, z -7.5 | 91.6       | T3_T4, r 24.78, z +4.4, Tangente 59° | -109.7     | T4_T5      | 104.0   | T4   |
+| `pos_011_W3_DY2` | LOAD_16NM | +1.58 %  | 67.8       | 128.2          | T5 RIGHT, r 25.90, z -7.5 | 98.4       | T3_T4, r 24.82, z +4.4, Tangente 45° | -122.2     | T4_T5      | 81.4    | T4   |
+| `pos_011_W4_QS`  | LOAD_16NM | +2.10 %  | 107.6      | 93.6           | T5 RIGHT, r 25.90, z -7.5 | 66.2       | T3_T4, r 24.77, z +5.1, Tangente 64° | -71.1      | T4_T5      | 127.7   | T4   |
+| `pos_011_W4_DY1` | LOAD_16NM | +2.03 %  | 100.3      | 101.3          | T5 RIGHT, r 25.90, z -7.5 | 71.5       | T3_T4, r 24.77, z +5.1, Tangente 64° | -77.0      | T4_T5      | 118.7   | T4   |
+| `pos_011_W4_DY2` | LOAD_16NM | +1.86 %  | 72.9       | 104.4          | T5 RIGHT, r 25.90, z -7.5 | 78.6       | T3_T4, r 24.77, z +5.1, Tangente 64° | -88.8      | T4_T5      | 87.0    | T4   |
+| `pos_012_W1_QS`  | LOAD_16NM | +0.78 %  | 94.3       | 135.1          | T5 RIGHT, r 25.90, z -2.0 | 88.0       | T3_T4, r 24.82, z +0.0, Tangente 45° | -102.5     | T4_T5      | 117.6   | T4   |
+| `pos_012_W1_DY1` | LOAD_16NM | +0.71 %  | 87.5       | 136.4          | T5 RIGHT, r 25.90, z -2.0 | 90.5       | T3_T4, r 24.82, z +0.0, Tangente 45° | -106.2     | T4_T5      | 109.1   | T4   |
+| `pos_012_W1_DY2` | LOAD_16NM | +0.48 %  | 69.1       | 130.5          | T5 RIGHT, r 25.90, z +0.0 | 100.8      | T3_T4, r 24.82, z +0.0, Tangente 45° | -121.2     | T4_T5      | 86.6    | T4   |
+| `pos_012_W2_QS`  | LOAD_16NM | +1.17 %  | 110.1      | 90.9           | T5 RIGHT, r 25.90, z -5.9 | 53.5       | T3_T4, r 24.78, z +0.0, Tangente 59° | -60.5      | T4_T5      | 135.0   | T4   |
+| `pos_012_W2_DY1` | LOAD_16NM | +1.33 %  | 103.6      | 94.6           | T5 RIGHT, r 25.90, z -5.9 | 56.5       | T3_T4, r 24.77, z +0.0, Tangente 64° | -63.5      | T4_T5      | 127.6   | T4   |
+| `pos_012_W2_DY2` | LOAD_16NM | +0.93 %  | 76.0       | 101.8          | T5 RIGHT, r 25.90, z -3.6 | 64.2       | T3_T4, r 24.78, z +0.0, Tangente 59° | -73.8      | T4_T5      | 94.2    | T4   |
+| `pos_012_W3_QS`  | LOAD_16NM | +0.81 %  | 95.3       | 144.7          | T5 RIGHT, r 25.90, z -7.5 | 90.9       | T3_T4, r 24.78, z +4.4, Tangente 59° | -110.6     | T4_T5      | 113.9   | T4   |
+| `pos_012_W3_DY1` | LOAD_16NM | +0.77 %  | 89.2       | 149.0          | T5 RIGHT, r 25.90, z -7.5 | 95.6       | T3_T4, r 24.78, z +4.4, Tangente 59° | -116.4     | T4_T5      | 106.0   | T4   |
+| `pos_012_W3_DY2` | LOAD_16NM | +0.51 %  | 70.0       | 137.1          | T5 RIGHT, r 25.90, z -7.5 | 103.6      | T3_T4, r 24.82, z +4.4, Tangente 45° | -131.5     | T4_T5      | 83.7    | T4   |
+| `pos_012_W4_QS`  | LOAD_16NM | +1.12 %  | 107.8      | 95.8           | T5 RIGHT, r 25.90, z -7.5 | 66.3       | T3_T4, r 24.77, z +5.1, Tangente 64° | -72.3      | T4_T5      | 127.5   | T4   |
+| `pos_012_W4_DY1` | LOAD_16NM | +1.27 %  | 102.4      | 104.6          | T5 RIGHT, r 25.90, z -7.5 | 73.2       | T3_T4, r 24.77, z +5.1, Tangente 64° | -79.3      | T4_T5      | 121.1   | T4   |
+| `pos_012_W4_DY2` | LOAD_16NM | +0.94 %  | 75.4       | 112.5          | T5 RIGHT, r 25.90, z -7.5 | 81.7       | T3_T4, r 24.77, z +5.1, Tangente 64° | -92.9      | T4_T5      | 89.9    | T4   |
+| `pos_013_W1_QS`  | LOAD_16NM | +0.62 %  | 95.6       | 136.2          | T5 RIGHT, r 25.90, z +0.0 | 90.0       | T3_T4, r 24.82, z +0.0, Tangente 45° | -106.2     | T4_T5      | 119.2   | T4   |
+| `pos_013_W1_DY1` | LOAD_16NM | +0.57 %  | 88.9       | 136.9          | T5 RIGHT, r 25.90, z +0.0 | 93.0       | T3_T4, r 24.82, z +0.0, Tangente 45° | -110.3     | T4_T5      | 110.9   | T4   |
+| `pos_013_W1_DY2` | LOAD_16NM | +0.35 %  | 70.2       | 114.1          | T5 RIGHT, r 25.90, z +0.0 | 103.8      | T3_T4, r 24.82, z +0.0, Tangente 45° | -126.1     | T4_T5      | 88.1    | T4   |
+| `pos_013_W2_QS`  | LOAD_16NM | +0.30 %  | 107.7      | 90.1           | T5 RIGHT, r 25.90, z +0.0 | 52.6       | T3_T4, r 24.78, z +0.0, Tangente 59° | -60.5      | T4_T5      | 131.7   | T4   |
+| `pos_013_W2_DY1` | LOAD_16NM | +0.48 %  | 101.9      | 94.2           | T5 RIGHT, r 25.90, z +0.0 | 55.6       | T3_T4, r 24.78, z +0.0, Tangente 59° | -63.7      | T4_T5      | 125.2   | T4   |
+| `pos_013_W2_DY2` | LOAD_16NM | +0.64 %  | 78.0       | 103.4          | T5 RIGHT, r 25.90, z +0.0 | 65.5       | T3_T4, r 24.78, z +0.0, Tangente 59° | -75.8      | T4_T5      | 96.9    | T4   |
+| `pos_013_W3_QS`  | LOAD_16NM | +0.50 %  | 95.7       | 140.7          | T5 RIGHT, r 25.90, z -7.5 | 91.2       | T3_T4, r 24.78, z +4.4, Tangente 59° | -113.9     | T4_T5      | 114.4   | T4   |
+| `pos_013_W3_DY1` | LOAD_16NM | +0.61 %  | 90.6       | 146.8          | T5 RIGHT, r 25.90, z -7.5 | 97.9       | T3_T4, r 24.78, z +4.4, Tangente 59° | -120.7     | T4_T5      | 107.6   | T4   |
+| `pos_013_W3_DY2` | LOAD_16NM | +0.35 %  | 71.0       | 120.3          | T5 RIGHT, r 25.90, z -7.5 | 106.2      | T3_T4, r 24.82, z +4.4, Tangente 45° | -136.4     | T4_T5      | 85.1    | T4   |
+| `pos_013_W4_QS`  | LOAD_16NM | +0.19 %  | 106.0      | 93.8           | T5 RIGHT, r 25.90, z -7.5 | 64.4       | T3_T4, r 24.77, z +5.1, Tangente 64° | -72.8      | T4_T5      | 124.5   | T4   |
+| `pos_013_W4_DY1` | LOAD_16NM | +0.33 %  | 100.5      | 101.2          | T5 RIGHT, r 25.90, z -7.5 | 71.1       | T3_T4, r 24.77, z +5.1, Tangente 64° | -79.8      | T4_T5      | 117.9   | T4   |
+| `pos_013_W4_DY2` | LOAD_16NM | +0.61 %  | 77.5       | 111.3          | T5 RIGHT, r 25.90, z -7.5 | 83.3       | T3_T4, r 24.77, z +5.1, Tangente 64° | -95.5      | T4_T5      | 91.9    | T4   |
+| `pos_014_W1_QS`  | LOAD_16NM | +0.30 %  | 95.0       | 129.6          | T5 RIGHT, r 25.90, z +0.0 | 88.6       | T3_T4, r 24.82, z +0.0, Tangente 45° | -107.3     | T4_T5      | 117.5   | T4   |
+| `pos_014_W1_DY1` | LOAD_16NM | +0.35 %  | 89.2       | 128.8          | T5 RIGHT, r 25.90, z +0.0 | 93.1       | T3_T4, r 24.82, z +0.0, Tangente 45° | -112.5     | T4_T5      | 110.7   | T4   |
+| `pos_014_W1_DY2` | LOAD_16NM | +0.18 %  | 71.4       | 98.5           | T4 RIGHT, r 26.31, z +0.0 | 106.5      | T3_T4, r 24.82, z +0.0, Tangente 45° | -130.5     | T4_T5      | 89.4    | T4   |
+| `pos_014_W2_QS`  | LOAD_16NM | +0.18 %  | 106.4      | 87.6           | T5 RIGHT, r 25.90, z +0.0 | 51.6       | T3_T4, r 24.78, z +0.0, Tangente 59° | -60.2      | T4_T5      | 129.3   | T4   |
+| `pos_014_W2_DY1` | LOAD_16NM | +0.20 %  | 100.6      | 91.2           | T5 RIGHT, r 25.90, z +0.0 | 54.6       | T3_T4, r 24.78, z +0.0, Tangente 59° | -63.4      | T4_T5      | 122.7   | T4   |
+| `pos_014_W2_DY2` | LOAD_16NM | +0.56 %  | 80.0       | 101.6          | T5 RIGHT, r 25.90, z +0.0 | 66.7       | T3_T4, r 24.78, z +0.0, Tangente 59° | -77.4      | T4_T5      | 99.1    | T4   |
+| `pos_014_W3_QS`  | LOAD_16NM | +0.22 %  | 95.0       | 129.4          | T5 RIGHT, r 25.90, z -7.5 | 88.7       | T3_T4, r 24.82, z +4.4, Tangente 45° | -115.1     | T4_T5      | 112.7   | T4   |
+| `pos_014_W3_DY1` | LOAD_16NM | +0.25 %  | 89.9       | 135.0          | T5 RIGHT, r 25.90, z -7.5 | 94.8       | T3_T4, r 24.82, z +4.4, Tangente 45° | -122.2     | T4_T5      | 106.1   | T4   |
+| `pos_014_W3_DY2` | LOAD_16NM | +0.26 %  | 72.3       | 104.2          | T5 RIGHT, r 25.90, z -7.5 | 108.8      | T3_T4, r 24.82, z +4.4, Tangente 45° | -141.2     | T4_T5      | 86.6    | T4   |
+| `pos_014_W4_QS`  | LOAD_16NM | +0.13 %  | 104.7      | 87.9           | T5 RIGHT, r 25.90, z -7.5 | 62.4       | T3_T4, r 24.77, z +5.1, Tangente 64° | -72.9      | T4_T5      | 122.6   | T4   |
+| `pos_014_W4_DY1` | LOAD_16NM | +0.11 %  | 99.1       | 95.1           | T5 RIGHT, r 25.90, z -7.5 | 68.9       | T3_T4, r 24.77, z +5.1, Tangente 64° | -80.0      | T4_T5      | 115.9   | T4   |
+| `pos_014_W4_DY2` | LOAD_16NM | +0.51 %  | 79.0       | 109.1          | T5 RIGHT, r 25.90, z -7.5 | 84.6       | T3_T4, r 24.77, z +5.1, Tangente 64° | -98.2      | T4_T5      | 93.9    | T4   |
+| `pos_015_W1_QS`  | LOAD_16NM | +1.19 %  | 96.7       | 113.6          | T5 RIGHT, r 25.90, z +0.0 | 88.3       | T3_T4, r 24.82, z +0.0, Tangente 45° | -109.8     | T4_T5      | 119.2   | T4   |
+| `pos_015_W1_DY1` | LOAD_16NM | +1.13 %  | 90.7       | 118.2          | T5 RIGHT, r 25.90, z +0.0 | 92.7       | T3_T4, r 24.82, z +0.0, Tangente 45° | -115.4     | T4_T5      | 112.1   | T4   |
+| `pos_015_W1_DY2` | LOAD_16NM | +0.65 %  | 73.8       | 105.5          | T4 RIGHT, r 26.21, z +0.0 | 110.4      | T3_T4, r 24.82, z +0.0, Tangente 45° | -136.8     | T4_T5      | 92.5    | T4   |
+| `pos_015_W2_QS`  | LOAD_16NM | +1.03 %  | 108.1      | 81.9           | T5 RIGHT, r 25.90, z +0.0 | 51.0       | T3_T4, r 24.78, z +0.0, Tangente 59° | -60.3      | T4_T5      | 130.5   | T4   |
+| `pos_015_W2_DY1` | LOAD_16NM | +0.93 %  | 101.9      | 86.2           | T5 RIGHT, r 25.90, z +0.0 | 53.9       | T3_T4, r 24.78, z +0.0, Tangente 59° | -63.5      | T4_T5      | 123.6   | T4   |
+| `pos_015_W2_DY2` | LOAD_16NM | +0.80 %  | 80.6       | 96.9           | T5 RIGHT, r 25.90, z +0.0 | 65.6       | T3_T4, r 24.78, z +0.0, Tangente 59° | -77.6      | T4_T5      | 98.9    | T4   |
+| `pos_015_W3_QS`  | LOAD_16NM | +1.00 %  | 96.6       | 101.7          | T5 RIGHT, r 25.90, z +0.0 | 87.6       | T3_T4, r 24.79, z -0.7, Tangente 54° | -117.8     | T4_T5      | 113.7   | T4   |
+| `pos_015_W3_DY1` | LOAD_16NM | +0.90 %  | 91.1       | 102.1          | T5 RIGHT, r 25.90, z +0.0 | 92.6       | T3_T4, r 24.82, z +4.4, Tangente 45° | -124.9     | T4_T5      | 106.6   | T4   |
+| `pos_015_W3_DY2` | LOAD_16NM | +0.57 %  | 74.0       | 100.9          | T4 RIGHT, r 26.21, z -7.5 | 109.7      | T3_T4, r 24.82, z +4.4, Tangente 45° | -146.7     | T4_T5      | 88.0    | T4   |
+| `pos_015_W4_QS`  | LOAD_16NM | +0.92 %  | 106.3      | 77.9           | T5 RIGHT, r 25.90, z +0.0 | 60.5       | T3_T4, r 24.77, z +5.1, Tangente 64° | -73.5      | T4_T5      | 123.7   | T4   |
+| `pos_015_W4_DY1` | LOAD_16NM | +0.84 %  | 100.5      | 80.5           | T5 RIGHT, r 25.90, z +0.0 | 66.7       | T3_T4, r 24.77, z +5.1, Tangente 64° | -80.8      | T4_T5      | 116.7   | T4   |
+| `pos_015_W4_DY2` | LOAD_16NM | +0.64 %  | 79.3       | 88.1           | T5 RIGHT, r 25.90, z +0.0 | 81.4       | T3_T4, r 24.77, z +5.1, Tangente 64° | -99.2      | T4_T5      | 93.4    | T4   |
+| `pos_016_W1_QS`  | LOAD_16NM | -0.32 %  | 97.4       | 83.5           | T4 RIGHT, r 26.11, z +0.0 | 88.6       | T3_T4, r 24.82, z +0.0, Tangente 45° | -114.3     | T4_T5      | 119.5   | T4   |
+| `pos_016_W1_DY1` | LOAD_16NM | -0.39 %  | 91.4       | 87.5           | T4 RIGHT, r 26.11, z +0.0 | 93.0       | T3_T4, r 24.82, z +0.0, Tangente 45° | -120.2     | T4_T5      | 112.5   | T4   |
+| `pos_016_W1_DY2` | LOAD_16NM | -0.62 %  | 75.8       | 108.9          | T4 RIGHT, r 26.21, z +0.0 | 111.6      | T3_T4, r 24.82, z +0.0, Tangente 45° | -145.1     | T4_T5      | 94.4    | T4   |
+| `pos_016_W2_QS`  | LOAD_16NM | +0.35 %  | 109.9      | 78.7           | T5 RIGHT, r 26.00, z -5.9 | 50.9       | T3_T4, r 24.79, z +0.0, Tangente 54° | -61.1      | T4_T5      | 132.3   | T4   |
+| `pos_016_W2_DY1` | LOAD_16NM | +0.23 %  | 103.9      | 78.2           | T5 RIGHT, r 26.00, z -6.7 | 53.6       | T3_T4, r 24.79, z +0.0, Tangente 54° | -64.3      | T4_T5      | 125.7   | T4   |
+| `pos_016_W2_DY2` | LOAD_16NM | -0.14 %  | 82.0       | 78.1           | T4 RIGHT, r 26.11, z +0.0 | 65.0       | T3_T4, r 24.79, z +0.0, Tangente 54° | -78.6      | T4_T5      | 100.1   | T4   |
+| `pos_016_W3_QS`  | LOAD_16NM | -0.32 %  | 97.3       | 78.5           | T4 RIGHT, r 26.11, z -7.5 | 87.8       | T3_T4, r 24.85, z -0.7, Tangente 37° | -121.8     | T4_T5      | 113.8   | T4   |
+| `pos_016_W3_DY1` | LOAD_16NM | -0.38 %  | 91.9       | 82.8           | T4 RIGHT, r 26.11, z -7.5 | 93.6       | T3_T4, r 24.85, z +6.7, Tangente 37° | -128.8     | T4_T5      | 106.6   | T4   |
+| `pos_016_W3_DY2` | LOAD_16NM | -0.61 %  | 75.5       | 104.2          | T4 RIGHT, r 26.21, z -7.5 | 109.6      | T3_T4, r 24.84, z +4.4, Tangente 41° | -153.6     | T4_T5      | 89.1    | T4   |
+| `pos_016_W4_QS`  | LOAD_16NM | +0.25 %  | 107.8      | 81.1           | T5 RIGHT, r 26.00, z +7.5 | 59.9       | T3_T4, r 24.78, z +4.4, Tangente 59° | -74.8      | T4_T5      | 124.3   | T4   |
+| `pos_016_W4_DY1` | LOAD_16NM | +0.16 %  | 102.3      | 83.6           | T5 RIGHT, r 26.00, z +7.5 | 65.8       | T3_T4, r 24.78, z +4.4, Tangente 59° | -82.4      | T4_T5      | 117.8   | T4   |
+| `pos_016_W4_DY2` | LOAD_16NM | -0.21 %  | 80.7       | 78.5           | T4 RIGHT, r 26.11, z -7.5 | 79.0       | T3_T4, r 24.78, z +5.1, Tangente 59° | -101.0     | T4_T5      | 93.9    | T4   |
+| `pos_017_W1_QS`  | LOAD_16NM | -1.06 %  | 97.6       | 90.7           | T4 RIGHT, r 26.11, z +0.0 | 88.4       | T3_T4, r 24.84, z +0.0, Tangente 41° | -117.2     | T4_T5      | 119.1   | T4   |
+| `pos_017_W1_DY1` | LOAD_16NM | -1.18 %  | 91.5       | 95.4           | T4 RIGHT, r 26.11, z +0.0 | 92.6       | T3_T4, r 24.84, z +0.0, Tangente 41° | -123.3     | T4_T5      | 112.0   | T4   |
+| `pos_017_W1_DY2` | LOAD_16NM | -1.62 %  | 75.5       | 114.5          | T4 RIGHT, r 26.11, z +0.0 | 110.2      | T3_T4, r 24.84, z +0.0, Tangente 41° | -148.0     | T4_T5      | 93.4    | T4   |
+| `pos_017_W2_QS`  | LOAD_16NM | -0.85 %  | 110.6      | 77.3           | T5 RIGHT, r 26.00, z +0.0 | 50.8       | T3_T4, r 24.79, z +0.0, Tangente 54° | -61.9      | T4_T5      | 132.7   | T4   |
+| `pos_017_W2_DY1` | LOAD_16NM | -0.88 %  | 104.5      | 74.7           | T3 RIGHT, r 26.90, z +0.0 | 53.5       | T3_T4, r 24.79, z +0.0, Tangente 54° | -65.3      | T4_T5      | 125.8   | T4   |
+| `pos_017_W2_DY2` | LOAD_16NM | -1.28 %  | 82.7       | 83.9           | T4 RIGHT, r 26.11, z +0.0 | 64.4       | T3_T4, r 24.79, z +0.0, Tangente 54° | -79.5      | T4_T5      | 100.4   | T4   |
+| `pos_017_W3_QS`  | LOAD_16NM | -1.05 %  | 97.4       | 83.7           | T4 RIGHT, r 26.11, z -7.5 | 88.0       | T3_T4, r 24.85, z -0.7, Tangente 37° | -124.9     | T4_T5      | 113.4   | T4   |
+| `pos_017_W3_DY1` | LOAD_16NM | -1.15 %  | 91.9       | 88.4           | T4 RIGHT, r 26.11, z -7.5 | 92.9       | T3_T4, r 24.85, z +6.7, Tangente 37° | -132.0     | T4_T5      | 106.3   | T4   |
+| `pos_017_W3_DY2` | LOAD_16NM | -1.59 %  | 75.5       | 107.0          | T4 RIGHT, r 26.11, z -7.5 | 108.8      | T3_T4, r 24.85, z -0.7, Tangente 37° | -157.4     | T4_T5      | 88.6    | T4   |
+| `pos_017_W4_QS`  | LOAD_16NM | -0.91 %  | 108.3      | 77.2           | T5 RIGHT, r 26.00, z +7.5 | 59.5       | T3_T4, r 24.78, z +4.4, Tangente 59° | -75.8      | T4_T5      | 124.4   | T4   |
+| `pos_017_W4_DY1` | LOAD_16NM | -0.99 %  | 102.7      | 74.8           | T5 RIGHT, r 26.00, z +7.5 | 65.2       | T3_T4, r 24.78, z +4.4, Tangente 59° | -83.8      | T4_T5      | 117.6   | T4   |
+| `pos_017_W4_DY2` | LOAD_16NM | -1.28 %  | 81.3       | 82.3           | T4 RIGHT, r 26.11, z -7.5 | 77.3       | T3_T4, r 24.78, z +5.1, Tangente 59° | -102.6     | T4_T5      | 94.1    | T4   |
+| `pos_018_W1_QS`  | LOAD_16NM | -1.20 %  | 97.9       | 97.3           | T4 RIGHT, r 26.11, z +0.0 | 87.7       | T3_T4, r 24.84, z +0.0, Tangente 41° | -118.7     | T4_T5      | 118.9   | T4   |
+| `pos_018_W1_DY1` | LOAD_16NM | -1.40 %  | 91.8       | 102.8          | T4 RIGHT, r 26.11, z +0.0 | 91.8       | T3_T4, r 24.84, z +0.0, Tangente 41° | -124.8     | T4_T5      | 111.7   | T4   |
+| `pos_018_W1_DY2` | LOAD_16NM | -1.62 %  | 72.6       | 119.7          | T4 RIGHT, r 26.11, z +0.0 | 104.7      | T3_T4, r 24.84, z +0.0, Tangente 41° | -142.0     | T4_T5      | 89.2    | T4   |
+| `pos_018_W2_QS`  | LOAD_16NM | -0.73 %  | 110.9      | 79.0           | T3 RIGHT, r 26.90, z +0.0 | 50.5       | T3_T4, r 24.79, z +0.0, Tangente 54° | -62.0      | T4_T5      | 132.4   | T4   |
+| `pos_018_W2_DY1` | LOAD_16NM | -0.91 %  | 104.5      | 82.1           | T3 RIGHT, r 26.90, z +0.0 | 53.1       | T3_T4, r 24.79, z +0.0, Tangente 54° | -65.3      | T4_T5      | 125.1   | T4   |
+| `pos_018_W2_DY2` | LOAD_16NM | -1.60 %  | 83.5       | 96.2           | T3 RIGHT, r 26.90, z +0.0 | 63.9       | T3_T4, r 24.81, z +0.0, Tangente 49° | -79.8      | T4_T5      | 100.6   | T4   |
+| `pos_018_W3_QS`  | LOAD_16NM | -1.17 %  | 97.5       | 94.3           | T3 RIGHT, r 26.90, z +0.0 | 87.7       | T3_T4, r 24.85, z -0.7, Tangente 37° | -126.6     | T4_T5      | 113.1   | T4   |
+| `pos_018_W3_DY1` | LOAD_16NM | -1.32 %  | 92.1       | 95.0           | T3 RIGHT, r 26.90, z +0.0 | 91.7       | T3_T4, r 24.85, z +6.7, Tangente 37° | -133.6     | T4_T5      | 105.8   | T4   |
+| `pos_018_W3_DY2` | LOAD_16NM | -1.62 %  | 73.0       | 111.4          | T4 RIGHT, r 26.11, z -7.5 | 104.4      | T3_T4, r 24.85, z -0.7, Tangente 37° | -152.2     | T4_T5      | 85.0    | T4   |
+| `pos_018_W4_QS`  | LOAD_16NM | -0.84 %  | 108.8      | 72.9           | T3 RIGHT, r 26.90, z +0.0 | 58.7       | T3_T4, r 24.78, z +4.4, Tangente 59° | -76.8      | T4_T5      | 124.9   | T4   |
+| `pos_018_W4_DY1` | LOAD_16NM | -0.98 %  | 102.6      | 74.3           | T3 RIGHT, r 26.90, z +0.0 | 64.3       | T3_T4, r 24.78, z +4.4, Tangente 59° | -84.1      | T4_T5      | 117.3   | T4   |
+| `pos_018_W4_DY2` | LOAD_16NM | -1.59 %  | 81.6       | 86.1           | T4 RIGHT, r 26.11, z -7.5 | 75.7       | T3_T4, r 24.78, z +4.4, Tangente 59° | -103.8     | T4_T5      | 94.2    | T4   |
+| `pos_019_W1_QS`  | LOAD_16NM | -1.16 %  | 100.2      | 111.3          | T3 RIGHT, r 26.90, z +0.0 | 89.1       | T3_T4, r 24.84, z +0.0, Tangente 41° | -122.9     | T4_T5      | 121.7   | T4   |
+| `pos_019_W1_DY1` | LOAD_16NM | -1.60 %  | 93.4       | 111.1          | T3 RIGHT, r 26.90, z +0.0 | 92.7       | T3_T4, r 24.84, z +0.0, Tangente 41° | -128.5     | T4_T5      | 113.6   | T4   |
+| `pos_019_W1_DY2` | LOAD_16NM | -1.53 %  | 70.1       | 122.5          | T4 RIGHT, r 26.11, z +0.0 | 100.5      | T3_T4, r 24.84, z +0.0, Tangente 41° | -137.3     | T4_T5      | 85.9    | T4   |
+| `pos_019_W2_QS`  | LOAD_16NM | +0.11 %  | 114.9      | 83.6           | T3 RIGHT, r 26.90, z +0.0 | 50.6       | T3_T4, r 24.79, z +0.0, Tangente 54° | -62.6      | T4_T5      | 136.7   | T4   |
+| `pos_019_W2_DY1` | LOAD_16NM | -0.24 %  | 108.5      | 89.3           | T3 RIGHT, r 26.90, z +0.0 | 53.3       | T3_T4, r 24.79, z +0.0, Tangente 54° | -66.2      | T4_T5      | 129.5   | T4   |
+| `pos_019_W2_DY2` | LOAD_16NM | -1.73 %  | 82.9       | 105.1          | T3 RIGHT, r 26.90, z +0.0 | 63.1       | T3_T4, r 24.81, z +0.0, Tangente 49° | -79.5      | T4_T5      | 99.2    | T4   |
+| `pos_019_W3_QS`  | LOAD_16NM | -1.10 %  | 99.5       | 110.2          | T3 RIGHT, r 26.90, z +0.0 | 88.6       | T3_T4, r 24.85, z -0.7, Tangente 37° | -130.1     | T4_T5      | 114.8   | T4   |
+| `pos_019_W3_DY1` | LOAD_16NM | -1.44 %  | 93.4       | 111.2          | T3 RIGHT, r 26.90, z +0.0 | 92.2       | T3_T4, r 24.85, z -0.7, Tangente 37° | -136.7     | T4_T5      | 106.7   | T4   |
+| `pos_019_W3_DY2` | LOAD_16NM | -1.56 %  | 70.6       | 115.3          | T4 RIGHT, r 26.11, z -7.5 | 99.8       | T3_T4, r 24.85, z -0.7, Tangente 37° | -146.4     | T4_T5      | 81.5    | T4   |
+| `pos_019_W4_QS`  | LOAD_16NM | -0.11 %  | 111.9      | 75.9           | T3 RIGHT, r 26.90, z +0.0 | 58.2       | T3_T4, r 24.78, z +4.4, Tangente 59° | -78.7      | T4_T5      | 128.3   | T4   |
+| `pos_019_W4_DY1` | LOAD_16NM | -0.43 %  | 105.6      | 79.3           | T3 RIGHT, r 26.90, z +0.0 | 63.8       | T3_T4, r 24.78, z +4.4, Tangente 59° | -85.8      | T4_T5      | 120.6   | T4   |
+| `pos_019_W4_DY2` | LOAD_16NM | -1.65 %  | 80.3       | 92.8           | T3 RIGHT, r 26.90, z +0.0 | 73.6       | T3_T4, r 24.78, z +4.4, Tangente 59° | -103.2     | T4_T5      | 92.0    | T4   |
+| `pos_020_W1_QS`  | LOAD_16NM | -1.69 %  | 101.3      | 124.0          | T3 RIGHT, r 26.90, z +0.0 | 89.6       | T3_T4, r 24.84, z +0.0, Tangente 41° | -126.6     | T4_T5      | 122.6   | T4   |
+| `pos_020_W1_DY1` | LOAD_16NM | -1.62 %  | 92.3       | 120.9          | T3 RIGHT, r 26.90, z +0.0 | 91.0       | T3_T4, r 24.84, z +0.0, Tangente 41° | -128.0     | T4_T5      | 111.8   | T4   |
+| `pos_020_W1_DY2` | LOAD_16NM | -1.41 %  | 68.0       | 125.9          | T4 RIGHT, r 26.11, z +0.0 | 96.4       | T3_T4, r 24.84, z +0.0, Tangente 41° | -132.8     | T4_T5      | 82.8    | T4   |
+| `pos_020_W2_QS`  | LOAD_16NM | -1.22 %  | 117.4      | 85.2           | T3 RIGHT, r 26.90, z +0.0 | 50.9       | T3_T4, r 24.81, z +0.0, Tangente 49° | -63.6      | T4_T5      | 138.9   | T4   |
+| `pos_020_W2_DY1` | LOAD_16NM | -1.43 %  | 111.8      | 91.7           | T3 RIGHT, r 26.90, z +0.0 | 53.6       | T3_T4, r 24.81, z +0.0, Tangente 49° | -67.6      | T4_T5      | 132.9   | T4   |
+| `pos_020_W2_DY2` | LOAD_16NM | -1.53 %  | 80.2       | 110.5          | T3 RIGHT, r 26.90, z +0.0 | 61.8       | T3_T4, r 24.81, z +0.0, Tangente 49° | -78.2      | T4_T5      | 95.9    | T4   |
+| `pos_020_W3_QS`  | LOAD_16NM | -1.72 %  | 101.1      | 125.1          | T3 RIGHT, r 26.90, z +0.0 | 89.6       | T3_T4, r 24.85, z -0.7, Tangente 37° | -134.4     | T4_T5      | 116.2   | T4   |
+| `pos_020_W3_DY1` | LOAD_16NM | -1.67 %  | 93.2       | 124.8          | T3 RIGHT, r 26.90, z +0.0 | 91.2       | T3_T4, r 24.85, z -0.7, Tangente 37° | -137.2     | T4_T5      | 105.9   | T4   |
+| `pos_020_W3_DY2` | LOAD_16NM | -1.42 %  | 68.5       | 118.2          | T4 RIGHT, r 26.11, z -7.5 | 96.1       | T3_T4, r 24.85, z -0.7, Tangente 37° | -141.6     | T4_T5      | 78.7    | T4   |
+| `pos_020_W4_QS`  | LOAD_16NM | -1.31 %  | 114.0      | 77.5           | T3 RIGHT, r 26.90, z +0.0 | 58.8       | T3_T4, r 24.87, z +6.7, Tangente 33° | -81.0      | T4_T5      | 129.4   | T4   |
+| `pos_020_W4_DY1` | LOAD_16NM | -1.50 %  | 108.5      | 81.4           | T3 RIGHT, r 26.90, z +0.0 | 64.0       | T3_T4, r 24.87, z +6.7, Tangente 33° | -89.1      | T4_T5      | 122.7   | T4   |
+| `pos_020_W4_DY2` | LOAD_16NM | -1.51 %  | 77.9       | 98.3           | T3 RIGHT, r 26.90, z +0.0 | 70.9       | T3_T4, r 24.78, z +4.4, Tangente 59° | -101.4     | T4_T5      | 88.3    | T4   |
+| `pos_021_W1_QS`  | LOAD_16NM | -1.49 %  | 99.4       | 130.2          | T3 RIGHT, r 26.90, z +0.0 | 87.3       | T3_T4, r 24.84, z +0.0, Tangente 41° | -123.9     | T4_T5      | 119.6   | T4   |
+| `pos_021_W1_DY1` | LOAD_16NM | -1.44 %  | 90.4       | 127.9          | T3 RIGHT, r 26.90, z +0.0 | 88.3       | T3_T4, r 24.84, z +0.0, Tangente 41° | -124.9     | T4_T5      | 108.7   | T4   |
+| `pos_021_W1_DY2` | LOAD_16NM | -1.27 %  | 66.3       | 129.7          | T4 RIGHT, r 26.11, z +0.0 | 92.5       | T3_T4, r 24.84, z +0.0, Tangente 41° | -128.7     | T4_T5      | 79.9    | T4   |
+| `pos_021_W2_QS`  | LOAD_16NM | -1.51 %  | 118.7      | 86.1           | T3 RIGHT, r 26.90, z +0.0 | 51.0       | T3_T4, r 24.81, z +0.0, Tangente 49° | -64.0      | T4_T5      | 140.2   | T4   |
+| `pos_021_W2_DY1` | LOAD_16NM | -1.71 %  | 112.9      | 92.8           | T3 RIGHT, r 26.90, z +0.0 | 53.6       | T3_T4, r 24.81, z +0.0, Tangente 49° | -68.1      | T4_T5      | 133.8   | T4   |
+| `pos_021_W2_DY2` | LOAD_16NM | -1.35 %  | 78.0       | 114.4          | T3 RIGHT, r 26.90, z +0.0 | 60.5       | T3_T4, r 24.81, z +0.0, Tangente 49° | -76.8      | T4_T5      | 92.7    | T4   |
+| `pos_021_W3_QS`  | LOAD_16NM | -1.51 %  | 99.2       | 125.5          | T3 RIGHT, r 26.90, z +0.7 | 87.5       | T3_T4, r 24.85, z -0.7, Tangente 37° | -131.4     | T4_T5      | 113.4   | T4   |
+| `pos_021_W3_DY1` | LOAD_16NM | -1.46 %  | 91.3       | 129.8          | T3 RIGHT, r 26.90, z +0.7 | 89.0       | T3_T4, r 24.85, z -0.7, Tangente 37° | -134.0     | T4_T5      | 103.3   | T4   |
+| `pos_021_W3_DY2` | LOAD_16NM | -1.26 %  | 66.7       | 122.2          | T3 RIGHT, r 26.90, z +0.7 | 92.9       | T3_T4, r 24.85, z -0.7, Tangente 37° | -137.5     | T4_T5      | 76.0    | T4   |
+| `pos_021_W4_QS`  | LOAD_16NM | -1.60 %  | 115.2      | 78.3           | T3 RIGHT, r 26.90, z +0.0 | 58.8       | T3_T4, r 24.87, z +6.7, Tangente 33° | -82.1      | T4_T5      | 130.2   | T4   |
+| `pos_021_W4_DY1` | LOAD_16NM | -1.71 %  | 108.5      | 82.0           | T3 RIGHT, r 26.90, z +0.0 | 63.5       | T3_T4, r 24.87, z +6.7, Tangente 33° | -89.8      | T4_T5      | 122.0   | T4   |
+| `pos_021_W4_DY2` | LOAD_16NM | -1.33 %  | 75.7       | 101.3          | T3 RIGHT, r 26.90, z +0.0 | 69.4       | T3_T4, r 24.87, z +6.7, Tangente 33° | -99.7      | T4_T5      | 85.6    | T4   |
+| `pos_022_W1_QS`  | LOAD_16NM | -1.28 %  | 97.8       | 129.9          | T3 RIGHT, r 26.90, z +0.0 | 85.0       | T3_T4, r 24.84, z +0.0, Tangente 41° | -121.3     | T4_T5      | 116.7   | T4   |
+| `pos_022_W1_DY1` | LOAD_16NM | -1.24 %  | 88.8       | 134.0          | T3 RIGHT, r 26.90, z +0.0 | 85.8       | T3_T4, r 24.84, z +0.0, Tangente 41° | -122.1     | T4_T5      | 105.9   | T4   |
+| `pos_022_W1_DY2` | LOAD_16NM | -1.09 %  | 64.9       | 130.6          | T4 RIGHT, r 26.11, z +0.0 | 89.1       | T3_T4, r 24.84, z +0.0, Tangente 41° | -125.1     | T4_T5      | 77.5    | T4   |
+| `pos_022_W2_QS`  | LOAD_16NM | -1.57 %  | 120.8      | 87.8           | T3 RIGHT, r 26.90, z +0.0 | 51.1       | T3_T4, r 24.81, z +0.0, Tangente 49° | -64.4      | T4_T5      | 142.2   | T4   |
+| `pos_022_W2_DY1` | LOAD_16NM | -1.51 %  | 110.5      | 93.4           | T3 RIGHT, r 26.90, z +0.0 | 52.8       | T3_T4, r 24.81, z +0.0, Tangente 49° | -67.2      | T4_T5      | 130.2   | T4   |
+| `pos_022_W2_DY2` | LOAD_16NM | -1.20 %  | 75.7       | 114.1          | T3 RIGHT, r 26.90, z +0.0 | 58.9       | T3_T4, r 24.82, z +0.0, Tangente 45° | -75.2      | T4_T5      | 89.2    | T4   |
+| `pos_022_W3_QS`  | LOAD_16NM | -1.31 %  | 97.3       | 120.9          | T3 RIGHT, r 26.90, z +0.7 | 85.2       | T3_T4, r 24.85, z -0.7, Tangente 37° | -128.4     | T4_T5      | 110.5   | T4   |
+| `pos_022_W3_DY1` | LOAD_16NM | -1.26 %  | 89.6       | 125.5          | T3 RIGHT, r 26.90, z +0.7 | 86.6       | T3_T4, r 24.85, z -0.7, Tangente 37° | -130.9     | T4_T5      | 100.5   | T4   |
+| `pos_022_W3_DY2` | LOAD_16NM | -1.11 %  | 65.2       | 131.9          | T3 RIGHT, r 26.90, z +0.7 | 89.6       | T3_T4, r 24.85, z -0.7, Tangente 37° | -133.3     | T4_T5      | 73.3    | T4   |
+| `pos_022_W4_QS`  | LOAD_16NM | -1.55 %  | 115.6      | 78.8           | T3 RIGHT, r 26.90, z +0.0 | 58.7       | T3_T4, r 24.87, z +6.7, Tangente 33° | -82.6      | T4_T5      | 130.3   | T4   |
+| `pos_022_W4_DY1` | LOAD_16NM | -1.49 %  | 106.2      | 82.4           | T3 RIGHT, r 26.90, z +0.0 | 62.6       | T3_T4, r 24.87, z +6.7, Tangente 33° | -88.9      | T4_T5      | 119.0   | T4   |
+| `pos_022_W4_DY2` | LOAD_16NM | -1.20 %  | 73.5       | 101.6          | T3 RIGHT, r 26.90, z +0.0 | 67.5       | T3_T4, r 24.87, z +6.7, Tangente 33° | -97.8      | T4_T5      | 82.5    | T4   |
+| `pos_023_W1_QS`  | LOAD_16NM | -1.05 %  | 96.4       | 122.9          | T3 RIGHT, r 26.90, z +0.0 | 83.0       | T3_T4, r 24.84, z +0.0, Tangente 41° | -119.0     | T4_T5      | 114.5   | T4   |
+| `pos_023_W1_DY1` | LOAD_16NM | -0.99 %  | 87.5       | 131.4          | T3 RIGHT, r 26.90, z +0.0 | 83.8       | T3_T4, r 24.84, z +0.0, Tangente 41° | -119.7     | T4_T5      | 103.9   | T4   |
+| `pos_023_W1_DY2` | LOAD_16NM | -0.87 %  | 63.7       | 135.6          | T3 RIGHT, r 26.90, z +0.0 | 86.6       | T3_T4, r 24.84, z +0.0, Tangente 41° | -122.2     | T4_T5      | 75.5    | T4   |
+| `pos_023_W2_QS`  | LOAD_16NM | -1.33 %  | 118.8      | 86.6           | T3 RIGHT, r 26.90, z +0.0 | 50.5       | T3_T4, r 24.81, z +0.0, Tangente 49° | -63.8      | T4_T5      | 138.7   | T4   |
+| `pos_023_W2_DY1` | LOAD_16NM | -1.28 %  | 108.5      | 91.5           | T3 RIGHT, r 26.90, z +0.0 | 52.0       | T3_T4, r 24.81, z +0.0, Tangente 49° | -66.4      | T4_T5      | 126.7   | T4   |
+| `pos_023_W2_DY2` | LOAD_16NM | -1.03 %  | 73.8       | 111.4          | T3 RIGHT, r 26.90, z +0.0 | 57.2       | T3_T4, r 24.82, z +0.0, Tangente 45° | -73.6      | T4_T5      | 86.0    | T4   |
+| `pos_023_W3_QS`  | LOAD_16NM | -1.12 %  | 95.7       | 116.0          | T3 RIGHT, r 26.90, z +0.7 | 83.0       | T3_T4, r 24.85, z -0.7, Tangente 37° | -125.4     | T4_T5      | 107.5   | T4   |
+| `pos_023_W3_DY1` | LOAD_16NM | -1.07 %  | 88.0       | 120.6          | T3 RIGHT, r 26.90, z +0.7 | 84.2       | T3_T4, r 24.85, z -0.7, Tangente 37° | -128.0     | T4_T5      | 97.6    | T4   |
+| `pos_023_W3_DY2` | LOAD_16NM | -0.92 %  | 64.0       | 140.2          | T3 RIGHT, r 26.90, z +0.7 | 86.4       | T3_T4, r 24.85, z -0.7, Tangente 37° | -129.5     | T4_T5      | 71.2    | T4   |
+| `pos_023_W4_QS`  | LOAD_16NM | -1.31 %  | 113.5      | 78.4           | T3 RIGHT, r 26.90, z +0.0 | 57.8       | T3_T4, r 24.87, z +6.7, Tangente 33° | -82.1      | T4_T5      | 127.2   | T4   |
+| `pos_023_W4_DY1` | LOAD_16NM | -1.25 %  | 104.3      | 83.3           | T3 RIGHT, r 26.90, z +0.0 | 61.6       | T3_T4, r 24.87, z +6.7, Tangente 33° | -88.1      | T4_T5      | 116.2   | T4   |
+| `pos_023_W4_DY2` | LOAD_16NM | -1.02 %  | 71.8       | 101.9          | T3 RIGHT, r 26.90, z +0.0 | 65.5       | T3_T4, r 24.87, z +6.7, Tangente 33° | -96.1      | T4_T5      | 79.5    | T4   |
+| `pos_024_W1_QS`  | LOAD_16NM | -0.83 %  | 95.1       | 115.7          | T3 RIGHT, r 26.90, z +0.0 | 81.2       | T3_T4, r 24.84, z +0.0, Tangente 41° | -116.9     | T4_T5      | 112.1   | T4   |
+| `pos_024_W1_DY1` | LOAD_16NM | -0.77 %  | 86.4       | 123.6          | T3 RIGHT, r 26.90, z +0.0 | 81.8       | T3_T4, r 24.84, z +0.0, Tangente 41° | -117.4     | T4_T5      | 101.7   | T4   |
+| `pos_024_W1_DY2` | LOAD_16NM | -0.66 %  | 62.7       | 143.3          | T3 RIGHT, r 26.90, z +0.0 | 84.0       | T3_T4, r 24.84, z +0.0, Tangente 41° | -119.3     | T4_T5      | 73.5    | T4   |
+| `pos_024_W2_QS`  | LOAD_16NM | -1.11 %  | 116.7      | 82.1           | T3 RIGHT, r 26.90, z +0.0 | 49.8       | T3_T4, r 24.81, z +0.0, Tangente 49° | -63.1      | T4_T5      | 135.2   | T4   |
+| `pos_024_W2_DY1` | LOAD_16NM | -1.03 %  | 106.8      | 89.4           | T3 RIGHT, r 26.90, z +0.0 | 51.3       | T3_T4, r 24.81, z +0.0, Tangente 49° | -65.6      | T4_T5      | 123.9   | T4   |
+| `pos_024_W2_DY2` | LOAD_16NM | -0.81 %  | 72.2       | 108.6          | T3 RIGHT, r 26.90, z +0.0 | 56.0       | T3_T4, r 24.82, z +0.0, Tangente 45° | -72.3      | T4_T5      | 83.6    | T4   |
+| `pos_024_W3_QS`  | LOAD_16NM | -0.92 %  | 94.3       | 111.1          | T3 RIGHT, r 26.90, z +0.7 | 80.9       | T3_T4, r 24.85, z -0.7, Tangente 37° | -123.2     | T4_T5      | 105.2   | T4   |
+| `pos_024_W3_DY1` | LOAD_16NM | -0.88 %  | 86.7       | 115.7          | T3 RIGHT, r 26.90, z +0.7 | 81.9       | T3_T4, r 24.85, z -0.7, Tangente 37° | -125.3     | T4_T5      | 95.3    | T4   |
+| `pos_024_W3_DY2` | LOAD_16NM | -0.71 %  | 63.0       | 140.6          | T3 RIGHT, r 26.90, z +0.7 | 84.1       | T3_T4, r 24.85, z -0.7, Tangente 37° | -126.8     | T4_T5      | 69.4    | T4   |
+| `pos_024_W4_QS`  | LOAD_16NM | -1.13 %  | 111.3      | 76.3           | T3 RIGHT, r 26.90, z +0.0 | 56.6       | T3_T4, r 24.87, z +6.7, Tangente 33° | -81.3      | T4_T5      | 123.6   | T4   |
+| `pos_024_W4_DY1` | LOAD_16NM | -1.05 %  | 102.5      | 81.5           | T3 RIGHT, r 26.90, z +0.0 | 60.3       | T3_T4, r 24.87, z +6.7, Tangente 33° | -87.2      | T4_T5      | 113.0   | T4   |
+| `pos_024_W4_DY2` | LOAD_16NM | -0.86 %  | 70.3       | 100.0          | T3 RIGHT, r 26.90, z +0.0 | 63.4       | T3_T4, r 24.87, z +6.7, Tangente 33° | -94.3      | T4_T5      | 76.8    | T4   |
+| `pos_025_W1_QS`  | LOAD_16NM | -0.59 %  | 94.1       | 107.8          | T3 RIGHT, r 26.90, z +0.0 | 79.4       | T3_T4, r 24.84, z +0.0, Tangente 41° | -114.8     | T4_T5      | 109.7   | T4   |
+| `pos_025_W1_DY1` | LOAD_16NM | -0.54 %  | 85.5       | 115.0          | T3 RIGHT, r 26.90, z +0.0 | 79.9       | T3_T4, r 24.84, z +0.0, Tangente 41° | -115.3     | T4_T5      | 99.4    | T4   |
+| `pos_025_W1_DY2` | LOAD_16NM | -0.42 %  | 62.1       | 143.5          | T3 RIGHT, r 26.90, z +0.0 | 81.5       | T3_T4, r 24.84, z +0.0, Tangente 41° | -116.6     | T4_T5      | 71.6    | T4   |
+| `pos_025_W2_QS`  | LOAD_16NM | -0.86 %  | 114.7      | 76.7           | T3 RIGHT, r 26.90, z +0.0 | 49.2       | T3_T4, r 24.82, z +0.0, Tangente 45° | -62.5      | T4_T5      | 132.1   | T4   |
+| `pos_025_W2_DY1` | LOAD_16NM | -0.76 %  | 105.1      | 83.2           | T3 RIGHT, r 26.90, z +0.0 | 50.7       | T3_T4, r 24.82, z +0.0, Tangente 45° | -65.0      | T4_T5      | 121.3   | T4   |
+| `pos_025_W2_DY2` | LOAD_16NM | -0.56 %  | 71.0       | 104.7          | T3 RIGHT, r 26.90, z +0.0 | 55.1       | T3_T4, r 24.84, z +0.0, Tangente 41° | -71.3      | T4_T5      | 81.2    | T4   |
+| `pos_025_W3_QS`  | LOAD_16NM | -0.66 %  | 93.3       | 105.5          | T3 RIGHT, r 26.90, z +0.7 | 79.3       | T3_T4, r 24.85, z -0.7, Tangente 37° | -121.3     | T4_T5      | 103.1   | T4   |
+| `pos_025_W3_DY1` | LOAD_16NM | -0.64 %  | 85.6       | 110.1          | T3 RIGHT, r 26.90, z +0.7 | 80.1       | T3_T4, r 24.85, z -0.7, Tangente 37° | -123.2     | T4_T5      | 93.3    | T4   |
+| `pos_025_W3_DY2` | LOAD_16NM | -0.49 %  | 62.1       | 132.8          | T3 RIGHT, r 26.90, z +0.7 | 81.5       | T3_T4, r 24.85, z -0.7, Tangente 37° | -123.9     | T4_T5      | 67.5    | T4   |
+| `pos_025_W4_QS`  | LOAD_16NM | -0.92 %  | 109.4      | 72.6           | T3 RIGHT, r 26.90, z +0.0 | 55.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -80.6      | T4_T5      | 120.1   | T4   |
+| `pos_025_W4_DY1` | LOAD_16NM | -0.84 %  | 100.8      | 77.5           | T3 RIGHT, r 26.90, z +0.0 | 58.9       | T3_T4, r 24.87, z +6.7, Tangente 33° | -86.2      | T4_T5      | 109.8   | T4   |
+| `pos_025_W4_DY2` | LOAD_16NM | -0.62 %  | 69.0       | 97.4           | T3 RIGHT, r 26.90, z +0.0 | 61.9       | T3_T4, r 24.87, z +6.7, Tangente 33° | -92.9      | T4_T5      | 74.6    | T4   |
+| `pos_026_W1_QS`  | LOAD_16NM | -0.38 %  | 93.3       | 100.3          | T3 RIGHT, r 26.90, z +0.0 | 77.5       | T3_T4, r 24.84, z +0.0, Tangente 41° | -112.8     | T4_T5      | 107.5   | T4   |
+| `pos_026_W1_DY1` | LOAD_16NM | -0.34 %  | 84.8       | 106.8          | T3 RIGHT, r 26.90, z +0.0 | 77.8       | T3_T4, r 24.84, z +0.0, Tangente 41° | -113.1     | T4_T5      | 97.2    | T4   |
+| `pos_026_W1_DY2` | LOAD_16NM | -0.23 %  | 61.7       | 132.6          | T3 RIGHT, r 26.90, z +0.0 | 78.6       | T3_T4, r 24.84, z +0.0, Tangente 41° | -113.6     | T4_T5      | 69.5    | T4   |
+| `pos_026_W2_QS`  | LOAD_16NM | -0.64 %  | 112.9      | 71.4           | T3 RIGHT, r 26.90, z +0.0 | 48.6       | T3_T4, r 24.82, z +0.0, Tangente 45° | -61.9      | T4_T5      | 129.1   | T4   |
+| `pos_026_W2_DY1` | LOAD_16NM | -0.55 %  | 103.5      | 77.0           | T3 RIGHT, r 26.90, z +0.0 | 50.0       | T3_T4, r 24.82, z +0.0, Tangente 45° | -64.3      | T4_T5      | 118.3   | T4   |
+| `pos_026_W2_DY2` | LOAD_16NM | -0.33 %  | 70.0       | 100.9          | T3 RIGHT, r 26.90, z +0.0 | 54.1       | T3_T4, r 24.84, z +0.0, Tangente 41° | -70.2      | T4_T5      | 78.8    | T4   |
+| `pos_026_W3_QS`  | LOAD_16NM | -0.44 %  | 92.5       | 98.1           | T3 RIGHT, r 26.90, z +0.7 | 77.6       | T3_T4, r 24.85, z -0.7, Tangente 37° | -119.4     | T4_T5      | 101.7   | T3   |
+| `pos_026_W3_DY1` | LOAD_16NM | -0.41 %  | 84.9       | 104.7          | T3 RIGHT, r 26.90, z +0.7 | 78.3       | T3_T4, r 24.85, z -0.7, Tangente 37° | -121.2     | T4_T5      | 93.1    | T3   |
+| `pos_026_W3_DY2` | LOAD_16NM | -0.28 %  | 61.6       | 125.5          | T3 RIGHT, r 26.90, z +0.7 | 79.0       | T3_T4, r 24.85, z -0.7, Tangente 37° | -121.2     | T4_T5      | 67.4    | T3   |
+| `pos_026_W4_QS`  | LOAD_16NM | -0.69 %  | 107.8      | 68.3           | T3 RIGHT, r 26.90, z +0.0 | 56.6       | T2_T3, r 24.77, z +4.4, Tangente 64° | -79.9      | T4_T5      | 117.6   | T4   |
+| `pos_026_W4_DY1` | LOAD_16NM | -0.63 %  | 99.1       | 72.8           | T3 RIGHT, r 26.90, z +0.0 | 59.6       | T2_T3, r 24.77, z +4.4, Tangente 64° | -85.3      | T4_T5      | 107.9   | T3   |
+| `pos_026_W4_DY2` | LOAD_16NM | -0.38 %  | 68.1       | 95.3           | T3 RIGHT, r 26.90, z +0.0 | 61.3       | T2_T3, r 24.77, z +4.4, Tangente 64° | -91.8      | T4_T5      | 74.0    | T3   |
+| `pos_027_W1_QS`  | LOAD_16NM | -0.18 %  | 92.8       | 96.8           | T4 RIGHT, r 26.00, z +0.0 | 75.6       | T3_T4, r 24.84, z +0.0, Tangente 41° | -110.6     | T4_T5      | 105.3   | T4   |
+| `pos_027_W1_DY1` | LOAD_16NM | -0.13 %  | 84.3       | 102.7          | T4 RIGHT, r 26.00, z +0.0 | 75.7       | T3_T4, r 24.84, z +0.0, Tangente 41° | -110.8     | T4_T5      | 95.5    | T3   |
+| `pos_027_W1_DY2` | LOAD_16NM | -0.00 %  | 61.4       | 123.9          | T4 RIGHT, r 26.00, z +0.0 | 76.0       | T3_T4, r 24.84, z +0.0, Tangente 41° | -111.0     | T4_T5      | 70.1    | T3   |
+| `pos_027_W2_QS`  | LOAD_16NM | -0.42 %  | 111.6      | 64.9           | T3 RIGHT, r 26.90, z +0.0 | 48.0       | T3_T4, r 24.82, z +0.0, Tangente 45° | -61.3      | T4_T5      | 126.2   | T4   |
+| `pos_027_W2_DY1` | LOAD_16NM | -0.35 %  | 102.1      | 70.0           | T3 RIGHT, r 26.90, z +0.0 | 49.3       | T3_T4, r 24.82, z +0.0, Tangente 45° | -63.4      | T4_T5      | 115.3   | T4   |
+| `pos_027_W2_DY2` | LOAD_16NM | -0.12 %  | 69.4       | 97.1           | T3 RIGHT, r 26.90, z +0.0 | 53.0       | T3_T4, r 24.84, z +0.0, Tangente 41° | -69.1      | T4_T5      | 78.2    | T3   |
+| `pos_027_W3_QS`  | LOAD_16NM | -0.25 %  | 91.8       | 90.2           | T4 RIGHT, r 26.00, z +7.5 | 75.8       | T3_T4, r 24.85, z -0.7, Tangente 37° | -117.2     | T4_T5      | 103.0   | T3   |
+| `pos_027_W3_DY1` | LOAD_16NM | -0.21 %  | 84.3       | 97.9           | T4 RIGHT, r 26.00, z +7.5 | 76.4       | T3_T4, r 24.85, z -0.7, Tangente 37° | -119.0     | T4_T5      | 94.6    | T3   |
+| `pos_027_W3_DY2` | LOAD_16NM | -0.07 %  | 61.4       | 117.7          | T4 RIGHT, r 26.00, z +7.5 | 76.5       | T3_T4, r 24.85, z -0.7, Tangente 37° | -118.3     | T4_T5      | 69.3    | T3   |
+| `pos_027_W4_QS`  | LOAD_16NM | -0.46 %  | 106.5      | 63.3           | T3 RIGHT, r 26.90, z +0.0 | 57.4       | T2_T3, r 24.77, z +4.4, Tangente 64° | -79.3      | T4_T5      | 118.3   | T3   |
+| `pos_027_W4_DY1` | LOAD_16NM | -0.41 %  | 97.9       | 68.1           | T3 RIGHT, r 26.90, z +0.0 | 60.6       | T2_T3, r 24.77, z +4.4, Tangente 64° | -84.5      | T4_T5      | 108.8   | T3   |
+| `pos_027_W4_DY2` | LOAD_16NM | -0.15 %  | 67.5       | 90.4           | T3 RIGHT, r 26.90, z +0.0 | 62.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -90.5      | T4_T5      | 75.6    | T3   |
+| `pos_028_W1_QS`  | LOAD_16NM | -0.00 %  | 92.3       | 91.8           | T4 RIGHT, r 26.00, z +0.0 | 73.8       | T3_T4, r 24.84, z +0.0, Tangente 41° | -108.5     | T4_T5      | 105.9   | T3   |
+| `pos_028_W1_DY1` | LOAD_16NM | +0.06 %  | 83.9       | 97.2           | T4 RIGHT, r 26.00, z +0.0 | 73.9       | T3_T4, r 24.84, z +0.0, Tangente 41° | -108.6     | T4_T5      | 96.6    | T3   |
+| `pos_028_W1_DY2` | LOAD_16NM | +0.24 %  | 61.4       | 116.4          | T4 RIGHT, r 26.00, z +0.0 | 74.1       | T3_T4, r 24.84, z +0.0, Tangente 41° | -109.0     | T4_T5      | 71.7    | T3   |
+| `pos_028_W2_QS`  | LOAD_16NM | -0.23 %  | 110.5      | 62.7           | T4 RIGHT, r 26.00, z +0.0 | 47.3       | T3_T4, r 24.82, z +0.0, Tangente 45° | -60.6      | T4_T5      | 124.9   | T3   |
+| `pos_028_W2_DY1` | LOAD_16NM | -0.16 %  | 101.1      | 66.8           | T4 RIGHT, r 26.00, z +0.0 | 48.5       | T3_T4, r 24.82, z +0.0, Tangente 45° | -62.6      | T4_T5      | 114.6   | T3   |
+| `pos_028_W2_DY2` | LOAD_16NM | +0.08 %  | 69.0       | 87.9           | T4 RIGHT, r 26.00, z +0.0 | 51.9       | T2_T3, r 24.79, z +0.0, Tangente 54° | -67.9      | T4_T5      | 79.5    | T3   |
+| `pos_028_W3_QS`  | LOAD_16NM | -0.07 %  | 91.2       | 86.9           | T4 RIGHT, r 26.00, z +7.5 | 74.0       | T3_T4, r 24.85, z -0.7, Tangente 37° | -114.9     | T4_T5      | 103.9   | T3   |
+| `pos_028_W3_DY1` | LOAD_16NM | -0.03 %  | 83.8       | 94.1           | T4 RIGHT, r 26.00, z +7.5 | 74.5       | T3_T4, r 24.85, z -0.7, Tangente 37° | -116.5     | T4_T5      | 95.7    | T3   |
+| `pos_028_W3_DY2` | LOAD_16NM | +0.15 %  | 61.3       | 113.8          | T4 RIGHT, r 26.00, z +7.5 | 74.1       | T3_T4, r 24.85, z -0.7, Tangente 37° | -115.8     | T4_T5      | 70.9    | T3   |
+| `pos_028_W4_QS`  | LOAD_16NM | -0.26 %  | 105.4      | 60.3           | T4 RIGHT, r 26.11, z -7.5 | 58.2       | T2_T3, r 24.77, z +4.4, Tangente 64° | -78.5      | T4_T5      | 118.7   | T3   |
+| `pos_028_W4_DY1` | LOAD_16NM | -0.19 %  | 96.9       | 65.0           | T4 RIGHT, r 26.00, z +7.5 | 61.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -83.6      | T4_T5      | 109.4   | T3   |
+| `pos_028_W4_DY2` | LOAD_16NM | +0.04 %  | 66.9       | 87.4           | T4 RIGHT, r 26.00, z +7.5 | 64.4       | T2_T3, r 24.77, z +4.4, Tangente 64° | -88.9      | T4_T5      | 76.7    | T3   |
+| `pos_029_W1_QS`  | LOAD_16NM | +0.17 %  | 91.9       | 84.7           | T4 RIGHT, r 26.00, z +0.0 | 72.4       | T3_T4, r 24.84, z +0.0, Tangente 41° | -106.6     | T4_T5      | 106.4   | T3   |
+| `pos_029_W1_DY1` | LOAD_16NM | +0.23 %  | 83.7       | 90.2           | T4 RIGHT, r 26.00, z +0.0 | 72.3       | T3_T4, r 24.84, z +0.0, Tangente 41° | -106.6     | T4_T5      | 97.3    | T3   |
+| `pos_029_W1_DY2` | LOAD_16NM | +0.42 %  | 61.5       | 107.7          | T4 RIGHT, r 26.00, z +0.0 | 72.9       | T2_T3, r 24.82, z +0.0, Tangente 45° | -106.7     | T4_T5      | 72.9    | T3   |
+| `pos_029_W2_QS`  | LOAD_16NM | -0.08 %  | 109.5      | 62.2           | T4 RIGHT, r 26.00, z +0.0 | 47.2       | T2_T3, r 24.78, z +0.0, Tangente 59° | -59.8      | T4_T5      | 124.9   | T3   |
+| `pos_029_W2_DY1` | LOAD_16NM | -0.01 %  | 100.2      | 66.2           | T4 RIGHT, r 26.00, z +0.0 | 48.4       | T2_T3, r 24.78, z +0.0, Tangente 59° | -61.8      | T4_T5      | 114.7   | T3   |
+| `pos_029_W2_DY2` | LOAD_16NM | +0.26 %  | 68.5       | 84.2           | T4 RIGHT, r 26.00, z +0.0 | 52.7       | T2_T3, r 24.79, z +0.0, Tangente 54° | -67.2      | T4_T5      | 80.1    | T3   |
+| `pos_029_W3_QS`  | LOAD_16NM | +0.08 %  | 90.8       | 82.1           | T4 RIGHT, r 26.00, z +7.5 | 72.2       | T3_T4, r 24.85, z -0.7, Tangente 37° | -112.7     | T4_T5      | 104.5   | T3   |
+| `pos_029_W3_DY1` | LOAD_16NM | +0.13 %  | 83.5       | 89.6           | T4 RIGHT, r 26.00, z +7.5 | 74.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -114.2     | T4_T5      | 96.4    | T3   |
+| `pos_029_W3_DY2` | LOAD_16NM | +0.31 %  | 61.1       | 105.0          | T4 RIGHT, r 26.00, z +7.5 | 75.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -113.4     | T4_T5      | 71.8    | T3   |
+| `pos_029_W4_QS`  | LOAD_16NM | -0.07 %  | 104.7      | 58.2           | T4 RIGHT, r 26.11, z -7.5 | 58.9       | T2_T3, r 24.77, z +4.4, Tangente 64° | -77.8      | T4_T5      | 119.0   | T3   |
+| `pos_029_W4_DY1` | LOAD_16NM | -0.03 %  | 96.1       | 63.3           | T4 RIGHT, r 26.11, z -7.5 | 62.4       | T2_T3, r 24.77, z +4.4, Tangente 64° | -82.6      | T4_T5      | 109.6   | T3   |
+| `pos_029_W4_DY2` | LOAD_16NM | +0.20 %  | 66.6       | 85.1           | T4 RIGHT, r 26.00, z +7.5 | 65.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -87.4      | T4_T5      | 77.6    | T3   |
+| `pos_030_W1_QS`  | LOAD_16NM | +0.30 %  | 91.6       | 77.4           | T4 RIGHT, r 26.00, z +0.0 | 70.6       | T3_T4, r 24.84, z +0.0, Tangente 41° | -104.5     | T4_T5      | 106.9   | T3   |
+| `pos_030_W1_DY1` | LOAD_16NM | +0.39 %  | 83.6       | 82.3           | T4 RIGHT, r 26.00, z +0.0 | 71.3       | T2_T3, r 24.82, z +0.0, Tangente 45° | -104.6     | T4_T5      | 97.9    | T3   |
+| `pos_030_W1_DY2` | LOAD_16NM | +0.53 %  | 61.6       | 98.5           | T4 RIGHT, r 26.00, z +0.0 | 74.8       | T2_T3, r 24.82, z +0.0, Tangente 45° | -103.9     | T4_T5      | 73.5    | T3   |
+| `pos_030_W2_QS`  | LOAD_16NM | +0.10 %  | 108.9      | 60.6           | T4 RIGHT, r 26.00, z +0.0 | 47.5       | T2_T3, r 24.78, z +0.0, Tangente 59° | -59.3      | T4_T5      | 126.0   | T3   |
+| `pos_030_W2_DY1` | LOAD_16NM | +0.16 %  | 99.5       | 63.2           | T4 RIGHT, r 26.00, z +0.0 | 48.8       | T2_T3, r 24.78, z +0.0, Tangente 59° | -61.3      | T4_T5      | 115.2   | T3   |
+| `pos_030_W2_DY2` | LOAD_16NM | +0.45 %  | 68.4       | 78.6           | T4 RIGHT, r 26.00, z +0.0 | 53.4       | T2_T3, r 24.79, z +0.0, Tangente 54° | -66.5      | T4_T5      | 80.6    | T3   |
+| `pos_030_W3_QS`  | LOAD_16NM | +0.23 %  | 90.4       | 76.6           | T4 RIGHT, r 26.00, z +7.5 | 72.6       | T2_T3, r 24.77, z +4.4, Tangente 64° | -110.7     | T4_T5      | 104.5   | T3   |
+| `pos_030_W3_DY1` | LOAD_16NM | +0.28 %  | 83.2       | 82.7           | T4 RIGHT, r 26.00, z +7.5 | 75.7       | T2_T3, r 24.77, z +4.4, Tangente 64° | -112.1     | T4_T5      | 96.5    | T3   |
+| `pos_030_W3_DY2` | LOAD_16NM | +0.46 %  | 61.2       | 96.2           | T4 RIGHT, r 26.00, z +7.5 | 77.7       | T2_T3, r 24.77, z +4.4, Tangente 64° | -110.9     | T4_T5      | 72.5    | T3   |
+| `pos_030_W4_QS`  | LOAD_16NM | +0.10 %  | 104.2      | 57.2           | T4 RIGHT, r 26.00, z +7.5 | 59.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -77.1      | T4_T5      | 119.1   | T3   |
+| `pos_030_W4_DY1` | LOAD_16NM | +0.15 %  | 95.8       | 62.5           | T4 RIGHT, r 26.00, z +7.5 | 63.2       | T2_T3, r 24.77, z +4.4, Tangente 64° | -81.7      | T4_T5      | 109.8   | T3   |
+| `pos_030_W4_DY2` | LOAD_16NM | +0.38 %  | 66.5       | 79.7           | T4 RIGHT, r 26.00, z +7.5 | 66.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -86.0      | T4_T5      | 78.1    | T3   |
+| `pos_031_W1_QS`  | LOAD_16NM | +0.40 %  | 91.3       | 73.7           | T4 RIGHT, r 25.90, z +0.0 | 71.4       | T2_T3, r 24.81, z +0.0, Tangente 49° | -102.1     | T4_T5      | 107.6   | T3   |
+| `pos_031_W1_DY1` | LOAD_16NM | +0.48 %  | 83.4       | 76.8           | T4 RIGHT, r 25.90, z +0.0 | 72.4       | T2_T3, r 24.82, z +0.0, Tangente 45° | -102.1     | T4_T5      | 98.5    | T3   |
+| `pos_031_W1_DY2` | LOAD_16NM | +0.68 %  | 62.0       | 89.5           | T4 RIGHT, r 26.00, z +0.0 | 76.7       | T2_T3, r 24.82, z +0.0, Tangente 45° | -101.2     | T4_T5      | 74.2    | T3   |
+| `pos_031_W2_QS`  | LOAD_16NM | +0.25 %  | 108.3      | 59.2           | T4 RIGHT, r 25.80, z +0.0 | 47.9       | T2_T3, r 24.78, z +0.0, Tangente 59° | -58.9      | T4_T5      | 126.4   | T3   |
+| `pos_031_W2_DY1` | LOAD_16NM | +0.32 %  | 99.1       | 59.7           | T4 RIGHT, r 25.80, z +0.0 | 49.3       | T2_T3, r 24.78, z +0.0, Tangente 59° | -60.8      | T4_T5      | 115.9   | T3   |
+| `pos_031_W2_DY2` | LOAD_16NM | +0.61 %  | 68.3       | 72.6           | T4 RIGHT, r 26.00, z +0.0 | 54.2       | T2_T3, r 24.79, z +0.0, Tangente 54° | -65.6      | T4_T5      | 80.9    | T3   |
+| `pos_031_W3_QS`  | LOAD_16NM | +0.38 %  | 90.2       | 71.6           | T4 RIGHT, r 26.00, z +7.5 | 73.7       | T2_T3, r 24.77, z +4.4, Tangente 64° | -108.6     | T4_T5      | 104.3   | T3   |
+| `pos_031_W3_DY1` | LOAD_16NM | +0.42 %  | 83.1       | 77.0           | T4 RIGHT, r 26.00, z +7.5 | 76.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -109.9     | T4_T5      | 96.4    | T3   |
+| `pos_031_W3_DY2` | LOAD_16NM | +0.64 %  | 61.6       | 88.2           | T4 RIGHT, r 26.00, z +7.5 | 79.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -108.6     | T4_T5      | 73.1    | T3   |
+| `pos_031_W4_QS`  | LOAD_16NM | +0.26 %  | 103.9      | 57.4           | T4 RIGHT, r 25.80, z +0.0 | 60.0       | T2_T3, r 24.77, z +4.4, Tangente 64° | -76.3      | T4_T5      | 119.5   | T3   |
+| `pos_031_W4_DY1` | LOAD_16NM | +0.30 %  | 95.5       | 61.6           | T4 RIGHT, r 26.00, z +7.5 | 63.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -80.6      | T4_T5      | 109.7   | T3   |
+| `pos_031_W4_DY2` | LOAD_16NM | +0.53 %  | 66.3       | 74.3           | T4 RIGHT, r 26.00, z +7.5 | 67.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -84.7      | T4_T5      | 77.9    | T3   |
+| `pos_032_W1_QS`  | LOAD_16NM | +0.50 %  | 91.4       | 72.7           | T4 RIGHT, r 25.90, z +0.0 | 72.4       | T2_T3, r 24.81, z +0.0, Tangente 49° | -99.6      | T4_T5      | 108.2   | T3   |
+| `pos_032_W1_DY1` | LOAD_16NM | +0.55 %  | 83.4       | 75.5           | T4 RIGHT, r 25.90, z +0.0 | 73.4       | T2_T3, r 24.82, z +0.0, Tangente 45° | -99.3      | T4_T5      | 99.1    | T3   |
+| `pos_032_W1_DY2` | LOAD_16NM | +0.73 %  | 62.4       | 87.1           | T4 RIGHT, r 25.90, z +0.0 | 78.5       | T2_T3, r 24.82, z +0.0, Tangente 45° | -98.0      | T4_T5      | 75.1    | T3   |
+| `pos_032_W2_QS`  | LOAD_16NM | +0.47 %  | 108.5      | 61.2           | T4 RIGHT, r 25.80, z +0.0 | 48.2       | T2_T3, r 24.78, z +0.0, Tangente 59° | -58.5      | T4_T5      | 127.2   | T3   |
+| `pos_032_W2_DY1` | LOAD_16NM | +0.47 %  | 98.9       | 61.6           | T4 RIGHT, r 25.80, z +0.0 | 49.6       | T2_T3, r 24.78, z +0.0, Tangente 59° | -60.2      | T4_T5      | 116.3   | T3   |
+| `pos_032_W2_DY2` | LOAD_16NM | +0.66 %  | 68.1       | 68.8           | T4 RIGHT, r 25.90, z +0.0 | 54.6       | T2_T3, r 24.79, z +0.0, Tangente 54° | -64.5      | T4_T5      | 81.3    | T3   |
+| `pos_032_W3_QS`  | LOAD_16NM | +0.50 %  | 90.3       | 69.7           | T4 RIGHT, r 25.90, z -7.5 | 74.6       | T2_T3, r 24.77, z +4.4, Tangente 64° | -106.4     | T4_T5      | 105.1   | T3   |
+| `pos_032_W3_DY1` | LOAD_16NM | +0.54 %  | 83.2       | 72.5           | T4 RIGHT, r 25.90, z -7.5 | 77.9       | T2_T3, r 24.77, z +4.4, Tangente 64° | -107.6     | T4_T5      | 96.7    | T3   |
+| `pos_032_W3_DY2` | LOAD_16NM | +0.70 %  | 61.8       | 81.9           | T4 RIGHT, r 26.00, z +7.5 | 81.0       | T2_T3, r 24.78, z +4.4, Tangente 59° | -105.3     | T4_T5      | 73.0    | T3   |
+| `pos_032_W4_QS`  | LOAD_16NM | +0.50 %  | 104.3      | 59.3           | T4 RIGHT, r 25.70, z +0.0 | 60.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -75.6      | T4_T5      | 120.7   | T3   |
+| `pos_032_W4_DY1` | LOAD_16NM | +0.50 %  | 95.6       | 59.8           | T4 RIGHT, r 26.00, z +7.5 | 64.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -79.7      | T4_T5      | 110.7   | T3   |
+| `pos_032_W4_DY2` | LOAD_16NM | +0.66 %  | 66.3       | 69.3           | T4 RIGHT, r 26.00, z +7.5 | 68.7       | T2_T3, r 24.77, z +4.4, Tangente 64° | -83.2      | T4_T5      | 77.7    | T3   |
+| `pos_033_W1_QS`  | LOAD_16NM | +0.62 %  | 91.8       | 75.1           | T4 RIGHT, r 25.80, z -6.7 | 73.7       | T2_T3, r 24.81, z +0.0, Tangente 49° | -97.3      | T4_T5      | 109.1   | T3   |
+| `pos_033_W1_DY1` | LOAD_16NM | +0.63 %  | 83.8       | 75.1           | T4 RIGHT, r 25.90, z +0.0 | 74.7       | T2_T3, r 24.82, z +0.0, Tangente 45° | -96.8      | T4_T5      | 99.9    | T3   |
+| `pos_033_W1_DY2` | LOAD_16NM | +0.69 %  | 62.8       | 86.0           | T4 RIGHT, r 25.90, z +0.0 | 79.7       | T2_T3, r 24.82, z +0.0, Tangente 45° | -94.5      | T4_T5      | 75.6    | T3   |
+| `pos_033_W2_QS`  | LOAD_16NM | +0.73 %  | 109.0      | 65.1           | T4 RIGHT, r 25.80, z -5.9 | 48.7       | T2_T3, r 24.77, z +0.0, Tangente 64° | -57.9      | T4_T5      | 128.3   | T3   |
+| `pos_033_W2_DY1` | LOAD_16NM | +0.72 %  | 99.6       | 64.6           | T4 RIGHT, r 25.80, z +0.0 | 50.1       | T2_T3, r 24.78, z +0.0, Tangente 59° | -59.6      | T4_T5      | 117.5   | T3   |
+| `pos_033_W2_DY2` | LOAD_16NM | +0.72 %  | 68.5       | 68.7           | T4 RIGHT, r 25.90, z +0.0 | 55.1       | T2_T3, r 24.79, z +0.0, Tangente 54° | -63.4      | T4_T5      | 81.9    | T3   |
+| `pos_033_W3_QS`  | LOAD_16NM | +0.67 %  | 90.9       | 75.2           | T4 RIGHT, r 25.80, z -7.5 | 75.7       | T2_T3, r 24.77, z +4.4, Tangente 64° | -104.2     | T4_T5      | 106.1   | T3   |
+| `pos_033_W3_DY1` | LOAD_16NM | +0.68 %  | 83.7       | 76.1           | T4 RIGHT, r 25.90, z -7.5 | 79.0       | T2_T3, r 24.77, z +4.4, Tangente 64° | -105.1     | T4_T5      | 97.6    | T3   |
+| `pos_033_W3_DY2` | LOAD_16NM | +0.73 %  | 62.3       | 82.4           | T4 RIGHT, r 25.90, z -7.5 | 82.2       | T2_T3, r 24.78, z +4.4, Tangente 59° | -102.1     | T4_T5      | 73.7    | T3   |
+| `pos_033_W4_QS`  | LOAD_16NM | +0.76 %  | 104.9      | 65.3           | T4 RIGHT, r 25.80, z +7.5 | 61.1       | T2_T3, r 24.77, z +4.4, Tangente 64° | -74.9      | T4_T5      | 121.7   | T3   |
+| `pos_033_W4_DY1` | LOAD_16NM | +0.77 %  | 96.4       | 64.9           | T4 RIGHT, r 25.80, z -7.5 | 65.1       | T2_T3, r 24.77, z +4.4, Tangente 64° | -78.9      | T4_T5      | 111.9   | T3   |
+| `pos_033_W4_DY2` | LOAD_16NM | +0.75 %  | 66.6       | 70.6           | T4 RIGHT, r 25.90, z -7.5 | 69.4       | T2_T3, r 24.77, z +4.4, Tangente 64° | -81.6      | T4_T5      | 78.5    | T3   |
+| `pos_034_W1_QS`  | LOAD_16NM | +0.78 %  | 92.8       | 89.1           | T4 RIGHT, r 25.80, z -4.4 | 75.5       | T2_T3, r 24.81, z +0.0, Tangente 49° | -95.1      | T4_T5      | 111.0   | T3   |
+| `pos_034_W1_DY1` | LOAD_16NM | +0.78 %  | 84.7       | 86.9           | T4 RIGHT, r 25.80, z -4.4 | 76.6       | T2_T3, r 24.82, z +0.0, Tangente 45° | -94.4      | T4_T5      | 101.6   | T3   |
+| `pos_034_W1_DY2` | LOAD_16NM | +0.74 %  | 63.5       | 87.9           | T4 RIGHT, r 25.90, z +0.0 | 82.0       | T2_T3, r 24.82, z +0.0, Tangente 45° | -91.1      | T4_T5      | 77.1    | T3   |
+| `pos_034_W2_QS`  | LOAD_16NM | +0.91 %  | 109.9      | 72.2           | T4 RIGHT, r 25.80, z -5.9 | 49.3       | T2_T3, r 24.77, z +0.0, Tangente 64° | -57.2      | T4_T5      | 130.1   | T3   |
+| `pos_034_W2_DY1` | LOAD_16NM | +0.89 %  | 100.4      | 72.8           | T4 RIGHT, r 25.80, z -5.9 | 50.7       | T2_T3, r 24.78, z +0.0, Tangente 59° | -58.7      | T4_T5      | 119.2   | T3   |
+| `pos_034_W2_DY2` | LOAD_16NM | +0.84 %  | 69.3       | 74.3           | T4 RIGHT, r 25.90, z -5.9 | 56.0       | T2_T3, r 24.79, z +0.0, Tangente 54° | -62.2      | T4_T5      | 83.5    | T3   |
+| `pos_034_W3_QS`  | LOAD_16NM | +0.82 %  | 91.9       | 86.8           | T4 RIGHT, r 25.80, z -7.5 | 77.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -101.7     | T4_T5      | 107.7   | T3   |
+| `pos_034_W3_DY1` | LOAD_16NM | +0.84 %  | 84.7       | 85.6           | T4 RIGHT, r 25.80, z -7.5 | 80.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -102.5     | T4_T5      | 99.0    | T3   |
+| `pos_034_W3_DY2` | LOAD_16NM | +0.76 %  | 63.1       | 84.1           | T4 RIGHT, r 25.90, z -7.5 | 83.9       | T2_T3, r 24.78, z +4.4, Tangente 59° | -98.5      | T4_T5      | 74.7    | T3   |
+| `pos_034_W4_QS`  | LOAD_16NM | +0.98 %  | 106.0      | 73.0           | T4 RIGHT, r 25.80, z +7.5 | 62.0       | T2_T3, r 24.77, z +4.4, Tangente 64° | -74.0      | T4_T5      | 123.4   | T3   |
+| `pos_034_W4_DY1` | LOAD_16NM | +0.95 %  | 97.3       | 74.5           | T4 RIGHT, r 25.80, z +7.5 | 66.1       | T2_T3, r 24.77, z +4.4, Tangente 64° | -77.8      | T4_T5      | 113.2   | T3   |
+| `pos_034_W4_DY2` | LOAD_16NM | +0.88 %  | 67.6       | 75.5           | T4 RIGHT, r 25.90, z -7.5 | 70.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -80.0      | T4_T5      | 79.5    | T3   |
+| `pos_035_W1_QS`  | LOAD_16NM | +0.68 %  | 93.6       | 107.5          | T4 RIGHT, r 25.80, z -2.0 | 77.4       | T2_T3, r 24.81, z +0.0, Tangente 49° | -91.5      | T4_T5      | 112.2   | T3   |
+| `pos_035_W1_DY1` | LOAD_16NM | +0.70 %  | 85.6       | 106.8          | T4 RIGHT, r 25.80, z -2.0 | 78.7       | T2_T3, r 24.82, z +0.0, Tangente 45° | -91.0      | T4_T5      | 103.0   | T3   |
+| `pos_035_W1_DY2` | LOAD_16NM | +0.72 %  | 64.4       | 104.0          | T4 RIGHT, r 25.80, z +0.0 | 84.2       | T2_T3, r 24.82, z +0.0, Tangente 45° | -88.5      | T4_T5      | 78.3    | T3   |
+| `pos_035_W2_QS`  | LOAD_16NM | +0.89 %  | 110.7      | 76.2           | T4 RIGHT, r 25.80, z -4.4 | 49.8       | T2_T3, r 24.77, z +0.0, Tangente 64° | -56.5      | T4_T5      | 131.4   | T3   |
+| `pos_035_W2_DY1` | LOAD_16NM | +0.90 %  | 101.5      | 78.3           | T4 RIGHT, r 25.80, z -4.4 | 51.4       | T2_T3, r 24.77, z +0.0, Tangente 64° | -58.0      | T4_T5      | 120.8   | T3   |
+| `pos_035_W2_DY2` | LOAD_16NM | +0.87 %  | 70.7       | 83.0           | T4 RIGHT, r 25.80, z -2.0 | 57.1       | T2_T3, r 24.79, z +0.0, Tangente 54° | -61.1      | T4_T5      | 85.3    | T3   |
+| `pos_035_W3_QS`  | LOAD_16NM | +0.78 %  | 92.8       | 94.4           | T4 RIGHT, r 25.80, z -7.5 | 79.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -99.0      | T4_T5      | 109.2   | T3   |
+| `pos_035_W3_DY1` | LOAD_16NM | +0.78 %  | 85.6       | 93.9           | T4 RIGHT, r 25.80, z -7.5 | 83.0       | T2_T3, r 24.77, z +4.4, Tangente 64° | -99.7      | T4_T5      | 100.5   | T3   |
+| `pos_035_W3_DY2` | LOAD_16NM | +0.76 %  | 64.2       | 92.6           | T4 RIGHT, r 25.80, z -0.7 | 86.4       | T2_T3, r 24.78, z +4.4, Tangente 59° | -95.6      | T4_T5      | 76.3    | T3   |
+| `pos_035_W4_QS`  | LOAD_16NM | +0.97 %  | 106.8      | 75.7           | T4 RIGHT, r 25.80, z +7.5 | 63.1       | T2_T3, r 24.77, z +4.4, Tangente 64° | -72.6      | T4_T5      | 125.0   | T3   |
+| `pos_035_W4_DY1` | LOAD_16NM | +1.00 %  | 98.4       | 78.3           | T4 RIGHT, r 25.80, z +7.5 | 67.4       | T2_T3, r 24.77, z +4.4, Tangente 64° | -76.2      | T4_T5      | 115.2   | T3   |
+| `pos_035_W4_DY2` | LOAD_16NM | +0.93 %  | 69.0       | 78.7           | T4 RIGHT, r 25.90, z -7.5 | 72.2       | T2_T3, r 24.77, z +4.4, Tangente 64° | -77.8      | T4_T5      | 81.7    | T3   |
+| `pos_036_W1_QS`  | LOAD_16NM | +0.65 %  | 94.0       | 118.8          | T4 RIGHT, r 25.80, z +0.0 | 78.5       | T2_T3, r 24.82, z +0.0, Tangente 45° | -90.2      | T4_T5      | 113.1   | T3   |
+| `pos_036_W1_DY1` | LOAD_16NM | +0.66 %  | 86.0       | 117.1          | T4 RIGHT, r 25.80, z +0.0 | 79.8       | T2_T3, r 24.82, z +0.0, Tangente 45° | -89.5      | T4_T5      | 103.6   | T3   |
+| `pos_036_W1_DY2` | LOAD_16NM | +0.71 %  | 64.9       | 109.8          | T4 RIGHT, r 25.80, z +0.0 | 85.4       | T2_T3, r 24.82, z +0.0, Tangente 45° | -90.0      | T3_T4      | 78.9    | T3   |
+| `pos_036_W2_QS`  | LOAD_16NM | +0.81 %  | 111.1      | 79.2           | T4 RIGHT, r 25.80, z -2.8 | 50.2       | T2_T3, r 24.77, z +0.0, Tangente 64° | -56.1      | T4_T5      | 132.5   | T3   |
+| `pos_036_W2_DY1` | LOAD_16NM | +0.81 %  | 101.9      | 82.5           | T4 RIGHT, r 25.80, z -2.0 | 51.8       | T2_T3, r 24.77, z +0.0, Tangente 64° | -57.4      | T4_T5      | 121.9   | T3   |
+| `pos_036_W2_DY2` | LOAD_16NM | +0.75 %  | 71.2       | 90.9           | T4 RIGHT, r 25.80, z +0.0 | 57.6       | T2_T3, r 24.79, z +0.0, Tangente 54° | -61.7      | T3_T4      | 85.9    | T3   |
+| `pos_036_W3_QS`  | LOAD_16NM | +0.69 %  | 93.3       | 105.3          | T4 RIGHT, r 25.80, z +0.0 | 80.6       | T2_T3, r 24.77, z +4.4, Tangente 64° | -97.3      | T4_T5      | 109.9   | T3   |
+| `pos_036_W3_DY1` | LOAD_16NM | +0.71 %  | 86.2       | 103.3          | T4 RIGHT, r 25.80, z +0.0 | 84.2       | T2_T3, r 24.77, z +4.4, Tangente 64° | -98.0      | T4_T5      | 101.4   | T3   |
+| `pos_036_W3_DY2` | LOAD_16NM | +0.74 %  | 64.7       | 100.5          | T4 RIGHT, r 25.80, z +0.0 | 87.6       | T2_T3, r 24.78, z +4.4, Tangente 59° | -94.8      | T3_T4      | 77.0    | T3   |
+| `pos_036_W4_QS`  | LOAD_16NM | +0.90 %  | 107.4      | 77.0           | T4 RIGHT, r 25.80, z +7.5 | 63.7       | T2_T3, r 24.77, z +4.4, Tangente 64° | -71.6      | T4_T5      | 125.9   | T3   |
+| `pos_036_W4_DY1` | LOAD_16NM | +0.90 %  | 98.9       | 79.9           | T4 RIGHT, r 25.80, z +7.5 | 68.1       | T2_T3, r 24.77, z +4.4, Tangente 64° | -75.0      | T4_T5      | 116.0   | T3   |
+| `pos_036_W4_DY2` | LOAD_16NM | +0.82 %  | 69.7       | 82.8           | T4 RIGHT, r 25.80, z +0.0 | 73.2       | T2_T3, r 24.77, z +4.4, Tangente 64° | -76.2      | T4_T5      | 82.7    | T3   |
+| `pos_037_W1_QS`  | LOAD_16NM | +0.68 %  | 94.3       | 120.5          | T4 RIGHT, r 25.80, z +0.0 | 79.2       | T2_T3, r 24.82, z +0.0, Tangente 45° | -89.4      | T4_T5      | 113.6   | T3   |
+| `pos_037_W1_DY1` | LOAD_16NM | +0.69 %  | 86.3       | 119.1          | T4 RIGHT, r 25.80, z +0.0 | 80.5       | T2_T3, r 24.82, z +0.0, Tangente 45° | -88.7      | T4_T5      | 104.2   | T3   |
+| `pos_037_W1_DY2` | LOAD_16NM | +0.71 %  | 65.2       | 112.8          | T4 RIGHT, r 25.80, z +0.0 | 86.4       | T2_T3, r 24.82, z +0.0, Tangente 45° | -91.5      | T3_T4      | 79.5    | T3   |
+| `pos_037_W2_QS`  | LOAD_16NM | +0.76 %  | 111.5      | 80.9           | T4 RIGHT, r 25.80, z -1.3 | 50.4       | T2_T3, r 24.77, z +0.0, Tangente 64° | -55.8      | T4_T5      | 133.3   | T3   |
+| `pos_037_W2_DY1` | LOAD_16NM | +0.75 %  | 102.2      | 84.8           | T4 RIGHT, r 25.80, z -1.3 | 52.1       | T2_T3, r 24.77, z +0.0, Tangente 64° | -57.1      | T4_T5      | 122.5   | T3   |
+| `pos_037_W2_DY2` | LOAD_16NM | +0.75 %  | 71.4       | 92.1           | T4 RIGHT, r 25.80, z +0.0 | 57.8       | T2_T3, r 24.79, z +0.0, Tangente 54° | -62.0      | T3_T4      | 86.5    | T3   |
+| `pos_037_W3_QS`  | LOAD_16NM | +0.68 %  | 93.5       | 108.0          | T4 RIGHT, r 25.80, z +0.0 | 81.0       | T2_T3, r 24.77, z +4.4, Tangente 64° | -96.2      | T4_T5      | 110.1   | T3   |
+| `pos_037_W3_DY1` | LOAD_16NM | +0.71 %  | 86.5       | 105.4          | T4 RIGHT, r 25.80, z +0.0 | 84.7       | T2_T3, r 24.77, z +4.4, Tangente 64° | -97.0      | T4_T5      | 101.6   | T3   |
+| `pos_037_W3_DY2` | LOAD_16NM | +0.71 %  | 64.9       | 102.5          | T4 RIGHT, r 25.80, z +0.0 | 88.2       | T2_T3, r 24.78, z +4.4, Tangente 59° | -95.7      | T3_T4      | 77.2    | T3   |
+| `pos_037_W4_QS`  | LOAD_16NM | +0.83 %  | 107.7      | 77.8           | T4 RIGHT, r 25.80, z +7.5 | 64.0       | T2_T3, r 24.77, z +4.4, Tangente 64° | -71.2      | T4_T5      | 126.3   | T3   |
+| `pos_037_W4_DY1` | LOAD_16NM | +0.83 %  | 99.3       | 80.9           | T4 RIGHT, r 25.80, z +7.5 | 68.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -74.4      | T4_T5      | 116.4   | T3   |
+| `pos_037_W4_DY2` | LOAD_16NM | +0.79 %  | 70.2       | 85.3           | T4 RIGHT, r 25.80, z +0.0 | 73.7       | T2_T3, r 24.77, z +4.4, Tangente 64° | -75.4      | T4_T5      | 83.2    | T3   |
+| `pos_038_W1_QS`  | LOAD_16NM | +0.69 %  | 94.8       | 124.4          | T4 RIGHT, r 25.80, z +0.0 | 80.9       | T2_T3, r 24.82, z +0.0, Tangente 45° | -86.9      | T4_T5      | 114.7   | T3   |
+| `pos_038_W1_DY1` | LOAD_16NM | +0.72 %  | 87.0       | 124.0          | T4 RIGHT, r 25.80, z +0.0 | 82.4       | T2_T3, r 24.82, z +0.0, Tangente 45° | -86.5      | T3_T4      | 105.6   | T3   |
+| `pos_038_W1_DY2` | LOAD_16NM | +0.70 %  | 66.1       | 120.6          | T4 RIGHT, r 25.80, z +0.0 | 88.8       | T2_T3, r 24.82, z +0.0, Tangente 45° | -95.3      | T3_T4      | 81.0    | T3   |
+| `pos_038_W2_QS`  | LOAD_16NM | +0.74 %  | 112.0      | 83.5           | T4 RIGHT, r 25.80, z +0.0 | 51.0       | T2_T3, r 24.77, z +0.0, Tangente 64° | -55.1      | T4_T5      | 134.4   | T3   |
+| `pos_038_W2_DY1` | LOAD_16NM | +0.75 %  | 102.9      | 87.8           | T4 RIGHT, r 25.80, z +0.0 | 52.6       | T2_T3, r 24.77, z +0.0, Tangente 64° | -56.3      | T3_T4      | 123.9   | T3   |
+| `pos_038_W2_DY2` | LOAD_16NM | +0.82 %  | 72.4       | 95.2           | T4 RIGHT, r 25.80, z +0.0 | 58.7       | T2_T3, r 24.79, z +0.0, Tangente 54° | -63.2      | T3_T4      | 88.2    | T3   |
+| `pos_038_W3_QS`  | LOAD_16NM | +0.70 %  | 94.1       | 112.2          | T4 RIGHT, r 25.80, z +0.0 | 82.6       | T2_T3, r 24.77, z +4.4, Tangente 64° | -93.4      | T4_T5      | 111.3   | T3   |
+| `pos_038_W3_DY1` | LOAD_16NM | +0.71 %  | 87.2       | 109.7          | T4 RIGHT, r 25.80, z +0.0 | 86.3       | T2_T3, r 24.77, z +4.4, Tangente 64° | -94.1      | T4_T5      | 102.7   | T3   |
+| `pos_038_W3_DY2` | LOAD_16NM | +0.72 %  | 65.8       | 108.1          | T4 RIGHT, r 25.80, z +0.0 | 90.4       | T2_T3, r 24.78, z +4.4, Tangente 59° | -98.4      | T3_T4      | 78.4    | T3   |
+| `pos_038_W4_QS`  | LOAD_16NM | +0.77 %  | 108.2      | 79.7           | T4 RIGHT, r 25.80, z +7.5 | 64.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -69.9      | T4_T5      | 127.2   | T3   |
+| `pos_038_W4_DY1` | LOAD_16NM | +0.79 %  | 100.0      | 83.4           | T4 RIGHT, r 25.80, z +7.5 | 69.3       | T2_T3, r 24.77, z +4.4, Tangente 64° | -72.9      | T4_T5      | 117.4   | T3   |
+| `pos_038_W4_DY2` | LOAD_16NM | +0.80 %  | 71.1       | 88.5           | T4 RIGHT, r 25.80, z +0.0 | 74.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -73.5      | T4_T5      | 84.2    | T3   |
+| `pos_039_W1_QS`  | LOAD_16NM | +0.71 %  | 95.6       | 128.5          | T4 RIGHT, r 25.80, z +0.0 | 82.4       | T2_T3, r 24.82, z +0.0, Tangente 45° | -86.9      | T3_T4      | 115.8   | T3   |
+| `pos_039_W1_DY1` | LOAD_16NM | +0.69 %  | 87.7       | 128.4          | T4 RIGHT, r 25.80, z +0.0 | 84.0       | T2_T3, r 24.82, z +0.0, Tangente 45° | -89.2      | T3_T4      | 106.5   | T3   |
+| `pos_039_W1_DY2` | LOAD_16NM | +0.67 %  | 67.1       | 128.0          | T4 RIGHT, r 25.80, z +0.0 | 91.2       | T2_T3, r 24.82, z +0.0, Tangente 45° | -99.1      | T3_T4      | 82.3    | T3   |
+| `pos_039_W2_QS`  | LOAD_16NM | +0.78 %  | 112.6      | 85.1           | T4 RIGHT, r 25.80, z +0.0 | 51.3       | T2_T3, r 24.77, z +0.0, Tangente 64° | -55.1      | T3_T4      | 135.2   | T3   |
+| `pos_039_W2_DY1` | LOAD_16NM | +0.77 %  | 103.4      | 89.6           | T4 RIGHT, r 25.80, z +0.0 | 53.1       | T2_T3, r 24.77, z +0.0, Tangente 64° | -57.0      | T3_T4      | 124.4   | T3   |
+| `pos_039_W2_DY2` | LOAD_16NM | +0.77 %  | 73.2       | 98.0           | T4 RIGHT, r 25.80, z +0.0 | 59.5       | T2_T3, r 24.79, z +0.0, Tangente 54° | -64.4      | T3_T4      | 89.2    | T3   |
+| `pos_039_W3_QS`  | LOAD_16NM | +0.74 %  | 94.9       | 115.0          | T4 RIGHT, r 25.80, z +0.0 | 84.0       | T2_T3, r 24.77, z +4.4, Tangente 64° | -90.9      | T4_T5      | 112.5   | T3   |
+| `pos_039_W3_DY1` | LOAD_16NM | +0.74 %  | 88.0       | 112.6          | T4 RIGHT, r 25.80, z +0.0 | 88.1       | T2_T3, r 24.77, z +4.4, Tangente 64° | -93.1      | T3_T4      | 103.9   | T3   |
+| `pos_039_W3_DY2` | LOAD_16NM | +0.70 %  | 66.8       | 113.0          | T4 RIGHT, r 25.80, z +0.0 | 92.7       | T2_T3, r 24.78, z +4.4, Tangente 59° | -101.7     | T3_T4      | 79.8    | T3   |
+| `pos_039_W4_QS`  | LOAD_16NM | +0.83 %  | 108.9      | 79.9           | T4 RIGHT, r 25.80, z +7.5 | 65.4       | T2_T3, r 24.77, z +4.4, Tangente 64° | -68.6      | T4_T5      | 128.4   | T3   |
+| `pos_039_W4_DY1` | LOAD_16NM | +0.81 %  | 100.7      | 84.8           | T4 RIGHT, r 25.80, z +7.5 | 70.1       | T2_T3, r 24.77, z +4.4, Tangente 64° | -71.3      | T4_T5      | 118.6   | T3   |
+| `pos_039_W4_DY2` | LOAD_16NM | +0.80 %  | 71.9       | 91.7           | T4 RIGHT, r 25.80, z +7.5 | 76.1       | T2_T3, r 24.77, z +4.4, Tangente 64° | -74.1      | T3_T4      | 85.6    | T3   |
+| `pos_040_W1_QS`  | LOAD_16NM | +1.20 %  | 97.5       | 133.9          | T4 RIGHT, r 25.80, z +0.0 | 84.9       | T2_T3, r 24.82, z +0.0, Tangente 45° | -90.5      | T3_T4      | 118.7   | T3   |
+| `pos_040_W1_DY1` | LOAD_16NM | +1.09 %  | 89.4       | 134.3          | T4 RIGHT, r 25.80, z +0.0 | 86.6       | T2_T3, r 24.82, z +0.0, Tangente 45° | -92.9      | T3_T4      | 109.1   | T3   |
+| `pos_040_W1_DY2` | LOAD_16NM | +0.69 %  | 68.1       | 130.3          | T4 RIGHT, r 25.80, z +0.0 | 93.7       | T2_T3, r 24.82, z +0.0, Tangente 45° | -103.0     | T3_T4      | 83.8    | T3   |
+| `pos_040_W2_QS`  | LOAD_16NM | +1.32 %  | 114.7      | 86.6           | T4 RIGHT, r 25.80, z +0.0 | 52.1       | T2_T3, r 24.77, z +0.0, Tangente 64° | -56.0      | T3_T4      | 138.5   | T3   |
+| `pos_040_W2_DY1` | LOAD_16NM | +1.19 %  | 105.1      | 90.8           | T4 RIGHT, r 25.80, z +0.0 | 53.8       | T2_T3, r 24.77, z +0.0, Tangente 64° | -57.8      | T3_T4      | 127.2   | T3   |
+| `pos_040_W2_DY2` | LOAD_16NM | +0.84 %  | 74.6       | 101.5          | T4 RIGHT, r 25.80, z +0.0 | 60.3       | T2_T3, r 24.79, z +0.0, Tangente 54° | -65.5      | T3_T4      | 91.1    | T3   |
+| `pos_040_W3_QS`  | LOAD_16NM | +1.16 %  | 96.6       | 118.8          | T4 RIGHT, r 25.80, z +0.0 | 85.3       | T2_T3, r 24.78, z -3.6, Tangente 59° | -92.6      | T3_T4      | 114.2   | T3   |
+| `pos_040_W3_DY1` | LOAD_16NM | +1.04 %  | 89.4       | 116.1          | T4 RIGHT, r 25.80, z +0.0 | 89.3       | T2_T3, r 24.77, z +4.4, Tangente 64° | -95.7      | T3_T4      | 105.3   | T3   |
+| `pos_040_W3_DY2` | LOAD_16NM | +0.70 %  | 67.9       | 117.8          | T4 RIGHT, r 25.80, z +0.0 | 94.6       | T2_T3, r 24.78, z +4.4, Tangente 59° | -104.7     | T3_T4      | 80.9    | T3   |
+| `pos_040_W4_QS`  | LOAD_16NM | +1.24 %  | 110.6      | 83.5           | T4 RIGHT, r 25.90, z -7.5 | 65.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -67.8      | T4_T5      | 130.2   | T3   |
+| `pos_040_W4_DY1` | LOAD_16NM | +1.16 %  | 102.5      | 85.5           | T4 RIGHT, r 25.90, z -7.5 | 70.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -70.3      | T4_T5      | 120.5   | T3   |
+| `pos_040_W4_DY2` | LOAD_16NM | +0.85 %  | 73.2       | 93.4           | T4 RIGHT, r 25.80, z +7.5 | 77.1       | T2_T3, r 24.77, z +4.4, Tangente 64° | -76.2      | T3_T4      | 86.9    | T3   |
+| `pos_041_W1_QS`  | LOAD_16NM | +1.79 %  | 100.2      | 117.3          | T4 RIGHT, r 25.80, z +0.0 | 87.7       | T2_T3, r 24.82, z +0.0, Tangente 45° | -94.3      | T3_T4      | 122.3   | T3   |
+| `pos_041_W1_DY1` | LOAD_16NM | +1.79 %  | 92.2       | 122.4          | T4 RIGHT, r 25.80, z +0.0 | 89.6       | T2_T3, r 24.82, z +0.0, Tangente 45° | -96.9      | T3_T4      | 112.7   | T3   |
+| `pos_041_W1_DY2` | LOAD_16NM | +1.46 %  | 70.5       | 130.8          | T4 RIGHT, r 25.80, z +0.0 | 97.5       | T2_T3, r 24.82, z +0.0, Tangente 45° | -108.1     | T3_T4      | 87.0    | T3   |
+| `pos_041_W2_QS`  | LOAD_16NM | +1.82 %  | 117.2      | 87.5           | T4 RIGHT, r 25.90, z -5.9 | 52.8       | T2_T3, r 24.77, z +0.0, Tangente 64° | -56.9      | T3_T4      | 141.7   | T3   |
+| `pos_041_W2_DY1` | LOAD_16NM | +1.79 %  | 107.8      | 88.2           | T4 RIGHT, r 25.90, z -5.9 | 54.7       | T2_T3, r 24.77, z +0.0, Tangente 64° | -58.9      | T3_T4      | 130.7   | T3   |
+| `pos_041_W2_DY2` | LOAD_16NM | +1.56 %  | 77.0       | 100.7          | T4 RIGHT, r 25.80, z +0.0 | 61.7       | T2_T3, r 24.78, z +0.0, Tangente 59° | -67.3      | T3_T4      | 94.3    | T3   |
+| `pos_041_W3_QS`  | LOAD_16NM | +1.79 %  | 99.4       | 126.4          | T4 RIGHT, r 25.90, z -7.5 | 88.1       | T2_T3, r 24.78, z -3.6, Tangente 59° | -95.9      | T3_T4      | 117.9   | T3   |
+| `pos_041_W3_DY1` | LOAD_16NM | +1.78 %  | 92.3       | 125.2          | T4 RIGHT, r 25.90, z -7.5 | 92.0       | T2_T3, r 24.77, z +4.4, Tangente 64° | -98.9      | T3_T4      | 108.8   | T3   |
+| `pos_041_W3_DY2` | LOAD_16NM | +1.43 %  | 70.3       | 118.6          | T4 RIGHT, r 25.80, z +0.0 | 97.5       | T2_T3, r 24.78, z -3.6, Tangente 59° | -109.4     | T3_T4      | 83.7    | T3   |
+| `pos_041_W4_QS`  | LOAD_16NM | +1.82 %  | 113.4      | 91.7           | T4 RIGHT, r 25.90, z -7.5 | 66.9       | T2_T3, r 24.77, z +4.4, Tangente 64° | -66.9      | T4_T5      | 133.5   | T3   |
+| `pos_041_W4_DY1` | LOAD_16NM | +1.75 %  | 105.1      | 97.4           | T4 RIGHT, r 25.90, z -7.5 | 71.9       | T2_T3, r 24.77, z +4.4, Tangente 64° | -70.5      | T3_T4      | 123.6   | T3   |
+| `pos_041_W4_DY2` | LOAD_16NM | +1.47 %  | 75.4       | 94.5           | T4 RIGHT, r 25.90, z -7.5 | 78.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -79.7      | T3_T4      | 89.3    | T3   |
+| `pos_042_W1_QS`  | LOAD_16NM | +1.19 %  | 101.7      | 127.4          | T4 RIGHT, r 25.90, z -4.4 | 90.7       | T2_T3, r 24.82, z +0.0, Tangente 45° | -99.2      | T3_T4      | 124.3   | T3   |
+| `pos_042_W1_DY1` | LOAD_16NM | +1.22 %  | 93.9       | 127.8          | T4 RIGHT, r 25.90, z -5.1 | 93.0       | T2_T3, r 24.82, z +0.0, Tangente 45° | -102.3     | T3_T4      | 114.9   | T3   |
+| `pos_042_W1_DY2` | LOAD_16NM | +1.09 %  | 72.8       | 121.4          | T4 RIGHT, r 25.90, z -5.9 | 102.1      | T2_T3, r 24.82, z +0.0, Tangente 45° | -115.4     | T3_T4      | 89.7    | T3   |
+| `pos_042_W2_QS`  | LOAD_16NM | +1.60 %  | 119.4      | 90.8           | T4 RIGHT, r 25.90, z -5.9 | 53.4       | T2_T3, r 24.77, z +0.0, Tangente 64° | -57.8      | T3_T4      | 144.2   | T3   |
+| `pos_042_W2_DY1` | LOAD_16NM | +1.57 %  | 109.9      | 93.2           | T4 RIGHT, r 25.90, z -5.9 | 55.4       | T2_T3, r 24.77, z +0.0, Tangente 64° | -60.0      | T3_T4      | 133.2   | T3   |
+| `pos_042_W2_DY2` | LOAD_16NM | +1.55 %  | 79.7       | 97.1           | T4 RIGHT, r 25.90, z -5.9 | 63.0       | T2_T3, r 24.78, z +0.0, Tangente 59° | -69.2      | T3_T4      | 97.5    | T3   |
+| `pos_042_W3_QS`  | LOAD_16NM | +1.26 %  | 100.9      | 140.1          | T4 RIGHT, r 25.90, z -7.5 | 91.6       | T2_T3, r 24.78, z -3.6, Tangente 59° | -100.4     | T3_T4      | 119.9   | T3   |
+| `pos_042_W3_DY1` | LOAD_16NM | +1.29 %  | 93.9       | 145.0          | T4 RIGHT, r 25.90, z -7.5 | 96.1       | T2_T3, r 24.77, z +4.4, Tangente 64° | -104.8     | T3_T4      | 111.1   | T3   |
+| `pos_042_W3_DY2` | LOAD_16NM | +1.21 %  | 72.6       | 137.3          | T4 RIGHT, r 25.90, z -7.5 | 102.4      | T2_T3, r 24.78, z +4.4, Tangente 59° | -116.9     | T3_T4      | 86.6    | T3   |
+| `pos_042_W4_QS`  | LOAD_16NM | +1.69 %  | 115.8      | 95.5           | T4 RIGHT, r 25.90, z -7.5 | 68.3       | T2_T3, r 24.77, z +4.4, Tangente 64° | -68.6      | T3_T4      | 136.8   | T3   |
+| `pos_042_W4_DY1` | LOAD_16NM | +1.68 %  | 107.7      | 103.4          | T4 RIGHT, r 25.90, z -7.5 | 73.7       | T2_T3, r 24.77, z +4.4, Tangente 64° | -73.9      | T3_T4      | 127.0   | T3   |
+| `pos_042_W4_DY2` | LOAD_16NM | +1.57 %  | 78.1       | 110.0          | T4 RIGHT, r 25.90, z -7.5 | 81.1       | T2_T3, r 24.77, z +4.4, Tangente 64° | -84.6      | T3_T4      | 92.8    | T3   |
+| `pos_043_W1_QS`  | LOAD_16NM | +0.60 %  | 102.7      | 140.7          | T4 RIGHT, r 25.90, z +0.0 | 93.7       | T2_T3, r 24.82, z +0.0, Tangente 45° | -104.8     | T3_T4      | 126.3   | T3   |
+| `pos_043_W1_DY1` | LOAD_16NM | +0.56 %  | 95.0       | 141.4          | T4 RIGHT, r 25.90, z +0.0 | 96.2       | T2_T3, r 24.82, z +0.0, Tangente 45° | -108.4     | T3_T4      | 117.0   | T3   |
+| `pos_043_W1_DY2` | LOAD_16NM | +0.42 %  | 74.3       | 133.1          | T4 RIGHT, r 25.90, z +0.0 | 106.3      | T2_T3, r 24.82, z +0.0, Tangente 45° | -123.0     | T3_T4      | 92.1    | T3   |
+| `pos_043_W2_QS`  | LOAD_16NM | +0.58 %  | 117.4      | 91.7           | T4 RIGHT, r 25.90, z -1.3 | 52.7       | T2_T3, r 24.77, z +0.0, Tangente 64° | -58.1      | T3_T4      | 142.1   | T3   |
+| `pos_043_W2_DY1` | LOAD_16NM | +0.82 %  | 110.7      | 96.2           | T4 RIGHT, r 25.90, z -1.3 | 55.7       | T2_T3, r 24.77, z +0.0, Tangente 64° | -61.1      | T3_T4      | 134.7   | T3   |
+| `pos_043_W2_DY2` | LOAD_16NM | +0.67 %  | 81.7       | 104.7          | T4 RIGHT, r 25.90, z +0.0 | 64.3       | T2_T3, r 24.78, z +0.0, Tangente 59° | -71.6      | T3_T4      | 100.1   | T3   |
+| `pos_043_W3_QS`  | LOAD_16NM | +0.63 %  | 102.1      | 139.2          | T4 RIGHT, r 25.90, z -7.5 | 94.4       | T2_T3, r 24.78, z -3.6, Tangente 59° | -105.5     | T3_T4      | 121.2   | T3   |
+| `pos_043_W3_DY1` | LOAD_16NM | +0.60 %  | 95.1       | 144.1          | T4 RIGHT, r 25.90, z -7.5 | 99.1       | T2_T3, r 24.77, z +4.4, Tangente 64° | -109.4     | T3_T4      | 112.4   | T3   |
+| `pos_043_W3_DY2` | LOAD_16NM | +0.42 %  | 74.2       | 127.2          | T4 RIGHT, r 25.90, z -7.5 | 106.4      | T2_T3, r 24.78, z -3.6, Tangente 59° | -123.9     | T3_T4      | 88.3    | T3   |
+| `pos_043_W4_QS`  | LOAD_16NM | +0.62 %  | 114.3      | 95.1           | T4 RIGHT, r 25.90, z -7.5 | 67.4       | T2_T3, r 24.77, z +4.4, Tangente 64° | -70.4      | T3_T4      | 134.4   | T3   |
+| `pos_043_W4_DY1` | LOAD_16NM | +0.83 %  | 108.3      | 103.0          | T4 RIGHT, r 25.90, z -7.5 | 74.3       | T2_T3, r 24.77, z +5.9, Tangente 69° | -76.6      | T3_T4      | 127.5   | T3   |
+| `pos_043_W4_DY2` | LOAD_16NM | +0.72 %  | 80.1       | 111.5          | T4 RIGHT, r 25.90, z -7.5 | 83.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -89.5      | T3_T4      | 95.1    | T3   |
+| `pos_044_W1_QS`  | LOAD_16NM | +0.41 %  | 103.1      | 136.5          | T4 RIGHT, r 25.90, z +0.0 | 94.3       | T2_T3, r 24.82, z +0.0, Tangente 45° | -107.2     | T3_T4      | 126.8   | T3   |
+| `pos_044_W1_DY1` | LOAD_16NM | +0.48 %  | 96.2       | 138.8          | T4 RIGHT, r 25.90, z +0.0 | 98.5       | T2_T3, r 24.82, z +0.0, Tangente 45° | -112.1     | T3_T4      | 118.7   | T3   |
+| `pos_044_W1_DY2` | LOAD_16NM | +0.27 %  | 75.3       | 116.2          | T4 RIGHT, r 25.90, z +0.0 | 109.2      | T2_T3, r 24.82, z +0.0, Tangente 45° | -127.7     | T3_T4      | 93.5    | T3   |
+| `pos_044_W2_QS`  | LOAD_16NM | +0.12 %  | 114.9      | 90.0           | T4 RIGHT, r 25.90, z +0.0 | 51.7       | T2_T3, r 24.78, z +0.0, Tangente 59° | -57.8      | T3_T4      | 138.9   | T3   |
+| `pos_044_W2_DY1` | LOAD_16NM | +0.27 %  | 108.4      | 94.1           | T4 RIGHT, r 25.90, z +0.0 | 54.6       | T2_T3, r 24.78, z +0.0, Tangente 59° | -60.9      | T3_T4      | 131.7   | T3   |
+| `pos_044_W2_DY2` | LOAD_16NM | +0.56 %  | 83.4       | 104.3          | T4 RIGHT, r 25.90, z +0.0 | 65.3       | T2_T3, r 24.78, z +0.0, Tangente 59° | -73.1      | T3_T4      | 102.5   | T3   |
+| `pos_044_W3_QS`  | LOAD_16NM | +0.36 %  | 101.8      | 135.0          | T4 RIGHT, r 25.90, z -7.5 | 93.5       | T2_T3, r 24.78, z -3.6, Tangente 59° | -107.2     | T3_T4      | 120.8   | T3   |
+| `pos_044_W3_DY1` | LOAD_16NM | +0.49 %  | 96.0       | 140.5          | T4 RIGHT, r 25.90, z -7.5 | 100.4      | T2_T3, r 24.77, z +4.4, Tangente 64° | -112.6     | T3_T4      | 113.4   | T3   |
+| `pos_044_W3_DY2` | LOAD_16NM | +0.29 %  | 75.1       | 113.8          | T4 RIGHT, r 25.90, z +0.0 | 109.0      | T2_T3, r 24.78, z -3.6, Tangente 59° | -128.3     | T3_T4      | 89.6    | T3   |
+| `pos_044_W4_QS`  | LOAD_16NM | +0.06 %  | 112.2      | 92.5           | T4 RIGHT, r 25.90, z -7.5 | 65.5       | T2_T3, r 24.77, z +4.4, Tangente 64° | -71.4      | T3_T4      | 131.2   | T3   |
+| `pos_044_W4_DY1` | LOAD_16NM | +0.19 %  | 106.1      | 99.6           | T4 RIGHT, r 25.90, z -7.5 | 72.0       | T2_T3, r 24.77, z +4.4, Tangente 64° | -77.6      | T3_T4      | 124.0   | T3   |
+| `pos_044_W4_DY2` | LOAD_16NM | +0.55 %  | 81.9       | 110.6          | T4 RIGHT, r 25.90, z -7.5 | 84.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -92.6      | T3_T4      | 96.8    | T3   |
+| `pos_045_W1_QS`  | LOAD_16NM | +0.72 %  | 103.6      | 132.7          | T4 RIGHT, r 25.90, z +0.0 | 93.4       | T2_T3, r 24.82, z +0.0, Tangente 45° | -109.1     | T3_T4      | 126.8   | T3   |
+| `pos_045_W1_DY1` | LOAD_16NM | +0.66 %  | 96.7       | 132.9          | T4 RIGHT, r 25.90, z +0.0 | 97.9       | T2_T3, r 24.82, z +0.0, Tangente 45° | -114.3     | T3_T4      | 118.8   | T3   |
+| `pos_045_W1_DY2` | LOAD_16NM | +0.17 %  | 76.5       | 100.1          | T3 RIGHT, r 26.31, z +0.0 | 111.9      | T2_T3, r 24.82, z +0.0, Tangente 45° | -132.1     | T3_T4      | 94.8    | T3   |
+| `pos_045_W2_QS`  | LOAD_16NM | +0.43 %  | 114.7      | 88.0           | T4 RIGHT, r 25.90, z +0.0 | 51.2       | T2_T3, r 24.89, z +0.0, Tangente 30° | -57.7      | T3_T4      | 138.2   | T3   |
+| `pos_045_W2_DY1` | LOAD_16NM | +0.35 %  | 107.8      | 91.6           | T4 RIGHT, r 25.90, z +0.0 | 53.8       | T2_T3, r 24.78, z +0.0, Tangente 59° | -60.8      | T3_T4      | 130.5   | T3   |
+| `pos_045_W2_DY2` | LOAD_16NM | +0.51 %  | 85.1       | 102.2          | T4 RIGHT, r 25.90, z +0.0 | 66.0       | T2_T3, r 24.78, z +0.0, Tangente 59° | -74.5      | T3_T4      | 104.3   | T3   |
+| `pos_045_W3_QS`  | LOAD_16NM | +0.59 %  | 102.0      | 115.6          | T4 RIGHT, r 25.90, z +0.0 | 91.9       | T2_T3, r 24.81, z +0.0, Tangente 49° | -109.0     | T3_T4      | 120.6   | T3   |
+| `pos_045_W3_DY1` | LOAD_16NM | +0.51 %  | 95.9       | 113.5          | T4 RIGHT, r 25.90, z +0.0 | 97.0       | T2_T3, r 24.78, z -3.6, Tangente 59° | -114.3     | T3_T4      | 112.7   | T3   |
+| `pos_045_W3_DY2` | LOAD_16NM | +0.27 %  | 76.4       | 99.5           | T4 RIGHT, r 25.90, z +0.0 | 111.7      | T2_T3, r 24.78, z -3.6, Tangente 59° | -133.1     | T3_T4      | 91.1    | T3   |
+| `pos_045_W4_QS`  | LOAD_16NM | +0.37 %  | 111.9      | 81.1           | T4 RIGHT, r 25.90, z +0.0 | 63.6       | T2_T3, r 24.77, z +4.4, Tangente 64° | -72.7      | T3_T4      | 130.8   | T3   |
+| `pos_045_W4_DY1` | LOAD_16NM | +0.31 %  | 105.4      | 82.4           | T4 RIGHT, r 25.90, z +0.0 | 70.0       | T2_T3, r 24.77, z +4.4, Tangente 64° | -79.0      | T3_T4      | 122.9   | T3   |
+| `pos_045_W4_DY2` | LOAD_16NM | +0.47 %  | 83.2       | 106.9          | T4 RIGHT, r 25.90, z -7.5 | 85.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -96.0      | T3_T4      | 98.5    | T3   |
+| `pos_046_W1_QS`  | LOAD_16NM | +0.61 %  | 104.5      | 98.5           | T4 RIGHT, r 25.90, z +0.0 | 92.9       | T2_T3, r 24.82, z +0.0, Tangente 45° | -111.4     | T3_T4      | 127.9   | T3   |
+| `pos_046_W1_DY1` | LOAD_16NM | +0.66 %  | 97.7       | 105.1          | T4 RIGHT, r 25.90, z +0.0 | 97.3       | T2_T3, r 24.82, z +0.0, Tangente 45° | -117.0     | T3_T4      | 120.0   | T3   |
+| `pos_046_W1_DY2` | LOAD_16NM | +0.62 %  | 79.3       | 107.9          | T3 RIGHT, r 26.21, z +0.0 | 115.5      | T2_T3, r 24.82, z +0.0, Tangente 45° | -138.9     | T3_T4      | 98.6    | T3   |
+| `pos_046_W2_QS`  | LOAD_16NM | +0.69 %  | 116.3      | 76.7           | T4 RIGHT, r 25.90, z +0.0 | 51.1       | T2_T3, r 24.89, z +0.0, Tangente 30° | -57.8      | T3_T4      | 139.8   | T3   |
+| `pos_046_W2_DY1` | LOAD_16NM | +0.66 %  | 109.4      | 80.9           | T4 RIGHT, r 25.90, z +0.0 | 53.5       | T2_T3, r 24.87, z +0.0, Tangente 33° | -61.0      | T3_T4      | 132.0   | T3   |
+| `pos_046_W2_DY2` | LOAD_16NM | +0.71 %  | 85.8       | 94.3           | T4 RIGHT, r 25.90, z +0.0 | 65.2       | T2_T3, r 24.85, z +0.0, Tangente 37° | -74.6      | T3_T4      | 104.6   | T3   |
+| `pos_046_W3_QS`  | LOAD_16NM | +0.63 %  | 103.2      | 89.9           | T4 RIGHT, r 25.90, z +0.0 | 91.3       | T2_T3, r 24.81, z +0.0, Tangente 49° | -112.5     | T3_T4      | 121.3   | T3   |
+| `pos_046_W3_DY1` | LOAD_16NM | +0.65 %  | 97.0       | 91.8           | T4 RIGHT, r 25.90, z +0.0 | 95.5       | T2_T3, r 24.79, z -0.7, Tangente 54° | -119.6     | T3_T4      | 113.3   | T3   |
+| `pos_046_W3_DY2` | LOAD_16NM | +0.63 %  | 78.7       | 96.8           | T3 RIGHT, r 26.31, z +7.5 | 113.0      | T2_T3, r 24.81, z +0.0, Tangente 49° | -141.3     | T3_T4      | 93.3    | T3   |
+| `pos_046_W4_QS`  | LOAD_16NM | +0.73 %  | 113.6      | 84.4           | T4 RIGHT, r 26.00, z +7.5 | 62.2       | T2_T3, r 24.77, z +4.4, Tangente 64° | -75.2      | T3_T4      | 132.5   | T3   |
+| `pos_046_W4_DY1` | LOAD_16NM | +0.71 %  | 107.1      | 82.6           | T4 RIGHT, r 26.00, z +7.5 | 68.3       | T2_T3, r 24.77, z +4.4, Tangente 64° | -81.9      | T3_T4      | 124.6   | T3   |
+| `pos_046_W4_DY2` | LOAD_16NM | +0.64 %  | 83.8       | 82.7           | T4 RIGHT, r 25.90, z +0.0 | 82.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -99.4      | T3_T4      | 98.5    | T3   |
+| `pos_047_W1_QS`  | LOAD_16NM | -0.85 %  | 104.1      | 86.6           | T3 RIGHT, r 26.11, z +0.0 | 92.9       | T2_T3, r 24.82, z +0.0, Tangente 45° | -115.7     | T3_T4      | 127.1   | T3   |
+| `pos_047_W1_DY1` | LOAD_16NM | -0.88 %  | 97.5       | 90.6           | T3 RIGHT, r 26.11, z +0.0 | 97.2       | T2_T3, r 24.82, z +0.0, Tangente 45° | -121.6     | T3_T4      | 119.3   | T3   |
+| `pos_047_W1_DY2` | LOAD_16NM | -1.07 %  | 80.0       | 110.7          | T3 RIGHT, r 26.21, z +0.0 | 115.7      | T2_T3, r 24.82, z +0.0, Tangente 45° | -146.4     | T3_T4      | 99.0    | T3   |
+| `pos_047_W2_QS`  | LOAD_16NM | -0.31 %  | 116.9      | 77.7           | T4 RIGHT, r 26.00, z -3.6 | 51.4       | T2_T3, r 24.89, z +0.0, Tangente 30° | -58.5      | T3_T4      | 140.2   | T3   |
+| `pos_047_W2_DY1` | LOAD_16NM | -0.38 %  | 110.3      | 76.3           | T4 RIGHT, r 26.00, z -4.4 | 53.8       | T2_T3, r 24.89, z +0.0, Tangente 30° | -61.8      | T3_T4      | 132.8   | T3   |
+| `pos_047_W2_DY2` | LOAD_16NM | -0.67 %  | 86.4       | 80.3           | T3 RIGHT, r 26.11, z +0.0 | 65.3       | T2_T3, r 24.87, z +0.0, Tangente 33° | -75.5      | T3_T4      | 105.0   | T3   |
+| `pos_047_W3_QS`  | LOAD_16NM | -0.75 %  | 103.0      | 76.9           | T3 RIGHT, r 26.11, z -0.7 | 90.8       | T2_T3, r 24.81, z +0.0, Tangente 49° | -118.2     | T3_T4      | 120.5   | T3   |
+| `pos_047_W3_DY1` | LOAD_16NM | -0.76 %  | 96.9       | 78.1           | T3 RIGHT, r 26.11, z -0.7 | 95.7       | T2_T3, r 24.84, z +6.7, Tangente 41° | -125.9     | T3_T4      | 112.6   | T3   |
+| `pos_047_W3_DY2` | LOAD_16NM | -0.96 %  | 79.1       | 96.1           | T3 RIGHT, r 26.21, z +0.0 | 112.4      | T2_T3, r 24.81, z +0.0, Tangente 49° | -151.0     | T3_T4      | 93.3    | T3   |
+| `pos_047_W4_QS`  | LOAD_16NM | -0.30 %  | 113.9      | 83.7           | T4 RIGHT, r 26.00, z +7.5 | 61.4       | T2_T3, r 24.78, z +4.4, Tangente 59° | -77.6      | T3_T4      | 131.7   | T3   |
+| `pos_047_W4_DY1` | LOAD_16NM | -0.31 %  | 107.9      | 85.5           | T4 RIGHT, r 26.00, z +7.5 | 67.3       | T2_T3, r 24.77, z +4.4, Tangente 64° | -85.2      | T3_T4      | 124.4   | T3   |
+| `pos_047_W4_DY2` | LOAD_16NM | -0.60 %  | 84.5       | 74.9           | T3 RIGHT, r 26.11, z +0.0 | 80.6       | T2_T3, r 24.77, z +4.4, Tangente 64° | -104.0     | T3_T4      | 98.4    | T3   |
+| `pos_048_W1_QS`  | LOAD_16NM | -1.21 %  | 103.9      | 93.3           | T3 RIGHT, r 26.11, z +0.0 | 92.0       | T2_T3, r 24.82, z +0.0, Tangente 45° | -117.6     | T3_T4      | 126.5   | T3   |
+| `pos_048_W1_DY1` | LOAD_16NM | -1.32 %  | 97.2       | 97.9           | T3 RIGHT, r 26.11, z +0.0 | 96.2       | T2_T3, r 24.82, z +0.0, Tangente 45° | -123.6     | T3_T4      | 118.6   | T3   |
+| `pos_048_W1_DY2` | LOAD_16NM | -1.66 %  | 78.9       | 116.1          | T3 RIGHT, r 26.11, z +0.0 | 113.0      | T2_T3, r 24.82, z +0.0, Tangente 45° | -147.1     | T3_T4      | 97.2    | T3   |
+| `pos_048_W2_QS`  | LOAD_16NM | -0.98 %  | 117.0      | 76.9           | T4 RIGHT, r 26.00, z +0.0 | 51.5       | T2_T3, r 24.91, z +0.0, Tangente 26° | -59.0      | T3_T4      | 140.0   | T3   |
+| `pos_048_W2_DY1` | LOAD_16NM | -1.02 %  | 110.0      | 77.2           | T2 RIGHT, r 26.90, z +0.0 | 53.9       | T2_T3, r 24.89, z +0.0, Tangente 30° | -62.4      | T3_T4      | 132.2   | T3   |
+| `pos_048_W2_DY2` | LOAD_16NM | -1.43 %  | 86.6       | 86.0           | T3 RIGHT, r 26.11, z +0.0 | 65.2       | T2_T3, r 24.87, z +0.0, Tangente 33° | -76.7      | T3_T4      | 105.0   | T3   |
+| `pos_048_W3_QS`  | LOAD_16NM | -1.14 %  | 102.7      | 83.0           | T2 RIGHT, r 26.90, z +0.7 | 90.2       | T2_T3, r 24.85, z -0.7, Tangente 37° | -120.8     | T3_T4      | 120.0   | T3   |
+| `pos_048_W3_DY1` | LOAD_16NM | -1.22 %  | 96.7       | 83.7           | T3 RIGHT, r 26.11, z -0.7 | 94.5       | T2_T3, r 24.84, z +6.7, Tangente 41° | -129.2     | T3_T4      | 112.0   | T3   |
+| `pos_048_W3_DY2` | LOAD_16NM | -1.65 %  | 78.7       | 101.3          | T3 RIGHT, r 26.11, z -0.7 | 110.8      | T2_T3, r 24.81, z +0.0, Tangente 49° | -154.8     | T3_T4      | 92.5    | T3   |
+| `pos_048_W4_QS`  | LOAD_16NM | -1.00 %  | 114.0      | 77.9           | T4 RIGHT, r 26.00, z +7.5 | 60.7       | T2_T3, r 24.78, z +4.4, Tangente 59° | -79.3      | T3_T4      | 131.6   | T3   |
+| `pos_048_W4_DY1` | LOAD_16NM | -1.06 %  | 107.7      | 74.3           | T4 RIGHT, r 26.00, z +7.5 | 66.3       | T2_T3, r 24.78, z +4.4, Tangente 59° | -87.0      | T3_T4      | 123.9   | T3   |
+| `pos_048_W4_DY2` | LOAD_16NM | -1.36 %  | 84.8       | 79.7           | T3 RIGHT, r 26.11, z +0.0 | 78.6       | T2_T3, r 24.78, z +4.4, Tangente 59° | -106.6     | T3_T4      | 98.6    | T3   |
+| `pos_049_W1_QS`  | LOAD_16NM | -1.25 %  | 104.3      | 100.9          | T2 RIGHT, r 26.90, z +0.0 | 91.4       | T2_T3, r 24.82, z +0.0, Tangente 45° | -118.9     | T3_T4      | 126.7   | T3   |
+| `pos_049_W1_DY1` | LOAD_16NM | -1.48 %  | 97.4       | 104.1          | T3 RIGHT, r 26.11, z +0.0 | 95.3       | T2_T3, r 24.82, z +0.0, Tangente 45° | -124.9     | T3_T4      | 118.4   | T3   |
+| `pos_049_W1_DY2` | LOAD_16NM | -1.67 %  | 76.4       | 120.4          | T3 RIGHT, r 26.11, z +0.0 | 108.3      | T2_T3, r 24.82, z +0.0, Tangente 45° | -142.1     | T3_T4      | 93.7    | T3   |
+| `pos_049_W2_QS`  | LOAD_16NM | -0.71 %  | 117.8      | 80.5           | T2 RIGHT, r 26.90, z +0.0 | 51.5       | T2_T3, r 24.91, z +0.0, Tangente 26° | -59.2      | T3_T4      | 141.0   | T3   |
+| `pos_049_W2_DY1` | LOAD_16NM | -0.92 %  | 110.4      | 83.5           | T2 RIGHT, r 26.90, z +0.0 | 53.8       | T2_T3, r 24.89, z +0.0, Tangente 30° | -62.5      | T3_T4      | 132.5   | T3   |
+| `pos_049_W2_DY2` | LOAD_16NM | -1.69 %  | 87.1       | 96.6           | T2 RIGHT, r 26.90, z +0.0 | 65.1       | T2_T3, r 24.89, z +0.0, Tangente 30° | -78.1      | T3_T4      | 105.1   | T3   |
+| `pos_049_W3_QS`  | LOAD_16NM | -1.17 %  | 102.9      | 95.7           | T2 RIGHT, r 26.90, z +0.7 | 90.1       | T2_T3, r 24.85, z -0.7, Tangente 37° | -123.0     | T3_T4      | 120.0   | T3   |
+| `pos_049_W3_DY1` | LOAD_16NM | -1.35 %  | 96.7       | 95.7           | T2 RIGHT, r 26.90, z +0.7 | 93.7       | T2_T3, r 24.85, z -0.7, Tangente 37° | -131.8     | T3_T4      | 111.8   | T3   |
+| `pos_049_W3_DY2` | LOAD_16NM | -1.65 %  | 76.5       | 104.6          | T3 RIGHT, r 26.11, z -0.7 | 107.0      | T2_T3, r 24.85, z -0.7, Tangente 37° | -150.7     | T3_T4      | 89.4    | T3   |
+| `pos_049_W4_QS`  | LOAD_16NM | -0.77 %  | 114.9      | 73.0           | T2 RIGHT, r 26.90, z +0.7 | 60.1       | T2_T3, r 24.78, z +4.4, Tangente 59° | -80.6      | T3_T4      | 132.9   | T3   |
+| `pos_049_W4_DY1` | LOAD_16NM | -0.96 %  | 107.7      | 74.1           | T2 RIGHT, r 26.90, z +0.7 | 65.5       | T2_T3, r 24.78, z +4.4, Tangente 59° | -88.2      | T3_T4      | 124.1   | T3   |
+| `pos_049_W4_DY2` | LOAD_16NM | -1.61 %  | 85.0       | 84.0           | T2 RIGHT, r 26.90, z +0.7 | 77.3       | T2_T3, r 24.78, z +4.4, Tangente 59° | -108.8     | T3_T4      | 98.6    | T3   |
+| `pos_050_W1_QS`  | LOAD_16NM | -1.22 %  | 104.5      | 103.6          | T2 RIGHT, r 26.90, z +0.0 | 91.5       | T2_T3, r 24.82, z +0.0, Tangente 45° | -119.3     | T3_T4      | 127.0   | T3   |
+| `pos_050_W1_DY1` | LOAD_16NM | -1.49 %  | 97.5       | 105.5          | T3 RIGHT, r 26.11, z +0.0 | 95.3       | T2_T3, r 24.84, z +0.0, Tangente 41° | -125.2     | T3_T4      | 118.7   | T3   |
+| `pos_050_W1_DY2` | LOAD_16NM | -1.66 %  | 75.9       | 121.3          | T3 RIGHT, r 26.11, z +0.0 | 107.4      | T2_T3, r 24.82, z +0.0, Tangente 45° | -141.1     | T3_T4      | 93.1    | T3   |
+| `pos_050_W2_QS`  | LOAD_16NM | -0.52 %  | 118.6      | 81.7           | T2 RIGHT, r 26.90, z +0.0 | 51.6       | T2_T3, r 24.91, z +0.0, Tangente 26° | -59.6      | T3_T4      | 142.0   | T3   |
+| `pos_050_W2_DY1` | LOAD_16NM | -0.85 %  | 110.8      | 84.7           | T2 RIGHT, r 26.90, z +0.0 | 53.8       | T2_T3, r 24.89, z +0.0, Tangente 30° | -62.7      | T3_T4      | 132.9   | T3   |
+| `pos_050_W2_DY2` | LOAD_16NM | -1.73 %  | 87.3       | 98.7           | T2 RIGHT, r 26.90, z +0.0 | 65.1       | T2_T3, r 24.89, z +0.0, Tangente 30° | -78.4      | T3_T4      | 105.2   | T3   |
+| `pos_050_W3_QS`  | LOAD_16NM | -1.14 %  | 103.1      | 98.3           | T2 RIGHT, r 26.90, z +0.7 | 90.1       | T2_T3, r 24.85, z -0.7, Tangente 37° | -123.7     | T3_T4      | 120.2   | T3   |
+| `pos_050_W3_DY1` | LOAD_16NM | -1.34 %  | 96.8       | 98.5           | T2 RIGHT, r 26.90, z +0.7 | 93.7       | T2_T3, r 24.85, z -0.7, Tangente 37° | -132.5     | T3_T4      | 111.9   | T3   |
+| `pos_050_W3_DY2` | LOAD_16NM | -1.64 %  | 76.0       | 105.3          | T3 RIGHT, r 26.11, z -0.7 | 106.1      | T2_T3, r 24.85, z -0.7, Tangente 37° | -149.7     | T3_T4      | 88.7    | T3   |
+| `pos_050_W4_QS`  | LOAD_16NM | -0.64 %  | 115.4      | 73.7           | T2 RIGHT, r 26.90, z +0.7 | 60.0       | T2_T3, r 24.78, z +4.4, Tangente 59° | -81.0      | T3_T4      | 133.6   | T3   |
+| `pos_050_W4_DY1` | LOAD_16NM | -0.87 %  | 108.1      | 75.3           | T2 RIGHT, r 26.90, z +0.7 | 65.4       | T2_T3, r 24.78, z +4.4, Tangente 59° | -88.6      | T3_T4      | 124.5   | T3   |
+| `pos_050_W4_DY2` | LOAD_16NM | -1.66 %  | 85.0       | 85.9           | T2 RIGHT, r 26.90, z +0.7 | 77.0       | T2_T3, r 24.78, z +4.4, Tangente 59° | -109.2     | T3_T4      | 98.6    | T3   |
+| `pos_051_W1_QS`  | LOAD_16NM | -1.50 %  | 106.9      | 120.1          | T2 RIGHT, r 26.90, z +0.0 | 93.0       | T2_T3, r 24.84, z +0.0, Tangente 41° | -124.2     | T3_T4      | 130.0   | T3   |
+| `pos_051_W1_DY1` | LOAD_16NM | -1.78 %  | 98.7       | 118.6          | T2 RIGHT, r 26.90, z +0.0 | 96.0       | T2_T3, r 24.84, z +0.0, Tangente 41° | -129.0     | T3_T4      | 120.2   | T3   |
+| `pos_051_W1_DY2` | LOAD_16NM | -1.56 %  | 73.4       | 124.2          | T3 RIGHT, r 26.11, z +0.0 | 103.0      | T2_T3, r 24.84, z +0.0, Tangente 41° | -136.3     | T3_T4      | 89.8    | T3   |
+| `pos_051_W2_QS`  | LOAD_16NM | -0.40 %  | 121.9      | 85.0           | T2 RIGHT, r 26.90, z +0.0 | 52.0       | T2_T3, r 24.91, z +0.0, Tangente 26° | -61.9      | T3_T4      | 145.2   | T3   |
+| `pos_051_W2_DY1` | LOAD_16NM | -0.65 %  | 115.0      | 91.1           | T2 RIGHT, r 26.90, z +0.0 | 54.3       | T2_T3, r 24.91, z +0.0, Tangente 26° | -66.0      | T3_T4      | 137.5   | T3   |
+| `pos_051_W2_DY2` | LOAD_16NM | -1.77 %  | 85.8       | 106.5          | T2 RIGHT, r 26.90, z +0.0 | 64.0       | T2_T3, r 24.89, z +0.0, Tangente 30° | -78.2      | T3_T4      | 102.9   | T3   |
+| `pos_051_W3_QS`  | LOAD_16NM | -1.34 %  | 105.6      | 114.6          | T2 RIGHT, r 26.90, z +0.7 | 91.5       | T2_T3, r 24.85, z -0.7, Tangente 37° | -131.7     | T3_T4      | 122.4   | T3   |
+| `pos_051_W3_DY1` | LOAD_16NM | -1.60 %  | 98.3       | 114.9          | T2 RIGHT, r 26.90, z +0.7 | 94.5       | T2_T3, r 24.85, z -0.7, Tangente 37° | -139.3     | T3_T4      | 112.9   | T3   |
+| `pos_051_W3_DY2` | LOAD_16NM | -1.58 %  | 73.5       | 109.5          | T3 RIGHT, r 26.11, z -0.7 | 101.5      | T2_T3, r 24.85, z -0.7, Tangente 37° | -144.9     | T3_T4      | 85.3    | T3   |
+| `pos_051_W4_QS`  | LOAD_16NM | -0.44 %  | 118.1      | 75.6           | T2 RIGHT, r 26.90, z +0.7 | 60.2       | T2_T3, r 24.91, z +6.7, Tangente 26° | -83.6      | T3_T4      | 136.1   | T3   |
+| `pos_051_W4_DY1` | LOAD_16NM | -0.62 %  | 111.6      | 78.9           | T2 RIGHT, r 26.90, z +0.7 | 65.5       | T2_T3, r 24.91, z +6.7, Tangente 26° | -92.3      | T3_T4      | 128.3   | T3   |
+| `pos_051_W4_DY2` | LOAD_16NM | -1.67 %  | 83.4       | 92.9           | T2 RIGHT, r 26.90, z +0.7 | 74.8       | T2_T3, r 24.78, z +4.4, Tangente 59° | -108.9     | T3_T4      | 96.0    | T3   |
+| `pos_052_W1_QS`  | LOAD_16NM | -1.73 %  | 106.3      | 130.0          | T2 RIGHT, r 26.90, z +0.0 | 92.2       | T2_T3, r 24.84, z +0.0, Tangente 41° | -125.4     | T3_T4      | 129.1   | T3   |
+| `pos_052_W1_DY1` | LOAD_16NM | -1.66 %  | 96.8       | 126.9          | T2 RIGHT, r 26.90, z +0.0 | 93.6       | T2_T3, r 24.84, z +0.0, Tangente 41° | -126.8     | T3_T4      | 117.5   | T3   |
+| `pos_052_W1_DY2` | LOAD_16NM | -1.44 %  | 71.2       | 127.5          | T3 RIGHT, r 26.11, z +0.0 | 98.9       | T2_T3, r 24.84, z +0.0, Tangente 41° | -131.7     | T3_T4      | 86.7    | T3   |
+| `pos_052_W2_QS`  | LOAD_16NM | -1.55 %  | 123.2      | 86.5           | T2 RIGHT, r 26.90, z +0.0 | 52.5       | T2_T3, r 24.91, z +0.0, Tangente 26° | -63.2      | T3_T4      | 146.5   | T3   |
+| `pos_052_W2_DY1` | LOAD_16NM | -1.73 %  | 116.9      | 92.7           | T2 RIGHT, r 26.90, z +0.0 | 55.1       | T2_T3, r 24.91, z +0.0, Tangente 26° | -67.7      | T3_T4      | 139.5   | T3   |
+| `pos_052_W2_DY2` | LOAD_16NM | -1.57 %  | 83.1       | 111.9          | T2 RIGHT, r 26.90, z +0.0 | 62.8       | T2_T3, r 24.89, z +0.0, Tangente 30° | -77.3      | T3_T4      | 99.7    | T3   |
+| `pos_052_W3_QS`  | LOAD_16NM | -1.74 %  | 105.7      | 127.5          | T2 RIGHT, r 26.90, z +0.7 | 91.4       | T2_T3, r 24.85, z -0.7, Tangente 37° | -133.8     | T3_T4      | 122.3   | T3   |
+| `pos_052_W3_DY1` | LOAD_16NM | -1.69 %  | 97.2       | 127.4          | T2 RIGHT, r 26.90, z +0.7 | 92.8       | T2_T3, r 24.85, z -0.7, Tangente 37° | -138.5     | T3_T4      | 111.3   | T3   |
+| `pos_052_W3_DY2` | LOAD_16NM | -1.44 %  | 71.4       | 115.8          | T2 RIGHT, r 26.90, z +0.7 | 97.8       | T2_T3, r 24.85, z -0.7, Tangente 37° | -141.1     | T3_T4      | 82.5    | T3   |
+| `pos_052_W4_QS`  | LOAD_16NM | -1.56 %  | 119.3      | 77.0           | T2 RIGHT, r 26.90, z +1.3 | 60.7       | T2_T3, r 24.91, z +6.7, Tangente 26° | -85.7      | T3_T4      | 136.5   | T3   |
+| `pos_052_W4_DY1` | LOAD_16NM | -1.71 %  | 113.1      | 80.2           | T2 RIGHT, r 26.90, z +0.7 | 66.1       | T2_T3, r 24.91, z +6.7, Tangente 26° | -95.1      | T3_T4      | 128.9   | T3   |
+| `pos_052_W4_DY2` | LOAD_16NM | -1.53 %  | 81.0       | 98.2           | T2 RIGHT, r 26.90, z +0.7 | 72.4       | T2_T3, r 24.91, z +6.7, Tangente 26° | -106.9     | T3_T4      | 92.4    | T3   |
+| `pos_053_W1_QS`  | LOAD_16NM | -1.52 %  | 104.4      | 136.0          | T2 RIGHT, r 26.90, z +0.0 | 89.9       | T2_T3, r 24.84, z +0.0, Tangente 41° | -122.7     | T3_T4      | 126.1   | T3   |
+| `pos_053_W1_DY1` | LOAD_16NM | -1.47 %  | 94.8       | 133.7          | T2 RIGHT, r 26.90, z +0.0 | 90.9       | T2_T3, r 24.84, z +0.0, Tangente 41° | -123.7     | T3_T4      | 114.5   | T3   |
+| `pos_053_W1_DY2` | LOAD_16NM | -1.30 %  | 69.4       | 131.3          | T3 RIGHT, r 26.11, z +0.0 | 95.1       | T2_T3, r 24.84, z +0.0, Tangente 41° | -127.5     | T3_T4      | 83.9    | T3   |
+| `pos_053_W2_QS`  | LOAD_16NM | -1.62 %  | 124.4      | 87.5           | T2 RIGHT, r 26.90, z +0.0 | 52.7       | T2_T3, r 24.91, z +0.0, Tangente 26° | -64.2      | T3_T4      | 147.7   | T3   |
+| `pos_053_W2_DY1` | LOAD_16NM | -1.76 %  | 116.9      | 93.8           | T2 RIGHT, r 26.90, z +0.0 | 55.0       | T2_T3, r 24.91, z +0.0, Tangente 26° | -68.3      | T3_T4      | 139.2   | T3   |
+| `pos_053_W2_DY2` | LOAD_16NM | -1.39 %  | 80.7       | 115.5          | T2 RIGHT, r 26.90, z +0.0 | 61.5       | T2_T3, r 24.87, z +0.0, Tangente 33° | -76.2      | T3_T4      | 96.4    | T3   |
+| `pos_053_W3_QS`  | LOAD_16NM | -1.53 %  | 103.6      | 126.8          | T2 RIGHT, r 26.90, z +0.7 | 89.2       | T2_T3, r 24.85, z -0.7, Tangente 37° | -131.2     | T3_T4      | 119.5   | T3   |
+| `pos_053_W3_DY1` | LOAD_16NM | -1.48 %  | 95.3       | 131.0          | T2 RIGHT, r 26.90, z +0.7 | 90.6       | T2_T3, r 24.85, z -0.7, Tangente 37° | -135.9     | T3_T4      | 108.7   | T3   |
+| `pos_053_W3_DY2` | LOAD_16NM | -1.28 %  | 69.6       | 126.5          | T2 RIGHT, r 26.90, z +0.7 | 94.6       | T2_T3, r 24.85, z -0.7, Tangente 37° | -137.2     | T3_T4      | 79.8    | T3   |
+| `pos_053_W4_QS`  | LOAD_16NM | -1.65 %  | 120.4      | 77.4           | T2 RIGHT, r 26.90, z +1.3 | 60.7       | T2_T3, r 24.91, z +6.7, Tangente 26° | -86.9      | T3_T4      | 137.1   | T3   |
+| `pos_053_W4_DY1` | LOAD_16NM | -1.74 %  | 112.7      | 80.9           | T2 RIGHT, r 26.90, z +0.7 | 65.5       | T2_T3, r 24.91, z +6.7, Tangente 26° | -95.7      | T3_T4      | 127.8   | T3   |
+| `pos_053_W4_DY2` | LOAD_16NM | -1.36 %  | 78.7       | 100.2          | T2 RIGHT, r 26.90, z +0.7 | 70.8       | T2_T3, r 24.91, z +6.7, Tangente 26° | -105.0     | T3_T4      | 89.6    | T3   |
+| `pos_054_W1_QS`  | LOAD_16NM | -1.31 %  | 102.7      | 132.0          | T2 RIGHT, r 26.90, z +0.0 | 87.5       | T2_T3, r 24.84, z +0.0, Tangente 41° | -120.0     | T3_T4      | 123.2   | T3   |
+| `pos_054_W1_DY1` | LOAD_16NM | -1.27 %  | 93.2       | 139.8          | T2 RIGHT, r 26.90, z +0.0 | 88.4       | T2_T3, r 24.84, z +0.0, Tangente 41° | -120.8     | T3_T4      | 111.8   | T3   |
+| `pos_054_W1_DY2` | LOAD_16NM | -1.12 %  | 68.0       | 132.7          | T2 RIGHT, r 26.90, z +0.0 | 91.7       | T2_T3, r 24.84, z +0.0, Tangente 41° | -123.7     | T3_T4      | 81.6    | T3   |
+| `pos_054_W2_QS`  | LOAD_16NM | -1.62 %  | 125.1      | 88.9           | T2 RIGHT, r 26.90, z +0.0 | 52.7       | T2_T3, r 24.91, z +0.0, Tangente 26° | -65.0      | T3_T4      | 148.1   | T3   |
+| `pos_054_W2_DY1` | LOAD_16NM | -1.55 %  | 114.3      | 94.6           | T2 RIGHT, r 26.90, z +0.0 | 54.1       | T2_T3, r 24.91, z +0.0, Tangente 26° | -67.8      | T3_T4      | 135.5   | T3   |
+| `pos_054_W2_DY2` | LOAD_16NM | -1.24 %  | 78.5       | 114.9          | T2 RIGHT, r 26.90, z +0.0 | 60.0       | T2_T3, r 24.87, z +0.0, Tangente 33° | -75.0      | T3_T4      | 92.9    | T3   |
+| `pos_054_W3_QS`  | LOAD_16NM | -1.34 %  | 101.7      | 122.3          | T2 RIGHT, r 26.90, z +0.7 | 87.0       | T2_T3, r 24.85, z -0.7, Tangente 37° | -128.5     | T3_T4      | 116.5   | T3   |
+| `pos_054_W3_DY1` | LOAD_16NM | -1.29 %  | 93.5       | 126.8          | T2 RIGHT, r 26.90, z +0.7 | 88.2       | T2_T3, r 24.85, z -0.7, Tangente 37° | -133.1     | T3_T4      | 105.8   | T3   |
+| `pos_054_W3_DY2` | LOAD_16NM | -1.12 %  | 68.0       | 136.1          | T2 RIGHT, r 26.90, z +0.7 | 91.3       | T2_T3, r 24.85, z -0.7, Tangente 37° | -133.4     | T3_T4      | 77.1    | T3   |
+| `pos_054_W4_QS`  | LOAD_16NM | -1.58 %  | 120.2      | 78.2           | T2 RIGHT, r 26.90, z +1.3 | 60.6       | T2_T3, r 24.91, z +6.7, Tangente 26° | -87.4      | T3_T4      | 136.7   | T3   |
+| `pos_054_W4_DY1` | LOAD_16NM | -1.51 %  | 110.4      | 81.4           | T2 RIGHT, r 26.90, z +1.3 | 64.5       | T2_T3, r 24.91, z +6.7, Tangente 26° | -94.7      | T3_T4      | 124.8   | T3   |
+| `pos_054_W4_DY2` | LOAD_16NM | -1.23 %  | 76.5       | 100.7          | T2 RIGHT, r 26.90, z +0.7 | 68.9       | T2_T3, r 24.91, z +6.7, Tangente 26° | -103.0     | T3_T4      | 86.5    | T3   |
+| `pos_055_W1_QS`  | LOAD_16NM | -1.08 %  | 101.2      | 124.8          | T2 RIGHT, r 26.90, z +0.0 | 85.6       | T2_T3, r 24.84, z +0.0, Tangente 41° | -117.7     | T3_T4      | 121.0   | T3   |
+| `pos_055_W1_DY1` | LOAD_16NM | -1.02 %  | 91.8       | 133.3          | T2 RIGHT, r 26.90, z +0.0 | 86.3       | T2_T3, r 24.84, z +0.0, Tangente 41° | -118.4     | T3_T4      | 109.7   | T3   |
+| `pos_055_W1_DY2` | LOAD_16NM | -0.89 %  | 66.7       | 141.2          | T2 RIGHT, r 26.90, z +0.0 | 89.1       | T2_T3, r 24.84, z +0.0, Tangente 41° | -120.8     | T3_T4      | 79.6    | T3   |
+| `pos_055_W2_QS`  | LOAD_16NM | -1.38 %  | 122.9      | 87.0           | T2 RIGHT, r 26.90, z +0.0 | 52.0       | T2_T3, r 24.91, z +0.0, Tangente 26° | -64.5      | T3_T4      | 144.4   | T3   |
+| `pos_055_W2_DY1` | LOAD_16NM | -1.31 %  | 112.2      | 92.6           | T2 RIGHT, r 26.90, z +0.0 | 53.2       | T2_T3, r 24.91, z +0.0, Tangente 26° | -67.2      | T3_T4      | 131.9   | T3   |
+| `pos_055_W2_DY2` | LOAD_16NM | -1.06 %  | 76.5       | 112.3          | T2 RIGHT, r 26.90, z +0.0 | 58.4       | T2_T3, r 24.87, z +0.0, Tangente 33° | -73.9      | T3_T4      | 89.8    | T3   |
+| `pos_055_W3_QS`  | LOAD_16NM | -1.14 %  | 100.0      | 117.3          | T2 RIGHT, r 26.90, z +0.7 | 84.7       | T2_T3, r 24.85, z -0.7, Tangente 37° | -125.9     | T3_T4      | 113.5   | T3   |
+| `pos_055_W3_DY1` | LOAD_16NM | -1.09 %  | 91.9       | 121.8          | T2 RIGHT, r 26.90, z +0.7 | 85.8       | T2_T3, r 24.85, z -0.7, Tangente 37° | -130.2     | T3_T4      | 102.9   | T3   |
+| `pos_055_W3_DY2` | LOAD_16NM | -0.93 %  | 66.8       | 144.3          | T2 RIGHT, r 26.90, z +0.7 | 88.2       | T2_T3, r 24.85, z -0.7, Tangente 37° | -130.4     | T3_T4      | 75.0    | T3   |
+| `pos_055_W4_QS`  | LOAD_16NM | -1.34 %  | 118.0      | 77.1           | T2 RIGHT, r 26.90, z +1.3 | 59.6       | T2_T3, r 24.91, z +6.7, Tangente 26° | -86.7      | T3_T4      | 133.4   | T3   |
+| `pos_055_W4_DY1` | LOAD_16NM | -1.27 %  | 108.5      | 82.0           | T2 RIGHT, r 26.90, z +1.3 | 63.5       | T2_T3, r 24.91, z +6.7, Tangente 26° | -93.7      | T3_T4      | 121.9   | T3   |
+| `pos_055_W4_DY2` | LOAD_16NM | -1.04 %  | 74.7       | 101.3          | T2 RIGHT, r 26.90, z +0.7 | 66.8       | T2_T3, r 24.91, z +6.7, Tangente 26° | -101.1     | T3_T4      | 83.5    | T3   |
+| `pos_056_W1_QS`  | LOAD_16NM | -0.86 %  | 99.8       | 117.6          | T2 RIGHT, r 26.90, z +0.0 | 83.7       | T2_T3, r 24.84, z +0.0, Tangente 41° | -115.5     | T3_T4      | 118.6   | T3   |
+| `pos_056_W1_DY1` | LOAD_16NM | -0.80 %  | 90.6       | 125.5          | T2 RIGHT, r 26.90, z +0.0 | 84.3       | T2_T3, r 24.84, z +0.0, Tangente 41° | -116.0     | T3_T4      | 107.6   | T3   |
+| `pos_056_W1_DY2` | LOAD_16NM | -0.68 %  | 65.8       | 148.9          | T2 RIGHT, r 26.90, z +0.0 | 86.6       | T2_T3, r 24.84, z +0.0, Tangente 41° | -118.0     | T3_T4      | 77.6    | T3   |
+| `pos_056_W2_QS`  | LOAD_16NM | -1.15 %  | 120.8      | 82.1           | T2 RIGHT, r 26.90, z +0.0 | 51.3       | T2_T3, r 24.91, z +0.0, Tangente 26° | -64.0      | T3_T4      | 141.0   | T3   |
+| `pos_056_W2_DY1` | LOAD_16NM | -1.07 %  | 110.4      | 89.7           | T2 RIGHT, r 26.90, z +0.0 | 52.5       | T2_T3, r 24.91, z +0.0, Tangente 26° | -66.8      | T3_T4      | 129.2   | T3   |
+| `pos_056_W2_DY2` | LOAD_16NM | -0.84 %  | 74.9       | 109.6          | T2 RIGHT, r 26.90, z +0.0 | 57.3       | T2_T3, r 24.87, z +0.0, Tangente 33° | -72.9      | T3_T4      | 87.4    | T3   |
+| `pos_056_W3_QS`  | LOAD_16NM | -0.94 %  | 98.7       | 112.4          | T2 RIGHT, r 26.90, z +0.7 | 82.6       | T2_T3, r 24.85, z -0.7, Tangente 37° | -123.6     | T3_T4      | 111.1   | T3   |
+| `pos_056_W3_DY1` | LOAD_16NM | -0.90 %  | 90.5       | 117.0          | T2 RIGHT, r 26.90, z +0.7 | 83.4       | T2_T3, r 24.85, z -0.7, Tangente 37° | -127.7     | T3_T4      | 100.5   | T3   |
+| `pos_056_W3_DY2` | LOAD_16NM | -0.72 %  | 65.7       | 141.8          | T2 RIGHT, r 26.90, z +0.7 | 85.8       | T2_T3, r 24.85, z -0.7, Tangente 37° | -127.8     | T3_T4      | 73.2    | T3   |
+| `pos_056_W4_QS`  | LOAD_16NM | -1.16 %  | 115.8      | 75.2           | T2 RIGHT, r 26.90, z +1.3 | 58.3       | T2_T3, r 24.91, z +6.7, Tangente 26° | -85.9      | T3_T4      | 129.8   | T3   |
+| `pos_056_W4_DY1` | LOAD_16NM | -1.08 %  | 106.5      | 79.9           | T2 RIGHT, r 26.90, z +0.7 | 62.2       | T2_T3, r 24.91, z +6.7, Tangente 26° | -92.7      | T3_T4      | 118.5   | T3   |
+| `pos_056_W4_DY2` | LOAD_16NM | -0.88 %  | 73.2       | 99.2           | T2 RIGHT, r 26.90, z +0.7 | 64.6       | T2_T3, r 24.91, z +6.7, Tangente 26° | -99.1      | T3_T4      | 80.6    | T3   |
+| `pos_057_W1_QS`  | LOAD_16NM | -0.62 %  | 98.8       | 109.6          | T2 RIGHT, r 26.90, z +0.0 | 81.8       | T2_T3, r 24.84, z +0.0, Tangente 41° | -113.5     | T3_T4      | 116.4   | T3   |
+| `pos_057_W1_DY1` | LOAD_16NM | -0.57 %  | 89.6       | 116.8          | T2 RIGHT, r 26.90, z +0.0 | 82.3       | T2_T3, r 24.84, z +0.0, Tangente 41° | -113.8     | T3_T4      | 105.3   | T3   |
+| `pos_057_W1_DY2` | LOAD_16NM | -0.44 %  | 65.1       | 145.4          | T2 RIGHT, r 26.90, z +0.0 | 84.0       | T2_T3, r 24.84, z +0.0, Tangente 41° | -115.2     | T3_T4      | 75.7    | T3   |
+| `pos_057_W2_QS`  | LOAD_16NM | -0.89 %  | 118.7      | 76.6           | T2 RIGHT, r 26.90, z +0.0 | 50.8       | T2_T3, r 24.91, z +0.0, Tangente 26° | -63.6      | T3_T4      | 138.0   | T3   |
+| `pos_057_W2_DY1` | LOAD_16NM | -0.80 %  | 108.6      | 83.3           | T2 RIGHT, r 26.90, z +0.0 | 52.0       | T2_T3, r 24.89, z +0.0, Tangente 30° | -66.2      | T3_T4      | 126.5   | T3   |
+| `pos_057_W2_DY2` | LOAD_16NM | -0.59 %  | 73.6       | 105.7          | T2 RIGHT, r 26.90, z +0.0 | 56.4       | T2_T3, r 24.87, z +0.0, Tangente 33° | -71.9      | T3_T4      | 85.0    | T3   |
+| `pos_057_W3_QS`  | LOAD_16NM | -0.68 %  | 97.5       | 106.7          | T2 RIGHT, r 26.90, z +0.7 | 80.9       | T2_T3, r 24.85, z -0.7, Tangente 37° | -121.8     | T3_T4      | 109.1   | T3   |
+| `pos_057_W3_DY1` | LOAD_16NM | -0.65 %  | 89.4       | 111.3          | T2 RIGHT, r 26.90, z +0.7 | 81.6       | T2_T3, r 24.85, z -0.7, Tangente 37° | -125.4     | T3_T4      | 98.5    | T3   |
+| `pos_057_W3_DY2` | LOAD_16NM | -0.50 %  | 64.8       | 134.0          | T2 RIGHT, r 26.90, z +0.7 | 83.1       | T2_T3, r 24.85, z -0.7, Tangente 37° | -125.0     | T3_T4      | 71.2    | T3   |
+| `pos_057_W4_QS`  | LOAD_16NM | -0.96 %  | 113.8      | 71.6           | T2 RIGHT, r 26.90, z +0.7 | 57.1       | T2_T3, r 24.91, z +6.7, Tangente 26° | -85.0      | T3_T4      | 126.2   | T3   |
+| `pos_057_W4_DY1` | LOAD_16NM | -0.88 %  | 104.7      | 76.1           | T2 RIGHT, r 26.90, z +0.7 | 60.7       | T2_T3, r 24.91, z +6.7, Tangente 26° | -91.5      | T3_T4      | 115.1   | T3   |
+| `pos_057_W4_DY2` | LOAD_16NM | -0.65 %  | 71.9       | 97.0           | T2 RIGHT, r 26.90, z +0.7 | 63.2       | T2_T3, r 24.91, z +6.7, Tangente 26° | -97.6      | T3_T4      | 78.5    | T3   |
+| `pos_058_W1_QS`  | LOAD_16NM | -0.40 %  | 98.0       | 102.1          | T2 RIGHT, r 26.90, z +0.0 | 79.9       | T2_T3, r 24.84, z +0.0, Tangente 41° | -111.3     | T3_T4      | 114.2   | T3   |
+| `pos_058_W1_DY1` | LOAD_16NM | -0.36 %  | 88.9       | 108.6          | T2 RIGHT, r 26.90, z +0.0 | 80.2       | T2_T3, r 24.84, z +0.0, Tangente 41° | -111.7     | T3_T4      | 103.2   | T3   |
+| `pos_058_W1_DY2` | LOAD_16NM | -0.25 %  | 64.6       | 134.4          | T2 RIGHT, r 26.90, z +0.0 | 81.0       | T2_T3, r 24.84, z +0.0, Tangente 41° | -112.2     | T3_T4      | 73.8    | T3   |
+| `pos_058_W2_QS`  | LOAD_16NM | -0.67 %  | 116.9      | 71.1           | T2 RIGHT, r 26.90, z +0.0 | 50.1       | T2_T3, r 24.91, z +0.0, Tangente 26° | -63.2      | T3_T4      | 135.0   | T3   |
+| `pos_058_W2_DY1` | LOAD_16NM | -0.58 %  | 107.0      | 76.9           | T2 RIGHT, r 26.90, z +0.0 | 51.3       | T2_T3, r 24.89, z +0.0, Tangente 30° | -65.6      | T3_T4      | 123.6   | T3   |
+| `pos_058_W2_DY2` | LOAD_16NM | -0.35 %  | 72.6       | 102.0          | T2 RIGHT, r 26.90, z +0.0 | 55.4       | T2_T3, r 24.87, z +0.0, Tangente 33° | -70.9      | T3_T4      | 82.7    | T3   |
+| `pos_058_W3_QS`  | LOAD_16NM | -0.46 %  | 96.7       | 98.1           | T2 RIGHT, r 26.90, z +0.7 | 79.2       | T2_T3, r 24.85, z -0.7, Tangente 37° | -120.0     | T3_T4      | 107.1   | T3   |
+| `pos_058_W3_DY1` | LOAD_16NM | -0.43 %  | 88.6       | 104.9          | T2 RIGHT, r 26.90, z +0.7 | 79.8       | T2_T3, r 24.85, z -0.7, Tangente 37° | -123.5     | T3_T4      | 96.6    | T3   |
+| `pos_058_W3_DY2` | LOAD_16NM | -0.29 %  | 64.3       | 126.6          | T2 RIGHT, r 26.90, z +0.7 | 80.5       | T2_T3, r 24.85, z -0.7, Tangente 37° | -122.4     | T3_T4      | 69.6    | T2   |
+| `pos_058_W4_QS`  | LOAD_16NM | -0.73 %  | 112.2      | 67.4           | T2 RIGHT, r 26.90, z +0.7 | 56.8       | T1_T2, r 24.77, z +5.1, Tangente 69° | -84.3      | T3_T4      | 123.6   | T3   |
+| `pos_058_W4_DY1` | LOAD_16NM | -0.67 %  | 103.1      | 71.5           | T2 RIGHT, r 26.90, z +0.7 | 59.9       | T2_T3, r 24.91, z +6.7, Tangente 26° | -90.5      | T3_T4      | 112.5   | T3   |
+| `pos_058_W4_DY2` | LOAD_16NM | -0.40 %  | 70.9       | 95.1           | T2 RIGHT, r 26.90, z +0.7 | 61.8       | T2_T3, r 24.91, z +6.7, Tangente 26° | -96.4      | T3_T4      | 76.5    | T3   |
+| `pos_059_W1_QS`  | LOAD_16NM | -0.21 %  | 97.3       | 96.1           | T3 RIGHT, r 26.00, z +0.0 | 77.9       | T2_T3, r 24.84, z +0.0, Tangente 41° | -109.1     | T3_T4      | 111.9   | T3   |
+| `pos_059_W1_DY1` | LOAD_16NM | -0.16 %  | 88.4       | 102.0          | T3 RIGHT, r 26.00, z +0.0 | 78.1       | T2_T3, r 24.84, z +0.0, Tangente 41° | -109.3     | T3_T4      | 101.0   | T3   |
+| `pos_059_W1_DY2` | LOAD_16NM | -0.03 %  | 64.3       | 123.7          | T3 RIGHT, r 26.00, z +0.0 | 78.3       | T2_T3, r 24.84, z +0.0, Tangente 41° | -109.4     | T3_T4      | 72.4    | T2   |
+| `pos_059_W2_QS`  | LOAD_16NM | -0.46 %  | 115.5      | 64.1           | T2 RIGHT, r 26.90, z +0.0 | 49.5       | T2_T3, r 24.91, z +0.0, Tangente 26° | -62.8      | T3_T4      | 132.1   | T3   |
+| `pos_059_W2_DY1` | LOAD_16NM | -0.39 %  | 105.6      | 69.8           | T2 RIGHT, r 26.90, z +0.0 | 50.6       | T2_T3, r 24.89, z +0.0, Tangente 30° | -65.0      | T3_T4      | 120.6   | T3   |
+| `pos_059_W2_DY2` | LOAD_16NM | -0.14 %  | 72.0       | 98.3           | T2 RIGHT, r 26.90, z +0.0 | 54.3       | T2_T3, r 24.87, z +0.0, Tangente 33° | -70.1      | T3_T4      | 80.5    | T3   |
+| `pos_059_W3_QS`  | LOAD_16NM | -0.28 %  | 95.8       | 87.6           | T2 RIGHT, r 26.90, z +0.7 | 77.4       | T2_T3, r 24.85, z -0.7, Tangente 37° | -117.8     | T3_T4      | 106.4   | T2   |
+| `pos_059_W3_DY1` | LOAD_16NM | -0.23 %  | 88.0       | 94.1           | T2 RIGHT, r 26.90, z +0.7 | 77.8       | T2_T3, r 24.85, z -0.7, Tangente 37° | -121.3     | T3_T4      | 97.6    | T2   |
+| `pos_059_W3_DY2` | LOAD_16NM | -0.09 %  | 64.0       | 118.9          | T2 RIGHT, r 26.90, z +0.7 | 78.1       | T2_T3, r 24.85, z -0.7, Tangente 37° | -119.7     | T3_T4      | 71.5    | T2   |
+| `pos_059_W4_QS`  | LOAD_16NM | -0.51 %  | 110.9      | 62.2           | T2 RIGHT, r 26.90, z +0.7 | 57.5       | T1_T2, r 24.77, z +5.1, Tangente 69° | -83.6      | T3_T4      | 122.0   | T2   |
+| `pos_059_W4_DY1` | LOAD_16NM | -0.45 %  | 101.8      | 67.0           | T2 RIGHT, r 26.90, z +0.7 | 60.5       | T1_T2, r 24.77, z +5.1, Tangente 69° | -89.7      | T3_T4      | 112.1   | T2   |
+| `pos_059_W4_DY2` | LOAD_16NM | -0.18 %  | 70.2       | 89.1           | T2 RIGHT, r 26.90, z +0.7 | 62.6       | T1_T2, r 24.77, z +5.1, Tangente 64° | -94.9      | T3_T4      | 77.9    | T2   |
+| `pos_060_W1_QS`  | LOAD_16NM | -0.04 %  | 96.7       | 91.3           | T3 RIGHT, r 26.00, z +0.0 | 76.2       | T2_T3, r 24.84, z +0.0, Tangente 41° | -106.9     | T3_T4      | 109.6   | T2   |
+| `pos_060_W1_DY1` | LOAD_16NM | +0.03 %  | 87.9       | 96.8           | T3 RIGHT, r 26.00, z +0.0 | 76.2       | T2_T3, r 24.84, z +0.0, Tangente 41° | -107.0     | T3_T4      | 99.9    | T2   |
+| `pos_060_W1_DY2` | LOAD_16NM | +0.21 %  | 64.2       | 116.0          | T3 RIGHT, r 26.00, z +0.0 | 76.5       | T2_T3, r 24.84, z +0.0, Tangente 41° | -107.3     | T3_T4      | 74.0    | T2   |
+| `pos_060_W2_QS`  | LOAD_16NM | -0.27 %  | 114.3      | 63.1           | T3 RIGHT, r 26.00, z +0.0 | 48.8       | T1_T2, r 24.87, z +0.0, Tangente 33° | -62.3      | T3_T4      | 129.0   | T3   |
+| `pos_060_W2_DY1` | LOAD_16NM | -0.19 %  | 104.5      | 67.3           | T3 RIGHT, r 26.00, z +0.0 | 49.9       | T1_T2, r 24.87, z +0.0, Tangente 33° | -64.5      | T3_T4      | 117.6   | T3   |
+| `pos_060_W2_DY2` | LOAD_16NM | +0.05 %  | 71.5       | 88.6           | T3 RIGHT, r 26.00, z +0.0 | 54.2       | T1_T2, r 24.84, z +0.0, Tangente 41° | -69.2      | T3_T4      | 81.4    | T2   |
+| `pos_060_W3_QS`  | LOAD_16NM | -0.10 %  | 95.2       | 79.2           | T3 RIGHT, r 26.11, z +7.5 | 75.7       | T2_T3, r 24.85, z -0.7, Tangente 37° | -115.6     | T3_T4      | 107.3   | T2   |
+| `pos_060_W3_DY1` | LOAD_16NM | -0.06 %  | 87.4       | 83.4           | T3 RIGHT, r 26.00, z +7.5 | 76.4       | T1_T2, r 24.79, z -0.7, Tangente 54° | -118.9     | T3_T4      | 98.6    | T2   |
+| `pos_060_W3_DY2` | LOAD_16NM | +0.12 %  | 63.8       | 108.8          | T2 RIGHT, r 26.90, z +0.7 | 78.0       | T1_T2, r 24.79, z -0.7, Tangente 54° | -117.2     | T3_T4      | 73.0    | T2   |
+| `pos_060_W4_QS`  | LOAD_16NM | -0.30 %  | 109.7      | 57.8           | T3 RIGHT, r 26.11, z +6.7 | 58.3       | T1_T2, r 24.77, z +5.1, Tangente 69° | -82.8      | T3_T4      | 122.3   | T2   |
+| `pos_060_W4_DY1` | LOAD_16NM | -0.24 %  | 100.7      | 61.7           | T3 RIGHT, r 26.11, z +7.5 | 61.4       | T1_T2, r 24.77, z +5.1, Tangente 69° | -88.7      | T3_T4      | 112.6   | T2   |
+| `pos_060_W4_DY2` | LOAD_16NM | +0.01 %  | 69.6       | 81.2           | T2 RIGHT, r 26.90, z +0.7 | 64.2       | T1_T2, r 24.77, z +5.1, Tangente 64° | -93.3      | T3_T4      | 78.9    | T2   |
+| `pos_061_W1_QS`  | LOAD_16NM | +0.15 %  | 96.3       | 84.2           | T3 RIGHT, r 26.00, z +0.0 | 74.8       | T2_T3, r 24.84, z +0.0, Tangente 41° | -105.1     | T3_T4      | 110.1   | T2   |
+| `pos_061_W1_DY1` | LOAD_16NM | +0.21 %  | 87.6       | 89.6           | T3 RIGHT, r 26.00, z +0.0 | 74.7       | T2_T3, r 24.84, z +0.0, Tangente 41° | -105.0     | T3_T4      | 100.6   | T2   |
+| `pos_061_W1_DY2` | LOAD_16NM | +0.40 %  | 64.3       | 107.2          | T3 RIGHT, r 26.00, z +0.0 | 77.5       | T1_T2, r 24.81, z +0.0, Tangente 49° | -105.1     | T3_T4      | 75.1    | T2   |
+| `pos_061_W2_QS`  | LOAD_16NM | -0.11 %  | 113.4      | 62.6           | T3 RIGHT, r 26.00, z +0.0 | 49.2       | T1_T2, r 24.87, z +0.0, Tangente 33° | -61.9      | T3_T4      | 128.4   | T2   |
+| `pos_061_W2_DY1` | LOAD_16NM | -0.03 %  | 103.6      | 66.7           | T3 RIGHT, r 26.00, z +0.0 | 50.5       | T1_T2, r 24.87, z +0.0, Tangente 33° | -63.8      | T3_T4      | 117.5   | T2   |
+| `pos_061_W2_DY2` | LOAD_16NM | +0.24 %  | 71.0       | 84.7           | T3 RIGHT, r 26.00, z +0.0 | 55.1       | T1_T2, r 24.85, z +0.0, Tangente 37° | -68.4      | T3_T4      | 82.0    | T2   |
+| `pos_061_W3_QS`  | LOAD_16NM | +0.07 %  | 94.8       | 75.1           | T3 RIGHT, r 26.00, z -0.7 | 76.5       | T1_T2, r 24.79, z -0.7, Tangente 54° | -113.5     | T3_T4      | 107.8   | T2   |
+| `pos_061_W3_DY1` | LOAD_16NM | +0.11 %  | 87.1       | 78.6           | T3 RIGHT, r 26.00, z +7.5 | 78.0       | T1_T2, r 24.79, z -0.7, Tangente 54° | -116.5     | T3_T4      | 99.3    | T2   |
+| `pos_061_W3_DY2` | LOAD_16NM | +0.29 %  | 63.6       | 95.0           | T3 RIGHT, r 26.00, z +7.5 | 80.3       | T1_T2, r 24.79, z -0.7, Tangente 54° | -114.7     | T3_T4      | 73.9    | T2   |
+| `pos_061_W4_QS`  | LOAD_16NM | -0.10 %  | 108.9      | 54.7           | T3 RIGHT, r 26.00, z +0.0 | 59.0       | T1_T2, r 24.77, z +5.1, Tangente 69° | -82.1      | T3_T4      | 122.6   | T2   |
+| `pos_061_W4_DY1` | LOAD_16NM | -0.06 %  | 99.9       | 58.8           | T3 RIGHT, r 26.11, z +7.5 | 62.2       | T1_T2, r 24.77, z +5.1, Tangente 69° | -87.6      | T3_T4      | 112.8   | T2   |
+| `pos_061_W4_DY2` | LOAD_16NM | +0.17 %  | 69.3       | 76.6           | T3 RIGHT, r 26.00, z +7.5 | 65.5       | T1_T2, r 24.77, z +5.1, Tangente 64° | -91.5      | T3_T4      | 79.7    | T2   |
+| `pos_062_W1_QS`  | LOAD_16NM | +0.27 %  | 95.9       | 77.0           | T3 RIGHT, r 26.00, z +0.0 | 75.1       | T1_T2, r 24.81, z +0.0, Tangente 49° | -102.9     | T3_T4      | 110.9   | T2   |
+| `pos_062_W1_DY1` | LOAD_16NM | +0.36 %  | 87.5       | 81.8           | T3 RIGHT, r 26.00, z +0.0 | 76.0       | T1_T2, r 24.81, z +0.0, Tangente 49° | -103.0     | T3_T4      | 101.3   | T2   |
+| `pos_062_W1_DY2` | LOAD_16NM | +0.52 %  | 64.3       | 98.1           | T3 RIGHT, r 26.00, z +0.0 | 79.3       | T1_T2, r 24.81, z +0.0, Tangente 49° | -102.2     | T3_T4      | 75.7    | T2   |
+| `pos_062_W2_QS`  | LOAD_16NM | +0.07 %  | 112.7      | 60.6           | T3 RIGHT, r 26.00, z +0.0 | 49.6       | T1_T2, r 24.87, z +0.0, Tangente 33° | -61.4      | T3_T4      | 129.4   | T2   |
+| `pos_062_W2_DY1` | LOAD_16NM | +0.13 %  | 102.9      | 63.3           | T3 RIGHT, r 26.00, z +0.0 | 50.8       | T1_T2, r 24.87, z +0.0, Tangente 33° | -63.3      | T3_T4      | 118.3   | T2   |
+| `pos_062_W2_DY2` | LOAD_16NM | +0.44 %  | 70.9       | 79.0           | T3 RIGHT, r 26.00, z +0.0 | 55.9       | T1_T2, r 24.85, z +0.0, Tangente 37° | -67.7      | T3_T4      | 82.4    | T2   |
+| `pos_062_W3_QS`  | LOAD_16NM | +0.21 %  | 94.3       | 70.1           | T3 RIGHT, r 26.00, z -0.7 | 77.7       | T1_T2, r 24.79, z -0.7, Tangente 54° | -111.4     | T3_T4      | 107.8   | T2   |
+| `pos_062_W3_DY1` | LOAD_16NM | +0.26 %  | 86.7       | 74.0           | T3 RIGHT, r 25.90, z -7.5 | 79.5       | T1_T2, r 24.79, z -0.7, Tangente 54° | -114.3     | T3_T4      | 99.4    | T2   |
+| `pos_062_W3_DY2` | LOAD_16NM | +0.45 %  | 63.7       | 86.9           | T3 RIGHT, r 26.00, z -0.7 | 82.3       | T1_T2, r 24.79, z -0.7, Tangente 54° | -112.4     | T3_T4      | 74.6    | T2   |
+| `pos_062_W4_QS`  | LOAD_16NM | +0.07 %  | 108.4      | 55.1           | T3 RIGHT, r 25.80, z +0.0 | 59.5       | T1_T2, r 24.77, z +5.1, Tangente 69° | -81.2      | T3_T4      | 122.5   | T2   |
+| `pos_062_W4_DY1` | LOAD_16NM | +0.12 %  | 99.4       | 57.5           | T3 RIGHT, r 25.90, z -7.5 | 62.9       | T1_T2, r 24.77, z +5.1, Tangente 69° | -86.6      | T3_T4      | 112.9   | T2   |
+| `pos_062_W4_DY2` | LOAD_16NM | +0.34 %  | 69.1       | 72.1           | T3 RIGHT, r 26.00, z +0.0 | 66.5       | T1_T2, r 24.77, z +5.1, Tangente 64° | -90.0      | T3_T4      | 80.2    | T2   |
+| `pos_063_W1_QS`  | LOAD_16NM | +0.37 %  | 95.6       | 73.9           | T3 RIGHT, r 25.90, z +0.0 | 76.1       | T1_T2, r 24.81, z +0.0, Tangente 49° | -100.4     | T3_T4      | 111.6   | T2   |
+| `pos_063_W1_DY1` | LOAD_16NM | +0.44 %  | 87.2       | 76.8           | T3 RIGHT, r 25.90, z +0.0 | 77.1       | T1_T2, r 24.81, z +0.0, Tangente 49° | -100.4     | T3_T4      | 102.1   | T2   |
+| `pos_063_W1_DY2` | LOAD_16NM | +0.66 %  | 64.7       | 89.1           | T3 RIGHT, r 26.00, z +0.0 | 81.1       | T1_T2, r 24.81, z +0.0, Tangente 49° | -99.6      | T3_T4      | 76.5    | T2   |
+| `pos_063_W2_QS`  | LOAD_16NM | +0.24 %  | 112.2      | 60.4           | T3 RIGHT, r 25.80, z +0.0 | 49.9       | T1_T2, r 24.87, z +0.0, Tangente 33° | -60.9      | T3_T4      | 130.0   | T2   |
+| `pos_063_W2_DY1` | LOAD_16NM | +0.30 %  | 102.5      | 60.6           | T3 RIGHT, r 25.80, z +0.0 | 51.3       | T1_T2, r 24.87, z +0.0, Tangente 33° | -62.7      | T3_T4      | 119.0   | T2   |
+| `pos_063_W2_DY2` | LOAD_16NM | +0.58 %  | 70.7       | 72.9           | T3 RIGHT, r 26.00, z +0.0 | 56.7       | T1_T2, r 24.85, z +0.0, Tangente 37° | -66.6      | T3_T4      | 83.1    | T2   |
+| `pos_063_W3_QS`  | LOAD_16NM | +0.35 %  | 94.2       | 69.2           | T3 RIGHT, r 25.90, z -7.5 | 78.9       | T1_T2, r 24.79, z -0.7, Tangente 54° | -109.3     | T3_T4      | 108.1   | T2   |
+| `pos_063_W3_DY1` | LOAD_16NM | +0.40 %  | 86.5       | 73.2           | T3 RIGHT, r 25.90, z -7.5 | 80.8       | T1_T2, r 24.79, z -0.7, Tangente 54° | -112.0     | T3_T4      | 99.2    | T2   |
+| `pos_063_W3_DY2` | LOAD_16NM | +0.62 %  | 64.0       | 80.2           | T3 RIGHT, r 26.00, z +7.5 | 84.5       | T1_T2, r 24.79, z -0.7, Tangente 54° | -109.9     | T3_T4      | 75.0    | T2   |
+| `pos_063_W4_QS`  | LOAD_16NM | +0.26 %  | 108.2      | 58.8           | T3 RIGHT, r 25.80, z -7.5 | 60.0       | T1_T2, r 24.77, z +5.1, Tangente 69° | -80.4      | T3_T4      | 123.7   | T2   |
+| `pos_063_W4_DY1` | LOAD_16NM | +0.28 %  | 99.2       | 59.1           | T3 RIGHT, r 25.80, z -7.5 | 63.5       | T1_T2, r 24.77, z +5.1, Tangente 69° | -85.5      | T3_T4      | 113.4   | T2   |
+| `pos_063_W4_DY2` | LOAD_16NM | +0.50 %  | 68.8       | 69.8           | T3 RIGHT, r 25.90, z -7.5 | 67.4       | T1_T2, r 24.77, z +5.1, Tangente 64° | -88.6      | T3_T4      | 80.0    | T2   |
+| `pos_064_W1_QS`  | LOAD_16NM | +0.47 %  | 95.7       | 73.0           | T3 RIGHT, r 25.90, z +0.0 | 77.2       | T1_T2, r 24.81, z +0.0, Tangente 49° | -97.9      | T3_T4      | 112.3   | T2   |
+| `pos_064_W1_DY1` | LOAD_16NM | +0.51 %  | 87.2       | 75.8           | T3 RIGHT, r 25.90, z +0.0 | 78.2       | T1_T2, r 24.81, z +0.0, Tangente 49° | -97.7      | T3_T4      | 102.7   | T2   |
+| `pos_064_W1_DY2` | LOAD_16NM | +0.69 %  | 65.0       | 87.3           | T3 RIGHT, r 25.90, z +0.0 | 82.9       | T1_T2, r 24.81, z +0.0, Tangente 49° | -96.2      | T3_T4      | 77.5    | T2   |
+| `pos_064_W2_QS`  | LOAD_16NM | +0.44 %  | 112.4      | 62.5           | T3 RIGHT, r 25.80, z +0.0 | 50.3       | T1_T2, r 24.87, z +0.0, Tangente 33° | -60.3      | T3_T4      | 130.7   | T2   |
+| `pos_064_W2_DY1` | LOAD_16NM | +0.45 %  | 102.4      | 62.8           | T3 RIGHT, r 25.80, z +0.0 | 51.6       | T1_T2, r 24.87, z +0.0, Tangente 33° | -62.0      | T3_T4      | 119.5   | T2   |
+| `pos_064_W2_DY2` | LOAD_16NM | +0.63 %  | 70.6       | 69.8           | T3 RIGHT, r 25.90, z +0.0 | 57.1       | T1_T2, r 24.85, z +0.0, Tangente 37° | -65.4      | T3_T4      | 83.6    | T2   |
+| `pos_064_W3_QS`  | LOAD_16NM | +0.49 %  | 94.3       | 71.9           | T3 RIGHT, r 25.80, z -7.5 | 80.3       | T1_T2, r 24.79, z -0.7, Tangente 54° | -106.9     | T3_T4      | 109.0   | T2   |
+| `pos_064_W3_DY1` | LOAD_16NM | +0.52 %  | 86.7       | 74.5           | T3 RIGHT, r 25.90, z -7.5 | 82.3       | T1_T2, r 24.79, z -0.7, Tangente 54° | -109.4     | T3_T4      | 100.1   | T2   |
+| `pos_064_W3_DY2` | LOAD_16NM | +0.67 %  | 64.2       | 80.0           | T3 RIGHT, r 25.90, z -7.5 | 86.2       | T1_T2, r 24.79, z -0.7, Tangente 54° | -106.5     | T3_T4      | 75.3    | T2   |
+| `pos_064_W4_QS`  | LOAD_16NM | +0.49 %  | 108.6      | 67.5           | T3 RIGHT, r 25.80, z -7.5 | 60.5       | T1_T2, r 24.77, z +5.1, Tangente 69° | -79.7      | T3_T4      | 125.0   | T2   |
+| `pos_064_W4_DY1` | LOAD_16NM | +0.50 %  | 99.6       | 67.4           | T3 RIGHT, r 25.80, z -7.5 | 64.1       | T1_T2, r 24.77, z +5.1, Tangente 69° | -84.5      | T3_T4      | 114.6   | T2   |
+| `pos_064_W4_DY2` | LOAD_16NM | +0.63 %  | 68.8       | 69.8           | T3 RIGHT, r 25.90, z -7.5 | 68.3       | T1_T2, r 24.77, z +5.1, Tangente 64° | -87.1      | T3_T4      | 80.2    | T2   |
+| `pos_065_W1_QS`  | LOAD_16NM | +0.61 %  | 96.1       | 76.6           | T3 RIGHT, r 25.80, z +0.0 | 78.5       | T1_T2, r 24.81, z +0.0, Tangente 49° | -95.6      | T3_T4      | 113.3   | T2   |
+| `pos_065_W1_DY1` | LOAD_16NM | +0.60 %  | 87.6       | 75.8           | T3 RIGHT, r 25.90, z +0.0 | 79.5       | T1_T2, r 24.81, z +0.0, Tangente 49° | -95.0      | T3_T4      | 103.5   | T2   |
+| `pos_065_W1_DY2` | LOAD_16NM | +0.66 %  | 65.3       | 86.2           | T3 RIGHT, r 25.90, z +0.0 | 84.2       | T1_T2, r 24.81, z +0.0, Tangente 49° | -92.7      | T3_T4      | 78.0    | T2   |
+| `pos_065_W2_QS`  | LOAD_16NM | +0.67 %  | 112.8      | 67.9           | T3 RIGHT, r 25.80, z -5.9 | 50.8       | T1_T2, r 24.87, z +0.0, Tangente 33° | -59.6      | T3_T4      | 132.0   | T2   |
+| `pos_065_W2_DY1` | LOAD_16NM | +0.69 %  | 103.0      | 67.2           | T3 RIGHT, r 25.80, z -5.9 | 52.2       | T1_T2, r 24.87, z +0.0, Tangente 33° | -61.2      | T3_T4      | 120.9   | T2   |
+| `pos_065_W2_DY2` | LOAD_16NM | +0.69 %  | 70.9       | 70.4           | T3 RIGHT, r 25.90, z -5.9 | 57.7       | T1_T2, r 24.85, z +0.0, Tangente 37° | -64.1      | T3_T4      | 84.1    | T2   |
+| `pos_065_W3_QS`  | LOAD_16NM | +0.66 %  | 94.9       | 84.2           | T3 RIGHT, r 25.80, z -7.5 | 81.6       | T1_T2, r 24.79, z -0.7, Tangente 54° | -104.5     | T3_T4      | 109.9   | T2   |
+| `pos_065_W3_DY1` | LOAD_16NM | +0.66 %  | 87.2       | 83.4           | T3 RIGHT, r 25.80, z -7.5 | 83.7       | T1_T2, r 24.79, z -0.7, Tangente 54° | -106.7     | T3_T4      | 101.0   | T2   |
+| `pos_065_W3_DY2` | LOAD_16NM | +0.71 %  | 64.7       | 81.5           | T3 RIGHT, r 25.90, z -7.5 | 87.7       | T1_T2, r 24.79, z -0.7, Tangente 54° | -103.1     | T3_T4      | 76.0    | T2   |
+| `pos_065_W4_QS`  | LOAD_16NM | +0.72 %  | 109.3      | 76.8           | T3 RIGHT, r 25.80, z -7.5 | 61.1       | T1_T2, r 24.77, z +5.1, Tangente 69° | -78.7      | T3_T4      | 126.1   | T2   |
+| `pos_065_W4_DY1` | LOAD_16NM | +0.75 %  | 100.3      | 78.4           | T3 RIGHT, r 25.80, z -7.5 | 64.8       | T1_T2, r 24.77, z +5.1, Tangente 69° | -83.4      | T3_T4      | 115.8   | T2   |
+| `pos_065_W4_DY2` | LOAD_16NM | +0.72 %  | 69.2       | 72.4           | T3 RIGHT, r 25.90, z -7.5 | 68.9       | T1_T2, r 24.77, z +5.1, Tangente 64° | -85.3      | T3_T4      | 81.0    | T2   |
+| `pos_066_W1_QS`  | LOAD_16NM | +0.69 %  | 96.8       | 92.7           | T3 RIGHT, r 25.80, z -3.6 | 80.4       | T1_T2, r 24.81, z +0.0, Tangente 49° | -92.9      | T3_T4      | 114.9   | T2   |
+| `pos_066_W1_DY1` | LOAD_16NM | +0.71 %  | 88.4       | 90.5           | T3 RIGHT, r 25.80, z -3.6 | 81.4       | T1_T2, r 24.81, z +0.0, Tangente 49° | -92.2      | T3_T4      | 105.2   | T2   |
+| `pos_066_W1_DY2` | LOAD_16NM | +0.70 %  | 66.0       | 89.2           | T3 RIGHT, r 25.90, z +0.0 | 86.5       | T1_T2, r 24.81, z +0.0, Tangente 49° | -88.9      | T3_T4      | 79.5    | T2   |
+| `pos_066_W2_QS`  | LOAD_16NM | +0.81 %  | 113.5      | 72.7           | T3 RIGHT, r 25.80, z -5.9 | 51.3       | T1_T2, r 24.87, z +0.0, Tangente 33° | -58.9      | T3_T4      | 133.6   | T2   |
+| `pos_066_W2_DY1` | LOAD_16NM | +0.82 %  | 103.7      | 73.3           | T3 RIGHT, r 25.80, z -4.4 | 52.8       | T1_T2, r 24.87, z +0.0, Tangente 33° | -60.3      | T3_T4      | 122.4   | T2   |
+| `pos_066_W2_DY2` | LOAD_16NM | +0.79 %  | 71.7       | 75.1           | T3 RIGHT, r 25.90, z -4.4 | 58.6       | T1_T2, r 24.85, z +0.0, Tangente 37° | -62.8      | T3_T4      | 85.8    | T2   |
+| `pos_066_W3_QS`  | LOAD_16NM | +0.75 %  | 95.6       | 93.1           | T3 RIGHT, r 25.80, z -7.5 | 83.5       | T1_T2, r 24.79, z -0.7, Tangente 54° | -102.4     | T3_T4      | 111.3   | T2   |
+| `pos_066_W3_DY1` | LOAD_16NM | +0.77 %  | 88.0       | 93.4           | T3 RIGHT, r 25.80, z -7.5 | 85.6       | T1_T2, r 24.79, z -0.7, Tangente 54° | -104.4     | T3_T4      | 102.3   | T2   |
+| `pos_066_W3_DY2` | LOAD_16NM | +0.73 %  | 65.4       | 82.2           | T3 RIGHT, r 25.90, z -7.5 | 89.7       | T1_T2, r 24.79, z -0.7, Tangente 54° | -99.8      | T3_T4      | 77.0    | T2   |
+| `pos_066_W4_QS`  | LOAD_16NM | +0.87 %  | 110.1      | 80.8           | T3 RIGHT, r 25.80, z -7.5 | 62.1       | T1_T2, r 24.77, z +5.1, Tangente 69° | -77.4      | T3_T4      | 127.6   | T2   |
+| `pos_066_W4_DY1` | LOAD_16NM | +0.89 %  | 101.1      | 84.1           | T3 RIGHT, r 25.80, z -7.5 | 66.0       | T1_T2, r 24.77, z +5.1, Tangente 69° | -82.0      | T3_T4      | 117.1   | T2   |
+| `pos_066_W4_DY2` | LOAD_16NM | +0.85 %  | 70.2       | 78.5           | T3 RIGHT, r 25.80, z -7.5 | 70.0       | T1_T2, r 24.77, z +5.1, Tangente 64° | -83.3      | T3_T4      | 82.2    | T2   |
+| `pos_067_W1_QS`  | LOAD_16NM | +0.59 %  | 97.4       | 111.9          | T3 RIGHT, r 25.80, z -0.7 | 82.1       | T1_T2, r 24.81, z +0.0, Tangente 49° | -89.0      | T3_T4      | 115.9   | T2   |
+| `pos_067_W1_DY1` | LOAD_16NM | +0.62 %  | 89.0       | 111.2          | T3 RIGHT, r 25.80, z -0.7 | 83.3       | T1_T2, r 24.81, z +0.0, Tangente 49° | -88.1      | T3_T4      | 106.3   | T2   |
+| `pos_067_W1_DY2` | LOAD_16NM | +0.68 %  | 66.8       | 104.7          | T3 RIGHT, r 25.80, z +0.0 | 88.5       | T1_T2, r 24.81, z +0.0, Tangente 49° | -89.2      | T2_T3      | 80.6    | T2   |
+| `pos_067_W2_QS`  | LOAD_16NM | +0.77 %  | 114.0      | 77.9           | T3 RIGHT, r 25.80, z -2.8 | 51.9       | T1_T2, r 24.87, z +0.0, Tangente 33° | -58.1      | T3_T4      | 134.6   | T2   |
+| `pos_067_W2_DY1` | LOAD_16NM | +0.78 %  | 104.4      | 80.2           | T3 RIGHT, r 25.80, z -2.8 | 53.5       | T1_T2, r 24.87, z +0.0, Tangente 33° | -59.5      | T3_T4      | 123.6   | T2   |
+| `pos_067_W2_DY2` | LOAD_16NM | +0.79 %  | 72.9       | 85.2           | T3 RIGHT, r 25.80, z +0.0 | 59.7       | T1_T2, r 24.85, z +0.0, Tangente 37° | -61.7      | T3_T4      | 87.4    | T2   |
+| `pos_067_W3_QS`  | LOAD_16NM | +0.68 %  | 96.3       | 100.9          | T3 RIGHT, r 25.80, z -7.5 | 85.5       | T1_T2, r 24.79, z -0.7, Tangente 54° | -100.0     | T3_T4      | 112.7   | T2   |
+| `pos_067_W3_DY1` | LOAD_16NM | +0.70 %  | 88.7       | 102.2          | T3 RIGHT, r 25.80, z -7.5 | 87.8       | T1_T2, r 24.79, z -0.7, Tangente 54° | -101.8     | T3_T4      | 103.6   | T2   |
+| `pos_067_W3_DY2` | LOAD_16NM | +0.72 %  | 66.4       | 95.3           | T3 RIGHT, r 25.80, z +0.0 | 92.3       | T1_T2, r 24.79, z -0.7, Tangente 54° | -97.0      | T3_T4      | 78.5    | T2   |
+| `pos_067_W4_QS`  | LOAD_16NM | +0.87 %  | 110.7      | 83.3           | T3 RIGHT, r 25.80, z -7.5 | 63.1       | T1_T2, r 24.77, z +5.1, Tangente 69° | -75.9      | T3_T4      | 129.0   | T2   |
+| `pos_067_W4_DY1` | LOAD_16NM | +0.89 %  | 101.9      | 87.6           | T3 RIGHT, r 25.80, z -7.5 | 67.1       | T1_T2, r 24.77, z +5.1, Tangente 69° | -80.2      | T3_T4      | 118.7   | T2   |
+| `pos_067_W4_DY2` | LOAD_16NM | +0.86 %  | 71.3       | 86.6           | T3 RIGHT, r 25.80, z -7.5 | 71.6       | T1_T2, r 24.77, z +5.1, Tangente 64° | -81.0      | T3_T4      | 84.0    | T2   |
+| `pos_068_W1_QS`  | LOAD_16NM | +0.60 %  | 97.7       | 119.3          | T3 RIGHT, r 25.80, z +0.0 | 83.1       | T1_T2, r 24.81, z +0.0, Tangente 49° | -86.8      | T3_T4      | 116.7   | T2   |
+| `pos_068_W1_DY1` | LOAD_16NM | +0.62 %  | 89.3       | 117.6          | T3 RIGHT, r 25.80, z +0.0 | 84.3       | T1_T2, r 24.81, z +0.0, Tangente 49° | -86.0      | T3_T4      | 106.9   | T2   |
+| `pos_068_W1_DY2` | LOAD_16NM | +0.67 %  | 67.3       | 110.3          | T3 RIGHT, r 25.80, z +0.0 | 89.8       | T1_T2, r 24.81, z +0.0, Tangente 49° | -91.1      | T2_T3      | 81.2    | T2   |
+| `pos_068_W2_QS`  | LOAD_16NM | +0.69 %  | 114.3      | 80.9           | T3 RIGHT, r 25.80, z -1.3 | 52.3       | T1_T2, r 24.89, z +0.0, Tangente 30° | -57.7      | T3_T4      | 135.7   | T2   |
+| `pos_068_W2_DY1` | LOAD_16NM | +0.70 %  | 104.8      | 84.3           | T3 RIGHT, r 25.80, z -1.3 | 53.9       | T1_T2, r 24.87, z +0.0, Tangente 33° | -58.9      | T3_T4      | 124.6   | T2   |
+| `pos_068_W2_DY2` | LOAD_16NM | +0.70 %  | 73.3       | 91.5           | T3 RIGHT, r 25.80, z +0.0 | 60.2       | T1_T2, r 24.85, z +0.0, Tangente 37° | -60.9      | T3_T4      | 87.9    | T2   |
+| `pos_068_W3_QS`  | LOAD_16NM | +0.64 %  | 96.7       | 105.9          | T3 RIGHT, r 25.80, z +0.0 | 86.7       | T1_T2, r 24.79, z -0.7, Tangente 54° | -98.3      | T3_T4      | 113.2   | T2   |
+| `pos_068_W3_DY1` | LOAD_16NM | +0.67 %  | 89.2       | 107.0          | T3 RIGHT, r 25.80, z -7.5 | 89.0       | T1_T2, r 24.79, z -0.7, Tangente 54° | -100.0     | T3_T4      | 104.3   | T2   |
+| `pos_068_W3_DY2` | LOAD_16NM | +0.70 %  | 66.8       | 100.3          | T3 RIGHT, r 25.80, z +0.0 | 93.8       | T1_T2, r 24.79, z -0.7, Tangente 54° | -96.4      | T2_T3      | 79.1    | T2   |
+| `pos_068_W4_QS`  | LOAD_16NM | +0.78 %  | 111.2      | 84.8           | T3 RIGHT, r 25.80, z -7.5 | 63.6       | T1_T2, r 24.77, z +5.1, Tangente 69° | -75.1      | T3_T4      | 129.7   | T2   |
+| `pos_068_W4_DY1` | LOAD_16NM | +0.79 %  | 102.3      | 89.5           | T3 RIGHT, r 25.80, z -7.5 | 67.8       | T1_T2, r 24.77, z +5.1, Tangente 69° | -79.2      | T3_T4      | 119.4   | T2   |
+| `pos_068_W4_DY2` | LOAD_16NM | +0.76 %  | 72.0       | 90.4           | T3 RIGHT, r 25.80, z -7.5 | 72.6       | T1_T2, r 24.77, z +5.1, Tangente 64° | -79.6      | T3_T4      | 85.0    | T2   |
+| `pos_069_W1_QS`  | LOAD_16NM | +0.62 %  | 97.9       | 120.9          | T3 RIGHT, r 25.80, z +0.0 | 83.8       | T1_T2, r 24.81, z +0.0, Tangente 49° | -85.8      | T3_T4      | 117.2   | T2   |
+| `pos_069_W1_DY1` | LOAD_16NM | +0.64 %  | 89.5       | 119.6          | T3 RIGHT, r 25.80, z +0.0 | 85.0       | T1_T2, r 24.81, z +0.0, Tangente 49° | -85.0      | T3_T4      | 107.4   | T2   |
+| `pos_069_W1_DY2` | LOAD_16NM | +0.67 %  | 67.5       | 113.3          | T3 RIGHT, r 25.80, z +0.0 | 90.7       | T1_T2, r 24.81, z +0.0, Tangente 49° | -92.5      | T2_T3      | 81.7    | T2   |
+| `pos_069_W2_QS`  | LOAD_16NM | +0.65 %  | 114.5      | 82.6           | T3 RIGHT, r 25.80, z +0.0 | 52.5       | T1_T2, r 24.89, z +0.0, Tangente 30° | -57.4      | T3_T4      | 136.2   | T2   |
+| `pos_069_W2_DY1` | LOAD_16NM | +0.66 %  | 104.9      | 86.4           | T3 RIGHT, r 25.80, z +0.0 | 54.2       | T1_T2, r 24.87, z +0.0, Tangente 33° | -58.5      | T3_T4      | 125.2   | T2   |
+| `pos_069_W2_DY2` | LOAD_16NM | +0.71 %  | 73.5       | 92.5           | T3 RIGHT, r 25.80, z +0.0 | 60.4       | T1_T2, r 24.85, z +0.0, Tangente 37° | -60.4      | T3_T4      | 88.5    | T2   |
+| `pos_069_W3_QS`  | LOAD_16NM | +0.63 %  | 96.8       | 107.6          | T3 RIGHT, r 25.80, z +0.0 | 87.3       | T1_T2, r 24.79, z -0.7, Tangente 54° | -97.2      | T3_T4      | 113.4   | T2   |
+| `pos_069_W3_DY1` | LOAD_16NM | +0.67 %  | 89.4       | 109.4          | T3 RIGHT, r 25.80, z -7.5 | 89.7       | T1_T2, r 24.79, z -0.7, Tangente 54° | -98.9      | T3_T4      | 104.5   | T2   |
+| `pos_069_W3_DY2` | LOAD_16NM | +0.67 %  | 67.0       | 102.2          | T3 RIGHT, r 25.80, z +0.0 | 94.5       | T1_T2, r 24.79, z -0.7, Tangente 54° | -97.2      | T2_T3      | 79.3    | T2   |
+| `pos_069_W4_QS`  | LOAD_16NM | +0.72 %  | 111.4      | 85.7           | T3 RIGHT, r 25.80, z -7.5 | 63.9       | T1_T2, r 24.77, z +5.1, Tangente 69° | -74.6      | T3_T4      | 129.9   | T2   |
+| `pos_069_W4_DY1` | LOAD_16NM | +0.73 %  | 102.6      | 90.6           | T3 RIGHT, r 25.80, z -7.5 | 68.1       | T1_T2, r 24.77, z +5.1, Tangente 69° | -78.6      | T3_T4      | 119.7   | T2   |
+| `pos_069_W4_DY2` | LOAD_16NM | +0.76 %  | 72.4       | 92.0           | T3 RIGHT, r 25.80, z -7.5 | 72.9       | T1_T2, r 24.77, z +5.1, Tangente 64° | -78.8      | T3_T4      | 85.4    | T2   |
+| `pos_070_W1_QS`  | LOAD_16NM | +0.64 %  | 98.3       | 124.7          | T3 RIGHT, r 25.80, z +0.0 | 85.4       | T1_T2, r 24.81, z +0.0, Tangente 49° | -85.4      | T2_T3      | 118.2   | T2   |
+| `pos_070_W1_DY1` | LOAD_16NM | +0.67 %  | 90.2       | 124.3          | T3 RIGHT, r 25.80, z +0.0 | 86.9       | T1_T2, r 24.81, z +0.0, Tangente 49° | -87.5      | T2_T3      | 108.6   | T2   |
+| `pos_070_W1_DY2` | LOAD_16NM | +0.66 %  | 68.3       | 120.9          | T3 RIGHT, r 25.80, z +0.0 | 93.1       | T1_T2, r 24.81, z +0.0, Tangente 49° | -96.1      | T2_T3      | 83.2    | T2   |
+| `pos_070_W2_QS`  | LOAD_16NM | +0.68 %  | 114.9      | 84.3           | T3 RIGHT, r 25.80, z +0.0 | 53.0       | T1_T2, r 24.89, z +0.0, Tangente 30° | -56.5      | T3_T4      | 137.2   | T2   |
+| `pos_070_W2_DY1` | LOAD_16NM | +0.69 %  | 105.5      | 88.4           | T3 RIGHT, r 25.80, z +0.0 | 54.7       | T1_T2, r 24.87, z +0.0, Tangente 33° | -57.6      | T3_T4      | 126.4   | T2   |
+| `pos_070_W2_DY2` | LOAD_16NM | +0.78 %  | 74.4       | 95.5           | T3 RIGHT, r 25.80, z +0.0 | 61.4       | T1_T2, r 24.85, z +0.0, Tangente 37° | -61.4      | T2_T3      | 90.1    | T2   |
+| `pos_070_W3_QS`  | LOAD_16NM | +0.65 %  | 97.4       | 112.6          | T3 RIGHT, r 25.80, z -7.5 | 88.9       | T1_T2, r 24.79, z -0.7, Tangente 54° | -94.5      | T3_T4      | 114.6   | T2   |
+| `pos_070_W3_DY1` | LOAD_16NM | +0.67 %  | 90.0       | 115.0          | T3 RIGHT, r 25.80, z -7.5 | 91.4       | T1_T2, r 24.79, z -0.7, Tangente 54° | -95.9      | T3_T4      | 105.6   | T2   |
+| `pos_070_W3_DY2` | LOAD_16NM | +0.69 %  | 67.9       | 107.8          | T3 RIGHT, r 25.80, z -7.5 | 96.7       | T1_T2, r 24.79, z -0.7, Tangente 54° | -99.9      | T2_T3      | 80.6    | T2   |
+| `pos_070_W4_QS`  | LOAD_16NM | +0.71 %  | 111.6      | 87.5           | T3 RIGHT, r 25.80, z -7.5 | 64.5       | T1_T2, r 24.77, z +5.1, Tangente 69° | -73.2      | T3_T4      | 130.7   | T2   |
+| `pos_070_W4_DY1` | LOAD_16NM | +0.74 %  | 103.1      | 93.3           | T3 RIGHT, r 25.80, z -7.5 | 68.8       | T1_T2, r 24.77, z +5.1, Tangente 69° | -77.0      | T3_T4      | 120.5   | T2   |
+| `pos_070_W4_DY2` | LOAD_16NM | +0.75 %  | 73.3       | 96.4           | T3 RIGHT, r 25.80, z -7.5 | 73.9       | T1_T2, r 24.77, z +5.1, Tangente 64° | -76.6      | T3_T4      | 86.5    | T2   |
+| `pos_071_W1_QS`  | LOAD_16NM | +0.77 %  | 99.4       | 129.3          | T3 RIGHT, r 25.80, z +0.0 | 87.2       | T1_T2, r 24.81, z +0.0, Tangente 49° | -88.0      | T2_T3      | 119.7   | T2   |
+| `pos_071_W1_DY1` | LOAD_16NM | +0.68 %  | 90.9       | 128.9          | T3 RIGHT, r 25.80, z +0.0 | 88.5       | T1_T2, r 24.81, z +0.0, Tangente 49° | -90.1      | T2_T3      | 109.6   | T2   |
+| `pos_071_W1_DY2` | LOAD_16NM | +0.62 %  | 69.3       | 128.2          | T3 RIGHT, r 25.80, z +0.0 | 95.5       | T1_T2, r 24.82, z +0.0, Tangente 45° | -99.9      | T2_T3      | 84.4    | T2   |
+| `pos_071_W2_QS`  | LOAD_16NM | +0.83 %  | 115.8      | 85.9           | T3 RIGHT, r 25.80, z +0.0 | 53.5       | T1_T2, r 24.89, z +0.0, Tangente 30° | -55.8      | T3_T4      | 138.5   | T2   |
+| `pos_071_W2_DY1` | LOAD_16NM | +0.79 %  | 106.1      | 90.2           | T3 RIGHT, r 25.80, z +0.0 | 55.1       | T1_T2, r 24.87, z +0.0, Tangente 33° | -56.8      | T3_T4      | 127.3   | T2   |
+| `pos_071_W2_DY2` | LOAD_16NM | +0.72 %  | 75.2       | 98.4           | T3 RIGHT, r 25.80, z +0.0 | 62.2       | T1_T2, r 24.87, z +0.0, Tangente 33° | -62.6      | T2_T3      | 91.2    | T2   |
+| `pos_071_W3_QS`  | LOAD_16NM | +0.76 %  | 98.2       | 114.6          | T3 RIGHT, r 25.80, z +0.0 | 90.8       | T1_T2, r 24.79, z -0.7, Tangente 54° | -92.2      | T3_T4      | 115.8   | T2   |
+| `pos_071_W3_DY1` | LOAD_16NM | +0.73 %  | 90.8       | 118.2          | T3 RIGHT, r 25.80, z -7.5 | 93.4       | T1_T2, r 24.79, z -0.7, Tangente 54° | -95.0      | T2_T3      | 106.8   | T2   |
+| `pos_071_W3_DY2` | LOAD_16NM | +0.66 %  | 68.8       | 115.6          | T3 RIGHT, r 25.80, z -7.5 | 99.4       | T1_T2, r 24.79, z -0.7, Tangente 54° | -103.7     | T2_T3      | 81.8    | T2   |
+| `pos_071_W4_QS`  | LOAD_16NM | +0.88 %  | 112.6      | 82.9           | T3 RIGHT, r 25.80, z -7.5 | 65.0       | T1_T2, r 24.77, z +5.1, Tangente 69° | -72.0      | T3_T4      | 132.2   | T2   |
+| `pos_071_W4_DY1` | LOAD_16NM | +0.81 %  | 103.9      | 90.6           | T3 RIGHT, r 25.80, z -7.5 | 69.5       | T1_T2, r 24.77, z +5.1, Tangente 69° | -75.3      | T3_T4      | 121.8   | T2   |
+| `pos_071_W4_DY2` | LOAD_16NM | +0.75 %  | 74.0       | 100.4          | T3 RIGHT, r 25.80, z -7.5 | 75.1       | T1_T2, r 24.77, z +5.1, Tangente 64° | -75.1      | T2_T3      | 87.8    | T2   |
+| `pos_072_W1_QS`  | LOAD_16NM | +1.35 %  | 101.6      | 134.3          | T3 RIGHT, r 25.80, z +0.0 | 89.9       | T1_T2, r 24.81, z +0.0, Tangente 49° | -91.7      | T2_T3      | 123.1   | T2   |
+| `pos_072_W1_DY1` | LOAD_16NM | +1.24 %  | 93.0       | 135.5          | T3 RIGHT, r 25.80, z +0.0 | 91.5       | T1_T2, r 24.81, z +0.0, Tangente 49° | -94.1      | T2_T3      | 113.0   | T2   |
+| `pos_072_W1_DY2` | LOAD_16NM | +0.74 %  | 70.3       | 130.9          | T3 RIGHT, r 25.80, z +0.0 | 98.0       | T1_T2, r 24.82, z +0.0, Tangente 45° | -103.9     | T2_T3      | 86.1    | T2   |
+| `pos_072_W2_QS`  | LOAD_16NM | +1.38 %  | 118.2      | 86.4           | T3 RIGHT, r 25.80, z +0.0 | 54.3       | T1_T2, r 24.89, z +0.0, Tangente 30° | -55.3      | T3_T4      | 142.2   | T2   |
+| `pos_072_W2_DY1` | LOAD_16NM | +1.30 %  | 108.2      | 90.9           | T3 RIGHT, r 25.80, z +0.0 | 55.9       | T1_T2, r 24.87, z +0.0, Tangente 33° | -56.2      | T3_T4      | 130.6   | T2   |
+| `pos_072_W2_DY2` | LOAD_16NM | +0.90 %  | 76.7       | 102.0          | T3 RIGHT, r 25.80, z +0.0 | 63.1       | T1_T2, r 24.87, z +0.0, Tangente 33° | -63.9      | T2_T3      | 93.3    | T2   |
+| `pos_072_W3_QS`  | LOAD_16NM | +1.34 %  | 100.5      | 118.5          | T3 RIGHT, r 25.80, z +0.0 | 93.2       | T1_T2, r 24.79, z -0.7, Tangente 54° | -94.6      | T2_T3      | 118.5   | T2   |
+| `pos_072_W3_DY1` | LOAD_16NM | +1.21 %  | 92.7       | 116.3          | T3 RIGHT, r 25.80, z +0.0 | 95.9       | T1_T2, r 24.79, z -0.7, Tangente 54° | -98.2      | T2_T3      | 108.9   | T2   |
+| `pos_072_W3_DY2` | LOAD_16NM | +0.72 %  | 69.9       | 117.3          | T3 RIGHT, r 25.80, z +0.0 | 101.8      | T1_T2, r 24.79, z -0.7, Tangente 54° | -107.2     | T2_T3      | 83.0    | T2   |
+| `pos_072_W4_QS`  | LOAD_16NM | +1.36 %  | 114.7      | 86.6           | T3 RIGHT, r 25.90, z -7.5 | 65.4       | T1_T2, r 24.77, z +5.1, Tangente 69° | -71.2      | T3_T4      | 134.4   | T2   |
+| `pos_072_W4_DY1` | LOAD_16NM | +1.30 %  | 106.1      | 89.6           | T3 RIGHT, r 25.90, z -7.5 | 69.9       | T1_T2, r 24.77, z +5.1, Tangente 69° | -74.5      | T3_T4      | 124.2   | T2   |
+| `pos_072_W4_DY2` | LOAD_16NM | +0.88 %  | 75.3       | 97.6           | T3 RIGHT, r 25.80, z -7.5 | 75.9       | T1_T2, r 24.77, z +5.1, Tangente 64° | -77.0      | T2_T3      | 89.1    | T2   |
+| `pos_073_W1_QS`  | LOAD_16NM | +1.59 %  | 103.8      | 120.0          | T3 RIGHT, r 25.90, z -6.7 | 92.6       | T1_T2, r 24.81, z +0.0, Tangente 49° | -95.4      | T2_T3      | 126.1   | T2   |
+| `pos_073_W1_DY1` | LOAD_16NM | +1.56 %  | 95.3       | 116.9          | T3 RIGHT, r 25.90, z -6.7 | 94.4       | T1_T2, r 24.81, z +0.0, Tangente 49° | -98.2      | T2_T3      | 116.1   | T2   |
+| `pos_073_W1_DY2` | LOAD_16NM | +1.42 %  | 72.9       | 126.2          | T3 RIGHT, r 25.80, z +0.0 | 102.1      | T1_T2, r 24.82, z +0.0, Tangente 45° | -109.3     | T2_T3      | 89.6    | T2   |
+| `pos_073_W2_QS`  | LOAD_16NM | +1.64 %  | 120.3      | 88.6           | T3 RIGHT, r 25.90, z -5.9 | 55.0       | T1_T2, r 24.89, z +0.0, Tangente 30° | -54.7      | T2_T3      | 144.9   | T2   |
+| `pos_073_W2_DY1` | LOAD_16NM | +1.65 %  | 110.6      | 90.1           | T3 RIGHT, r 25.90, z -5.9 | 56.7       | T1_T2, r 24.89, z +0.0, Tangente 30° | -56.9      | T2_T3      | 133.7   | T2   |
+| `pos_073_W2_DY2` | LOAD_16NM | +1.52 %  | 79.2       | 98.8           | T3 RIGHT, r 25.80, z +0.0 | 64.6       | T1_T2, r 24.87, z +0.0, Tangente 33° | -65.7      | T2_T3      | 96.7    | T2   |
+| `pos_073_W3_QS`  | LOAD_16NM | +1.64 %  | 102.8      | 137.1          | T3 RIGHT, r 25.90, z -7.5 | 96.3       | T1_T2, r 24.79, z -0.7, Tangente 54° | -98.5      | T2_T3      | 121.8   | T2   |
+| `pos_073_W3_DY1` | LOAD_16NM | +1.63 %  | 95.2       | 135.9          | T3 RIGHT, r 25.90, z -7.5 | 99.0       | T1_T2, r 24.79, z -0.7, Tangente 54° | -102.1     | T2_T3      | 112.3   | T2   |
+| `pos_073_W3_DY2` | LOAD_16NM | +1.41 %  | 72.5       | 114.5          | T3 RIGHT, r 25.80, z +0.0 | 106.0      | T1_T2, r 24.79, z -0.7, Tangente 54° | -112.4     | T2_T3      | 86.4    | T2   |
+| `pos_073_W4_QS`  | LOAD_16NM | +1.72 %  | 117.1      | 93.4           | T3 RIGHT, r 25.90, z -7.5 | 66.7       | T1_T2, r 24.77, z +5.1, Tangente 69° | -69.7      | T3_T4      | 137.9   | T2   |
+| `pos_073_W4_DY1` | LOAD_16NM | +1.69 %  | 108.5      | 100.2          | T3 RIGHT, r 25.90, z -7.5 | 71.3       | T1_T2, r 24.77, z +5.1, Tangente 69° | -72.8      | T3_T4      | 127.4   | T2   |
+| `pos_073_W4_DY2` | LOAD_16NM | +1.46 %  | 77.8       | 98.0           | T3 RIGHT, r 25.90, z -7.5 | 77.4       | T1_T2, r 24.77, z +5.1, Tangente 64° | -80.3      | T2_T3      | 92.1    | T2   |
+| `pos_074_W1_QS`  | LOAD_16NM | +0.95 %  | 104.7      | 130.1          | T3 RIGHT, r 25.90, z -3.6 | 95.5       | T1_T2, r 24.81, z +0.0, Tangente 49° | -100.5     | T2_T3      | 127.5   | T2   |
+| `pos_074_W1_DY1` | LOAD_16NM | +0.97 %  | 96.6       | 129.4          | T3 RIGHT, r 25.90, z -3.6 | 97.6       | T1_T2, r 24.81, z +0.0, Tangente 49° | -103.6     | T2_T3      | 117.8   | T2   |
+| `pos_074_W1_DY2` | LOAD_16NM | +0.88 %  | 74.7       | 121.6          | T3 RIGHT, r 25.90, z -4.4 | 106.5      | T1_T2, r 24.82, z +0.0, Tangente 45° | -116.3     | T2_T3      | 91.7    | T2   |
+| `pos_074_W2_QS`  | LOAD_16NM | +1.30 %  | 121.5      | 91.0           | T3 RIGHT, r 25.90, z +0.0 | 55.5       | T1_T2, r 24.89, z +0.0, Tangente 30° | -55.4      | T2_T3      | 146.4   | T2   |
+| `pos_074_W2_DY1` | LOAD_16NM | +1.33 %  | 112.3      | 93.4           | T3 RIGHT, r 25.90, z +0.0 | 57.5       | T1_T2, r 24.89, z +0.0, Tangente 30° | -58.0      | T2_T3      | 135.7   | T2   |
+| `pos_074_W2_DY2` | LOAD_16NM | +1.36 %  | 81.6       | 97.4           | T3 RIGHT, r 25.90, z -5.9 | 66.1       | T1_T2, r 24.87, z +0.0, Tangente 33° | -67.7      | T2_T3      | 99.5    | T2   |
+| `pos_074_W3_QS`  | LOAD_16NM | +1.05 %  | 103.8      | 138.9          | T3 RIGHT, r 25.90, z -7.5 | 99.3       | T1_T2, r 24.79, z -0.7, Tangente 54° | -103.4     | T2_T3      | 123.2   | T2   |
+| `pos_074_W3_DY1` | LOAD_16NM | +1.08 %  | 96.5       | 144.5          | T3 RIGHT, r 25.90, z -7.5 | 102.5      | T1_T2, r 24.79, z -0.7, Tangente 54° | -107.3     | T2_T3      | 114.0   | T2   |
+| `pos_074_W3_DY2` | LOAD_16NM | +1.02 %  | 74.4       | 136.0          | T3 RIGHT, r 25.90, z -7.5 | 110.5      | T1_T2, r 24.79, z -0.7, Tangente 54° | -119.1     | T2_T3      | 88.8    | T2   |
+| `pos_074_W4_QS`  | LOAD_16NM | +1.43 %  | 118.8      | 95.7           | T3 RIGHT, r 25.90, z -7.5 | 67.9       | T1_T2, r 24.77, z +5.1, Tangente 69° | -68.4      | T2_T3      | 140.0   | T2   |
+| `pos_074_W4_DY1` | LOAD_16NM | +1.46 %  | 110.7      | 104.3          | T3 RIGHT, r 25.90, z -7.5 | 73.1       | T1_T2, r 24.77, z +5.1, Tangente 69° | -75.3      | T2_T3      | 130.3   | T2   |
+| `pos_074_W4_DY2` | LOAD_16NM | +1.40 %  | 80.2       | 112.2          | T3 RIGHT, r 25.90, z -7.5 | 80.0       | T1_T2, r 24.77, z +5.1, Tangente 64° | -86.2      | T2_T3      | 95.2    | T2   |
+| `pos_075_W1_QS`  | LOAD_16NM | +0.53 %  | 105.6      | 140.2          | T3 RIGHT, r 25.90, z +0.0 | 98.0       | T1_T2, r 24.81, z +0.0, Tangente 49° | -105.2     | T2_T3      | 129.3   | T2   |
+| `pos_075_W1_DY1` | LOAD_16NM | +0.50 %  | 97.5       | 141.0          | T3 RIGHT, r 25.90, z +0.0 | 100.4      | T1_T2, r 24.81, z +0.0, Tangente 49° | -108.8     | T2_T3      | 119.6   | T2   |
+| `pos_075_W1_DY2` | LOAD_16NM | +0.37 %  | 76.0       | 132.4          | T3 RIGHT, r 25.90, z +0.0 | 110.3      | T1_T2, r 24.82, z +0.0, Tangente 45° | -123.3     | T2_T3      | 93.8    | T2   |
+| `pos_075_W2_QS`  | LOAD_16NM | +0.34 %  | 119.0      | 92.5           | T3 RIGHT, r 25.90, z +0.0 | 55.3       | T1_T2, r 24.89, z +0.0, Tangente 30° | -56.1      | T2_T3      | 143.8   | T2   |
+| `pos_075_W2_DY1` | LOAD_16NM | +0.58 %  | 112.2      | 97.0           | T3 RIGHT, r 25.90, z +0.0 | 58.0       | T1_T2, r 24.89, z +0.0, Tangente 30° | -59.2      | T2_T3      | 136.2   | T2   |
+| `pos_075_W2_DY2` | LOAD_16NM | +0.56 %  | 83.3       | 105.5          | T3 RIGHT, r 25.90, z +0.0 | 67.5       | T1_T2, r 24.87, z +0.0, Tangente 33° | -70.4      | T2_T3      | 101.8   | T2   |
+| `pos_075_W3_QS`  | LOAD_16NM | +0.58 %  | 104.8      | 137.8          | T3 RIGHT, r 25.90, z -7.5 | 101.7      | T1_T2, r 24.79, z -0.7, Tangente 54° | -107.4     | T2_T3      | 124.2   | T2   |
+| `pos_075_W3_DY1` | LOAD_16NM | +0.55 %  | 97.5       | 143.3          | T3 RIGHT, r 25.90, z -7.5 | 105.2      | T1_T2, r 24.79, z -0.7, Tangente 54° | -111.8     | T2_T3      | 115.0   | T2   |
+| `pos_075_W3_DY2` | LOAD_16NM | +0.38 %  | 75.8       | 124.8          | T3 RIGHT, r 25.90, z -7.5 | 114.5      | T1_T2, r 24.79, z -0.7, Tangente 54° | -125.4     | T2_T3      | 90.2    | T2   |
+| `pos_075_W4_QS`  | LOAD_16NM | +0.39 %  | 116.7      | 94.7           | T3 RIGHT, r 25.90, z -7.5 | 66.5       | T1_T2, r 24.77, z +5.1, Tangente 69° | -69.7      | T2_T3      | 137.0   | T2   |
+| `pos_075_W4_DY1` | LOAD_16NM | +0.60 %  | 110.5      | 103.4          | T3 RIGHT, r 25.90, z -7.5 | 73.1       | T1_T2, r 24.77, z +5.1, Tangente 69° | -77.0      | T2_T3      | 129.7   | T2   |
+| `pos_075_W4_DY2` | LOAD_16NM | +0.61 %  | 82.0       | 112.4          | T3 RIGHT, r 25.90, z -7.5 | 82.1       | T1_T2, r 24.77, z +5.1, Tangente 64° | -90.4      | T2_T3      | 97.1    | T2   |
+| `pos_076_W1_QS`  | LOAD_16NM | +0.37 %  | 105.5      | 135.5          | T3 RIGHT, r 25.90, z +0.0 | 97.8       | T1_T2, r 24.81, z +0.0, Tangente 49° | -107.2     | T2_T3      | 129.4   | T2   |
+| `pos_076_W1_DY1` | LOAD_16NM | +0.41 %  | 98.4       | 138.0          | T3 RIGHT, r 25.90, z +0.0 | 102.2      | T1_T2, r 24.81, z +0.0, Tangente 49° | -112.2     | T2_T3      | 121.0   | T2   |
+| `pos_076_W1_DY2` | LOAD_16NM | +0.22 %  | 76.9       | 115.3          | T3 RIGHT, r 25.90, z +0.0 | 113.2      | T1_T2, r 24.82, z +0.0, Tangente 45° | -128.0     | T2_T3      | 95.1    | T2   |
+| `pos_076_W2_QS`  | LOAD_16NM | +0.10 %  | 116.8      | 89.8           | T3 RIGHT, r 25.90, z +0.0 | 54.7       | T1_T2, r 24.89, z +0.0, Tangente 30° | -56.3      | T2_T3      | 141.1   | T2   |
+| `pos_076_W2_DY1` | LOAD_16NM | +0.19 %  | 110.0      | 93.7           | T3 RIGHT, r 25.90, z +0.0 | 57.4       | T1_T2, r 24.89, z +0.0, Tangente 30° | -59.5      | T2_T3      | 133.5   | T2   |
+| `pos_076_W2_DY2` | LOAD_16NM | +0.49 %  | 84.9       | 103.9          | T3 RIGHT, r 25.90, z +0.0 | 68.6       | T1_T2, r 24.87, z +0.0, Tangente 33° | -72.0      | T2_T3      | 104.1   | T2   |
+| `pos_076_W3_QS`  | LOAD_16NM | +0.32 %  | 104.2      | 131.2          | T3 RIGHT, r 25.90, z -7.5 | 100.7      | T1_T2, r 24.79, z -0.7, Tangente 54° | -108.4     | T2_T3      | 123.8   | T2   |
+| `pos_076_W3_DY1` | LOAD_16NM | +0.41 %  | 98.1       | 138.8          | T3 RIGHT, r 25.90, z -7.5 | 106.1      | T1_T2, r 24.79, z -0.7, Tangente 54° | -114.1     | T2_T3      | 116.1   | T2   |
+| `pos_076_W3_DY2` | LOAD_16NM | +0.25 %  | 76.7       | 112.2          | T3 RIGHT, r 25.90, z +0.0 | 117.1      | T1_T2, r 24.79, z -0.7, Tangente 54° | -130.3     | T2_T3      | 91.6    | T2   |
+| `pos_076_W4_QS`  | LOAD_16NM | +0.02 %  | 114.8      | 89.9           | T3 RIGHT, r 25.90, z -7.5 | 64.3       | T1_T2, r 24.77, z +5.1, Tangente 64° | -70.7      | T2_T3      | 134.8   | T2   |
+| `pos_076_W4_DY1` | LOAD_16NM | +0.12 %  | 108.3      | 99.6           | T3 RIGHT, r 25.90, z -7.5 | 70.5       | T1_T2, r 24.77, z +5.1, Tangente 69° | -78.0      | T2_T3      | 127.0   | T2   |
+| `pos_076_W4_DY2` | LOAD_16NM | +0.51 %  | 83.6       | 111.4          | T3 RIGHT, r 25.90, z -7.5 | 83.3       | T1_T2, r 24.77, z +5.1, Tangente 64° | -93.8      | T2_T3      | 99.1    | T2   |
+| `pos_077_W1_QS`  | LOAD_16NM | +0.72 %  | 106.3      | 131.5          | T3 RIGHT, r 25.90, z +0.0 | 97.0       | T1_T2, r 24.82, z +0.0, Tangente 45° | -109.2     | T2_T3      | 130.1   | T2   |
+| `pos_077_W1_DY1` | LOAD_16NM | +0.65 %  | 99.1       | 133.2          | T3 RIGHT, r 25.90, z +0.0 | 101.4      | T1_T2, r 24.82, z +0.0, Tangente 45° | -114.4     | T2_T3      | 121.6   | T2   |
+| `pos_077_W1_DY2` | LOAD_16NM | +0.19 %  | 78.1       | 101.1          | T2 RIGHT, r 26.31, z +0.0 | 115.9      | T1_T2, r 24.82, z +0.0, Tangente 45° | -132.5     | T2_T3      | 96.6    | T2   |
+| `pos_077_W2_QS`  | LOAD_16NM | +0.47 %  | 117.1      | 87.5           | T3 RIGHT, r 25.90, z +0.0 | 54.4       | T1_T2, r 24.89, z +0.0, Tangente 30° | -56.8      | T2_T3      | 141.5   | T2   |
+| `pos_077_W2_DY1` | LOAD_16NM | +0.42 %  | 109.9      | 91.5           | T3 RIGHT, r 25.90, z +0.0 | 57.0       | T1_T2, r 24.89, z +0.0, Tangente 30° | -60.0      | T2_T3      | 133.2   | T2   |
+| `pos_077_W2_DY2` | LOAD_16NM | +0.50 %  | 86.4       | 101.4          | T3 RIGHT, r 25.90, z +0.0 | 69.3       | T1_T2, r 24.87, z +0.0, Tangente 33° | -73.7      | T2_T3      | 105.8   | T2   |
+| `pos_077_W3_QS`  | LOAD_16NM | +0.67 %  | 104.8      | 114.3          | T3 RIGHT, r 25.90, z +0.0 | 99.7       | T1_T2, r 24.79, z -0.7, Tangente 54° | -109.7     | T2_T3      | 124.7   | T2   |
+| `pos_077_W3_DY1` | LOAD_16NM | +0.63 %  | 98.4       | 112.7          | T3 RIGHT, r 25.90, z +0.0 | 104.9      | T1_T2, r 24.79, z -0.7, Tangente 54° | -117.1     | T2_T3      | 116.5   | T2   |
+| `pos_077_W3_DY2` | LOAD_16NM | +0.27 %  | 78.0       | 100.6          | T2 RIGHT, r 26.31, z +7.5 | 120.1      | T1_T2, r 24.79, z -0.7, Tangente 54° | -136.4     | T2_T3      | 93.2    | T2   |
+| `pos_077_W4_QS`  | LOAD_16NM | +0.44 %  | 115.0      | 79.9           | T3 RIGHT, r 25.90, z +0.0 | 62.3       | T1_T2, r 24.77, z +5.1, Tangente 64° | -72.2      | T2_T3      | 135.4   | T2   |
+| `pos_077_W4_DY1` | LOAD_16NM | +0.37 %  | 108.0      | 81.3           | T3 RIGHT, r 25.90, z +0.0 | 68.3       | T1_T2, r 24.77, z +5.1, Tangente 64° | -79.6      | T2_T3      | 127.0   | T2   |
+| `pos_077_W4_DY2` | LOAD_16NM | +0.47 %  | 84.8       | 104.9          | T3 RIGHT, r 25.90, z -7.5 | 83.7       | T1_T2, r 24.77, z +5.1, Tangente 64° | -96.6      | T2_T3      | 100.6   | T2   |
+| `pos_078_W1_QS`  | LOAD_16NM | +0.20 %  | 106.4      | 88.7           | T3 RIGHT, r 25.90, z +0.0 | 96.3       | T1_T2, r 24.82, z +0.0, Tangente 45° | -111.5     | T2_T3      | 130.3   | T2   |
+| `pos_078_W1_DY1` | LOAD_16NM | +0.33 %  | 99.6       | 95.2           | T3 RIGHT, r 25.90, z +0.0 | 100.7      | T1_T2, r 24.82, z +0.0, Tangente 45° | -117.0     | T2_T3      | 122.2   | T2   |
+| `pos_078_W1_DY2` | LOAD_16NM | +0.43 %  | 80.8       | 109.3          | T2 RIGHT, r 26.21, z +0.0 | 119.1      | T1_T2, r 24.82, z +0.0, Tangente 45° | -139.2     | T2_T3      | 100.3   | T2   |
+| `pos_078_W2_QS`  | LOAD_16NM | +0.34 %  | 118.0      | 76.6           | T3 RIGHT, r 26.00, z -5.9 | 54.3       | T1_T2, r 24.89, z +0.0, Tangente 30° | -58.1      | T2_T3      | 142.2   | T2   |
+| `pos_078_W2_DY1` | LOAD_16NM | +0.36 %  | 111.0      | 76.2           | T3 RIGHT, r 25.90, z +0.0 | 56.8       | T1_T2, r 24.89, z +0.0, Tangente 30° | -61.2      | T2_T3      | 134.3   | T2   |
+| `pos_078_W2_DY2` | LOAD_16NM | +0.56 %  | 87.1       | 91.7           | T3 RIGHT, r 25.90, z +0.0 | 68.8       | T1_T2, r 24.89, z +0.0, Tangente 30° | -74.9      | T2_T3      | 106.3   | T2   |
+| `pos_078_W3_QS`  | LOAD_16NM | +0.28 %  | 105.3      | 82.6           | T3 RIGHT, r 26.00, z +7.5 | 98.5       | T1_T2, r 24.79, z -0.7, Tangente 54° | -116.4     | T2_T3      | 124.6   | T2   |
+| `pos_078_W3_DY1` | LOAD_16NM | +0.40 %  | 99.0       | 84.1           | T3 RIGHT, r 25.90, z +0.0 | 103.7      | T1_T2, r 24.79, z -0.7, Tangente 54° | -125.6     | T2_T3      | 116.6   | T2   |
+| `pos_078_W3_DY2` | LOAD_16NM | +0.51 %  | 80.3       | 103.4          | T2 RIGHT, r 26.21, z -7.5 | 121.8      | T1_T2, r 24.79, z -0.7, Tangente 54° | -146.4     | T2_T3      | 95.7    | T2   |
+| `pos_078_W4_QS`  | LOAD_16NM | +0.46 %  | 116.0      | 86.3           | T3 RIGHT, r 26.00, z +7.5 | 61.1       | T1_T2, r 24.77, z +5.1, Tangente 64° | -75.3      | T2_T3      | 136.1   | T2   |
+| `pos_078_W4_DY1` | LOAD_16NM | +0.49 %  | 109.5      | 88.2           | T3 RIGHT, r 26.00, z +7.5 | 66.7       | T1_T2, r 24.77, z +5.1, Tangente 64° | -83.9      | T2_T3      | 128.3   | T2   |
+| `pos_078_W4_DY2` | LOAD_16NM | +0.56 %  | 85.4       | 80.2           | T3 RIGHT, r 25.90, z +0.0 | 80.7       | T1_T2, r 24.77, z +5.1, Tangente 64° | -100.6     | T2_T3      | 101.0   | T2   |
+| `pos_079_W1_QS`  | LOAD_16NM | -1.06 %  | 105.7      | 88.2           | T2 RIGHT, r 26.11, z +0.0 | 96.1       | T1_T2, r 24.82, z +0.0, Tangente 45° | -115.5     | T2_T3      | 129.4   | T2   |
+| `pos_079_W1_DY1` | LOAD_16NM | -1.10 %  | 98.9       | 92.1           | T2 RIGHT, r 26.11, z +0.0 | 100.4      | T1_T2, r 24.82, z +0.0, Tangente 45° | -121.3     | T2_T3      | 121.3   | T2   |
+| `pos_079_W1_DY2` | LOAD_16NM | -1.26 %  | 80.9       | 111.8          | T2 RIGHT, r 26.21, z +0.0 | 118.9      | T1_T2, r 24.82, z +0.0, Tangente 45° | -146.1     | T2_T3      | 100.2   | T2   |
+| `pos_079_W2_QS`  | LOAD_16NM | -0.64 %  | 118.2      | 77.2           | T3 RIGHT, r 26.00, z -2.8 | 54.6       | T1_T2, r 24.91, z +0.0, Tangente 26° | -59.7      | T2_T3      | 142.5   | T2   |
+| `pos_079_W2_DY1` | LOAD_16NM | -0.66 %  | 111.4      | 75.3           | T3 RIGHT, r 26.00, z -2.8 | 57.1       | T1_T2, r 24.89, z +0.0, Tangente 30° | -63.3      | T2_T3      | 134.7   | T2   |
+| `pos_079_W2_DY2` | LOAD_16NM | -0.92 %  | 87.2       | 82.6           | T2 RIGHT, r 26.11, z +0.0 | 69.0       | T1_T2, r 24.89, z +0.0, Tangente 30° | -78.2      | T2_T3      | 106.3   | T2   |
+| `pos_079_W3_QS`  | LOAD_16NM | -0.95 %  | 104.8      | 81.0           | T2 RIGHT, r 26.11, z +7.5 | 97.7       | T1_T2, r 24.79, z -0.7, Tangente 54° | -120.6     | T2_T3      | 123.9   | T2   |
+| `pos_079_W3_DY1` | LOAD_16NM | -0.96 %  | 98.5       | 85.7           | T2 RIGHT, r 26.11, z +7.5 | 102.7      | T1_T2, r 24.79, z -0.7, Tangente 54° | -130.5     | T2_T3      | 115.8   | T2   |
+| `pos_079_W3_DY2` | LOAD_16NM | -1.13 %  | 80.2       | 106.0          | T2 RIGHT, r 26.21, z -7.5 | 120.4      | T1_T2, r 24.79, z -0.7, Tangente 54° | -155.2     | T2_T3      | 95.4    | T2   |
+| `pos_079_W4_QS`  | LOAD_16NM | -0.56 %  | 115.9      | 82.9           | T3 RIGHT, r 26.00, z +7.5 | 60.2       | T1_T2, r 24.78, z +4.4, Tangente 59° | -77.1      | T2_T3      | 135.0   | T2   |
+| `pos_079_W4_DY1` | LOAD_16NM | -0.56 %  | 109.7      | 83.9           | T3 RIGHT, r 26.00, z +7.5 | 65.6       | T1_T2, r 24.77, z +5.1, Tangente 64° | -86.6      | T2_T3      | 127.6   | T2   |
+| `pos_079_W4_DY2` | LOAD_16NM | -0.80 %  | 85.8       | 83.6           | T2 RIGHT, r 26.11, z +7.5 | 78.4       | T1_T2, r 24.77, z +5.1, Tangente 64° | -105.4     | T2_T3      | 100.6   | T2   |
+| `pos_080_W1_QS`  | LOAD_16NM | -1.30 %  | 105.4      | 94.7           | T2 RIGHT, r 26.11, z +0.0 | 95.1       | T1_T2, r 24.82, z +0.0, Tangente 45° | -116.8     | T2_T3      | 128.8   | T2   |
+| `pos_080_W1_DY1` | LOAD_16NM | -1.42 %  | 98.5       | 99.3           | T2 RIGHT, r 26.11, z +0.0 | 99.3       | T1_T2, r 24.82, z +0.0, Tangente 45° | -122.9     | T2_T3      | 120.6   | T2   |
+| `pos_080_W1_DY2` | LOAD_16NM | -1.69 %  | 79.3       | 116.8          | T2 RIGHT, r 26.11, z +0.0 | 115.5      | T1_T2, r 24.82, z +0.0, Tangente 45° | -145.3     | T2_T3      | 97.9    | T2   |
+| `pos_080_W2_QS`  | LOAD_16NM | -1.05 %  | 118.1      | 76.9           | T1 RIGHT, r 26.90, z +0.0 | 54.6       | T1_T2, r 24.91, z +0.0, Tangente 26° | -60.8      | T2_T3      | 142.3   | T2   |
+| `pos_080_W2_DY1` | LOAD_16NM | -1.11 %  | 110.9      | 78.7           | T1 RIGHT, r 26.90, z +0.0 | 57.0       | T1_T2, r 24.89, z +0.0, Tangente 30° | -64.3      | T2_T3      | 134.1   | T2   |
+| `pos_080_W2_DY2` | LOAD_16NM | -1.54 %  | 87.3       | 88.4           | T2 RIGHT, r 26.11, z +0.0 | 68.9       | T1_T2, r 24.89, z +0.0, Tangente 30° | -80.1      | T2_T3      | 106.3   | T2   |
+| `pos_080_W3_QS`  | LOAD_16NM | -1.21 %  | 104.4      | 86.4           | T2 RIGHT, r 26.11, z +7.5 | 96.6       | T1_T2, r 24.79, z -0.7, Tangente 54° | -123.4     | T2_T3      | 123.4   | T2   |
+| `pos_080_W3_DY1` | LOAD_16NM | -1.29 %  | 98.1       | 91.5           | T2 RIGHT, r 26.11, z +7.5 | 101.4      | T1_T2, r 24.79, z -0.7, Tangente 54° | -133.6     | T2_T3      | 115.2   | T2   |
+| `pos_080_W3_DY2` | LOAD_16NM | -1.68 %  | 79.5       | 110.1          | T2 RIGHT, r 26.11, z +7.5 | 118.0      | T1_T2, r 24.79, z -0.7, Tangente 54° | -158.1     | T2_T3      | 94.4    | T2   |
+| `pos_080_W4_QS`  | LOAD_16NM | -1.05 %  | 115.9      | 76.6           | T3 RIGHT, r 26.00, z +7.5 | 59.5       | T1_T2, r 24.78, z +4.4, Tangente 59° | -78.6      | T2_T3      | 135.1   | T2   |
+| `pos_080_W4_DY1` | LOAD_16NM | -1.12 %  | 109.3      | 72.3           | T3 RIGHT, r 26.00, z +7.5 | 64.5       | T1_T2, r 24.89, z +7.5, Tangente 30° | -88.1      | T2_T3      | 127.1   | T2   |
+| `pos_080_W4_DY2` | LOAD_16NM | -1.43 %  | 85.8       | 86.4           | T2 RIGHT, r 26.11, z +7.5 | 76.3       | T1_T2, r 24.78, z +4.4, Tangente 59° | -108.2     | T2_T3      | 100.7   | T2   |
+| `pos_081_W1_QS`  | LOAD_16NM | -1.30 %  | 106.1      | 110.1          | T1 RIGHT, r 26.90, z +0.0 | 94.8       | T1_T2, r 24.82, z +0.0, Tangente 45° | -118.8     | T2_T3      | 129.9   | T2   |
+| `pos_081_W1_DY1` | LOAD_16NM | -1.60 %  | 98.8       | 108.3          | T1 RIGHT, r 26.90, z +0.0 | 98.4       | T1_T2, r 24.82, z +0.0, Tangente 45° | -124.5     | T2_T3      | 120.9   | T2   |
+| `pos_081_W1_DY2` | LOAD_16NM | -1.69 %  | 76.3       | 122.0          | T2 RIGHT, r 26.11, z +0.0 | 109.9      | T1_T2, r 24.82, z +0.0, Tangente 45° | -139.3     | T2_T3      | 93.8    | T2   |
+| `pos_081_W2_QS`  | LOAD_16NM | -0.51 %  | 120.3      | 83.5           | T1 RIGHT, r 26.90, z +0.0 | 54.9       | T1_T2, r 24.91, z +0.0, Tangente 26° | -62.4      | T2_T3      | 145.4   | T2   |
+| `pos_081_W2_DY1` | LOAD_16NM | -0.84 %  | 112.2      | 86.4           | T1 RIGHT, r 26.90, z +0.0 | 57.1       | T1_T2, r 24.89, z +0.0, Tangente 30° | -65.8      | T2_T3      | 135.7   | T2   |
+| `pos_081_W2_DY2` | LOAD_16NM | -1.85 %  | 87.7       | 100.1          | T1 RIGHT, r 26.90, z +0.0 | 68.7       | T1_T2, r 24.89, z +0.0, Tangente 30° | -81.8      | T2_T3      | 106.4   | T2   |
+| `pos_081_W3_QS`  | LOAD_16NM | -1.17 %  | 105.0      | 101.4          | T1 RIGHT, r 26.90, z +0.7 | 96.2       | T1_T2, r 24.79, z -0.7, Tangente 54° | -127.2     | T2_T3      | 123.9   | T2   |
+| `pos_081_W3_DY1` | LOAD_16NM | -1.39 %  | 98.3       | 101.2          | T1 RIGHT, r 26.90, z +0.7 | 100.7      | T1_T2, r 24.79, z -0.7, Tangente 54° | -137.5     | T2_T3      | 115.2   | T2   |
+| `pos_081_W3_DY2` | LOAD_16NM | -1.66 %  | 76.6       | 114.6          | T2 RIGHT, r 26.11, z +7.5 | 112.5      | T1_T2, r 24.79, z -0.7, Tangente 54° | -152.8     | T2_T3      | 90.4    | T2   |
+| `pos_081_W4_QS`  | LOAD_16NM | -0.56 %  | 117.9      | 76.1           | T1 RIGHT, r 26.90, z +0.7 | 58.9       | T1_T2, r 24.78, z +4.4, Tangente 59° | -80.7      | T2_T3      | 137.9   | T2   |
+| `pos_081_W4_DY1` | LOAD_16NM | -0.84 %  | 110.2      | 78.4           | T1 RIGHT, r 26.90, z +0.7 | 64.2       | T1_T2, r 24.89, z +7.5, Tangente 30° | -90.2      | T2_T3      | 128.3   | T2   |
+| `pos_081_W4_DY2` | LOAD_16NM | -1.72 %  | 86.0       | 89.6           | T2 RIGHT, r 26.11, z +7.5 | 75.2       | T1_T2, r 24.89, z +7.5, Tangente 30° | -110.6     | T2_T3      | 100.6   | T2   |
+| `pos_082_W1_QS`  | LOAD_16NM | -1.67 %  | 108.0      | 126.1          | T1 RIGHT, r 26.90, z +0.0 | 96.0       | T1_T2, r 24.82, z +0.0, Tangente 45° | -123.6     | T2_T3      | 132.4   | T2   |
+| `pos_082_W1_DY1` | LOAD_16NM | -1.87 %  | 99.4       | 123.9          | T1 RIGHT, r 26.90, z +0.0 | 98.6       | T1_T2, r 24.82, z +0.0, Tangente 45° | -127.9     | T2_T3      | 121.9   | T2   |
+| `pos_082_W1_DY2` | LOAD_16NM | -1.59 %  | 73.7       | 124.9          | T2 RIGHT, r 26.11, z +0.0 | 105.5      | T1_T2, r 24.82, z +0.0, Tangente 45° | -134.4     | T2_T3      | 90.6    | T2   |
+| `pos_082_W2_QS`  | LOAD_16NM | -0.73 %  | 122.9      | 86.2           | T1 RIGHT, r 26.90, z +0.0 | 55.2       | T1_T2, r 24.91, z +0.0, Tangente 26° | -64.8      | T2_T3      | 147.6   | T2   |
+| `pos_082_W2_DY1` | LOAD_16NM | -0.90 %  | 116.0      | 91.8           | T1 RIGHT, r 26.90, z +0.0 | 57.6       | T1_T2, r 24.91, z +0.0, Tangente 26° | -69.3      | T2_T3      | 139.8   | T2   |
+| `pos_082_W2_DY2` | LOAD_16NM | -1.79 %  | 85.4       | 107.1          | T1 RIGHT, r 26.90, z +0.0 | 67.2       | T1_T2, r 24.89, z +0.0, Tangente 30° | -80.9      | T2_T3      | 103.3   | T2   |
+| `pos_082_W3_QS`  | LOAD_16NM | -1.49 %  | 107.2      | 117.6          | T1 RIGHT, r 26.90, z +0.7 | 97.0       | T1_T2, r 24.79, z -0.7, Tangente 54° | -135.8     | T2_T3      | 126.0   | T2   |
+| `pos_082_W3_DY1` | LOAD_16NM | -1.70 %  | 99.6       | 117.4          | T1 RIGHT, r 26.90, z +0.7 | 100.8      | T1_T2, r 24.79, z -0.7, Tangente 54° | -144.0     | T2_T3      | 116.1   | T2   |
+| `pos_082_W3_DY2` | LOAD_16NM | -1.59 %  | 74.1       | 118.3          | T2 RIGHT, r 26.11, z +7.5 | 107.3      | T1_T2, r 24.79, z -0.7, Tangente 54° | -148.3     | T2_T3      | 87.1    | T2   |
+| `pos_082_W4_QS`  | LOAD_16NM | -0.71 %  | 119.9      | 77.4           | T1 RIGHT, r 26.90, z +0.7 | 59.3       | T1_T2, r 24.89, z +7.5, Tangente 30° | -83.5      | T2_T3      | 139.4   | T2   |
+| `pos_082_W4_DY1` | LOAD_16NM | -0.81 %  | 113.4      | 81.4           | T1 RIGHT, r 26.90, z +0.7 | 65.2       | T1_T2, r 24.89, z +7.5, Tangente 30° | -94.7      | T2_T3      | 131.5   | T2   |
+| `pos_082_W4_DY2` | LOAD_16NM | -1.69 %  | 84.0       | 95.3           | T1 RIGHT, r 26.90, z +0.7 | 73.2       | T1_T2, r 24.89, z +7.5, Tangente 30° | -109.5     | T2_T3      | 97.6    | T2   |
+| `pos_083_W1_QS`  | LOAD_16NM | -1.76 %  | 106.7      | 134.9          | T1 RIGHT, r 26.90, z +0.0 | 94.6       | T1_T2, r 24.82, z +0.0, Tangente 45° | -123.6     | T2_T3      | 130.6   | T2   |
+| `pos_083_W1_DY1` | LOAD_16NM | -1.69 %  | 97.1       | 131.6          | T1 RIGHT, r 26.90, z +0.0 | 95.9       | T1_T2, r 24.82, z +0.0, Tangente 45° | -124.9     | T2_T3      | 118.9   | T2   |
+| `pos_083_W1_DY2` | LOAD_16NM | -1.47 %  | 71.4       | 128.2          | T2 RIGHT, r 26.11, z +0.0 | 101.3      | T1_T2, r 24.82, z +0.0, Tangente 45° | -129.8     | T2_T3      | 87.6    | T2   |
+| `pos_083_W2_QS`  | LOAD_16NM | -1.67 %  | 123.8      | 87.3           | T1 RIGHT, r 26.90, z +0.0 | 55.6       | T1_T2, r 24.91, z +0.0, Tangente 26° | -66.2      | T2_T3      | 148.7   | T2   |
+| `pos_083_W2_DY1` | LOAD_16NM | -1.85 %  | 117.4      | 93.6           | T1 RIGHT, r 26.90, z +0.0 | 58.3       | T1_T2, r 24.91, z +0.0, Tangente 26° | -71.0      | T2_T3      | 141.4   | T2   |
+| `pos_083_W2_DY2` | LOAD_16NM | -1.59 %  | 82.7       | 112.7          | T1 RIGHT, r 26.90, z +0.0 | 65.9       | T1_T2, r 24.89, z +0.0, Tangente 30° | -79.7      | T2_T3      | 100.0   | T2   |
+| `pos_083_W3_QS`  | LOAD_16NM | -1.76 %  | 106.6      | 129.0          | T1 RIGHT, r 26.90, z +0.7 | 95.7       | T1_T2, r 24.84, z -2.0, Tangente 41° | -136.2     | T2_T3      | 125.1   | T2   |
+| `pos_083_W3_DY1` | LOAD_16NM | -1.70 %  | 98.1       | 129.5          | T1 RIGHT, r 26.90, z +0.7 | 98.4       | T1_T2, r 24.84, z -2.0, Tangente 41° | -142.3     | T2_T3      | 114.0   | T2   |
+| `pos_083_W3_DY2` | LOAD_16NM | -1.45 %  | 72.0       | 121.3          | T2 RIGHT, r 26.11, z +7.5 | 102.9      | T1_T2, r 24.84, z -2.0, Tangente 41° | -144.3     | T2_T3      | 84.3    | T2   |
+| `pos_083_W4_QS`  | LOAD_16NM | -1.63 %  | 120.9      | 78.6           | T1 RIGHT, r 26.90, z +0.7 | 59.5       | T1_T2, r 24.89, z +7.5, Tangente 30° | -84.7      | T2_T3      | 139.6   | T2   |
+| `pos_083_W4_DY1` | LOAD_16NM | -1.78 %  | 114.5      | 82.6           | T1 RIGHT, r 26.90, z +0.7 | 65.4       | T1_T2, r 24.89, z +7.5, Tangente 30° | -96.6      | T2_T3      | 131.8   | T2   |
+| `pos_083_W4_DY2` | LOAD_16NM | -1.54 %  | 81.6       | 100.8          | T1 RIGHT, r 26.90, z +0.7 | 70.9       | T1_T2, r 24.89, z +7.5, Tangente 30° | -107.6     | T2_T3      | 94.2    | T2   |
+| `pos_084_W1_QS`  | LOAD_16NM | -1.54 %  | 104.7      | 140.8          | T1 RIGHT, r 26.90, z +0.0 | 92.2       | T1_T2, r 24.82, z +0.0, Tangente 45° | -120.8     | T2_T3      | 127.7   | T2   |
+| `pos_084_W1_DY1` | LOAD_16NM | -1.49 %  | 95.1       | 138.5          | T1 RIGHT, r 26.90, z +0.0 | 93.3       | T1_T2, r 24.82, z +0.0, Tangente 45° | -121.8     | T2_T3      | 115.9   | T2   |
+| `pos_084_W1_DY2` | LOAD_16NM | -1.32 %  | 69.7       | 132.0          | T2 RIGHT, r 26.11, z +0.0 | 97.4       | T1_T2, r 24.82, z +0.0, Tangente 45° | -125.5     | T2_T3      | 84.8    | T2   |
+| `pos_084_W2_QS`  | LOAD_16NM | -1.75 %  | 125.0      | 88.3           | T1 RIGHT, r 26.90, z +0.0 | 55.8       | T1_T2, r 24.91, z +0.0, Tangente 26° | -67.3      | T2_T3      | 149.9   | T2   |
+| `pos_084_W2_DY1` | LOAD_16NM | -1.78 %  | 116.1      | 94.4           | T1 RIGHT, r 26.90, z +0.0 | 57.9       | T1_T2, r 24.91, z +0.0, Tangente 26° | -71.1      | T2_T3      | 139.7   | T2   |
+| `pos_084_W2_DY2` | LOAD_16NM | -1.41 %  | 80.3       | 116.2          | T1 RIGHT, r 26.90, z +0.0 | 64.5       | T1_T2, r 24.89, z +0.0, Tangente 30° | -78.5      | T2_T3      | 96.8    | T2   |
+| `pos_084_W3_QS`  | LOAD_16NM | -1.54 %  | 104.5      | 129.1          | T1 RIGHT, r 26.90, z +0.7 | 93.4       | T1_T2, r 24.84, z -2.0, Tangente 41° | -133.7     | T2_T3      | 122.2   | T2   |
+| `pos_084_W3_DY1` | LOAD_16NM | -1.49 %  | 96.1       | 133.3          | T1 RIGHT, r 26.90, z +0.7 | 95.9       | T1_T2, r 24.84, z -2.0, Tangente 41° | -139.5     | T2_T3      | 111.3   | T2   |
+| `pos_084_W3_DY2` | LOAD_16NM | -1.29 %  | 70.1       | 130.1          | T1 RIGHT, r 26.90, z +0.7 | 99.3       | T1_T2, r 24.84, z -2.0, Tangente 41° | -140.4     | T2_T3      | 81.6    | T2   |
+| `pos_084_W4_QS`  | LOAD_16NM | -1.70 %  | 122.0      | 79.0           | T1 RIGHT, r 26.90, z +0.7 | 59.5       | T1_T2, r 24.89, z +7.5, Tangente 30° | -86.0      | T2_T3      | 140.5   | T2   |
+| `pos_084_W4_DY1` | LOAD_16NM | -1.75 %  | 113.7      | 83.3           | T1 RIGHT, r 26.90, z +0.7 | 64.7       | T1_T2, r 24.89, z +7.5, Tangente 30° | -96.7      | T2_T3      | 130.5   | T2   |
+| `pos_084_W4_DY2` | LOAD_16NM | -1.38 %  | 79.2       | 102.8          | T1 RIGHT, r 26.90, z +0.7 | 69.3       | T1_T2, r 24.89, z +7.5, Tangente 30° | -106.0     | T2_T3      | 91.3    | T2   |
+| `pos_085_W1_QS`  | LOAD_16NM | -1.34 %  | 103.0      | 134.2          | T1 RIGHT, r 26.90, z +0.0 | 89.8       | T1_T2, r 24.82, z +0.0, Tangente 45° | -117.9     | T2_T3      | 124.8   | T2   |
+| `pos_085_W1_DY1` | LOAD_16NM | -1.29 %  | 93.5       | 143.3          | T1 RIGHT, r 26.90, z +0.0 | 90.7       | T1_T2, r 24.82, z +0.0, Tangente 45° | -118.8     | T2_T3      | 113.2   | T2   |
+| `pos_085_W1_DY2` | LOAD_16NM | -1.15 %  | 68.1       | 137.4          | T1 RIGHT, r 26.90, z +0.0 | 93.9       | T1_T2, r 24.82, z +0.0, Tangente 45° | -121.7     | T2_T3      | 82.5    | T2   |
+| `pos_085_W2_QS`  | LOAD_16NM | -1.65 %  | 124.1      | 89.3           | T1 RIGHT, r 26.90, z +0.0 | 55.5       | T1_T2, r 24.91, z +0.0, Tangente 26° | -67.6      | T2_T3      | 148.5   | T2   |
+| `pos_085_W2_DY1` | LOAD_16NM | -1.57 %  | 113.6      | 95.2           | T1 RIGHT, r 26.90, z +0.0 | 56.9       | T1_T2, r 24.91, z +0.0, Tangente 26° | -70.4      | T2_T3      | 136.0   | T2   |
+| `pos_085_W2_DY2` | LOAD_16NM | -1.27 %  | 78.0       | 115.6          | T1 RIGHT, r 26.90, z +0.0 | 62.8       | T1_T2, r 24.87, z +0.0, Tangente 33° | -77.1      | T2_T3      | 93.3    | T2   |
+| `pos_085_W3_QS`  | LOAD_16NM | -1.35 %  | 102.5      | 124.6          | T1 RIGHT, r 26.90, z +0.7 | 90.9       | T1_T2, r 24.84, z -2.0, Tangente 41° | -131.0     | T2_T3      | 119.3   | T2   |
+| `pos_085_W3_DY1` | LOAD_16NM | -1.30 %  | 94.2       | 129.1          | T1 RIGHT, r 26.90, z +0.7 | 93.3       | T1_T2, r 24.84, z -2.0, Tangente 41° | -136.6     | T2_T3      | 108.5   | T2   |
+| `pos_085_W3_DY2` | LOAD_16NM | -1.14 %  | 68.5       | 139.8          | T1 RIGHT, r 26.90, z +0.7 | 95.9       | T1_T2, r 24.84, z -2.0, Tangente 41° | -136.5     | T2_T3      | 79.1    | T2   |
+| `pos_085_W4_QS`  | LOAD_16NM | -1.60 %  | 121.2      | 79.6           | T1 RIGHT, r 26.90, z +0.7 | 59.3       | T1_T2, r 24.89, z +7.5, Tangente 30° | -86.2      | T2_T3      | 139.4   | T2   |
+| `pos_085_W4_DY1` | LOAD_16NM | -1.53 %  | 111.4      | 83.7           | T1 RIGHT, r 26.90, z +0.7 | 63.8       | T1_T2, r 24.89, z +7.5, Tangente 30° | -95.9      | T2_T3      | 127.5   | T2   |
+| `pos_085_W4_DY2` | LOAD_16NM | -1.24 %  | 77.0       | 103.2          | T1 RIGHT, r 26.90, z +0.7 | 67.3       | T1_T2, r 24.89, z +7.5, Tangente 30° | -104.0     | T2_T3      | 88.2    | T2   |
+| `pos_086_W1_QS`  | LOAD_16NM | -1.10 %  | 101.4      | 126.9          | T1 RIGHT, r 26.90, z +0.0 | 87.7       | T1_T2, r 24.84, z +0.0, Tangente 41° | -115.5     | T2_T3      | 122.5   | T2   |
+| `pos_086_W1_DY1` | LOAD_16NM | -1.04 %  | 92.0       | 135.4          | T1 RIGHT, r 26.90, z +0.0 | 88.5       | T1_T2, r 24.84, z +0.0, Tangente 41° | -116.2     | T2_T3      | 111.1   | T2   |
+| `pos_086_W1_DY2` | LOAD_16NM | -0.91 %  | 66.9       | 145.9          | T1 RIGHT, r 26.90, z +0.0 | 91.3       | T1_T2, r 24.84, z +0.0, Tangente 41° | -118.8     | T2_T3      | 80.5    | T2   |
+| `pos_086_W2_QS`  | LOAD_16NM | -1.40 %  | 121.9      | 87.2           | T1 RIGHT, r 26.90, z -0.7 | 54.7       | T1_T2, r 24.91, z +0.0, Tangente 26° | -67.0      | T2_T3      | 144.8   | T2   |
+| `pos_086_W2_DY1` | LOAD_16NM | -1.33 %  | 111.4      | 92.9           | T1 RIGHT, r 26.90, z +0.0 | 55.9       | T1_T2, r 24.91, z +0.0, Tangente 26° | -69.7      | T2_T3      | 132.4   | T2   |
+| `pos_086_W2_DY2` | LOAD_16NM | -1.08 %  | 76.0       | 112.9          | T1 RIGHT, r 26.90, z +0.0 | 61.0       | T1_T2, r 24.87, z +0.0, Tangente 33° | -75.9      | T2_T3      | 90.2    | T2   |
+| `pos_086_W3_QS`  | LOAD_16NM | -1.15 %  | 100.8      | 119.5          | T1 RIGHT, r 26.90, z +0.7 | 88.6       | T1_T2, r 24.87, z -1.3, Tangente 33° | -128.3     | T2_T3      | 116.5   | T2   |
+| `pos_086_W3_DY1` | LOAD_16NM | -1.10 %  | 92.6       | 124.1          | T1 RIGHT, r 26.90, z +0.7 | 90.7       | T1_T2, r 24.87, z -1.3, Tangente 33° | -133.6     | T2_T3      | 105.9   | T2   |
+| `pos_086_W3_DY2` | LOAD_16NM | -0.94 %  | 67.3       | 148.2          | T1 RIGHT, r 26.90, z +0.7 | 92.5       | T1_T2, r 24.84, z -2.0, Tangente 41° | -133.4     | T2_T3      | 77.1    | T2   |
+| `pos_086_W4_QS`  | LOAD_16NM | -1.37 %  | 118.9      | 78.3           | T1 RIGHT, r 26.90, z +0.7 | 58.2       | T1_T2, r 24.89, z +7.5, Tangente 30° | -85.4      | T2_T3      | 136.0   | T2   |
+| `pos_086_W4_DY1` | LOAD_16NM | -1.28 %  | 109.4      | 84.1           | T1 RIGHT, r 26.90, z +0.7 | 62.8       | T1_T2, r 24.89, z +7.5, Tangente 30° | -95.0      | T2_T3      | 124.5   | T2   |
+| `pos_086_W4_DY2` | LOAD_16NM | -1.06 %  | 75.2       | 104.1          | T1 RIGHT, r 26.90, z +0.7 | 65.3       | T1_T2, r 24.89, z +7.5, Tangente 30° | -102.1     | T2_T3      | 85.3    | T2   |
+| `pos_087_W1_QS`  | LOAD_16NM | -0.88 %  | 100.0      | 119.7          | T1 RIGHT, r 26.90, z +0.0 | 85.9       | T1_T2, r 24.84, z +0.0, Tangente 41° | -113.3     | T2_T3      | 120.3   | T2   |
+| `pos_087_W1_DY1` | LOAD_16NM | -0.83 %  | 90.8       | 127.6          | T1 RIGHT, r 26.90, z +0.0 | 86.4       | T1_T2, r 24.84, z +0.0, Tangente 41° | -113.8     | T2_T3      | 109.0   | T2   |
+| `pos_087_W1_DY2` | LOAD_16NM | -0.70 %  | 65.9       | 153.7          | T1 RIGHT, r 26.90, z +0.0 | 88.8       | T1_T2, r 24.84, z +0.0, Tangente 41° | -115.9     | T2_T3      | 78.6    | T2   |
+| `pos_087_W2_QS`  | LOAD_16NM | -1.17 %  | 119.7      | 82.1           | T1 RIGHT, r 26.90, z +0.0 | 54.0       | T1_T2, r 24.91, z +0.0, Tangente 26° | -66.5      | T2_T3      | 141.5   | T2   |
+| `pos_087_W2_DY1` | LOAD_16NM | -1.08 %  | 109.6      | 90.0           | T1 RIGHT, r 26.90, z +0.0 | 55.2       | T1_T2, r 24.91, z +0.0, Tangente 26° | -69.2      | T2_T3      | 129.8   | T2   |
+| `pos_087_W2_DY2` | LOAD_16NM | -0.85 %  | 74.4       | 110.2          | T1 RIGHT, r 26.90, z +0.0 | 59.9       | T1_T2, r 24.87, z +0.0, Tangente 33° | -74.8      | T2_T3      | 87.9    | T2   |
+| `pos_087_W3_QS`  | LOAD_16NM | -0.94 %  | 99.4       | 114.6          | T1 RIGHT, r 26.90, z +0.7 | 86.3       | T1_T2, r 24.87, z -1.3, Tangente 33° | -126.0     | T2_T3      | 114.2   | T2   |
+| `pos_087_W3_DY1` | LOAD_16NM | -0.91 %  | 91.3       | 119.2          | T1 RIGHT, r 26.90, z +0.7 | 88.2       | T1_T2, r 24.87, z -1.3, Tangente 33° | -131.0     | T2_T3      | 103.6   | T2   |
+| `pos_087_W3_DY2` | LOAD_16NM | -0.73 %  | 66.2       | 144.2          | T1 RIGHT, r 26.90, z +0.7 | 89.9       | T1_T2, r 24.87, z -1.3, Tangente 33° | -130.6     | T2_T3      | 75.2    | T2   |
+| `pos_087_W4_QS`  | LOAD_16NM | -1.18 %  | 116.6      | 76.7           | T1 RIGHT, r 26.90, z +0.7 | 57.0       | T1_T2, r 24.89, z +7.5, Tangente 30° | -84.6      | T2_T3      | 132.4   | T2   |
+| `pos_087_W4_DY1` | LOAD_16NM | -1.10 %  | 107.4      | 82.2           | T1 RIGHT, r 26.90, z +0.7 | 61.6       | T1_T2, r 24.89, z +7.5, Tangente 30° | -93.9      | T2_T3      | 121.2   | T2   |
+| `pos_087_W4_DY2` | LOAD_16NM | -0.89 %  | 73.7       | 102.1          | T1 RIGHT, r 26.90, z +0.7 | 63.4       | T1_T2, r 24.87, z -1.3, Tangente 33° | -100.3     | T2_T3      | 82.8    | T2   |
+| `pos_088_W1_QS`  | LOAD_16NM | -0.64 %  | 98.9       | 111.7          | T1 RIGHT, r 26.90, z +0.0 | 84.0       | T1_T2, r 24.84, z +0.0, Tangente 41° | -111.1     | T2_T3      | 118.0   | T2   |
+| `pos_088_W1_DY1` | LOAD_16NM | -0.59 %  | 89.7       | 118.8          | T1 RIGHT, r 26.90, z +0.0 | 84.4       | T1_T2, r 24.84, z +0.0, Tangente 41° | -111.5     | T2_T3      | 106.8   | T2   |
+| `pos_088_W1_DY2` | LOAD_16NM | -0.46 %  | 65.2       | 147.5          | T1 RIGHT, r 26.90, z +0.0 | 86.1       | T1_T2, r 24.84, z +0.0, Tangente 41° | -112.9     | T2_T3      | 76.7    | T2   |
+| `pos_088_W2_QS`  | LOAD_16NM | -0.92 %  | 117.6      | 76.4           | T1 RIGHT, r 26.90, z +0.0 | 53.3       | T1_T2, r 24.91, z +0.0, Tangente 26° | -66.0      | T2_T3      | 138.6   | T2   |
+| `pos_088_W2_DY1` | LOAD_16NM | -0.82 %  | 107.8      | 83.3           | T1 RIGHT, r 26.90, z +0.0 | 54.5       | T1_T2, r 24.89, z +0.0, Tangente 30° | -68.6      | T2_T3      | 127.1   | T2   |
+| `pos_088_W2_DY2` | LOAD_16NM | -0.60 %  | 73.1       | 106.1          | T1 RIGHT, r 26.90, z +0.0 | 58.9       | T1_T2, r 24.87, z +0.0, Tangente 33° | -73.7      | T2_T3      | 85.5    | T2   |
+| `pos_088_W3_QS`  | LOAD_16NM | -0.69 %  | 98.3       | 109.0          | T1 RIGHT, r 26.90, z +0.7 | 84.6       | T1_T2, r 24.87, z -1.3, Tangente 33° | -124.1     | T2_T3      | 112.1   | T2   |
+| `pos_088_W3_DY1` | LOAD_16NM | -0.66 %  | 90.1       | 113.5          | T1 RIGHT, r 26.90, z +0.7 | 86.3       | T1_T2, r 24.87, z -1.3, Tangente 33° | -128.7     | T2_T3      | 101.5   | T2   |
+| `pos_088_W3_DY2` | LOAD_16NM | -0.51 %  | 65.3       | 136.4          | T1 RIGHT, r 26.90, z +0.7 | 87.2       | T1_T2, r 24.87, z -1.3, Tangente 33° | -127.7     | T2_T3      | 73.2    | T2   |
+| `pos_088_W4_QS`  | LOAD_16NM | -0.98 %  | 114.7      | 73.3           | T1 RIGHT, r 26.90, z +0.7 | 55.8       | T1_T2, r 24.89, z +7.5, Tangente 30° | -83.9      | T2_T3      | 129.2   | T2   |
+| `pos_088_W4_DY1` | LOAD_16NM | -0.90 %  | 105.5      | 78.4           | T1 RIGHT, r 26.90, z +0.7 | 60.2       | T1_T2, r 24.89, z +7.5, Tangente 30° | -92.8      | T2_T3      | 118.2   | T2   |
+| `pos_088_W4_DY2` | LOAD_16NM | -0.66 %  | 72.4       | 99.9           | T1 RIGHT, r 26.90, z +0.7 | 61.9       | T1_T2, r 24.87, z -1.3, Tangente 33° | -98.7      | T2_T3      | 80.6    | T2   |
+| `pos_089_W1_QS`  | LOAD_16NM | -0.42 %  | 98.0       | 103.9          | T1 RIGHT, r 26.90, z +0.0 | 82.1       | T1_T2, r 24.84, z +0.0, Tangente 41° | -109.0     | T2_T3      | 115.8   | T2   |
+| `pos_089_W1_DY1` | LOAD_16NM | -0.38 %  | 88.9       | 110.6          | T1 RIGHT, r 26.90, z +0.0 | 82.3       | T1_T2, r 24.84, z +0.0, Tangente 41° | -109.3     | T2_T3      | 104.6   | T2   |
+| `pos_089_W1_DY2` | LOAD_16NM | -0.26 %  | 64.6       | 136.4          | T1 RIGHT, r 26.90, z +0.0 | 83.1       | T1_T2, r 24.84, z +0.0, Tangente 41° | -109.8     | T2_T3      | 74.8    | T2   |
+| `pos_089_W2_QS`  | LOAD_16NM | -0.69 %  | 115.9      | 70.7           | T1 RIGHT, r 26.90, z +0.0 | 52.6       | T1_T2, r 24.91, z +0.0, Tangente 26° | -65.4      | T2_T3      | 135.6   | T2   |
+| `pos_089_W2_DY1` | LOAD_16NM | -0.60 %  | 106.1      | 76.8           | T1 RIGHT, r 26.90, z +0.0 | 53.8       | T1_T2, r 24.89, z +0.0, Tangente 30° | -67.9      | T2_T3      | 124.2   | T2   |
+| `pos_089_W2_DY2` | LOAD_16NM | -0.37 %  | 72.1       | 102.6          | T1 RIGHT, r 26.90, z +0.0 | 57.8       | T1_T2, r 24.87, z +0.0, Tangente 33° | -72.7      | T2_T3      | 83.3    | T2   |
+| `pos_089_W3_QS`  | LOAD_16NM | -0.47 %  | 97.4       | 99.6           | T1 RIGHT, r 26.90, z +0.7 | 82.9       | T1_T2, r 24.87, z -1.3, Tangente 33° | -122.2     | T2_T3      | 110.0   | T2   |
+| `pos_089_W3_DY1` | LOAD_16NM | -0.43 %  | 89.3       | 106.4          | T1 RIGHT, r 26.90, z +0.7 | 84.5       | T1_T2, r 24.87, z -1.3, Tangente 33° | -126.6     | T2_T3      | 99.5    | T2   |
+| `pos_089_W3_DY2` | LOAD_16NM | -0.30 %  | 64.7       | 129.0          | T1 RIGHT, r 26.90, z +0.7 | 84.6       | T1_T2, r 24.87, z -1.3, Tangente 33° | -125.0     | T2_T3      | 71.4    | T2   |
+| `pos_089_W4_QS`  | LOAD_16NM | -0.75 %  | 113.1      | 68.9           | T1 RIGHT, r 26.90, z +0.7 | 55.1       | T1_T2, r 24.89, z +7.5, Tangente 30° | -83.4      | T2_T3      | 126.7   | T2   |
+| `pos_089_W4_DY1` | LOAD_16NM | -0.68 %  | 103.9      | 73.6           | T1 RIGHT, r 26.90, z +0.7 | 59.4       | T1_T2, r 24.89, z +7.5, Tangente 30° | -91.8      | T2_T3      | 115.5   | T2   |
+| `pos_089_W4_DY2` | LOAD_16NM | -0.41 %  | 71.4       | 97.9           | T1 RIGHT, r 26.90, z +0.7 | 60.9       | T1_T2, r 24.87, z -1.3, Tangente 33° | -97.3      | T2_T3      | 78.5    | T2   |
+| `pos_090_W1_QS`  | LOAD_16NM | -0.24 %  | 97.3       | 95.6           | T2 RIGHT, r 26.00, z +0.0 | 80.1       | T1_T2, r 24.84, z +0.0, Tangente 41° | -106.7     | T2_T3      | 113.5   | T2   |
+| `pos_090_W1_DY1` | LOAD_16NM | -0.18 %  | 88.4       | 101.5          | T2 RIGHT, r 26.00, z +0.0 | 80.2       | T1_T2, r 24.84, z +0.0, Tangente 41° | -106.9     | T2_T3      | 102.4   | T2   |
+| `pos_090_W1_DY2` | LOAD_16NM | -0.05 %  | 64.3       | 125.1          | T1 RIGHT, r 26.90, z +0.0 | 80.4       | T1_T2, r 24.84, z +0.0, Tangente 41° | -106.9     | T2_T3      | 73.2    | T2   |
+| `pos_090_W2_QS`  | LOAD_16NM | -0.48 %  | 114.4      | 64.4           | T2 RIGHT, r 26.00, z +0.0 | 51.9       | T1_T2, r 24.91, z +0.0, Tangente 26° | -65.0      | T2_T3      | 132.7   | T2   |
+| `pos_090_W2_DY1` | LOAD_16NM | -0.41 %  | 104.7      | 69.4           | T1 RIGHT, r 26.90, z +0.0 | 53.0       | T1_T2, r 24.89, z +0.0, Tangente 30° | -67.2      | T2_T3      | 121.2   | T2   |
+| `pos_090_W2_DY2` | LOAD_16NM | -0.16 %  | 71.5       | 98.7           | T1 RIGHT, r 26.90, z +0.0 | 56.7       | T1_T2, r 24.87, z +0.0, Tangente 33° | -71.7      | T2_T3      | 81.1    | T2   |
+| `pos_090_W3_QS`  | LOAD_16NM | -0.29 %  | 96.5       | 89.4           | T2 RIGHT, r 26.11, z +7.5 | 81.1       | T1_T2, r 24.87, z -1.3, Tangente 33° | -120.0     | T2_T3      | 107.7   | T2   |
+| `pos_090_W3_DY1` | LOAD_16NM | -0.24 %  | 88.6       | 95.7           | T2 RIGHT, r 26.11, z +7.5 | 82.5       | T1_T2, r 24.87, z -1.3, Tangente 33° | -124.3     | T2_T3      | 97.6    | T1   |
+| `pos_090_W3_DY2` | LOAD_16NM | -0.09 %  | 64.4       | 121.2          | T1 RIGHT, r 26.90, z +0.7 | 82.1       | T1_T2, r 24.87, z -1.3, Tangente 33° | -122.1     | T2_T3      | 71.4    | T1   |
+| `pos_090_W4_QS`  | LOAD_16NM | -0.53 %  | 111.6      | 63.6           | T2 RIGHT, r 26.11, z +7.5 | 54.3       | T1_T2, r 24.89, z +7.5, Tangente 30° | -82.7      | T2_T3      | 124.0   | T2   |
+| `pos_090_W4_DY1` | LOAD_16NM | -0.47 %  | 102.6      | 68.7           | T1 RIGHT, r 26.90, z +0.7 | 58.7       | T1_T2, r 24.89, z +7.5, Tangente 30° | -90.8      | T2_T3      | 112.9   | T2   |
+| `pos_090_W4_DY2` | LOAD_16NM | -0.20 %  | 70.6       | 91.3           | T1 RIGHT, r 26.90, z +0.7 | 59.7       | T1_T2, r 24.87, z -1.3, Tangente 33° | -95.7      | T2_T3      | 77.8    | T1   |
+| `pos_091_W1_QS`  | LOAD_16NM | -0.06 %  | 96.7       | 91.0           | T2 RIGHT, r 26.00, z +0.0 | 78.3       | T1_T2, r 24.84, z +0.0, Tangente 41° | -104.5     | T2_T3      | 111.1   | T2   |
+| `pos_091_W1_DY1` | LOAD_16NM | +0.01 %  | 87.8       | 96.5           | T2 RIGHT, r 26.00, z +0.0 | 78.3       | T1_T2, r 24.84, z +0.0, Tangente 41° | -104.6     | T2_T3      | 100.4   | T2   |
+| `pos_091_W1_DY2` | LOAD_16NM | +0.19 %  | 64.2       | 115.7          | T2 RIGHT, r 26.00, z +0.0 | 78.6       | T1_T2, r 24.84, z +0.0, Tangente 41° | -104.8     | T2_T3      | 73.3    | T1   |
+| `pos_091_W2_QS`  | LOAD_16NM | -0.29 %  | 113.2      | 63.6           | T2 RIGHT, r 26.00, z +0.0 | 51.1       | T1_T2, r 24.89, z +0.0, Tangente 30° | -64.5      | T2_T3      | 129.6   | T2   |
+| `pos_091_W2_DY1` | LOAD_16NM | -0.21 %  | 103.6      | 67.9           | T2 RIGHT, r 26.00, z +0.0 | 52.2       | T1_T2, r 24.89, z +0.0, Tangente 30° | -66.5      | T2_T3      | 118.3   | T2   |
+| `pos_091_W2_DY2` | LOAD_16NM | +0.03 %  | 70.9       | 89.4           | T2 RIGHT, r 26.00, z +0.0 | 55.4       | T1_T2, r 24.87, z +0.0, Tangente 33° | -70.7      | T2_T3      | 80.2    | T1   |
+| `pos_091_W3_QS`  | LOAD_16NM | -0.10 %  | 95.8       | 86.1           | T2 RIGHT, r 26.11, z +7.5 | 79.3       | T1_T2, r 24.87, z -1.3, Tangente 33° | -117.8     | T2_T3      | 107.2   | T1   |
+| `pos_091_W3_DY1` | LOAD_16NM | -0.06 %  | 88.0       | 92.8           | T2 RIGHT, r 26.11, z +7.5 | 80.6       | T1_T2, r 24.87, z -1.3, Tangente 33° | -121.8     | T2_T3      | 98.6    | T1   |
+| `pos_091_W3_DY2` | LOAD_16NM | +0.11 %  | 64.2       | 110.5          | T1 RIGHT, r 26.90, z +0.7 | 79.6       | T1_T2, r 24.87, z -1.3, Tangente 33° | -119.5     | T2_T3      | 72.9    | T1   |
+| `pos_091_W4_QS`  | LOAD_16NM | -0.32 %  | 110.4      | 60.6           | T2 RIGHT, r 26.11, z +7.5 | 53.2       | T1_T2, r 24.89, z +7.5, Tangente 30° | -82.1      | T2_T3      | 122.3   | T1   |
+| `pos_091_W4_DY1` | LOAD_16NM | -0.26 %  | 101.4      | 66.6           | T2 RIGHT, r 26.11, z +7.5 | 57.6       | T1_T2, r 24.89, z +7.5, Tangente 30° | -89.9      | T2_T3      | 112.7   | T1   |
+| `pos_091_W4_DY2` | LOAD_16NM | -0.01 %  | 70.0       | 88.4           | T2 RIGHT, r 26.00, z -7.5 | 58.4       | T1_T2, r 24.87, z -1.3, Tangente 33° | -94.1      | T2_T3      | 78.9    | T1   |
+| `pos_092_W1_QS`  | LOAD_16NM | +0.13 %  | 96.2       | 83.9           | T2 RIGHT, r 26.00, z +0.0 | 76.8       | T1_T2, r 24.84, z +0.0, Tangente 41° | -102.6     | T2_T3      | 109.2   | T1   |
+| `pos_092_W1_DY1` | LOAD_16NM | +0.19 %  | 87.5       | 89.4           | T2 RIGHT, r 26.00, z +0.0 | 76.7       | T1_T2, r 24.84, z +0.0, Tangente 41° | -102.6     | T2_T3      | 99.6    | T1   |
+| `pos_092_W1_DY2` | LOAD_16NM | +0.37 %  | 64.1       | 106.9          | T2 RIGHT, r 26.00, z +0.0 | 76.6       | T1_T2, r 24.84, z +0.0, Tangente 41° | -102.6     | T2_T3      | 74.3    | T1   |
+| `pos_092_W2_QS`  | LOAD_16NM | -0.13 %  | 112.1      | 62.9           | T2 RIGHT, r 26.00, z +0.0 | 50.2       | T1_T2, r 24.89, z +0.0, Tangente 30° | -63.9      | T2_T3      | 126.8   | T1   |
+| `pos_092_W2_DY1` | LOAD_16NM | -0.05 %  | 102.7      | 67.1           | T2 RIGHT, r 26.00, z +0.0 | 51.1       | T1_T2, r 24.89, z +0.0, Tangente 30° | -65.8      | T2_T3      | 116.2   | T1   |
+| `pos_092_W2_DY2` | LOAD_16NM | +0.22 %  | 70.5       | 85.5           | T2 RIGHT, r 26.00, z +0.0 | 54.3       | T1_T2, r 24.87, z +0.0, Tangente 33° | -69.8      | T2_T3      | 80.8    | T1   |
+| `pos_092_W3_QS`  | LOAD_16NM | +0.06 %  | 95.3       | 78.0           | T2 RIGHT, r 26.11, z +7.5 | 77.4       | T1_T2, r 24.87, z -1.3, Tangente 33° | -115.5     | T2_T3      | 107.6   | T1   |
+| `pos_092_W3_DY1` | LOAD_16NM | +0.11 %  | 87.6       | 84.7           | T2 RIGHT, r 26.11, z +7.5 | 78.7       | T1_T2, r 24.87, z -1.3, Tangente 33° | -119.4     | T2_T3      | 99.2    | T1   |
+| `pos_092_W3_DY2` | LOAD_16NM | +0.28 %  | 64.0       | 96.6           | T2 RIGHT, r 26.00, z -7.5 | 77.5       | T1_T2, r 24.87, z -1.3, Tangente 33° | -117.0     | T2_T3      | 73.8    | T1   |
+| `pos_092_W4_QS`  | LOAD_16NM | -0.12 %  | 109.6      | 57.3           | T2 RIGHT, r 25.90, z -7.5 | 52.1       | T1_T2, r 24.89, z +7.5, Tangente 30° | -81.4      | T2_T3      | 122.6   | T1   |
+| `pos_092_W4_DY1` | LOAD_16NM | -0.07 %  | 100.6      | 63.1           | T2 RIGHT, r 25.90, z -7.5 | 56.3       | T1_T2, r 24.89, z +7.5, Tangente 30° | -88.9      | T2_T3      | 112.9   | T1   |
+| `pos_092_W4_DY2` | LOAD_16NM | +0.16 %  | 69.7       | 84.1           | T2 RIGHT, r 26.00, z -7.5 | 57.2       | T1_T2, r 24.87, z -1.3, Tangente 33° | -92.5      | T2_T3      | 79.7    | T1   |
+| `pos_093_W1_QS`  | LOAD_16NM | +0.25 %  | 95.8       | 76.8           | T2 RIGHT, r 26.00, z +0.0 | 74.8       | T1_T2, r 24.84, z +0.0, Tangente 41° | -100.4     | T2_T3      | 110.3   | T1   |
+| `pos_093_W1_DY1` | LOAD_16NM | +0.34 %  | 87.3       | 81.7           | T2 RIGHT, r 26.00, z +0.0 | 74.9       | T1_T2, r 24.84, z +0.0, Tangente 41° | -100.5     | T2_T3      | 100.7   | T1   |
+| `pos_093_W1_DY2` | LOAD_16NM | +0.50 %  | 64.2       | 97.8           | T2 RIGHT, r 26.00, z +0.0 | 74.1       | T1_T2, r 24.84, z +0.0, Tangente 41° | -99.7      | T2_T3      | 74.9    | T1   |
+| `pos_093_W2_QS`  | LOAD_16NM | +0.05 %  | 111.5      | 60.8           | T2 RIGHT, r 26.00, z +0.0 | 49.4       | T1_T2, r 24.89, z +0.0, Tangente 30° | -63.4      | T2_T3      | 127.8   | T1   |
+| `pos_093_W2_DY1` | LOAD_16NM | +0.12 %  | 101.9      | 63.6           | T2 RIGHT, r 26.00, z +0.0 | 50.4       | T1_T2, r 24.89, z +0.0, Tangente 30° | -65.2      | T2_T3      | 117.0   | T1   |
+| `pos_093_W2_DY2` | LOAD_16NM | +0.42 %  | 70.3       | 79.8           | T2 RIGHT, r 26.00, z +0.0 | 53.6       | T1_T2, r 24.87, z +0.0, Tangente 33° | -69.0      | T2_T3      | 81.4    | T1   |
+| `pos_093_W3_QS`  | LOAD_16NM | +0.19 %  | 94.9       | 71.0           | T2 RIGHT, r 25.90, z -7.5 | 75.2       | T1_T2, r 24.87, z -1.3, Tangente 33° | -113.3     | T2_T3      | 107.6   | T1   |
+| `pos_093_W3_DY1` | LOAD_16NM | +0.25 %  | 87.2       | 76.2           | T2 RIGHT, r 25.90, z -7.5 | 76.5       | T1_T2, r 24.87, z -1.3, Tangente 33° | -116.9     | T2_T3      | 99.3    | T1   |
+| `pos_093_W3_DY2` | LOAD_16NM | +0.45 %  | 64.0       | 87.3           | T2 RIGHT, r 26.00, z -7.5 | 75.4       | T1_T2, r 24.87, z -1.3, Tangente 33° | -114.6     | T2_T3      | 74.4    | T1   |
+| `pos_093_W4_QS`  | LOAD_16NM | +0.06 %  | 109.0      | 57.2           | T2 RIGHT, r 25.90, z -7.5 | 50.9       | T1_T2, r 24.87, z -1.3, Tangente 33° | -80.7      | T2_T3      | 123.0   | T1   |
+| `pos_093_W4_DY1` | LOAD_16NM | +0.10 %  | 100.1      | 62.2           | T2 RIGHT, r 25.90, z -7.5 | 54.9       | T1_T2, r 24.89, z +7.5, Tangente 30° | -87.9      | T2_T3      | 113.0   | T1   |
+| `pos_093_W4_DY2` | LOAD_16NM | +0.33 %  | 69.5       | 78.1           | T2 RIGHT, r 26.00, z -7.5 | 55.9       | T1_T2, r 24.87, z -1.3, Tangente 33° | -91.0      | T2_T3      | 80.1    | T1   |
+| `pos_094_W1_QS`  | LOAD_16NM | +0.35 %  | 95.4       | 73.9           | T2 RIGHT, r 25.90, z +0.0 | 72.5       | T1_T2, r 24.84, z +0.0, Tangente 41° | -98.0      | T2_T3      | 111.0   | T1   |
+| `pos_094_W1_DY1` | LOAD_16NM | +0.42 %  | 87.0       | 76.8           | T2 RIGHT, r 25.90, z +0.0 | 72.4       | T1_T2, r 24.84, z +0.0, Tangente 41° | -97.9      | T2_T3      | 101.4   | T1   |
+| `pos_094_W1_DY2` | LOAD_16NM | +0.64 %  | 64.5       | 88.8           | T2 RIGHT, r 26.00, z +0.0 | 71.5       | T1_T2, r 24.84, z +0.0, Tangente 41° | -97.0      | T2_T3      | 76.1    | T1   |
+| `pos_094_W2_QS`  | LOAD_16NM | +0.22 %  | 111.0      | 61.4           | T2 RIGHT, r 25.80, z +0.0 | 48.5       | T1_T2, r 24.89, z +0.0, Tangente 30° | -62.7      | T2_T3      | 128.4   | T1   |
+| `pos_094_W2_DY1` | LOAD_16NM | +0.28 %  | 101.5      | 61.6           | T2 RIGHT, r 25.80, z +0.0 | 49.6       | T1_T2, r 24.89, z +0.0, Tangente 30° | -64.5      | T2_T3      | 117.7   | T1   |
+| `pos_094_W2_DY2` | LOAD_16NM | +0.56 %  | 70.2       | 73.4           | T2 RIGHT, r 26.00, z +0.0 | 52.6       | T1_T2, r 24.87, z +0.0, Tangente 33° | -67.8      | T2_T3      | 82.3    | T1   |
+| `pos_094_W3_QS`  | LOAD_16NM | +0.34 %  | 94.7       | 72.4           | T2 RIGHT, r 25.90, z -7.5 | 73.2       | T1_T2, r 24.87, z -1.3, Tangente 33° | -111.0     | T2_T3      | 108.5   | T1   |
+| `pos_094_W3_DY1` | LOAD_16NM | +0.38 %  | 87.1       | 76.2           | T2 RIGHT, r 25.90, z -7.5 | 74.3       | T1_T2, r 24.87, z -1.3, Tangente 33° | -114.5     | T2_T3      | 99.7    | T1   |
+| `pos_094_W3_DY2` | LOAD_16NM | +0.61 %  | 64.3       | 82.0           | T2 RIGHT, r 26.00, z +7.5 | 73.0       | T1_T2, r 24.87, z -1.3, Tangente 33° | -111.8     | T2_T3      | 74.9    | T1   |
+| `pos_094_W4_QS`  | LOAD_16NM | +0.25 %  | 108.9      | 59.7           | T2 RIGHT, r 25.90, z -7.5 | 49.9       | T1_T2, r 24.87, z -1.3, Tangente 33° | -79.9      | T2_T3      | 124.3   | T1   |
+| `pos_094_W4_DY1` | LOAD_16NM | +0.27 %  | 99.9       | 63.1           | T2 RIGHT, r 25.90, z -7.5 | 52.4       | T1_T2, r 24.89, z +7.5, Tangente 30° | -86.9      | T2_T3      | 114.1   | T1   |
+| `pos_094_W4_DY2` | LOAD_16NM | +0.48 %  | 69.2       | 75.9           | T2 RIGHT, r 25.90, z -7.5 | 54.8       | T1_T2, r 24.87, z -1.3, Tangente 33° | -89.2      | T2_T3      | 79.9    | T1   |
+| `pos_095_W1_QS`  | LOAD_16NM | +0.44 %  | 95.4       | 73.1           | T2 RIGHT, r 25.90, z +0.0 | 70.1       | T1_T2, r 24.84, z +0.0, Tangente 41° | -95.5      | T2_T3      | 111.6   | T1   |
+| `pos_095_W1_DY1` | LOAD_16NM | +0.49 %  | 87.0       | 75.9           | T2 RIGHT, r 25.90, z +0.0 | 69.9       | T1_T2, r 24.84, z +0.0, Tangente 41° | -95.2      | T2_T3      | 102.0   | T1   |
+| `pos_095_W1_DY2` | LOAD_16NM | +0.66 %  | 64.7       | 87.3           | T2 RIGHT, r 25.90, z +0.0 | 68.1       | T1_T2, r 24.84, z +0.0, Tangente 41° | -93.6      | T2_T3      | 76.9    | T1   |
+| `pos_095_W2_QS`  | LOAD_16NM | +0.41 %  | 111.1      | 63.9           | T2 RIGHT, r 25.80, z +0.0 | 47.5       | T1_T2, r 24.89, z +0.0, Tangente 30° | -62.0      | T2_T3      | 129.2   | T1   |
+| `pos_095_W2_DY1` | LOAD_16NM | +0.42 %  | 101.4      | 63.9           | T2 RIGHT, r 25.80, z +0.0 | 48.6       | T1_T2, r 24.89, z +0.0, Tangente 30° | -63.6      | T2_T3      | 118.2   | T1   |
+| `pos_095_W2_DY2` | LOAD_16NM | +0.61 %  | 70.0       | 71.0           | T2 RIGHT, r 25.90, z +0.0 | 51.2       | T1_T2, r 24.87, z +0.0, Tangente 33° | -66.4      | T2_T3      | 82.8    | T1   |
+| `pos_095_W3_QS`  | LOAD_16NM | +0.47 %  | 94.7       | 75.3           | T2 RIGHT, r 25.90, z -7.5 | 71.0       | T1_T2, r 24.87, z -1.3, Tangente 33° | -108.3     | T2_T3      | 109.4   | T1   |
+| `pos_095_W3_DY1` | LOAD_16NM | +0.51 %  | 87.1       | 79.2           | T2 RIGHT, r 25.90, z -7.5 | 72.0       | T1_T2, r 24.87, z -1.3, Tangente 33° | -111.7     | T2_T3      | 100.6   | T1   |
+| `pos_095_W3_DY2` | LOAD_16NM | +0.65 %  | 64.5       | 83.2           | T2 RIGHT, r 25.90, z -7.5 | 70.0       | T1_T2, r 24.87, z -1.3, Tangente 33° | -108.3     | T2_T3      | 75.5    | T1   |
+| `pos_095_W4_QS`  | LOAD_16NM | +0.49 %  | 109.3      | 64.2           | T2 RIGHT, r 25.80, z -7.5 | 48.7       | T1_T2, r 24.87, z -1.3, Tangente 33° | -79.0      | T2_T3      | 125.7   | T1   |
+| `pos_095_W4_DY1` | LOAD_16NM | +0.49 %  | 100.3      | 66.7           | T2 RIGHT, r 25.90, z -7.5 | 50.6       | T1_T2, r 24.87, z -1.3, Tangente 33° | -85.9      | T2_T3      | 115.4   | T1   |
+| `pos_095_W4_DY2` | LOAD_16NM | +0.61 %  | 69.2       | 76.4           | T2 RIGHT, r 25.90, z -7.5 | 53.6       | T1_T2, r 24.87, z -1.3, Tangente 33° | -87.4      | T2_T3      | 80.5    | T1   |
+| `pos_096_W1_QS`  | LOAD_16NM | +0.57 %  | 95.8       | 78.1           | T2 RIGHT, r 25.80, z +0.0 | 66.5       | T1_T2, r 24.84, z +0.0, Tangente 41° | -93.0      | T2_T3      | 112.8   | T1   |
+| `pos_096_W1_DY1` | LOAD_16NM | +0.58 %  | 87.3       | 76.4           | T2 RIGHT, r 25.90, z +0.0 | 66.4       | T1_T2, r 24.84, z +0.0, Tangente 41° | -92.5      | T2_T3      | 103.0   | T1   |
+| `pos_096_W1_DY2` | LOAD_16NM | +0.64 %  | 65.1       | 86.5           | T2 RIGHT, r 25.90, z +0.0 | 64.8       | T1_T2, r 24.84, z +0.0, Tangente 41° | -90.1      | T2_T3      | 77.7    | T1   |
+| `pos_096_W2_QS`  | LOAD_16NM | +0.62 %  | 111.5      | 68.7           | T2 RIGHT, r 25.80, z -5.9 | 45.8       | T1_T2, r 24.89, z +0.0, Tangente 30° | -61.1      | T2_T3      | 130.7   | T1   |
+| `pos_096_W2_DY1` | LOAD_16NM | +0.64 %  | 101.9      | 68.2           | T2 RIGHT, r 25.80, z +0.0 | 47.0       | T1_T2, r 24.87, z +0.0, Tangente 33° | -62.7      | T2_T3      | 119.8   | T1   |
+| `pos_096_W2_DY2` | LOAD_16NM | +0.66 %  | 70.3       | 71.2           | T2 RIGHT, r 25.90, z +0.0 | 49.5       | T1_T2, r 24.87, z +0.0, Tangente 33° | -64.9      | T2_T3      | 83.4    | T1   |
+| `pos_096_W3_QS`  | LOAD_16NM | +0.63 %  | 95.3       | 79.7           | T2 RIGHT, r 25.80, z -7.5 | 67.6       | T1_T2, r 24.87, z -1.3, Tangente 33° | -106.1     | T2_T3      | 110.3   | T1   |
+| `pos_096_W3_DY1` | LOAD_16NM | +0.65 %  | 87.6       | 80.9           | T2 RIGHT, r 25.90, z -7.5 | 68.4       | T1_T2, r 24.87, z -1.3, Tangente 33° | -109.0     | T2_T3      | 101.4   | T1   |
+| `pos_096_W3_DY2` | LOAD_16NM | +0.69 %  | 64.9       | 85.7           | T2 RIGHT, r 25.90, z -7.5 | 67.0       | T1_T2, r 24.87, z -1.3, Tangente 33° | -104.8     | T2_T3      | 76.2    | T1   |
+| `pos_096_W4_QS`  | LOAD_16NM | +0.69 %  | 109.9      | 71.5           | T2 RIGHT, r 25.80, z -7.5 | 46.9       | T1_T2, r 24.89, z +7.5, Tangente 30° | -77.9      | T2_T3      | 126.7   | T1   |
+| `pos_096_W4_DY1` | LOAD_16NM | +0.70 %  | 100.9      | 73.2           | T2 RIGHT, r 25.80, z -7.5 | 50.5       | T1_T2, r 24.89, z +7.5, Tangente 30° | -84.4      | T2_T3      | 116.4   | T1   |
+| `pos_096_W4_DY2` | LOAD_16NM | +0.70 %  | 69.5       | 78.9           | T2 RIGHT, r 25.90, z -7.5 | 52.1       | T1_T2, r 24.87, z -1.3, Tangente 33° | -85.3      | T2_T3      | 81.3    | T1   |
+| `pos_097_W1_QS`  | LOAD_16NM | +0.64 %  | 96.3       | 94.9           | T2 RIGHT, r 25.80, z -2.8 | 63.5       | T1_T2, r 24.84, z +0.0, Tangente 41° | -90.1      | T2_T3      | 114.3   | T1   |
+| `pos_097_W1_DY1` | LOAD_16NM | +0.65 %  | 87.9       | 92.6           | T2 RIGHT, r 25.80, z -2.8 | 63.2       | T1_T2, r 24.84, z +0.0, Tangente 41° | -89.4      | T2_T3      | 104.6   | T1   |
+| `pos_097_W1_DY2` | LOAD_16NM | +0.66 %  | 65.7       | 89.8           | T2 RIGHT, r 25.90, z +0.0 | 60.9       | T1_T2, r 24.84, z +0.0, Tangente 41° | -86.6      | T1_T2      | 79.0    | T1   |
+| `pos_097_W2_QS`  | LOAD_16NM | +0.74 %  | 112.0      | 73.9           | T2 RIGHT, r 25.80, z -3.6 | 44.3       | T1_T2, r 24.89, z +0.0, Tangente 30° | -60.4      | T2_T3      | 132.2   | T1   |
+| `pos_097_W2_DY1` | LOAD_16NM | +0.75 %  | 102.4      | 74.6           | T2 RIGHT, r 25.80, z -3.6 | 45.2       | T1_T2, r 24.87, z +0.0, Tangente 33° | -61.7      | T2_T3      | 121.2   | T1   |
+| `pos_097_W2_DY2` | LOAD_16NM | +0.76 %  | 71.0       | 76.4           | T2 RIGHT, r 25.90, z -4.4 | 47.3       | T1_T2, r 24.87, z +0.0, Tangente 33° | -63.5      | T2_T3      | 85.1    | T1   |
+| `pos_097_W3_QS`  | LOAD_16NM | +0.70 %  | 95.9       | 89.0           | T2 RIGHT, r 25.80, z -7.5 | 64.6       | T1_T2, r 24.87, z -1.3, Tangente 33° | -103.9     | T2_T3      | 111.7   | T1   |
+| `pos_097_W3_DY1` | LOAD_16NM | +0.72 %  | 88.3       | 88.9           | T2 RIGHT, r 25.80, z -7.5 | 65.6       | T1_T2, r 24.87, z -1.3, Tangente 33° | -106.6     | T2_T3      | 102.7   | T1   |
+| `pos_097_W3_DY2` | LOAD_16NM | +0.70 %  | 65.6       | 87.5           | T2 RIGHT, r 25.90, z -7.5 | 63.1       | T1_T2, r 24.87, z -1.3, Tangente 33° | -101.3     | T2_T3      | 77.3    | T1   |
+| `pos_097_W4_QS`  | LOAD_16NM | +0.81 %  | 110.6      | 75.0           | T2 RIGHT, r 25.80, z -7.5 | 46.8       | T1_T2, r 24.89, z +7.5, Tangente 30° | -76.9      | T2_T3      | 128.2   | T1   |
+| `pos_097_W4_DY1` | LOAD_16NM | +0.84 %  | 101.7      | 77.8           | T2 RIGHT, r 25.80, z -7.5 | 50.5       | T1_T2, r 24.89, z +7.5, Tangente 30° | -83.1      | T2_T3      | 117.8   | T1   |
+| `pos_097_W4_DY2` | LOAD_16NM | +0.83 %  | 70.5       | 81.4           | T2 RIGHT, r 25.90, z -7.5 | 49.8       | T1_T2, r 24.87, z -1.3, Tangente 33° | -83.5      | T2_T3      | 82.6    | T1   |
+| `pos_098_W1_QS`  | LOAD_16NM | +0.53 %  | 96.7       | 114.2          | T2 RIGHT, r 25.80, z +0.0 | 62.0       | T1_T2, r 24.84, z +0.0, Tangente 41° | -86.1      | T2_T3      | 115.1   | T1   |
+| `pos_098_W1_DY1` | LOAD_16NM | +0.57 %  | 88.4       | 113.3          | T2 RIGHT, r 25.80, z +0.0 | 61.1       | T1_T2, r 24.84, z +0.0, Tangente 41° | -85.3      | T2_T3      | 105.5   | T1   |
+| `pos_098_W1_DY2` | LOAD_16NM | +0.65 %  | 66.3       | 104.4          | T2 RIGHT, r 25.80, z +0.0 | 57.6       | T1_T2, r 24.84, z +0.0, Tangente 41° | -89.9      | T1_T2      | 80.1    | T1   |
+| `pos_098_W2_QS`  | LOAD_16NM | +0.68 %  | 112.4      | 79.5           | T2 RIGHT, r 25.80, z -2.0 | 43.4       | T1_T2, r 24.89, z +0.0, Tangente 30° | -59.6      | T2_T3      | 133.1   | T1   |
+| `pos_098_W2_DY1` | LOAD_16NM | +0.71 %  | 103.0      | 81.7           | T2 RIGHT, r 25.80, z -2.0 | 44.5       | T1_T2, r 24.87, z +0.0, Tangente 33° | -60.8      | T2_T3      | 122.3   | T1   |
+| `pos_098_W2_DY2` | LOAD_16NM | +0.73 %  | 72.1       | 86.8           | T2 RIGHT, r 25.80, z +0.0 | 45.8       | T1_T2, r 24.87, z +0.0, Tangente 33° | -62.3      | T2_T3      | 86.7    | T1   |
+| `pos_098_W3_QS`  | LOAD_16NM | +0.62 %  | 96.4       | 99.9           | T2 RIGHT, r 25.80, z -1.3 | 64.1       | T1_T2, r 24.87, z -1.3, Tangente 33° | -101.4     | T2_T3      | 112.8   | T1   |
+| `pos_098_W3_DY1` | LOAD_16NM | +0.65 %  | 89.0       | 98.1           | T2 RIGHT, r 25.80, z -7.5 | 64.5       | T1_T2, r 24.87, z -1.3, Tangente 33° | -103.8     | T2_T3      | 103.9   | T1   |
+| `pos_098_W3_DY2` | LOAD_16NM | +0.69 %  | 66.5       | 95.4           | T2 RIGHT, r 25.80, z -0.7 | 60.5       | T1_T2, r 24.87, z -1.3, Tangente 33° | -98.3      | T2_T3      | 78.7    | T1   |
+| `pos_098_W4_QS`  | LOAD_16NM | +0.79 %  | 111.1      | 77.7           | T2 RIGHT, r 25.80, z -7.5 | 46.2       | T1_T2, r 24.89, z +7.5, Tangente 30° | -76.1      | T2_T3      | 129.4   | T1   |
+| `pos_098_W4_DY1` | LOAD_16NM | +0.83 %  | 102.3      | 81.4           | T2 RIGHT, r 25.80, z -7.5 | 50.0       | T1_T2, r 24.89, z +7.5, Tangente 30° | -81.9      | T2_T3      | 119.2   | T1   |
+| `pos_098_W4_DY2` | LOAD_16NM | +0.81 %  | 71.5       | 83.7           | T2 RIGHT, r 25.90, z -7.5 | 48.4       | T1_T2, r 24.87, z -1.3, Tangente 33° | -81.7      | T2_T3      | 84.3    | T1   |
+| `pos_099_W1_QS`  | LOAD_16NM | +0.58 %  | 97.1       | 120.5          | T2 RIGHT, r 25.80, z +0.0 | 59.3       | T1_T2, r 24.84, z +0.0, Tangente 41° | -83.8      | T1_T2      | 116.5   | T1   |
+| `pos_099_W1_DY1` | LOAD_16NM | +0.60 %  | 88.9       | 119.2          | T2 RIGHT, r 25.80, z +0.0 | 58.4       | T1_T2, r 24.84, z +0.0, Tangente 41° | -85.4      | T1_T2      | 106.8   | T1   |
+| `pos_099_W1_DY2` | LOAD_16NM | +0.64 %  | 67.0       | 112.9          | T2 RIGHT, r 25.80, z +0.0 | 54.3       | T1_T2, r 24.85, z +0.0, Tangente 37° | -93.2      | T1_T2      | 81.3    | T1   |
+| `pos_099_W2_QS`  | LOAD_16NM | +0.59 %  | 112.7      | 83.8           | T2 RIGHT, r 25.80, z +0.0 | 43.5       | T1_T2, r 24.89, z +0.0, Tangente 30° | -58.7      | T2_T3      | 134.5   | T1   |
+| `pos_099_W2_DY1` | LOAD_16NM | +0.61 %  | 103.4      | 87.2           | T2 RIGHT, r 25.80, z +0.0 | 44.3       | T1_T2, r 24.87, z +0.0, Tangente 33° | -59.7      | T2_T3      | 123.8   | T1   |
+| `pos_099_W2_DY2` | LOAD_16NM | +0.68 %  | 72.6       | 92.8           | T2 RIGHT, r 25.80, z +0.0 | 44.4       | T1_T2, r 24.87, z +0.0, Tangente 33° | -60.9      | T2_T3      | 87.8    | T1   |
+| `pos_099_W3_QS`  | LOAD_16NM | +0.60 %  | 96.9       | 107.1          | T2 RIGHT, r 25.80, z -0.7 | 61.9       | T1_T2, r 24.87, z -1.3, Tangente 33° | -98.4      | T2_T3      | 113.8   | T1   |
+| `pos_099_W3_DY1` | LOAD_16NM | +0.63 %  | 89.5       | 105.5          | T2 RIGHT, r 25.80, z -7.5 | 62.2       | T1_T2, r 24.87, z -1.3, Tangente 33° | -100.8     | T2_T3      | 105.0   | T1   |
+| `pos_099_W3_DY2` | LOAD_16NM | +0.65 %  | 67.1       | 101.8          | T2 RIGHT, r 25.80, z -0.7 | 57.1       | T1_T2, r 24.87, z -1.3, Tangente 33° | -99.0      | T1_T2      | 79.4    | T1   |
+| `pos_099_W4_QS`  | LOAD_16NM | +0.65 %  | 111.6      | 80.2           | T2 RIGHT, r 25.80, z -7.5 | 45.3       | T1_T2, r 24.89, z +7.5, Tangente 30° | -75.0      | T2_T3      | 130.5   | T1   |
+| `pos_099_W4_DY1` | LOAD_16NM | +0.68 %  | 102.9      | 84.6           | T2 RIGHT, r 25.80, z -7.5 | 49.0       | T1_T2, r 24.89, z +7.5, Tangente 30° | -80.6      | T2_T3      | 120.3   | T1   |
+| `pos_099_W4_DY2` | LOAD_16NM | +0.73 %  | 72.5       | 86.7           | T2 RIGHT, r 25.80, z -7.5 | 47.0       | T1_T2, r 24.87, z -1.3, Tangente 33° | -79.9      | T2_T3      | 85.5    | T1   |
+
+## 2026-10-25 21:23 `variante_kunststoff_gemessen_gerechnet`
+
+**Zweck:** Einzelvariante kunststoff an A bis E (ADR-116 Punkt 54, 55 und 56 (d)): Stahlritzel nach dem STplus-Fall, Kunststoffrad wie gefertigt (Kopfrundung 0,21 mm, Profil-Winkelabweichung +10,25 µm, Zahnweite 16,972 mm) auf dem Kappennetz mit 87 955 Knoten und den Karten des Mappings auf das Kappennetz, W1 bis W4 × QS/DY1/DY2, 60 Jobs, drei Jobs zu je vier Kernen. **Ergebnis:** 60 Jobs vollständig, 2026-10-25 17:16 bis 21:24 (4,1 h, Summe der Jobzeiten 12,1 h), keine negativen Eigenwerte; gegen den Nennpiloten an A bis E: σ1 an C unter 1 %, an B und E +2 bis +5 % (8 Nm bis +8 %), Kontaktdruck max −2 bis −4 % (an A und D −13 bis −17 %, die eigene Kopfkante); die Anteile von Ritzel und Rad addieren sich an der Fußrundung bis auf einen Prozentpunkt zur Serie beide; das Kappennetz verschiebt die Fußwerte gegen den Piloten mit 83 650 Knoten nicht; Thesis 5.4.3, 7.3, 8. (gerechnet: Vollversion; Befunde FE-19, FE-26, FE-27)
+
+Netz: 87955 Knoten, 76932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+**Läufe**
+
+| Datei            | Stellung | Stufe | Rate | Variante | Löser           | Status   | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|------------------|----------|-------|------|----------|-----------------|----------|-----------------------|--------|---------|------------------|
+| `pos_031_W1_QS`  | A        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 413    | 0       | 2026-10-25 17:22 |
+| `pos_031_W1_DY1` | A        | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 400    | 0       | 2026-10-25 17:22 |
+| `pos_031_W1_DY2` | A        | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 396    | 0       | 2026-10-25 17:22 |
+| `pos_031_W2_QS`  | A        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 472    | 0       | 2026-10-25 17:30 |
+| `pos_031_W2_DY1` | A        | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 471    | 0       | 2026-10-25 17:30 |
+| `pos_031_W2_DY2` | A        | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 443    | 0       | 2026-10-25 17:30 |
+| `pos_031_W3_QS`  | A        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 821    | 0       | 2026-10-25 17:44 |
+| `pos_031_W3_DY1` | A        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 827    | 0       | 2026-10-25 17:43 |
+| `pos_031_W3_DY2` | A        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 801    | 0       | 2026-10-25 17:43 |
+| `pos_031_W4_QS`  | A        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1087   | 0       | 2026-10-25 18:02 |
+| `pos_031_W4_DY1` | A        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1053   | 0       | 2026-10-25 18:01 |
+| `pos_031_W4_DY2` | A        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1010   | 0       | 2026-10-25 18:00 |
+| `pos_036_W1_QS`  | B        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 409    | 0       | 2026-10-25 18:09 |
+| `pos_036_W1_DY1` | B        | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 423    | 0       | 2026-10-25 18:07 |
+| `pos_036_W1_DY2` | B        | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 402    | 0       | 2026-10-25 18:08 |
+| `pos_036_W2_QS`  | B        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 490    | 0       | 2026-10-25 18:17 |
+| `pos_036_W2_DY1` | B        | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 468    | 0       | 2026-10-25 18:15 |
+| `pos_036_W2_DY2` | B        | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 446    | 0       | 2026-10-25 18:15 |
+| `pos_036_W3_QS`  | B        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 917    | 0       | 2026-10-25 18:32 |
+| `pos_036_W3_DY1` | B        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 906    | 0       | 2026-10-25 18:30 |
+| `pos_036_W3_DY2` | B        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 878    | 0       | 2026-10-25 18:30 |
+| `pos_036_W4_QS`  | B        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 11           | 1368   | 5       | 2026-10-25 18:55 |
+| `pos_036_W4_DY1` | B        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1192   | 0       | 2026-10-25 18:50 |
+| `pos_036_W4_DY2` | B        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1122   | 0       | 2026-10-25 18:49 |
+| `pos_049_W1_QS`  | C        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 391    | 0       | 2026-10-25 19:02 |
+| `pos_049_W1_DY1` | C        | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 370    | 0       | 2026-10-25 18:55 |
+| `pos_049_W1_DY2` | C        | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 382    | 0       | 2026-10-25 18:56 |
+| `pos_049_W2_QS`  | C        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 11           | 559    | 4       | 2026-10-25 19:11 |
+| `pos_049_W2_DY1` | C        | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 487    | 0       | 2026-10-25 19:03 |
+| `pos_049_W2_DY2` | C        | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 432    | 0       | 2026-10-25 19:03 |
+| `pos_049_W3_QS`  | C        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 837    | 0       | 2026-10-25 19:25 |
+| `pos_049_W3_DY1` | C        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 817    | 0       | 2026-10-25 19:17 |
+| `pos_049_W3_DY2` | C        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 833    | 0       | 2026-10-25 19:17 |
+| `pos_049_W4_QS`  | C        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 11           | 1333   | 4       | 2026-10-25 19:47 |
+| `pos_049_W4_DY1` | C        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1132   | 0       | 2026-10-25 19:36 |
+| `pos_049_W4_DY2` | C        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1031   | 0       | 2026-10-25 19:34 |
+| `pos_063_W1_QS`  | D        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 437    | 0       | 2026-10-25 19:49 |
+| `pos_063_W1_DY1` | D        | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 417    | 0       | 2026-10-25 19:41 |
+| `pos_063_W1_DY2` | D        | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 409    | 0       | 2026-10-25 19:42 |
+| `pos_063_W2_QS`  | D        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 481    | 0       | 2026-10-25 19:57 |
+| `pos_063_W2_DY1` | D        | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 499    | 0       | 2026-10-25 19:51 |
+| `pos_063_W2_DY2` | D        | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 446    | 0       | 2026-10-25 19:54 |
+| `pos_063_W3_QS`  | D        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 902    | 0       | 2026-10-25 20:12 |
+| `pos_063_W3_DY1` | D        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 823    | 0       | 2026-10-25 20:04 |
+| `pos_063_W3_DY2` | D        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 834    | 0       | 2026-10-25 20:08 |
+| `pos_063_W4_QS`  | D        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1157   | 0       | 2026-10-25 20:31 |
+| `pos_063_W4_DY1` | D        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1102   | 0       | 2026-10-25 20:23 |
+| `pos_063_W4_DY2` | D        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1069   | 0       | 2026-10-25 20:26 |
+| `pos_068_W1_QS`  | E        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 423    | 0       | 2026-10-25 20:37 |
+| `pos_068_W1_DY1` | E        | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 433    | 0       | 2026-10-25 20:30 |
+| `pos_068_W1_DY2` | E        | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 416    | 0       | 2026-10-25 20:33 |
+| `pos_068_W2_QS`  | E        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 521    | 0       | 2026-10-25 20:46 |
+| `pos_068_W2_DY1` | E        | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 499    | 0       | 2026-10-25 20:39 |
+| `pos_068_W2_DY2` | E        | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 476    | 0       | 2026-10-25 20:41 |
+| `pos_068_W3_QS`  | E        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 914    | 0       | 2026-10-25 21:01 |
+| `pos_068_W3_DY1` | E        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 915    | 0       | 2026-10-25 20:54 |
+| `pos_068_W3_DY2` | E        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 913    | 0       | 2026-10-25 20:56 |
+| `pos_068_W4_QS`  | E        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 9            | 1340   | 3       | 2026-10-25 21:23 |
+| `pos_068_W4_DY1` | E        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1184   | 2       | 2026-10-25 21:14 |
+| `pos_068_W4_DY2` | E        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1110   | 0       | 2026-10-25 21:15 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei            | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|------------------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_031_W1_QS`  | LOAD_16NM | -0.38 %  | 80.1       | 126.4          | T4 RIGHT, r 25.70, z +0.0 | 71.4       | T3_T4, r 24.84, z +0.0, Tangente 41° | -100.2     | T4_T5      | 94.8    | T3   |
+| `pos_031_W1_DY1` | LOAD_16NM | -0.35 %  | 72.3       | 125.3          | T4 RIGHT, r 25.70, z +0.0 | 71.4       | T3_T4, r 24.84, z +0.0, Tangente 41° | -100.2     | T4_T5      | 85.9    | T3   |
+| `pos_031_W1_DY2` | LOAD_16NM | -0.31 %  | 51.5       | 119.6          | T4 RIGHT, r 25.70, z +0.0 | 70.8       | T3_T4, r 24.84, z +0.0, Tangente 41° | -99.7      | T4_T5      | 62.4    | T3   |
+| `pos_031_W2_QS`  | LOAD_16NM | -0.28 %  | 100.7      | 84.0           | T4 RIGHT, r 25.70, z +0.0 | 46.2       | T2_T3, r 24.78, z +0.0, Tangente 59° | -58.8      | T4_T5      | 117.8   | T3   |
+| `pos_031_W2_DY1` | LOAD_16NM | -0.27 %  | 90.9       | 88.6           | T4 RIGHT, r 25.70, z +0.0 | 47.0       | T2_T3, r 24.78, z +0.0, Tangente 59° | -60.7      | T4_T5      | 106.6   | T3   |
+| `pos_031_W2_DY2` | LOAD_16NM | -0.19 %  | 59.0       | 95.0           | T4 RIGHT, r 25.70, z +0.0 | 50.2       | T3_T4, r 24.82, z +0.0, Tangente 45° | -65.6      | T4_T5      | 70.5    | T3   |
+| `pos_031_W3_QS`  | LOAD_16NM | -0.36 %  | 79.8       | 114.4          | T4 RIGHT, r 25.70, z +0.0 | 71.2       | T3_T4, r 24.85, z -0.7, Tangente 37° | -107.7     | T4_T5      | 93.1    | T3   |
+| `pos_031_W3_DY1` | LOAD_16NM | -0.33 %  | 72.8       | 115.3          | T4 RIGHT, r 25.70, z +7.5 | 71.6       | T3_T4, r 24.85, z -0.7, Tangente 37° | -109.0     | T4_T5      | 85.4    | T3   |
+| `pos_031_W3_DY2` | LOAD_16NM | -0.27 %  | 51.5       | 109.0          | T4 RIGHT, r 25.70, z +0.0 | 70.9       | T3_T4, r 24.85, z -0.7, Tangente 37° | -107.7     | T4_T5      | 62.1    | T3   |
+| `pos_031_W4_QS`  | LOAD_16NM | -0.23 %  | 96.4       | 83.0           | T4 RIGHT, r 25.70, z +7.5 | 57.7       | T2_T3, r 24.77, z +4.4, Tangente 64° | -76.1      | T4_T5      | 111.1   | T3   |
+| `pos_031_W4_DY1` | LOAD_16NM | -0.22 %  | 87.7       | 89.2           | T4 RIGHT, r 25.70, z +7.5 | 60.7       | T2_T3, r 24.77, z +4.4, Tangente 64° | -80.4      | T4_T5      | 101.3   | T3   |
+| `pos_031_W4_DY2` | LOAD_16NM | -0.17 %  | 57.6       | 93.7           | T4 RIGHT, r 25.70, z +7.5 | 61.9       | T2_T3, r 24.77, z +4.4, Tangente 64° | -84.6      | T4_T5      | 68.6    | T3   |
+| `pos_036_W1_QS`  | LOAD_16NM | +0.75 %  | 83.7       | 167.2          | T4 RIGHT, r 25.80, z -4.4 | 69.8       | T2_T3, r 24.81, z +0.0, Tangente 49° | -94.4      | T4_T5      | 100.9   | T3   |
+| `pos_036_W1_DY1` | LOAD_16NM | +0.81 %  | 75.7       | 169.6          | T4 RIGHT, r 25.80, z -5.1 | 70.0       | T2_T3, r 24.81, z +0.0, Tangente 49° | -94.4      | T4_T5      | 91.5    | T3   |
+| `pos_036_W1_DY2` | LOAD_16NM | +0.88 %  | 54.4       | 179.6          | T4 RIGHT, r 25.80, z -5.9 | 71.6       | T2_T3, r 24.81, z +0.0, Tangente 49° | -93.7      | T4_T5      | 66.7    | T3   |
+| `pos_036_W2_QS`  | LOAD_16NM | +0.98 %  | 103.9      | 94.3           | T4 RIGHT, r 25.80, z -5.9 | 48.5       | T2_T3, r 24.77, z +0.0, Tangente 64° | -56.7      | T4_T5      | 124.1   | T3   |
+| `pos_036_W2_DY1` | LOAD_16NM | +1.04 %  | 94.3       | 101.3          | T4 RIGHT, r 25.80, z -5.9 | 49.7       | T2_T3, r 24.78, z +0.0, Tangente 59° | -58.4      | T4_T5      | 113.0   | T3   |
+| `pos_036_W2_DY2` | LOAD_16NM | +1.19 %  | 62.9       | 122.1          | T4 RIGHT, r 25.80, z -5.9 | 53.5       | T2_T3, r 24.79, z +0.0, Tangente 54° | -62.7      | T4_T5      | 76.2    | T3   |
+| `pos_036_W3_QS`  | LOAD_16NM | +0.79 %  | 83.6       | 166.7          | T4 RIGHT, r 25.80, z -7.5 | 73.2       | T2_T3, r 24.77, z +4.4, Tangente 64° | -100.9     | T4_T5      | 98.7    | T3   |
+| `pos_036_W3_DY1` | LOAD_16NM | +0.84 %  | 76.6       | 171.9          | T4 RIGHT, r 25.80, z -7.5 | 75.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -102.1     | T4_T5      | 90.3    | T3   |
+| `pos_036_W3_DY2` | LOAD_16NM | +0.95 %  | 54.8       | 183.4          | T4 RIGHT, r 25.80, z -7.5 | 75.6       | T2_T3, r 24.77, z +4.4, Tangente 64° | -100.6     | T4_T5      | 65.5    | T3   |
+| `pos_036_W4_QS`  | LOAD_16NM | +1.08 %  | 100.8      | 94.6           | T4 RIGHT, r 25.80, z +6.7 | 61.3       | T2_T3, r 24.77, z +4.4, Tangente 64° | -73.0      | T4_T5      | 118.2   | T3   |
+| `pos_036_W4_DY1` | LOAD_16NM | +1.12 %  | 92.0       | 103.5          | T4 RIGHT, r 25.80, z +7.5 | 64.9       | T2_T3, r 24.77, z +4.4, Tangente 64° | -76.9      | T4_T5      | 107.8   | T3   |
+| `pos_036_W4_DY2` | LOAD_16NM | +1.27 %  | 61.4       | 124.9          | T4 RIGHT, r 25.80, z +7.5 | 66.8       | T2_T3, r 24.77, z +4.4, Tangente 64° | -80.5      | T4_T5      | 73.0    | T3   |
+| `pos_049_W1_QS`  | LOAD_16NM | -0.92 %  | 95.0       | 83.3           | T2 RIGHT, r 26.90, z +0.0 | 85.6       | T2_T3, r 24.82, z +0.0, Tangente 45° | -105.9     | T3_T4      | 115.6   | T3   |
+| `pos_049_W1_DY1` | LOAD_16NM | -1.00 %  | 88.5       | 81.0           | T3 RIGHT, r 26.11, z +0.0 | 88.9       | T2_T3, r 24.82, z +0.0, Tangente 45° | -110.7     | T3_T4      | 107.9   | T3   |
+| `pos_049_W1_DY2` | LOAD_16NM | -1.19 %  | 71.7       | 102.2          | T3 RIGHT, r 26.11, z +0.0 | 103.5      | T2_T3, r 24.82, z +0.0, Tangente 45° | -131.0     | T3_T4      | 88.1    | T3   |
+| `pos_049_W2_QS`  | LOAD_16NM | -0.77 %  | 107.7      | 85.3           | T4 RIGHT, r 26.00, z +0.0 | 50.0       | T2_T3, r 24.89, z +0.0, Tangente 30° | -57.2      | T3_T4      | 129.2   | T3   |
+| `pos_049_W2_DY1` | LOAD_16NM | -0.91 %  | 100.3      | 82.5           | T4 RIGHT, r 26.00, z +0.0 | 52.0       | T2_T3, r 24.87, z +0.0, Tangente 33° | -59.9      | T3_T4      | 120.6   | T3   |
+| `pos_049_W2_DY2` | LOAD_16NM | -1.10 %  | 77.0       | 79.2           | T2 RIGHT, r 26.90, z +0.0 | 61.8       | T2_T3, r 24.85, z +0.0, Tangente 37° | -71.9      | T3_T4      | 93.2    | T3   |
+| `pos_049_W3_QS`  | LOAD_16NM | -0.90 %  | 93.8       | 83.8           | T2 RIGHT, r 26.90, z +0.7 | 84.4       | T2_T3, r 24.81, z +0.0, Tangente 49° | -108.0     | T3_T4      | 109.6   | T3   |
+| `pos_049_W3_DY1` | LOAD_16NM | -0.98 %  | 87.9       | 83.0           | T2 RIGHT, r 26.90, z +0.7 | 87.9       | T2_T3, r 24.84, z +6.7, Tangente 41° | -114.5     | T3_T4      | 101.9   | T3   |
+| `pos_049_W3_DY2` | LOAD_16NM | -1.15 %  | 70.9       | 86.5           | T3 RIGHT, r 26.11, z -0.7 | 101.4      | T2_T3, r 24.81, z +0.0, Tangente 49° | -135.1     | T3_T4      | 83.1    | T3   |
+| `pos_049_W4_QS`  | LOAD_16NM | -0.88 %  | 104.6      | 91.6           | T4 RIGHT, r 26.00, z +7.5 | 59.1       | T2_T3, r 24.78, z +4.4, Tangente 59° | -75.8      | T3_T4      | 121.7   | T3   |
+| `pos_049_W4_DY1` | LOAD_16NM | -0.97 %  | 98.1       | 90.6           | T4 RIGHT, r 26.00, z +7.5 | 64.4       | T2_T3, r 24.77, z +4.4, Tangente 64° | -82.2      | T3_T4      | 113.6   | T3   |
+| `pos_049_W4_DY2` | LOAD_16NM | -1.06 %  | 75.4       | 73.7           | T2 RIGHT, r 26.90, z +0.7 | 74.9       | T2_T3, r 24.78, z +4.4, Tangente 59° | -97.7      | T3_T4      | 88.0    | T3   |
+| `pos_063_W1_QS`  | LOAD_16NM | -0.37 %  | 84.3       | 127.9          | T3 RIGHT, r 25.70, z +0.0 | 73.8       | T2_T3, r 24.84, z +0.0, Tangente 41° | -98.5      | T3_T4      | 99.6    | T3   |
+| `pos_063_W1_DY1` | LOAD_16NM | -0.36 %  | 76.0       | 126.7          | T3 RIGHT, r 25.70, z +0.0 | 73.7       | T2_T3, r 24.84, z +0.0, Tangente 41° | -98.5      | T3_T4      | 89.6    | T3   |
+| `pos_063_W1_DY2` | LOAD_16NM | -0.33 %  | 54.0       | 120.9          | T3 RIGHT, r 25.70, z +0.0 | 73.1       | T2_T3, r 24.84, z +0.0, Tangente 41° | -97.9      | T3_T4      | 64.5    | T2   |
+| `pos_063_W2_QS`  | LOAD_16NM | -0.26 %  | 104.2      | 85.2           | T3 RIGHT, r 25.70, z +0.0 | 47.9       | T1_T2, r 24.85, z +0.0, Tangente 37° | -61.0      | T3_T4      | 120.9   | T2   |
+| `pos_063_W2_DY1` | LOAD_16NM | -0.25 %  | 93.9       | 89.6           | T3 RIGHT, r 25.70, z +0.0 | 48.7       | T1_T2, r 24.85, z +0.0, Tangente 37° | -62.9      | T3_T4      | 109.3   | T3   |
+| `pos_063_W2_DY2` | LOAD_16NM | -0.22 %  | 61.1       | 95.8           | T3 RIGHT, r 25.70, z +0.0 | 51.7       | T1_T2, r 24.84, z +0.0, Tangente 41° | -66.8      | T3_T4      | 72.2    | T2   |
+| `pos_063_W3_QS`  | LOAD_16NM | -0.35 %  | 83.5       | 115.0          | T3 RIGHT, r 25.70, z +0.0 | 72.8       | T2_T3, r 24.85, z -0.7, Tangente 37° | -109.2     | T3_T4      | 96.1    | T2   |
+| `pos_063_W3_DY1` | LOAD_16NM | -0.34 %  | 76.1       | 112.1          | T3 RIGHT, r 25.70, z +0.0 | 73.0       | T2_T3, r 24.85, z -0.7, Tangente 37° | -111.8     | T3_T4      | 88.0    | T2   |
+| `pos_063_W3_DY2` | LOAD_16NM | -0.29 %  | 53.8       | 109.6          | T3 RIGHT, r 25.70, z +0.0 | 72.4       | T2_T3, r 24.85, z -0.7, Tangente 37° | -109.3     | T3_T4      | 63.9    | T2   |
+| `pos_063_W4_QS`  | LOAD_16NM | -0.20 %  | 100.6      | 78.5           | T3 RIGHT, r 25.70, z +0.7 | 57.7       | T1_T2, r 24.77, z +5.1, Tangente 69° | -80.3      | T3_T4      | 115.2   | T2   |
+| `pos_063_W4_DY1` | LOAD_16NM | -0.22 %  | 91.4       | 85.4           | T3 RIGHT, r 25.70, z +7.5 | 60.5       | T1_T2, r 24.77, z +5.1, Tangente 69° | -85.3      | T3_T4      | 104.6   | T2   |
+| `pos_063_W4_DY2` | LOAD_16NM | -0.20 %  | 60.0       | 92.8           | T3 RIGHT, r 25.70, z +7.5 | 61.8       | T1_T2, r 24.77, z +5.1, Tangente 64° | -88.7      | T3_T4      | 70.6    | T2   |
+| `pos_068_W1_QS`  | LOAD_16NM | +0.55 %  | 87.3       | 171.9          | T3 RIGHT, r 25.80, z -2.8 | 74.5       | T1_T2, r 24.81, z +0.0, Tangente 49° | -91.6      | T3_T4      | 104.4   | T2   |
+| `pos_068_W1_DY1` | LOAD_16NM | +0.62 %  | 79.0       | 173.9          | T3 RIGHT, r 25.80, z -2.8 | 74.8       | T1_T2, r 24.81, z +0.0, Tangente 49° | -91.6      | T3_T4      | 94.7    | T2   |
+| `pos_068_W1_DY2` | LOAD_16NM | +0.71 %  | 56.8       | 182.3          | T3 RIGHT, r 25.80, z -4.4 | 76.3       | T1_T2, r 24.81, z +0.0, Tangente 49° | -91.1      | T3_T4      | 69.0    | T2   |
+| `pos_068_W2_QS`  | LOAD_16NM | +0.80 %  | 106.8      | 94.9           | T3 RIGHT, r 25.80, z -5.9 | 50.3       | T1_T2, r 24.87, z +0.0, Tangente 33° | -58.3      | T3_T4      | 126.9   | T2   |
+| `pos_068_W2_DY1` | LOAD_16NM | +0.84 %  | 96.8       | 101.7          | T3 RIGHT, r 25.80, z -5.9 | 51.4       | T1_T2, r 24.87, z +0.0, Tangente 33° | -59.9      | T3_T4      | 115.4   | T2   |
+| `pos_068_W2_DY2` | LOAD_16NM | +1.01 %  | 64.9       | 122.7          | T3 RIGHT, r 25.80, z -5.9 | 55.6       | T1_T2, r 24.84, z +0.0, Tangente 41° | -63.1      | T3_T4      | 78.2    | T2   |
+| `pos_068_W3_QS`  | LOAD_16NM | +0.62 %  | 86.9       | 179.6          | T3 RIGHT, r 25.80, z -7.5 | 78.1       | T1_T2, r 24.79, z -0.7, Tangente 54° | -102.2     | T3_T4      | 101.9   | T2   |
+| `pos_068_W3_DY1` | LOAD_16NM | +0.66 %  | 79.6       | 188.0          | T3 RIGHT, r 25.80, z -7.5 | 79.6       | T1_T2, r 24.79, z -0.7, Tangente 54° | -104.3     | T3_T4      | 93.2    | T2   |
+| `pos_068_W3_DY2` | LOAD_16NM | +0.80 %  | 57.0       | 198.7          | T3 RIGHT, r 25.80, z -7.5 | 80.4       | T1_T2, r 24.79, z -0.7, Tangente 54° | -102.0     | T3_T4      | 67.7    | T2   |
+| `pos_068_W4_QS`  | LOAD_16NM | +0.88 %  | 104.5      | 103.2          | T3 RIGHT, r 25.80, z -7.5 | 61.4       | T1_T2, r 24.77, z +5.1, Tangente 69° | -76.1      | T3_T4      | 121.9   | T2   |
+| `pos_068_W4_DY1` | LOAD_16NM | +0.93 %  | 95.4       | 115.1          | T3 RIGHT, r 25.80, z -7.5 | 64.9       | T1_T2, r 24.77, z +5.1, Tangente 69° | -80.7      | T3_T4      | 111.3   | T2   |
+| `pos_068_W4_DY2` | LOAD_16NM | +1.10 %  | 63.8       | 137.7          | T3 RIGHT, r 25.80, z -7.5 | 66.7       | T1_T2, r 24.77, z +5.1, Tangente 64° | -83.6      | T3_T4      | 75.5    | T2   |
+
+## 2026-10-26 01:05 `variante_stahl_gemessen_gerechnet`
+
+**Zweck:** Einzelvariante stahl an A bis E (ADR-116 Punkt 54 und 56 (d)): Stahlritzel wie gefertigt (Kopfrücknahme 23,6 µm ab d 51,946, Zahnweite 16,797, Fußkreis 48,321 mm), Kunststoffrad nach dem STplus-Fall; Taschenkörper, Netz der Taschenserie (83 650 Knoten), W1 bis W4 × QS/DY1/DY2, 60 Jobs, drei Jobs zu je vier Kernen. **Ergebnis:** 60 Jobs vollständig, 2026-10-25 21:24 bis 2026-10-26 01:06 (3,7 h, Summe der Jobzeiten 11,0 h), keine negativen Eigenwerte; gegen den Nennpiloten an A bis E (`fe_series_analysis.py --reference`, analyse/analyse.md Abschnitt 5): bei 12 Nm QS σ1 an C +7,6 % (W1) / +4,7 % (W2), an B und E +7 bis +18 %, Kontaktdruck max −21 bis −32 %, Verdrehweg an C +11 %; das Ritzel trägt den Fertigungseffekt der Serie beide, auch die Druckerhöhung an C (Kopfrücknahme nimmt dem Folgezahn den Lastanteil); Thesis 5.4.3, 7.3, 8. (gerechnet: Vollversion; Befunde FE-19, FE-27)
+
+Netz: 83650 Knoten, 72932 Elemente (C3D8I, C3D8), 20 Schichten, Bohrung r 16.500 mm, Körper pocket; Werkstoffstufen W1, W2, W3, W4, Raten QS, DY1, DY2; Momente am Rad 8, 12, 16 Nm; 60 Stellungsdateien (grid, 30 je Teilung)
+
+**Läufe**
+
+| Datei            | Stellung | Stufe | Rate | Variante | Löser           | Status   | Inkremente je Schritt | Wand s | neg. EW | Ende             |
+|------------------|----------|-------|------|----------|-----------------|----------|-----------------------|--------|---------|------------------|
+| `pos_031_W1_QS`  | A        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 344    | 0       | 2026-10-25 21:29 |
+| `pos_031_W1_DY1` | A        | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 336    | 0       | 2026-10-25 21:29 |
+| `pos_031_W1_DY2` | A        | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 357    | 0       | 2026-10-25 21:29 |
+| `pos_031_W2_QS`  | A        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 429    | 0       | 2026-10-25 21:36 |
+| `pos_031_W2_DY1` | A        | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 436    | 0       | 2026-10-25 21:36 |
+| `pos_031_W2_DY2` | A        | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 414    | 0       | 2026-10-25 21:36 |
+| `pos_031_W3_QS`  | A        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 781    | 0       | 2026-10-25 21:49 |
+| `pos_031_W3_DY1` | A        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 744    | 0       | 2026-10-25 21:48 |
+| `pos_031_W3_DY2` | A        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 788    | 0       | 2026-10-25 21:49 |
+| `pos_031_W4_QS`  | A        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1028   | 0       | 2026-10-25 22:07 |
+| `pos_031_W4_DY1` | A        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1037   | 0       | 2026-10-25 22:06 |
+| `pos_031_W4_DY2` | A        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 988    | 0       | 2026-10-25 22:06 |
+| `pos_036_W1_QS`  | B        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 356    | 0       | 2026-10-25 22:13 |
+| `pos_036_W1_DY1` | B        | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 365    | 0       | 2026-10-25 22:12 |
+| `pos_036_W1_DY2` | B        | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 364    | 0       | 2026-10-25 22:12 |
+| `pos_036_W2_QS`  | B        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 446    | 0       | 2026-10-25 22:20 |
+| `pos_036_W2_DY1` | B        | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 447    | 0       | 2026-10-25 22:19 |
+| `pos_036_W2_DY2` | B        | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 416    | 0       | 2026-10-25 22:19 |
+| `pos_036_W3_QS`  | B        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 812    | 0       | 2026-10-25 22:33 |
+| `pos_036_W3_DY1` | B        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 807    | 0       | 2026-10-25 22:32 |
+| `pos_036_W3_DY2` | B        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 734    | 0       | 2026-10-25 22:31 |
+| `pos_036_W4_QS`  | B        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1105   | 0       | 2026-10-25 22:52 |
+| `pos_036_W4_DY1` | B        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1097   | 0       | 2026-10-25 22:50 |
+| `pos_036_W4_DY2` | B        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 984    | 0       | 2026-10-25 22:49 |
+| `pos_049_W1_QS`  | C        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 344    | 0       | 2026-10-25 22:58 |
+| `pos_049_W1_DY1` | C        | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 337    | 0       | 2026-10-25 22:54 |
+| `pos_049_W1_DY2` | C        | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 334    | 0       | 2026-10-25 22:55 |
+| `pos_049_W2_QS`  | C        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 8, 6, 6            | 517    | 0       | 2026-10-25 23:06 |
+| `pos_049_W2_DY1` | C        | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 445    | 0       | 2026-10-25 23:02 |
+| `pos_049_W2_DY2` | C        | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 423    | 0       | 2026-10-25 23:02 |
+| `pos_049_W3_QS`  | C        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 785    | 0       | 2026-10-25 23:19 |
+| `pos_049_W3_DY1` | C        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 745    | 0       | 2026-10-25 23:14 |
+| `pos_049_W3_DY2` | C        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 729    | 0       | 2026-10-25 23:14 |
+| `pos_049_W4_QS`  | C        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 8            | 1282   | 4       | 2026-10-25 23:41 |
+| `pos_049_W4_DY1` | C        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1017   | 0       | 2026-10-25 23:31 |
+| `pos_049_W4_DY2` | C        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1024   | 0       | 2026-10-25 23:32 |
+| `pos_063_W1_QS`  | D        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 351    | 0       | 2026-10-25 23:43 |
+| `pos_063_W1_DY1` | D        | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 345    | 0       | 2026-10-25 23:37 |
+| `pos_063_W1_DY2` | D        | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 365    | 0       | 2026-10-25 23:38 |
+| `pos_063_W2_QS`  | D        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 440    | 0       | 2026-10-25 23:50 |
+| `pos_063_W2_DY1` | D        | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 444    | 0       | 2026-10-25 23:45 |
+| `pos_063_W2_DY2` | D        | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 429    | 0       | 2026-10-25 23:48 |
+| `pos_063_W3_QS`  | D        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 790    | 0       | 2026-10-26 00:03 |
+| `pos_063_W3_DY1` | D        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 752    | 0       | 2026-10-25 23:58 |
+| `pos_063_W3_DY2` | D        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 805    | 0       | 2026-10-26 00:01 |
+| `pos_063_W4_QS`  | D        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1074   | 0       | 2026-10-26 00:21 |
+| `pos_063_W4_DY1` | D        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1050   | 0       | 2026-10-26 00:15 |
+| `pos_063_W4_DY2` | D        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1016   | 0       | 2026-10-26 00:18 |
+| `pos_068_W1_QS`  | E        | W1    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 366    | 0       | 2026-10-26 00:27 |
+| `pos_068_W1_DY1` | E        | W1    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 355    | 0       | 2026-10-26 00:21 |
+| `pos_068_W1_DY2` | E        | W1    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 375    | 0       | 2026-10-26 00:24 |
+| `pos_068_W2_QS`  | E        | W2    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 462    | 0       | 2026-10-26 00:35 |
+| `pos_068_W2_DY1` | E        | W2    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 467    | 0       | 2026-10-26 00:29 |
+| `pos_068_W2_DY2` | E        | W2    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 449    | 0       | 2026-10-26 00:32 |
+| `pos_068_W3_QS`  | E        | W3    | QS   |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 828    | 0       | 2026-10-26 00:49 |
+| `pos_068_W3_DY1` | E        | W3    | DY1  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 800    | 0       | 2026-10-26 00:42 |
+| `pos_068_W3_DY2` | E        | W3    | DY2  |          | linear, N2S 0.2 | complete | 6, 6, 6, 6            | 775    | 0       | 2026-10-26 00:45 |
+| `pos_068_W4_QS`  | E        | W4    | QS   |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1022   | 0       | 2026-10-26 01:06 |
+| `pos_068_W4_DY1` | E        | W4    | DY1  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1072   | 0       | 2026-10-26 01:00 |
+| `pos_068_W4_DY2` | E        | W4    | DY2  |          | NLGEOM, N2S 0.2 | complete | 6, 6, 6, 6            | 1003   | 0       | 2026-10-26 01:02 |
+
+**Kennwerte des letzten gedruckten Lastschritts**
+
+| Datei            | Schritt   | RM3 Abw. | Drehung µm | CPRESS max MPa | Ort                       | σ1 max MPa | Fußrundung, Ort, Tangente            | σ3 min MPa | Fußrundung | Kopf µm | Zahn |
+|------------------|-----------|----------|------------|----------------|---------------------------|------------|--------------------------------------|------------|------------|---------|------|
+| `pos_031_W1_QS`  | LOAD_16NM | +0.35 %  | 91.7       | 74.2           | T4 RIGHT, r 25.90, z +0.0 | 68.6       | T2_T3, r 24.82, z +0.0, Tangente 49° | -101.7     | T4_T5      | 102.4   | T3   |
+| `pos_031_W1_DY1` | LOAD_16NM | +0.41 %  | 83.8       | 77.2           | T4 RIGHT, r 25.90, z +0.0 | 69.4       | T2_T3, r 24.82, z +0.0, Tangente 49° | -101.8     | T4_T5      | 93.4    | T3   |
+| `pos_031_W1_DY2` | LOAD_16NM | +0.65 %  | 63.0       | 90.0           | T4 RIGHT, r 25.90, z +0.0 | 72.8       | T2_T3, r 24.82, z +0.0, Tangente 49° | -101.9     | T4_T5      | 69.7    | T3   |
+| `pos_031_W2_QS`  | LOAD_16NM | +0.24 %  | 108.7      | 62.1           | T4 RIGHT, r 25.80, z +0.0 | 47.2       | T2_T3, r 24.79, z +0.0, Tangente 58° | -58.8      | T4_T5      | 121.4   | T3   |
+| `pos_031_W2_DY1` | LOAD_16NM | +0.30 %  | 99.5       | 63.0           | T4 RIGHT, r 25.80, z +0.0 | 48.4       | T2_T3, r 24.79, z +0.0, Tangente 58° | -60.7      | T4_T5      | 111.0   | T3   |
+| `pos_031_W2_DY2` | LOAD_16NM | +0.54 %  | 68.9       | 69.8           | T4 RIGHT, r 25.90, z +0.0 | 52.6       | T2_T3, r 24.80, z +0.0, Tangente 54° | -65.7      | T4_T5      | 76.2    | T3   |
+| `pos_031_W3_QS`  | LOAD_16NM | +0.35 %  | 90.8       | 70.7           | T4 RIGHT, r 25.90, z -7.5 | 70.8       | T2_T3, r 24.78, z +4.4, Tangente 63° | -108.8     | T4_T5      | 99.7    | T3   |
+| `pos_031_W3_DY1` | LOAD_16NM | +0.39 %  | 83.7       | 74.5           | T4 RIGHT, r 25.90, z -7.5 | 73.7       | T2_T3, r 24.78, z +4.4, Tangente 63° | -110.2     | T4_T5      | 91.4    | T3   |
+| `pos_031_W3_DY2` | LOAD_16NM | +0.60 %  | 62.6       | 85.1           | T4 RIGHT, r 25.90, z -7.5 | 75.5       | T2_T3, r 24.78, z +4.4, Tangente 63° | -109.1     | T4_T5      | 68.4    | T3   |
+| `pos_031_W4_QS`  | LOAD_16NM | +0.25 %  | 104.6      | 60.7           | T4 RIGHT, r 25.70, z +0.0 | 58.8       | T2_T3, r 24.78, z +4.4, Tangente 63° | -76.7      | T4_T5      | 115.1   | T3   |
+| `pos_031_W4_DY1` | LOAD_16NM | +0.29 %  | 96.2       | 60.4           | T4 RIGHT, r 25.80, z +0.0 | 62.3       | T2_T3, r 24.78, z +4.4, Tangente 63° | -81.5      | T4_T5      | 105.4   | T3   |
+| `pos_031_W4_DY2` | LOAD_16NM | +0.51 %  | 67.0       | 71.1           | T4 RIGHT, r 25.90, z -7.5 | 65.4       | T2_T3, r 24.78, z +4.4, Tangente 63° | -86.0      | T4_T5      | 73.2    | T3   |
+| `pos_036_W1_QS`  | LOAD_16NM | +0.63 %  | 94.5       | 126.6          | T4 RIGHT, r 25.80, z +0.0 | 76.2       | T2_T3, r 24.82, z +0.0, Tangente 49° | -90.6      | T4_T5      | 108.9   | T3   |
+| `pos_036_W1_DY1` | LOAD_16NM | +0.64 %  | 86.6       | 127.2          | T4 RIGHT, r 25.80, z +0.0 | 77.2       | T2_T3, r 24.82, z +0.0, Tangente 49° | -90.1      | T4_T5      | 99.5    | T3   |
+| `pos_036_W1_DY2` | LOAD_16NM | +0.69 %  | 65.7       | 124.3          | T4 RIGHT, r 25.80, z +0.0 | 81.7       | T2_T3, r 24.83, z +0.0, Tangente 45° | -87.9      | T4_T5      | 75.1    | T3   |
+| `pos_036_W2_QS`  | LOAD_16NM | +0.82 %  | 111.6      | 81.1           | T4 RIGHT, r 25.80, z -2.8 | 49.6       | T2_T3, r 24.78, z +0.0, Tangente 63° | -56.0      | T4_T5      | 128.3   | T3   |
+| `pos_036_W2_DY1` | LOAD_16NM | +0.81 %  | 102.5      | 84.9           | T4 RIGHT, r 25.80, z -2.8 | 51.1       | T2_T3, r 24.78, z +0.0, Tangente 63° | -57.4      | T4_T5      | 117.8   | T3   |
+| `pos_036_W2_DY2` | LOAD_16NM | +0.76 %  | 72.0       | 94.7           | T4 RIGHT, r 25.80, z -0.7 | 56.3       | T2_T3, r 24.80, z +0.0, Tangente 54° | -60.7      | T4_T5      | 82.1    | T3   |
+| `pos_036_W3_QS`  | LOAD_16NM | +0.67 %  | 94.0       | 111.0          | T4 RIGHT, r 25.80, z -0.7 | 78.0       | T2_T3, r 24.78, z +4.4, Tangente 63° | -97.8      | T4_T5      | 105.7   | T3   |
+| `pos_036_W3_DY1` | LOAD_16NM | +0.69 %  | 87.0       | 111.0          | T4 RIGHT, r 25.80, z +7.5 | 81.4       | T2_T3, r 24.78, z +4.4, Tangente 63° | -98.6      | T4_T5      | 97.3    | T3   |
+| `pos_036_W3_DY2` | LOAD_16NM | +0.70 %  | 65.6       | 112.1          | T4 RIGHT, r 25.80, z +0.0 | 83.9       | T2_T3, r 24.78, z +4.4, Tangente 63° | -94.9      | T4_T5      | 73.1    | T3   |
+| `pos_036_W4_QS`  | LOAD_16NM | +0.91 %  | 108.0      | 80.7           | T4 RIGHT, r 25.80, z +7.5 | 62.5       | T2_T3, r 24.78, z +4.4, Tangente 63° | -72.3      | T4_T5      | 121.5   | T3   |
+| `pos_036_W4_DY1` | LOAD_16NM | +0.90 %  | 99.6       | 85.0           | T4 RIGHT, r 25.80, z +7.5 | 66.7       | T2_T3, r 24.78, z +4.4, Tangente 63° | -76.3      | T4_T5      | 111.7   | T3   |
+| `pos_036_W4_DY2` | LOAD_16NM | +0.83 %  | 70.7       | 91.2           | T4 RIGHT, r 25.80, z +7.5 | 71.1       | T2_T3, r 24.78, z +4.4, Tangente 63° | -78.1      | T4_T5      | 78.9    | T3   |
+| `pos_049_W1_QS`  | LOAD_16NM | -1.18 %  | 105.7      | 101.1          | T3 RIGHT, r 26.10, z +0.0 | 91.9       | T2_T3, r 24.83, z +0.0, Tangente 45° | -118.8     | T3_T4      | 125.7   | T3   |
+| `pos_049_W1_DY1` | LOAD_16NM | -1.40 %  | 98.9       | 108.4          | T3 RIGHT, r 26.10, z +0.0 | 95.9       | T2_T3, r 24.83, z +0.0, Tangente 45° | -124.7     | T3_T4      | 117.6   | T3   |
+| `pos_049_W1_DY2` | LOAD_16NM | -1.62 %  | 78.6       | 127.2          | T3 RIGHT, r 26.10, z +0.0 | 110.0      | T2_T3, r 24.83, z +0.0, Tangente 45° | -143.5     | T3_T4      | 93.8    | T3   |
+| `pos_049_W2_QS`  | LOAD_16NM | -0.61 %  | 119.9      | 74.2           | T4 RIGHT, r 26.00, z +0.0 | 51.5       | T2_T3, r 24.90, z +0.0, Tangente 30° | -59.3      | T3_T4      | 140.5   | T3   |
+| `pos_049_W2_DY1` | LOAD_16NM | -0.88 %  | 112.1      | 71.2           | T3 RIGHT, r 26.10, z -5.9 | 53.7       | T2_T3, r 24.90, z +0.0, Tangente 30° | -62.5      | T3_T4      | 131.4   | T3   |
+| `pos_049_W2_DY2` | LOAD_16NM | -1.63 %  | 88.6       | 90.6           | T3 RIGHT, r 26.10, z -2.0 | 65.0       | T2_T3, r 24.88, z +0.0, Tangente 33° | -77.8      | T3_T4      | 103.9   | T3   |
+| `pos_049_W3_QS`  | LOAD_16NM | -1.12 %  | 104.4      | 89.9           | T3 RIGHT, r 26.10, z -7.5 | 90.0       | T2_T3, r 24.82, z +0.0, Tangente 49° | -123.4     | T3_T4      | 118.7   | T3   |
+| `pos_049_W3_DY1` | LOAD_16NM | -1.29 %  | 98.2       | 94.6           | T3 RIGHT, r 26.10, z -7.5 | 93.6       | T2_T3, r 24.82, z +0.0, Tangente 49° | -131.5     | T3_T4      | 110.5   | T3   |
+| `pos_049_W3_DY2` | LOAD_16NM | -1.62 %  | 78.7       | 114.0          | T3 RIGHT, r 26.10, z -7.5 | 107.9      | T2_T3, r 24.82, z +0.0, Tangente 49° | -153.0     | T3_T4      | 89.2    | T3   |
+| `pos_049_W4_QS`  | LOAD_16NM | -0.71 %  | 117.0      | 68.3           | T4 RIGHT, r 26.00, z +7.5 | 60.6       | T2_T3, r 24.78, z +4.4, Tangente 63° | -80.7      | T3_T4      | 132.3   | T3   |
+| `pos_049_W4_DY1` | LOAD_16NM | -0.91 %  | 109.8      | 66.0           | T2 RIGHT, r 26.89, z +0.7 | 66.2       | T2_T3, r 24.78, z +4.4, Tangente 63° | -88.4      | T3_T4      | 123.3   | T3   |
+| `pos_049_W4_DY2` | LOAD_16NM | -1.57 %  | 86.4       | 82.2           | T3 RIGHT, r 26.10, z -6.7 | 77.7       | T2_T3, r 24.78, z +4.4, Tangente 63° | -108.6     | T3_T4      | 97.2    | T3   |
+| `pos_063_W1_QS`  | LOAD_16NM | +0.33 %  | 96.0       | 74.6           | T3 RIGHT, r 25.90, z +0.0 | 73.3       | T1_T2, r 24.82, z +0.0, Tangente 49° | -100.1     | T3_T4      | 106.6   | T2   |
+| `pos_063_W1_DY1` | LOAD_16NM | +0.38 %  | 87.6       | 77.5           | T3 RIGHT, r 25.90, z +0.0 | 74.0       | T1_T2, r 24.82, z +0.0, Tangente 49° | -100.1     | T3_T4      | 97.1    | T2   |
+| `pos_063_W1_DY2` | LOAD_16NM | +0.62 %  | 65.7       | 89.9           | T3 RIGHT, r 25.90, z +0.0 | 77.5       | T1_T2, r 24.82, z +0.0, Tangente 49° | -100.2     | T3_T4      | 72.3    | T2   |
+| `pos_063_W2_QS`  | LOAD_16NM | +0.24 %  | 112.6      | 63.3           | T3 RIGHT, r 25.80, z +0.0 | 49.0       | T1_T2, r 24.88, z +0.0, Tangente 33° | -60.8      | T3_T4      | 125.1   | T2   |
+| `pos_063_W2_DY1` | LOAD_16NM | +0.29 %  | 102.9      | 64.1           | T3 RIGHT, r 25.80, z +0.0 | 50.2       | T1_T2, r 24.86, z +0.0, Tangente 37° | -62.7      | T3_T4      | 114.2   | T2   |
+| `pos_063_W2_DY2` | LOAD_16NM | +0.52 %  | 71.3       | 70.6           | T3 RIGHT, r 25.90, z +0.0 | 54.9       | T1_T2, r 24.85, z +0.0, Tangente 40° | -66.7      | T3_T4      | 78.5    | T2   |
+| `pos_063_W3_QS`  | LOAD_16NM | +0.33 %  | 94.8       | 70.3           | T3 RIGHT, r 25.90, z -7.5 | 75.4       | T1_T2, r 24.79, z -0.7, Tangente 58° | -109.7     | T3_T4      | 103.6   | T2   |
+| `pos_063_W3_DY1` | LOAD_16NM | +0.37 %  | 87.2       | 73.8           | T3 RIGHT, r 25.90, z -7.5 | 77.0       | T1_T2, r 24.79, z -0.7, Tangente 58° | -111.4     | T3_T4      | 94.8    | T2   |
+| `pos_063_W3_DY2` | LOAD_16NM | +0.57 %  | 65.0       | 83.1           | T3 RIGHT, r 25.90, z -7.5 | 79.5       | T1_T2, r 24.79, z -0.7, Tangente 58° | -109.9     | T3_T4      | 70.5    | T2   |
+| `pos_063_W4_QS`  | LOAD_16NM | +0.26 %  | 108.9      | 61.0           | T3 RIGHT, r 25.80, z -7.5 | 58.7       | T1_T2, r 24.77, z +5.1, Tangente 68° | -80.4      | T3_T4      | 119.6   | T2   |
+| `pos_063_W4_DY1` | LOAD_16NM | +0.28 %  | 100.0      | 60.4           | T3 RIGHT, r 25.80, z -7.5 | 62.0       | T1_T2, r 24.77, z +5.1, Tangente 68° | -85.5      | T3_T4      | 109.4   | T2   |
+| `pos_063_W4_DY2` | LOAD_16NM | +0.47 %  | 69.6       | 70.8           | T3 RIGHT, r 25.90, z -7.5 | 64.9       | T1_T2, r 24.78, z +5.1, Tangente 63° | -89.1      | T3_T4      | 75.3    | T2   |
+| `pos_068_W1_QS`  | LOAD_16NM | +0.58 %  | 98.2       | 128.4          | T3 RIGHT, r 25.80, z +0.0 | 80.8       | T1_T2, r 24.82, z +0.0, Tangente 49° | -87.2      | T3_T4      | 112.5   | T2   |
+| `pos_068_W1_DY1` | LOAD_16NM | +0.59 %  | 89.9       | 127.8          | T3 RIGHT, r 25.80, z +0.0 | 81.8       | T1_T2, r 24.82, z +0.0, Tangente 49° | -86.6      | T3_T4      | 102.8   | T2   |
+| `pos_068_W1_DY2` | LOAD_16NM | +0.65 %  | 68.1       | 124.8          | T3 RIGHT, r 25.80, z +0.0 | 86.3       | T1_T2, r 24.82, z +0.0, Tangente 49° | -86.1      | T2_T3      | 77.4    | T2   |
+| `pos_068_W2_QS`  | LOAD_16NM | +0.68 %  | 114.8      | 82.8           | T3 RIGHT, r 25.80, z -2.0 | 51.5       | T1_T2, r 24.88, z +0.0, Tangente 33° | -57.6      | T3_T4      | 131.5   | T2   |
+| `pos_068_W2_DY1` | LOAD_16NM | +0.69 %  | 105.3      | 86.6           | T3 RIGHT, r 25.80, z -2.0 | 53.0       | T1_T2, r 24.88, z +0.0, Tangente 33° | -58.9      | T3_T4      | 120.5   | T2   |
+| `pos_068_W2_DY2` | LOAD_16NM | +0.68 %  | 74.1       | 96.6           | T3 RIGHT, r 25.80, z +0.0 | 58.7       | T1_T2, r 24.86, z +0.0, Tangente 37° | -61.3      | T3_T4      | 84.2    | T2   |
+| `pos_068_W3_QS`  | LOAD_16NM | +0.59 %  | 97.4       | 114.6          | T3 RIGHT, r 25.80, z -7.5 | 83.3       | T1_T2, r 24.79, z -0.7, Tangente 58° | -97.8      | T3_T4      | 109.1   | T2   |
+| `pos_068_W3_DY1` | LOAD_16NM | +0.62 %  | 90.0       | 117.2          | T3 RIGHT, r 25.80, z -7.5 | 85.4       | T1_T2, r 24.79, z -0.7, Tangente 58° | -99.5      | T3_T4      | 100.3   | T2   |
+| `pos_068_W3_DY2` | LOAD_16NM | +0.66 %  | 67.8       | 111.8          | T3 RIGHT, r 25.80, z +0.0 | 88.8       | T1_T2, r 24.79, z -0.7, Tangente 58° | -95.0      | T3_T4      | 75.2    | T2   |
+| `pos_068_W4_QS`  | LOAD_16NM | +0.78 %  | 111.8      | 85.0           | T3 RIGHT, r 25.80, z -7.5 | 62.4       | T1_T2, r 24.77, z +5.1, Tangente 68° | -75.1      | T3_T4      | 125.4   | T2   |
+| `pos_068_W4_DY1` | LOAD_16NM | +0.79 %  | 103.0      | 90.3           | T3 RIGHT, r 25.80, z -7.5 | 66.4       | T1_T2, r 24.77, z +5.1, Tangente 68° | -79.4      | T3_T4      | 115.3   | T2   |
+| `pos_068_W4_DY2` | LOAD_16NM | +0.76 %  | 73.0       | 95.9           | T3 RIGHT, r 25.80, z -7.5 | 70.4       | T1_T2, r 24.78, z +5.1, Tangente 63° | -80.1      | T3_T4      | 81.2    | T2   |
+

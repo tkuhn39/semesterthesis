@@ -1,0 +1,43 @@
+% erzeugt von 20_code/10_gearcore/scripts/thesis_appendix_tables.py, nicht von Hand ändern
+\begin{table}[htbp]
+    \caption{Verfeinerungsreihen des ebenen Radsektors, Formulierung von CPE4 und C3D8 (selektiv reduzierte Integration): Knoten und Elemente je Stufe, Elemente über der Zahnhöhe, je Zahnlücke am Fuß und über der Zahndicke, größte Hauptspannung an der Fußoberfläche, Verschiebung der Kopfmitte und der belasteten Kopfecke und Formänderungsenergie des Sektors. Die Stufe 1 ist das Ausgangsnetz jeder Reihe, die letzten Zeilen prüfen das Ausgangsnetz gegen die Lastbreite und die Stellung.}
+    \label{tab:anhang_netzleiter_cpe4}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{L{2.1cm}llllllllll}
+        Reihe & Stufe & Knoten & Elemente & Höhe & Fuß & Dicke & $\sigma_{\mathrm{1,max}}$ & $u$ Mitte & $u$ Ecke & $U$ \\
+         &  &  &  &  &  &  & MPa & \textmu m & \textmu m & N\,mm/mm \\
+        \hline
+        \arrayrulecolor{black!30}
+        gleichmäßig & 1 & 3\,719 & 3\,360 & 20 & 80 & 10 & $125{,}42$ & $203{,}80$ & $203{,}85$ & $3{,}5776$ \\
+        \hline
+        gleichmäßig & 2 & 14\,157 & 13\,440 & 40 & 160 & 20 & $135{,}11$ & $203{,}61$ & $204{,}04$ & $3{,}5790$ \\
+        \hline
+        gleichmäßig & 3 & 31\,315 & 30\,240 & 60 & 240 & 30 & $138{,}89$ & $203{,}65$ & $204{,}12$ & $3{,}5810$ \\
+        \hline
+        gleichmäßig & 4 & 55\,193 & 53\,760 & 80 & 320 & 40 & $140{,}89$ & $203{,}69$ & $204{,}17$ & $3{,}5825$ \\
+        \hline
+        Zahnhöhe & 2 & 4\,819 & 4\,360 & 40 & 80 & 10 & $125{,}37$ & $203{,}69$ & $204{,}05$ & $3{,}5768$ \\
+        \hline
+        Zahnhöhe & 3 & 5\,919 & 5\,360 & 60 & 80 & 10 & $125{,}38$ & $203{,}70$ & $204{,}10$ & $3{,}5777$ \\
+        \hline
+        Zahnfuß & 2 & 5\,919 & 5\,360 & 20 & 160 & 10 & $125{,}46$ & $203{,}97$ & $204{,}02$ & $3{,}5805$ \\
+        \hline
+        Zahnfuß & 3 & 8\,119 & 7\,360 & 20 & 240 & 10 & $125{,}46$ & $204{,}00$ & $204{,}05$ & $3{,}5810$ \\
+        \hline
+        Zahndicke & 2 & 7\,021 & 6\,624 & 20 & 80 & 20 & $135{,}13$ & $203{,}49$ & $203{,}57$ & $3{,}5758$ \\
+        \hline
+        Zahndicke & 3 & 10\,323 & 9\,888 & 20 & 80 & 30 & $138{,}91$ & $203{,}47$ & $203{,}55$ & $3{,}5761$ \\
+        \hline
+        Zahndicke & 4 & 13\,625 & 13\,152 & 20 & 80 & 40 & $140{,}91$ & $203{,}47$ & $203{,}55$ & $3{,}5763$ \\
+        \hline
+        Lastbreite $0{,}5\,b_{\mathrm{H}}$ & 1 & 3\,719 & 3\,360 & 20 & 80 & 10 & $131{,}75$ & $211{,}28$ & $211{,}14$ & $3{,}9153$ \\
+        \hline
+        Lastbreite $2\,b_{\mathrm{H}}$ & 1 & 3\,719 & 3\,360 & 20 & 80 & 10 & $118{,}13$ & $189{,}20$ & $190{,}41$ & $3{,}1288$ \\
+        \hline
+        Stellung D & 1 & 3\,719 & 3\,360 & 20 & 80 & 10 & $86{,}92$ & $102{,}22$ & $101{,}83$ & $1{,}7591$ \\
+        \hline
+        \arrayrulecolor{black}
+    \end{tabular}
+\end{table}

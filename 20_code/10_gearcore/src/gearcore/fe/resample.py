@@ -26,6 +26,16 @@ Classes (template values of the kst-E wheel in brackets):
 
 so that elements over the tooth height = height + chamfer, at the tooth root (one gap) =
 2 root, over the tooth thickness = 2 (root_layers + centre).
+
+The cap of the tooth tip (``MeshCounts.cap_layers`` > 0, for a tooth whose tip corner is an
+arc, ``contour.ProfileModification.tip_edge_radius_mm``): the head of the template is a
+logical rectangle whose corner sits on the tip corner, so a tangential arc there gives the
+corner quad an angle near 180 degrees (a sliver). With the cap the rows above the tangency
+row (the row through the tip form point) are rebuilt as three blocks, see ``TipCap``: the
+layers along the surface run from the flank around the arc and along the tip circle to the
+tooth centre line, the corner of the block structure moves into the tooth (one node of
+valence 3 under the arc end) and every surface node keeps two quads. Without the option the
+block is the template's.
 """
 
 import math
@@ -63,8 +73,20 @@ class MeshCounts:
     root_layers: int = 3
     rim_rings: int = 12
     shoulder_columns: int = 4
+    cap_layers: int = 0
+    """Layers of the cap of the tooth tip along the arc of the tip corner and the tip circle
+    (0: no cap, the head is the rectangle of the template). The cap takes the first
+    ``cap_layers`` columns of the tangency row as its depth, so it needs at least one column
+    more over the half thickness."""
 
     def __post_init__(self) -> None:
+        cap = integer_input(self.cap_layers, "cap_layers")
+        if cap < 0 or cap >= (
+            integer_input(self.over_tooth_thickness, "over_tooth_thickness") >> 1
+        ):
+            raise InputRangeError(
+                f"cap_layers must lie in 0 to over_tooth_thickness / 2 - 1, got {self.cap_layers}"
+            )
         for name in (
             "over_tooth_height",
             "at_tip_edge_break",
@@ -111,6 +133,7 @@ class MeshCounts:
         return (
             f"h{self.over_tooth_height}_c{self.at_tip_edge_break}_r{self.at_tooth_root}_"
             f"t{self.over_tooth_thickness}_l{self.root_layers}_k{self.rim_rings}_s{self.shoulder_columns}"
+            + (f"_cap{self.cap_layers}" if self.cap_layers else "")
         )
 
 
@@ -546,13 +569,296 @@ def resample_block(
     return new_block, classified, classes, dict(resampler.corner_of)
 
 
+# --- the cap of the tooth tip ----------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class TipCap:
+    """The cap of the tooth tip of the clockwise half of the tooth block (0-based node ids).
+
+    Above the tangency row (the row of the head grid through the tip form point) the head is
+    not the rectangle of the template but three blocks. ``corner_grid[a, b]`` lies under the
+    arc of the tip corner: a = 0 on the arc from the tip form point (b = 0) to the arc end
+    (b = chamfer), a = cap_layers on the diagonal; its side b = 0 is the tangency row from
+    the tip form point inwards. ``land_grid[a, b]`` lies under the tip circle: a = 0 on the
+    circle from the arc end (b = 0) to the tooth centre (b = land), a = cap_layers on the
+    inner row. ``core_grid[c, b]`` lies between the tangency row (c = 0, from the foot of the
+    diagonal, b = 0, to the centre line, b = land) and the inner row (c = chamfer). Shared
+    sides: the diagonal ``corner_grid[-1, :]`` = ``core_grid[:, 0]``, the ray under the arc
+    end ``corner_grid[:, -1]`` = ``land_grid[:, 0]``, the inner row ``land_grid[-1, :]`` =
+    ``core_grid[-1, :]``. The inner corner (arc end ray meets the inner row) has valence 3;
+    every other node of the cap is regular. The counter-clockwise half is the mirror image
+    through the partner list of the block.
+    """
+
+    corner_grid: IntArray
+    land_grid: IntArray
+    core_grid: IntArray
+
+    @property
+    def cap_layers(self) -> int:
+        return int(self.corner_grid.shape[0]) - 1
+
+    @property
+    def tangency_row(self) -> IntArray:
+        """The nodes of the tangency row from the tip form point to the tooth centre line."""
+        return np.concatenate((self.corner_grid[:, 0], self.core_grid[0, 1:]))
+
+    @property
+    def nodes(self) -> IntArray:
+        return np.unique(
+            np.concatenate(
+                (self.corner_grid.ravel(), self.land_grid.ravel(), self.core_grid.ravel())
+            )
+        )
+
+
+def _coons(bottom: Array, top: Array, left: Array, right: Array, s: Array, t: Array) -> Array:
+    """Points of a logical rectangle from its four sides (transfinite interpolation):
+    ``bottom`` = P[0, :], ``top`` = P[-1, :], ``left`` = P[:, 0], ``right`` = P[:, -1]; ``s``
+    and ``t`` are the blending fractions 0 ... 1 along the first and the second index."""
+    s_col, t_row = s[:, None, None], t[None, :, None]
+    points = (
+        (1.0 - s_col) * bottom[None, :, :]
+        + s_col * top[None, :, :]
+        + (1.0 - t_row) * left[:, None, :]
+        + t_row * right[:, None, :]
+        - (
+            (1.0 - s_col) * (1.0 - t_row) * bottom[0]
+            + (1.0 - s_col) * t_row * bottom[-1]
+            + s_col * (1.0 - t_row) * top[0]
+            + s_col * t_row * top[-1]
+        )
+    )
+    return np.asarray(points, dtype=np.float64)
+
+
+def cap_inner_points(
+    arc_end: Array, tip_centre: Array, tangency_centre: Array, chamfer: int, layers: int
+) -> tuple[Array, Array]:
+    """The inner corner and the inner centre of the cap: the centre line between the tangency
+    row and the tip is divided evenly into the chamfer rows of the core and the layers of the
+    land block, and the inner corner lies radially under the arc end at the depth of those
+    layers."""
+    inner_centre = tangency_centre + (chamfer / (chamfer + layers)) * (tip_centre - tangency_centre)
+    inner_centre = np.array([0.0, float(inner_centre[1])])
+    depth = float(np.hypot(*(tip_centre - inner_centre)))
+    inner_corner = arc_end * (1.0 - depth / float(np.hypot(*arc_end)))
+    return inner_corner, inner_centre
+
+
+def cap_points(
+    row: Array, arc: Array, land: Array, inner_corner: Array, inner_centre: Array, layers: int
+) -> tuple[Array, Array, Array]:
+    """The points of the three cap blocks of one half (``TipCap``) from the given lines: the
+    tangency row from the tip form point to the tooth centre line, the arc from the tip form
+    point to its end, the tip circle from the arc end to the tooth centre, the inner corner
+    and the inner centre. The layers of the corner and land blocks take the spacing of the
+    first ``layers`` columns of the tangency row; the rest is transfinite interpolation."""
+    chamfer, count = len(arc) - 1, len(land) - 1
+    steps = np.hypot(*(row[1 : layers + 1] - row[:layers]).T)
+    depth = np.concatenate(([0.0], np.cumsum(steps)))
+    fractions = depth / depth[-1]
+    even_chamfer = np.linspace(0.0, 1.0, chamfer + 1)
+    even_count = np.linspace(0.0, 1.0, count + 1)
+    foot = row[layers]
+    diagonal = foot + even_chamfer[:, None] * (inner_corner - foot)
+    ray = arc[-1] + fractions[:, None] * (inner_corner - arc[-1])
+    corner = _coons(arc, diagonal, row[: layers + 1], ray, fractions, even_chamfer)
+    inner_row = inner_corner + even_count[:, None] * (inner_centre - inner_corner)
+    centre_side = land[-1] + fractions[:, None] * (inner_centre - land[-1])
+    land_block = _coons(land, inner_row, ray, centre_side, fractions, even_count)
+    core_centre = row[-1] + even_chamfer[:, None] * (inner_centre - row[-1])
+    core = _coons(row[layers:], inner_row, diagonal, core_centre, even_chamfer, even_count)
+    return corner, land_block, core
+
+
+def _head_rows(block: Block, features: tuple[int, ...], columns: int) -> IntArray:
+    """The head grid of the clockwise half as rows of node ids: row i runs from the flank node
+    i above the root form point inwards to the tooth centre line (``columns`` steps); the last
+    row is the tip circle from the tip corner to the tooth centre."""
+    order = list(block.surface_order)
+    _, form, _, corner, centre = features
+    topology = _Topology(block.quads)
+    on_surface = set(order)
+    rows = []
+    for i in range(corner - form):
+        start = order[form + i]
+        inward = [n for n in topology.neighbours(start) if n not in on_surface]
+        if len(inward) != 1:
+            raise GeometryInfeasibleError("the head of the tooth block is not a regular grid")
+        chain = [start, inward[0]]
+        while len(chain) <= columns:
+            following = topology.straight_on(chain[-2], chain[-1])
+            if following is None:
+                raise GeometryInfeasibleError("the head of the tooth block is not a regular grid")
+            chain.append(following)
+        rows.append(chain)
+    rows.append(order[corner : centre + 1])
+    grid = np.array(rows, dtype=np.int64)
+    if np.abs(block.phi[grid[:, -1]]).max() > 1.0e-7:
+        raise GeometryInfeasibleError(
+            "the head rows of the tooth block do not end on its centre line"
+        )
+    return grid
+
+
+def _with_tip_cap(
+    block: Block, features: tuple[int, ...], grid_flags: IntArray, counts: MeshCounts, pitch: float
+) -> tuple[Block, IntArray, tuple[int, ...], TipCap]:
+    """The tooth block with the cap of the tooth tip (see ``TipCap``): the quads above the
+    tangency row are replaced on both halves, mirror symmetric. Returns the block, the head
+    flags of its quads, the surface features and the cap of the clockwise half."""
+    gap, form, tip_form, corner, centre = features
+    layers = counts.cap_layers
+    columns = counts.over_tooth_thickness >> 1
+    chamfer = corner - tip_form
+    count = columns - layers
+    tangency = tip_form - form
+    rows = _head_rows(block, features, columns)
+    partner = _partners(block)
+    mirrored_rows = partner[rows]
+    points = _cartesian(block, pitch)
+
+    above = set(rows[tangency:].ravel().tolist()) | set(mirrored_rows[tangency:].ravel().tolist())
+    keep_quad = np.array(
+        [not all(n in above for n in quad) for quad in block.quads.tolist()], dtype=np.bool_
+    )
+    doomed = (
+        set(rows[tangency + 1 :, 1:columns].ravel().tolist())
+        | set(mirrored_rows[tangency + 1 :, 1:columns].ravel().tolist())
+        | set(rows[tangency + 1 : tangency + chamfer, columns].tolist())
+    )
+
+    new_xy: list[tuple[float, float]] = []
+    new_kind: list[str] = []
+    mirror_of: dict[int, int] = {int(n): int(partner[n]) for n in rows.ravel().tolist()}
+    base = len(block.phi)
+
+    def create(xy: Array, kind: str) -> int:
+        node = base + len(new_xy)
+        new_xy.append((float(xy[0]), float(xy[1])))
+        new_kind.append(kind)
+        if abs(float(xy[0])) == 0.0:
+            mirror_of[node] = node
+        else:
+            new_xy.append((-float(xy[0]), float(xy[1])))
+            new_kind.append(kind)
+            mirror_of[node] = node + 1
+            mirror_of[node + 1] = node
+        return node
+
+    row = rows[tangency]
+    arc = rows[tangency : tangency + chamfer + 1, 0]
+    old_land = points[rows[-1]]
+    land_xy = _at_index(old_land, _index_map(old_land, count))
+    land_xy[0], land_xy[-1] = old_land[0], old_land[-1]
+    inner_corner, inner_centre = cap_inner_points(
+        points[arc[-1]], old_land[-1], points[row[-1]], chamfer, layers
+    )
+    corner_xy, land_block_xy, core_xy = cap_points(
+        points[row], points[arc], land_xy, inner_corner, inner_centre, layers
+    )
+    corner_ids = np.full((layers + 1, chamfer + 1), -1, dtype=np.int64)
+    land_ids = np.full((layers + 1, count + 1), -1, dtype=np.int64)
+    core_ids = np.full((chamfer + 1, count + 1), -1, dtype=np.int64)
+    corner_ids[0, :] = arc
+    corner_ids[:, 0] = row[: layers + 1]
+    core_ids[0, :] = row[layers:]
+    land_ids[0, 0], land_ids[0, count] = arc[-1], rows[-1, -1]
+    for b in range(1, count):
+        land_ids[0, b] = create(land_xy[b], "surface")
+    for a in range(1, layers + 1):
+        corner_ids[a, chamfer] = create(corner_xy[a, chamfer], "interior")
+    land_ids[:, 0] = corner_ids[:, chamfer]
+    for c in range(1, chamfer):
+        corner_ids[layers, c] = create(corner_xy[layers, c], "interior")
+    core_ids[:, 0] = corner_ids[layers, :]
+    for a in range(1, layers):
+        for b in range(1, chamfer):
+            corner_ids[a, b] = create(corner_xy[a, b], "interior")
+    for a in range(1, layers + 1):
+        land_ids[a, count] = create(np.array([0.0, float(land_block_xy[a, count, 1])]), "interior")
+    for b in range(1, count):
+        land_ids[layers, b] = create(land_block_xy[layers, b], "interior")
+    core_ids[chamfer, :] = land_ids[layers, :]
+    for a in range(1, layers):
+        for b in range(1, count):
+            land_ids[a, b] = create(land_block_xy[a, b], "interior")
+    for c in range(1, chamfer):
+        core_ids[c, count] = create(np.array([0.0, float(core_xy[c, count, 1])]), "interior")
+    for c in range(1, chamfer):
+        for b in range(1, count):
+            core_ids[c, b] = create(core_xy[c, b], "interior")
+    if (corner_ids < 0).any() or (land_ids < 0).any() or (core_ids < 0).any():
+        raise GeometryInfeasibleError("the cap of the tooth tip is incomplete")
+
+    all_xy = np.concatenate((points, np.array(new_xy, dtype=np.float64).reshape(-1, 2)))
+    mirror = np.vectorize(lambda n: mirror_of[int(n)], otypes=[np.int64])
+    new_quads: list[tuple[int, int, int, int]] = []
+    for grid in (corner_ids, land_ids, core_ids):
+        for ids in (grid, mirror(grid)):
+            rows_of_ids: list[list[int]] = ids.tolist()
+            cells = [
+                (row[j], below[j], below[j + 1], row[j + 1])
+                for row, below in zip(rows_of_ids[:-1], rows_of_ids[1:], strict=True)
+                for j in range(len(row) - 1)
+            ]
+            first = all_xy[list(cells[0])]
+            area = 0.0
+            for k in range(4):
+                area += first[k, 0] * first[(k + 1) % 4, 1] - first[(k + 1) % 4, 0] * first[k, 1]
+            new_quads.extend(cells if area > 0.0 else [cell[::-1] for cell in cells])
+
+    kept = np.array([n for n in range(len(all_xy)) if n not in doomed], dtype=np.int64)
+    index = np.full(len(all_xy), -1, dtype=np.int64)
+    index[kept] = np.arange(len(kept), dtype=np.int64)
+    quads = np.concatenate(
+        (index[block.quads[keep_quad]], index[np.array(new_quads, dtype=np.int64)])
+    )
+    if int(quads.min()) < 0:
+        raise GeometryInfeasibleError("a quad of the cap names a removed node")
+    kinds = list(block.kind) + new_kind
+    xy = all_xy[kept]
+    radius = np.hypot(xy[:, 0], xy[:, 1])
+    phi = np.arctan2(-xy[:, 0], xy[:, 1]) / pitch
+    new_kinds = [kinds[int(n)] for n in kept.tolist()]
+    order = _surface_order(quads, new_kinds, int(index[block.surface_order[gap]]))
+    new_block = Block(
+        phi=np.asarray(phi, dtype=np.float64),
+        radius_mm=np.asarray(radius, dtype=np.float64),
+        quads=quads,
+        kind=tuple(new_kinds),
+        surface_order=tuple(order),
+    )
+    old_order = block.surface_order
+    new_features = tuple(
+        order.index(int(index[n]))
+        for n in (
+            old_order[gap],
+            old_order[form],
+            old_order[tip_form],
+            old_order[corner],
+            rows[-1, -1],
+        )
+    )
+    if new_features[:4] != (gap, form, tip_form, corner) or new_features[4] != corner + count:
+        raise GeometryInfeasibleError("the surface of the cap is not in the order of the template")
+    flags = np.concatenate((grid_flags[keep_quad], np.ones(len(new_quads), dtype=np.int64)))
+    cap = TipCap(
+        corner_grid=index[corner_ids], land_grid=index[land_ids], core_grid=index[core_ids]
+    )
+    return new_block, flags, new_features, cap
+
+
 # --- the template --------------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
 class ResampledTemplate:
     """The trimmed blocks of the template with new counts and the lists ``sector_mesh``
-    needs (all 0-based, as ``sector_template`` has them)."""
+    needs (all 0-based, as ``sector_template`` has them). ``tip_cap`` is the cap of the tooth
+    tip when ``counts.cap_layers`` asks for one."""
 
     tooth: Block
     shoulder: Block
@@ -563,6 +869,7 @@ class ResampledTemplate:
     tooth_surface_features: tuple[int, ...]
     shoulder_interface: IntArray
     shoulder_cut: IntArray
+    tip_cap: TipCap | None = None
 
 
 def _on_line(block: Block, phi: float) -> IntArray:
@@ -651,6 +958,11 @@ def resample_template(
     grid = np.array(
         [1 if "height" in pair or "chamfer" in pair else 0 for pair in classes], dtype=np.int64
     )
+    cap: TipCap | None = None
+    if counts.cap_layers:
+        new_tooth, grid, new_features, cap = _with_tip_cap(
+            new_tooth, new_features, grid, counts, pitch
+        )
 
     bore_corner = int(shoulder_cut[0])
     top_corner = int(shoulder_cut[-1])
@@ -680,4 +992,5 @@ def resample_template(
         tooth_surface_features=new_features,
         shoulder_interface=_on_line(new_shoulder, 0.0),
         shoulder_cut=_on_line(new_shoulder, -1.0),
+        tip_cap=cap,
     )

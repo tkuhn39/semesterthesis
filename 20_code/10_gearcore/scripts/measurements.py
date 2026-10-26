@@ -57,7 +57,7 @@ import csv
 import io
 import math
 from collections import Counter
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import median
@@ -77,6 +77,7 @@ from gearcore.measurement import gina
 from gearcore.measurement import report as rp
 from gearcore.measurement import roughness as rg
 from gearcore.measurement import test_rig as tr
+from gearcore.measurement import tolerances as tl
 from gearcore.measurement import woehler as wl
 from gearcore.measurement.inventory import (
     Inventory,
@@ -86,9 +87,16 @@ from gearcore.measurement.inventory import (
     scan_folder,
 )
 from gearcore.models.results import GenerationResult
-from gearcore.plot_style import LINE_STYLES, MARKERS
+from gearcore.plot_style import (
+    LINE_STYLES,
+    MARKERS,
+    decimal_comma,
+    legend_outside,
+    new_figure,
+    save,
+    symbol_label,
+)
 from gearcore.plot_style import apply as apply_plot_style
-from gearcore.plot_style import decimal_comma, legend_outside, new_figure, save, symbol_label
 from gearcore.quantities import quantity
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -478,13 +486,23 @@ def exceedances(result: gina.GinaResult) -> list[list[str]]:
     return rows
 
 
-def tolerances_markdown(part_kind: str, results: Sequence[gina.GinaResult]) -> str:
+def tolerances_markdown(
+    part_kind: str,
+    results: Sequence[gina.GinaResult],
+    drawing: Mapping[str, Any] | None = None,
+    latest: Sequence[gina.GinaResult] = (),
+    group_of: Mapping[str, str] | None = None,
+) -> str:
     lines = [f"# Toleranzen laut Messprotokoll, {PART_LABELS[part_kind]}", ""]
     lines.append(
         "Werte, gegen die das Messprogramm des P40 geprüft hat (Kopfzeilen der .mew-Dateien). Die "
-        "Stufe ist eine Einstellung des Programms, die Norm ist in der Datei nicht genannt; hier wird "
-        "keine Qualitätsstufe berechnet. Fpz/8, Fr und Rs sind Größen des Messprogramms ohne "
-        "Normeintrag (Fpz/8 = gleitende Teilungs-Spannenabweichung, nicht F_pk; die Norm nennt "
+        "Datei nennt keine Norm; die Werte sind die Tabellen der zurückgezogenen DIN 3962 Teil 1 "
+        "(Teilung, Rundlauf, Zahndickenschwankung, Profil-Winkelabweichung; S. 2 und 3, Normalmodul "
+        "1 bis 2 mm) und Teil 2 (Flankenlinien-Winkelabweichung, S. 1) für die Qualität der "
+        "Einstellung (geprüft an der Norm 2026-10-25). DIN ISO 1328-1:2018 ersetzt DIN 3962 mit "
+        "anders gestuften Klassen; die Klasse der Zeichnung steht im Abschnitt Zeichnungsqualität. "
+        "Fpz/8, Fr und Rs sind Größen des Messprogramms ohne Eintrag in DIN ISO 1328-1 "
+        "(Fpz/8 = gleitende Teilungs-Spannenabweichung, nicht F_pk; die Norm nennt "
         "keine Toleranz für F_pSk). f_Hβ ist auf die Zahnbreite b bezogen (Einstellung 179 "
         "BZGFL 1: Z, DIN ISO 1328-1 bezieht f_Hβ auf L_β), f_Hα auf den Auswertebereich M1 bis "
         "M2 (Einstellung 180). Überschreitungen: Betrag des Werts über dem Wert des Messprogramms "
@@ -533,7 +551,136 @@ def tolerances_markdown(part_kind: str, results: Sequence[gina.GinaResult]) -> s
         )
     else:
         lines.append("Keine.")
+    if drawing is not None:
+        lines.extend(drawing_quality_lines(part_kind, results, drawing, latest, group_of or {}))
     return "\n".join(lines) + "\n"
+
+
+DRAWING_CHECKS: tuple[tuple[str, str, str], ...] = (
+    ("fp", "single_pitch_tolerance", "f_pT"),
+    ("fu", "adjacent_pitch_difference_tolerance", "f_uT (Anhang G, informativ)"),
+    ("Fp", "total_cumulative_pitch_tolerance", "F_pT"),
+    ("Fr", "runout_tolerance", "F_rT (Anhang E, informativ)"),
+    ("fHa", "profile_slope_tolerance", "f_HαT (je Zahn)"),
+    ("fHb", "helix_slope_tolerance", "f_HβT (je Zahn, auf b bezogen)"),
+)
+"""Labels of the value file against the tolerance of DIN ISO 1328-1 they are checked with."""
+
+
+def drawing_exceedances(result: gina.GinaResult, limits: Mapping[str, float]) -> list[list[str]]:
+    """Values above the drawing class: ``[ME, variant, label, flank, value, tolerance]``."""
+    rows: list[list[str]] = []
+
+    def check(label: str, flank: str, value: float | None) -> None:
+        limit = limits.get(label)
+        if limit is None or value is None:
+            return
+        if abs(value) > limit:
+            rows.append([result.me, result.variant or "", label, flank, _n(value, 1), _n(limit, 1)])
+
+    for label, name in (("fHa", "profile_slope_deviation"), ("fHb", "helix_slope_deviation")):
+        deviation = result.deviation(name)
+        for flank in FLANKS:
+            for tooth in deviation.flank(flank).per_tooth:
+                check(label, f"{flank} Zahn {tooth.tooth}", tooth.value_um)
+    by_label = {value.label: value for value in result.pitch}
+    for label, pitch_label in (("fp", "fp max"), ("fu", "fu max"), ("Fp", "Fp")):
+        value = by_label.get(pitch_label)
+        if value is not None:
+            check(label, "links", value.left_um)
+            check(label, "rechts", value.right_um)
+    if "Fr" in by_label:
+        check("Fr", "", by_label["Fr"].value_um)
+    return rows
+
+
+def drawing_quality_lines(
+    part_kind: str,
+    results: Sequence[gina.GinaResult],
+    drawing: Mapping[str, Any],
+    latest: Sequence[gina.GinaResult],
+    group_of: Mapping[str, str],
+) -> list[str]:
+    """The quality the drawing demands against the measured values: for a class of DIN ISO
+    1328-1 the tolerances of ``gearcore.measurement.tolerances`` and the exceedances per file and
+    per group (latest file of every part); for a grade of DIN 3962 the note that the measuring
+    program already checks it."""
+    lines = ["", "## Zeichnungsqualität", ""]
+    norm = str(drawing.get("norm", ""))
+    if norm != "DINISO1328-1:2018":
+        lines.append(
+            f"Die Zeichnung ({drawing.get('drawing', '')}) fordert die Qualität {drawing.get('grade')} "
+            f"nach {norm}; das ist die Prüfung des Messprogramms oben, keine weitere Rechnung."
+        )
+        return lines
+    tol = tl.flank_tolerances(
+        float(drawing["reference_diameter_mm"]),
+        float(drawing["normal_module_mm"]),
+        float(drawing["face_width_mm"]),
+        int(drawing["accuracy_class"]),
+    )
+    lines.append(
+        f"Die Zeichnung ({drawing.get('drawing', '')}) fordert die Klasse {tol.accuracy_class} nach "
+        "DIN ISO 1328-1:2018-03. Toleranzen der Klasse nach den Gleichungen (5) bis (12) der Norm, "
+        "Anhang E.1 (Rundlauf) und G.2 (Teilungssprung), gerundet nach 5.2.3, für "
+        f"d = {_n(float(drawing['reference_diameter_mm']), 1)} mm, "
+        f"m_n = {_n(float(drawing['normal_module_mm']), 1)} mm, "
+        f"b = {_n(float(drawing['face_width_mm']), 1)} mm (gearcore.measurement.tolerances). "
+        "Überschreitungen: Betrag des Werts über der Klassentoleranz (Steigungsabweichungen je "
+        "Zahn, Teilung und Rundlauf je Datei); f_Hβ der Datei ist auf b bezogen, die Norm auf L_β."
+    )
+    lines.append("")
+    program = {t.label: t.left_um for result in results[:1] for t in result.tolerances}
+    limits = {label: tol.value(name) for label, name, _ in DRAWING_CHECKS}
+    lines.extend(
+        _table(
+            ["Label", "Toleranz", f"Klasse {tol.accuracy_class} in µm", "Messprogramm in µm"],
+            [
+                [label, text, _n(limits[label], 1), _n(program.get(label), 1)]
+                for label, _, text in DRAWING_CHECKS
+            ],
+        )
+    )
+    exceed = [row for result in results for row in drawing_exceedances(result, limits)]
+    lines.extend(["", f"### Überschreitungen der Klasse {tol.accuracy_class}", ""])
+    if not exceed:
+        lines.append("Keine.")
+        return lines
+    per_label: dict[str, tuple[int, set[str]]] = {}
+    for row in exceed:
+        count, files = per_label.get(row[2], (0, set()))
+        per_label[row[2]] = (count + 1, files | {row[0] + row[1]})
+    lines.extend(
+        _table(
+            ["Label", "Werte über der Toleranz", "Dateien (von " + str(len(results)) + ")"],
+            [
+                [label, str(count), str(len(files))]
+                for label, (count, files) in sorted(per_label.items())
+            ],
+        )
+    )
+    if latest:
+        lines.extend(["", "Letzte Messung je Teil, Teile mit Überschreitung je Gruppe:", ""])
+        rows: list[list[str]] = []
+        for group in sorted({group_of.get(r.me, "") for r in latest}):
+            members = [r for r in latest if group_of.get(r.me, "") == group]
+            cells = [GROUP_LABELS.get(group, group), str(len(members))]
+            for label, _, _ in DRAWING_CHECKS:
+                over = sorted(
+                    {
+                        r.me
+                        for r in members
+                        if any(x[2] == label for x in drawing_exceedances(r, limits))
+                    }
+                )
+                cells.append(f"{len(over)}" + (f" ({', '.join(over)})" if over else ""))
+            rows.append(cells)
+        lines.extend(_table(["Gruppe", "Teile", *(label for label, _, _ in DRAWING_CHECKS)], rows))
+    lines.append("")
+    lines.extend(
+        _table(["ME", "Variante", "Label", "Flanke", "Wert in µm", "Toleranz in µm"], exceed)
+    )
+    return lines
 
 
 def relief_markdown(results: Sequence[gina.GinaResult]) -> str:
@@ -815,7 +962,16 @@ def run_gina(
             ("tabelle_streuung.md", text),
             ("tabelle_streuung.csv", rp.csv_text(csv_columns, csv_rows)),
             ("wiederholbarkeit.md", repeatability_markdown(part_kind, results)),
-            ("toleranzen_protokoll.md", tolerances_markdown(part_kind, results)),
+            (
+                "toleranzen_protokoll.md",
+                tolerances_markdown(
+                    part_kind,
+                    results,
+                    decisions.get("drawing_quality", {}).get(part_kind),
+                    chosen,
+                    group_of,
+                ),
+            ),
         ]
         if part_kind == "pinion":
             files.append(("kopfruecknahme_ritzel.md", relief_markdown(results)))
@@ -1674,15 +1830,40 @@ FLAG_LABELS = {
     "wheel_torque_from_pinion": "Radmoment aus dem Ritzelmoment (Spalte Q leer)",
 }
 RUN_COLUMNS = [
-    "Lauf", "Zeilen", "Datum", "Prüfstand", "Werkstoff", "Ritzel", "Rad", "Stufe in Nm",
-    "Radmoment in Nm", "Ritzelmoment Soll in Nm", "Drehzahl Rad in 1/min",
-    "Drehzahl Ritzel in 1/min", "Öltemperatur in °C", "Lastwechsel", "Lastwechsel (Spalte S)",
-    "Lastwechsel Rad (× 51/52)", "Versagensart (Spalte J)", "Kriterium", "letzte Kontrolle ohne Anriss",
-    "erste Kontrolle mit Anriss", "Kennzeichen",
+    "Lauf",
+    "Zeilen",
+    "Datum",
+    "Prüfstand",
+    "Werkstoff",
+    "Ritzel",
+    "Rad",
+    "Stufe in Nm",
+    "Radmoment in Nm",
+    "Ritzelmoment Soll in Nm",
+    "Drehzahl Rad in 1/min",
+    "Drehzahl Ritzel in 1/min",
+    "Öltemperatur in °C",
+    "Lastwechsel",
+    "Lastwechsel (Spalte S)",
+    "Lastwechsel Rad (× 51/52)",
+    "Versagensart (Spalte J)",
+    "Kriterium",
+    "letzte Kontrolle ohne Anriss",
+    "erste Kontrolle mit Anriss",
+    "Kennzeichen",
 ]
 EVENT_COLUMNS = [
-    "Lauf", "Nr.", "Lastwechsel", "Momente in Nm", "nachgespannt auf Nm", "TA in °C", "TP in °C",
-    "Verlust in Nm", "über Lastwechsel", "Befund", "Text",
+    "Lauf",
+    "Nr.",
+    "Lastwechsel",
+    "Momente in Nm",
+    "nachgespannt auf Nm",
+    "TA in °C",
+    "TP in °C",
+    "Verlust in Nm",
+    "über Lastwechsel",
+    "Befund",
+    "Text",
 ]
 
 
@@ -1697,16 +1878,26 @@ def _opt(value: float | None, digits: int) -> str:
 def _run_row(run: tr.TestRun) -> list[str]:
     lower, upper = run.crack_window
     return [
-        run.run_id, " ".join(str(r) for r in run.rows), run.date or "", run.rig,
-        run.material or "", run.pinion_me or "", run.wheel_me or "",
+        run.run_id,
+        " ".join(str(r) for r in run.rows),
+        run.date or "",
+        run.rig,
+        run.material or "",
+        run.pinion_me or "",
+        run.wheel_me or "",
         "" if run.level_Nm is None else str(run.level_Nm),
-        _opt(run.wheel_torque_Nm, 2), _opt(run.target_pinion_torque_Nm, 2),
-        _opt(run.speed_wheel_rpm, 0), _opt(run.speed_pinion_rpm, 0),
-        run.oil_temperature_raw or "", _cycles_text(run.cycles), run.cycles_raw or "",
+        _opt(run.wheel_torque_Nm, 2),
+        _opt(run.target_pinion_torque_Nm, 2),
+        _opt(run.speed_wheel_rpm, 0),
+        _opt(run.speed_pinion_rpm, 0),
+        run.oil_temperature_raw or "",
+        _cycles_text(run.cycles),
+        run.cycles_raw or "",
         _opt(run.cycles_wheel, 0),
         (run.failure_mode or "").replace("\n", " "),
         run.criterion + (" (bestätigt)" if run.criterion_confirmed else " (Vorschlag)"),
-        _cycles_text(lower), _cycles_text(upper),
+        _cycles_text(lower),
+        _cycles_text(upper),
         "; ".join(
             ([", ".join(FLAG_LABELS.get(f, f) for f in run.flags)] if run.flags else [])
             + ([run.user_note] if run.user_note else [])
@@ -1716,28 +1907,64 @@ def _run_row(run: tr.TestRun) -> list[str]:
 
 def _overview(title: str, runs: Sequence[tr.TestRun]) -> list[str]:
     columns = [
-        "Lauf", "Datum", "Werkstoff", "Rad", "Stufe in Nm", "Radmoment in Nm",
-        "Drehzahl Rad in 1/min", "Öl in °C", "Lastwechsel", "Versagensart",
-        "Kriterium", "ohne Anriss bis", "Anriss ab", "Kennzeichen und Vermerke",
+        "Lauf",
+        "Datum",
+        "Werkstoff",
+        "Rad",
+        "Stufe in Nm",
+        "Radmoment in Nm",
+        "Drehzahl Rad in 1/min",
+        "Öl in °C",
+        "Lastwechsel",
+        "Versagensart",
+        "Kriterium",
+        "ohne Anriss bis",
+        "Anriss ab",
+        "Kennzeichen und Vermerke",
     ]
     rows: list[list[str]] = []
     for run in runs:
         r = _run_row(run)
-        rows.append([r[0], r[2], r[4], r[6], r[7], r[8], r[10], r[12], r[13], r[16], r[17],
-                     r[18], r[19], r[20]])
+        rows.append(
+            [
+                r[0],
+                r[2],
+                r[4],
+                r[6],
+                r[7],
+                r[8],
+                r[10],
+                r[12],
+                r[13],
+                r[16],
+                r[17],
+                r[18],
+                r[19],
+                r[20],
+            ]
+        )
     return [f"## {title}", "", *_table(columns, rows), ""]
 
 
 def _event_row(run: tr.TestRun, number: int, event: tr.RemarkEvent) -> list[str]:
-    after = "" if event.torque_after_Nm is None else (
-        f"{rp.german_number(event.torque_after_Nm[0], 1)} bis "
-        f"{rp.german_number(event.torque_after_Nm[1], 1)}"
+    after = (
+        ""
+        if event.torque_after_Nm is None
+        else (
+            f"{rp.german_number(event.torque_after_Nm[0], 1)} bis "
+            f"{rp.german_number(event.torque_after_Nm[1], 1)}"
+        )
     )
     return [
-        run.run_id, str(number), _cycles_text(event.cycles),
-        " ".join(rp.german_number(t, 1) for t in event.torques_Nm), after,
-        _opt(event.aggregate_temperature_C, 0), _opt(event.gearing_temperature_C, 0),
-        _opt(event.loss_Nm, 1), _cycles_text(event.loss_over_cycles),
+        run.run_id,
+        str(number),
+        _cycles_text(event.cycles),
+        " ".join(rp.german_number(t, 1) for t in event.torques_Nm),
+        after,
+        _opt(event.aggregate_temperature_C, 0),
+        _opt(event.gearing_temperature_C, 0),
+        _opt(event.loss_Nm, 1),
+        _cycles_text(event.loss_over_cycles),
         ", ".join(tr.OBSERVATION_LABELS[o] for o in event.observations),
         event.text.replace("|", "/").replace("\n", " "),
     ]
@@ -1750,13 +1977,15 @@ def testruns_tables(book: tr.Workbook) -> dict[str, str]:
     other_2026 = [r for r in runs if r.rig == "KV3" and r not in core]
     kv4 = [r for r in runs if r.rig == "KV4"]
     lines = [
-        "# Laufversuche aus `kst-E_Laufversuche_KV3.xlsx`", "",
+        "# Laufversuche aus `kst-E_Laufversuche_KV3.xlsx`",
+        "",
         f"Quelle: `{book.path}`, Blatt Tabelle1. Stufe = Radmoment (Spalte Q) auf ganze Nm "
         "gerundet; 2023 benennt die Stufen nach dem Ritzelmoment (16 Nm = 16,3 Nm am Rad), 2026 "
         "nach dem Radmoment (15,7 Nm am Ritzel). Drehzahl: auf KV3 steht in Spalte R die "
         "Ritzeldrehzahl (3058 = 2999 am Rad, 3000 entspräche 3058,8), auf KV4 die Raddrehzahl "
         "(Nutzer, 18.10.2026). Das Kriterium ist ein Vorschlag aus den Spalten J, T und U und "
-        "wird je Lauf bestätigt. Öltemperatur = Messstelle vor der Prüfverzahnung.", "",
+        "wird je Lauf bestätigt. Öltemperatur = Messstelle vor der Prüfverzahnung.",
+        "",
     ]
     lines += _overview("PA46-GF30, KV3 (2026)", core)
     lines += _overview("POM und PEEK, KV3 (2026)", other_2026)
@@ -1765,16 +1994,19 @@ def testruns_tables(book: tr.Workbook) -> dict[str, str]:
         lines += ["Nur geplante Zeilen ohne Datum und Lastspielzahl: " + ", ".join(planned), ""]
     ev_rows: list[list[str]] = []
     ev_lines = [
-        "# Ereignisse aus Spalte T (wörtlich, zur Bestätigung)", "",
+        "# Ereignisse aus Spalte T (wörtlich, zur Bestätigung)",
+        "",
         "Befund: Schlagworte des Segments; ein Nachspannen ohne Befund ist keine Aussage zum "
-        "Anriss. TA Aggregat, TP Messstelle vor der Prüfverzahnung, ein einzelner Wert ist TP.", "",
+        "Anriss. TA Aggregat, TP Messstelle vor der Prüfverzahnung, ein einzelner Wert ist TP.",
+        "",
     ]
     for run in core + other_2026 + kv4:
         if not run.events:
             continue
         ev_lines += [
             f"## {run.run_id} (Rad {run.wheel_me or '?'}, {run.material or '?'}, "
-            f"Stufe {run.level_Nm or '?'} Nm)", "",
+            f"Stufe {run.level_Nm or '?'} Nm)",
+            "",
         ]
         table_rows: list[list[str]] = []
         for n, e in enumerate(run.events, start=1):
@@ -1783,11 +2015,13 @@ def testruns_tables(book: tr.Workbook) -> dict[str, str]:
             table_rows.append(row[1:])
         ev_lines += [*_table(EVENT_COLUMNS[1:], table_rows), ""]
     cw_lines = [
-        "# Anrissfenster (erster makroskopischer Anriss nach Stommel et al.)", "",
+        "# Anrissfenster (erster makroskopischer Anriss nach Stommel et al.)",
+        "",
         "Untere Schranke: letzte Kontrolle, die keinen Anriss nennt; obere Schranke: erste "
         "Kontrolle mit Anriss oder ersten Anzeichen. Läufe ohne Zeile tragen keine Rissnotiz. "
         "Die Zeilen von 2023 (KV4) folgen der Lesart der Schlagworte und sind vom Nutzer am "
-        "Text zu prüfen; ein Nachspannen ohne Befund ist keine Aussage.", "",
+        "Text zu prüfen; ein Nachspannen ohne Befund ist keine Aussage.",
+        "",
     ]
     cw_rows: list[list[str]] = []
     for run in core + kv4 + other_2026:
@@ -1796,20 +2030,28 @@ def testruns_tables(book: tr.Workbook) -> dict[str, str]:
             continue
         quoted = upper if upper is not None else lower
         quote = next((e.text for e in run.events if e.cycles == quoted), "")
-        cw_rows.append([
-            run.run_id, run.material or "", str(run.level_Nm or ""), _cycles_text(lower),
-            _cycles_text(upper), _cycles_text(run.cycles),
-            quote[:140].replace("|", "/").replace("\n", " "),
-        ])
+        cw_rows.append(
+            [
+                run.run_id,
+                run.material or "",
+                str(run.level_Nm or ""),
+                _cycles_text(lower),
+                _cycles_text(upper),
+                _cycles_text(run.cycles),
+                quote[:140].replace("|", "/").replace("\n", " "),
+            ]
+        )
     cw_lines += _table(
         ["Lauf", "Werkstoff", "Stufe in Nm", "ohne Anriss bis", "Anriss ab", "Ende", "Zitat"],
         cw_rows,
     )
     lr_lines = [
-        "# Nachspannhistorie der PA46-GF30-Läufe: Momentverlust je Intervall", "",
+        "# Nachspannhistorie der PA46-GF30-Läufe: Momentverlust je Intervall",
+        "",
         "Verlust aus der Notiz (ca. x Nm Verlust über n) oder aus dem Moment nach dem vorherigen "
         "Nachspannen minus dem Moment vor diesem Halt. TA Aggregat, TP Messstelle vor der "
-        "Prüfverzahnung.", "",
+        "Prüfverzahnung.",
+        "",
     ]
     for run in core:
         intervals = tr.loss_intervals(run)
@@ -1818,9 +2060,17 @@ def testruns_tables(book: tr.Workbook) -> dict[str, str]:
         lr_lines += [f"## {run.run_id} (Rad {run.wheel_me}, {run.level_Nm} Nm)", ""]
         lr_lines += _table(
             ["von", "bis", "Verlust in Nm", "Nm je Mio. Lastwechsel", "TA in °C", "TP in °C"],
-            [[_cycles_text(a), _cycles_text(b), rp.german_number(loss, 1),
-              rp.german_number(rate, 2), _opt(ta, 0), _opt(tp, 0)]
-             for a, b, loss, rate, ta, tp in intervals],
+            [
+                [
+                    _cycles_text(a),
+                    _cycles_text(b),
+                    rp.german_number(loss, 1),
+                    rp.german_number(rate, 2),
+                    _opt(ta, 0),
+                    _opt(tp, 0),
+                ]
+                for a, b, loss, rate, ta, tp in intervals
+            ],
         )
         lr_lines.append("")
     tm_lines = ["# Temperaturmatrix (Stufenläufe, Zahnflankentemperatur nach 2 h)", ""]
@@ -1829,18 +2079,37 @@ def testruns_tables(book: tr.Workbook) -> dict[str, str]:
             continue
         tm_lines += [f"## {run.run_id} (Rad {run.wheel_me})", ""]
         tm_lines += _table(
-            ["Zeile", "Datum", "Ritzelmoment Soll in Nm", "Radmoment in Nm",
-             "Drehzahl Rad in 1/min", "Lastwechsel", "Flankentemperatur nach 2 h in °C",
-             "Bemerkung"],
-            [[str(s.row), s.date or "", _opt(s.target_pinion_torque_Nm, 1),
-              _opt(s.wheel_torque_Nm, 2), _opt(s.speed_wheel_rpm, 0), s.cycles_raw or "",
-              _opt(s.flank_temperature_2h_C, 1),
-              (s.remark or "").replace("|", "/").replace("\n", " ")[:110]]
-             for s in run.stages],
+            [
+                "Zeile",
+                "Datum",
+                "Ritzelmoment Soll in Nm",
+                "Radmoment in Nm",
+                "Drehzahl Rad in 1/min",
+                "Lastwechsel",
+                "Flankentemperatur nach 2 h in °C",
+                "Bemerkung",
+            ],
+            [
+                [
+                    str(s.row),
+                    s.date or "",
+                    _opt(s.target_pinion_torque_Nm, 1),
+                    _opt(s.wheel_torque_Nm, 2),
+                    _opt(s.speed_wheel_rpm, 0),
+                    s.cycles_raw or "",
+                    _opt(s.flank_temperature_2h_C, 1),
+                    (s.remark or "").replace("|", "/").replace("\n", " ")[:110],
+                ]
+                for s in run.stages
+            ],
         )
         tm_lines.append("")
-    an_lines = ["# Anomalien und Annahmen (zur Bestätigung)", "",
-                *[f"- {a}" for a in book.anomalies], ""]
+    an_lines = [
+        "# Anomalien und Annahmen (zur Bestätigung)",
+        "",
+        *[f"- {a}" for a in book.anomalies],
+        "",
+    ]
     return {
         "laufversuche.md": "\n".join(lines) + "\n",
         "laufversuche.csv": rp.csv_text(RUN_COLUMNS, [_run_row(r) for r in book.runs]),
@@ -1853,7 +2122,9 @@ def testruns_tables(book: tr.Workbook) -> dict[str, str]:
     }
 
 
-def run_testruns(path: Path, out: Path, *, confirmations: Path | None = tr.CONFIRMATIONS) -> list[Path]:
+def run_testruns(
+    path: Path, out: Path, *, confirmations: Path | None = tr.CONFIRMATIONS
+) -> list[Path]:
     book = tr.load_workbook(path)
     if confirmations is not None and confirmations.is_file():
         book = tr.apply_confirmations(book, confirmations)
@@ -1894,7 +2165,9 @@ def _slug(material: str, campaign: str) -> str:
     return (material + "_" + campaign).lower().replace("-", "").replace(" ", "_")
 
 
-def _point_groups(points: Sequence[wl.TestPoint]) -> dict[tuple[str, bool, str], list[wl.TestPoint]]:
+def _point_groups(
+    points: Sequence[wl.TestPoint],
+) -> dict[tuple[str, bool, str], list[wl.TestPoint]]:
     groups: dict[tuple[str, bool, str], list[wl.TestPoint]] = {}
     for p in points:
         if p.runout:
@@ -1914,16 +2187,28 @@ def _point_groups(points: Sequence[wl.TestPoint]) -> dict[tuple[str, bool, str],
 def _draw_points(axes: Any, points: Sequence[wl.TestPoint], colour: str, prefix: str) -> None:
     for (marker, filled, suffix), group in _point_groups(points).items():
         axes.plot(
-            [p.cycles for p in group], [p.load_Nm for p in group], linestyle="none",
-            marker=marker, color=colour, markerfacecolor=colour if filled else "white",
+            [p.cycles for p in group],
+            [p.load_Nm for p in group],
+            linestyle="none",
+            marker=marker,
+            color=colour,
+            markerfacecolor=colour if filled else "white",
             label=f"{prefix}: {suffix} (n = {len(group)})",
         )
 
 
-def _draw_line(axes: Any, fit: wl.LineFit, probability: int, colour: str, style: Any, label: str) -> None:
+def _draw_line(
+    axes: Any, fit: wl.LineFit, probability: int, colour: str, style: Any, label: str
+) -> None:
     loads = [fit.load_min + i * (fit.load_max - fit.load_min) / 60.0 for i in range(61)]
-    axes.plot([fit.cycles(load, probability) for load in loads], loads, color=colour,
-              linestyle=style, marker="none", label=label)
+    axes.plot(
+        [fit.cycles(load, probability) for load in loads],
+        loads,
+        color=colour,
+        linestyle=style,
+        marker="none",
+        label=label,
+    )
 
 
 def _axes_woehler(axes: Any, y_max: float) -> None:
@@ -1942,21 +2227,41 @@ def woehler_figure(result: wl.WoehlerResult, out: Path) -> list[Path]:
     colours = _colours()
     _draw_points(axes, result.points, colours[0], f"{result.material}, {result.campaign}")
     s = result.semilog
-    _draw_line(axes, s, 50, colours[0], LINE_STYLES[0],
-               f"50 % halblogarithmisch: lg $N_{{\\mathrm{{L}}}}$ = {_g(s.intercept, 3)} − "
-               f"{_g(s.slope, 4)} · $T_{{\\mathrm{{2}}}}$, $s_{{\\lg N}}$ = {_g(s.s_used, 3)} (n = {s.n})")
+    _draw_line(
+        axes,
+        s,
+        50,
+        colours[0],
+        LINE_STYLES[0],
+        f"50 % halblogarithmisch: lg $N_{{\\mathrm{{L}}}}$ = {_g(s.intercept, 3)} − "
+        f"{_g(s.slope, 4)} · $T_{{\\mathrm{{2}}}}$, $s_{{\\lg N}}$ = {_g(s.s_used, 3)} (n = {s.n})",
+    )
     _draw_line(axes, s, 10, colours[0], LINE_STYLES[1], "10 % nach DIN 50100 (u = −1,282)")
-    _draw_line(axes, s, 1, colours[0], LINE_STYLES[2], "1 % (u = −2,33, außerhalb des Bereichs der Norm)")
+    _draw_line(
+        axes, s, 1, colours[0], LINE_STYLES[2], "1 % (u = −2,33, außerhalb des Bereichs der Norm)"
+    )
     ll = result.loglog
-    _draw_line(axes, ll, 50, colours[1], LINE_STYLES[3],
-               f"50 % doppeltlogarithmisch: k = {_g(ll.slope, 2)}, lg C = {_g(ll.intercept, 2)}")
+    _draw_line(
+        axes,
+        ll,
+        50,
+        colours[1],
+        LINE_STYLES[3],
+        f"50 % doppeltlogarithmisch: k = {_g(ll.slope, 2)}, lg C = {_g(ll.intercept, 2)}",
+    )
     if result.vdi_s_bar is not None:
         load_of = {lvl.level_Nm: lvl.load_Nm for lvl in result.levels}
         xs = [v.N_i_10 for v in result.vdi if v.N_i_10 is not None]
         ys = [load_of[v.level_Nm] for v in result.vdi if v.N_i_10 is not None]
-        axes.plot(xs, ys, linestyle="none", marker=MARKERS[5], color=colours[1],
-                  markerfacecolor="white",
-                  label=f"10 % nach VDI 2736 Blatt 4 je Horizont (s̄ = {_g(result.vdi_s_bar, 4)})")
+        axes.plot(
+            xs,
+            ys,
+            linestyle="none",
+            marker=MARKERS[5],
+            color=colours[1],
+            markerfacecolor="white",
+            label=f"10 % nach VDI 2736 Blatt 4 je Horizont (s̄ = {_g(result.vdi_s_bar, 4)})",
+        )
     _axes_woehler(axes, 18.0)
     axes.set_yticks([lvl.level_Nm for lvl in result.levels])
     legend_outside(figure, axes, where="bottom", ncol=1)
@@ -1966,7 +2271,9 @@ def woehler_figure(result: wl.WoehlerResult, out: Path) -> list[Path]:
 
 
 def comparison_figure(
-    groups: Sequence[tuple[str, Sequence[wl.TestPoint]]], main: wl.WoehlerResult, out: Path,
+    groups: Sequence[tuple[str, Sequence[wl.TestPoint]]],
+    main: wl.WoehlerResult,
+    out: Path,
 ) -> list[Path]:
     """The materials beside each other: points per material and campaign, the 50 % line of the
     main material only."""
@@ -1976,11 +2283,23 @@ def comparison_figure(
         colour = colours[index % len(colours)]
         marker = MARKERS[index % len(MARKERS)]
         filled = "KV3" in label
-        axes.plot([p.cycles for p in points], [p.load_Nm for p in points], linestyle="none",
-                  marker=marker, color=colour, markerfacecolor=colour if filled else "white",
-                  label=f"{label} (n = {len(points)})")
-    _draw_line(axes, main.semilog, 50, colours[0], LINE_STYLES[0],
-               f"{main.material}, {main.campaign}: 50 %-Linie halblogarithmisch")
+        axes.plot(
+            [p.cycles for p in points],
+            [p.load_Nm for p in points],
+            linestyle="none",
+            marker=marker,
+            color=colour,
+            markerfacecolor=colour if filled else "white",
+            label=f"{label} (n = {len(points)})",
+        )
+    _draw_line(
+        axes,
+        main.semilog,
+        50,
+        colours[0],
+        LINE_STYLES[0],
+        f"{main.material}, {main.campaign}: 50 %-Linie halblogarithmisch",
+    )
     _axes_woehler(axes, 20.0)
     axes.set_yticks([8, 10, 12, 14, 16, 18])
     legend_outside(figure, axes, where="bottom", ncol=1)
@@ -1998,39 +2317,59 @@ def net_figures(result: wl.WoehlerResult, out: Path) -> list[Path]:
     n = len(values)
     colours = _colours()
     for kind in ("gauss", "weibull"):
+
         def transform(p: float) -> float:
             return NormalDist().inv_cdf(p) if kind == "gauss" else math.log(-math.log(1.0 - p))
 
         figure, axes = new_figure("full", 0.62)
-        for index, (estimator, name) in enumerate((("rossow", "Rossow (3j − 1)/(3n + 1)"),
-                                                   ("rank", "j/(n + 1)"))):
-            probabilities = [wl.rossow(j, n) if estimator == "rossow" else wl.rank_estimate(j, n)
-                             for j in range(1, n + 1)]
-            axes.plot(values, [transform(p) for p in probabilities], linestyle="none",
-                      marker=MARKERS[index], color=colours[index],
-                      markerfacecolor=colours[index] if index == 0 else "white",
-                      label=f"Punkte, $P_{{\\mathrm{{A}}}}$ nach {name}")
+        for index, (estimator, name) in enumerate(
+            (("rossow", "Rossow (3j − 1)/(3n + 1)"), ("rank", "j/(n + 1)"))
+        ):
+            probabilities = [
+                wl.rossow(j, n) if estimator == "rossow" else wl.rank_estimate(j, n)
+                for j in range(1, n + 1)
+            ]
+            axes.plot(
+                values,
+                [transform(p) for p in probabilities],
+                linestyle="none",
+                marker=MARKERS[index],
+                color=colours[index],
+                markerfacecolor=colours[index] if index == 0 else "white",
+                label=f"Punkte, $P_{{\\mathrm{{A}}}}$ nach {name}",
+            )
             fit = next(f for f in result.nets if f.kind == kind and f.estimator == estimator)
             grid = [min(values) * (max(values) / min(values)) ** (i / 40.0) for i in range(41)]
             ratio = "$N_{\\mathrm{L,10\\%}}/N_{\\mathrm{L,50\\%}}$"
             if kind == "gauss":
                 ys = [(math.log10(x) - fit.intercept) / fit.slope for x in grid]
-                label = (f"Gerade, {name}: $s_{{\\lg N}}$ = {_g(fit.parameter, 3)}, "
-                         f"{ratio} = {_g(fit.factor_10, 2)}, R² = {_g(fit.r_squared, 3)}")
+                label = (
+                    f"Gerade, {name}: $s_{{\\lg N}}$ = {_g(fit.parameter, 3)}, "
+                    f"{ratio} = {_g(fit.factor_10, 2)}, R² = {_g(fit.r_squared, 3)}"
+                )
             else:
                 ys = [(math.log(x) - fit.intercept) / fit.slope for x in grid]
-                label = (f"Gerade, {name}: $k_{{\\mathrm{{W}}}}$ = {_g(fit.parameter, 2)}, "
-                         f"$\\eta$ = {_g(fit.scale, 3)}, "
-                         f"{ratio} = {_g(fit.factor_10, 2)}, R² = {_g(fit.r_squared, 3)}")
-            axes.plot(grid, ys, color=colours[index], linestyle=LINE_STYLES[index], marker="none",
-                      label=label)
+                label = (
+                    f"Gerade, {name}: $k_{{\\mathrm{{W}}}}$ = {_g(fit.parameter, 2)}, "
+                    f"$\\eta$ = {_g(fit.scale, 3)}, "
+                    f"{ratio} = {_g(fit.factor_10, 2)}, R² = {_g(fit.r_squared, 3)}"
+                )
+            axes.plot(
+                grid,
+                ys,
+                color=colours[index],
+                linestyle=LINE_STYLES[index],
+                marker="none",
+                label=label,
+            )
         axes.set_xscale("log")
         from matplotlib.ticker import NullFormatter
 
         axes.set_xticks([0.5, 0.7, 1.0, 1.5, 2.0])
         axes.xaxis.set_minor_formatter(NullFormatter())
-        axes.set_yticks([transform(p / 100.0) for p in PROBABILITY_TICKS],
-                        [str(p) for p in PROBABILITY_TICKS])
+        axes.set_yticks(
+            [transform(p / 100.0) for p in PROBABILITY_TICKS], [str(p) for p in PROBABILITY_TICKS]
+        )
         axes.set_xlabel("bezogene Lastwechselzahl $N_{\\mathrm{L}} / N_{\\mathrm{L,50\\%}}$")
         axes.set_ylabel("Ausfallwahrscheinlichkeit $P_{\\mathrm{A}}$ in %")
         axes.grid(True, which="major", linewidth=0.4, color="0.85")
@@ -2046,11 +2385,15 @@ def temperature_figure(run: tr.TestRun, out: Path) -> tuple[list[Path], list[str
     matrix as bars, the 80 °C reference as a line; the table beside it."""
     cells: dict[tuple[int, int], float] = {}
     for stage in run.stages:
-        if stage.flank_temperature_2h_C is None or stage.wheel_torque_Nm is None \
-                or stage.speed_wheel_rpm is None:
+        if (
+            stage.flank_temperature_2h_C is None
+            or stage.wheel_torque_Nm is None
+            or stage.speed_wheel_rpm is None
+        ):
             continue
-        cells[(round(stage.wheel_torque_Nm), int(round(stage.speed_wheel_rpm / 10.0)) * 10)] = \
+        cells[(round(stage.wheel_torque_Nm), int(round(stage.speed_wheel_rpm / 10.0)) * 10)] = (
             stage.flank_temperature_2h_C
+        )
     if not cells:
         raise InputRangeError(f"{run.run_id}: no flank temperatures in the stages")
     levels = sorted({level for level, _ in cells})
@@ -2062,11 +2405,23 @@ def temperature_figure(run: tr.TestRun, out: Path) -> tuple[list[Path], list[str
     for index, speed in enumerate(speeds):
         xs = [i + (index - (len(speeds) - 1) / 2.0) * width for i in range(len(levels))]
         heights = [cells.get((level, speed), 0.0) for level in levels]
-        axes.bar(xs, heights, width=width * 0.85, color=colours[index], edgecolor="#000000",
-                 linewidth=0.5, hatch=hatches[index % len(hatches)],
-                 label=f"{speed} 1/min am Rad: " + " / ".join(_g(h, 1) for h in heights) + " °C")
-    axes.axhline(80.0, color=GREY, linestyle=(0, (1, 2)), linewidth=1.0,
-                 label="Bezugstemperatur 80 °C der Werkstoffkarten")
+        axes.bar(
+            xs,
+            heights,
+            width=width * 0.85,
+            color=colours[index],
+            edgecolor="#000000",
+            linewidth=0.5,
+            hatch=hatches[index % len(hatches)],
+            label=f"{speed} 1/min am Rad: " + " / ".join(_g(h, 1) for h in heights) + " °C",
+        )
+    axes.axhline(
+        80.0,
+        color=GREY,
+        linestyle=(0, (1, 2)),
+        linewidth=1.0,
+        label="Bezugstemperatur 80 °C der Werkstoffkarten",
+    )
     axes.set_xticks(list(range(len(levels))), [str(level) for level in levels])
     axes.set_xlabel("Raddrehmoment $T_{\\mathrm{2}}$ in Nm")
     axes.set_ylabel("Temperatur nach 2 h in °C")
@@ -2075,7 +2430,10 @@ def temperature_figure(run: tr.TestRun, out: Path) -> tuple[list[Path], list[str
     decimal_comma(axes, which="y")
     paths = save(figure, out / f"temperatur_matrix_{run.wheel_me or run.run_id}")
     _close(figure)
-    lines = [f"## Temperaturmatrix {run.run_id} (Rad {run.wheel_me}, Öl {run.oil_temperature_raw} °C)", ""]
+    lines = [
+        f"## Temperaturmatrix {run.run_id} (Rad {run.wheel_me}, Öl {run.oil_temperature_raw} °C)",
+        "",
+    ]
     lines += _table(
         ["Raddrehmoment in Nm"] + [f"{speed} 1/min am Rad" for speed in speeds],
         [[str(level)] + [_g(cells.get((level, speed)), 1) for speed in speeds] for level in levels],
@@ -2085,8 +2443,10 @@ def temperature_figure(run: tr.TestRun, out: Path) -> tuple[list[Path], list[str
 
 def _fit_lines(fit: wl.LineFit, label: str) -> list[str]:
     if fit.kind == "semilog":
-        form = (f"lg N_L = {_g(fit.intercept, 4)} − {_g(fit.slope, 5)} · T_2 "
-                f"(a_c = {_g(fit.intercept, 4)}, b_c = {_g(fit.slope, 5)} 1/Nm)")
+        form = (
+            f"lg N_L = {_g(fit.intercept, 4)} − {_g(fit.slope, 5)} · T_2 "
+            f"(a_c = {_g(fit.intercept, 4)}, b_c = {_g(fit.slope, 5)} 1/Nm)"
+        )
     else:
         form = f"lg N_L = {_g(fit.intercept, 4)} − {_g(fit.slope, 3)} · lg T_2 (lg C, k)"
     return [
@@ -2098,16 +2458,22 @@ def _fit_lines(fit: wl.LineFit, label: str) -> list[str]:
 
 def woehler_tables(result: wl.WoehlerResult, excluded: Sequence[str]) -> dict[str, str]:
     lines = [
-        f"# Wöhlerlinie {result.material}, {result.campaign} (Bruchlinie nach Prüfstandskriterium)", "",
+        f"# Wöhlerlinie {result.material}, {result.campaign} (Bruchlinie nach Prüfstandskriterium)",
+        "",
         "Regression mit lg N_L als abhängiger Größe im Zeitfestigkeitsbereich; Streuung gepoolt "
         "nach DIN 50100 (Perlenschnur, Gl. (36), (38), (39)); Linien nach Gl. (67) mit u = −1,282 "
         "(10 %) und −2,33 (1 %, Hasl); Untergrenze s_lgN = 0,10 (Hasl S. 118). Keine Durchläufer "
-        "in der Regression; Stufenläufe nur als Marker.", "",
+        "in der Regression; Stufenläufe nur als Marker.",
+        "",
     ]
-    lines += _fit_lines(result.semilog, "halblogarithmisch (Hasl Gl. (51), Darstellung VDI 2736 Blatt 2)")
+    lines += _fit_lines(
+        result.semilog, "halblogarithmisch (Hasl Gl. (51), Darstellung VDI 2736 Blatt 2)"
+    )
     lines += _fit_lines(result.loglog, "doppeltlogarithmisch (DIN 50100 Gl. (30), Basquin)")
     if result.all_failures is not None:
-        lines += _fit_lines(result.all_failures, "halblogarithmisch mit allen Ausfällen (ohne Regel 10.2.1)")
+        lines += _fit_lines(
+            result.all_failures, "halblogarithmisch mit allen Ausfällen (ohne Regel 10.2.1)"
+        )
     if excluded:
         lines += ["", "Nicht in der Auswertung: " + ", ".join(excluded)]
     lines += ["", "## Horizonte", ""]
@@ -2115,35 +2481,95 @@ def woehler_tables(result: wl.WoehlerResult, excluded: Sequence[str]) -> dict[st
     rows: list[list[str]] = []
     for lvl in result.levels:
         v = vdi_of[lvl.level_Nm]
-        rows.append([
-            str(lvl.level_Nm), _g(lvl.load_Nm, 2), str(lvl.n),
-            " / ".join(f"{c:,}".replace(",", " ") for c in lvl.cycles_measured),
-            f"{lvl.N_50:.3e}", f"{lvl.N_10:.3e}", f"{lvl.N_1:.3e}",
-            f"{v.N_i_50:.3e}", _g(v.s_i, 4) if v.s_i is not None else "–",
-            f"{v.N_i_10:.3e}" if v.N_i_10 is not None else "–",
-        ])
+        rows.append(
+            [
+                str(lvl.level_Nm),
+                _g(lvl.load_Nm, 2),
+                str(lvl.n),
+                " / ".join(f"{c:,}".replace(",", " ") for c in lvl.cycles_measured),
+                f"{lvl.N_50:.3e}",
+                f"{lvl.N_10:.3e}",
+                f"{lvl.N_1:.3e}",
+                f"{v.N_i_50:.3e}",
+                _g(v.s_i, 4) if v.s_i is not None else "–",
+                f"{v.N_i_10:.3e}" if v.N_i_10 is not None else "–",
+            ]
+        )
     lines += _table(
-        ["Stufe in Nm", "Radmoment in Nm", "n", "Lastwechsel gemessen", "N_50 % DIN", "N_10 % DIN",
-         "N_1 % DIN", "N_i,50 % VDI", "s_i VDI", "N_i,10 % VDI"], rows,
+        [
+            "Stufe in Nm",
+            "Radmoment in Nm",
+            "n",
+            "Lastwechsel gemessen",
+            "N_50 % DIN",
+            "N_10 % DIN",
+            "N_1 % DIN",
+            "N_i,50 % VDI",
+            "s_i VDI",
+            "N_i,10 % VDI",
+        ],
+        rows,
     )
-    lines += ["", f"VDI 2736 Blatt 4: s̄ = {_g(result.vdi_s_bar, 5)} über die Horizonte mit "
-              "Wiederholung; N_i,10 % = 10^((1 − 1,28 s̄) L_i,50 %).", ""]
-    lines += ["## Netze (bezogene Lastwechselzahlen N_L / N_L,50 % der halblogarithmischen Linie)", ""]
-    net_rows = [[
-        "Gauß" if f.kind == "gauss" else "Weibull", f.estimator, str(f.n),
-        _g(f.parameter, 4), _g(f.scale, 4), _g(f.factor_10, 3), _g(f.factor_1, 3), _g(f.r_squared, 4),
-    ] for f in result.nets]
-    lines += _table(["Netz", "P_A nach", "n", "s_lgN bzw. k", "10^μ bzw. η", "N_10/N_50", "N_1/N_50", "R²"],
-                    net_rows)
-    lines += ["", "Illenberger (PEEK, Grübchen, Tabelle 7-2): k = 3,46, N_10/N_50 = 0,58, N_1/N_50 = 0,30.", ""]
-    columns = ["Lauf", "Rad", "Stufe in Nm", "Radmoment in Nm", "Lastwechsel", "Kriterium",
-               "geschätzt", "Durchläufer", "Stufenlauf", "in der Regression"]
+    lines += [
+        "",
+        f"VDI 2736 Blatt 4: s̄ = {_g(result.vdi_s_bar, 5)} über die Horizonte mit "
+        "Wiederholung; N_i,10 % = 10^((1 − 1,28 s̄) L_i,50 %).",
+        "",
+    ]
+    lines += [
+        "## Netze (bezogene Lastwechselzahlen N_L / N_L,50 % der halblogarithmischen Linie)",
+        "",
+    ]
+    net_rows = [
+        [
+            "Gauß" if f.kind == "gauss" else "Weibull",
+            f.estimator,
+            str(f.n),
+            _g(f.parameter, 4),
+            _g(f.scale, 4),
+            _g(f.factor_10, 3),
+            _g(f.factor_1, 3),
+            _g(f.r_squared, 4),
+        ]
+        for f in result.nets
+    ]
+    lines += _table(
+        ["Netz", "P_A nach", "n", "s_lgN bzw. k", "10^μ bzw. η", "N_10/N_50", "N_1/N_50", "R²"],
+        net_rows,
+    )
+    lines += [
+        "",
+        "Illenberger (PEEK, Grübchen, Tabelle 7-2): k = 3,46, N_10/N_50 = 0,58, N_1/N_50 = 0,30.",
+        "",
+    ]
+    columns = [
+        "Lauf",
+        "Rad",
+        "Stufe in Nm",
+        "Radmoment in Nm",
+        "Lastwechsel",
+        "Kriterium",
+        "geschätzt",
+        "Durchläufer",
+        "Stufenlauf",
+        "in der Regression",
+    ]
     admitted = {p.run_id for p in result.admitted}
-    point_rows = [[
-        p.run_id, p.wheel or "", str(p.level_Nm), _g(p.load_Nm, 2), str(p.cycles), p.criterion,
-        "ja" if p.estimated else "", "ja" if p.runout else "", "ja" if p.stepped else "",
-        "ja" if p.run_id in admitted else "nein",
-    ] for p in result.points]
+    point_rows = [
+        [
+            p.run_id,
+            p.wheel or "",
+            str(p.level_Nm),
+            _g(p.load_Nm, 2),
+            str(p.cycles),
+            p.criterion,
+            "ja" if p.estimated else "",
+            "ja" if p.runout else "",
+            "ja" if p.stepped else "",
+            "ja" if p.run_id in admitted else "nein",
+        ]
+        for p in result.points
+    ]
     return {"woehler.md": "\n".join(lines) + "\n", "punkte.csv": rp.csv_text(columns, point_rows)}
 
 
@@ -2161,16 +2587,27 @@ def _comparison_groups(book: tr.Workbook) -> tuple[list[tuple[str, list[wl.TestP
         for p in points:
             speed = speed_of.get(p.run_id)
             if not p.stepped and (speed is None or abs(speed - REFERENCE_SPEED_RPM[rig]) > 5.0):
-                excluded.append(f"{p.run_id} ({material}, {rig}, Drehzahl {_g(speed, 0) or '?'} 1/min am Rad)")
+                excluded.append(
+                    f"{p.run_id} ({material}, {rig}, Drehzahl {_g(speed, 0) or '?'} 1/min am Rad)"
+                )
                 continue
             kept.append(p)
         if kept:
-            groups.append((f"{material}, {kept[0].campaign}, {REFERENCE_SPEED_RPM[rig]:.0f} 1/min am Rad", kept))
+            groups.append(
+                (
+                    f"{material}, {kept[0].campaign}, {REFERENCE_SPEED_RPM[rig]:.0f} 1/min am Rad",
+                    kept,
+                )
+            )
     return groups, excluded
 
 
 def run_woehler(
-    path: Path, out: Path, *, confirmations: Path | None = tr.CONFIRMATIONS, plots: bool = True,
+    path: Path,
+    out: Path,
+    *,
+    confirmations: Path | None = tr.CONFIRMATIONS,
+    plots: bool = True,
 ) -> list[Path]:
     apply_plot_style()
     book = tr.load_workbook(path)
@@ -2186,8 +2623,11 @@ def run_woehler(
         target = out / name
         target.write_text(text, encoding="utf-8", newline="\n")
         written.append(target)
-    lines = ["# Vergleichswerkstoff POM 2023 (Punkte bei Referenzdrehzahl; nur POM KV4 2023, "
-             "Entscheidung des Nutzers 2026-10-21)", ""]
+    lines = [
+        "# Vergleichswerkstoff POM 2023 (Punkte bei Referenzdrehzahl; nur POM KV4 2023, "
+        "Entscheidung des Nutzers 2026-10-21)",
+        "",
+    ]
     for label, points in groups[1:]:
         lines.append(f"## {label} (n = {len(points)})")
         lines.append("")
@@ -2197,10 +2637,17 @@ def run_woehler(
             lines += _fit_lines(other.loglog, "doppeltlogarithmisch")
         except InputRangeError as error:
             lines.append(f"- keine Linie: {error}")
-        lines += ["", *_table(
-            ["Lauf", "Rad", "Stufe in Nm", "Lastwechsel", "Kriterium"],
-            [[p.run_id, p.wheel or "", str(p.level_Nm), str(p.cycles), p.criterion] for p in points],
-        ), ""]
+        lines += [
+            "",
+            *_table(
+                ["Lauf", "Rad", "Stufe in Nm", "Lastwechsel", "Kriterium"],
+                [
+                    [p.run_id, p.wheel or "", str(p.level_Nm), str(p.cycles), p.criterion]
+                    for p in points
+                ],
+            ),
+            "",
+        ]
     if excluded:
         lines += ["Ausgeschlossen (andere Drehzahl): " + ", ".join(excluded), ""]
     matrix_lines: list[str] = []

@@ -17,7 +17,13 @@ centre lines. The geometry comes from the generated tooth contour (``contour.too
    gap centre. The thin element layers along the surface thereby keep their thickness.
 4. In the tip region the interior nodes are set to the mean of their neighbours. The template
    has a row of cells a few micrometres thin there, below the cells of the tip.
-5. The tooth block is made mirror symmetric about its tooth centre line; every tooth of the
+5. With the cap of the tooth tip (``counts.cap_layers``, ``resample.TipCap``) the nodes of
+   the cap are then placed from the contour: the inner centre divides the centre line between
+   the tangency row and the tip evenly, the inner corner lies radially under the arc end at
+   the depth of the land layers, and the three blocks are transfinite interpolations of their
+   sides (``resample.cap_points``), so that every quad of the cap is well shaped by
+   construction.
+6. The tooth block is made mirror symmetric about its tooth centre line; every tooth of the
    sector is a rotation of it, so the teeth are congruent by construction.
 
 Frame: millimetres, the gear axis at the origin, the bisector of the sector on +y. The teeth are
@@ -39,7 +45,7 @@ from gearcore import fillet as fl
 from gearcore._safe import integer_input, positive_input
 from gearcore.contour import Role
 from gearcore.errors import GeometryInfeasibleError, InputRangeError, NotSupportedError
-from gearcore.fe.resample import MeshCounts, resample_template
+from gearcore.fe.resample import MeshCounts, TipCap, cap_inner_points, cap_points, resample_template
 from gearcore.fe.sector_template import Block, SectorTemplate, load_sector_template
 from gearcore.models.results import GenerationResult
 
@@ -132,6 +138,7 @@ class _Lists:
     shoulder_interface: IntArray
     shoulder_cut: IntArray
     tooth_grid: IntArray
+    cap: TipCap | None = None
 
 
 def scaled_jacobians(points_mm: Array, quads: IntArray) -> Array:
@@ -314,6 +321,30 @@ def _harmonic(
     return np.asarray(result[same_as], dtype=np.float64)
 
 
+def _cap_on_contour(points: Array, cap: TipCap, partner: IntArray) -> Array:
+    """The nodes of the cap of the tooth tip placed from the contour (step 5 of the module):
+    the surface nodes and the tangency row stay where they are, the rest of the cap follows
+    from them on both halves (tooth centre on +y)."""
+    placed = points.copy()
+    row = cap.tangency_row
+    corner, land = cap.corner_grid, cap.land_grid
+    inner_corner, inner_centre = cap_inner_points(
+        placed[corner[0, -1]],
+        placed[land[0, -1]],
+        placed[row[-1]],
+        int(corner.shape[1]) - 1,
+        cap.cap_layers,
+    )
+    blocks = cap_points(
+        placed[row], placed[corner[0]], placed[land[0]], inner_corner, inner_centre, cap.cap_layers
+    )
+    for grid, block_points in zip((corner, land, cap.core_grid), blocks, strict=True):
+        placed[grid] = block_points
+    nodes = cap.nodes
+    placed[partner[nodes]] = placed[nodes] * np.array([-1.0, 1.0])
+    return placed
+
+
 def _tooth_block_polar(
     tooth: Block,
     lists: _Lists,
@@ -364,6 +395,14 @@ def _tooth_block_polar(
         here = np.column_stack((-radius * np.sin(angle), radius * np.cos(angle)))
         here = _harmonic(
             here, tooth.quads, ~in_tip_region, here, np.arange(len(radius)), by_length=False
+        )
+        radius = np.hypot(here[:, 0], here[:, 1])
+        angle = np.arctan2(-here[:, 0], here[:, 1])
+    if lists.cap is not None:
+        here = _cap_on_contour(
+            np.column_stack((-radius * np.sin(angle), radius * np.cos(angle))),
+            lists.cap,
+            lists.tooth_partner,
         )
         radius = np.hypot(here[:, 0], here[:, 1])
         angle = np.arctan2(-here[:, 0], here[:, 1])
@@ -433,8 +472,10 @@ def sector_mesh(
     ``modification`` the measured deviations of the flank (tip relief, profile slope, tip
     corner radius; ``contour.ProfileModification``) are put onto the contour; the tip corner
     arc takes the rows of the tip edge break of the template (``counts.at_tip_edge_break``,
-    three rows resolve a 0,2 mm arc to a few micrometres). A fillet variant together with a
-    modification is not built (``NotSupportedError``: ``fillet.apply`` rebuilds the involute).
+    three rows resolve a 0,2 mm arc to a few micrometres); with ``counts.cap_layers`` the
+    rows above the tangency point become the cap of the tooth tip (``resample.TipCap``), so
+    that no quad corner sits on the arc. A fillet variant together with a modification is
+    not built (``NotSupportedError``: ``fillet.apply`` rebuilds the involute).
     """
     if not isinstance(generation, GenerationResult):
         raise InputRangeError(
@@ -497,6 +538,7 @@ def sector_mesh(
             resampled.shoulder_interface,
             resampled.shoulder_cut,
             resampled.tooth_grid,
+            resampled.tip_cap,
         )
 
     # circles of the gear the template is mapped onto

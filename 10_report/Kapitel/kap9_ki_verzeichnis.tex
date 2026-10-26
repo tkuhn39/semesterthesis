@@ -1,0 +1,41 @@
+\chapter*{Einsatz generativer KI-Systeme}
+\label{chap:ki_verzeichnis}
+\markboth{Einsatz generativer KI-Systeme}{Einsatz generativer KI-Systeme}
+% Die Tabelle dieses Verzeichnisses zählt nicht als Anhangtabelle (nach \appendix liefe sie als A.n weiter).
+\setcounter{table}{0}
+\renewcommand{\thetable}{KI.\arabic{table}}
+% Gesondertes Verzeichnis nach der Eidesstattlichen Erklärung (Nutzer, 2026-10-25, Rückmeldung der
+% Betreuerin): Produktbezeichnung, genutzte Funktionen, Zuordnung zu den Abschnitten; kurz und in der
+% passiven Form des Haupttextes (Nutzer, 2026-10-25 Abend).
+
+Bei der Erstellung dieser Arbeit wurde das generative KI-System Claude Code der Firma Anthropic mit dem Sprachmodell Claude Fable 5.1 eingesetzt, ein Programmierassistent in der Entwicklungsumgebung Visual Studio Code. Der Einsatz erfolgte von Juni bis Oktober 2026 im Arbeitsverzeichnis der Arbeit mit Zugriff auf die Ergebnisdateien und Textquellen.
+
+In der Programmierung wurde das System für die Python-Programme der Vor- und Nachbereitung der Berechnungen genutzt, also für die Geometriekette, die Vernetzung und die Abaqus-Eingabedateien, die Auswertung der Serien, den Nachweis nach Stommel et al., die Auswertung der Messungen und Laufversuche sowie den Bildbau (\secref{sec:werkzeugkette}). Gleichungen mit Fundstelle, Eingabedaten und Abnahmekriterien wurden vorgegeben, die vorgeschlagene Umsetzung wurde mit Tests, Zahlenbeispielen der Quellen und den Ergebnissen von STplus geprüft. Die Simulationen liefen auf einem Lizenzrechner des Lehrstuhls für Maschinenelemente und des Lehrstuhls für Umformtechnik und Gießereiwesen.
+
+Beim Schreiben wurde das System zur sprachlichen Überarbeitung eigener Textentwürfe eingesetzt, spezifisch für Rechtschreibung, Grammatik und Satzbau, für einen durchgehenden Aufbau der Dokumentation über mehrere Kapitel hinweg und für den Abgleich der Verweise und Zahlen mit den Ergebnisdateien. Die fachlichen Inhalte, die Auswahl und Lesart der Quellen, die Bewertung der Ergebnisse und die Schlussfolgerungen wurden ohne das System erarbeitet. Jeder Abschnitt wurde geprüft und in eigener Verantwortung freigegeben. Für die Messungen, die Laufversuche, die Spritzgießsimulation, die Berechnungen der Forschungsstelle mit RIKOR und S-Life Plastics und die Rechenläufe in Abaqus wurde das System nicht eingesetzt. \tabref{tab:ki_zuordnung} ordnet den Umfang des Einsatzes den Abschnitten zu.
+
+\begin{table}[htbp]
+	\color{tumdiag3}
+	\caption{Einsatz des KI-Systems Claude Code (Modell Claude Fable 5.1) je Abschnitt dieser Arbeit.}
+	\label{tab:ki_zuordnung}
+	\centering
+	\footnotesize
+	\begin{tabular}{L{4.2cm}L{10.3cm}}
+		Abschnitt                                    & Umfang des Einsatzes                                                                                               \\
+		\hline
+		\arrayrulecolor{black!30}
+		Kapitel 1, 2, 7 und 8                        & sprachliche Überarbeitung und Gliederung eigener Entwürfe                                                          \\
+		\hline
+		Abschnitte 3.1 bis 3.4                       & sprachliche Überarbeitung eigener Entwürfe, Rechnung nach VDI 2736 Blatt 2 in der Kette                            \\
+		\hline
+		Abschnitte 3.5 bis 3.8                       & Programmierung der Geometrie- und Simulationskette und der Auswertung nach Vorgabe, sprachliche Überarbeitung      \\
+		\hline
+		Kapitel 4 und 5                              & Auswerteprogramme und Bilder, Zusammenhänge aus den Ergebnisdateien,  sprachliche Überarbeitung                    \\
+		\hline
+		Kapitel 6                                    & Importer der Arbeitsmappe, Wöhler-Auswertung, Konturverschleiß, Bildzuschnitt der Fotos, sprachliche Überarbeitung \\
+		\hline
+		Anhang, Literaturverzeichnis und Nomenklatur & Tabellen und Verzeichnisse aus den Datendateien erzeugt, Einträge von den Titelseiten übertragen, Prüfprogramme    \\
+		\hline
+		\arrayrulecolor{black}
+	\end{tabular}
+\end{table}

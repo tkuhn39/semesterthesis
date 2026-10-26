@@ -1263,35 +1263,87 @@ def _positions(
 def _runner_text() -> str:
     return "\n".join(
         [
-            "# Runs every position file in this folder one after another with Abaqus (full",
-            "# licence). Skips a position whose .sta file reports completion. Start it from the",
-            "# Abaqus command prompt in this folder:  powershell -File run_all.ps1 [-Launcher abq2025]",
-            'param([string]$Launcher = "abaqus", [int]$Cpus = 4)',
+            "# Runs every position file in this folder with Abaqus (full licence), -Parallel jobs at a",
+            "# time with -Cpus cores each (every running job takes licence tokens of its own, 5 N^0.422",
+            "# for N cores: 9 for four, so three jobs of four cores need 27). Skips a position whose",
+            "# .sta file reports completion; a slot is filled again as soon as its job (solver and the",
+            "# extraction of the fields) has ended, the slots do not wait for each other. The console",
+            "# output of a job goes to <job>.console.txt, the course of the chain to run_log.txt. Start",
+            "# it from the Abaqus command prompt in this folder:",
+            "#   powershell -File run_all.ps1 [-Launcher abq2025] [-Cpus 4] [-Parallel 3]",
+            'param([string]$Launcher = "abaqus", [int]$Cpus = 4, [int]$Parallel = 1)',
             "Set-Location $PSScriptRoot",
             '$log = Join-Path $PSScriptRoot "run_log.txt"',
-            'foreach ($deck in Get-ChildItem -Filter "pos_*.inp" | Sort-Object Name) {',
-            "    $job = $deck.BaseName",
-            '    $sta = "$job.sta"',
-            '    if ((Test-Path $sta) -and (Select-String -Path $sta -Pattern "COMPLETED SUCCESSFULLY" -Quiet)) {',
-            '        "$(Get-Date -Format s) $job already completed" | Tee-Object -FilePath $log -Append',
-            "        continue",
-            "    }",
-            '    "$(Get-Date -Format s) start $job" | Tee-Object -FilePath $log -Append',
-            '    & $Launcher "job=$job" "input=$($deck.Name)" "cpus=$Cpus" "interactive" "ask_delete=OFF"',
-            '    $outcome = "NOT completed (see $job.msg)"',
+            "if ($Parallel -lt 1) { $Parallel = 1 }",
+            "function Complete-Position($name) {",
+            '    $sta = "$name.sta"',
+            '    $outcome = "NOT completed (see $name.msg)"',
             '    if ((Test-Path $sta) -and (Select-String -Path $sta -Pattern "COMPLETED SUCCESSFULLY" -Quiet)) {',
             '        $outcome = "completed"',
             "    }",
-            '    "$(Get-Date -Format s) end $job exit $LASTEXITCODE, $outcome" | Tee-Object -FilePath $log -Append',
-            '    if ((Test-Path "$job.odb") -and (Test-Path "extract_odb.py")) {',
-            "        # the fields of the .odb (contact, fillets, heads, reference points) into",
-            "        # <job>_fields.json (build_fe_decks.py report) and the stress tensor of every",
-            "        # wheel node into <job>_stress.npz (the design check after Stommel, fe_fatigue.py)",
-            '        & $Launcher "python" "extract_odb.py" "$job" 2>&1 | Tee-Object -FilePath $log -Append',
-            '        "$(Get-Date -Format s) fields of $job written to ${job}_fields.json and ${job}_stress.npz" '
+            '    "$(Get-Date -Format s) end $name, $outcome" | Tee-Object -FilePath $log -Append',
+            '    if (Test-Path "${name}_fields.json") {',
+            '        "$(Get-Date -Format s) fields of $name written to ${name}_fields.json and ${name}_stress.npz" '
+            "| Tee-Object -FilePath $log -Append",
+            '    } elseif (Test-Path "$name.odb") {',
+            '        "$(Get-Date -Format s) fields of $name NOT extracted (see $name.console.txt)" '
             "| Tee-Object -FilePath $log -Append",
             "    }",
             "}",
+            "function Complete-Finished {",
+            '    foreach ($done in (Get-Job | Where-Object { $_.State -ne "Running" })) {',
+            "        Receive-Job $done -ErrorAction SilentlyContinue | Out-Null",
+            "        Remove-Job $done -Force",
+            "        Complete-Position $done.Name",
+            "    }",
+            "}",
+            'foreach ($deck in Get-ChildItem -Filter "pos_*.inp" | Sort-Object Name) {',
+            "    $job = $deck.BaseName",
+            '    $sta = "$job.sta"',
+            "    # a position is done when the solver completed it AND its fields are extracted (or",
+            "    # nothing is there to extract); a run cut short during the extraction is extracted again",
+            '    $solved = (Test-Path $sta) -and (Select-String -Path $sta -Pattern "COMPLETED SUCCESSFULLY" -Quiet)',
+            '    $extracted = (Test-Path "${job}_fields.json") -and (Test-Path "${job}_stress.npz")',
+            '    $extractable = (Test-Path "$job.odb") -and (Test-Path "extract_odb.py")',
+            "    if ($solved -and ($extracted -or -not $extractable)) {",
+            '        "$(Get-Date -Format s) $job already completed" | Tee-Object -FilePath $log -Append',
+            "        continue",
+            "    }",
+            '    while ((Get-Job | Where-Object { $_.State -eq "Running" }).Count -ge $Parallel) {',
+            "        Get-Job | Wait-Job -Any -Timeout 30 | Out-Null",
+            "        Complete-Finished",
+            "    }",
+            "    if ($solved) {",
+            '        "$(Get-Date -Format s) extract $job again (solved before, fields missing or cut short)" '
+            "| Tee-Object -FilePath $log -Append",
+            "    } else {",
+            '        "$(Get-Date -Format s) start $job ($Cpus cores, $Parallel at a time)" '
+            "| Tee-Object -FilePath $log -Append",
+            "    }",
+            "    # the job runs in a background PowerShell with the environment of this prompt; the",
+            "    # Abaqus call stays interactive there, and the extraction of the fields follows in the",
+            "    # same slot, so this loop never blocks and a free slot is filled at once",
+            "    Start-Job -Name $job -ScriptBlock {",
+            "        param($launcher, $folder, $name, $deckName, $cores, $solved)",
+            "        Set-Location $folder",
+            '        $console = Join-Path $folder "$name.console.txt"',
+            "        if (-not $solved) {",
+            '            & $launcher "job=$name" "input=$deckName" "cpus=$cores" "interactive" "ask_delete=OFF" 2>&1 '
+            "| Out-File -FilePath $console",
+            "        }",
+            '        if ((Test-Path "$name.odb") -and (Test-Path "extract_odb.py")) {',
+            "            # the fields of the .odb (contact, fillets, heads, reference points) into",
+            "            # <job>_fields.json (build_fe_decks.py report) and the stress tensor of every",
+            "            # wheel node into <job>_stress.npz (the design check after Stommel, fe_fatigue.py)",
+            '            & $launcher "python" "extract_odb.py" "$name" 2>&1 | Out-File -FilePath $console -Append',
+            "        }",
+            "    } -ArgumentList $Launcher, $PSScriptRoot, $job, $deck.Name, $Cpus, $solved | Out-Null",
+            "}",
+            'while ((Get-Job | Where-Object { $_.State -eq "Running" }).Count -gt 0) {',
+            "    Get-Job | Wait-Job -Any -Timeout 30 | Out-Null",
+            "    Complete-Finished",
+            "}",
+            "Complete-Finished",
             "",
         ]
     )
@@ -1857,6 +1909,7 @@ def decks(
                 "rim_rings": counts.rim_rings if counts is not None else effective.rim_rings,
                 "root_layers": counts.root_layers if counts is not None else 3,
                 "shoulder_columns": counts.shoulder_columns if counts is not None else 4,
+                "cap_layers": counts.cap_layers if counts is not None else 0,
             },
             "levels": "pocket" if level_counts is not None else "equal",
             "z_levels_mm": built.solid.z_levels_mm.tolist(),
@@ -2040,8 +2093,10 @@ def decks(
                 + ". Endet jede ohne ***ERROR, kann der Runner starten; er überspringt nur "
                 "Stellungen, deren `.sta` einen vollständigen Lauf meldet, und überschreibt die "
                 "Dateien der Datenprüfung.",
-                "3. Alle Stellungen nacheinander: `powershell -ExecutionPolicy Bypass -File run_all.ps1` "
-                "(anderer Starter: `-Launcher abq2025`, Kerne: `-Cpus 4`). Fertige Stellungen werden "
+                "3. Alle Stellungen: `powershell -ExecutionPolicy Bypass -File run_all.ps1` "
+                "(anderer Starter: `-Launcher abq2025`, Kerne je Job: `-Cpus 4`, Jobs gleichzeitig: "
+                "`-Parallel 3`, jeder laufende Job braucht eigene Lizenz-Tokens, 9 je Job mit vier "
+                "Kernen). Fertige Stellungen werden "
                 "übersprungen; `run_log.txt` protokolliert.",
                 "4. Abnahme je Stellung: `.sta` muss mit COMPLETED SUCCESSFULLY enden (ohne "
                 "Stabilisierung; Löser- und Kontakteinstellung jeder Datei stehen in ihrer Kopfzeile "
@@ -2766,7 +2821,12 @@ def le_tests(out: Path, run: bool) -> list[str]:
 
 LOG_NOTES = REPO_ROOT / "20_code" / "00_development_documentation" / "fe_simulation_notes.yaml"
 LOG_FILE = REPO_ROOT / "20_code" / "00_development_documentation" / "fe_simulation_log.md"
-RUN_LOG_LINE = re.compile(r"^(\S+) (start|end) (\S+)(?: exit (-?\d+), (.*))?$")
+RUN_LOG_LINE = re.compile(
+    r"^(\S+) (start|end) ([^\s,]+)(?: \([^)]*\))?(?: exit (-?\d+))?(?:, (.*))?$"
+)
+"""A line of ``run_log.txt``: the sequential runner writes ``start JOB`` and ``end JOB exit 0,
+completed``, the parallel runner (ADR-116 item 55 (f)) ``start JOB (4 cores, 3 at a time)`` and
+``end JOB, completed``; both are read (2026-10-25)."""
 STA_LINE = re.compile(r"^\s+(\d+)\s+(\d+)\s+(\d+)U?\s")
 
 
@@ -3420,6 +3480,7 @@ def main() -> None:
         ("root-layers", "layers normal to the root surface (= outer columns of the head)"),
         ("rings", "rings of the rim between the bore and the fan ring"),
         ("shoulder-columns", "columns of each toothless shoulder pitch"),
+        ("cap-layers", "layers of the cap of the tooth tip (0: none; for a tip corner arc)"),
     ):
         counts_group.add_argument(f"--{name}", type=int, default=None, help=text)
     _body_arguments(mesh_parser)
@@ -3482,6 +3543,7 @@ def main() -> None:
         ("root-layers", "layers normal to the root surface"),
         ("rings", "rings of the rim between the bore and the fan ring"),
         ("shoulder-columns", "columns of each toothless shoulder pitch"),
+        ("cap-layers", "layers of the cap of the tooth tip (0: none; for a tip corner arc)"),
     ):
         decks_parser.add_argument(f"--{name}", type=int, default=None, help=text)
     _body_arguments(decks_parser)
@@ -3649,6 +3711,7 @@ def main() -> None:
             "root_layers": args.root_layers,
             "rim_rings": body_counts.rings if body_counts is not None else args.rings,
             "shoulder_columns": args.shoulder_columns,
+            "cap_layers": args.cap_layers,
         }
         counts = None
         if any(value is not None for value in given.values()):
@@ -3715,6 +3778,7 @@ def main() -> None:
             "root_layers": args.root_layers,
             "rim_rings": body_counts.rings if body_counts is not None else args.rings,
             "shoulder_columns": args.shoulder_columns,
+            "cap_layers": args.cap_layers,
         }
         counts = None
         if any(value is not None for value in given.values()):

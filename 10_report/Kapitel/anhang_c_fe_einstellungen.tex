@@ -2,28 +2,41 @@
 \label{sec:anhang_c}
 % Inhalt: Netz, Elementtypen je Stufe, Kontakt, Schritte, Iterationsgrenzen, Werkstoffkarten je Rate (simulation_toolchain.md, Manifest der Serie).
 
-\tabref{tab:anhang_fe_einstellungen} fasst die Einstellungen der Serie aus \secref{sec:fe_modell} zusammen, wie das Manifest der Serie sie festhält.
+\tabref{tab:anhang_fe_einstellungen} fasst die Einstellungen der Serie aus \secref{sec:fe_modell} zusammen, wie das Manifest der Serie sie festhält. Die Serie der gefertigten Paarung aus \secref{sec:fussgeometrie_fertigung} teilt sie bis auf die Geometrie, die Kopfkappe und die Kopfrücknahme des Ritzels.
 
 % \Note{PH: Werte gegen das Manifest der Serie und die Werkzeugkarte (T6) prüfen; Versionen von Abaqus, CADMOULD und CONVERSE ergänzen.}
 
 \begin{table}[htbp]
-    \caption{Einstellungen des FE-Modells der Serie über dem Wälzweg.}
-    \label{tab:anhang_fe_einstellungen}
-    \centering
-    \footnotesize
-    \begin{tabular}{L{5.0cm}L{10.0cm}}
-        Einstellung         & Wert                                                                                                                              \\
-        \hline
-        Sektor              & fünf Zähne des Rades, mittlerer Zahn T3 ausgewertet                                                                               \\
-        Netzvorlage         & $20$ Schichten über die Zahnbreite, Bohrung $33$\,mm, Ringkörper (Serie) und Taschenkörper (Varianten)                            \\
-        Elementtyp je Stufe & W1 und W3 linear mit C3D8I; W2 und W4 mit C3D8 und geometrischer Nichtlinearität                                                  \\
-        Ritzel              & starre Fläche, Kopfkante mit $r = 0{,}10$\,mm und 12 Facetten, ohne Kopfrücknahme (Zeichnung 2025)                                \\
-        Kontakt             & Knoten-auf-Fläche, reibungsfrei, Arbeitsflanken berühren sich, das Moment schließt den Kontakt mit einer Drehung von rund $1$\,µm \\
-        Fesselung           & Bohrung und Schnittflächen des Sektors, jeder Knoten                                                                              \\
-        Stellungen          & $30$ je Teilung, Rand eine Teilung vor A und hinter E, 99 Stellungen je Serie                                                     \\
-        Lastschritte        & $8$, $12$ und $16$\,Nm am Rad, eine Analyse je Stellung                                                                           \\
-        Iterationsgrenzen   & $20$ / $30$ / $100$ je Stufe der Wiederholung                                                                                     \\
-        Werkstoffkarten     & PA46-GF30 bei $80$\,\textdegree C, quasistatisch (Serie), Dehnraten $3$ und $60$\,s$^{-1}$ (Piloten an A bis E)                   \\
-        Orientierung        & CONVERSE-Zuordnung der CADMOULD-Rechnung je Element (W3, W4)                                                                      \\
-    \end{tabular}
+	\caption{Einstellungen des FE-Modells der Serie über dem Wälzweg.}
+	\label{tab:anhang_fe_einstellungen}
+	\centering
+	\footnotesize
+	\begin{tabular}{L{5.0cm}L{10.0cm}}
+		Einstellung         & Wert                                                                                                                                                                                                                    \\
+		\hline
+		\arrayrulecolor{black!30}
+		Sektor              & fünf Zähne des Rades, mittlerer Zahn T3 ausgewertet                                                                                                                                                                     \\
+		\hline
+		Netzvorlage         & $20$ Schichten über die Zahnbreite, Bohrung $33$\,mm, Taschenkörper für die Serien und Varianten, Ringkörper in den Voruntersuchungen, Kopfkappe mit drei Elementreihen auf der Kopfrundung des gefertigten Rades \\
+		\hline
+		Elementtyp je Stufe & W1 und W3 linear mit C3D8I; W2 und W4 mit C3D8 und geometrischer Nichtlinearität                                                                                                                                        \\
+		\hline
+		Ritzel              & starre Fläche, Kopfkante mit $r = 0{,}10$\,mm und 12 Facetten, ohne Kopfrücknahme (Zeichnung 2025), in der Serie der gefertigten Paarung mit der Kopfrücknahme $23{,}6$\,µm der Messung                           \\
+		\hline
+		Kontakt             & Knoten-auf-Fläche, reibungsfrei, Arbeitsflanken berühren sich, das Moment schließt den Kontakt mit einer Drehung von rund $1$\,µm                                                                                       \\
+		\hline
+		Fesselung           & Bohrung und Schnittflächen des Sektors, jeder Knoten                                                                                                                                                                    \\
+		\hline
+		Stellungen          & $30$ je Teilung, Rand eine Teilung vor A und hinter E, 99 Stellungen je Serie                                                                                                                                           \\
+		\hline
+		Lastschritte        & $8$, $12$ und $16$\,Nm am Rad, eine Analyse je Stellung                                                                                                                                                                 \\
+		\hline
+		Iterationsgrenzen   & $20$ / $30$ / $100$ je Stufe der Wiederholung                                                                                                                                                                           \\
+		\hline
+		Werkstoffkarten     & PA46-GF30 bei $80$\,\textdegree C, quasistatisch (Serie), Dehnraten $3$ und $60$\,1/s (Piloten an A bis E, Serie der gefertigten Paarung)                                                                    \\
+		\hline
+		Orientierung        & CONVERSE-Mapping der CADMOULD-Rechnung je Element (W3, W4)                                                                                                                                                            \\
+		\hline
+		\arrayrulecolor{black}
+	\end{tabular}
 \end{table}

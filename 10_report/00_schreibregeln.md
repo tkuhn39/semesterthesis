@@ -75,6 +75,11 @@ Nach `Formeln_in_wissenschaftlichen_Arbeiten.pdf` (DIN 1338):
 5. Bilder liegen als PDF (aus SVG) oder PNG 300 dpi in `10_report/bilder/<kapitel>/`, ausgewählt
    über `10_report/bilder/bilder.yaml` und kopiert von `scripts/build_thesis_figures.py`.
 6. Überflüssig gewordene Bildversuche werden gelöscht, sobald überarbeitete Fassungen vorliegen.
+7. Tabellen (Nutzer, 2026-10-26): Kopfzeile mit schwarzer Linie darunter, zwischen den Zeilen des
+   Körpers eine hellgraue Linie (`\arrayrulecolor{black!30}` nach der Kopflinie, `\hline` nach jeder
+   Zeile, `\arrayrulecolor{black}` vor `\end{tabular}`), damit die Zeilen auseinanderzuhalten sind.
+   Erzeugte Tabellen bekommen sie aus `scripts/thesis_appendix_tables.py` (`RULE_COLOUR`). Das
+   Formelverzeichnis bleibt ohne Linien. Im Anhang beginnt jeder Abschnitt auf einer neuen Seite.
 
 ## 6 Prüfliste je Abschnitt (vor der Übergabe)
 

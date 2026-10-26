@@ -228,7 +228,7 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `transverse_base_pitch_deviation` | f_pb | µm | Transverse base pitch deviation (the values of f_pT may be used for calculations in accordance with the ISO 6336 series, using tolerances according to ISO 1328-1:2013) | ISOTR6336-30:2022, Table 2, p. 3 | Transverse base pitch deviation (ISOTR6336-30:2022, A.6, p. 46) | Inkrement 1 | verified |
 | `pitch_line_velocity` | v_w | m/s | Pitch line velocity | ISOTR6336-30:2022, Table 2, p. 4 | Pitch line velocity (ISOTR6336-30:2022, Table 2, p. 4; A.6, p. 46) | Inkrement 1 | verified |
 | `circumferential_velocity` | v | m/s | Circumferential velocity at the reference cylinder | ISOTR6336-30:2022, Table 2, p. 4 | Circumferential velocity at the reference cylinder (ISOTR6336-30:2022, Table 2, p. 4) | Inkrement 1 | verified |
-| `single_pitch_tolerance` | f_pT | µm | Single pitch tolerance (see ISO 1328-1:2013, ISO 6336 refers to f_pT as f_pt) | ISOTR6336-30:2022, Table 2, p. 3 | Single pitch tolerance (ISOTR6336-30:2022, Table A.2, p. 43) | Inkrement 1 | verified |
+| `single_pitch_tolerance` | f_pT | µm | Toleranz der Teilungs-Einzelabweichung (ISO 6336 schreibt f_pt; Gl. (5) von DIN ISO 1328-1:2018, p. 36) | ISOTR6336-30:2022, Table 2, p. 3 | Single pitch tolerance (ISOTR6336-30:2022, Table A.2, p. 43) | Inkrement 1 | verified |
 | `rotation_speed` | n | 1/min | Rotation speed of pinion (or wheel) | ISOTR6336-30:2022, Table 2, p. 4 | rotation speed of pinion (or wheel) (ISO6336-1:2019, Table 2, p. 8) | Inkrement 1 | verified |
 | `sum_of_profile_shift_coefficients` | Sigma x | - | Summe der Profilverschiebungsfaktoren | ISO21771:2014, §3.1 symbol list, p. 17; §5.3 Eq. (62), p. 41 | – | Inkrement 2 | verified |
 | `tip_alteration_coefficient` | k | - | Kopfhöhenänderungsfaktor | ISO21771:2014, §3.1 symbol list, p. 12; §4.5.2, p. 34 | – | Inkrement 2 | verified |
@@ -315,6 +315,11 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 | `adjacent_pitch_difference_tolerance` | f_uT | µm | Toleranz des Teilungssprungs | DINISO1328-1:2018, Tabelle 1, p. 11; Anhang G.2, p. 60 | Adjacent pitch difference tolerance (DINISO1328-1:2018-EN, Table 1, p. 8) | Inkrement 4 | verified |
 | `total_cumulative_pitch_tolerance` | F_pT | µm | Toleranz der Teilungs-Gesamtabweichung | DINISO1328-1:2018, Tabelle 1, p. 11 | Cumulative pitch (index) tolerance, total (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
 | `sector_pitch_tolerance` | F_pkT | µm | Toleranz der Teilungs-Sektorabweichung | DINISO1328-1:2018, Tabelle 1, p. 11 | Sector pitch tolerance (DINISO1328-1:2018-EN, Table 1, p. 10) | Inkrement 4 | verified |
+| `profile_form_tolerance` | f_f_alpha_T | µm | Toleranz der Profil-Formabweichung | DINISO1328-1:2018, Tabelle 1, p. 11; Gl. (8), p. 37 | Profile form tolerance (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `total_profile_tolerance` | F_alpha_T | µm | Toleranz der Profil-Gesamtabweichung | DINISO1328-1:2018, Tabelle 1, p. 11; Gl. (9), p. 37 | Total profile tolerance (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `helix_form_tolerance` | f_f_beta_T | µm | Toleranz der Flankenlinien-Formabweichung | DINISO1328-1:2018, Tabelle 1, p. 11; Gl. (11), p. 37 | Helix form tolerance (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `total_helix_tolerance` | F_beta_T | µm | Toleranz der Flankenlinien-Gesamtabweichung | DINISO1328-1:2018, Tabelle 1, p. 11; Gl. (12), p. 37 | Total helix tolerance (DINISO1328-1:2018-EN, Table 1, p. 9) | Inkrement 4 | verified |
+| `runout_tolerance` | F_rT | µm | Toleranz des Rundlaufs | DINISO1328-1:2018, Anhang E.4 (informativ), Gl. (E.1), p. 53 | Runout tolerance (DINISO1328-1:2018-EN, Annex E.4) | Inkrement 4 | verified |
 | `arithmetic_mean_roughness` | R_a | µm | Arithmetic mean roughness value, Ra = 1/6 Rz | ISOTR6336-30:2022, Table 2, p. 4 | – | Inkrement 4 | verified |
 | `mean_peak_to_valley_roughness` | R_z | µm | Mean peak-to-valley roughness (ISO 4287:1997a including ISO 4287:1997/Cor 1:1998, ISO 4287:1997/Cor 2:2005, ISO 4287:1997/Amd 1:2009 and ISO 4288:1996b) | ISOTR6336-30:2022, Table 2, p. 4 | – | Inkrement 4 | verified |
 | `equivalent_stress` | sigma_V | MPa | Vergleichsspannung (aus FEM) | Stommel2018, §6.1.2.2 Gl. (6.1), p. 313 | – | Inkrement 4 | verified |
@@ -783,6 +788,11 @@ Noch nicht an der Normseite geprüft (`pending`), daher oben nicht aufgeführt: 
 - `adjacent_pitch_difference_tolerance` (f_uT): Eq. (G.2): f_uT = sqrt(2) f_pT (p. 60); the P40 header stores the value it checked against (code 212/213 'fu'). Program name after the English edition (DINISO1328-1:2018-EN, Table 1).
 - `total_cumulative_pitch_tolerance` (F_pT): The P40 header stores the tolerance it checked against (code 214/215 'Fp').
 - `sector_pitch_tolerance` (F_pkT): Not what the P40 header codes 216/217 store: that is the tolerance of the program's own Fpz/8 (a sliding pitch span, see pitch_span_deviation), kept raw by the evaluation.
+- `profile_form_tolerance` (f_f_alpha_T): Computed by gearcore.measurement.tolerances (2026-10-25) to place the measured gears against the drawing's class; the P40 header stores no value for it.
+- `total_profile_tolerance` (F_alpha_T): Gl. (9): root of the squared unrounded slope and form tolerances (2026-10-25).
+- `helix_form_tolerance` (f_f_beta_T): Computed by gearcore.measurement.tolerances (2026-10-25); the P40 header stores no value for it.
+- `total_helix_tolerance` (F_beta_T): Gl. (12): root of the squared unrounded slope and form tolerances (2026-10-25).
+- `runout_tolerance` (F_rT): Informative: F_rT = 0,9 F_pT (Gl. (E.1)); Tabelle 1 prints no tolerance symbol for the runout. The P40 header code 218 'Fr' stores the value of DIN 3962 Teil 1 (grade 7: 22 µm for d 50 to 125 mm, m_n 1 to 2 mm; checked 2026-10-25).
 - `arithmetic_mean_roughness` (R_a): Defined by ISO 4287 (not in the repository); ISO/TR 6336-30 prints 'Ra' and 'Rz' without subscript. Measured by the Hommel-Etamic instrument (column 'Ra', mean of three traces 'Xq-Ra').
 - `mean_peak_to_valley_roughness` (R_z): Defined by ISO 4287 (not in the repository). Measured by the Hommel-Etamic instrument (column 'Rz', mean of three traces 'Xq-Rz').
 - `equivalent_stress` (sigma_V): Gl. (6.2), p. 322: interpoliert zwischen von-Mises-Spannung und Normalspannungshypothese; Gl. (6.16), p. 357: druckkorrigiert im statischen Nachweis.

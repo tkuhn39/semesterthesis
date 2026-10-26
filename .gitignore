@@ -6,6 +6,9 @@
 # --- Literature (large binary PDFs, not version controlled) --------------------
 00_literatur/
 
+# --- Office lock files (an open workbook leaves ~$name.xlsx behind) --------------
+~$*
+
 # --- Environment / secrets -----------------------------------------------------
 .env
 .env.*

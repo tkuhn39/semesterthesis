@@ -5,50 +5,66 @@ Neben der eigenen Simulationskette wird die Zahnfußspannung je Laststufe mit we
 
 Die Zahnfußspannung nach VDI 2736 Blatt 2 wird mit Gleichung (10) der Richtlinie aus der Nennumfangskraft $F_{\mathrm{t}}$ am Teilzylinder, der tragenden Zahnbreite $b$ und dem Normalmodul $m_{\mathrm{n}}$ berechnet \cite[S.~11]{VDI2736-2}, und die Faktoren sind in \secref{sec:vdi2736} erläutert:
 \begin{equation}
-    \sigma_{\mathrm{F}} = K_{\mathrm{F}}\,Y_{\mathrm{Fa}}\,Y_{\mathrm{Sa}}\,Y_{\varepsilon}\,Y_{\beta}\,\frac{F_{\mathrm{t}}}{b\,m_{\mathrm{n}}} \leq \sigma_{\mathrm{FP}} .
-    \label{eq:vdi2736_sigma_f}
+	\sigma_{\mathrm{F}} = K_{\mathrm{F}}\,Y_{\mathrm{Fa}}\,Y_{\mathrm{Sa}}\,Y_{\varepsilon}\,Y_{\beta}\,\frac{F_{\mathrm{t}}}{b\,m_{\mathrm{n}}} \leq \sigma_{\mathrm{FP}} .
+	\label{eq:vdi2736_sigma_f}
 \end{equation}
 Am Verspannungsprüfstand wird das Drehmoment ohne äußere Stöße aufgebracht, deshalb gilt für den Anwendungsfaktor nach \cite[Abschnitt 5, S.~19]{ISO6336-1} $K_{\mathrm{F}} = K_{\mathrm{A}} = 1{,}0$ wie in den Rechenbeispielen der Richtlinie \cite[S.~11 und 25 bis 28]{VDI2736-2}. $Y_{\varepsilon}$ folgt aus der unverformten Profilüberdeckung, $Y_{\beta}$ ist bei Geradverzahnung eins \cite[S.~13]{VDI2736-2}. Weil die Richtlinie für PA46-GF30 keine Zeitschwellfestigkeit nennt, wird allein die Spannung nach \eqref{eq:vdi2736_sigma_f} berechnet und in \secref{sec:verfahrensvergleich} über der gemessenen Lastspielzahl aufgetragen. Ein Sicherheitsnachweis entfällt.
 
-Die Bilder 1 und 2 der Richtlinie für $Y_{\mathrm{Fa}}$ und $Y_{\mathrm{Sa}}$ gelten für das Bezugsprofil nach DIN 867 mit der Fußrundung $0{,}25\,m_{\mathrm{n}}$ \cite[S.~12 bis 13]{VDI2736-2}. Das Werkzeug der Prüfverzahnung trägt $0{,}20\,m_{\mathrm{n}}$ (\tabref{tab:geometrie_kste}). Beide Faktoren werden deshalb, wie es die Fußnoten der Richtlinie zulassen, nach den in \secref{sec:vdi2736} genannten Gleichungen der ISO 6336-3 an der $30$°-Tangente der erzeugten Fußrundung bestimmt, die die Geometriekette liefert (\figref{fig:zahnkontur_kste}). Für die Fußrundungsvarianten aus \secref{sec:werkzeugkette} wird dieselbe Auswertung auf die ersetzte Kontur angewendet. \tabref{tab:vdi2736_eingaben} stellt die Eingaben zusammen.
+Die Bilder 1 und 2 der Richtlinie für $Y_{\mathrm{Fa}}$ und $Y_{\mathrm{Sa}}$ gelten für das Bezugsprofil nach DIN 867 mit der Fußrundung $0{,}25\,m_{\mathrm{n}}$ \cite[S.~12 bis 13]{VDI2736-2}. Das Werkzeug der Prüfverzahnung trägt $0{,}20\,m_{\mathrm{n}}$ (\tabref{tab:geometrie_kste}). Beide Faktoren werden deshalb, wie es die Fußnoten der Richtlinie zulassen, nach den in \secref{sec:vdi2736} genannten Gleichungen der ISO 6336-3 aus dem STplus-Bericht der kst-E übernommen. Ausgewertet wird dafür die $30$°-Tangente der erzeugten Fußrundung aus der Geometriekette (\figref{fig:zahnkontur_kste}). Für die Fußrundungsvarianten aus \secref{sec:werkzeugkette} wird dieselbe Auswertung auf die ersetzte Kontur angewendet. \tabref{tab:vdi2736_eingaben} stellt die Eingaben zusammen.
 
 % TK erledigt (Faktoren und Festigkeitswerte nur noch mit Verweis auf 2.5, Absatz auf Prüfstandsannahmen und Vorgehen gekürzt): Bitte nochmal den Abschnitt genauso mit bereits formulierten Vorgehen aus Stand d Wissenschaft und Technik abgleichen und nur das nötigste erneut aufschreiben und wesentlich reduzieren, was bereits in der Arbeit steht.
 
 \begin{table}[htbp]
-    \caption{Eingaben der Berechnung nach VDI 2736 Blatt 2 für das Rad der Prüfverzahnung kst-E. Geometrie nach \tabref{tab:geometrie_kste}, Faktoren nach den genannten Stellen der Richtlinie.}
-    \label{tab:vdi2736_eingaben}
-    \centering
-    \footnotesize
-    \setlength{\tabcolsep}{4pt}
-    \begin{tabular}{L{4.6cm}L{1.6cm}L{3.6cm}L{4.9cm}}
-        Größe                                  & Zeichen                   & Wert                            & Herkunft                                                                              \\
-        \hline
-        Zähnezahl des Rades                    & $z_{\mathrm{2}}$          & $52$                            & \tabref{tab:geometrie_kste}                                                           \\
-        Normalmodul in mm                      & $m_{\mathrm{n}}$          & $1{,}0$                         & \tabref{tab:geometrie_kste}                                                           \\
-        tragende Zahnbreite in mm              & $b$                       & $15$                            & Radbreite, Ritzel $17$\,mm                                                            \\
-        Teilkreisdurchmesser des Rades in mm   & $d_{\mathrm{2}}$          & $52{,}000$                      & \tabref{tab:geometrie_kste}                                                           \\
-        Profilüberdeckung                      & $\varepsilon_{\alpha}$    & $1{,}154$                       & \tabref{tab:geometrie_kste}                                                           \\
-        Drehmoment am Rad in Nm                & $T_{\mathrm{2}}$          & $8$; $12$; $16$                 & Versuchsplan, \secref{sec:pruefstand}                                                 \\
-        Nennumfangskraft in N                  & $F_{\mathrm{t}}$          & $307{,}7$; $461{,}5$; $615{,}4$ & $F_{\mathrm{t}} = 2\,T_{\mathrm{2}}/d_{\mathrm{2}}$, Gleichung (2) \cite{VDI2736-2}   \\
-        Faktor für Zahnfußbeanspruchung        & $K_{\mathrm{F}}$          & $1{,}0$                         & $K_{\mathrm{F}} \approx K_{\mathrm{A}}$, Prüfstand ohne Stöße \cite[S.~11]{VDI2736-2} \\
-        Überdeckungsfaktor                     & $Y_{\varepsilon}$         & $0{,}900$                       & Gleichung (11) \cite[S.~13]{VDI2736-2}                                                \\
-        Schrägenfaktor                         & $Y_{\beta}$               & $1{,}0$                         & Geradverzahnung \cite[S.~13]{VDI2736-2}                                               \\
-        Formfaktor                             & $Y_{\mathrm{Fa}}$         & $2{,}211$                       & STplus-Bericht der kst-E (Kraft am Kopf), eigene Rechnung nach ISO 6336-3 offen       \\
-        Spannungskorrekturfaktor               & $Y_{\mathrm{Sa}}$         & $1{,}904$                       & STplus-Bericht der kst-E, eigene Rechnung nach ISO 6336-3 offen                       \\
-        Spannungskorrekturfaktor des Prüfrades & $Y_{\mathrm{St}}$         & $2{,}0$                         & \cite[S.~13]{VDI2736-2}, nur zur Einordnung                                           \\
-        Zeitschwellfestigkeit                  & $\sigma_{\mathrm{FlimN}}$ & keine für PA46-GF30             & \cite[S.~14]{VDI2736-2}                                                               \\
-    \end{tabular}
+	\caption{Eingaben der Berechnung nach VDI 2736 Blatt 2 für das Rad der Prüfverzahnung kst-E. Geometrie nach \tabref{tab:geometrie_kste}, Faktoren nach den genannten Stellen der Richtlinie.}
+	\label{tab:vdi2736_eingaben}
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{L{4.6cm}L{1.6cm}L{3.6cm}L{4.9cm}}
+		Größe                                  & Zeichen                   & Wert                            & Herkunft                                                                              \\
+		\hline
+		\arrayrulecolor{black!30}
+		Zähnezahl des Rades                    & $z_{\mathrm{2}}$          & $52$                            & \tabref{tab:geometrie_kste}                                                           \\
+		\hline
+		Normalmodul in mm                      & $m_{\mathrm{n}}$          & $1{,}0$                         & \tabref{tab:geometrie_kste}                                                           \\
+		\hline
+		tragende Zahnbreite in mm              & $b$                       & $15$                            & Radbreite, Ritzel $17$\,mm                                                            \\
+		\hline
+		Teilkreisdurchmesser des Rades in mm   & $d_{\mathrm{2}}$          & $52{,}000$                      & \tabref{tab:geometrie_kste}                                                           \\
+		\hline
+		Profilüberdeckung                      & $\varepsilon_{\alpha}$    & $1{,}154$                       & \tabref{tab:geometrie_kste}                                                           \\
+		\hline
+		Drehmoment am Rad in Nm                & $T_{\mathrm{2}}$          & $8$; $12$; $16$                 & Versuchsplan, \secref{sec:pruefstand}                                                 \\
+		\hline
+		Nennumfangskraft in N                  & $F_{\mathrm{t}}$          & $307{,}7$; $461{,}5$; $615{,}4$ & $F_{\mathrm{t}} = 2\,T_{\mathrm{2}}/d_{\mathrm{2}}$, Gleichung (2) \cite{VDI2736-2}   \\
+		\hline
+		Faktor für Zahnfußbeanspruchung        & $K_{\mathrm{F}}$          & $1{,}0$                         & $K_{\mathrm{F}} \approx K_{\mathrm{A}}$, Prüfstand ohne Stöße \cite[S.~11]{VDI2736-2} \\
+		\hline
+		Überdeckungsfaktor                     & $Y_{\varepsilon}$         & $0{,}900$                       & Gleichung (11) \cite[S.~13]{VDI2736-2}                                                \\
+		\hline
+		Schrägenfaktor                         & $Y_{\beta}$               & $1{,}0$                         & Geradverzahnung \cite[S.~13]{VDI2736-2}                                               \\
+		\hline
+		Formfaktor                             & $Y_{\mathrm{Fa}}$         & $2{,}211$                       & STplus-Bericht der kst-E (Kraft am Kopf)                                              \\
+		\hline
+		Spannungskorrekturfaktor               & $Y_{\mathrm{Sa}}$         & $1{,}904$                       & STplus-Bericht der kst-E                                                              \\
+		\hline
+		Spannungskorrekturfaktor des Prüfrades & $Y_{\mathrm{St}}$         & $2{,}0$                         & \cite[S.~13]{VDI2736-2}, nur zur Einordnung                                           \\
+		\hline
+		Zeitschwellfestigkeit                  & $\sigma_{\mathrm{FlimN}}$ & keine für PA46-GF30             & \cite[S.~14]{VDI2736-2}                                                               \\
+		\hline
+		\arrayrulecolor{black}
+	\end{tabular}
 \end{table}
 
 % gestrichen (TK kap3_4:45): Absatz zur FVA-Workbench; Workbench-Werte werden nicht aufgeführt.
 
 % TK erledigt: Nein, Auswertungen vom quasistatischen Abwälzen aus der Workbench werden nicht aufgeführt. Den Absatz rausnehmen.
 
-RIKOR ist in \secref{sec:numerik_fussgeometrien} eingeordnet. Die RIKOR-Werte dieser Arbeit stammen aus Berechnungen der Forschungsstelle mit den Daten des STplus-Falls, linear elastisch mit $E = 3900$\,MPa und erweitert um die lineare Kopfrücknahme des Stahlritzels, was beim Vergleich mit dem FE-Modell ohne Rücknahme zu beachten ist (\secref{sec:verfahrensvergleich}). Die Faserorientierung des gespritzten Rades geht nicht ein. Der Beitrag von RIKOR zum Vergleich ist die Lastverteilung unter Verformung, die das Richtlinienverfahren über die Faktoren pauschal erfasst. \Note{PH: RIKOR-Version -> Liang fragen.}
+RIKOR ist in \secref{sec:numerik_fussgeometrien} eingeordnet. Die RIKOR-Werte dieser Arbeit stammen aus Berechnungen der Forschungsstelle mit RIKOR N Version 3.0 auf den Daten des STplus-Falls. Gerechnet wurde linear elastisch mit $E = 2282$\,MPa der quasistatischen Karte bei $80$\,\textdegree C wie in der Stufe W1 und mit der linearen Kopfrücknahme des Stahlritzels. Beim Vergleich mit dem FE-Modell ohne Rücknahme ist das zu beachten (\secref{sec:verfahrensvergleich}). Die Faserorientierung des gespritzten Rades geht nicht ein. Der Beitrag von RIKOR zum Vergleich ist die Lastverteilung unter Verformung, die das Richtlinienverfahren über die Faktoren pauschal erfasst.
 
 % TK erledigt (RIKOR-Beschreibung auf Herkunft der Werte gekürzt, Verweis auf 2.5): So ähnlich gibt es schonmal einen großen Abschnitt im Stand der Wissenschaft und Technik und doppelt sich damit. Eher auf die Formel im Stand der WIssenschaft und Technik zitieren und den Abschnitt wesentlich einkürzen.
 
-S-Life Plastics (PART Engineering) bewertet FE-Ergebnisse nach dem Verfahren von Stommel et al., auf das das Buch für die Anwendung verweist \cite[S.~375]{Sto18}. In dieser Arbeit dient die Version 4.0.0 der Prüfung der eigenen Umsetzung des Nachweises. In S-Life Plastics konnten nur die Oberflächenknoten ausgewertet werden, weswegen die Formeln in ein Python-Skript übertragen wurden, um den Ansatz für jeden Knoten anzuwenden. Geprüft wurde an der Stellung C des Netzes mit der Werkstoffstufe W1 bei den drei Laststufen. Die Einstellungen und der Vergleich an fünf benannten Knoten sind in \secref{sec:auswertung_beanspruchung} beschrieben. Im Verfahrensvergleich steht S-Life Plastics damit nicht als weiteres Spannungsverfahren, sondern als Gegenprobe des Nachweises auf denselben FE-Spannungen.
+S-Life Plastics (PART Engineering) bewertet FE-Ergebnisse nach dem Verfahren von Stommel et al., auf das das Buch für die Anwendung verweist \cite[S.~375]{Sto18}. In dieser Arbeit dient es der Prüfung der eigenen Umsetzung des Nachweises. In S-Life Plastics konnten nur die Oberflächenknoten ausgewertet werden, weswegen die Formeln in ein Python-Skript übertragen wurden, um den Ansatz für jeden Knoten anzuwenden. Version, Einstellungen und der Vergleich an fünf benannten Knoten stehen in \secref{sec:auswertung_beanspruchung}. Im Verfahrensvergleich steht S-Life Plastics damit nicht als weiteres Spannungsverfahren, sondern als Gegenprobe des Nachweises auf denselben FE-Spannungen.
 
 % Herkunft:
 % Absatz 1 (vier Programme, Eingabedatei, Geometriefall): ADR-116 Punkt 7 (architecture_decisions.md

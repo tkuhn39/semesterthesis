@@ -9,6 +9,178 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Dates are ISO 8601 (YYYY-MM-DD).
 
+### Added (thesis: the revision after the supervisor's feedback, the measured-geometry series computed, ADR-118 amendment of 2026-10-25)
+- 2026-10-26: the two single variants of the measured geometry (`variante_stahl_gemessen_gerechnet`,
+  `variante_kunststoff_gemessen_gerechnet`, 60 jobs each, 3,7 and 4,1 h with three jobs in
+  parallel) copied from the server and compared with the nominal pocket pilot at A to E with
+  `fe_series_analysis.py --reference`: the pinion's tip relief carries the whole effect of the
+  series "beide" (σ1 at C +7,6 % under W1 and +4,7 % under W2 at 12 Nm, B and E +7 to +18 %,
+  contact pressure −21 to −32 %, the pressure rise at C included), the wheel's rounding and
+  profile slope change σ1 at C by under 1 %, the parts add within one percentage point. Thesis:
+  sentences in 5.4.3 (no extra table, page budget), 7.3, 8.1, the outlook 8.2 (micro-geometry of
+  the manufactured parts through the GINA and contour-scan chain in every further FE model), the
+  run times in table 3.6, a forward reference in 3.1; the two placeholders for primary sources
+  (Rossow 1964, Winkler 2009) closed as double citations at the user's decision.
+  `fe_simulation_notes.yaml` entries, ADR-116 item 56 (d) closed, roadmap M7.
+- 2026-10-26, final round towards submission (user: the orange of the revision becomes black, three
+  independent language reviewers, every box and every reference checked): all 112 `\rev{}` of the
+  revision unwrapped (session script), only the reviewers' small fixes are orange again; three
+  read-only reviewer agents (chapters 1 to 3.3, 3.4 to 5.3, 5.4 to the appendix) for grammar,
+  sentence structure, duplicated explanations and ambiguous passages, no content changes; their
+  small findings applied (grammar, references, "Vorhersage" spelled out, numbers in math mode,
+  `\textdegree C` everywhere), their large findings (duplications between 7 and 8, sentences over
+  30 words, paragraph breaks, term unification) collected in a scratch file for the user's
+  decision; the six overfull boxes of the build fixed (table column widths and spacing, one word
+  order), zero boxes left; the seven twin figures of A.6 and table A.15 now referenced in the text
+  (label check script); the GINA and roughness protocol pages of A.7 scaled to 0,78 with a 4 mm
+  offset so they sit between header and footer; lossless PNG recompression measured at 0 % (the
+  photos are already optimally compressed, a real reduction would need JPEG). Second pass on the
+  user's go: the 49 large findings implemented by three agents (one per chapter block, Edit tool
+  only, every rewording in `\rev{}`, deletions of duplicates unmarked, text shorter everywhere),
+  checked by a read-only control agent; the user's decisions: "auf der sicheren Seite" only with
+  the quasistatic card (7.1, 8.1), the ring anisotropy at C is 16 to 18 % (7.2 corrected from
+  20 %), "CONVERSE-Mapping" as the one term (16 places), "Verdrehwinkel des Ritzels" for φ1,
+  "Überlastungsfall", "1/s" and `\textdegree C` everywhere, the "offen" cells of tables 3.4 and 3.7
+  removed, DIN EN ISO 21920-1 cited in table 3.3, the microscope images look at the end face
+  (table 3.3 corrected, the text was right). The control agent's 40 findings worked in (article
+  errors after the term change, term remnants, a T3/T4 swap in 5.3 at the critical node, the
+  temperature measurement of 3.2 is the thermal camera, "MEGT" instead of "METG", counts in the
+  text face); the user's decisions: the W2 critical node is in tension while T4 carries (verified
+  on the Stommel load-history plot), the benefit of the anisotropic steps at C is 4 to 29 % (the
+  table), 34 and 68 1/s. Release: every `\rev{}` unwrapped again (all black), the three drawings of
+  A.1 and the protocols of A.7 scaled to 0,78 with a 4 mm offset, class option `notodolist` (the
+  empty notes list is gone), the italic rights notice of the task description on its own page,
+  the empty "web" bibliography list removed, the first task paragraph with `\hbadness=2000` for
+  two lines of the supervisor's text, zero boxes and zero warnings in the log; `~$*` ignored.
+- 2026-10-26, appendix and wording (user's reading of 7, 8 and the appendix): every appendix
+  section starts on a new page (`\clearpage` between the `\input`s of `Kapitel/anhang.tex`), so
+  the tables and figures of one appendix stand before the text of the next; the generated
+  appendix tables (`scripts/thesis_appendix_tables.py`, `RULE_COLOUR`) and the hand table of A.3
+  carry a light rule between the body rows (the wrapped rows of A.2 were hard to tell apart),
+  and on the user's go the same rules in all 37 hand-written tables of the chapters (one-off
+  script in the session scratchpad, rule 5.7 of `10_report/00_schreibregeln.md`; the symbol list
+  stays without rules);
+  "Vorhersage" in 7.1, 7.3 and 8.1 spelled out as the predicted load-cycle number after Stommel
+  et al. where the context did not say so; the damage photos of 6.2 assigned to the wheels by
+  the user's folder names (97345 at 8 Nm, 97360 at 12 Nm, 97340 at 16 Nm), placeholder removed.
+- `gearcore.measurement.tolerances`: the flank tolerances of DIN ISO 1328-1:2018 for one class
+  (Gl. (5) to (12), step factor 5.2.2, rounding 5.2.3, the informative F_rT of Anhang E.1 and
+  f_uT of Anhang G.2), `flank_tolerances()` with the rounded set; registry entries
+  `profile_form_tolerance`, `total_profile_tolerance`, `helix_form_tolerance`,
+  `total_helix_tolerance`, `runout_tolerance`; `tests/test_measurement_tolerances.py` (hand
+  calculation for the kst-E wheel class 7 and 10 and the pinion class 6, and the statement that
+  the GINA header values are those of DIN 3962, not of DIN ISO 1328-1).
+- `scripts/measurements.py gina`: the tolerance protocol names DIN 3962 Teil 1 and Teil 2 as the
+  source of the measuring program's values (checked on the norm 2026-10-25) and adds the section
+  "Zeichnungsqualität": the drawing's class (`parts.yaml` block `drawing_quality`, wheel Q10
+  after DIN ISO 1328-1, pinion grade 6 after DIN 3962 as the program already checks), the
+  exceedances per file and per group (latest file of every part).
+- `scripts/thesis_crack_photos.py`: the nine rig photos of the wheel 97364 (one per stop, file
+  name = load cycles) cut to one window of the same pixel size around the green marks of the
+  marked teeth (wheel found by colour, marks by colour, `MARK_OFFSET` for photos without marks)
+  → `80_output/thesis/risswachstum_97364/`, listed in `bilder.yaml` (Bild 6.1 of the thesis).
+- `scripts/thesis_float_distances.py`: for a built thesis the page of every figure and table
+  against the page of its nearest mention in the text (aux labels, pdftotext per page, captions
+  excluded, mentions across line breaks); exit 1 when a float lies before every mention or
+  farther than `--max-pages` behind it.
+- `scripts/fe_series_analysis.py`: section 5 compares every series both folders share (one block
+  and one figure `vergleich_referenz_<series>_<step>` per series) and names the geometries in
+  the legend (`geometry_label`, "Nenngeometrie" against the manifest's as-manufactured
+  description); `common_positions` pairs named points by name and the rest by the nearest point
+  within 0,03 mm (the named points of the measured pairing lie up to 0,02 mm beside those of
+  the nominal one); the run-log parser reads the parallel runner's lines (`start JOB (4 cores,
+  3 at a time)`, `end JOB, completed`), also in `build_fe_decks.py`; restarted jobs get no wall
+  time. `tests/test_fe_series_analysis.py` covers the new log format.
+- Bibliography: `DIN3962-1`, `DIN3962-2` (title pages read as rendered pages 2026-10-25);
+  `sources.yaml`: `DIN3962-1:1978`, `DIN3962-2:1978`, `DIN3962-3:1978` with the table values the
+  thesis cites. Nomenclature: f_pT, F_pT, f_HαT, f_HβT, F_rT.
+- Thesis: the chapter "Einsatz generativer KI-Systeme" after the appendix
+  (`Kapitel/kap9_ki_verzeichnis.tex`: product, functions, the working method, the mapping to
+  the sections, what the system was not used for); appendix A.1 with the three drawings as
+  pages, A.7 with one GINA sheet (97364, four pages) and one roughness protocol, A.6 without
+  the placeholder; the figures `kontur_rad_gemessen`, `kontur_ritzel_gemessen`,
+  `vergleich_referenz_w2_12nm`, `risswachstum_97364_<cycles>` in `bilder.yaml`.
+
+### Changed (thesis text of the round, every change in `\rev{}`)
+- 4.4, 3.3, 7.3: the measuring program's tolerances are the tables of DIN 3962 Teil 1 and Teil 2
+  (grade 7 wheels, 6 pinions), cited with pages; the drawing's class 10 after DIN ISO 1328-1
+  computed from the norm (f_pT 31, F_pT 95, F_rT 85, f_HαT 25, f_HβT 32 µm) and the exceedances
+  counted (pitch and runout: only 97345 of the core wheels; f_Hβ per tooth: 8 of 10 core wheels
+  and all 26 scatter wheels); table 4.5 with the two tolerance columns.
+- 5.5, 7.1, 3.4, 8.1: RIKOR N 3.0 with E 2282 MPa (the supervisor's recomputation entered by the
+  user): 56,6/73,3/91,3 MPa = −5/+1/+6 % against W1, slope 6,2 instead of 5,8, the deviation
+  text rewritten.
+- 5.4.3, 3.6 (scope table), 7.3, 8.1, 8.2, A.3: the series of the gears as manufactured (1188
+  jobs, 77,6 h with three parallel jobs) evaluated against the nominal pocket series: σ1 max
+  +3 to +10 %, contact pressure max −8 to −36 %, at B and E −16 to −58 %, at C +5 to +29 %
+  (8 and 12 Nm), rotation +6 to +9 %; the design check after Stommel et al. with W2 QS at the
+  same critical node, a_B,V 1,38/1,70/2,00 (nominal 1,30/1,64/1,96), N_pred 6,5e4/2,3e3/0; with
+  the DY2 card 0,94/1,17/1,33, N_pred 3,5e7 at 8 Nm above the measured 50 % line; the Hill
+  variants as on the nominal geometry.
+- 6.1: Bild 6.1 with the nine crack-growth photos of the wheel 97364 and two sentences.
+- Preamble (2026-10-25 evening): no float barrier at sections after all (the user: only chapters start
+  a new page); instead more floats per page, every new float `[!htbp]` (a near-page figure without
+  `p` had blocked the whole float queue of chapter 6 to the chapter end) and the drifting floats moved
+  before the paragraph that first names them; `thesis_float_distances.py` measures the distances.
+- The user's questions of the night (2026-10-25/26), all worked into 5.4.3, 7.3, 8.1 and ADR-116 item
+  56 (b): the measured gears are not thinner in the model (the STplus generation already carries the
+  drawing's allowance; the cause is the pinion tip relief, which lowers the load share of the second
+  pair, not to zero); the maximum of the contact pressure and the values at B and E are different
+  comparisons; the DY2 prediction at 8 Nm lies above the fracture line and 5 to 11 times above the
+  first visible cracks. The term "Nennspannung" for the VDI 2736 Blatt 2 value is
+  "Zahnfußspannung nach VDI 2736 Blatt 2" now (ten places; the conceptual uses in 2.5 and 2.7 stay).
+  The AI chapter shortened to one page in the passive voice; Bild 5.12 shows the whole teeth
+  (`as_manufactured_figures.py plot_teeth`); Bild 6.1 with the photos d and e swapped by renaming the
+  raw files and the last window below the pinion (`thesis_crack_photos.py WINDOW_TOP`).
+- Handover for the next session: `20_code/00_development_documentation/uebergabe_2026-10-26.md`.
+
+### Added (FE: the cap of the tooth tip for the rounded wheel corner, ADR-116 amendment of 2026-10-22)
+- `gearcore.fe.resample`: `MeshCounts.cap_layers` (0 = the template, the label gets `_cap<n>`),
+  `TipCap` (the three blocks above the tangency row of the clockwise half: corner block under
+  the arc, land block under the tip circle, core between; the inner corner the one node of
+  valence 3), `cap_points` / `cap_inner_points` (transfinite interpolation of the blocks from
+  their sides, the centre line divided evenly, the inner corner radially under the arc end),
+  `_head_rows` (the head grid walked from the flank), `_with_tip_cap` (quads above the tangency
+  row replaced on both halves, mirror symmetric, surface order and features rebuilt, head flags
+  for the cap); `ResampledTemplate.tip_cap`.
+- `gearcore.fe.sector_mesh`: step 5 of the mapping, `_cap_on_contour`: after the harmonic
+  continuation and the smoothing the cap is placed again from the contour on both halves;
+  `_Lists.cap`.
+- `scripts/build_fe_decks.py mesh|decks --cap-layers`, manifest `wheel_mesh.counts.cap_layers`.
+- `scripts/build_fe_decks.py` runner (`_runner_text`, `run_all.ps1` of every deck folder):
+  `-Parallel N` runs N positions at a time, each as a background PowerShell job with the
+  interactive Abaqus call, `-Cpus` cores and the extraction of the fields in the same slot
+  (the user's twelve cores as three jobs of four, 27 licence tokens; a slot is refilled the
+  moment its job ends, the slots never wait for each other); a position counts as done only
+  with a completed .sta AND both extraction files, a run cut short during the extraction is
+  extracted again without solving again, and `fe_odb_extract.py` writes both files under a
+  `.part` name and renames them when complete; the log stays, the console output of a job
+  goes to `<job>.console.txt`; the chain starter and the
+  autostart of `nachtlauf_2026-10-19_messvarianten` pass `-Parallel` through; the six runners
+  of the chain and its source folders rewritten (`tests/test_fe_runner_parallel.py`, and a
+  run against a fake launcher: five positions, one already complete, three slots).
+- `scripts/as_manufactured_figures.py` (+ `tests/test_as_manufactured_figures.py`) →
+  `80_output/fe/kst_e/geometrie_gemessen`: per gear the root and the tip in true scale and
+  the deviation of the manufactured contour from the nominal one from the root circle to the
+  tip form point over the diameter (nearest-point distance on the outward normal; on the
+  involute checked against r_b·Δψ at equal radius; the deeper root circles, the pinion's span
+  and relief, the wheel's profile slope), and the tip of the sector mesh on the measured wheel
+  without and with the cap (user's request of 2026-10-22 for contour plots of original
+  against adjusted geometry).
+- `tests/test_fe_tip_cap.py`: validation and label, the template kept without the option, the
+  topology of the resampled block (shapes, shared sides, valences, kinds, partners, head flags),
+  the quality on the measured wheel (sine ≥ 0,5 in the head against < 0,25 before, the surface
+  path on element edges, one node per half less), the arc nodes on the arc to 1 µm.
+- Folders with the cap: `pilot_20layers_bore33_pocket_gemessen_kunststoff_cap1_round0p1f12_qsdy1dy2_AtoE`
+  (W1/W2 × QS/DY1/DY2 at A to E) and, on the user's decisions of 2026-10-22, the variant
+  "beide" only as the complete series
+  `series_20layers_bore33_pocket_gemessen_beide_cap1_round0p1f12_30perpitch_margin1_qsdy1dy2`
+  (99 positions); after the user's CONVERSE mapping of the capped mesh
+  (`wheel-pocketlevels-fertigung_mesh_{QS,DY1,DY2}.cof`, guard passed) both wheel folders
+  carry W1 to W4 × QS/DY1/DY2 (60 and 1188 jobs); the chain
+  `nachtlauf_2026-10-19_messvarianten` rebuilt with the three sub-folders, the series first.
+  Known limit FE-26 resolved, roadmap S14 built.
+
 ### Changed (thesis: the revision after the user's first reading, ADR-118 amendment of 2026-10-21)
 - `10_report/SA_16_03738470.tex`: `\rev{...}` (orange, `tumdiag3`) marks every rewritten
   sentence, paragraph, table value and caption of this revision; `\revmarkfalse` builds the

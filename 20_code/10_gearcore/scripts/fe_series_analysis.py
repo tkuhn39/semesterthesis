@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 from gearcore.errors import InputRangeError
 from gearcore.fe import evaluation as ev
 from gearcore.plot_style import apply as apply_plot_style
-from gearcore.plot_style import legend_beside, legend_outside, new_figure
+from gearcore.plot_style import legend_outside, new_figure
 from gearcore.plot_style import save as save_figure
 
 SHEET = apply_plot_style()
@@ -46,7 +46,12 @@ GLOBAL_QUANTITIES: tuple[tuple[str, str, str, float], ...] = (
 """The global quantities of the path report, their German labels and table units."""
 FORCE_THRESHOLD_N = 1.0
 """A tooth half carries load where its normal force exceeds this."""
-RUN_LOG_LINE = re.compile(r"^(\S+) (start|end) (\S+)(?: exit (-?\d+), (.*))?$")
+RUN_LOG_LINE = re.compile(
+    r"^(\S+) (start|end) ([^\s,]+)(?: \([^)]*\))?(?: exit (-?\d+))?(?:, (.*))?$"
+)
+"""A line of ``run_log.txt``: the sequential runner writes ``start JOB`` and ``end JOB exit 0,
+completed``, the parallel runner (ADR-116 item 55 (f)) ``start JOB (4 cores, 3 at a time)`` and
+``end JOB, completed``; both are read (2026-10-25)."""
 MSG_NODE = re.compile(r"NODE WHEEL-1\.(\d+) OF CONTACT PAIR")
 MSG_TAIL_LINES = 400
 STEP_LABELS = {"LOAD_8NM": "8 Nm", "LOAD_12NM": "12 Nm", "LOAD_16NM": "16 Nm"}
@@ -80,6 +85,24 @@ def describe(manifest: Mapping[str, Any]) -> str:
     edge = manifest.get("pinion_surface", {}).get("tip_rounding_mm")
     text += f", Kopfkante r = {_g(float(edge), 2)} mm" if edge else ", Kopfkante scharf"
     return text
+
+
+NOMINAL_GEOMETRY = "Nenngeometrie"
+"""Legend text of a folder without measured (as manufactured) geometry in a geometry comparison."""
+
+
+def geometry_label(manifest: Mapping[str, Any]) -> str | None:
+    """The description of the measured geometry a deck folder was built with (``build_fe_decks.py
+    decks --as-manufactured``, manifest block ``geometry.as_manufactured``), None for the nominal
+    geometry of the case."""
+    block = (
+        manifest.get("geometry", {}).get("as_manufactured")
+        if isinstance(manifest.get("geometry"), dict)
+        else None
+    )
+    if isinstance(block, dict) and block.get("description"):
+        return str(block["description"])
+    return None
 
 
 COMPARISONS: tuple[tuple[str, str, str], ...] = (
@@ -173,6 +196,9 @@ def read_run_log(folder: Path, series_of_job: Mapping[str, str]) -> tuple[JobRun
                 ).total_seconds()
             except ValueError:
                 wall = None
+        if wall is not None and wall < 0.0:
+            # a job the runner restarted (killed and started again): no wall time
+            wall = None
         runs.append(
             JobRun(
                 job=job,
@@ -290,16 +316,24 @@ def is_full_grid(points: Sequence[ev.PathPoint], steps_per_pitch: int, pitch_mm:
 
 
 def common_positions(
-    a: Sequence[ev.PathPoint], b: Sequence[ev.PathPoint], tolerance_mm: float = 1.0e-6
+    a: Sequence[ev.PathPoint], b: Sequence[ev.PathPoint], tolerance_mm: float = 0.03
 ) -> list[tuple[ev.PathPoint, ev.PathPoint]]:
-    """Pairs of points of two folders at the same position along the path."""
-    by_x = sorted(b, key=lambda p: p.from_a_mm)
+    """Pairs of points of two folders at the same position along the path: a named point (A to
+    E) with the point of the same name, every other point with the nearest point within the
+    tolerance. The tolerance of 0,03 mm (a third of the grid step of 30 per pitch) lets the
+    named points of a measured pairing match those of the nominal one, whose positions differ
+    by up to 0,02 mm (2026-10-25: C at 1,655 against 1,635 mm from A)."""
+    by_label = {q.label: q for q in b if q.label}
     pairs = []
     for point in a:
-        for other in by_x:
-            if abs(other.from_a_mm - point.from_a_mm) < tolerance_mm:
-                pairs.append((point, other))
-                break
+        if point.label and point.label in by_label:
+            pairs.append((point, by_label[point.label]))
+            continue
+        candidates = [
+            q for q in b if not q.label and abs(q.from_a_mm - point.from_a_mm) < tolerance_mm
+        ]
+        if candidates:
+            pairs.append((point, min(candidates, key=lambda q: abs(q.from_a_mm - point.from_a_mm))))
     return pairs
 
 
@@ -793,14 +827,15 @@ def analyse(
     # 5 sharp against rounded (reference folder)
     if reference is not None:
         ref_manifest, ref_series = _load(reference)
-        ref_name = reference_series or next(iter(ref_series))
-        if ref_name not in ref_series:
-            raise InputRangeError(
-                f"{reference.name} has no series {ref_name!r}: {list(ref_series)}"
-            )
-        own_name = next((s for s in by_series if step_of(s) == step_of(ref_name)), None)
-        if own_name is None:
-            raise InputRangeError(f"{folder.name} has no series of the step {step_of(ref_name)}")
+        if reference_series is not None:
+            if reference_series not in ref_series:
+                raise InputRangeError(
+                    f"{reference.name} has no series {reference_series!r}: {list(ref_series)}"
+                )
+            shared = [reference_series]
+        else:
+            # every series both folders carry (W1_QS, W2_QS, ...), else the reference's first
+            shared = [s for s in ref_series if s in by_series] or [next(iter(ref_series))]
         ref_edge = ref_manifest.get("pinion_surface", {}).get("tip_rounding_mm")
         own_edge = manifest.get("pinion_surface", {}).get("tip_rounding_mm")
 
@@ -813,101 +848,141 @@ def analyse(
             )
 
         labels = (describe(manifest), describe(ref_manifest))
+        geometry = (geometry_label(manifest), geometry_label(ref_manifest))
+        if any(geometry):
+            # one folder carries the measured geometry: the legend names the geometries, and
+            # the body and edge only when they differ (long twin labels overflow the figure)
+            geometry_labels = (geometry[0] or NOMINAL_GEOMETRY, geometry[1] or NOMINAL_GEOMETRY)
+            labels = (
+                geometry_labels
+                if labels[0] == labels[1]
+                else (f"{labels[0]}, {geometry_labels[0]}", f"{labels[1]}, {geometry_labels[1]}")
+            )
         if labels[0] == labels[1]:
             # the same body and edge in both folders: the folder names tell them apart
             labels = (f"{labels[0]} ({folder.name})", f"{labels[1]} ({reference.name})")
         doc.extend([f"## 5 Vergleich mit {reference.name}", ""])
-        pairs = common_positions(by_series[own_name], ref_series[ref_name])
-        doc.append(
-            f"Dieser Ordner ({describe(manifest)}, Serie {own_name}) gegen den Referenzordner "
-            f"{reference.name} ({describe(ref_manifest)}, Serie {ref_name}) an {len(pairs)} "
-            f"gemeinsamen Stellungen; {edge_text(own_edge)} gegen {edge_text(ref_edge)}. Bilder "
-            "`vergleich_referenz_<Schritt>`; ein Ordner mit einer Auswahl von Stellungen steht "
-            "dort als Marker ohne Linie, weil der Verlauf dazwischen nicht gerechnet ist."
-        )
-        doc.append("")
-        for step in steps:
-            pictures = figure_reference_comparison(
-                by_series[own_name],
-                ref_series[ref_name],
-                step,
-                r_b1,
-                named,
-                out / f"vergleich_referenz_{step}",
-                labels,
-                f"{SERIES_LABELS.get(step_of(own_name), own_name)}, {rate_text(own_name)}, "
-                f"{STEP_LABELS.get(step, step)}",
-                own_full=is_full_grid(by_series[own_name], steps_per_pitch, pitch_mm),
-                ref_full=is_full_grid(
-                    ref_series[ref_name],
-                    # an older reference without a grid block: judged by this folder's grid
-                    int(ref_manifest.get("grid", {}).get("steps_per_pitch") or steps_per_pitch),
-                    float(ref_manifest.get("grid", {}).get("transverse_base_pitch_mm") or pitch_mm),
-                ),
+        for ref_name in shared:
+            own_name = next((s for s in by_series if s == ref_name), None) or next(
+                (s for s in by_series if step_of(s) == step_of(ref_name)), None
             )
-            lines.append(f"{step}: " + ", ".join(p.name for p in pictures))
-            captions.append(
-                f"- `vergleich_referenz_{step}`: {labels[0]} gegen {labels[1]} über dem Wälzweg, "
-                f"{SERIES_LABELS.get(step_of(own_name), own_name)}, {rate_text(own_name)}, "
-                f"{STEP_LABELS.get(step, step)}: Verdrehweg, Fußspannung σ1, größter Kontaktdruck und "
-                "die Kraft des Nebenzahns; eine Auswahl von Stellungen als Marker ohne Linie."
+            if own_name is None:
+                raise InputRangeError(
+                    f"{folder.name} has no series of the step {step_of(ref_name)}"
+                )
+            if len(shared) > 1:
+                doc.extend([f"### Serie {own_name}", ""])
+            stem_prefix = (
+                "vergleich_referenz" if len(shared) == 1 else f"vergleich_referenz_{own_name}"
             )
-            rows = []
-            for quantity, label, unit, scale in GLOBAL_QUANTITIES:
-                own_at = values_at_points([p for p, _ in pairs], step, quantity)
-                ref_at = values_at_points([q for _, q in pairs], step, quantity)
-                own_peak = ev.extremum(ev.curve([p for p, _ in pairs], step, quantity))
-                ref_peak = ev.extremum(ev.curve([q for _, q in pairs], step, quantity))
-                rows.append(
-                    [
-                        f"{label} in {unit}",
-                        _g(ref_peak[1] * scale, 2) if ref_peak else "–",
-                        _g(own_peak[1] * scale, 2) if own_peak else "–",
-                        _pct(
-                            relative(
-                                ref_peak[1] if ref_peak else None, own_peak[1] if own_peak else None
-                            )
-                        ),
-                        *(
-                            _pct(relative(ref_at.get(k), own_at.get(k)))
-                            for k in ("A", "B", "C", "D", "E")
-                        ),
-                    ]
-                )
-            # the neighbour's load in the edge contact: outside the theoretical path only
-            # (inside it the second largest force is the handover share, about half the load)
-            own_edge_force = {
-                x: v
-                for x, v in edge_tooth_force([p for p, _ in pairs], step)
-                if not 0.0 <= x <= path_mm
-            }
-            ref_edge_force = {
-                x: v
-                for x, v in edge_tooth_force([q for _, q in pairs], step)
-                if not 0.0 <= x <= path_mm
-            }
-            if own_edge_force and ref_edge_force:
-                rows.append(
-                    [
-                        "Kraft des Nebenzahns im Kantenkontakt max in N (vor A, hinter E)",
-                        _g(max(ref_edge_force.values()), 1),
-                        _g(max(own_edge_force.values()), 1),
-                        _pct(relative(max(ref_edge_force.values()), max(own_edge_force.values()))),
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                    ]
-                )
-            doc.extend([f"### {STEP_LABELS.get(step, step)}", ""])
-            doc.extend(
-                _table(
-                    ["Größe", "Referenz max", "Serie max", "Änderung max", "A", "B", "C", "D", "E"],
-                    rows,
-                )
+            pairs = common_positions(by_series[own_name], ref_series[ref_name])
+            doc.append(
+                f"Dieser Ordner ({describe(manifest)}, Serie {own_name}) gegen den Referenzordner "
+                f"{reference.name} ({describe(ref_manifest)}, Serie {ref_name}) an {len(pairs)} "
+                f"gemeinsamen Stellungen; {edge_text(own_edge)} gegen {edge_text(ref_edge)}. Bilder "
+                "`vergleich_referenz_<Schritt>`; ein Ordner mit einer Auswahl von Stellungen steht "
+                "dort als Marker ohne Linie, weil der Verlauf dazwischen nicht gerechnet ist."
             )
             doc.append("")
+            for step in steps:
+                pictures = figure_reference_comparison(
+                    by_series[own_name],
+                    ref_series[ref_name],
+                    step,
+                    r_b1,
+                    named,
+                    out / f"{stem_prefix}_{step}",
+                    labels,
+                    f"{SERIES_LABELS.get(step_of(own_name), own_name)}, {rate_text(own_name)}, "
+                    f"{STEP_LABELS.get(step, step)}",
+                    own_full=is_full_grid(by_series[own_name], steps_per_pitch, pitch_mm),
+                    ref_full=is_full_grid(
+                        ref_series[ref_name],
+                        # an older reference without a grid block: judged by this folder's grid
+                        int(ref_manifest.get("grid", {}).get("steps_per_pitch") or steps_per_pitch),
+                        float(
+                            ref_manifest.get("grid", {}).get("transverse_base_pitch_mm") or pitch_mm
+                        ),
+                    ),
+                )
+                lines.append(f"{step}: " + ", ".join(p.name for p in pictures))
+                captions.append(
+                    f"- `{stem_prefix}_{step}`: {labels[0]} gegen {labels[1]} über dem Wälzweg, "
+                    f"{SERIES_LABELS.get(step_of(own_name), own_name)}, {rate_text(own_name)}, "
+                    f"{STEP_LABELS.get(step, step)}: Verdrehweg, Fußspannung σ1, größter Kontaktdruck und "
+                    "die Kraft des Nebenzahns; eine Auswahl von Stellungen als Marker ohne Linie."
+                )
+                rows = []
+                for quantity, label, unit, scale in GLOBAL_QUANTITIES:
+                    own_at = values_at_points([p for p, _ in pairs], step, quantity)
+                    ref_at = values_at_points([q for _, q in pairs], step, quantity)
+                    own_peak = ev.extremum(ev.curve([p for p, _ in pairs], step, quantity))
+                    ref_peak = ev.extremum(ev.curve([q for _, q in pairs], step, quantity))
+                    rows.append(
+                        [
+                            f"{label} in {unit}",
+                            _g(ref_peak[1] * scale, 2) if ref_peak else "–",
+                            _g(own_peak[1] * scale, 2) if own_peak else "–",
+                            _pct(
+                                relative(
+                                    ref_peak[1] if ref_peak else None,
+                                    own_peak[1] if own_peak else None,
+                                )
+                            ),
+                            *(
+                                _pct(relative(ref_at.get(k), own_at.get(k)))
+                                for k in ("A", "B", "C", "D", "E")
+                            ),
+                        ]
+                    )
+                # the neighbour's load in the edge contact: outside the theoretical path only
+                # (inside it the second largest force is the handover share, about half the load)
+                own_edge_force = {
+                    x: v
+                    for x, v in edge_tooth_force([p for p, _ in pairs], step)
+                    if not 0.0 <= x <= path_mm
+                }
+                ref_edge_force = {
+                    x: v
+                    for x, v in edge_tooth_force([q for _, q in pairs], step)
+                    if not 0.0 <= x <= path_mm
+                }
+                if own_edge_force and ref_edge_force:
+                    rows.append(
+                        [
+                            "Kraft des Nebenzahns im Kantenkontakt max in N (vor A, hinter E)",
+                            _g(max(ref_edge_force.values()), 1),
+                            _g(max(own_edge_force.values()), 1),
+                            _pct(
+                                relative(max(ref_edge_force.values()), max(own_edge_force.values()))
+                            ),
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                        ]
+                    )
+                doc.extend(
+                    [f"{'####' if len(shared) > 1 else '###'} {STEP_LABELS.get(step, step)}", ""]
+                )
+                doc.extend(
+                    _table(
+                        [
+                            "Größe",
+                            "Referenz max",
+                            "Serie max",
+                            "Änderung max",
+                            "A",
+                            "B",
+                            "C",
+                            "D",
+                            "E",
+                        ],
+                        rows,
+                    )
+                )
+                doc.append("")
 
     # 6 resolution
     base_pitch = grid.get("transverse_base_pitch_mm")

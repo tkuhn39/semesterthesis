@@ -1,0 +1,45 @@
+% erzeugt von 20_code/10_gearcore/scripts/thesis_appendix_tables.py, nicht von Hand ändern
+\begin{table}[htbp]
+    \caption{Ebene Decks der Konvergenzstudie auf der Abaqus-Vollversion je Elementtyp gegen den eigenen ebenen Löser in der Formulierung des Elements: Verschiebung der Kopfmitte, größte Hauptspannung an der Fußoberfläche (Knotenmittel) und künstliche Energie ALLAE der Hourglass-Kontrolle. Die Stufen t2 bis t4 verfeinern die Zahndicke auf das Zwei-, Drei- und Vierfache, u2 verfeinert gleichmäßig auf das Doppelte.}
+    \label{tab:anhang_elementtypen}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{llllllll}
+        Stufe & Element & Knoten & $u$ Abaqus & $u$ eigener Löser & $\sigma_{\mathrm{1,max}}$ Abaqus & $\sigma_{\mathrm{1,max}}$ eigener Löser & ALLAE \\
+         &  &  & \textmu m & \textmu m & MPa & MPa & N\,mm \\
+        \hline
+        \arrayrulecolor{black!30}
+        Ausgangsnetz & CPE4R & 3\,719 & $205{,}999$ & $203{,}801$ & $114{,}85$ & $125{,}42$ & $0{,}000447$ \\
+        \hline
+        Ausgangsnetz & CPE4 & 3\,719 & $203{,}801$ & $203{,}801$ & $125{,}42$ & $125{,}42$ & $0{,}000000$ \\
+        \hline
+        Ausgangsnetz & CPE4I & 3\,719 & $201{,}995$ & $201{,}990$ & $141{,}60$ & $141{,}61$ & $0{,}000000$ \\
+        \hline
+        t2 & CPE4R & 7\,021 & $204{,}422$ & $203{,}486$ & $127{,}94$ & $135{,}13$ & $0{,}000152$ \\
+        \hline
+        t2 & CPE4 & 7\,021 & $203{,}486$ & $203{,}486$ & $135{,}13$ & $135{,}13$ & $0{,}000000$ \\
+        \hline
+        t2 & CPE4I & 7\,021 & $203{,}071$ & $203{,}070$ & $147{,}61$ & $147{,}61$ & $0{,}000000$ \\
+        \hline
+        t3 & CPE4R & 10\,323 & $204{,}072$ & $203{,}469$ & $133{,}57$ & $138{,}91$ & $0{,}000124$ \\
+        \hline
+        t3 & CPE4 & 10\,323 & $203{,}469$ & $203{,}469$ & $138{,}91$ & $138{,}91$ & $0{,}000000$ \\
+        \hline
+        t3 & CPE4I & 10\,323 & $203{,}328$ & $203{,}327$ & $148{,}50$ & $148{,}50$ & $0{,}000000$ \\
+        \hline
+        t4 & CPE4R & 13\,625 & $203{,}976$ & $203{,}466$ & $136{,}69$ & $140{,}91$ & $0{,}000117$ \\
+        \hline
+        t4 & CPE4 & 13\,625 & $203{,}466$ & $203{,}466$ & $140{,}90$ & $140{,}91$ & $0{,}000000$ \\
+        \hline
+        t4 & CPE4I & 13\,625 & $203{,}424$ & $203{,}423$ & $148{,}62$ & $148{,}61$ & $0{,}000000$ \\
+        \hline
+        u2 & CPE4R & 14\,157 & $204{,}195$ & $203{,}612$ & $127{,}89$ & $135{,}11$ & $0{,}000053$ \\
+        \hline
+        u2 & CPE4 & 14\,157 & $203{,}612$ & $203{,}612$ & $135{,}11$ & $135{,}11$ & $0{,}000000$ \\
+        \hline
+        u2 & CPE4I & 14\,157 & $203{,}145$ & $203{,}145$ & $147{,}55$ & $147{,}54$ & $0{,}000000$ \\
+        \hline
+        \arrayrulecolor{black}
+    \end{tabular}
+\end{table}

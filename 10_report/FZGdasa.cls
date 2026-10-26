@@ -469,10 +469,10 @@
         \begin{otherlanguage}{ngerman}%
             \ifthenelse{\equal{\@ErlangungGrad}{}}{}{%
                 {\renewcommand{\baselinestretch}{1}\raggedright\large\normalfont
-                    Wissenschaftliche Arbeit zur Erlangung des Grades\\
-                    \@ErlangungGrad\\
-                    an der TUM School of Engineering and Design der Technischen Universität München.%
-                    \vspace{2cm}\\}%
+                        Wissenschaftliche Arbeit zur Erlangung des Grades\\
+                        \@ErlangungGrad\\
+                        an der TUM School of Engineering and Design der Technischen Universität München.%
+                        \vspace{2cm}\\}%
             }%
             \normalsize\mdseries\normalfont
             \begin{tabular}{@{}l@{\hspace{0.8cm}}l@{}}
@@ -537,6 +537,8 @@
     \InputIfFileExists{\@Aufgabepfad}{}{\ClassWarningNoLine{FZGdasa}{Das Pr\"aamble \protect\Aufgabepfad\space ist falsch oder nicht eingegeben. Definiere den Pfad der Aufgabenstellung mit \protect\Aufgabepfad{<Pfad>}}%
         \textcolor{red}{\textit{Die Aufgabenstellung muss in einer TeX Datei (.tex) zusammengefasst werden. Das Präamble \texttt{$\backslash$Aufgabepfad\{<Pfad>\}} bindet den Inhalt ein.\newline HINWEIS: Die Aufgabenstellung hat eine Länge von ein bis eineinhalb Seiten.}}}
 
+    % Der kursive Rechtehinweis beginnt vollständig auf einer neuen Seite (Nutzer, 2026-10-26).
+    \newpage
     \begin{otherlanguage}{ngerman}%
         {\itshape Die \@Arbeit\ wird nach ihrer erfolgreichen Fertigstellung in der Lehrstuhlbibliothek veröffentlicht. Informationen, Daten und EDV-Programme, die dem Studierenden während der Bearbeitung dieser \@Arbeit\ vom betreuenden Assistenten oder anderen Mitarbeitern des Lehrstuhls zugänglich gemacht werden, sind als streng vertraulich zu behandeln und verbleiben Eigentum des Lehrstuhls. Die Nutzung ist ausschließlich für die Bearbeitung und Erstellung dieser \@Arbeit\ gestattet.
 
@@ -557,6 +559,7 @@
         \chapter*{Eidesstattliche Erklärung}%\vspace{0,5cm}\\
 
         Ich erkläre hiermit eidesstattlich, dass ich die vorgelegte \@Arbeit\ selbständig angefertigt habe. Die aus fremden Quellen direkt oder indirekt übernommenen Gedanken sind als solche kenntlich gemacht.\par
+        Der Einsatz generativer KI-Systeme wird in einem gesonderten Verzeichnis vollständig dokumentiert. Die Dokumentation umfasst die jeweiligen Produktbezeichnungen, eine nachvollziehbare Beschreibung der konkret genutzten Funktionen sowie eine präzise Zuordnung des jeweiligen Anwendungsumfangs zu den entsprechenden Abschnitten dieser \@Arbeit.\par
         Die \@Arbeit\ wurde bisher keiner anderen Prüfungsbehörde vorgelegt.\vspace{4ex}\par
         \@Ort, den \@Ende\vspace{10ex}\par
         %\@Autorname

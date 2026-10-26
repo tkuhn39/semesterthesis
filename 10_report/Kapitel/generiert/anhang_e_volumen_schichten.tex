@@ -1,0 +1,27 @@
+% erzeugt von 20_code/10_gearcore/scripts/thesis_appendix_tables.py, nicht von Hand ändern
+\begin{table}[htbp]
+    \caption{Volumendecks des Radsektors mit 20, 40 und 80 Schichten über der Zahnbreite auf der Abaqus-Vollversion, Elemente C3D8R und C3D8I: Verschiebung der Kopfmitte in der Radmitte und an der Stirnfläche, größte Hauptspannung an der Fußoberfläche in der Radmitte, in der Schicht mit dem größten Wert und an der Stirnfläche, Formänderungsenergie ALLSE und künstliche Energie ALLAE.}
+    \label{tab:anhang_volumen_schichten}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{llllllllll}
+        Schichten & Element & Knoten & $u$ Mitte & $u$ Stirn & $\sigma_{\mathrm{1}}$ Mitte & $\sigma_{\mathrm{1}}$ max. & $\sigma_{\mathrm{1}}$ Stirn & ALLSE & ALLAE \\
+         &  &  & \textmu m & \textmu m & MPa & MPa & MPa & N\,mm & N\,mm \\
+        \hline
+        \arrayrulecolor{black!30}
+        20 & C3D8R & 78\,099 & $209{,}037$ & $207{,}838$ & $116{,}39$ & $119{,}39$ & $95{,}63$ & $55{,}8199$ & $0{,}018987$ \\
+        \hline
+        20 & C3D8I & 78\,099 & $204{,}867$ & $203{,}088$ & $143{,}49$ & $147{,}20$ & $108{,}34$ & $54{,}7826$ & $0{,}000000$ \\
+        \hline
+        40 & C3D8R & 152\,479 & $209{,}083$ & $207{,}861$ & $116{,}38$ & $119{,}30$ & $89{,}20$ & $55{,}8250$ & $0{,}016763$ \\
+        \hline
+        40 & C3D8I & 152\,479 & $204{,}932$ & $203{,}542$ & $143{,}53$ & $147{,}25$ & $101{,}57$ & $54{,}8042$ & $0{,}000000$ \\
+        \hline
+        80 & C3D8R & 301\,239 & $209{,}094$ & $207{,}870$ & $116{,}38$ & $119{,}31$ & $83{,}84$ & $55{,}8265$ & $0{,}016086$ \\
+        \hline
+        80 & C3D8I & 301\,239 & $204{,}950$ & $203{,}742$ & $143{,}55$ & $147{,}28$ & $96{,}80$ & $54{,}8117$ & $0{,}000000$ \\
+        \hline
+        \arrayrulecolor{black}
+    \end{tabular}
+\end{table}

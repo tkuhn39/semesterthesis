@@ -506,18 +506,43 @@ folders:
     outcome: "Vorlage; erster Unterordner der Kette nachtlauf_2026-10-19_messvarianten"
     machine: "-"
     findings: [FE-19]
-  pilot_20layers_bore33_pocket_gemessen_kunststoff_round0p1f12_qsdy1dy2_AtoE:
-    purpose: "Gemessene Geometrie, Variante kunststoff (ADR-116 Punkt 54): Stahlritzel nach dem STplus-Fall, Kunststoffrad wie gefertigt (Median der Kerngruppe: Zahnweite 16,972, Kopfkreis 54,0515, Fußkreis 49,5055 mm, Profil-Winkelabweichung +10,25 µm ab d_Cf 50,3 mit Nullpunkt am Messkreis d_M 51,728, Kopfkantenrundung r_K 0,21 mm statt der 45°-Fase); Taschenkörper auf dem gemessenen Zahn, drei Elementreihen auf dem Bogen (86 800 Knoten, 75 732 C3D8I), Ritzelkante 0,1 mm, A bis E (pos_031/036/049/063/068); W1 und W2 × QS/DY1/DY2 (30 Jobs), W3/W4 nach dem CONVERSE-Mapping des Nutzers auf wheel-pocket_mesh.inp"
-    outcome: "Vorlage; zweiter Unterordner der Kette nachtlauf_2026-10-19_messvarianten"
+  pilot_20layers_bore33_pocket_gemessen_kunststoff_cap1_round0p1f12_qsdy1dy2_AtoE:
+    purpose: "Gemessene Geometrie, Variante kunststoff (ADR-116 Punkt 54): Stahlritzel nach dem STplus-Fall, Kunststoffrad wie gefertigt (Median der Kerngruppe: Zahnweite 16,972, Kopfkreis 54,0515, Fußkreis 49,5055 mm, Profil-Winkelabweichung +10,25 µm ab d_Cf 50,3 mit Nullpunkt am Messkreis d_M 51,728, Kopfkantenrundung r_K 0,21 mm statt der 45°-Fase); Taschenkörper auf dem gemessenen Zahn, drei Elementreihen auf dem Bogen und die Kopfkappe (ADR-116 Punkt 55, `--cap-layers 1`: Grenzschicht um Bogen und Kopfkreis, Blockecke im Zahn, kein Elementeck auf dem Bogen; 87 955 Knoten, 76 932 C3D8I, kleinster Eckensinus 0,617 statt 0,192), Ritzelkante 0,1 mm, A bis E (pos_031/036/049/063/068); W1 bis W4 × QS/DY1/DY2 (60 Jobs) mit den Karten des CONVERSE-Mappings des Nutzers auf das Kappennetz (wheel-pocketlevels-fertigung_mesh_{QS,DY1,DY2}.cof, 2026-10-22, Marken geprüft). Ersetzt den Ordner ohne Kappe vom 2026-10-19 (86 800 Knoten, FE-26)"
+    outcome: "Vorlage; zweiter Unterordner der Kette nachtlauf_2026-10-19_messvarianten (variante_kunststoff_gemessen)"
     machine: "-"
-    findings: [FE-19, FE-26]
-  pilot_20layers_bore33_pocket_gemessen_beide_round0p1f12_qsdy1dy2_AtoE:
-    purpose: "Gemessene Geometrie, Variante beide (ADR-116 Punkt 54): Stahlritzel und Kunststoffrad wie gefertigt (die Zahlen der beiden Einzelvarianten); Radnetz byteidentisch mit der Variante kunststoff, Ritzelfläche byteidentisch mit der Variante stahl; A bis E (pos_031/036/049/063/068); W1 und W2 × QS/DY1/DY2 (30 Jobs), W3/W4 nach dem Mapping"
-    outcome: "Vorlage; dritter Unterordner der Kette nachtlauf_2026-10-19_messvarianten"
+    findings: [FE-19]
+  series_20layers_bore33_pocket_gemessen_beide_cap1_round0p1f12_30perpitch_margin1_qsdy1dy2:
+    purpose: "Gemessene Geometrie, Variante beide als Serie (Entscheidung des Nutzers 2026-10-22, ADR-116 Punkt 55 (e)): Stahlritzel und Kunststoffrad wie gefertigt (die Zahlen der beiden Einzelvarianten), alle 99 Stellungen der Taschenserie (30 je Teilung, Rand 1,0; A bis E = 31/36/49/63/68), QS/DY1/DY2, W1 bis W4 (1188 Jobs, rund 120 h) mit den Karten des Mappings auf das Kappennetz (wheel-pocketlevels-fertigung_mesh_*.cof); Radnetz mit der Kopfkappe byteidentisch mit der Variante kunststoff, Ritzelfläche byteidentisch mit der Variante stahl; ein eigener A-bis-E-Ordner entfällt (Nutzer 2026-10-22). Zweck: der Wälzweg der Fertigverzahnung (Wälzwegbilder, Stommel-Serie) gegen die Taschenserie des STplus-Falls"
+    outcome: "Vorlage; erster Unterordner der Kette nachtlauf_2026-10-19_messvarianten (serie_beide_gemessen, auf Wunsch des Nutzers zuerst)"
     machine: "-"
-    findings: [FE-19, FE-26]
+    findings: [FE-19]
+  tasche_serie_w1w4_qs_gerechnet:
+    purpose: "Serie über dem Wälzweg auf dem Taschenkörper, W1 bis W4, QS, 30 je Teilung, Rand eine Teilung (Hauptfall der Kapitel 5.2 bis 5.5 und 7)"
+    outcome: "396 Jobs, 387 vollständig (9 Abbrüche in LOAD_16NM: W1 010/040/045/072/077, W3 040/045/072/077), 67,1 h sequentiell 2026-10-16 bis 2026-10-19; ODBs 139,6 GiB lokal (W1 263, W2/W3 370, W4 406 MiB je Job); Auswertung analyse/, stommel_W1_QS, stommel_W2_QS, stommel_hill_W1/W3/W4_QS"
+    machine: "Vollversion"
+    findings: [FE-19]
+  serie_beide_gemessen_gerechnet:
+    purpose: "Serie der gefertigten Paarung (Variante beide, ADR-116 Punkt 54 und 55): Taschenkörper, Kopfkappe, 87 955 Knoten, W1 bis W4 × QS/DY1/DY2, 99 Stellungen, gerechnet mit drei Jobs zu je vier Kernen"
+    outcome: "1188 Jobs vollständig, 2026-10-22 11:38 bis 2026-10-25 17:16 (77,6 h), ≈ 24 Inkremente je Job, 49 Rückschnitte; ODBs auf dem Server (≈ 440 GiB), 55 GiB kopiert; gegen die Nennserie σ1 max +3 bis +10 %, Kontaktdruck max −8 bis −36 %; Nachweis W2 QS a_B,V 1,38/1,70/2,00, W2 DY2 0,94/1,17/1,33 (ADR-116 Punkt 56); Thesis 5.4.3"
+    machine: "Vollversion"
+    findings: [FE-26, FE-27]
+  variante_stahl_gemessen_gerechnet:
+    purpose: "Einzelvariante stahl an A bis E (ADR-116 Punkt 54 und 56 (d)): Stahlritzel wie gefertigt (Kopfrücknahme 23,6 µm ab d 51,946, Zahnweite 16,797, Fußkreis 48,321 mm), Kunststoffrad nach dem STplus-Fall; Taschenkörper, Netz der Taschenserie (83 650 Knoten), W1 bis W4 × QS/DY1/DY2, 60 Jobs, drei Jobs zu je vier Kernen"
+    outcome: "60 Jobs vollständig, 2026-10-25 21:24 bis 2026-10-26 01:06 (3,7 h, Summe der Jobzeiten 11,0 h), keine negativen Eigenwerte; gegen den Nennpiloten an A bis E (`fe_series_analysis.py --reference`, analyse/analyse.md Abschnitt 5): bei 12 Nm QS σ1 an C +7,6 % (W1) / +4,7 % (W2), an B und E +7 bis +18 %, Kontaktdruck max −21 bis −32 %, Verdrehweg an C +11 %; das Ritzel trägt den Fertigungseffekt der Serie beide, auch die Druckerhöhung an C (Kopfrücknahme nimmt dem Folgezahn den Lastanteil); Thesis 5.4.3, 7.3, 8"
+    machine: "Vollversion"
+    findings: [FE-19, FE-27]
+  variante_kunststoff_gemessen_gerechnet:
+    purpose: "Einzelvariante kunststoff an A bis E (ADR-116 Punkt 54, 55 und 56 (d)): Stahlritzel nach dem STplus-Fall, Kunststoffrad wie gefertigt (Kopfrundung 0,21 mm, Profil-Winkelabweichung +10,25 µm, Zahnweite 16,972 mm) auf dem Kappennetz mit 87 955 Knoten und den Karten des Mappings auf das Kappennetz, W1 bis W4 × QS/DY1/DY2, 60 Jobs, drei Jobs zu je vier Kernen"
+    outcome: "60 Jobs vollständig, 2026-10-25 17:16 bis 21:24 (4,1 h, Summe der Jobzeiten 12,1 h), keine negativen Eigenwerte; gegen den Nennpiloten an A bis E: σ1 an C unter 1 %, an B und E +2 bis +5 % (8 Nm bis +8 %), Kontaktdruck max −2 bis −4 % (an A und D −13 bis −17 %, die eigene Kopfkante); die Anteile von Ritzel und Rad addieren sich an der Fußrundung bis auf einen Prozentpunkt zur Serie beide; das Kappennetz verschiebt die Fußwerte gegen den Piloten mit 83 650 Knoten nicht; Thesis 5.4.3, 7.3, 8"
+    machine: "Vollversion"
+    findings: [FE-19, FE-26, FE-27]
+  geometrie_gemessen:
+    purpose: "Bilder der Geometrie wie gefertigt gegen den STplus-Fall (`scripts/as_manufactured_figures.py`, 2026-10-22): je Rad Zahnfuß und Zahnkopf in wahrem Maßstab und die Abweichung der gefertigten Kontur von der Sollkontur vom Fußkreis bis zum Kopfformpunkt über dem Durchmesser (Abstand zum nächsten Sollpunkt auf dessen äußerer Normale, auf der Evolvente gleich r_b·Δψ; Ritzel: Fußkreis −36 µm, −7,5 µm aus der Zahnweite, Kopfrücknahme 23,6 µm ab d 51,946, keine Winkelabweichung; Rad: Fußkreis −9 µm, f_Hα +10,25 µm mit Nullpunkt am Messkreis 51,728, Kopfrundung 0,21 mm), und der Zahnkopf des Sektornetzes auf dem gemessenen Rad ohne und mit Kopfkappe (FE-26, ADR-116 Punkt 55)"
+    outcome: "drei Bilder je SVG/PDF/PNG; für den Nutzer zur Ansicht, Thesis-Einbindung offen"
+    machine: "Auswertung"
+    findings: [FE-26]
   nachtlauf_2026-10-19_messvarianten:
-    purpose: "Kette der drei Messvarianten (ADR-116 Punkt 54) für den Lizenzrechner: variante_stahl_gemessen (60 Jobs), variante_kunststoff_gemessen und variante_beide_gemessen (je 30 Jobs W1/W2, nach dem Mapping je 60); Starter wie die Kette vom 2026-10-14 (Sperrdateien, pid-Wächter, Autostart)"
-    outcome: "übergeben 2026-10-19; rund 6 h (W1 bis W4) je Variante nach den Serienzeiten, mit W3/W4 der Radvarianten rund 18 h"
+    purpose: "Kette der Messvarianten (ADR-116 Punkt 54) für den Lizenzrechner, neu gebaut 2026-10-22 mit der Kopfkappe der Radvarianten (Punkt 55) und der Variante beide als vollständige Serie: serie_beide_gemessen (1188 Jobs W1 bis W4 × QS/DY1/DY2 an 99 Stellungen), variante_kunststoff_gemessen (60 Jobs W1 bis W4 × QS/DY1/DY2 an A bis E), variante_stahl_gemessen (60 Jobs); die beiden Radordner mit den Karten des Mappings des Nutzers auf das Kappennetz (2026-10-22); Starter wie die Kette vom 2026-10-14 (Sperrdateien, pid-Wächter, Autostart)"
+    outcome: "übergeben 2026-10-19, neu 2026-10-22 (die Ordner vom 2026-10-19 ohne Kappe waren noch nicht gerechnet); Reihenfolge Serie, kunststoff, stahl (Nutzer: die Serie zuerst), rund 120 + 6 + 6 h nach den Serienzeiten bei einem Job; Starter mit `-Parallel 3` (drei Jobs zu je vier Kernen auf zwölf Kernen, 27 Lizenz-Tokens, ADR-116 Punkt 55 (f)), erwartet etwa ein Drittel der Zeit"
     machine: "Vollversion"
     findings: [FE-26, FE-27]
